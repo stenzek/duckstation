@@ -17,6 +17,130 @@
     <file>icons/applications-system@2x.png</file>
     <file>icons/audio-card.png</file>
     <file>icons/audio-card@2x.png</file>
+    <file>icons/black/16/AchievementsSettings.png</file>
+    <file>icons/black/16/AddGameDirectory.png</file>
+    <file>icons/black/16/AdvancedSettings.png</file>
+    <file>icons/black/16/AudioSettings.png</file>
+    <file>icons/black/16/BIOSSettings.png</file>
+    <file>icons/black/16/ChangeDisc.png</file>
+    <file>icons/black/16/Cheats.png</file>
+    <file>icons/black/16/Clear.png</file>
+    <file>icons/black/16/ConsoleSettings.png</file>
+    <file>icons/black/16/ControllerSettings.png</file>
+    <file>icons/black/16/DisplaySettings.png</file>
+    <file>icons/black/16/EmulationSettings.png</file>
+    <file>icons/black/16/EnhancementSettings.png</file>
+    <file>icons/black/16/Exit.png</file>
+    <file>icons/black/16/Fullscreen.png</file>
+    <file>icons/black/16/GameGrid.png</file>
+    <file>icons/black/16/GameList.png</file>
+    <file>icons/black/16/GamelistSettings.png</file>
+    <file>icons/black/16/GeneralSettings.png</file>
+    <file>icons/black/16/HotkeySettings.png</file>
+    <file>icons/black/16/Language.png</file>
+    <file>icons/black/16/LoadState.png</file>
+    <file>icons/black/16/LockToolbar.png</file>
+    <file>icons/black/16/MemorycardSettings.png</file>
+    <file>icons/black/16/MoveDown.png</file>
+    <file>icons/black/16/MoveUp.png</file>
+    <file>icons/black/16/Options.png</file>
+    <file>icons/black/16/Pause.png</file>
+    <file>icons/black/16/PostProcessingAdd.png</file>
+    <file>icons/black/16/PostProcessingRemove.png</file>
+    <file>icons/black/16/PostprocessingSettings.png</file>
+    <file>icons/black/16/PowerOff.png</file>
+    <file>icons/black/16/PoweroffWsaving.png</file>
+    <file>icons/black/16/RescanAllGames.png</file>
+    <file>icons/black/16/Reset.png</file>
+    <file>icons/black/16/Resume.png</file>
+    <file>icons/black/16/SaveState.png</file>
+    <file>icons/black/16/ScanForGames.png</file>
+    <file>icons/black/16/Screenshot.png</file>
+    <file>icons/black/16/StartdiscSettings.png</file>
+    <file>icons/black/16/StartfileSettings.png</file>
+    <file>icons/black/32/AchievementsSettings.png</file>
+    <file>icons/black/32/AddGameDirectory.png</file>
+    <file>icons/black/32/AdvancedSettings.png</file>
+    <file>icons/black/32/AudioSettings.png</file>
+    <file>icons/black/32/BIOSSettings.png</file>
+    <file>icons/black/32/ChangeDisc.png</file>
+    <file>icons/black/32/Cheats.png</file>
+    <file>icons/black/32/Clear.png</file>
+    <file>icons/black/32/ConsoleSettings.png</file>
+    <file>icons/black/32/ControllerSettings.png</file>
+    <file>icons/black/32/DisplaySettings.png</file>
+    <file>icons/black/32/EmulationSettings.png</file>
+    <file>icons/black/32/EnhancementSettings.png</file>
+    <file>icons/black/32/Exit.png</file>
+    <file>icons/black/32/Fullscreen.png</file>
+    <file>icons/black/32/GameGrid.png</file>
+    <file>icons/black/32/GameList.png</file>
+    <file>icons/black/32/GamelistSettings.png</file>
+    <file>icons/black/32/GeneralSettings.png</file>
+    <file>icons/black/32/HotkeySettings.png</file>
+    <file>icons/black/32/Language.png</file>
+    <file>icons/black/32/LoadState.png</file>
+    <file>icons/black/32/LockToolbar.png</file>
+    <file>icons/black/32/MemorycardSettings.png</file>
+    <file>icons/black/32/MoveDown.png</file>
+    <file>icons/black/32/MoveUp.png</file>
+    <file>icons/black/32/Options.png</file>
+    <file>icons/black/32/Pause.png</file>
+    <file>icons/black/32/PostProcessingAdd.png</file>
+    <file>icons/black/32/PostProcessingRemove.png</file>
+    <file>icons/black/32/PostprocessingSettings.png</file>
+    <file>icons/black/32/PowerOff.png</file>
+    <file>icons/black/32/PoweroffWsaving.png</file>
+    <file>icons/black/32/RescanAllGames.png</file>
+    <file>icons/black/32/Reset.png</file>
+    <file>icons/black/32/Resume.png</file>
+    <file>icons/black/32/SaveState.png</file>
+    <file>icons/black/32/ScanForGames.png</file>
+    <file>icons/black/32/Screenshot.png</file>
+    <file>icons/black/32/StartdiscSettings.png</file>
+    <file>icons/black/32/StartfileSettings.png</file>
+    <file>icons/black/64/AchievementsSettings.png</file>
+    <file>icons/black/64/AddGameDirectory.png</file>
+    <file>icons/black/64/AdvancedSettings.png</file>
+    <file>icons/black/64/AudioSettings.png</file>
+    <file>icons/black/64/BIOSSettings.png</file>
+    <file>icons/black/64/ChangeDisc.png</file>
+    <file>icons/black/64/Cheats.png</file>
+    <file>icons/black/64/Clear.png</file>
+    <file>icons/black/64/ConsoleSettings.png</file>
+    <file>icons/black/64/ControllerSettings.png</file>
+    <file>icons/black/64/DisplaySettings.png</file>
+    <file>icons/black/64/EmulationSettings.png</file>
+    <file>icons/black/64/EnhancementSettings.png</file>
+    <file>icons/black/64/Exit.png</file>
+    <file>icons/black/64/Fullscreen.png</file>
+    <file>icons/black/64/GameGrid.png</file>
+    <file>icons/black/64/GameList.png</file>
+    <file>icons/black/64/GamelistSettings.png</file>
+    <file>icons/black/64/GeneralSettings.png</file>
+    <file>icons/black/64/HotkeySettings.png</file>
+    <file>icons/black/64/Language.png</file>
+    <file>icons/black/64/LoadState.png</file>
+    <file>icons/black/64/LockToolbar.png</file>
+    <file>icons/black/64/MemorycardSettings.png</file>
+    <file>icons/black/64/MoveDown.png</file>
+    <file>icons/black/64/MoveUp.png</file>
+    <file>icons/black/64/Options.png</file>
+    <file>icons/black/64/Pause.png</file>
+    <file>icons/black/64/PostProcessingAdd.png</file>
+    <file>icons/black/64/PostProcessingRemove.png</file>
+    <file>icons/black/64/PostprocessingSettings.png</file>
+    <file>icons/black/64/PowerOff.png</file>
+    <file>icons/black/64/PoweroffWsaving.png</file>
+    <file>icons/black/64/RescanAllGames.png</file>
+    <file>icons/black/64/Reset.png</file>
+    <file>icons/black/64/Resume.png</file>
+    <file>icons/black/64/SaveState.png</file>
+    <file>icons/black/64/ScanForGames.png</file>
+    <file>icons/black/64/Screenshot.png</file>
+    <file>icons/black/64/StartdiscSettings.png</file>
+    <file>icons/black/64/StartfileSettings.png</file>
+    <file>icons/black/index.theme</file>
     <file>icons/camera-photo.png</file>
     <file>icons/camera-photo@2x.png</file>
     <file>icons/camera-video.png</file>
@@ -164,9 +288,130 @@
     <file>icons/view-fullscreen@2x.png</file>
     <file>icons/view-refresh.png</file>
     <file>icons/view-refresh@2x.png</file>
-  </qresource>
-
-  <qresource>
+    <file>icons/white/16/AchievementsSettings.png</file>
+    <file>icons/white/16/AddGameDirectory.png</file>
+    <file>icons/white/16/AdvancedSettings.png</file>
+    <file>icons/white/16/AudioSettings.png</file>
+    <file>icons/white/16/BIOSSettings.png</file>
+    <file>icons/white/16/ChangeDisc.png</file>
+    <file>icons/white/16/Cheats.png</file>
+    <file>icons/white/16/Clear.png</file>
+    <file>icons/white/16/ConsoleSettings.png</file>
+    <file>icons/white/16/ControllerSettings.png</file>
+    <file>icons/white/16/DisplaySettings.png</file>
+    <file>icons/white/16/EmulationSettings.png</file>
+    <file>icons/white/16/EnhancementSettings.png</file>
+    <file>icons/white/16/Exit.png</file>
+    <file>icons/white/16/Fullscreen.png</file>
+    <file>icons/white/16/GameGrid.png</file>
+    <file>icons/white/16/GameList.png</file>
+    <file>icons/white/16/GamelistSettings.png</file>
+    <file>icons/white/16/GeneralSettings.png</file>
+    <file>icons/white/16/HotkeySettings.png</file>
+    <file>icons/white/16/Language.png</file>
+    <file>icons/white/16/LoadState.png</file>
+    <file>icons/white/16/LockToolbar.png</file>
+    <file>icons/white/16/MemorycardSettings.png</file>
+    <file>icons/white/16/MoveDown.png</file>
+    <file>icons/white/16/MoveUp.png</file>
+    <file>icons/white/16/Options.png</file>
+    <file>icons/white/16/Pause.png</file>
+    <file>icons/white/16/PostProcessingAdd.png</file>
+    <file>icons/white/16/PostProcessingRemove.png</file>
+    <file>icons/white/16/PostprocessingSettings.png</file>
+    <file>icons/white/16/PowerOff.png</file>
+    <file>icons/white/16/PoweroffWsaving.png</file>
+    <file>icons/white/16/RescanAllGames.png</file>
+    <file>icons/white/16/Reset.png</file>
+    <file>icons/white/16/Resume.png</file>
+    <file>icons/white/16/SaveState.png</file>
+    <file>icons/white/16/ScanForGames.png</file>
+    <file>icons/white/16/Screenshot.png</file>
+    <file>icons/white/16/StartdiscSettings.png</file>
+    <file>icons/white/16/StartfileSettings.png</file>
+    <file>icons/white/32/AchievementsSettings.png</file>
+    <file>icons/white/32/AddGameDirectory.png</file>
+    <file>icons/white/32/AdvancedSettings.png</file>
+    <file>icons/white/32/AudioSettings.png</file>
+    <file>icons/white/32/BIOSSettings.png</file>
+    <file>icons/white/32/ChangeDisc.png</file>
+    <file>icons/white/32/Cheats.png</file>
+    <file>icons/white/32/Clear.png</file>
+    <file>icons/white/32/ConsoleSettings.png</file>
+    <file>icons/white/32/ControllerSettings.png</file>
+    <file>icons/white/32/DisplaySettings.png</file>
+    <file>icons/white/32/EmulationSettings.png</file>
+    <file>icons/white/32/EnhancementSettings.png</file>
+    <file>icons/white/32/Exit.png</file>
+    <file>icons/white/32/Fullscreen.png</file>
+    <file>icons/white/32/GameGrid.png</file>
+    <file>icons/white/32/GameList.png</file>
+    <file>icons/white/32/GamelistSettings.png</file>
+    <file>icons/white/32/GeneralSettings.png</file>
+    <file>icons/white/32/HotkeySettings.png</file>
+    <file>icons/white/32/Language.png</file>
+    <file>icons/white/32/LoadState.png</file>
+    <file>icons/white/32/LockToolbar.png</file>
+    <file>icons/white/32/MemorycardSettings.png</file>
+    <file>icons/white/32/MoveDown.png</file>
+    <file>icons/white/32/MoveUp.png</file>
+    <file>icons/white/32/Options.png</file>
+    <file>icons/white/32/Pause.png</file>
+    <file>icons/white/32/PostProcessingAdd.png</file>
+    <file>icons/white/32/PostProcessingRemove.png</file>
+    <file>icons/white/32/PostprocessingSettings.png</file>
+    <file>icons/white/32/PowerOff.png</file>
+    <file>icons/white/32/PoweroffWsaving.png</file>
+    <file>icons/white/32/RescanAllGames.png</file>
+    <file>icons/white/32/Reset.png</file>
+    <file>icons/white/32/Resume.png</file>
+    <file>icons/white/32/SaveState.png</file>
+    <file>icons/white/32/ScanForGames.png</file>
+    <file>icons/white/32/Screenshot.png</file>
+    <file>icons/white/32/StartdiscSettings.png</file>
+    <file>icons/white/32/StartfileSettings.png</file>
+    <file>icons/white/64/AchievementsSettings.png</file>
+    <file>icons/white/64/AddGameDirectory.png</file>
+    <file>icons/white/64/AdvancedSettings.png</file>
+    <file>icons/white/64/AudioSettings.png</file>
+    <file>icons/white/64/BIOSSettings.png</file>
+    <file>icons/white/64/ChangeDisc.png</file>
+    <file>icons/white/64/Cheats.png</file>
+    <file>icons/white/64/Clear.png</file>
+    <file>icons/white/64/ConsoleSettings.png</file>
+    <file>icons/white/64/ControllerSettings.png</file>
+    <file>icons/white/64/DisplaySettings.png</file>
+    <file>icons/white/64/EmulationSettings.png</file>
+    <file>icons/white/64/EnhancementSettings.png</file>
+    <file>icons/white/64/Exit.png</file>
+    <file>icons/white/64/Fullscreen.png</file>
+    <file>icons/white/64/GameGrid.png</file>
+    <file>icons/white/64/GameList.png</file>
+    <file>icons/white/64/GamelistSettings.png</file>
+    <file>icons/white/64/GeneralSettings.png</file>
+    <file>icons/white/64/HotkeySettings.png</file>
+    <file>icons/white/64/Language.png</file>
+    <file>icons/white/64/LoadState.png</file>
+    <file>icons/white/64/LockToolbar.png</file>
+    <file>icons/white/64/MemorycardSettings.png</file>
+    <file>icons/white/64/MoveDown.png</file>
+    <file>icons/white/64/MoveUp.png</file>
+    <file>icons/white/64/Options.png</file>
+    <file>icons/white/64/Pause.png</file>
+    <file>icons/white/64/PostProcessingAdd.png</file>
+    <file>icons/white/64/PostProcessingRemove.png</file>
+    <file>icons/white/64/PostprocessingSettings.png</file>
+    <file>icons/white/64/PowerOff.png</file>
+    <file>icons/white/64/PoweroffWsaving.png</file>
+    <file>icons/white/64/RescanAllGames.png</file>
+    <file>icons/white/64/Reset.png</file>
+    <file>icons/white/64/Resume.png</file>
+    <file>icons/white/64/SaveState.png</file>
+    <file>icons/white/64/ScanForGames.png</file>
+    <file>icons/white/64/Screenshot.png</file>
+    <file>icons/white/64/StartdiscSettings.png</file>
+    <file>icons/white/64/StartfileSettings.png</file>
+    <file>icons/white/index.theme</file>
     <file>qdarkstyle/arrow_down.png</file>
     <file>qdarkstyle/arrow_down@2x.png</file>
     <file>qdarkstyle/arrow_down_disabled.png</file>
@@ -303,6 +548,7 @@
     <file>qdarkstyle/radio_unchecked_focus@2x.png</file>
     <file>qdarkstyle/radio_unchecked_pressed.png</file>
     <file>qdarkstyle/radio_unchecked_pressed@2x.png</file>
+    <file>qdarkstyle/style.qss</file>
     <file>qdarkstyle/toolbar_move_horizontal.png</file>
     <file>qdarkstyle/toolbar_move_horizontal@2x.png</file>
     <file>qdarkstyle/toolbar_move_horizontal_disabled.png</file>
@@ -375,6 +621,5 @@
     <file>qdarkstyle/window_undock_focus@2x.png</file>
     <file>qdarkstyle/window_undock_pressed.png</file>
     <file>qdarkstyle/window_undock_pressed@2x.png</file>
-    <file>qdarkstyle/style.qss</file>
   </qresource>
 </RCC>

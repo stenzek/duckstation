@@ -63,9 +63,6 @@ private Q_SLOTS:
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
   void updateMouseMode(bool paused);
 
-  void setTheme(const QString& theme);
-  void updateTheme();
-
   void onSettingsResetToDefault();
   void onEmulationStarting();
   void onEmulationStarted();
@@ -127,6 +124,8 @@ private:
     return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
   }
 
+  void setTheme(const QString& theme);
+  void setThemeFromSettings();
   void setupAdditionalUi();
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
@@ -147,6 +146,7 @@ private:
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
   void updateDebugMenuCropMode();
+  void updateMenuSelectedTheme();
   void ensureGameListLoaded();
   std::string getDeviceDiscPath(const QString& title);
 
