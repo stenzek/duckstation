@@ -100,6 +100,9 @@ void UWPHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Main", "ControllerBackend", "XInput");
   si.AddToStringList("GameList", "RecursivePaths", GetUserDirectoryRelativePath("games").c_str());
 
+  // TODO: Maybe we should bind this to F1 in the future.
+  si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
+
   if (IsRunningOnXbox())
     SetDefaultSettingsForXbox(si);
 }
