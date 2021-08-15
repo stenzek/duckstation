@@ -1325,29 +1325,6 @@ void CommonHostInterface::ClearOSDMessages()
     ImGuiFullscreen::ClearNotifications();
 }
 
-bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)
-{
-  auto iter = m_osd_active_messages.begin();
-  while (iter != m_osd_active_messages.end())
-  {
-    const OSDMessage& msg = *iter;
-    const double time = msg.time.GetTimeSeconds();
-    const float time_remaining = static_cast<float>(msg.duration - time);
-    if (time_remaining <= 0.0f)
-    {
-      iter = m_osd_active_messages.erase(iter);
-      continue;
-    }
-
-    if (callback && !callback(iter->text, time_remaining))
-      return false;
-
-    ++iter;
-  }
-
-  return true;
-}
-
 void CommonHostInterface::AcquirePendingOSDMessages()
 {
   // memory_order_consume is roughly equivalent to adding a volatile keyword to the read from the deque.
@@ -1415,17 +1392,29 @@ void CommonHostInterface::DrawOSDMessages()
     font = ImGui::GetFont();
   }
 
-  EnumerateOSDMessages([max_width, spacing, padding, rounding, &position_x, &position_y,
-                        font](const std::string& message, float time_remaining) -> bool {
+  auto iter = m_osd_active_messages.begin();
+  while (iter != m_osd_active_messages.end())
+  {
+    const OSDMessage& msg = *iter;
+    const double time = msg.time.GetTimeSeconds();
+    const float time_remaining = static_cast<float>(msg.duration - time);
+    if (time_remaining <= 0.0f)
+    {
+      iter = m_osd_active_messages.erase(iter);
+      continue;
+    }
+
+    ++iter;
+
     const float opacity = std::min(time_remaining, 1.0f);
     const u32 alpha = static_cast<u32>(opacity * 255.0f);
 
     if (position_y >= ImGui::GetIO().DisplaySize.y)
-      return false;
+      break;
 
     const ImVec2 pos(position_x, position_y);
     const ImVec2 text_size(
-      font->CalcTextSizeA(font->FontSize, max_width, -1.0f, message.c_str(), message.c_str() + message.length()));
+      font->CalcTextSizeA(font->FontSize, max_width, -1.0f, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
     const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
@@ -1433,11 +1422,9 @@ void CommonHostInterface::DrawOSDMessages()
     dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
     dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
     dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha),
-                message.c_str(), nullptr, max_width, &text_rect);
+                msg.text.c_str(), msg.text.c_str() + msg.text.length(), max_width, &text_rect);
     position_y += size.y + spacing;
-
-    return true;
-  });
+  }
 }
 
 void CommonHostInterface::DrawDebugWindows()

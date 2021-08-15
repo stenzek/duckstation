@@ -223,7 +223,6 @@ public:
 
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
-  bool EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback);
   void ClearOSDMessages();
 
   /// async message queue bookeeping for. Should be called on UI thread.
