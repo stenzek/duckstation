@@ -1388,17 +1388,35 @@ void CommonHostInterface::DrawOSDMessages()
 {
   AcquirePendingOSDMessages();
 
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float spacing = 5.0f * scale;
-  const float margin = 10.0f * scale;
-  const float padding = 8.0f * scale;
-  const float rounding = 5.0f * scale;
-  const float max_width = ImGui::GetIO().DisplaySize.x - margin;
-  float position_x = margin;
-  float position_y = margin;
+  float max_width, margin, spacing, padding, rounding, position_x, position_y;
+  ImFont* font;
 
-  EnumerateOSDMessages([max_width, spacing, padding, rounding, &position_x, &position_y](const std::string& message,
-                                                                                         float time_remaining) -> bool {
+  if (m_fullscreen_ui_enabled)
+  {
+    max_width = ImGuiFullscreen::LayoutScale(1080.0f);
+    spacing = ImGuiFullscreen::LayoutScale(4.0f);
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    padding = ImGuiFullscreen::LayoutScale(10.0f);
+    rounding = ImGuiFullscreen::LayoutScale(10.0f);
+    position_x = margin;
+    position_y = margin + ImGuiFullscreen::g_menu_bar_size;
+    font = ImGuiFullscreen::g_large_font;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    spacing = 5.0f * scale;
+    margin = 10.0f * scale;
+    padding = 8.0f * scale;
+    rounding = 5.0f * scale;
+    max_width = ImGui::GetIO().DisplaySize.x - margin;
+    position_x = margin;
+    position_y = margin;
+    font = ImGui::GetFont();
+  }
+
+  EnumerateOSDMessages([max_width, spacing, padding, rounding, &position_x, &position_y,
+                        font](const std::string& message, float time_remaining) -> bool {
     const float opacity = std::min(time_remaining, 1.0f);
     const u32 alpha = static_cast<u32>(opacity * 255.0f);
 
@@ -1406,12 +1424,12 @@ void CommonHostInterface::DrawOSDMessages()
       return false;
 
     const ImVec2 pos(position_x, position_y);
-    const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
+    const ImVec2 text_size(
+      font->CalcTextSizeA(font->FontSize, max_width, -1.0f, message.c_str(), message.c_str() + message.length()));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
     const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
-    ImFont* font = ImGui::GetFont();
     dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
     dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
     dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha),

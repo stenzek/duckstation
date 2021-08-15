@@ -92,7 +92,6 @@ static void DrawQuickMenu(MainWindowType type);
 static void DrawAchievementWindow();
 static void DrawLeaderboardsWindow();
 static void DrawDebugMenu();
-static void DrawOSDMessages();
 static void DrawAboutWindow();
 static void OpenAboutWindow();
 static void SetDebugMenuEnabled(bool enabled);
@@ -391,7 +390,7 @@ void Render()
   if (s_input_binding_type != InputBindingType::None)
     DrawInputBindingWindow();
 
-  DrawOSDMessages();
+  s_host_interface->DrawOSDMessages();
 
   ImGuiFullscreen::EndLayout();
 }
@@ -3330,46 +3329,6 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
-
-void DrawOSDMessages()
-{
-  s_host_interface->AcquirePendingOSDMessages();
-
-  ImGui::PushFont(g_large_font);
-
-  const float max_width = LayoutScale(1080.0f);
-  const float spacing = LayoutScale(4.0f);
-  const float margin = LayoutScale(10.0f);
-  const float padding = LayoutScale(10.0f);
-  float position_x = margin;
-  float position_y = margin + ImGuiFullscreen::g_menu_bar_size;
-
-  s_host_interface->EnumerateOSDMessages(
-    [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
-      const float opacity = std::min(time_remaining, 1.0f);
-      const u32 alpha = static_cast<u32>(opacity * 255.0f);
-
-      if (position_y >= ImGui::GetIO().DisplaySize.y)
-        return false;
-
-      const ImVec2 pos(position_x, position_y);
-      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
-      const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
-      const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-
-      // If we're in the landing page, draw the OSD over the windows (since it covers it)
-      ImDrawList* dl = (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
-                                                                         ImGui::GetBackgroundDrawList();
-      dl->AddRectFilled(pos, pos + size, IM_COL32(0x21, 0x21, 0x21, alpha), LayoutScale(10.0f));
-      dl->AddRect(pos, pos + size, IM_COL32(0x48, 0x48, 0x48, alpha), LayoutScale(10.0f));
-      dl->AddText(g_large_font, g_large_font->FontSize, ImVec2(text_rect.x, text_rect.y),
-                  IM_COL32(0xff, 0xff, 0xff, alpha), message.c_str(), nullptr, max_width, &text_rect);
-      position_y += size.y + spacing;
-      return true;
-    });
-
-  ImGui::PopFont();
-}
 
 void OpenAboutWindow()
 {
