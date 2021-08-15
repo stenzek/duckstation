@@ -92,7 +92,6 @@ static void DrawQuickMenu(MainWindowType type);
 static void DrawAchievementWindow();
 static void DrawLeaderboardsWindow();
 static void DrawDebugMenu();
-static void DrawStatsOverlay();
 static void DrawOSDMessages();
 static void DrawAboutWindow();
 static void OpenAboutWindow();
@@ -351,7 +350,7 @@ void Render()
   if (System::IsValid())
   {
     if (!s_debug_menu_enabled)
-      DrawStatsOverlay();
+      s_host_interface->DrawStatsOverlay();
 
     if (!IsCheevosHardcoreModeActive())
       s_host_interface->DrawDebugWindows();
@@ -3331,95 +3330,6 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
-void DrawStatsOverlay()
-{
-  if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
-        g_settings.display_show_resolution || System::IsPaused() || s_host_interface->IsFastForwardEnabled() ||
-        s_host_interface->IsTurboEnabled()))
-  {
-    return;
-  }
-
-  const float margin = LayoutScale(10.0f);
-  const float shadow_offset = DPIScale(1.0f);
-  float position_y = ImGuiFullscreen::g_menu_bar_size + margin;
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  TinyString text;
-  ImVec2 text_size;
-  bool first = true;
-
-#define DRAW_LINE(font, font_size, right_pad, color)                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    text_size = font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, text,                         \
-                                    text.GetCharArray() + text.GetLength(), nullptr);                                  \
-    dl->AddText(font, font_size,                                                                                       \
-                ImVec2(ImGui::GetIO().DisplaySize.x - (right_pad)-margin - text_size.x + shadow_offset,                \
-                       position_y + shadow_offset),                                                                    \
-                IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());                                 \
-    dl->AddText(font, font_size, ImVec2(ImGui::GetIO().DisplaySize.x - (right_pad)-margin - text_size.x, position_y),  \
-                color, text, text.GetCharArray() + text.GetLength());                                                  \
-    position_y += text_size.y + margin;                                                                                \
-  } while (0)
-
-  const System::State state = System::GetState();
-  if (System::GetState() == System::State::Running)
-  {
-    const float speed = System::GetEmulationSpeed();
-    if (g_settings.display_show_fps)
-    {
-      text.AppendFormattedString("%.2f", System::GetFPS());
-      first = false;
-    }
-    if (g_settings.display_show_vps)
-    {
-      text.AppendFormattedString("%s%.2f", first ? "" : " / ", System::GetVPS());
-      first = false;
-    }
-    if (g_settings.display_show_speed)
-    {
-      text.AppendFormattedString("%s%u%%", first ? "" : " / ", static_cast<u32>(std::round(speed)));
-      first = false;
-    }
-    if (!text.IsEmpty())
-    {
-      ImU32 color;
-      if (speed < 95.0f)
-        color = IM_COL32(255, 100, 100, 255);
-      else if (speed > 105.0f)
-        color = IM_COL32(100, 255, 100, 255);
-      else
-        color = IM_COL32(255, 255, 255, 255);
-
-      DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, color);
-    }
-
-    if (g_settings.display_show_resolution)
-    {
-      const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
-      const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
-      text.Format("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
-      DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
-    }
-
-    if (g_settings.display_show_status_indicators)
-    {
-      const bool rewinding = System::IsRewinding();
-      if (rewinding || s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled())
-      {
-        text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
-        DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
-      }
-    }
-  }
-  else if (g_settings.display_show_status_indicators && state == System::State::Paused)
-  {
-    text.Assign(ICON_FA_PAUSE);
-    DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
-  }
-
-#undef DRAW_LINE
-}
 
 void DrawOSDMessages()
 {

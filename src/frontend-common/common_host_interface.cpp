@@ -1189,13 +1189,13 @@ void CommonHostInterface::DrawImGuiWindows()
   {
     if (!IsCheevosChallengeModeActive())
       DrawDebugWindows();
-    DrawFPSWindow();
+    DrawStatsOverlay();
   }
 
   DrawOSDMessages();
 }
 
-void CommonHostInterface::DrawFPSWindow()
+void CommonHostInterface::DrawStatsOverlay()
 {
   if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed |
         g_settings.display_show_resolution | System::IsPaused() | IsFastForwardEnabled() | IsTurboEnabled()))
@@ -1203,13 +1203,28 @@ void CommonHostInterface::DrawFPSWindow()
     return;
   }
 
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float shadow_offset = 1.0f * scale;
-  float margin = 10.0f * scale;
-  float spacing = 5.0f * scale;
-  float position_y = margin;
+  float shadow_offset, margin, spacing, position_y;
+  ImFont* font;
+
+  if (m_fullscreen_ui_enabled)
+  {
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    spacing = margin;
+    shadow_offset = ImGuiFullscreen::DPIScale(1.0f);
+    position_y = ImGuiFullscreen::g_menu_bar_size + margin;
+    font = ImGuiFullscreen::g_large_font;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    shadow_offset = 1.0f * scale;
+    margin = 10.0f * scale;
+    spacing = 5.0f * scale;
+    position_y = margin;
+    font = ImGui::GetFont();
+  }
+
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  ImFont* font = ImGui::GetFont();
   TinyString text;
   ImVec2 text_size;
   bool first = true;

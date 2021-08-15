@@ -338,7 +338,7 @@ public:
   void SetRewindState(bool enabled);
 
   /// ImGui window drawing.
-  void DrawFPSWindow();
+  void DrawStatsOverlay();
   void DrawOSDMessages();
   void DrawDebugWindows();
 
