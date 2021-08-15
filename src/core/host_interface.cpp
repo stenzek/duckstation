@@ -643,6 +643,7 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     Log_WarningPrintf("All enhancements disabled by config setting.");
     g_settings.cpu_overclock_enable = false;
     g_settings.cpu_overclock_active = false;
+    g_settings.enable_8mb_ram = false;
     g_settings.gpu_resolution_scale = 1;
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
