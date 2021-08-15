@@ -697,7 +697,7 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
 #if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
   if (g_settings.rewind_enable)
   {
-    AddOSDMessage(TranslateString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."));
+    AddOSDMessage(TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
     g_settings.rewind_enable = false;
   }
 #endif
