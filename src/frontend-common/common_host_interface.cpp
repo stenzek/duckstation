@@ -1173,11 +1173,18 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 
 void CommonHostInterface::DrawImGuiWindows()
 {
-  if (m_save_state_selector_ui->IsOpen())
-    m_save_state_selector_ui->Draw();
+  const bool system_valid = System::IsValid();
+  if (system_valid)
+  {
+    if (m_save_state_selector_ui->IsOpen())
+      m_save_state_selector_ui->Draw();
 
-  if (s_input_overlay_ui)
-    s_input_overlay_ui->Draw();
+    if (s_input_overlay_ui)
+      s_input_overlay_ui->Draw();
+
+    if (g_settings.display_show_enhancements)
+      DrawEnhancementsOverlay();
+  }
 
   if (m_fullscreen_ui_enabled)
   {
@@ -1185,7 +1192,7 @@ void CommonHostInterface::DrawImGuiWindows()
     return;
   }
 
-  if (System::IsValid())
+  if (system_valid)
   {
     if (!IsCheevosChallengeModeActive())
       DrawDebugWindows();
@@ -1300,6 +1307,90 @@ void CommonHostInterface::DrawStatsOverlay()
   }
 
 #undef DRAW_LINE
+}
+
+void CommonHostInterface::DrawEnhancementsOverlay()
+{
+  LargeString text;
+  text.AppendString(Settings::GetConsoleRegionName(System::GetRegion()));
+
+  if (g_settings.rewind_enable)
+    text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
+  if (g_settings.IsRunaheadEnabled())
+    text.AppendFormattedString(" RA=%u", g_settings.runahead_frames);
+
+  if (g_settings.cpu_overclock_active)
+    text.AppendFormattedString(" CPU=%u%%", g_settings.GetCPUOverclockPercent());
+  if (g_settings.enable_8mb_ram)
+    text.AppendString(" 8MB");
+  if (g_settings.cdrom_read_speedup != 1)
+    text.AppendFormattedString(" CDR=%ux", g_settings.cdrom_read_speedup);
+  if (g_settings.cdrom_seek_speedup != 1)
+    text.AppendFormattedString(" CDS=%ux", g_settings.cdrom_seek_speedup);
+  if (g_settings.gpu_resolution_scale != 1)
+    text.AppendFormattedString(" IR=%ux", g_settings.gpu_resolution_scale);
+  if (g_settings.gpu_multisamples != 1)
+  {
+    text.AppendFormattedString(" %ux%s", g_settings.gpu_multisamples,
+                               g_settings.gpu_per_sample_shading ? "MSAA" : "SSAA");
+  }
+  if (g_settings.gpu_true_color)
+    text.AppendString(" TrueCol");
+  if (g_settings.gpu_disable_interlacing)
+    text.AppendString(" ForceProg");
+  if (g_settings.gpu_force_ntsc_timings && System::GetRegion() == ConsoleRegion::PAL)
+    text.AppendString(" PAL60");
+  if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
+    text.AppendFormattedString(" %s", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
+      g_settings.display_aspect_ratio != DisplayAspectRatio::R4_3)
+  {
+    text.AppendString(" WSHack");
+  }
+  if (g_settings.gpu_pgxp_enable)
+  {
+    text.AppendString(" PGXP");
+    if (g_settings.gpu_pgxp_culling)
+      text.AppendString("/Cull");
+    if (g_settings.gpu_pgxp_texture_correction)
+      text.AppendString("/Tex");
+    if (g_settings.gpu_pgxp_vertex_cache)
+      text.AppendString("/VC");
+    if (g_settings.gpu_pgxp_cpu)
+      text.AppendString("/CPU");
+    if (g_settings.gpu_pgxp_depth_buffer)
+      text.AppendString("/Depth");
+  }
+
+  float shadow_offset, margin, spacing, position_y;
+  ImFont* font;
+
+  if (m_fullscreen_ui_enabled)
+  {
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    spacing = margin;
+    shadow_offset = ImGuiFullscreen::DPIScale(1.0f);
+    font = ImGuiFullscreen::g_medium_font;
+    position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    shadow_offset = 1.0f * scale;
+    margin = 10.0f * scale;
+    spacing = 5.0f * scale;
+    font = ImGui::GetFont();
+    position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
+  }
+
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImVec2 text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,
+                                         text.GetCharArray() + text.GetLength(), nullptr);
+  dl->AddText(font, font->FontSize,
+              ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),
+              IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());
+  dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),
+              IM_COL32(255, 255, 255, 255), text, text.GetCharArray() + text.GetLength());
 }
 
 void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 2.0f*/)

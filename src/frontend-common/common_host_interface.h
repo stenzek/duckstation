@@ -338,6 +338,7 @@ public:
 
   /// ImGui window drawing.
   void DrawStatsOverlay();
+  void DrawEnhancementsOverlay();
   void DrawOSDMessages();
   void DrawDebugWindows();
 

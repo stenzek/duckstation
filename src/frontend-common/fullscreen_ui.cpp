@@ -2524,6 +2524,9 @@ void DrawSettingsWindow()
         settings_changed |=
           ToggleButton("Show Status Indicators", "Shows persistent icons when turbo is active or when paused.",
                        &g_settings.display_show_status_indicators);
+        settings_changed |= ToggleButton("Show Enhancement Settings",
+                                         "Shows enhancement settings in the bottom-right corner of the screen.",
+                                         &g_settings.display_show_enhancements);
         settings_changed |= RangeButton(
           "Display FPS Limit", "Limits how many frames are displayed to the screen. These frames are still rendered.",
           &s_settings_copy.display_max_fps, 0.0f, 500.0f, 1.0f, "%.2f FPS");
