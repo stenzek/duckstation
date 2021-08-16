@@ -1321,6 +1321,7 @@ void MainWindow::setTheme(const QString& theme)
   setStyleFromSettings();
   setIconThemeFromSettings();
   updateMenuSelectedTheme();
+  recreate();
 }
 
 void MainWindow::setStyleFromSettings()
