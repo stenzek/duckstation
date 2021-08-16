@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
   if (!ParseCommandLineParameters(app, host_interface.get(), &boot_params))
     return EXIT_FAILURE;
 
-  std::unique_ptr<MainWindow> window = std::make_unique<MainWindow>(host_interface.get());
+  MainWindow* window = new MainWindow(host_interface.get());
 
   if (!host_interface->Initialize())
   {
@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
   int result = app.exec();
 
-  window.reset();
   host_interface->Shutdown();
   return result;
 }

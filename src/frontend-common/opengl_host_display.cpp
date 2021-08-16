@@ -59,14 +59,31 @@ void* OpenGLHostDisplay::GetRenderContext() const
   return m_gl_context.get();
 }
 
-static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
-  s_display_pixel_format_mapping = {{
-    {},                                                  // Unknown
-    {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},               // RGBA8
-    {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},               // BGRA8
-    {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},        // RGB565
-    {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV} // RGBA5551
-  }};
+static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(bool is_gles, HostDisplayPixelFormat format)
+{
+  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
+    mapping = {{
+      {},                                                  // Unknown
+      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},               // RGBA8
+      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},               // BGRA8
+      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},        // RGB565
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV} // RGBA5551
+    }};
+
+  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
+    mapping_gles2 = {{
+      {},                                        // Unknown
+      {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE},      // RGBA8
+      {},                                        // BGRA8
+      {GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5}, // RGB565
+      {}                                         // RGBA5551
+    }};
+
+  if (is_gles && !GLAD_GL_ES_VERSION_3_0)
+    return mapping_gles2[static_cast<u32>(format)];
+  else
+    return mapping[static_cast<u32>(format)];
+}
 
 std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
                                                                      u32 samples, HostDisplayPixelFormat format,
@@ -76,7 +93,7 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
   if (layers != 1 || levels != 1)
     return {};
 
-  const auto [gl_internal_format, gl_format, gl_type] = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
 
   // TODO: Set pack width
   Assert(!data || data_stride == (width * sizeof(u32)));
@@ -93,7 +110,8 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
 {
   OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
   const auto [gl_internal_format, gl_format, gl_type] =
-    s_display_pixel_format_mapping[static_cast<u32>(texture->GetFormat())];
+    GetPixelFormatMapping(m_gl_context->IsGLES(), texture->GetFormat());
+
   GLint alignment;
   if (texture_data_stride & 1)
     alignment = 1;
@@ -145,8 +163,7 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   }
 
   const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
-  const auto [gl_internal_format, gl_format, gl_type] =
-    s_display_pixel_format_mapping[static_cast<u32>(texture_format)];
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), texture_format);
 
   GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, gl_format, gl_type, height * out_data_stride,
                                   out_data);
@@ -188,7 +205,8 @@ void OpenGLHostDisplay::UpdateDisplayPixelsTextureFilter()
 
 bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
 {
-  return (std::get<0>(s_display_pixel_format_mapping[static_cast<u32>(format)]) != static_cast<GLenum>(0));
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
+  return (gl_internal_format != static_cast<GLenum>(0));
 }
 
 bool OpenGLHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
@@ -237,7 +255,7 @@ void OpenGLHostDisplay::EndSetDisplayPixels()
   const u32 height = static_cast<u32>(m_display_texture_view_height);
 
   const auto [gl_internal_format, gl_format, gl_type] =
-    s_display_pixel_format_mapping[static_cast<u32>(m_display_texture_format)];
+    GetPixelFormatMapping(m_gl_context->IsGLES(), m_display_texture_format);
 
   glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
   if (m_use_pbo_for_pixels)
@@ -266,7 +284,7 @@ bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 widt
 {
   BindDisplayPixelsTexture();
 
-  const auto [gl_internal_format, gl_format, gl_type] = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
   const u32 pixel_size = GetDisplayPixelFormatSize(format);
   const bool is_packed_tightly = (pitch == (pixel_size * width));
 

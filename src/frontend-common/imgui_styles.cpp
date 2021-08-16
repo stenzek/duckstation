@@ -54,31 +54,3 @@ void ImGui::StyleColorsDarker(ImGuiStyle* dst)
   colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
-
-#include "font_roboto_regular.inl"
-
-ImFont* ImGui::AddRobotoRegularFont(float size /*= 15.0f*/)
-{
-  static const ImWchar ranges[] = {
-    // Basic Latin + Latin Supplement + Central European diacritics
-    0x0020,
-    0x017F,
-
-    // Cyrillic + Cyrillic Supplement
-    0x0400,
-    0x052F,
-
-    // Cyrillic Extended-A
-    0x2DE0,
-    0x2DFF,
-
-    // Cyrillic Extended-B
-    0xA640,
-    0xA69F,
-
-    0,
-  };
-
-  return ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-    s_font_roboto_regular_compressed_data, s_font_roboto_regular_compressed_size, size, nullptr, ranges);
-}

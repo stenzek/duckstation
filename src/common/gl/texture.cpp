@@ -55,7 +55,9 @@ bool Texture::Create(u32 width, u32 height, u32 samples, GLenum internal_format,
     glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
   }
 
-  glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1);
+  // This doesn't exist on GLES2.
+  if (!GLAD_GL_ES_VERSION_2_0 || GLAD_GL_ES_VERSION_3_0)
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1);
 
   GLenum error = glGetError();
   if (error != GL_NO_ERROR)

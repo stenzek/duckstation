@@ -60,8 +60,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
+        <iconset theme="PostProcessingAdd"/>
        </property>
       </widget>
      </item>
@@ -77,8 +76,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/list-remove.png</normaloff>:/icons/list-remove.png</iconset>
+        <iconset theme="PostProcessingRemove"/>
        </property>
       </widget>
      </item>
@@ -121,8 +119,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
+        <iconset theme="PostProcessingAdd"/>
        </property>
       </widget>
      </item>
@@ -138,8 +135,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/list-remove.png</normaloff>:/icons/list-remove.png</iconset>
+        <iconset theme="PostProcessingRemove"/>
        </property>
       </widget>
      </item>
@@ -175,8 +171,7 @@
         <string>Scan For New Games</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
+        <iconset theme="ScanForGames"/>
        </property>
       </widget>
      </item>
@@ -192,8 +187,7 @@
         <string>Rescan All Games</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+        <iconset theme="RescanAllGames"/>
        </property>
       </widget>
      </item>

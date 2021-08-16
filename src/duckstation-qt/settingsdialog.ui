@@ -58,8 +58,7 @@
        <string>General Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+       <iconset theme="GeneralSettings"/>
       </property>
      </item>
      <item>
@@ -67,8 +66,7 @@
        <string>BIOS Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/media-flash-2.png</normaloff>:/icons/media-flash-2.png</iconset>
+       <iconset theme="BIOSSettings"/>
       </property>
      </item>
      <item>
@@ -76,8 +74,7 @@
        <string>Console Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/utilities-system-monitor.png</normaloff>:/icons/utilities-system-monitor.png</iconset>
+       <iconset theme="ConsoleSettings"/>
       </property>
      </item>
      <item>
@@ -85,8 +82,7 @@
        <string>Emulation Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/applications-other.png</normaloff>:/icons/applications-other.png</iconset>
+       <iconset theme="EmulationSettings"/>
       </property>
      </item>
      <item>
@@ -94,8 +90,7 @@
        <string>Game List Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/system-file-manager.png</normaloff>:/icons/system-file-manager.png</iconset>
+       <iconset theme="GamelistSettings"/>
       </property>
      </item>
      <item>
@@ -103,8 +98,7 @@
        <string>Hotkey Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</normaloff>:/icons/preferences-desktop-keyboard-shortcuts.png</iconset>
+       <iconset theme="HotkeySettings"/>
       </property>
      </item>
      <item>
@@ -112,8 +106,7 @@
        <string>Controller Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/input-gaming.png</normaloff>:/icons/input-gaming.png</iconset>
+       <iconset theme="ControllerSettings"/>
       </property>
      </item>
      <item>
@@ -121,8 +114,7 @@
        <string>Memory Card Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/media-flash.png</normaloff>:/icons/media-flash.png</iconset>
+       <iconset theme="MemorycardSettings"/>
       </property>
      </item>
      <item>
@@ -130,8 +122,7 @@
        <string>Display Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/video-display.png</normaloff>:/icons/video-display.png</iconset>
+       <iconset theme="DisplaySettings"/>
       </property>
      </item>
      <item>
@@ -139,8 +130,7 @@
        <string>Enhancement Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
+       <iconset theme="EnhancementSettings"/>
       </property>
      </item>
      <item>
@@ -148,8 +138,7 @@
        <string>Post-Processing Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/applications-graphics.png</normaloff>:/icons/applications-graphics.png</iconset>
+       <iconset theme="PostprocessingSettings"/>
       </property>
      </item>
      <item>
@@ -157,8 +146,7 @@
        <string>Audio Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/audio-card.png</normaloff>:/icons/audio-card.png</iconset>
+       <iconset theme="AudioSettings"/>
       </property>
      </item>
      <item>
@@ -166,8 +154,7 @@
        <string>Achievement Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/trophy.png</normaloff>:/icons/trophy.png</iconset>
+       <iconset theme="AchievementsSettings"/>
       </property>
      </item>
      <item>
@@ -175,8 +162,7 @@
        <string>Advanced Settings</string>
       </property>
       <property name="icon">
-       <iconset resource="resources/resources.qrc">
-        <normaloff>:/icons/applications-development.png</normaloff>:/icons/applications-development.png</iconset>
+       <iconset theme="AdvancedSettings"/>
       </property>
      </item>
     </widget>

@@ -45,6 +45,8 @@
 #include <thread>
 Log_SetChannel(System);
 
+// #define PROFILE_MEMORY_SAVE_STATES 1
+
 SystemBootParameters::SystemBootParameters() = default;
 
 SystemBootParameters::SystemBootParameters(SystemBootParameters&& other) = default;
@@ -2323,7 +2325,9 @@ bool SaveMemoryState(MemorySaveState* mss)
 
 bool SaveRewindState()
 {
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Common::Timer save_timer;
+#endif
 
   // try to reuse the frontmost slot
   const u32 save_slots = g_settings.rewind_save_slots;
@@ -2339,8 +2343,10 @@ bool SaveRewindState()
 
   s_rewind_states.push_back(std::move(mss));
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Log_DevPrintf("Saved rewind state (%" PRIu64 " bytes, took %.4f ms)", s_rewind_states.back().state_stream->GetSize(),
                 save_timer.GetTimeMilliseconds());
+#endif
 
   return true;
 }
@@ -2356,7 +2362,9 @@ bool LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true */)
   if (s_rewind_states.empty())
     return false;
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Common::Timer load_timer;
+#endif
 
   if (!LoadMemoryState(s_rewind_states.back()))
     return false;
@@ -2364,7 +2372,10 @@ bool LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true */)
   if (consume_state)
     s_rewind_states.pop_back();
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Log_DevPrintf("Rewind load took %.4f ms", load_timer.GetTimeMilliseconds());
+#endif
+
   return true;
 }
 
@@ -2432,8 +2443,10 @@ void SaveRunaheadState()
 
 void DoRunahead()
 {
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Common::Timer timer;
   Log_DevPrintf("runahead starting at frame %u", s_frame_number);
+#endif
 
   if (s_runahead_replay_pending)
   {
@@ -2448,7 +2461,10 @@ void DoRunahead()
     // and throw away all the states, forcing us to catch up below
     // TODO: can we leave one frame here and run, avoiding the extra save?
     s_runahead_states.clear();
+
+#ifdef PROFILE_MEMORY_SAVE_STATES
     Log_VerbosePrintf("Rewound to frame %u, took %.2f ms", s_frame_number, timer.GetTimeMilliseconds());
+#endif
   }
 
   // run the frames with no audio
@@ -2469,7 +2485,9 @@ void DoRunahead()
 
     g_spu.SetAudioStream(g_host_interface->GetAudioStream());
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
     Log_VerbosePrintf("Running %d frames to catch up took %.2f ms", temp, timer2.GetTimeMilliseconds());
+#endif
   }
   else
   {
@@ -2477,7 +2495,9 @@ void DoRunahead()
     SaveRunaheadState();
   }
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Log_DevPrintf("runahead ending at frame %u, took %.2f ms", s_frame_number, timer.GetTimeMilliseconds());
+#endif
 }
 
 void DoMemorySaveStates()
@@ -2504,7 +2524,10 @@ void SetRunaheadReplayFlag()
   if (s_runahead_frames == 0 || s_runahead_states.empty())
     return;
 
+#ifdef PROFILE_MEMORY_SAVE_STATES
   Log_DevPrintf("Runahead rewind pending...");
+#endif
+
   s_runahead_replay_pending = true;
 }
 
