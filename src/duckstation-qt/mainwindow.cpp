@@ -970,8 +970,8 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
       m_host_interface->SetStringSettingValue("Main", "Language", new_language.toUtf8().constData());
-      QMessageBox::information(this, tr("DuckStation"),
-                               tr("Language changed. Please restart the application to apply."));
+      m_host_interface->reinstallTranslator();
+      recreate();
     });
   }
 

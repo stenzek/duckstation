@@ -91,6 +91,7 @@ public:
   void setMainWindow(MainWindow* window);
   HostDisplay* createHostDisplay();
   void connectDisplaySignals(QtDisplayWidget* widget);
+  void reinstallTranslator();
 
   void populateLoadStateMenu(const char* game_code, QMenu* menu);
   void populateSaveStateMenu(const char* game_code, QMenu* menu);
@@ -285,6 +286,7 @@ private:
 
   QTimer* m_background_controller_polling_timer = nullptr;
   std::unique_ptr<QTimer> m_settings_save_timer;
+  std::vector<QTranslator*> m_translators;
 
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;

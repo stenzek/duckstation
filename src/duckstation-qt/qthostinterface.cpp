@@ -158,7 +158,20 @@ void QtHostInterface::installTranslator()
   }
 
   Log_InfoPrintf("Loaded translation file for language '%s'", language.c_str());
-  qApp->installTranslator(translator.release());
+  qApp->installTranslator(translator.get());
+  m_translators.push_back(translator.release());
+}
+
+void QtHostInterface::reinstallTranslator()
+{
+  for (QTranslator* translator : m_translators)
+  {
+    qApp->removeTranslator(translator);
+    translator->deleteLater();
+  }
+  m_translators.clear();
+
+  installTranslator();
 }
 
 void QtHostInterface::ReportError(const char* message)
