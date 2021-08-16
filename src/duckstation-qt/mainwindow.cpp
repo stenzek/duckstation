@@ -92,8 +92,8 @@ void MainWindow::initializeAndShow()
   setIconThemeFromSettings();
 
   m_ui.setupUi(this);
-  setStyleFromSettings();
   setupAdditionalUi();
+  setStyleFromSettings();
   connectSignals();
 
   restoreStateFromConfig();
