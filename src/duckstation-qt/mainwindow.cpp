@@ -82,7 +82,8 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
 MainWindow::~MainWindow()
 {
   Assert(!m_display_widget);
-  m_host_interface->setMainWindow(nullptr);
+  if (m_host_interface->getMainWindow() == this)
+    m_host_interface->setMainWindow(nullptr);
 
   Assert(!m_debugger_window);
 }
@@ -560,6 +561,19 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 
   ret = std::move(devices[selected_index].first);
   return ret;
+}
+
+void MainWindow::recreate()
+{
+  if (m_emulation_running)
+    m_host_interface->synchronousPowerOffSystem();
+
+  close();
+  m_host_interface->setMainWindow(nullptr);
+
+  MainWindow* new_main_window = new MainWindow(m_host_interface);
+  new_main_window->initializeAndShow();
+  deleteLater();
 }
 
 void MainWindow::onStartDiscActionTriggered()

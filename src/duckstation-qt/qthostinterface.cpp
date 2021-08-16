@@ -99,6 +99,8 @@ bool QtHostInterface::Initialize()
 void QtHostInterface::Shutdown()
 {
   stopThread();
+
+  delete m_main_window;
 }
 
 bool QtHostInterface::initializeOnThread()

@@ -150,6 +150,7 @@ private:
   void updateMenuSelectedTheme();
   void ensureGameListLoaded();
   std::string getDeviceDiscPath(const QString& title);
+  void recreate();
 
   Ui::MainWindow m_ui;
 
