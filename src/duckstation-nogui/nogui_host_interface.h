@@ -43,6 +43,8 @@ protected:
 
   void RequestExit() override;
 
+  virtual void SetDefaultSettings(SettingsInterface& si) override;
+
   virtual bool CreatePlatformWindow() = 0;
   virtual void DestroyPlatformWindow() = 0;
   virtual std::optional<WindowInfo> GetPlatformWindowInfo() = 0;

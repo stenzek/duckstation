@@ -223,7 +223,6 @@ public:
 
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
-  bool EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback);
   void ClearOSDMessages();
 
   /// async message queue bookeeping for. Should be called on UI thread.
@@ -338,7 +337,8 @@ public:
   void SetRewindState(bool enabled);
 
   /// ImGui window drawing.
-  void DrawFPSWindow();
+  void DrawStatsOverlay();
+  void DrawEnhancementsOverlay();
   void DrawOSDMessages();
   void DrawDebugWindows();
 
@@ -487,7 +487,6 @@ protected:
   bool m_frame_step_request = false;
   bool m_fast_forward_enabled = false;
   bool m_turbo_enabled = false;
-  bool m_timer_resolution_increased = false;
   bool m_throttler_enabled = true;
   bool m_display_all_frames = true;
 

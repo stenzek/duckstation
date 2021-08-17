@@ -81,6 +81,14 @@ void NoGUIHostInterface::Shutdown()
   CommonHostInterface::Shutdown();
 }
 
+void NoGUIHostInterface::SetDefaultSettings(SettingsInterface& si)
+{
+  CommonHostInterface::SetDefaultSettings(si);
+
+  // TODO: Maybe we should bind this to F1 in the future.
+  si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
+}
+
 bool NoGUIHostInterface::CreateDisplay(bool fullscreen)
 {
   std::optional<WindowInfo> wi = GetPlatformWindowInfo();
