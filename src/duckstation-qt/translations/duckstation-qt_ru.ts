@@ -3716,7 +3716,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="126"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation type="unfinished">Сглаживание Цветности для 24-Битного отображения (уменьшение блочности цвета FMV)</translation>
+        <translation type="unfinished">Сглаживание цветности для 24-Битного отображения (уменьшение блочности цвета FMV)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="136"/>
@@ -3839,7 +3839,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="89"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation type="unfinished">Сглаживание Цветности для 24-Битного отображения</translation>
+        <translation type="unfinished">Сглаживание цветности для 24-Битного отображения</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="90"/>
@@ -5442,7 +5442,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2588"/>
         <source>Undo Load State</source>
-        <translation type="unfinished">Отменить Загрузку состояния</translation>
+        <translation type="unfinished">Отменить загрузку состояния</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2636"/>
