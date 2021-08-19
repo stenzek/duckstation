@@ -908,9 +908,21 @@ void CDROM::BeginCommand(Command command)
                       s_command_info[static_cast<u8>(command)].name);
 
     // subtract the currently-elapsed ack ticks from the new command
-    const TickCount elapsed_ticks = m_command_event->GetInterval() - m_command_event->GetTicksUntilNextExecution();
-    ack_delay = std::max(ack_delay - elapsed_ticks, 1);
-    m_command_event->Deactivate();
+    if (m_command_event->IsActive())
+    {
+      const TickCount elapsed_ticks = m_command_event->GetInterval() - m_command_event->GetTicksUntilNextExecution();
+      ack_delay = std::max(ack_delay - elapsed_ticks, 1);
+      m_command_event->Deactivate();
+    }
+  }
+
+  if (m_command_second_response != Command::None)
+  {
+    Log_WarningPrintf("Cancelling pending command 0x%02X (%s) second response",
+                      static_cast<u16>(m_command_second_response),
+                      s_command_info[static_cast<u16>(m_command_second_response)].name);
+
+    ClearCommandSecondResponse();
   }
 
   m_command = command;

@@ -134,32 +134,50 @@ void QtHostInterface::shutdownOnThread()
 
 void QtHostInterface::installTranslator()
 {
-  std::string language = GetStringSettingValue("Main", "Language", "");
-  if (language.empty())
-    language = "en";
+  const QString language(QString::fromStdString(GetStringSettingValue("Main", "Language", "en")));
 
-  const QString path =
-    QStringLiteral("%1/translations/duckstation-qt_%3.qm").arg(qApp->applicationDirPath()).arg(language.c_str());
+  // install the base qt translation first
+  const QString base_dir(QStringLiteral("%1/translations").arg(qApp->applicationDirPath()));
+  const QString base_path(QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language));
+  if (QFile::exists(base_path))
+  {
+    QTranslator* base_translator = new QTranslator(qApp);
+    if (!base_translator->load(base_path))
+    {
+      QMessageBox::warning(
+        nullptr, QStringLiteral("Translation Error"),
+        QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(language).arg(base_path));
+      delete base_translator;
+    }
+    else
+    {
+      m_translators.push_back(base_translator);
+      qApp->installTranslator(base_translator);
+    }
+  }
+
+  const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir).arg(language);
   if (!QFile::exists(path))
   {
     QMessageBox::warning(
       nullptr, QStringLiteral("Translation Error"),
-      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language.c_str()).arg(path));
+      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(language).arg(path));
     return;
   }
 
-  auto translator = std::make_unique<QTranslator>(qApp);
+  QTranslator* translator = new QTranslator(qApp);
   if (!translator->load(path))
   {
     QMessageBox::warning(
       nullptr, QStringLiteral("Translation Error"),
-      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language.c_str()).arg(path));
+      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(language).arg(path));
+    delete translator;
     return;
   }
 
-  Log_InfoPrintf("Loaded translation file for language '%s'", language.c_str());
-  qApp->installTranslator(translator.get());
-  m_translators.push_back(translator.release());
+  qDebug() << "Loaded translation file for language " << language;
+  qApp->installTranslator(translator);
+  m_translators.push_back(translator);
 }
 
 void QtHostInterface::reinstallTranslator()
