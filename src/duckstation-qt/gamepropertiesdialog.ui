@@ -257,6 +257,9 @@
             <property name="text">
              <string>Enable 8MB RAM (Dev Console)</string>
             </property>
+            <property name="tristate">
+              <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
