@@ -986,15 +986,19 @@ static bool IsConditionalInstruction(CheatCode::InstructionCode code)
 {
   switch (code)
   {
-    case CheatCode::InstructionCode::CompareEqual16:    // D0
-    case CheatCode::InstructionCode::CompareNotEqual16: // D1
-    case CheatCode::InstructionCode::CompareLess16:     // D2
-    case CheatCode::InstructionCode::CompareGreater16:  // D3
-    case CheatCode::InstructionCode::CompareEqual8:     // E0
-    case CheatCode::InstructionCode::CompareNotEqual8:  // E1
-    case CheatCode::InstructionCode::CompareLess8:      // E2
-    case CheatCode::InstructionCode::CompareGreater8:   // E3
-    case CheatCode::InstructionCode::CompareButtons:    // D4
+    case CheatCode::InstructionCode::CompareEqual16:       // D0
+    case CheatCode::InstructionCode::CompareNotEqual16:    // D1
+    case CheatCode::InstructionCode::CompareLess16:        // D2
+    case CheatCode::InstructionCode::CompareGreater16:     // D3
+    case CheatCode::InstructionCode::CompareEqual8:        // E0
+    case CheatCode::InstructionCode::CompareNotEqual8:     // E1
+    case CheatCode::InstructionCode::CompareLess8:         // E2
+    case CheatCode::InstructionCode::CompareGreater8:      // E3
+    case CheatCode::InstructionCode::CompareButtons:       // D4
+    case CheatCode::InstructionCode::ExtCompareEqual32:    // A0
+    case CheatCode::InstructionCode::ExtCompareNotEqual32: // A1
+    case CheatCode::InstructionCode::ExtCompareLess32:     // A2
+    case CheatCode::InstructionCode::ExtCompareGreater32:  // A3
       return true;
 
     default:
