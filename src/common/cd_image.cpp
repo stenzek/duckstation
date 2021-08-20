@@ -291,7 +291,10 @@ std::string CDImage::GetMetadata(const std::string_view& type) const
 {
   std::string result;
   if (type == "title")
-    result = FileSystem::GetFileTitleFromPath(m_filename);
+  {
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(m_filename));
+    result = FileSystem::StripExtension(display_name);
+  }
 
   return result;
 }
