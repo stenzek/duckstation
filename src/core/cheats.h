@@ -78,9 +78,13 @@ struct CheatCode
     ExtSkipIfNotGreater8 = 0xC4,
     ExtSkipIfNotLess16 = 0xC5,
     ExtSkipIfNotGreater16 = 0xC6,
+    ExtMultiConditionals = 0xF6,
 
     ExtCheatRegisters = 0x51,
     ExtCheatRegistersCompare = 0x52,
+    
+    ExtCompareBitsSet8 = 0xE4,   //Only used inside ExtMultiConditionals
+    ExtCompareBitsClear8 = 0xE5, //Only used inside ExtMultiConditionals
   };
 
   union Instruction
