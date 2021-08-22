@@ -54,7 +54,10 @@ static T DoMemoryRead(PhysicalMemoryAddress address)
 
   if (address < Bus::RAM_MIRROR_END)
   {
-    std::memcpy(&result, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(result));
+    if (Bus::g_ram != NULL)
+      std::memcpy(&result, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(result));
+    else
+      return 0;
     return result;
   }
 
@@ -986,15 +989,15 @@ static bool IsConditionalInstruction(CheatCode::InstructionCode code)
 {
   switch (code)
   {
-    case CheatCode::InstructionCode::CompareEqual16:       // D0
-    case CheatCode::InstructionCode::CompareNotEqual16:    // D1
-    case CheatCode::InstructionCode::CompareLess16:        // D2
-    case CheatCode::InstructionCode::CompareGreater16:     // D3
-    case CheatCode::InstructionCode::CompareEqual8:        // E0
-    case CheatCode::InstructionCode::CompareNotEqual8:     // E1
-    case CheatCode::InstructionCode::CompareLess8:         // E2
-    case CheatCode::InstructionCode::CompareGreater8:      // E3
-    case CheatCode::InstructionCode::CompareButtons:       // D4
+    case CheatCode::InstructionCode::CompareEqual16:    // D0
+    case CheatCode::InstructionCode::CompareNotEqual16: // D1
+    case CheatCode::InstructionCode::CompareLess16:     // D2
+    case CheatCode::InstructionCode::CompareGreater16:  // D3
+    case CheatCode::InstructionCode::CompareEqual8:     // E0
+    case CheatCode::InstructionCode::CompareNotEqual8:  // E1
+    case CheatCode::InstructionCode::CompareLess8:      // E2
+    case CheatCode::InstructionCode::CompareGreater8:   // E3
+    case CheatCode::InstructionCode::CompareButtons:    // D4
     case CheatCode::InstructionCode::ExtCompareEqual32:    // A0
     case CheatCode::InstructionCode::ExtCompareNotEqual32: // A1
     case CheatCode::InstructionCode::ExtCompareLess32:     // A2
@@ -1619,6 +1622,7 @@ void CheatCode::Apply() const
       case InstructionCode::ExtSkipIfNotGreater8:  // C4
       case InstructionCode::ExtSkipIfNotLess16:    // C5
       case InstructionCode::ExtSkipIfNotGreater16: // C6
+      case InstructionCode::ExtMultiConditionals:  // F6
       {
         index++;
 
@@ -1649,6 +1653,275 @@ void CheatCode::Apply() const
           case InstructionCode::ExtSkipIfNotGreater16: // C6
             activate_codes = (DoMemoryRead<u16>(inst.address) > inst.value16);
             break;
+          case InstructionCode::ExtMultiConditionals: // F6
+          {
+            //Ensure any else if or else that are hit outside the if context are skipped
+            if ( (inst.value32 & 0xFFFFFF00u) != 0x1F000000)
+            {
+                activate_codes = false;
+                break;
+            }
+            for (;;)
+            {
+                const u8 totalConds = Truncate8(instructions[index-1].value32 & 0x000000FFu);
+                const u8 conditionType = Truncate8(instructions[index-1].address & 0x000000FFu);
+
+                bool conditions_check;
+
+                if (conditionType == 0x00 && totalConds > 0) // AND
+                {
+                  conditions_check = true;
+
+                  for (int i = 1; totalConds >= i; index++, i++)
+                  {
+                    switch (instructions[index].code)
+                    {
+                      case InstructionCode::CompareEqual16: //D0
+                        conditions_check &= (DoMemoryRead<u16>(instructions[index].address) == instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareNotEqual16: //D1
+                        conditions_check &= (DoMemoryRead<u16>(instructions[index].address) != instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareLess16: //D2
+                        conditions_check &= (DoMemoryRead<u16>(instructions[index].address) < instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareGreater16: //D3
+                        conditions_check &= (DoMemoryRead<u16>(instructions[index].address) > instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareEqual8: //E0
+                        conditions_check &= (DoMemoryRead<u8>(instructions[index].address) == instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareNotEqual8: //E1
+                        conditions_check &= (DoMemoryRead<u8>(instructions[index].address) != instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareLess8: //E2
+                        conditions_check &= (DoMemoryRead<u8>(instructions[index].address) < instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareGreater8: //E3
+                        conditions_check &= (DoMemoryRead<u8>(instructions[index].address) > instructions[index].value8);
+                        break;
+                      case InstructionCode::ExtCompareEqual32: //A0
+                        conditions_check &= (DoMemoryRead<u32>(instructions[index].address) == instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareNotEqual32: //A1
+                        conditions_check &= (DoMemoryRead<u32>(instructions[index].address) != instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareLess32: //A2
+                        conditions_check &= (DoMemoryRead<u32>(instructions[index].address) < instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareGreater32: //A3
+                        conditions_check &= (DoMemoryRead<u32>(instructions[index].address) > instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareBitsSet8: //E4 Internal to F6
+                        conditions_check &= (instructions[index].value8 == (DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8));
+                        break;
+                      case InstructionCode::ExtCompareBitsClear8: //E5 Internal to F6
+                        conditions_check &= ((DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8) == 0);
+                        break;
+                      case InstructionCode::ExtBitCompareButtons:  // D7
+                      {
+                        const u32 frame_compare_value  = instructions[index].address & 0xFFFFu;
+                        const u8 cht_reg_no = Truncate8((instructions[index].value32 & 0xFF000000u) >>24);
+                        const bool bit_comparison_type = ((instructions[index].address & 0x100000u) >>20);
+                        const u8 frame_comparison = Truncate8((instructions[index].address & 0xF0000u) >>16);
+                        const u32 check_value = (instructions[index].value32 & 0xFFFFFFu);
+                        const u32 value1 = GetControllerButtonBits();
+                        const u32 value2 = GetControllerAnalogBits();
+                        u32 value = value1 | value2;
+
+                        if ((bit_comparison_type == false && check_value == (value & check_value))//Check Bits are set
+                            || (bit_comparison_type == true && check_value != (value & check_value))) //Check Bits are clear
+                        {
+                            cht_register[cht_reg_no] += 1;
+                          switch (frame_comparison)
+                          {
+                            case 0x0: // No comparison on frame count, just do it
+                              conditions_check &= true;
+                              break;
+                            case 0x1: // Check if frame_compare_value == current count
+                              conditions_check &= (cht_register[cht_reg_no] == frame_compare_value);
+                              break;
+                            case 0x2: // Check if frame_compare_value < current count
+                              conditions_check &= (cht_register[cht_reg_no] < frame_compare_value);
+                              break;
+                            case 0x3: // Check if frame_compare_value > current count
+                              conditions_check &= (cht_register[cht_reg_no] > frame_compare_value);
+                              break;
+                            case 0x4: // Check if frame_compare_value != current count
+                              conditions_check &= (cht_register[cht_reg_no] != frame_compare_value);
+                              break;
+                            default:
+                              conditions_check &= false;
+                              break;
+                          }
+                        }
+                        else
+                        {
+                            cht_register[cht_reg_no] = 0;
+                            conditions_check &= false;
+                        }
+                        break;
+                      }
+                      default:
+                        Log_ErrorPrintf("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
+                        return;
+                    }
+                  }
+                }
+                else if (conditionType == 0x01 && totalConds > 0) // OR
+                {
+                  conditions_check = false;
+
+                  for (int i = 1; totalConds >= i; index++, i++)
+                  {
+                    switch (instructions[index].code)
+                    {
+                      case InstructionCode::CompareEqual16: //D0
+                        conditions_check |= (DoMemoryRead<u16>(instructions[index].address) == instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareNotEqual16: //D1
+                        conditions_check |= (DoMemoryRead<u16>(instructions[index].address) != instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareLess16: //D2
+                        conditions_check |= (DoMemoryRead<u16>(instructions[index].address) < instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareGreater16: //D3
+                        conditions_check |= (DoMemoryRead<u16>(instructions[index].address) > instructions[index].value16);
+                        break;
+                      case InstructionCode::CompareEqual8: //E0
+                        conditions_check |= (DoMemoryRead<u8>(instructions[index].address) == instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareNotEqual8: //E1
+                        conditions_check |= (DoMemoryRead<u8>(instructions[index].address) != instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareLess8: //E2
+                        conditions_check |= (DoMemoryRead<u8>(instructions[index].address) < instructions[index].value8);
+                        break;
+                      case InstructionCode::CompareGreater8: //E3
+                        conditions_check |= (DoMemoryRead<u8>(instructions[index].address) > instructions[index].value8);
+                        break;
+                      case InstructionCode::ExtCompareEqual32: //A0
+                        conditions_check |= (DoMemoryRead<u32>(instructions[index].address) == instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareNotEqual32: //A1
+                        conditions_check |= (DoMemoryRead<u32>(instructions[index].address) != instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareLess32: //A2
+                        conditions_check |= (DoMemoryRead<u32>(instructions[index].address) < instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareGreater32: //A3
+                        conditions_check |= (DoMemoryRead<u32>(instructions[index].address) > instructions[index].value32);
+                        break;
+                      case InstructionCode::ExtCompareBitsSet8: //E4 Internal to F6
+                        conditions_check |= (instructions[index].value8 == (DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8));
+                        break;
+                      case InstructionCode::ExtCompareBitsClear8: //E5 Internal to F6
+                        conditions_check |= ((DoMemoryRead<u8>(instructions[index].address) & instructions[index].value8) == 0);
+                        break;
+                      case InstructionCode::ExtBitCompareButtons:  // D7
+                      {
+                        const u32 frame_compare_value  = instructions[index].address & 0xFFFFu;
+                        const u8 cht_reg_no = Truncate8((instructions[index].value32 & 0xFF000000u) >>24);
+                        const bool bit_comparison_type = ((instructions[index].address & 0x100000u) >>20);
+                        const u8 frame_comparison = Truncate8((instructions[index].address & 0xF0000u) >>16);
+                        const u32 check_value = (instructions[index].value32 & 0xFFFFFFu);
+                        const u32 value1 = GetControllerButtonBits();
+                        const u32 value2 = GetControllerAnalogBits();
+                        u32 value = value1 | value2;
+
+                        if ((bit_comparison_type == false && check_value == (value & check_value))//Check Bits are set
+                            || (bit_comparison_type == true && check_value != (value & check_value))) //Check Bits are clear
+                        {
+                            cht_register[cht_reg_no] += 1;
+                          switch (frame_comparison)
+                          {
+                            case 0x0: // No comparison on frame count, just do it
+                              conditions_check |= true;
+                              break;
+                            case 0x1: // Check if frame_compare_value == current count
+                              conditions_check |= (cht_register[cht_reg_no] == frame_compare_value);
+                              break;
+                            case 0x2: // Check if frame_compare_value < current count
+                              conditions_check |= (cht_register[cht_reg_no] < frame_compare_value);
+                              break;
+                            case 0x3: // Check if frame_compare_value > current count
+                              conditions_check |= (cht_register[cht_reg_no] > frame_compare_value);
+                              break;
+                            case 0x4: // Check if frame_compare_value != current count
+                              conditions_check |= (cht_register[cht_reg_no] != frame_compare_value);
+                              break;
+                            default:
+                              conditions_check |= false;
+                              break;
+                          }
+                        }
+                        else
+                        {
+                            cht_register[cht_reg_no] = 0;
+                            conditions_check |= false;
+                        }
+                        break;
+                      }
+                      default:
+                        Log_ErrorPrintf("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
+                        return;
+                    }
+                  }
+                }
+                else
+                {
+                  Log_ErrorPrintf("Incomplete multi conditional instruction");
+                  return;
+                }
+                if ( conditions_check == true)
+                {
+                    activate_codes = true;
+                    break;
+                }
+                else
+                {//parse through to 00000000 FFFF and peek if next line is a F6 type associated with a ELSE
+                    activate_codes = false;
+                    // skip to the next separator (00000000 FFFF), or end
+                    constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
+                    constexpr u64 else_value = UINT64_C(0x00000000E15E0000);
+                    constexpr u64 elseif_value = UINT64_C(0x00000000E15E1F00);
+                    while (index < count)
+                    {
+                      const u64 bits = instructions[index++].bits;
+                      if (bits == separator_value )
+                      {
+                        const u64 bits_ahead = instructions[index].bits;
+                        if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
+                        {
+                          break;
+                        }
+                        if ((bits_ahead & 0xFFFF0000u) == else_value)
+                        {
+                            //index++;
+                            activate_codes = true;
+                            break;
+                        }
+                        index--;
+                        break;
+                      }
+                      if ((bits & 0xFFFFFF00u) == elseif_value)
+                      {
+                        //index--;
+                        break;
+                      }
+                      if ((bits & 0xFFFFFFFFu) == else_value)
+                      {
+                        //index++;
+                        activate_codes = true;
+                        break;
+                      }
+                    }
+                    if (activate_codes == true)
+                            break;
+                }
+              }
+          break;
+          }
           default:
             activate_codes = false;
             break;
@@ -2465,6 +2738,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtSkipIfNotGreater8:  // C4
       case InstructionCode::ExtSkipIfNotLess16:    // C5
       case InstructionCode::ExtSkipIfNotGreater16: // C6
+      case InstructionCode::ExtMultiConditionals:  // F6
       case InstructionCode::ExtCheatRegistersCompare: // 52
         index++;
         break;
@@ -2801,6 +3075,8 @@ void MemoryScan::Result::UpdateValue(MemoryAccessSize size, bool is_signed)
     }
     break;
   }
+
+
 
   value_changed = (value != old_value);
 }
