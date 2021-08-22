@@ -22778,6 +22778,276 @@
   ]
  },
  {
+  "serial": "SLES-00107",
+  "name": "Tomb Raider II - Starring Lara Croft (Italy)",
+  "codes": [
+   "HASH-B3C0A02D27EEBB8"
+  ],
+  "languages": [
+   "Italian"
+  ],
+  "publisher": "Eidos Interactive",
+  "developer": "Core Design",
+  "releaseDate": "1997-11-15",
+  "genre": "Action / Adventure / Platformer",
+  "minPlayers": 1,
+  "maxPlayers": 1,
+  "minBlocks": 1,
+  "maxBlocks": 1,
+  "tracks": [
+      {
+    "size": "244939632",
+    "md5": "f701b2cf920dfa90e786153981481e92"
+   },
+   {
+    "size": "15424416",
+    "md5": "80617cf8a804924d604e079fdbcc3ff7"
+   },
+   {
+    "size": "20521200",
+    "md5": "a75a85d77c40271b6d85e700662cc443"
+   },
+   {
+    "size": "24307920",
+    "md5": "6b0d56663b0c4305f461e21b76de3277"
+   },
+   {
+    "size": "1726368",
+    "md5": "db721a3124a24827eec04e60001686c4"
+   },
+   {
+    "size": "1531152",
+    "md5": "8c861254477a2bfef2ebc81f4f86d716"
+   },
+   {
+    "size": "1241856",
+    "md5": "c3cde06a8febcf275f4a37be6cf474ed"
+   },
+   {
+    "size": "1237152",
+    "md5": "4760db380db9441c08cb2a883dd18b2b"
+   },
+   {
+    "size": "1378272",
+    "md5": "fa8d4b7e5c8d900293fa1db9a30d9f21"
+   },
+   {
+    "size": "2389632",
+    "md5": "9049d562c27027abeab322b0afeac04e"
+   },
+   {
+    "size": "3064656",
+    "md5": "53bc9152c68ac374af51a95e7605dbe3"
+   },
+   {
+    "size": "1825152",
+    "md5": "d19f9525bf94a49a0818958bbbaa9217"
+   },
+   {
+    "size": "2095632",
+    "md5": "443999e9d4e39dfa917cd0eaa720487c"
+   },
+   {
+    "size": "1237152",
+    "md5": "38b89936141d0d927667f8c4cc7c6877"
+   },
+   {
+    "size": "1237152",
+    "md5": "e846c0e75a4a9cace63a8a9d52eea2d8"
+   },
+   {
+    "size": "1239504",
+    "md5": "463ae2406979f09d7adb4e4e0885bf63"
+   },
+   {
+    "size": "1912176",
+    "md5": "3d9a7b8e635ed599c42ac7037cd13c5c"
+   },
+   {
+    "size": "1237152",
+    "md5": "4ee68956741bd3dcc52bcab23b72f53f"
+   },
+   {
+    "size": "1239504",
+    "md5": "188959b245c20540e056543dc20a5cbd"
+   },
+   {
+    "size": "1241856",
+    "md5": "b02b7d8cc4e561045445d1144b56e0e6"
+   },
+   {
+    "size": "1237152",
+    "md5": "44003834c937ccb6ddaee344e4e6ef2d"
+   },
+   {
+    "size": "1239504",
+    "md5": "15a5980283a28290ab2dfeacfed35a09"
+   },
+   {
+    "size": "3290448",
+    "md5": "fcc2cbf1727afd07dc2484e57385b6de"
+   },
+   {
+    "size": "1942752",
+    "md5": "37998dae723b1555b7dbdb9272375237"
+   },
+   {
+    "size": "1237152",
+    "md5": "c4f9b35deb1db13385742b11336d2c34"
+   },
+   {
+    "size": "9502080",
+    "md5": "2c4fb36e42aaf9e66351007278f298e9"
+   },
+   {
+    "size": "21193872",
+    "md5": "063b43125684b0e627da92b2a7a76fad"
+   },
+   {
+    "size": "21128016",
+    "md5": "613f41897f5fc4f07728382083a3b1df"
+   },
+   {
+    "size": "29715168",
+    "md5": "07a5d3397bff39b2f621a6256d145ab5"
+   },
+   {
+    "size": "32775120",
+    "md5": "65ccf50ed604d06fe1ac8a2d702ac1dc"
+   },
+   {
+    "size": "1721664",
+    "md5": "7c9bbd7a7ba5afc30d478ab07e1d9a93"
+   },
+   {
+    "size": "1171296",
+    "md5": "3d47e6c4076dfacc268510fc8d73059c"
+   },
+   {
+    "size": "3257520",
+    "md5": "54eba5d9538952e3d410330a332b67e6"
+   },
+   {
+    "size": "9958368",
+    "md5": "d73ac3ed207407d9f1d8b6b2d8cc1edd"
+   },
+   {
+    "size": "3859632",
+    "md5": "bfc646b9391b87b8dbb2f1335ebcb62e"
+   },
+   {
+    "size": "28386288",
+    "md5": "4d88f6e35e93ef5f012ed9aba7934cbc"
+   },
+   {
+    "size": "2500176",
+    "md5": "7536cc3dc65c9f016cd95c21b70d4f02"
+   },
+   {
+    "size": "2368464",
+    "md5": "0c2cb795b10c1d5a26af6741eed59d9a"
+   },
+   {
+    "size": "2970576",
+    "md5": "a997b735454cb4889f884c68b0cf99f6"
+   },
+   {
+    "size": "3499776",
+    "md5": "07662f901a12702ff98682983459c4fa"
+   },
+   {
+    "size": "10774512",
+    "md5": "3786e64809acc6472325479cb914d5b3"
+   },
+   {
+    "size": "6244560",
+    "md5": "89aa22829f76d57d7af14868b687f336"
+   },
+   {
+    "size": "1126608",
+    "md5": "b2edf8975c1a66e106e89c1f018db155"
+   },
+   {
+    "size": "2820048",
+    "md5": "96a9d9e930e7528a4a9119fd3e26df39"
+   },
+   {
+    "size": "2112096",
+    "md5": "397407bcd7e30809ddd7059749d85548"
+   },
+   {
+    "size": "2533104",
+    "md5": "c0eb0af863f792c2953702cc8687e532"
+   },
+   {
+    "size": "1841616",
+    "md5": "9b6b726b2ffdc4da8cf50b031f30eda0"
+   },
+   {
+    "size": "29124816",
+    "md5": "ca9be4d801b27caf31ff664251715292"
+   },
+   {
+    "size": "12936000",
+    "md5": "0466722e28022c551d24712d3f623989"
+   },
+   {
+    "size": "1698144",
+    "md5": "2c5f2e3192efc10f3461f9413fc9a465"
+   },
+   {
+    "size": "7780416",
+    "md5": "0d4573214c30ca88bf87ec658062bc1c"
+   },
+   {
+    "size": "2081520",
+    "md5": "fd19890c153598a06afb515b8e54bbd1"
+   },
+   {
+    "size": "9010512",
+    "md5": "7b9e60083aedd5ed0068f3b87c793861"
+   },
+   {
+    "size": "37323888",
+    "md5": "8112663bc77601d8a3f86aa1aba5f7f2"
+   },
+   {
+    "size": "37354464",
+    "md5": "6b95f72d279aa352f30c864d6bdb61e2"
+   },
+   {
+    "size": "18999456",
+    "md5": "a29bd8224666ed8868524138312b2222"
+   },
+   {
+    "size": "4515840",
+    "md5": "cae5eefc247f361919f38b1e368413c0"
+   },
+   {
+    "size": "4195968",
+    "md5": "43bba5a15d6fd0e042c3ad5ca0d16016"
+   },
+   {
+    "size": "3478608",
+    "md5": "4f8b716ea25cac93f17e36d435b8928e"
+   },
+   {
+    "size": "29745744",
+    "md5": "cbe8e549b5f7673d247f8dbe63cebabb"
+   },
+   {
+    "size": "3478608",
+    "md5": "4f8b716ea25cac93f17e36d435b8928e"
+   }
+  ],
+  "vibration": false,
+  "multitap": false,
+  "linkCable": false,
+  "controllers": [
+   "DigitalController"
+  ]
+ },
+ {
   "serial": "SLUS-00437",
   "name": "Tomb Raider II - Starring Lara Croft (USA)",
   "codes": [
