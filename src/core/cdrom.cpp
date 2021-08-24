@@ -315,6 +315,9 @@ bool CDROM::DoState(StateWrapper& sw)
       m_reader.QueueReadSector(m_requested_lba);
     UpdateCommandEvent();
     m_drive_event->SetState(!IsDriveIdle());
+
+    // Time will get fixed up later.
+    m_command_second_response_event->SetState(m_command_second_response != Command::None);
   }
 
   return !sw.HasError();
