@@ -261,10 +261,16 @@ GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
   return g_settings.gpu_downsample_mode;
 }
 
-std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution()
+std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution(bool scaled /* = true */)
 {
-  return std::make_tuple(m_crtc_state.display_vram_width * m_resolution_scale,
-                         m_resolution_scale * m_crtc_state.display_vram_height);
+  const u32 scale = scaled ? m_resolution_scale : 1u;
+  return std::make_tuple(m_crtc_state.display_vram_width * scale, m_crtc_state.display_vram_height * scale);
+}
+
+std::tuple<u32, u32> GPU_HW::GetFullDisplayResolution(bool scaled /* = true */)
+{
+  const u32 scale = scaled ? m_resolution_scale : 1u;
+  return std::make_tuple(m_crtc_state.display_width * scale, m_crtc_state.display_height * scale);
 }
 
 void GPU_HW::PrintSettingsToLog()
