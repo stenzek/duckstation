@@ -91,6 +91,7 @@ void GPU::Reset(bool clear_vram)
   SoftReset();
   m_set_texture_disable_mask = false;
   m_GPUREAD_latch = 0;
+  UpdateDisplay();
 }
 
 void GPU::SoftReset()
