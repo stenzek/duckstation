@@ -1040,8 +1040,6 @@ bool CreateGPU(GPURenderer renderer)
       return false;
   }
 
-  // we put this here rather than in Initialize() because of the virtual calls
-  g_gpu->Reset(true);
   return true;
 }
 
