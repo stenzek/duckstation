@@ -81,6 +81,18 @@ void LogVulkanResult(int level, const char* func_name, VkResult res, const char*
 
 #define LOG_VULKAN_ERROR(res, ...) ::Vulkan::Util::LogVulkanResult(1, __func__, res, __VA_ARGS__)
 
+#if defined(_DEBUG)
+
+// We can't use the templates below because they're all the same type on 32-bit.
+#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__)) || defined(_M_X64) ||         \
+  defined(__ia64) || defined(_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
+#define ENABLE_VULKAN_DEBUG_OBJECTS 1
+#endif
+
+#endif
+
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
+
 // Provides a compile-time mapping between a Vulkan-type into its matching VkObjectType
 template<typename T>
 struct VkObjectTypeMap;
@@ -117,9 +129,11 @@ template<> struct VkObjectTypeMap<VkSwapchainKHR            > { using type = VkS
 template<> struct VkObjectTypeMap<VkDebugUtilsMessengerEXT  > { using type = VkDebugUtilsMessengerEXT  ; static constexpr VkObjectType value = VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT;  };
 // clang-format on
 
+#endif
+
 inline void SetObjectName(VkDevice device, void* object_handle, VkObjectType object_type, const char* format, ...)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkSetDebugUtilsObjectNameEXT)
   {
     return;
@@ -140,7 +154,7 @@ inline void SetObjectName(VkDevice device, void* object_handle, VkObjectType obj
 template<typename T>
 inline void SetObjectName(VkDevice device, T object_handle, const char* format, ...)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   std::va_list ap;
   va_start(ap, format);
   SetObjectName(device, reinterpret_cast<void*>((typename VkObjectTypeMap<T>::type)object_handle),
@@ -153,7 +167,7 @@ inline void SetObjectName(VkDevice device, T object_handle, const char* format, 
 inline void BeginDebugScope(VkCommandBuffer command_buffer, const char* scope_name,
                             const std::array<float, 4>& scope_color = {0.5, 0.5, 0.5, 1.0})
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkCmdBeginDebugUtilsLabelEXT)
   {
     return;
@@ -168,7 +182,7 @@ inline void BeginDebugScope(VkCommandBuffer command_buffer, const char* scope_na
 
 inline void EndDebugScope(VkCommandBuffer command_buffer)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkCmdEndDebugUtilsLabelEXT)
   {
     return;
@@ -180,7 +194,7 @@ inline void EndDebugScope(VkCommandBuffer command_buffer)
 inline void InsertDebugLabel(VkCommandBuffer command_buffer, const char* label_name,
                              const std::array<float, 4>& label_color = {0.5, 0.5, 0.5, 1.0})
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkCmdInsertDebugUtilsLabelEXT)
   {
     return;
@@ -197,7 +211,7 @@ inline void InsertDebugLabel(VkCommandBuffer command_buffer, const char* label_n
 inline void BeginDebugScope(VkQueue queue, const char* scope_name,
                             const std::array<float, 4>& scope_color = {0.75, 0.75, 0.75, 1.0})
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkQueueBeginDebugUtilsLabelEXT)
   {
     return;
@@ -212,7 +226,7 @@ inline void BeginDebugScope(VkQueue queue, const char* scope_name,
 
 inline void EndDebugScope(VkQueue queue)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkQueueEndDebugUtilsLabelEXT)
   {
     return;
@@ -224,7 +238,7 @@ inline void EndDebugScope(VkQueue queue)
 inline void InsertDebugLabel(VkQueue queue, const char* label_name,
                              const std::array<float, 4>& label_color = {0.75, 0.75, 0.75, 1.0})
 {
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkQueueInsertDebugUtilsLabelEXT)
   {
     return;
@@ -244,7 +258,7 @@ public:
   DebugScope(T context, const char* format, ...) {}
 };
 
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
 template<>
 class DebugScope<VkCommandBuffer>
 {

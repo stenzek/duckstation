@@ -496,7 +496,7 @@ void LogVulkanResult(int level, const char* func_name, VkResult res, const char*
               static_cast<int>(res), VkResultToString(res));
 }
 
-#ifdef _DEBUG
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
 
 u8 DebugScope<VkCommandBuffer>::depth = 0;
 u8 DebugScope<VkQueue>::depth = 0;
