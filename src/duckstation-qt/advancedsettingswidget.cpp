@@ -5,8 +5,8 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                  std::string section, std::string key, bool default_value)
+static QCheckBox* addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                        std::string section, std::string key, bool default_value)
 {
   const int row = table->rowCount();
 
@@ -17,21 +17,25 @@ static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget*
   table->setItem(row, 0, name_item);
 
   QCheckBox* cb = new QCheckBox(table);
-  SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  if (!section.empty() || !key.empty())
+    SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setBooleanTweakOption(QTableWidget* table, int row, bool value)
+static QCheckBox* setBooleanTweakOption(QTableWidget* table, int row, bool value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QCheckBox* cb = qobject_cast<QCheckBox*>(widget);
   Assert(cb);
   cb->setChecked(value);
+  return cb;
 }
 
-static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                   std::string section, std::string key, int min_value, int max_value,
-                                   int default_value)
+static QSpinBox* addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                        std::string section, std::string key, int min_value, int max_value,
+                                        int default_value)
 {
   const int row = table->rowCount();
 
@@ -44,21 +48,25 @@ static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget
   QSpinBox* cb = new QSpinBox(table);
   cb->setMinimum(min_value);
   cb->setMaximum(max_value);
-  SettingWidgetBinder::BindWidgetToIntSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  if (!section.empty() || !key.empty())
+    SettingWidgetBinder::BindWidgetToIntSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setIntRangeTweakOption(QTableWidget* table, int row, int value)
+static QSpinBox* setIntRangeTweakOption(QTableWidget* table, int row, int value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QSpinBox* cb = qobject_cast<QSpinBox*>(widget);
   Assert(cb);
   cb->setValue(value);
+  return cb;
 }
 
-static void addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                     std::string section, std::string key, float min_value, float max_value,
-                                     float step_value, float default_value)
+static QDoubleSpinBox* addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                                std::string section, std::string key, float min_value, float max_value,
+                                                float step_value, float default_value)
 {
   const int row = table->rowCount();
 
@@ -72,27 +80,34 @@ static void addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidg
   cb->setMinimum(min_value);
   cb->setMaximum(max_value);
   cb->setSingleStep(step_value);
-  SettingWidgetBinder::BindWidgetToFloatSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
+  if (!section.empty() || !key.empty())
+  {
+    SettingWidgetBinder::BindWidgetToFloatSetting(host_interface, cb, std::move(section), std::move(key),
+                                                  default_value);
+  }
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setFloatRangeTweakOption(QTableWidget* table, int row, float value)
+static QDoubleSpinBox* setFloatRangeTweakOption(QTableWidget* table, int row, float value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QDoubleSpinBox* cb = qobject_cast<QDoubleSpinBox*>(widget);
   Assert(cb);
   cb->setValue(value);
+  return cb;
 }
 
 template<typename T>
-static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                 std::string section, std::string key, std::optional<T> (*parse_callback)(const char*),
-                                 const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
-                                 const char* tr_context, u32 num_values, T default_value)
+static QComboBox* addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                       std::string section, std::string key,
+                                       std::optional<T> (*parse_callback)(const char*),
+                                       const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
+                                       const char* tr_context, u32 num_values, T default_value)
 {
   const int row = table->rowCount();
-  const std::string current_value =
-    host_interface->GetStringSettingValue(section.c_str(), key.c_str(), get_value_callback(default_value));
 
   table->insertRow(row);
 
@@ -104,9 +119,14 @@ static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* 
   for (u32 i = 0; i < num_values; i++)
     cb->addItem(qApp->translate(tr_context, get_display_callback(static_cast<T>(i))));
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
-                                               get_value_callback, default_value);
+  if (!section.empty() || !key.empty())
+  {
+    SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
+                                                 get_value_callback, default_value);
+  }
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
 template<typename T>
