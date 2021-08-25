@@ -546,9 +546,10 @@ ALWAYS_INLINE_RELEASE void Cop0DataBreakpointCheck(VirtualMemoryAddress address)
 // return: a mask of data intersection
 ALWAYS_INLINE_RELEASE u32 AddressRangeIntersection(u32 a, u32 b, u32 c, u32 d)
 {
-  if (d < b) // if an intersection is impossible
+  // test impossible intersections
+  if (d < a)
     return 0;
-  if (c > b) // if an intersection is impossible
+  if (c > b) 
     return 0;
 
   u32 min = std::max(a, c);
@@ -559,9 +560,15 @@ ALWAYS_INLINE_RELEASE u32 AddressRangeIntersection(u32 a, u32 b, u32 c, u32 d)
     while (max > min)
     {
       mask = mask << 4;
-      max--;
       mask |= 0xFF;
+      max--;
     }
+    while (min > c)
+    {
+      mask = mask << 4;
+      min--;
+    }
+
     return mask;
   }
   return 0;
@@ -1848,7 +1855,7 @@ bool HasBreakpointAtAddress(VirtualMemoryAddress address)
 {
   for (const Breakpoint& bp : s_breakpoints)
   {
-    if (bp.dbg.address == address)
+    if (address >= bp.dbg.address && bp.dbg.address + bp.dbg.size > address)
       return true;
   }
 
