@@ -5935,7 +5935,7 @@
   "serial": "SLES-00107",
   "name": "Euro Demo 01 (Europe)",
   "codes": [
-   "SLES-00107"
+   "HASH-AAD8E924C9D6759C"
   ],
   "languages": [
    "Italian"

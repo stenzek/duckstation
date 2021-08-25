@@ -560,6 +560,8 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Display", "ShowVPS", false);
   si.SetBoolValue("Display", "ShowSpeed", false);
   si.SetBoolValue("Display", "ShowResolution", false);
+  si.SetBoolValue("Display", "ShowStatusIndicators", true);
+  si.SetBoolValue("Display", "ShowEnhancements", false);
   si.SetBoolValue("Display", "Fullscreen", false);
   si.SetBoolValue("Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
   si.SetBoolValue("Display", "DisplayAllFrames", false);
@@ -641,6 +643,7 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     Log_WarningPrintf("All enhancements disabled by config setting.");
     g_settings.cpu_overclock_enable = false;
     g_settings.cpu_overclock_active = false;
+    g_settings.enable_8mb_ram = false;
     g_settings.gpu_resolution_scale = 1;
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
@@ -690,6 +693,14 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
   {
     Log_WarningPrintf("mmap fastmem is not available on this platform, using LUT instead.");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
+#endif
+
+#if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
+  if (g_settings.rewind_enable)
+  {
+    AddOSDMessage(TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
+    g_settings.rewind_enable = false;
   }
 #endif
 

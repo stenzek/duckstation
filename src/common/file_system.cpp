@@ -59,12 +59,17 @@ static jobject s_android_FileHelper_object;
 static jclass s_android_FileHelper_class;
 static jmethodID s_android_FileHelper_openURIAsFileDescriptor;
 static jmethodID s_android_FileHelper_FindFiles;
+static jmethodID s_android_FileHelper_StatFile;
 static jclass s_android_FileHelper_FindResult_class;
 static jfieldID s_android_FileHelper_FindResult_name;
 static jfieldID s_android_FileHelper_FindResult_relativeName;
 static jfieldID s_android_FileHelper_FindResult_size;
 static jfieldID s_android_FileHelper_FindResult_modifiedTime;
 static jfieldID s_android_FileHelper_FindResult_flags;
+static jclass s_android_FileHelper_StatResult_class;
+static jfieldID s_android_FileHelper_StatResult_size;
+static jfieldID s_android_FileHelper_StatResult_modifiedTime;
+static jfieldID s_android_FileHelper_StatResult_flags;
 static jmethodID s_android_FileHelper_getDisplayName;
 static jmethodID s_android_FileHelper_getRelativePathForURIPath;
 
@@ -102,12 +107,18 @@ void SetAndroidFileHelper(void* jvm, void* env, void* object)
     s_android_FileHelper_FindResult_modifiedTime = {};
     s_android_FileHelper_FindResult_flags = {};
     s_android_FileHelper_FindResult_class = {};
+    jenv->DeleteGlobalRef(s_android_FileHelper_StatResult_class);
+    s_android_FileHelper_StatResult_size = {};
+    s_android_FileHelper_StatResult_modifiedTime = {};
+    s_android_FileHelper_StatResult_flags = {};
+    s_android_FileHelper_StatResult_class = {};
 
     jenv->DeleteGlobalRef(s_android_FileHelper_object);
     jenv->DeleteGlobalRef(s_android_FileHelper_class);
     s_android_FileHelper_getRelativePathForURIPath = {};
     s_android_FileHelper_getDisplayName = {};
     s_android_FileHelper_openURIAsFileDescriptor = {};
+    s_android_FileHelper_StatFile = {};
     s_android_FileHelper_FindFiles = {};
     s_android_FileHelper_object = {};
     s_android_FileHelper_class = {};
@@ -129,6 +140,9 @@ void SetAndroidFileHelper(void* jvm, void* env, void* object)
 
   s_android_FileHelper_openURIAsFileDescriptor =
     jenv->GetMethodID(s_android_FileHelper_class, "openURIAsFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
+  s_android_FileHelper_StatFile =
+    jenv->GetMethodID(s_android_FileHelper_class, "statFile",
+                      "(Ljava/lang/String;)Lcom/github/stenzek/duckstation/FileHelper$StatResult;");
   s_android_FileHelper_FindFiles =
     jenv->GetMethodID(s_android_FileHelper_class, "findFiles",
                       "(Ljava/lang/String;I)[Lcom/github/stenzek/duckstation/FileHelper$FindResult;");
@@ -157,6 +171,19 @@ void SetAndroidFileHelper(void* jvm, void* env, void* object)
   Assert(s_android_FileHelper_FindResult_relativeName && s_android_FileHelper_FindResult_name &&
          s_android_FileHelper_FindResult_size && s_android_FileHelper_FindResult_modifiedTime &&
          s_android_FileHelper_FindResult_flags);
+
+  jclass st_class = jenv->FindClass("com/github/stenzek/duckstation/FileHelper$StatResult");
+  Assert(st_class);
+  s_android_FileHelper_StatResult_class = static_cast<jclass>(jenv->NewGlobalRef(st_class));
+  Assert(s_android_FileHelper_StatResult_class);
+  jenv->DeleteLocalRef(st_class);
+
+  s_android_FileHelper_StatResult_size = jenv->GetFieldID(s_android_FileHelper_StatResult_class, "size", "J");
+  s_android_FileHelper_StatResult_modifiedTime =
+    jenv->GetFieldID(s_android_FileHelper_StatResult_class, "modifiedTime", "J");
+  s_android_FileHelper_StatResult_flags = jenv->GetFieldID(s_android_FileHelper_StatResult_class, "flags", "I");
+  Assert(s_android_FileHelper_StatResult_size && s_android_FileHelper_StatResult_modifiedTime &&
+         s_android_FileHelper_StatResult_flags);
 }
 
 static std::FILE* OpenUriFile(const char* path, const char* mode)
@@ -299,6 +326,32 @@ static bool FindUriFiles(const char* path, const char* pattern, u32 flags, FindR
   }
 
   env->DeleteLocalRef(arr);
+  return true;
+}
+
+static bool StatUriFile(const char* path, FILESYSTEM_STAT_DATA* sd)
+{
+  if (!s_android_FileHelper_object)
+    return false;
+
+  JNIEnv* env = GetJNIEnv();
+
+  jstring path_jstr = env->NewStringUTF(path);
+  jobject result = static_cast<jobjectArray>(
+    env->CallObjectMethod(s_android_FileHelper_object, s_android_FileHelper_StatFile, path_jstr));
+  env->DeleteLocalRef(path_jstr);
+  if (!result)
+    return false;
+
+  const u64 result_size = static_cast<u64>(env->GetLongField(result, s_android_FileHelper_StatResult_size));
+  const u64 result_modified_time =
+    static_cast<u64>(env->GetLongField(result, s_android_FileHelper_StatResult_modifiedTime));
+  const u32 result_flags = static_cast<u32>(env->GetIntField(result, s_android_FileHelper_StatResult_flags));
+  sd->Attributes = result_flags;
+  sd->ModificationTime.SetUnixTimestamp(result_modified_time);
+  sd->Size = result_size;
+
+  env->DeleteLocalRef(result);
   return true;
 }
 
@@ -2122,6 +2175,11 @@ bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
   if (Path[0] == '\0')
     return false;
 
+#ifdef __ANDROID__
+  if (IsUriPath(Path) && UriHelpersAreAvailable())
+    return StatUriFile(Path, pStatData);
+#endif
+
     // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
@@ -2190,7 +2248,15 @@ bool FileExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-    // stat file
+#ifdef __ANDROID__
+  if (IsUriPath(Path) && UriHelpersAreAvailable())
+  {
+    FILESYSTEM_STAT_DATA sd;
+    return (StatUriFile(Path, &sd) && (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) == 0);
+  }
+#endif
+
+  // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)
@@ -2212,7 +2278,15 @@ bool DirectoryExists(const char* Path)
   if (Path[0] == '\0')
     return false;
 
-    // stat file
+#ifdef __ANDROID__
+  if (IsUriPath(Path) && UriHelpersAreAvailable())
+  {
+    FILESYSTEM_STAT_DATA sd;
+    return (StatUriFile(Path, &sd) && (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+  }
+#endif
+
+  // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(Path, &sysStatData) < 0)

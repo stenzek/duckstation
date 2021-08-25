@@ -185,7 +185,8 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
       return {};
     }
   }
-
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "VulkanHostDisplay::CreateTexture");
   texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   if (data)
@@ -632,20 +633,24 @@ bool VulkanHostDisplay::Render()
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
   Vulkan::Texture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
 
-  // Swap chain images start in undefined
-  swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
-  swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  {
+    const Vulkan::Util::DebugScope debugScope(cmdbuffer, "VulkanHostDisplay::Render");
+    // Swap chain images start in undefined
+    swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+    swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  RenderDisplay();
+    RenderDisplay();
 
-  if (ImGui::GetCurrentContext())
-    RenderImGui();
+    if (ImGui::GetCurrentContext())
+      RenderImGui();
 
-  RenderSoftwareCursor();
+    RenderSoftwareCursor();
 
-  vkCmdEndRenderPass(cmdbuffer);
+    vkCmdEndRenderPass(cmdbuffer);
+    Vulkan::Util::EndDebugScope(cmdbuffer);
 
-  swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+  }
 
   g_vulkan_context->SubmitCommandBuffer(m_swap_chain->GetImageAvailableSemaphore(),
                                         m_swap_chain->GetRenderingFinishedSemaphore(), m_swap_chain->GetSwapChain(),
@@ -722,7 +727,8 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   const VkFramebuffer fb = tex.CreateFramebuffer(rp);
   if (!fb)
     return false;
-
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "VulkanHostDisplay::RenderScreenshot: %ux%u", width, height);
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
   const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
@@ -742,6 +748,7 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   }
 
   vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
+  Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   staging_tex.CopyFromTexture(tex, 0, 0, 0, 0, 0, 0, width, height);
   staging_tex.ReadTexels(0, 0, width, height, out_pixels->data(), *out_stride);
@@ -764,11 +771,15 @@ void VulkanHostDisplay::BeginSwapChainRenderPass(VkFramebuffer framebuffer, u32 
                                     {{0, 0}, {width, height}},
                                     1u,
                                     &clear_value};
+  Vulkan::Util::BeginDebugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                "VulkanHostDisplay::BeginSwapChainRenderPass");
   vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void VulkanHostDisplay::RenderDisplay()
 {
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "VulkanHostDisplay::RenderDisplay");
   if (!HasDisplayTexture())
   {
     BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer(), m_swap_chain->GetWidth(),
@@ -798,6 +809,9 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
                                       s32 texture_view_width, s32 texture_view_height, bool linear_filter)
 {
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+  const Vulkan::Util::DebugScope debugScope(
+    cmdbuffer, "VulkanHostDisplay::RenderDisplay: {%u,%u} %ux%u | %ux%u | {%u,%u} %ux%u", left, top, width, height,
+    texture_height, texture_width, texture_view_x, texture_view_y, texture_view_width, texture_view_height);
 
   VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(m_descriptor_set_layout);
   if (ds == VK_NULL_HANDLE)
@@ -830,6 +844,7 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
 
 void VulkanHostDisplay::RenderImGui()
 {
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(), "Imgui");
   ImGui::Render();
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_vulkan_context->GetCurrentCommandBuffer());
 }
@@ -846,6 +861,8 @@ void VulkanHostDisplay::RenderSoftwareCursor()
 void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, HostDisplayTexture* texture)
 {
   VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+  const Vulkan::Util::DebugScope debugScope(cmdbuffer, "VulkanHostDisplay::RenderSoftwareCursor: {%u,%u} %ux%u", left,
+                                            top, width, height);
 
   VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(m_descriptor_set_layout);
   if (ds == VK_NULL_HANDLE)
@@ -997,6 +1014,7 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
       m_post_processing_chain.ClearStages();
       return false;
     }
+    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), stage.pipeline, (shader.GetName() + "Pipeline").c_str());
 
     m_post_processing_stages.push_back(std::move(stage));
   }
@@ -1010,7 +1028,10 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
     m_post_processing_chain.ClearStages();
     return false;
   }
-
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_ubo.GetBuffer(),
+                              "Post Processing Uniform Buffer");
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_ubo.GetDeviceMemory(),
+                              "Post Processing Uniform Buffer Memory");
   return true;
 }
 
@@ -1035,6 +1056,12 @@ bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
     {
       return false;
     }
+    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetImage(),
+                                "Post Processing Input Texture");
+    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetView(),
+                                "Post Processing Input Texture View");
+    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetDeviceMemory(),
+                                "Post Processing Input Texture Memory");
   }
 
   const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
@@ -1056,6 +1083,12 @@ bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
       {
         return false;
       }
+      Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetImage(),
+                                  "Post Processing Output Texture %u", i);
+      Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetDeviceMemory(),
+                                  "Post Processing Output Texture Memory %u", i);
+      Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetView(),
+                                  "Post Processing Output Texture View %u", i);
     }
   }
 
@@ -1068,6 +1101,9 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
                                                  s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
                                                  u32 target_width, u32 target_height)
 {
+  VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+  const Vulkan::Util::DebugScope post_scope(cmdbuffer, "VulkanHostDisplay::ApplyPostProcessingChain");
+
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
     BeginSwapChainRenderPass(target_fb, target_width, target_height);
@@ -1077,12 +1113,12 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   }
 
   // downsample/upsample - use same viewport for remainder
-  VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   BeginSwapChainRenderPass(m_post_processing_input_framebuffer, target_width, target_height);
   RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
                 texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
   vkCmdEndRenderPass(cmdbuffer);
+  Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
   texture_handle = &m_post_processing_input_texture;
@@ -1097,6 +1133,9 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
   {
     PostProcessingStage& pps = m_post_processing_stages[i];
+    const Vulkan::Util::DebugScope stage_scope(g_vulkan_context->GetCurrentCommandBuffer(), "Post Processing Stage: %s",
+                                               m_post_processing_chain.GetShaderStage(i).GetName().c_str());
+
     if (i != final_stage)
     {
       pps.output_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1163,6 +1202,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
     if (i != final_stage)
     {
       vkCmdEndRenderPass(cmdbuffer);
+      Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
       pps.output_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       texture_handle = &pps.output_texture;
     }

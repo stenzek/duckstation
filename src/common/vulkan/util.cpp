@@ -10,6 +10,8 @@
 #include "context.h"
 #include "shader_compiler.h"
 
+#include <cmath>
+
 namespace Vulkan {
 namespace Util {
 bool IsDepthFormat(VkFormat format)
@@ -417,6 +419,71 @@ const char* VkResultToString(VkResult res)
       return "UNKNOWN_VK_RESULT";
   }
 }
+const char* VkImageLayoutToString(VkImageLayout layout)
+{
+  switch (layout)
+  {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return "VK_IMAGE_LAYOUT_UNDEFINED";
+
+    case VK_IMAGE_LAYOUT_GENERAL:
+      return "VK_IMAGE_LAYOUT_GENERAL";
+
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+      return "VK_IMAGE_LAYOUT_PREINITIALIZED";
+
+    case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+      return "VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL";
+
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+      return "VK_IMAGE_LAYOUT_PRESENT_SRC_KHR";
+
+    case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+      return "VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR";
+
+    case VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV:
+      return "VK_IMAGE_LAYOUT_SHADING_RATE_OPTIMAL_NV";
+
+    case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+      return "VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT";
+
+    default:
+      return "UNKNOWN_VK_RESULT";
+  }
+}
 
 void LogVulkanResult(int level, const char* func_name, VkResult res, const char* msg, ...)
 {
@@ -428,6 +495,79 @@ void LogVulkanResult(int level, const char* func_name, VkResult res, const char*
   Log::Writef("Vulkan", func_name, static_cast<LOGLEVEL>(level), "(%s) %s (%d: %s)", func_name, real_msg.c_str(),
               static_cast<int>(res), VkResultToString(res));
 }
+
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
+
+u8 DebugScope<VkCommandBuffer>::depth = 0;
+u8 DebugScope<VkQueue>::depth = 0;
+
+static std::array<float, 4> Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
+                                    const std::array<float, 3>& c, const std::array<float, 3>& d)
+{
+  std::array<float, 4> result;
+  result[0] = a[0] + b[0] * std::cos(6.28318f * (c[0] * phase + d[0]));
+  result[1] = a[1] + b[1] * std::cos(6.28318f * (c[1] * phase + d[1]));
+  result[2] = a[2] + b[2] * std::cos(6.28318f * (c[2] * phase + d[2]));
+  result[3] = 1.0f;
+  return result;
+}
+
+DebugScope<VkCommandBuffer>::DebugScope(VkCommandBuffer context, const char* format, ...) : command_buffer(context)
+{
+  if (command_buffer)
+  {
+    std::va_list ap;
+
+    SmallString str;
+    va_start(ap, format);
+    str.FormatVA(format, ap);
+    va_end(ap);
+
+    ++depth;
+    const float depth_phase = depth / static_cast<float>(max_depth);
+    BeginDebugScope(
+      command_buffer, str,
+      Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f}));
+  }
+}
+
+DebugScope<VkCommandBuffer>::~DebugScope()
+{
+  if (command_buffer)
+  {
+    --depth;
+    EndDebugScope(command_buffer);
+  }
+}
+
+DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queue(context)
+{
+  if (queue)
+  {
+    std::va_list ap;
+    va_start(ap, format);
+
+    SmallString str;
+    str.FormatVA(format, ap);
+    va_end(ap);
+
+    const float depth_phase = depth / static_cast<float>(max_depth);
+    BeginDebugScope(queue, str,
+                    Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {2.0f, 1.0f, 0.0f}, {0.5f, 0.20f, 0.25f}));
+    ++depth;
+  }
+}
+
+DebugScope<VkQueue>::~DebugScope()
+{
+  if (queue)
+  {
+    --depth;
+    EndDebugScope(queue);
+  }
+}
+
+#endif
 
 } // namespace Util
 

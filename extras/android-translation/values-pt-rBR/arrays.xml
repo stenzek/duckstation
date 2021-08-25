@@ -1,45 +1,24 @@
 <resources>
     <string-array name="settings_console_region_entries">
-        <item>Auto-Detectar</item>
+        <item>Detectar automaticamente</item>
         <item>NTSC-J (Japão)</item>
-        <item>NTSC-U (US)</item>
+        <item>NTSC-U (EUA)</item>
         <item>PAL (Europa, Austrália)</item>
     </string-array>
-    <string-array name="settings_console_region_values">
-        <item>Auto</item>
-        <item>NTSC-J</item>
-        <item>NTSC-U</item>
-        <item>PAL</item>
-    </string-array>
-	<string-array name="settings_cpu_execution_mode_entries">
+    <string-array name="settings_cpu_execution_mode_entries">
         <item>Interpretador (Mais lento)</item>
-        <item>Interpretador Armazenado (Rápido)</item>
+        <item>Interpretador armazenado (Rápido)</item>
         <item>Recompilador (Mais rápido)</item>
-    </string-array>
-	<string-array name="settings_cpu_execution_mode_values">
-        <item>Interpretador</item>
-        <item>Interpretador Armazenado</item>
-        <item>Recompilador</item>
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
         <item>Desabilitado (Lento)</item>
-        <item>MMap (Hardware, Mais rápido, (Dispositivos 64-bits)</item>
+        <item>MMap (Hardware, Mais rápido, (Apenas dispositivos 64-bits)</item>
         <item>LUT (Rápido)</item>
     </string-array>
-	<string-array name="settings_cpu_fastmem_mode_values">
-        <item>Desativado</item>
-        <item>MMap</item>
-        <item>LUT</item>
-    </string-array>
     <string-array name="gpu_renderer_entries">
-        <item>Dedicado (OpenGL)</item>
-        <item>Dedicado (Vulkan)</item>
-        <item>Aplicativo</item>
-    </string-array>
-	<string-array name="gpu_renderer_values">
         <item>OpenGL</item>
         <item>Vulkan</item>
-        <item>Software</item>
+        <item>Aplicativo</item>
     </string-array>
     <string-array name="settings_gpu_resolution_scale_entries">
         <item>1x</item>
@@ -59,53 +38,20 @@
         <item>15x</item>
         <item>16x</item>
     </string-array>
-	<string-array name="settings_gpu_resolution_scale_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
-        <item>11</item>
-        <item>12</item>
-        <item>13</item>
-        <item>14</item>
-        <item>15</item>
-        <item>16</item>
-    </string-array>
     <string-array name="settings_display_crop_mode_entries">
         <item>Nenhum</item>
         <item>Área renderizada</item>
         <item>Todas as bordas</item>
     </string-array>
-	<string-array name="settings_display_crop_mode_values">
-        <item>Nenhum</item>
-        <item>Área não visível</item>
-        <item>Bordas</item>
-    </string-array>
     <string-array name="settings_display_aspect_ratio_names">
       <item>Auto (Nativo do jogo)</item>
       <item>Auto (Corresponder a janela)</item>
-      <item>Customizado</item>
+      <item>Personalizado</item>
       <item>4:3</item>
       <item>16:9</item>
       <item>19:9</item>
       <item>20:9</item>
       <item>PAR 1:1</item>
-    </string-array>
-	<string-array name="settings_display_aspect_ratio_values">
-        <item>Auto (Nativo do jogo)</item>
-        <item>Auto (Corresponder a janela)</item>
-        <item>Custom</item>
-        <item>4:3</item>
-        <item>16:9</item>
-        <item>19:9</item>
-        <item>20:9</item>
-        <item>PAR 1:1</item>
     </string-array>
     <string-array name="settings_gpu_texture_filter_names">
         <item>Vizinho mais próximo</item>
@@ -116,30 +62,13 @@
         <item>xBR</item>
         <item>xBR (Sem AA)</item>
     </string-array>
-	<string-array name="settings_gpu_texture_filter_values">
-        <item>Vizinho mais próximo</item>
-        <item>Bi-linear</item>
-        <item>Bi-linear Bin Alfa</item>
-        <item>JINC2</item>
-        <item>JINC2 Bin Alfa</item>
-        <item>xBR</item>
-        <item>xBR Bin Alfa</item>
-    </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Nenhum</item>
-        <item>Controle Digital (Gamepad)</item>
-        <item>Controle analógico (DualShock)</item>
+        <item>Controle Digital</item>
+        <item>Controle analógico - DualShock</item>
         <item>Controle analógico</item>
         <item>Controle NeGcon</item>
         <item>Controle GunCon</item>
-    </string-array>
-	<string-array name="settings_controller_type_values">
-        <item>Nenhum</item>
-        <item>Controle Digital (Gamepad)</item>
-        <item>Controle analógico (DualShock)</item>
-        <item>Controle analógico</item>
-        <item>Controle NeGcon</item>
-        <item>Controle Namco GunCon</item>
     </string-array>
     <string-array name="settings_memory_card_mode_entries">
         <item>Sem cartão de memória</item>
@@ -149,15 +78,9 @@
         <item>Separate Card Per Game (File Title)</item>
         <item>Non-Persistent (Do Not Save)</item>
     </string-array>
-	<string-array name="settings_memory_card_mode_values">
-        <item>Nenhum</item>
-        <item>Compartilhada entre jogos</item>
-        <item>Por jogo</item>
-        <item>Por título</item>
-    </string-array>
     <string-array name="emulation_touchscreen_menu">
-		<item>Mudar</item>
-		<item>Ajustar visibilidade</item>
+		<item>Mudar tipo</item>
+		<item>Mudar visibilidade</item>
 		<item>Adicionar/Remover botões</item>
         <item>Mover botões</item>
         <item>Redimensionar botões</item>
@@ -172,27 +95,15 @@
     </string-array>
     <string-array name="settings_cdrom_read_speedup_entries">
         <item>Nenhum</item>
-        <item>2x (4x Velocidade)</item>
-        <item>3x (6x Velocidade)</item>
-        <item>4x (8x Velocidade)</item>
-        <item>5x (10x Velocidade)</item>
-        <item>6x (12x Velocidade)</item>
-        <item>7x (14x Velocidade)</item>
-        <item>8x (16x Velocidade)</item>
-        <item>9x (18x Velocidade)</item>
-        <item>10x (20x Velocidade)</item>
-    </string-array>
-	<string-array name="settings_cdrom_read_speedup_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
+        <item>2x (4x velocidade)</item>
+        <item>3x (6x velocidade)</item>
+        <item>4x (8x velocidade)</item>
+        <item>5x (10x velocidade)</item>
+        <item>6x (12x velocidade)</item>
+        <item>7x (14x velocidade)</item>
+        <item>8x (16x velocidade)</item>
+        <item>9x (18x velocidade)</item>
+        <item>10x (20x velocidade)</item>
     </string-array>
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Nenhum</item>
@@ -201,22 +112,10 @@
         <item>2 Analógicos</item>
         <item>Controle lightgun</item>
     </string-array>
-	<string-array name="settings_touchscreen_controller_view_values">
-        <item>Nenhum</item>
-        <item>Digital</item>
-        <item>Analógico</item>
-        <item>Analógicos</item>
-        <item>Controle lightgun</item>
-    </string-array>
     <string-array name="settings_audio_backend_entries">
          <item>Mudo</item>
         <item>Cubeb</item>
         <item>SLES (Recomendado)</item>
-    </string-array>
-	<string-array name="settings_audio_backend_values">
-        <item>Nenhum</item>
-        <item>Cubeb</item>
-        <item>OpenSLES</item>
     </string-array>
     <string-array name="settings_audio_buffer_size_entries">
         <item>1024 Quadros (23.22ms)</item>
@@ -224,29 +123,11 @@
         <item>3072 Quadros (69.66ms)</item>
         <item>4096 Quadros (92.88ms)</item>
     </string-array>
-	<string-array name="settings_audio_buffer_size_values">
-        <item>1024</item>
-        <item>2048</item>
-        <item>3072</item>
-        <item>4096</item>
-    </string-array>
     <string-array name="settings_log_level_entries">
         <item>Nenhum</item>
         <item>Erro</item>
         <item>Alerta</item>
-        <item>Alertas de performance</item>
-        <item>Informação</item>
-        <item>Detalhado</item>
-        <item>Desenvolvedor</item>
-        <item>Perfil</item>
-        <item>Depuração</item>
-        <item>Rota</item>
-    </string-array>
-	<string-array name="settings_log_level_values">
-        <item>Nenhum</item>
-        <item>Erro</item>
-        <item>Alerta</item>
-        <item>Alertas de performance</item>
+        <item>Alertas de desempenho</item>
         <item>Informação</item>
         <item>Detalhado</item>
         <item>Desenvolvedor</item>
@@ -271,15 +152,6 @@
         <item>4x SSAA</item>
         <item>8x SSAA</item>
     </string-array>
-	<string-array name="settings_gpu_msaa_values">
-        <item>1</item>
-        <item>2</item>
-        <item>4</item>
-        <item>8</item>
-        <item>2-ssaa</item>
-        <item>4-ssaa</item>
-        <item>8-ssaa</item>
-    </string-array>
     <string-array name="settings_advanced_display_fps_limit_entries">
         <item>Sem limite</item>
         <item>10 FPS</item>
@@ -289,16 +161,6 @@
         <item>60 FPS</item>
         <item>75 FPS</item>
         <item>90 FPS</item>
-    </string-array>
-	<string-array name="settings_advanced_display_fps_limit_values">
-        <item>0</item>
-        <item>10</item>
-        <item>15</item>
-        <item>30</item>
-        <item>45</item>
-        <item>60</item>
-        <item>75</item>
-        <item>90</item>
     </string-array>
     <string-array name="settings_emulation_speed_entries">
         <item>Sem Limite</item>
@@ -328,34 +190,6 @@
         <item>900% [540 FPS (NTSC) / 450 FPS (PAL)]</item>
         <item>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</item>
     </string-array>
-	<string-array name="settings_emulation_speed_values">
-        <item>0.0</item>
-        <item>0.1</item>
-        <item>0.2</item>
-        <item>0.3</item>
-        <item>0.4</item>
-        <item>0.5</item>
-        <item>0.6</item>
-        <item>0.7</item>
-        <item>0.8</item>
-        <item>0.9</item>
-        <item>1.0</item>
-        <item>1.25</item>
-        <item>1.5</item>
-        <item>1.75</item>
-        <item>2.0</item>
-        <item>2.5</item>
-        <item>3.0</item>
-        <item>3.5</item>
-        <item>4.0</item>
-        <item>4.5</item>
-        <item>5.0</item>
-        <item>6.0</item>
-        <item>7.0</item>
-        <item>8.0</item>
-        <item>9.0</item>
-        <item>10.0</item>
-    </string-array>
     <string-array name="settings_advanced_cpu_overclock_entries">
         <item>25% (8MHz)</item>
         <item>50% (16MHz)</item>
@@ -380,68 +214,24 @@
         <item>900% (297MHz)</item>
         <item>1000% (330MHz)</item>
     </string-array>
-	<string-array name="settings_advanced_cpu_overclock_values">
-        <item>25</item>
-        <item>50</item>
-        <item>75</item>
-        <item>100</item>
-        <item>125</item>
-        <item>150</item>
-        <item>175</item>
-        <item>200</item>
-        <item>225</item>
-        <item>250</item>
-        <item>275</item>
-        <item>300</item>
-        <item>350</item>
-        <item>400</item>
-        <item>450</item>
-        <item>500</item>
-        <item>500</item>
-        <item>600</item>
-        <item>700</item>
-        <item>800</item>
-        <item>900</item>
-        <item>1000</item>
-    </string-array>
     <string-array name="settings_emulation_screen_orientation_entries">
         <item>Padrão do dispositivo</item>
         <item>Retrato</item>
         <item>Paisagem</item>
         <item>Baseado no sensor de movimento</item>
     </string-array>
-	<string-array name="settings_emulation_screen_orientation_values">
-        <item>Não configurado</item>
-        <item>Retrato</item>
-        <item>Paisagem</item>
-        <item>Sensor</item>
-    </string-array>
 	<string-array name="settings_language_entries">
         <item>Usar padrão do sistema</item>
-        <item>Inglês</item>
-        <item>Portuguese do Brasil</item>
-        <item>Italiano</item>
-        <item>Holandês</item>
-        <item>Espanhol</item>
-        <item>Russo</item>
- 	</string-array>
-	<string-array name="settings_language_values">
-        <item>Nenhuma</item>
         <item>Inglês</item>
         <item>Português do Brasil</item>
         <item>Italiano</item>
         <item>Holandês</item>
         <item>Espanhol</item>
         <item>Russo</item>
-    </string-array>
+ 	</string-array>
     <string-array name="settings_theme_entries">
         <item>Padrão do sistema</item>
 		<item>Claro</item>
-        <item>Escuro</item>
-    </string-array>
-	<string-array name="settings_theme_values">
-        <item>Padrão do sistema</item>
-        <item>claro</item>
         <item>Escuro</item>
     </string-array>
     <string-array name="settings_downsample_mode_entries">
@@ -449,40 +239,25 @@
 		<item>Misto (Reduz 3D / suaviza tudo)</item>
         <item>Adaptativo (Preserva o 3D / suaviza 2D)</item>
     </string-array>
-	<string-array name="settings_downsample_mode_values">
-        <item>Desativado</item>
-        <item>Misto (Reduz 3D / suaviza tudo)</item>
-        <item>Adaptativo (Preserva o 3D / suaviza 2D)</item>
-    </string-array>
 	<string-array name="settings_boolean_entries">
-		<item>Desligado</item>
-		<item>Ligado</item>
+		<item>Desativado</item>
+		<item>Ativado</item>
 	</string-array>
-	<string-array name="settings_boolean_values">
-        <item>Desligado</item>
-        <item>Ligado</item>
-    </string-array>
 	<string-array name="settings_multitap_mode_entries">
-        	<item>Desativado</item>
-        	<item>Conectado à porta 1</item>
-        	<item>Conectado à porta 2</item>
-        	<item>Conectado à porta 1 e 2</item>
-    	</string-array>
-		<string-array name="settings_multitap_mode_values">
         <item>Desativado</item>
         <item>Conectado à porta 1</item>
         <item>Conectado à porta 2</item>
-        <item>Ambas</item>
-    </string-array>
-		<string-array name="memory_card_editor_save_menu">
+        <item>Conectado à porta 1 e 2</item>
+    	</string-array>
+	<string-array name="memory_card_editor_save_menu">
      		<item>Copiar salvar</item>
      		<item>Excluir salvar</item>
         </string-array>
-		<string-array name="memory_card_editor_save_deleted_menu">
+	<string-array name="memory_card_editor_save_deleted_menu">
         <item>Recuperar arquivo</item>
         <item>Apagar permanentemente</item>
     </string-array>
-		<string-array name="settings_touchscreen_controller_port_entries">
+	<string-array name="settings_touchscreen_controller_port_entries">
                <item>Porta 1</item>
                <item>Porta 2</item>
                <item>Multitap 3</item>
@@ -492,18 +267,8 @@
                <item>Multitap 7</item>
                <item>Multitap 8</item>
         </string-array>
-		<string-array name="settings_touchscreen_controller_port_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-    </string-array>
 	<string-array name="settings_cdrom_seek_speedup_entries">
-        <item>None (Velocidade Normal)</item>
+        <item>Nenhum(Velocidade Normal)</item>
         <item>Infinito/instantâneo</item>
         <item>2x</item>
         <item>3x</item>
@@ -515,17 +280,39 @@
         <item>9x</item>
         <item>10x</item>
     </string-array>
-	<string-array name="settings_cdrom_seek_speedup_values">
-        <item>1</item>
-        <item>0</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
+	 <string-array name="settings_cdrom_readahead_entries">
+        <item>Desabilitado (Síncrono)</item>
+        <item>1 Setor (7 KB / 2 ms)</item>
+        <item>2 Setores (13 KB / 4 ms)</item>
+        <item>3 Setores (20 KB / 6 ms)</item>
+        <item>4 Setores (27 KB / 8 ms)</item>
+        <item>5 Setores (33 KB / 10 ms)</item>
+        <item>6 Setores (40 KB / 12 ms)</item>
+        <item>7 Setores (47 KB / 14 ms)</item>
+        <item>8 Setores (53 KB / 16 ms)</item>
+        <item>9 Setores (60 KB / 18 ms)</item>
+        <item>10 Setores (67 KB / 20 ms)</item>
+        <item>11 Setores (73 KB / 22 ms)</item>
+        <item>12 Setores (80 KB / 24 ms)</item>
+        <item>13 Setores (87 KB / 26 ms)</item>
+        <item>14 Setores (93 KB / 28 ms)</item>
+        <item>15 Setores (100 KB / 30 ms)</item>
+        <item>16 Setores (107 KB / 32 ms)</item>
+        <item>17 Setores (113 KB / 34 ms)</item>
+        <item>18 Setores (120 KB / 36 ms)</item>
+        <item>19 Setores (127 KB / 38 ms)</item>
+        <item>20 Setores (133 KB / 40 ms)</item>
+        <item>21 Setores (140 KB / 42 ms)</item>
+        <item>22 Setores (147 KB / 44 ms)</item>
+        <item>23 Setores (153 KB / 46 ms)</item>
+        <item>24 Setores (160 KB / 48 ms)</item>
+        <item>25 Setores (167 KB / 50 ms)</item>
+        <item>26 Setores (173 KB / 52 ms)</item>
+        <item>27 Setores (180 KB / 54 ms)</item>
+        <item>28 Setores (187 KB / 56 ms)</item>
+        <item>29 Setores (193 KB / 58 ms)</item>
+        <item>30 Setores (200 KB / 60 ms)</item>
+        <item>31 Setores (207 KB / 62 ms)</item>
+        <item>32 Setores (213 KB / 64 ms)</item>
     </string-array>
 </resources>

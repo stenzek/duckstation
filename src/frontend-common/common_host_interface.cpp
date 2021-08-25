@@ -1,4 +1,5 @@
 #include "common_host_interface.h"
+#include "IconsFontAwesome5.h"
 #include "common/assert.h"
 #include "common/audio_stream.h"
 #include "common/byte_stream.h"
@@ -556,8 +557,38 @@ bool CommonHostInterface::CreateHostDisplayResources()
 
   if (!m_display->CreateImGuiContext())
   {
-    Log_ErrorPrintf("Failed to create ImGui device context");
+    ReportError("Failed to create ImGui device context");
     return false;
+  }
+
+  // load text font
+  {
+    std::unique_ptr<ByteStream> stream = OpenPackageFile("resources" FS_OSPATH_SEPARATOR_STR "roboto-regular.ttf",
+                                                         BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    std::vector<u8> font_data;
+    if (!stream || (font_data = FileSystem::ReadBinaryStream(stream.get()), font_data.empty()))
+    {
+      ReportError("Failed to load text font");
+      m_display->DestroyImGuiContext();
+      return false;
+    }
+
+    ImGuiFullscreen::SetFontData(std::move(font_data));
+  }
+
+  // load icon font
+  {
+    std::unique_ptr<ByteStream> stream = OpenPackageFile("resources" FS_OSPATH_SEPARATOR_STR "fa-solid-900.ttf",
+                                                         BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    std::vector<u8> font_data;
+    if (!stream || (font_data = FileSystem::ReadBinaryStream(stream.get()), font_data.empty()))
+    {
+      ReportError("Failed to load icon font");
+      m_display->DestroyImGuiContext();
+      return false;
+    }
+
+    ImGuiFullscreen::SetIconFontData(std::move(font_data));
   }
 
   if (m_fullscreen_ui_enabled)
@@ -572,9 +603,7 @@ bool CommonHostInterface::CreateHostDisplayResources()
   if (!m_fullscreen_ui_enabled)
     ImGuiFullscreen::ResetFonts();
 
-  m_logo_texture = m_display->CreateTexture(APP_ICON_WIDTH, APP_ICON_HEIGHT, 1, 1, 1, HostDisplayPixelFormat::RGBA8,
-                                            APP_ICON_DATA, sizeof(u32) * APP_ICON_WIDTH, false);
-  if (!m_logo_texture || !m_display->UpdateImGuiFontTexture())
+  if (!m_display->UpdateImGuiFontTexture())
   {
     Log_ErrorPrintf("Failed to create ImGui font text");
     if (m_fullscreen_ui_enabled)
@@ -584,6 +613,10 @@ bool CommonHostInterface::CreateHostDisplayResources()
     m_logo_texture.reset();
     return false;
   }
+
+  m_logo_texture = FullscreenUI::LoadTextureResource("logo.png", false);
+  if (!m_logo_texture)
+    m_logo_texture = FullscreenUI::LoadTextureResource("duck.png", true);
 
   return true;
 }
@@ -617,20 +650,26 @@ void CommonHostInterface::OnHostDisplayResized()
     ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
     ImGui::StyleColorsDarker();
     ImGui::GetStyle().ScaleAllSizes(new_scale);
-    ImGuiFullscreen::ResetFonts();
-    if (!m_display->UpdateImGuiFontTexture())
-      Panic("Failed to recreate font texture after resize");
-  }
 
-  if (m_fullscreen_ui_enabled)
-  {
-    if (ImGuiFullscreen::UpdateLayoutScale())
+    if (m_fullscreen_ui_enabled)
     {
-      if (ImGuiFullscreen::UpdateFonts())
-      {
-        if (!m_display->UpdateImGuiFontTexture())
-          Panic("Failed to update font texture");
-      }
+      ImGuiFullscreen::UpdateLayoutScale();
+      ImGuiFullscreen::UpdateFonts();
+    }
+    else
+    {
+      ImGuiFullscreen::ResetFonts();
+    }
+
+    if (!m_display->UpdateImGuiFontTexture())
+      Panic("Failed to recreate font texture after scale+resize");
+  }
+  else if (m_fullscreen_ui_enabled && ImGuiFullscreen::UpdateLayoutScale())
+  {
+    if (ImGuiFullscreen::UpdateFonts())
+    {
+      if (!m_display->UpdateImGuiFontTexture())
+        Panic("Failed to update font texture after resize");
     }
   }
 
@@ -1134,11 +1173,18 @@ void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 
 void CommonHostInterface::DrawImGuiWindows()
 {
-  if (m_save_state_selector_ui->IsOpen())
-    m_save_state_selector_ui->Draw();
+  const bool system_valid = System::IsValid();
+  if (system_valid)
+  {
+    if (m_save_state_selector_ui->IsOpen())
+      m_save_state_selector_ui->Draw();
 
-  if (s_input_overlay_ui)
-    s_input_overlay_ui->Draw();
+    if (s_input_overlay_ui)
+      s_input_overlay_ui->Draw();
+
+    if (g_settings.display_show_enhancements)
+      DrawEnhancementsOverlay();
+  }
 
   if (m_fullscreen_ui_enabled)
   {
@@ -1146,31 +1192,46 @@ void CommonHostInterface::DrawImGuiWindows()
     return;
   }
 
-  if (System::IsValid())
+  if (system_valid)
   {
     if (!IsCheevosChallengeModeActive())
       DrawDebugWindows();
-    DrawFPSWindow();
+    DrawStatsOverlay();
   }
 
   DrawOSDMessages();
 }
 
-void CommonHostInterface::DrawFPSWindow()
+void CommonHostInterface::DrawStatsOverlay()
 {
   if (!(g_settings.display_show_fps | g_settings.display_show_vps | g_settings.display_show_speed |
-        g_settings.display_show_resolution))
+        g_settings.display_show_resolution | System::IsPaused() | IsFastForwardEnabled() | IsTurboEnabled()))
   {
     return;
   }
 
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float shadow_offset = 1.0f * scale;
-  float margin = 10.0f * scale;
-  float spacing = 5.0f * scale;
-  float position_y = margin;
+  float shadow_offset, margin, spacing, position_y;
+  ImFont* font;
+
+  if (m_fullscreen_ui_enabled)
+  {
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    spacing = margin;
+    shadow_offset = ImGuiFullscreen::DPIScale(1.0f);
+    position_y = ImGuiFullscreen::g_menu_bar_size + margin;
+    font = ImGuiFullscreen::g_large_font;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    shadow_offset = 1.0f * scale;
+    margin = 10.0f * scale;
+    spacing = 5.0f * scale;
+    position_y = margin;
+    font = ImGui::GetFont();
+  }
+
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  ImFont* font = ImGui::GetFont();
   TinyString text;
   ImVec2 text_size;
   bool first = true;
@@ -1189,7 +1250,8 @@ void CommonHostInterface::DrawFPSWindow()
     position_y += text_size.y + spacing;                                                                               \
   } while (0)
 
-  if (System::GetState() == System::State::Running)
+  const System::State state = System::GetState();
+  if (state == System::State::Running)
   {
     const float speed = System::GetEmulationSpeed();
     if (g_settings.display_show_fps)
@@ -1227,9 +1289,108 @@ void CommonHostInterface::DrawFPSWindow()
       text.Format("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
       DRAW_LINE(IM_COL32(255, 255, 255, 255));
     }
+
+    if (g_settings.display_show_status_indicators)
+    {
+      const bool rewinding = System::IsRewinding();
+      if (rewinding || IsFastForwardEnabled() || IsTurboEnabled())
+      {
+        text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
+        DRAW_LINE(IM_COL32(255, 255, 255, 255));
+      }
+    }
+  }
+  else if (g_settings.display_show_status_indicators && state == System::State::Paused)
+  {
+    text.Assign(ICON_FA_PAUSE);
+    DRAW_LINE(IM_COL32(255, 255, 255, 255));
   }
 
 #undef DRAW_LINE
+}
+
+void CommonHostInterface::DrawEnhancementsOverlay()
+{
+  LargeString text;
+  text.AppendString(Settings::GetConsoleRegionName(System::GetRegion()));
+
+  if (g_settings.rewind_enable)
+    text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
+  if (g_settings.IsRunaheadEnabled())
+    text.AppendFormattedString(" RA=%u", g_settings.runahead_frames);
+
+  if (g_settings.cpu_overclock_active)
+    text.AppendFormattedString(" CPU=%u%%", g_settings.GetCPUOverclockPercent());
+  if (g_settings.enable_8mb_ram)
+    text.AppendString(" 8MB");
+  if (g_settings.cdrom_read_speedup != 1)
+    text.AppendFormattedString(" CDR=%ux", g_settings.cdrom_read_speedup);
+  if (g_settings.cdrom_seek_speedup != 1)
+    text.AppendFormattedString(" CDS=%ux", g_settings.cdrom_seek_speedup);
+  if (g_settings.gpu_resolution_scale != 1)
+    text.AppendFormattedString(" IR=%ux", g_settings.gpu_resolution_scale);
+  if (g_settings.gpu_multisamples != 1)
+  {
+    text.AppendFormattedString(" %ux%s", g_settings.gpu_multisamples,
+                               g_settings.gpu_per_sample_shading ? "MSAA" : "SSAA");
+  }
+  if (g_settings.gpu_true_color)
+    text.AppendString(" TrueCol");
+  if (g_settings.gpu_disable_interlacing)
+    text.AppendString(" ForceProg");
+  if (g_settings.gpu_force_ntsc_timings && System::GetRegion() == ConsoleRegion::PAL)
+    text.AppendString(" PAL60");
+  if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
+    text.AppendFormattedString(" %s", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
+      g_settings.display_aspect_ratio != DisplayAspectRatio::R4_3)
+  {
+    text.AppendString(" WSHack");
+  }
+  if (g_settings.gpu_pgxp_enable)
+  {
+    text.AppendString(" PGXP");
+    if (g_settings.gpu_pgxp_culling)
+      text.AppendString("/Cull");
+    if (g_settings.gpu_pgxp_texture_correction)
+      text.AppendString("/Tex");
+    if (g_settings.gpu_pgxp_vertex_cache)
+      text.AppendString("/VC");
+    if (g_settings.gpu_pgxp_cpu)
+      text.AppendString("/CPU");
+    if (g_settings.gpu_pgxp_depth_buffer)
+      text.AppendString("/Depth");
+  }
+
+  float shadow_offset, margin, spacing, position_y;
+  ImFont* font;
+
+  if (m_fullscreen_ui_enabled)
+  {
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    spacing = margin;
+    shadow_offset = ImGuiFullscreen::DPIScale(1.0f);
+    font = ImGuiFullscreen::g_medium_font;
+    position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    shadow_offset = 1.0f * scale;
+    margin = 10.0f * scale;
+    spacing = 5.0f * scale;
+    font = ImGui::GetFont();
+    position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
+  }
+
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImVec2 text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,
+                                         text.GetCharArray() + text.GetLength(), nullptr);
+  dl->AddText(font, font->FontSize,
+              ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),
+              IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());
+  dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),
+              IM_COL32(255, 255, 255, 255), text, text.GetCharArray() + text.GetLength());
 }
 
 void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
@@ -1253,29 +1414,6 @@ void CommonHostInterface::ClearOSDMessages()
 
   if (IsFullscreenUIEnabled())
     ImGuiFullscreen::ClearNotifications();
-}
-
-bool CommonHostInterface::EnumerateOSDMessages(std::function<bool(const std::string&, float)> callback)
-{
-  auto iter = m_osd_active_messages.begin();
-  while (iter != m_osd_active_messages.end())
-  {
-    const OSDMessage& msg = *iter;
-    const double time = msg.time.GetTimeSeconds();
-    const float time_remaining = static_cast<float>(msg.duration - time);
-    if (time_remaining <= 0.0f)
-    {
-      iter = m_osd_active_messages.erase(iter);
-      continue;
-    }
-
-    if (callback && !callback(iter->text, time_remaining))
-      return false;
-
-    ++iter;
-  }
-
-  return true;
 }
 
 void CommonHostInterface::AcquirePendingOSDMessages()
@@ -1318,38 +1456,66 @@ void CommonHostInterface::DrawOSDMessages()
 {
   AcquirePendingOSDMessages();
 
-  const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float spacing = 5.0f * scale;
-  const float margin = 10.0f * scale;
-  const float padding = 8.0f * scale;
-  const float rounding = 5.0f * scale;
-  const float max_width = ImGui::GetIO().DisplaySize.x - margin;
-  float position_x = margin;
-  float position_y = margin;
+  float max_width, margin, spacing, padding, rounding, position_x, position_y;
+  ImFont* font;
 
-  EnumerateOSDMessages([max_width, spacing, padding, rounding, &position_x, &position_y](const std::string& message,
-                                                                                         float time_remaining) -> bool {
+  if (m_fullscreen_ui_enabled)
+  {
+    max_width = ImGuiFullscreen::LayoutScale(1080.0f);
+    spacing = ImGuiFullscreen::LayoutScale(4.0f);
+    margin = ImGuiFullscreen::LayoutScale(10.0f);
+    padding = ImGuiFullscreen::LayoutScale(10.0f);
+    rounding = ImGuiFullscreen::LayoutScale(10.0f);
+    position_x = margin;
+    position_y = margin + ImGuiFullscreen::g_menu_bar_size;
+    font = ImGuiFullscreen::g_large_font;
+  }
+  else
+  {
+    const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
+    spacing = 5.0f * scale;
+    margin = 10.0f * scale;
+    padding = 8.0f * scale;
+    rounding = 5.0f * scale;
+    max_width = ImGui::GetIO().DisplaySize.x - margin;
+    position_x = margin;
+    position_y = margin;
+    font = ImGui::GetFont();
+  }
+
+  auto iter = m_osd_active_messages.begin();
+  while (iter != m_osd_active_messages.end())
+  {
+    const OSDMessage& msg = *iter;
+    const double time = msg.time.GetTimeSeconds();
+    const float time_remaining = static_cast<float>(msg.duration - time);
+    if (time_remaining <= 0.0f)
+    {
+      iter = m_osd_active_messages.erase(iter);
+      continue;
+    }
+
+    ++iter;
+
     const float opacity = std::min(time_remaining, 1.0f);
     const u32 alpha = static_cast<u32>(opacity * 255.0f);
 
     if (position_y >= ImGui::GetIO().DisplaySize.y)
-      return false;
+      break;
 
     const ImVec2 pos(position_x, position_y);
-    const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
+    const ImVec2 text_size(
+      font->CalcTextSizeA(font->FontSize, max_width, -1.0f, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
     const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
-    ImFont* font = ImGui::GetFont();
     dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
     dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
     dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha),
-                message.c_str(), nullptr, max_width, &text_rect);
+                msg.text.c_str(), msg.text.c_str() + msg.text.length(), max_width, &text_rect);
     position_y += size.y + spacing;
-
-    return true;
-  });
+  }
 }
 
 void CommonHostInterface::DrawDebugWindows()
@@ -2023,9 +2189,6 @@ void CommonHostInterface::SetFastForwardEnabled(bool enabled)
 
   m_fast_forward_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Fast forwarding...") :
-                          TranslateStdString("OSDMessage", "Stopped fast forwarding."),
-                2.0f);
 }
 
 void CommonHostInterface::SetTurboEnabled(bool enabled)
@@ -2035,9 +2198,6 @@ void CommonHostInterface::SetTurboEnabled(bool enabled)
 
   m_turbo_enabled = enabled;
   UpdateSpeedLimiterState();
-  AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Turboing...") :
-                          TranslateStdString("OSDMessage", "Stopped turboing."),
-                2.0f);
 }
 
 void CommonHostInterface::SetRewindState(bool enabled)
@@ -2055,9 +2215,13 @@ void CommonHostInterface::SetRewindState(bool enabled)
       return;
     }
 
-    AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
-                            TranslateStdString("OSDMessage", "Stopped rewinding."),
-                  5.0f);
+    if (!m_fullscreen_ui_enabled)
+    {
+      AddOSDMessage(enabled ? TranslateStdString("OSDMessage", "Rewinding...") :
+                              TranslateStdString("OSDMessage", "Stopped rewinding."),
+                    5.0f);
+    }
+
     System::SetRewinding(enabled);
     UpdateSpeedLimiterState();
   }
@@ -2984,10 +3148,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 {
   HostInterface::SetDefaultSettings(si);
 
-  // TODO: Maybe we should bind this to F1 in the future.
-  if (m_fullscreen_ui_enabled)
-    si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
-
   si.SetStringValue("Controller1", "ButtonUp", "Keyboard/W");
   si.SetStringValue("Controller1", "ButtonDown", "Keyboard/S");
   si.SetStringValue("Controller1", "ButtonLeft", "Keyboard/A");
@@ -3011,7 +3171,6 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
 
   si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
-  si.SetBoolValue("Display", "ShowStatusIndicators", true);
 
 #ifdef WITH_DISCORD_PRESENCE
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
@@ -3272,12 +3431,13 @@ std::vector<std::string> CommonHostInterface::GetSettingStringList(const char* s
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)
 {
-  if (m_timer_resolution_increased == enabled)
+#if defined(_WIN32) && !defined(_UWP)
+  static bool current_state = false;
+  if (current_state == enabled)
     return;
 
-  m_timer_resolution_increased = enabled;
+  current_state = enabled;
 
-#if defined(_WIN32) && !defined(_UWP)
   if (enabled)
     timeBeginPeriod(1);
   else
@@ -3296,8 +3456,8 @@ void CommonHostInterface::DisplayLoadingScreen(const char* message, int progress
   // eat the last imgui frame, it might've been partially rendered by the caller.
   ImGui::NewFrame();
 
-  const float logo_width = static_cast<float>(APP_ICON_WIDTH) * scale;
-  const float logo_height = static_cast<float>(APP_ICON_HEIGHT) * scale;
+  const float logo_width = 260.0f * scale;
+  const float logo_height = 260.0f * scale;
 
   ImGui::SetNextWindowSize(ImVec2(logo_width, logo_height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) - (50.0f * scale)),

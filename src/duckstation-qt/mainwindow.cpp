@@ -46,9 +46,28 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe "
   "*.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
 
-ALWAYS_INLINE static QString getWindowTitle()
+static const char* DEFAULT_THEME_NAME = "darkfusion";
+
+ALWAYS_INLINE static QString getWindowTitle(const QString& game_title)
 {
-  return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+  if (game_title.isEmpty())
+  {
+#if defined(_DEBUG)
+    return QStringLiteral("DuckStation [Debug] %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#elif defined(_DEBUGFAST)
+    return QStringLiteral("DuckStation [DebugFast] %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#else
+    return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+#endif
+  }
+
+#if defined(_DEBUG)
+  return QStringLiteral("%1 [Debug]").arg(game_title);
+#elif defined(_DEBUGFAST)
+  return QStringLiteral("%2 [DebugFast]").arg(game_title);
+#else
+  return game_title;
+#endif
 }
 
 MainWindow::MainWindow(QtHostInterface* host_interface)
@@ -63,19 +82,20 @@ MainWindow::MainWindow(QtHostInterface* host_interface)
 MainWindow::~MainWindow()
 {
   Assert(!m_display_widget);
-  m_host_interface->setMainWindow(nullptr);
+  if (m_host_interface->getMainWindow() == this)
+    m_host_interface->setMainWindow(nullptr);
 
   Assert(!m_debugger_window);
 }
 
 void MainWindow::initializeAndShow()
 {
+  setIconThemeFromSettings();
+
   m_ui.setupUi(this);
   setupAdditionalUi();
+  setStyleFromSettings();
   connectSignals();
-  updateTheme();
-
-  resize(800, 700);
 
   restoreStateFromConfig();
   switchToGameListView();
@@ -456,10 +476,7 @@ void MainWindow::onSystemPerformanceCountersUpdated(float speed, float fps, floa
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
 {
-  if (game_title.isEmpty())
-    setWindowTitle(getWindowTitle());
-  else
-    setWindowTitle(game_title);
+  setWindowTitle(getWindowTitle(game_title));
 
   if (m_display_widget)
     m_display_widget->setWindowTitle(windowTitle());
@@ -544,6 +561,19 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 
   ret = std::move(devices[selected_index].first);
   return ret;
+}
+
+void MainWindow::recreate()
+{
+  if (m_emulation_running)
+    m_host_interface->synchronousPowerOffSystem();
+
+  close();
+  m_host_interface->setMainWindow(nullptr);
+
+  MainWindow* new_main_window = new MainWindow(m_host_interface);
+  new_main_window->initializeAndShow();
+  deleteLater();
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -839,7 +869,7 @@ void MainWindow::onGameListSetCoverImageRequested(const GameListEntry* entry)
 
 void MainWindow::setupAdditionalUi()
 {
-  setWindowTitle(getWindowTitle());
+  setWindowTitle(getWindowTitle(QString()));
 
   const bool status_bar_visible = m_host_interface->GetBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
@@ -940,8 +970,8 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
       m_host_interface->SetStringSettingValue("Main", "Language", new_language.toUtf8().constData());
-      QMessageBox::information(this, tr("DuckStation"),
-                               tr("Language changed. Please restart the application to apply."));
+      m_host_interface->reinstallTranslator();
+      recreate();
     });
   }
 
@@ -1274,6 +1304,7 @@ void MainWindow::connectSignals()
   addThemeToMenu(tr("Dark Fusion (Gray)"), QStringLiteral("darkfusion"));
   addThemeToMenu(tr("Dark Fusion (Blue)"), QStringLiteral("darkfusionblue"));
   addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
+  updateMenuSelectedTheme();
 }
 
 void MainWindow::addThemeToMenu(const QString& name, const QString& key)
@@ -1287,13 +1318,17 @@ void MainWindow::addThemeToMenu(const QString& name, const QString& key)
 void MainWindow::setTheme(const QString& theme)
 {
   m_host_interface->SetStringSettingValue("UI", "Theme", theme.toUtf8().constData());
-  updateTheme();
+  setStyleFromSettings();
+  setIconThemeFromSettings();
+  updateMenuSelectedTheme();
+  recreate();
 }
 
-void MainWindow::updateTheme()
+void MainWindow::setStyleFromSettings()
 {
-  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", "darkfusion"));
-  if (theme == QStringLiteral("qdarkstyle"))
+  const std::string theme(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+
+  if (theme == "qdarkstyle")
   {
     qApp->setStyle(m_unthemed_style_name);
     qApp->setPalette(QApplication::style()->standardPalette());
@@ -1302,13 +1337,13 @@ void MainWindow::updateTheme()
     if (f.open(QFile::ReadOnly | QFile::Text))
       qApp->setStyleSheet(f.readAll());
   }
-  else if (theme == QStringLiteral("fusion"))
+  else if (theme == "fusion")
   {
     qApp->setPalette(QApplication::style()->standardPalette());
     qApp->setStyleSheet(QString());
     qApp->setStyle(QStyleFactory::create("Fusion"));
   }
-  else if (theme == QStringLiteral("darkfusion"))
+  else if (theme == "darkfusion")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -1343,7 +1378,7 @@ void MainWindow::updateTheme()
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
-  else if (theme == QStringLiteral("darkfusionblue"))
+  else if (theme == "darkfusionblue")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -1385,20 +1420,19 @@ void MainWindow::updateTheme()
     qApp->setStyleSheet(QString());
     qApp->setStyle(m_unthemed_style_name);
   }
+}
 
-  for (QObject* obj : m_ui.menuSettingsTheme->children())
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-    {
-      QVariant action_data(action->data());
-      if (action_data.isValid())
-      {
-        QSignalBlocker blocker(action);
-        action->setChecked(action_data == theme);
-      }
-    }
-  }
+void MainWindow::setIconThemeFromSettings()
+{
+  const std::string theme(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+  QString icon_theme;
+
+  if (theme == "qdarkstyle" || theme == "darkfusion" || theme == "darkfusionblue")
+    icon_theme = QStringLiteral("white");
+  else
+    icon_theme = QStringLiteral("black");
+
+  QIcon::setThemeName(icon_theme);
 }
 
 void MainWindow::onSettingsResetToDefault()
@@ -1421,6 +1455,7 @@ void MainWindow::onSettingsResetToDefault()
   updateDebugMenuGPURenderer();
   updateDebugMenuCropMode();
   updateDebugMenuVisibility();
+  updateMenuSelectedTheme();
 }
 
 void MainWindow::saveStateToConfig()
@@ -1558,6 +1593,25 @@ void MainWindow::updateDebugMenuCropMode()
     QAction* action = qobject_cast<QAction*>(obj);
     if (action)
       action->setChecked(action->text() == current_crop_mode_display_name);
+  }
+}
+
+void MainWindow::updateMenuSelectedTheme()
+{
+  QString theme = QString::fromStdString(m_host_interface->GetStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+
+  for (QObject* obj : m_ui.menuSettingsTheme->children())
+  {
+    QAction* action = qobject_cast<QAction*>(obj);
+    if (action)
+    {
+      QVariant action_data(action->data());
+      if (action_data.isValid())
+      {
+        QSignalBlocker blocker(action);
+        action->setChecked(action_data == theme);
+      }
+    }
   }
 }
 

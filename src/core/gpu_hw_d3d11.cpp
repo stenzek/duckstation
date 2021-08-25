@@ -857,6 +857,11 @@ void GPU_HW_D3D11::UpdateDisplay()
   }
   else
   {
+    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
+                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
+                                         GetDisplayAspectRatio());
+
     const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
     const u32 vram_offset_y = m_crtc_state.display_vram_top;
@@ -923,11 +928,6 @@ void GPU_HW_D3D11::UpdateDisplay()
 
       RestoreGraphicsAPIState();
     }
-
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
-                                         m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
-                                         m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                         GetDisplayAspectRatio());
   }
 }
 

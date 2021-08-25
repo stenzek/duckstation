@@ -104,13 +104,13 @@ To use on Xbox One:
 
 1. Ensure your console is in developer mode. You will need to purchase a developer license from Microsoft.
 2. Download the duckstation-uwp.appx file.
-4. Navigate to the device portal for your console (displayed in the home screen).
-5. Install the appx file by clicking Add in the main page.
-6. Set the app to Game mode instead of App mode: Scroll down to DuckStation in the listinng, press the `Change View` button, select `View Details`, and change `App` to `Game`.
-7. Upload a BIOS image to the local state directory for DuckStation, or place your BIOS image on a removable USB drive. If using a USB drive, you will need to set the BIOS path in DuckStation's settings to point to this directory.
-8. Add games to the local state games directory, or use a removable USB drive. Again, you will have to register this path in Game List Settings for it to scan.
-9. Launch the app, and enjoy. By default, the `Change View` button will open the quick menu.
-10. Don't forget to enable enhancements, an Xbox One S can do 8x resolution scale with 4K output, Series consoles can go higher.
+3. Navigate to the device portal for your console (displayed in the home screen).
+4. Install the appx file by clicking Add in the main page.
+5. Set the app to Game mode instead of App mode: Scroll down to DuckStation in the listinng, press the `Change View` button, select `View Details`, and change `App` to `Game`.
+6. Upload a BIOS image to the local state directory for DuckStation, or place your BIOS image on a removable USB drive. If using a USB drive, you will need to set the BIOS path in DuckStation's settings to point to this directory.
+7. Add games to the local state games directory, or use a removable USB drive. Again, you will have to register this path in Game List Settings for it to scan.
+8. Launch the app, and enjoy. By default, the `Change View` button will open the quick menu.
+9. Don't forget to enable enhancements, an Xbox One S can do 8x resolution scale with 4K output, Series consoles can go higher.
 
 **NOTE:** I'd recommend using a USB drive for saving memory cards, as the local state directory will be removed when you uninstall the app.
 
@@ -297,5 +297,3 @@ Hotkeys:
 Icon by icons8: https://icons8.com/icon/74847/platforms.undefined.short-title
 
 "PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.
-
-

@@ -92,8 +92,6 @@ static void DrawQuickMenu(MainWindowType type);
 static void DrawAchievementWindow();
 static void DrawLeaderboardsWindow();
 static void DrawDebugMenu();
-static void DrawStatsOverlay();
-static void DrawOSDMessages();
 static void DrawAboutWindow();
 static void OpenAboutWindow();
 static void SetDebugMenuEnabled(bool enabled);
@@ -113,7 +111,6 @@ static MainWindowType s_current_main_window = MainWindowType::Landing;
 static std::bitset<static_cast<u32>(FrontendCommon::ControllerNavigationButton::Count)> s_nav_input_values{};
 static bool s_debug_menu_enabled = false;
 static bool s_debug_menu_allowed = false;
-static bool s_show_status_indicators = false;
 static bool s_quick_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
@@ -123,7 +120,6 @@ static std::optional<u32> s_open_leaderboard_id;
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback = true);
 static bool LoadResources();
 static void DestroyResources();
 
@@ -248,10 +244,7 @@ bool HasActiveWindow()
          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
 }
 
-void LoadSettings()
-{
-  s_show_status_indicators = s_host_interface->GetBoolSettingValue("Display", "ShowStatusIndicators", true);
-}
+void LoadSettings() {}
 
 void UpdateSettings()
 {
@@ -356,7 +349,7 @@ void Render()
   if (System::IsValid())
   {
     if (!s_debug_menu_enabled)
-      DrawStatsOverlay();
+      s_host_interface->DrawStatsOverlay();
 
     if (!IsCheevosHardcoreModeActive())
       s_host_interface->DrawDebugWindows();
@@ -397,7 +390,7 @@ void Render()
   if (s_input_binding_type != InputBindingType::None)
     DrawInputBindingWindow();
 
-  DrawOSDMessages();
+  s_host_interface->DrawOSDMessages();
 
   ImGuiFullscreen::EndLayout();
 }
@@ -462,19 +455,6 @@ bool LoadResources()
       return false;
   }
 
-  {
-    std::unique_ptr<ByteStream> stream = s_host_interface->OpenPackageFile(
-      "resources" FS_OSPATH_SEPARATOR_STR "fa-solid-900.ttf", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-    if (!stream)
-      return false;
-
-    std::vector<u8> font_data = FileSystem::ReadBinaryStream(stream.get());
-    if (font_data.empty())
-      return false;
-
-    ImGuiFullscreen::SetIconFontData(std::move(font_data));
-  }
-
   return true;
 }
 
@@ -497,7 +477,7 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
 {
   std::unique_ptr<ByteStream> stream;
   if (from_package)
-    stream = s_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
+    stream = g_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
   else
     stream = FileSystem::OpenFile(path, BYTESTREAM_OPEN_READ);
   if (!stream)
@@ -513,7 +493,7 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
     return {};
   }
 
-  std::unique_ptr<HostDisplayTexture> texture = s_host_interface->GetDisplay()->CreateTexture(
+  std::unique_ptr<HostDisplayTexture> texture = g_host_interface->GetDisplay()->CreateTexture(
     image.GetWidth(), image.GetHeight(), 1, 1, 1, HostDisplayPixelFormat::RGBA8, image.GetPixels(),
     image.GetByteStride());
   if (!texture)
@@ -538,7 +518,7 @@ std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool a
 
   Log_ErrorPrintf("Missing resource '%s', using fallback", name);
 
-  texture = s_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
+  texture = g_host_interface->GetDisplay()->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
                                                           HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
                                                           sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
   if (!texture)
@@ -2541,9 +2521,12 @@ void DrawSettingsWindow()
                                                       "General", "CreateSaveStateBackups", false);
 
         MenuHeading("Display Settings");
-        settings_changed |= ToggleButtonForNonSetting("Show Status Indicators",
-                                                      "Shows persistent icons when turbo is active or when paused.",
-                                                      "Display", "ShowStatusIndicators", true);
+        settings_changed |=
+          ToggleButton("Show Status Indicators", "Shows persistent icons when turbo is active or when paused.",
+                       &g_settings.display_show_status_indicators);
+        settings_changed |= ToggleButton("Show Enhancement Settings",
+                                         "Shows enhancement settings in the bottom-right corner of the screen.",
+                                         &g_settings.display_show_enhancements);
         settings_changed |= RangeButton(
           "Display FPS Limit", "Limits how many frames are displayed to the screen. These frames are still rendered.",
           &s_settings_copy.display_max_fps, 0.0f, 500.0f, 1.0f, "%.2f FPS");
@@ -3349,131 +3332,6 @@ HostDisplayTexture* GetCoverForCurrentGame()
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
-void DrawStatsOverlay()
-{
-  if (!(g_settings.display_show_fps || g_settings.display_show_vps || g_settings.display_show_speed ||
-        g_settings.display_show_resolution || System::IsPaused() || s_host_interface->IsFastForwardEnabled() ||
-        s_host_interface->IsTurboEnabled()))
-  {
-    return;
-  }
-
-  const float margin = LayoutScale(10.0f);
-  const float shadow_offset = DPIScale(1.0f);
-  float position_y = ImGuiFullscreen::g_menu_bar_size + margin;
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  TinyString text;
-  ImVec2 text_size;
-  bool first = true;
-
-#define DRAW_LINE(font, font_size, right_pad, color)                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    text_size = font->CalcTextSizeA(font_size, std::numeric_limits<float>::max(), -1.0f, text,                         \
-                                    text.GetCharArray() + text.GetLength(), nullptr);                                  \
-    dl->AddText(font, font_size,                                                                                       \
-                ImVec2(ImGui::GetIO().DisplaySize.x - (right_pad)-margin - text_size.x + shadow_offset,                \
-                       position_y + shadow_offset),                                                                    \
-                IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());                                 \
-    dl->AddText(font, font_size, ImVec2(ImGui::GetIO().DisplaySize.x - (right_pad)-margin - text_size.x, position_y),  \
-                color, text, text.GetCharArray() + text.GetLength());                                                  \
-    position_y += text_size.y + margin;                                                                                \
-  } while (0)
-
-  const System::State state = System::GetState();
-  if (System::GetState() == System::State::Running)
-  {
-    const float speed = System::GetEmulationSpeed();
-    if (g_settings.display_show_fps)
-    {
-      text.AppendFormattedString("%.2f", System::GetFPS());
-      first = false;
-    }
-    if (g_settings.display_show_vps)
-    {
-      text.AppendFormattedString("%s%.2f", first ? "" : " / ", System::GetVPS());
-      first = false;
-    }
-    if (g_settings.display_show_speed)
-    {
-      text.AppendFormattedString("%s%u%%", first ? "" : " / ", static_cast<u32>(std::round(speed)));
-      first = false;
-    }
-    if (!text.IsEmpty())
-    {
-      ImU32 color;
-      if (speed < 95.0f)
-        color = IM_COL32(255, 100, 100, 255);
-      else if (speed > 105.0f)
-        color = IM_COL32(100, 255, 100, 255);
-      else
-        color = IM_COL32(255, 255, 255, 255);
-
-      DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, color);
-    }
-
-    if (g_settings.display_show_resolution)
-    {
-      const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
-      const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
-      text.Format("%ux%u (%s)", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
-      DRAW_LINE(g_large_font, g_large_font->FontSize, 0.0f, IM_COL32(255, 255, 255, 255));
-    }
-
-    if (s_show_status_indicators && (s_host_interface->IsFastForwardEnabled() || s_host_interface->IsTurboEnabled()))
-    {
-      text.Assign(ICON_FA_FAST_FORWARD);
-      DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
-    }
-  }
-  else if (s_show_status_indicators && state == System::State::Paused)
-  {
-    text.Assign(ICON_FA_PAUSE);
-    DRAW_LINE(g_large_font, g_large_font->FontSize * 2.0f, margin, IM_COL32(255, 255, 255, 255));
-  }
-
-#undef DRAW_LINE
-}
-
-void DrawOSDMessages()
-{
-  s_host_interface->AcquirePendingOSDMessages();
-
-  ImGui::PushFont(g_large_font);
-
-  const float max_width = LayoutScale(1080.0f);
-  const float spacing = LayoutScale(4.0f);
-  const float margin = LayoutScale(10.0f);
-  const float padding = LayoutScale(10.0f);
-  float position_x = margin;
-  float position_y = margin + ImGuiFullscreen::g_menu_bar_size;
-
-  s_host_interface->EnumerateOSDMessages(
-    [max_width, spacing, padding, &position_x, &position_y](const std::string& message, float time_remaining) -> bool {
-      const float opacity = std::min(time_remaining, 1.0f);
-      const u32 alpha = static_cast<u32>(opacity * 255.0f);
-
-      if (position_y >= ImGui::GetIO().DisplaySize.y)
-        return false;
-
-      const ImVec2 pos(position_x, position_y);
-      const ImVec2 text_size(ImGui::CalcTextSize(message.c_str(), nullptr, false, max_width));
-      const ImVec2 size(text_size + LayoutScale(20.0f, 20.0f));
-      const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
-
-      // If we're in the landing page, draw the OSD over the windows (since it covers it)
-      ImDrawList* dl = (s_current_main_window != MainWindowType::None) ? ImGui::GetForegroundDrawList() :
-                                                                         ImGui::GetBackgroundDrawList();
-      dl->AddRectFilled(pos, pos + size, IM_COL32(0x21, 0x21, 0x21, alpha), LayoutScale(10.0f));
-      dl->AddRect(pos, pos + size, IM_COL32(0x48, 0x48, 0x48, alpha), LayoutScale(10.0f));
-      dl->AddText(g_large_font, g_large_font->FontSize, ImVec2(text_rect.x, text_rect.y),
-                  IM_COL32(0xff, 0xff, 0xff, alpha), message.c_str(), nullptr, max_width, &text_rect);
-      position_y += size.y + spacing;
-      return true;
-    });
-
-  ImGui::PopFont();
-}
 
 void OpenAboutWindow()
 {

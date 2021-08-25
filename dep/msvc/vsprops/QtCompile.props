@@ -14,6 +14,7 @@
     <QtBinDir>$(QTDIR)bin\</QtBinDir>
     <QtHostBinDir>$(QTDIRHost)bin\</QtHostBinDir>
     <QtPluginsDir>$(QTDIR)plugins\</QtPluginsDir>
+    <QtTranslationsDir>$(QTDIR)translations\</QtTranslationsDir>
     <QtToolOutDir>$(SolutionDir)build\$(ProjectName)-$(Platform)-$(Configuration)\</QtToolOutDir>
     <QtMocOutPrefix>$(QtToolOutDir)moc_</QtMocOutPrefix>
     <QtTsOutDir>$(BinaryOutputDir)translations\</QtTsOutDir>
@@ -162,6 +163,22 @@
       File="$(QtConfFile)"
       Lines="[Paths];Plugins = ./$(QtPluginFolder)"
       Overwrite="true"
+    />
+  </Target>
+  
+  <!--Copies base translation files-->
+  <ItemGroup>
+    <BaseTsFiles Include="$(QtTranslationsDir)\*.qm" />
+  </ItemGroup>
+  <Target Name="QtCopyBaseTranslations"
+    AfterTargets="Build"
+    Inputs="@(BaseTsFiles)"
+    Outputs="@(BaseTsFiles -> '$(QtTsOutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying base translation files" Importance="High" />
+    <Copy
+      SourceFiles="@(BaseTsFiles)"
+      DestinationFolder="$(QtTsOutDir)"
+      SkipUnchangedFiles="true"
     />
   </Target>
 

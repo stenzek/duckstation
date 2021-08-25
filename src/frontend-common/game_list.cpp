@@ -89,8 +89,9 @@ bool GameList::GetExeListEntry(const std::string& path, GameListEntry* entry)
     return false;
   }
 
+  const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
   entry->code.clear();
-  entry->title = FileSystem::GetFileTitleFromPath(path);
+  entry->title = FileSystem::StripExtension(display_name);
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
   entry->type = GameListEntryType::PSExe;
@@ -126,9 +127,14 @@ bool GameList::GetPsfListEntry(const std::string& path, GameListEntry* entry)
 
   std::optional<std::string> title(file.GetTagString("title"));
   if (title.has_value())
+  {
     entry->title += title.value();
+  }
   else
-    entry->title += FileSystem::GetFileTitleFromPath(path);
+  {
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+    entry->title += FileSystem::StripExtension(display_name);
+  }
 
   return true;
 }

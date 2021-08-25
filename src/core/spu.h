@@ -6,6 +6,9 @@
 #include <array>
 #include <memory>
 
+// Enable to dump all voices of the SPU audio individually.
+// #define SPU_DUMP_ALL_VOICES 1
+
 class StateWrapper;
 
 namespace Common {
@@ -424,6 +427,11 @@ private:
   InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> m_transfer_fifo;
 
   std::array<u8, RAM_SIZE> m_ram{};
+
+#ifdef SPU_DUMP_ALL_VOICES
+  // +1 for reverb output
+  std::array<std::unique_ptr<Common::WAVWriter>, NUM_VOICES + 1> m_voice_dump_writers;
+#endif
 };
 
 extern SPU g_spu;

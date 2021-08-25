@@ -34,8 +34,8 @@ enum : u32
   VERTEX_CACHE_WIDTH = 0x800 * 2,
   VERTEX_CACHE_HEIGHT = 0x800 * 2,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
-  PGXP_MEM_SIZE = 3 * 2048 * 1024 / 4,
-  PGXP_MEM_SCRATCH_OFFSET = 2048 * 1024 / 4
+  PGXP_MEM_SIZE = (Bus::RAM_8MB_SIZE + CPU::DCACHE_SIZE) / 4,
+  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4
 };
 
 #define NONE 0
@@ -162,7 +162,7 @@ ALWAYS_INLINE_RELEASE PGXP_value* GetPtr(u32 addr)
 
   const u32 paddr = (addr & CPU::PHYSICAL_MEMORY_ADDRESS_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
-    return &Mem[(paddr & Bus::RAM_2MB_MASK) >> 2];
+    return &Mem[(paddr & Bus::g_ram_mask) >> 2];
   else
     return nullptr;
 }
