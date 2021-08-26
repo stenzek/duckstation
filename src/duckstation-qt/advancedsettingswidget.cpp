@@ -138,6 +138,36 @@ static void setChoiceTweakOption(QTableWidget* table, int row, T value)
   cb->setCurrentIndex(static_cast<int>(value));
 }
 
+static void addMSAATweakOption(QtHostInterface* host_interface, QTableWidget* table, const QString& name)
+{
+  const int row = table->rowCount();
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QComboBox* msaa = new QComboBox(table);
+  QtUtils::FillComboBoxWithMSAAModes(msaa);
+  const QVariant current_msaa_mode(QtUtils::GetMSAAModeValue(
+    static_cast<uint>(QtHostInterface::GetInstance()->GetIntSettingValue("GPU", "Multisamples", 1)),
+    QtHostInterface::GetInstance()->GetBoolSettingValue("GPU", "PerSampleShading", false)));
+  const int current_msaa_index = msaa->findData(current_msaa_mode);
+  if (current_msaa_index >= 0)
+    msaa->setCurrentIndex(current_msaa_index);
+  msaa->connect(msaa, QOverload<int>::of(&QComboBox::currentIndexChanged), [msaa](int index) {
+    uint multisamples;
+    bool ssaa;
+    QtUtils::DecodeMSAAModeValue(msaa->itemData(index), &multisamples, &ssaa);
+    QtHostInterface::GetInstance()->SetIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
+    QtHostInterface::GetInstance()->SetBoolSettingValue("GPU", "PerSampleShading", ssaa);
+    QtHostInterface::GetInstance()->applySettings(false);
+  });
+
+  table->setCellWidget(row, 1, msaa);
+}
+
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
   : QWidget(parent), m_host_interface(host_interface)
 {
@@ -171,6 +201,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                         "ShowEnhancements", false);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
                          0);
+
+  addMSAATweakOption(host_interface, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache",
                         false);
@@ -247,25 +279,26 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);
   setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
   setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 4, false);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 5, -1.0f);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 7, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 8, true);
-  setChoiceTweakOption(m_ui.tweakOptionTable, 9, Settings::DEFAULT_CPU_FASTMEM_MODE);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 10, false);
+  setChoiceTweakOption(m_ui.tweakOptionTable, 4, 0);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, -1.0f);
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 7, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 9, true);
+  setChoiceTweakOption(m_ui.tweakOptionTable, 10, Settings::DEFAULT_CPU_FASTMEM_MODE);
   setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);
   setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 15, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 19, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  setBooleanTweakOption(m_ui.tweakOptionTable, 21, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 22, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 23, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 15, false);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 19, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 21, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
+  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 23, true);
   setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 25, false);
 }
