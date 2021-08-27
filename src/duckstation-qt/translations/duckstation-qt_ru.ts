@@ -4414,7 +4414,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="621"/>
         <source>Resolution Scale:</source>
-        <translation>Масштаб разрешения:</translation>
+        <translation>Масштаб внутреннего разрешения:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="631"/>
@@ -7693,7 +7693,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1292"/>
         <source>Interlacing forced by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Чересстрочная развертка принудительно задана настройками игры.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1303"/>
@@ -7718,7 +7718,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1350"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Принудительные тайминги NTSC запрещены настройками игры.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1362"/>
