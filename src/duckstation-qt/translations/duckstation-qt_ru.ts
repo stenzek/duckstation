@@ -5860,7 +5860,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="156"/>
         <source>Switch GPU Renderer</source>
-        <translation>Переключить ГП рендер</translation>
+        <translation>Переключить рендер ГП</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="161"/>
@@ -5955,7 +5955,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="376"/>
         <source>C&amp;onsole Settings...</source>
-        <translation>&amp;Настройка консоли...</translation>
+        <translation>&amp;Настройки консоли...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="384"/>
@@ -5970,22 +5970,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="400"/>
         <source>&amp;Hotkey Settings...</source>
-        <translation>Настройка &amp;горячих клавиш...</translation>
+        <translation>Настройки &amp;горячих клавиш...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="408"/>
         <source>&amp;Display Settings...</source>
-        <translation>Настройка &amp;отображения...</translation>
+        <translation>Настройки &amp;отображения...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="416"/>
         <source>&amp;Enhancement Settings...</source>
-        <translation>Настройка &amp;улучшений...</translation>
+        <translation>Настройки &amp;улучшений...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="424"/>
         <source>&amp;Post-Processing Settings...</source>
-        <translation>Настройка &amp;пост-обработки...</translation>
+        <translation>Настройки &amp;пост-обработки...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="432"/>
@@ -6218,7 +6218,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="641"/>
         <source>Force NTSC Timings</source>
-        <translation>Принудительные NTSC тайминги</translation>
+        <translation>Принудительные тайминги NTSC</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="649"/>
