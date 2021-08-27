@@ -275,30 +275,36 @@ AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
-  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);
-  setChoiceTweakOption(m_ui.tweakOptionTable, 4, 0);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, -1.0f);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 7, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 9, true);
-  setChoiceTweakOption(m_ui.tweakOptionTable, 10, Settings::DEFAULT_CPU_FASTMEM_MODE);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 15, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 19, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 21, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 23, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 25, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);    // Disable all enhancements
+  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);     // Show status indicators
+  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);    // Show enhancement settings
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);       // Display FPS limit
+  setChoiceTweakOption(m_ui.tweakOptionTable, 4, 0);         // Multisample antialiasing
+  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);    // PGXP vertex cache
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, -1.0f); // PGXP geometry tolerance
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 7,
+                           Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);                // PGXP depth clear threshold
+  setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);                              // Recompiler memory exceptions
+  setBooleanTweakOption(m_ui.tweakOptionTable, 9, true);                               // Recompiler block linking
+  setChoiceTweakOption(m_ui.tweakOptionTable, 10, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
+  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);                             // Recompiler Icache
+  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);                             // VRAM write texture replacement
+  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);                             // Preload texture replacements
+  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);                             // Dump replacable VRAM writes
+  setBooleanTweakOption(m_ui.tweakOptionTable, 15, false); // Set dumped VRAM write alpha channel
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 16,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 17,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 18,
+                         static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 19,
+                         static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 21,
+                         static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
+  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);                       // Use debug host GPU device
+  setBooleanTweakOption(m_ui.tweakOptionTable, 23, true);                        // Increase timer resolution
+  setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);                       // Allow booting without SBI file
+  setBooleanTweakOption(m_ui.tweakOptionTable, 25, false);                       // Create save state backups
 }
