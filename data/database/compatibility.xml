@@ -1378,6 +1378,11 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1485-ge6156e2a</version-tested>
   </entry>
+  <entry code="SLUS-00224" compatibility="5" region="NTSC-U" title="Disruptor (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+    <comments>Enemy positions glitch, if you set PGXP to CPU mode.</comments>
+  </entry>
   <entry code="SLPS-01364" compatibility="5" region="NTSC-J" title="DoDonPachi (Japan) (Rev 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-4126-g179a7aea</version-tested>
@@ -1758,6 +1763,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-986-gfc911de1</version-tested>
     <comments>a</comments>
+  </entry>
+  <entry code="SLES-02423" compatibility="5" region="PAL" title="Front Mission 3 (Europe)">
+    <compatibility>No Issues</compatibility>
   </entry>
   <entry code="SLUS-01011" compatibility="5" region="NTSC-U" title="Front Mission 3 (USA)">
     <compatibility>No Issues</compatibility>
