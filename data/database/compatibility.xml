@@ -1313,10 +1313,9 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1558-gf852be74</version-tested>
   </entry>
-  <entry code="SCUS-94569" compatibility="4" region="NTSC-U" title="Disney's Aladdin in Nasira's Revenge (USA)">
-    <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
-    <comments>Humming sound is barely audible (wrong audio equalization?) (Issue #787)</comments>
+  <entry code="SCUS-94569" compatibility="5" region="NTSC-U" title="Disney's Aladdin in Nasira's Revenge (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4693-gbbcf1c67</version-tested>
   </entry>
   <entry code="SLUS-01242" compatibility="5" region="NTSC-U" title="Disney's Donald Duck - Goin' Quackers (USA)">
     <compatibility>No Issues</compatibility>
@@ -1416,6 +1415,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01092" compatibility="5" region="NTSC-U" title="Dragon Valor (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SLUS-01206" compatibility="5" region="NTSC-U" title="Dragon Warrior VII (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SLPS-00250" compatibility="5" region="NTSC-J" title="Drift King Shutokou Battle - Tsuchiya Keiichi &amp; Bandou Masaaki (Japan)">
     <compatibility>No Issues</compatibility>
@@ -1730,7 +1733,7 @@ Tetris with Card Captor Sakura (Japan)
   </entry>
   <entry code="SLPS-00148" compatibility="4" region="NTSC-J" title="Firemen 2, The - Pete &amp; Danny (Japan)">
     <compatibility>Graphical/Audio Issues</compatibility>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
+    <version-tested>0.1-4693-gbbcf1c67</version-tested>
     <comments>Dialogue in certain cutscenes ends too early or is missing entirely (Issue #575)</comments>
   </entry>
   <entry code="SLUS-00546" compatibility="5" region="NTSC-U" title="Formula 1 Championship Edition (USA) (En,Fr,De,Es,It)">
@@ -1815,10 +1818,6 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01099" compatibility="5" region="NTSC-U" title="Galerians (USA) (Disc 3)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-3777-g62718b3c</version-tested>
-  </entry>
-  <entry code="ARCDXEXE" compatibility="1" region="NTSC-U" title="GameShark 2 Version 2 Code Archive Disc Version 1 (USA) (Unl)">
-    <compatibility>Doesn't Boot</compatibility>
-    <version-tested>0.1-1580-g136a9d60</version-tested>
   </entry>
   <entry code="SLPM-86155" compatibility="5" region="NTSC-J" title="Ganbare Goemon - Kuru nara Koi! Ayashige Ikka no Kuroi Kage">
     <compatibility>No Issues</compatibility>
@@ -1987,10 +1986,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1031-g47138aa</version-tested>
   </entry>
-  <entry code="SLUS-01244" compatibility="0" region="NTSC-U" title="High Heat Major League Baseball 2002 (USA)">
-    <compatibility>Unknown</compatibility>
+  <entry code="SLUS-01244" compatibility="4" region="NTSC-U" title="High Heat Major League Baseball 2002 (USA)">
+    <compatibility>Graphical/Audio Issues</compatibility>
     <upscaling-issues>Menus transparency is wrong (Issue #592)</upscaling-issues>
-    <version-tested>0.1-2499-g770dd5a6</version-tested>
+    <version-tested>0.1-4693-gbbcf1c67</version-tested>
   </entry>
   <entry code="SLUS-01195" compatibility="5" region="NTSC-U" title="Hogs of War (USA)">
     <compatibility>No Issues</compatibility>
@@ -4821,5 +4820,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPS-00271" compatibility="5" region="NTSC-J" title="Zork I - The Great Underground Empire (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1323-ga6acd33</version-tested>
+  </entry>
+  <entry code="ARCDXEXE" compatibility="2" region="NTSC-U" title="gameshark 2 version 2 code archive disc version 1 (usa) (unl)">
+    <compatibility>Crashes In Intro</compatibility>
+    <upscaling-issues>There's audio, but no video</upscaling-issues>
+    <version-tested>0.1-4693-gbbcf1c67</version-tested>
   </entry>
 </compatibility-list>
