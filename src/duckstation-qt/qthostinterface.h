@@ -148,6 +148,7 @@ Q_SIGNALS:
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
   void achievementsLoaded(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+  void cheatEnabled(quint32 index, bool enabled);
 
 public Q_SLOTS:
   void setDefaultSettings();
