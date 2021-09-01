@@ -2071,9 +2071,12 @@ void SPU::DrawDebugStateWindow()
     ImGui::TextColored(m_SPUCNT.external_audio_reverb ? active_color : inactive_color, "External Audio Enable: %s",
                        m_SPUCNT.external_audio_reverb ? "Yes" : "No");
 
+    ImGui::Text("Base Address: 0x%08X (%04X)", m_reverb_base_address, m_reverb_registers.mBASE);
     ImGui::Text("Current Address: 0x%08X", m_reverb_current_address);
-    ImGui::Text("Current Volume: Input (%d, %d) Output (%d, %d)", s_last_reverb_input[0], s_last_reverb_input[1],
+    ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_last_reverb_input[0], s_last_reverb_input[1],
                 s_last_reverb_output[0], s_last_reverb_output[1]);
+    ImGui::Text("Output Volume: Left %d%% Right %d%%", ApplyVolume(100, m_reverb_registers.vLOUT),
+                ApplyVolume(100, m_reverb_registers.vROUT));
 
     ImGui::Text("Pitch Modulation: ");
     for (u32 i = 1; i < NUM_VOICES; i++)
