@@ -285,25 +285,25 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
-        <location filename="../advancedsettingswidget.cpp" line="210"/>
+        <location filename="../advancedsettingswidget.cpp" line="262"/>
         <source>Log To System Console</source>
         <translation>Log To System Console</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="71"/>
-        <location filename="../advancedsettingswidget.cpp" line="214"/>
+        <location filename="../advancedsettingswidget.cpp" line="266"/>
         <source>Log To Window</source>
         <translation>Log To Window</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="78"/>
-        <location filename="../advancedsettingswidget.cpp" line="212"/>
+        <location filename="../advancedsettingswidget.cpp" line="264"/>
         <source>Log To Debug Console</source>
         <translation>Log To Debug Console</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
-        <location filename="../advancedsettingswidget.cpp" line="216"/>
+        <location filename="../advancedsettingswidget.cpp" line="268"/>
         <source>Log To File</source>
         <translation>Log To File</translation>
     </message>
@@ -314,7 +314,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="103"/>
-        <location filename="../advancedsettingswidget.cpp" line="218"/>
+        <location filename="../advancedsettingswidget.cpp" line="270"/>
         <source>Show Debug Menu</source>
         <translation>Show Debug Menu</translation>
     </message>
@@ -339,7 +339,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
         <translation>Varsayılanlara Döndür</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="146"/>
+        <location filename="../advancedsettingswidget.cpp" line="196"/>
         <source>Disable All Enhancements</source>
         <translation>Tüm İyileştirmeleri Kapat</translation>
     </message>
@@ -348,175 +348,180 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
         <translation type="vanished">Tüm Ekran Durum Göstergelerini Göster</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="148"/>
+        <location filename="../advancedsettingswidget.cpp" line="198"/>
         <source>Show Status Indicators</source>
         <translation>Show Status Indicators</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="150"/>
+        <location filename="../advancedsettingswidget.cpp" line="200"/>
         <source>Show Enhancement Settings</source>
         <translation>Show Enhancement Settings</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="152"/>
+        <location filename="../advancedsettingswidget.cpp" line="202"/>
         <source>Display FPS Limit</source>
         <translation>FPS Sınırını Göster</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="155"/>
+        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <source>Multisample Antialiasing</source>
+        <translation>Kenar Yumuşatma</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="207"/>
         <source>PGXP Vertex Cache</source>
         <translation>PGXP Koordinat Önbelleği</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="157"/>
+        <location filename="../advancedsettingswidget.cpp" line="209"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXP Geometri Toleransı</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="159"/>
+        <location filename="../advancedsettingswidget.cpp" line="211"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP Derinlik Temizleme Sınırı</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="162"/>
+        <location filename="../advancedsettingswidget.cpp" line="214"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Enable Recompiler Memory Exceptions</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="164"/>
+        <location filename="../advancedsettingswidget.cpp" line="216"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>Enable Recompiler Block Linking</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="166"/>
+        <location filename="../advancedsettingswidget.cpp" line="218"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>Enable Recompiler Fast Memory Access</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="170"/>
+        <location filename="../advancedsettingswidget.cpp" line="222"/>
         <source>Enable Recompiler ICache</source>
         <translation>Enable Recompiler ICache</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="173"/>
+        <location filename="../advancedsettingswidget.cpp" line="225"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>Enable VRAM Write Texture Replacement</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="175"/>
+        <location filename="../advancedsettingswidget.cpp" line="227"/>
         <source>Preload Texture Replacements</source>
         <translation>Preload Texture Replacements</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="177"/>
+        <location filename="../advancedsettingswidget.cpp" line="229"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>Dump Replaceable VRAM Writes</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="179"/>
+        <location filename="../advancedsettingswidget.cpp" line="231"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
         <translation>Set Dumped VRAM Write Alpha Channel</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="181"/>
+        <location filename="../advancedsettingswidget.cpp" line="233"/>
         <source>Minimum Dumped VRAM Write Width</source>
         <translation>Minimum Dumped VRAM Write Width</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="184"/>
+        <location filename="../advancedsettingswidget.cpp" line="236"/>
         <source>Minimum Dumped VRAM Write Height</source>
         <translation>Minimum Dumped VRAM Write Height</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="188"/>
+        <location filename="../advancedsettingswidget.cpp" line="240"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA Max Slice Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="190"/>
+        <location filename="../advancedsettingswidget.cpp" line="242"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA Halt Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="192"/>
+        <location filename="../advancedsettingswidget.cpp" line="244"/>
         <source>GPU FIFO Size</source>
         <translation>GPU FIFO Boyutu</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="194"/>
+        <location filename="../advancedsettingswidget.cpp" line="246"/>
         <source>GPU Max Run-Ahead</source>
         <translation>GPU En Fazla İleri Hesaplama</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="196"/>
+        <location filename="../advancedsettingswidget.cpp" line="248"/>
         <source>Use Debug Host GPU Device</source>
         <translation>Use Debug Host GPU Device</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="199"/>
+        <location filename="../advancedsettingswidget.cpp" line="251"/>
         <source>Increase Timer Resolution</source>
         <translation>Increase Timer Resolution</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="202"/>
+        <location filename="../advancedsettingswidget.cpp" line="254"/>
         <source>Allow Booting Without SBI File</source>
         <translation>Allow Booting Without SBI File</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <location filename="../advancedsettingswidget.cpp" line="257"/>
         <source>Create Save State Backups</source>
         <translation>Durum Kaydı Yedekleri Oluştur</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
+        <location filename="../advancedsettingswidget.cpp" line="260"/>
         <source>Log Level</source>
         <translation>Log Level</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
+        <location filename="../advancedsettingswidget.cpp" line="260"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="209"/>
+        <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>Sets the verbosity of messages logged. Higher levels will log more messages.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="210"/>
-        <location filename="../advancedsettingswidget.cpp" line="212"/>
-        <location filename="../advancedsettingswidget.cpp" line="214"/>
-        <location filename="../advancedsettingswidget.cpp" line="216"/>
+        <location filename="../advancedsettingswidget.cpp" line="262"/>
+        <location filename="../advancedsettingswidget.cpp" line="264"/>
+        <location filename="../advancedsettingswidget.cpp" line="266"/>
+        <location filename="../advancedsettingswidget.cpp" line="268"/>
         <source>User Preference</source>
         <translation>User Preference</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="211"/>
+        <location filename="../advancedsettingswidget.cpp" line="263"/>
         <source>Logs messages to the console window.</source>
         <translation>Logs messages to the console window.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="213"/>
+        <location filename="../advancedsettingswidget.cpp" line="265"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>Logs messages to the debug console where supported.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="215"/>
+        <location filename="../advancedsettingswidget.cpp" line="267"/>
         <source>Logs messages to the window.</source>
         <translation>Logs messages to the window.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="217"/>
+        <location filename="../advancedsettingswidget.cpp" line="269"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>Logs messages to duckstation.log in the user directory.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="218"/>
+        <location filename="../advancedsettingswidget.cpp" line="270"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="219"/>
+        <location filename="../advancedsettingswidget.cpp" line="271"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Shows a debug menu bar with additional statistics and quick settings.</translation>
     </message>
@@ -1339,9 +1344,9 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="66"/>
-        <location filename="../cheatmanagerdialog.cpp" line="384"/>
-        <location filename="../cheatmanagerdialog.cpp" line="422"/>
-        <location filename="../cheatmanagerdialog.cpp" line="427"/>
+        <location filename="../cheatmanagerdialog.cpp" line="386"/>
+        <location filename="../cheatmanagerdialog.cpp" line="424"/>
+        <location filename="../cheatmanagerdialog.cpp" line="429"/>
         <source>Activate</source>
         <translation>Etkinleştir</translation>
     </message>
@@ -1676,117 +1681,117 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
         <translation>İmzalı Word</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="427"/>
+        <location filename="../cheatmanagerdialog.cpp" line="429"/>
         <source>Toggle</source>
         <translation>Değiştir</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="506"/>
+        <location filename="../cheatmanagerdialog.cpp" line="513"/>
         <source>Add Group</source>
         <translation>Grup Ekle</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="506"/>
+        <location filename="../cheatmanagerdialog.cpp" line="513"/>
         <source>Group Name:</source>
         <translation>Grup Adı:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="512"/>
-        <location filename="../cheatmanagerdialog.cpp" line="646"/>
-        <location filename="../cheatmanagerdialog.cpp" line="669"/>
-        <location filename="../cheatmanagerdialog.cpp" line="691"/>
+        <location filename="../cheatmanagerdialog.cpp" line="519"/>
+        <location filename="../cheatmanagerdialog.cpp" line="653"/>
+        <location filename="../cheatmanagerdialog.cpp" line="676"/>
+        <location filename="../cheatmanagerdialog.cpp" line="698"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="512"/>
+        <location filename="../cheatmanagerdialog.cpp" line="519"/>
         <source>This group name already exists.</source>
         <translation>Bu grup adı zaten var.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="603"/>
+        <location filename="../cheatmanagerdialog.cpp" line="610"/>
         <source>Delete Code</source>
         <translation>Kodu Sil</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="604"/>
+        <location filename="../cheatmanagerdialog.cpp" line="611"/>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
         <translation>Seçilmiş kodu silmek istediğinizden emin misiniz? Geri alamazsınız.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="631"/>
+        <location filename="../cheatmanagerdialog.cpp" line="638"/>
         <source>From File...</source>
         <translation>Dosyadan...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="632"/>
+        <location filename="../cheatmanagerdialog.cpp" line="639"/>
         <source>From Text...</source>
         <translation>Yazıdan...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="638"/>
+        <location filename="../cheatmanagerdialog.cpp" line="645"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
         <translation>PCSXR/Libretro Hile Dosyaları (*.cht *.txt);;Tüm Dosyalar (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="639"/>
-        <location filename="../cheatmanagerdialog.cpp" line="662"/>
+        <location filename="../cheatmanagerdialog.cpp" line="646"/>
+        <location filename="../cheatmanagerdialog.cpp" line="669"/>
         <source>Import Cheats</source>
         <translation>İçeri Hile Aktar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="646"/>
-        <location filename="../cheatmanagerdialog.cpp" line="669"/>
+        <location filename="../cheatmanagerdialog.cpp" line="653"/>
+        <location filename="../cheatmanagerdialog.cpp" line="676"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
         <translation>Hile kodu anlaşılamadı. İşlem Kaydı detaylı bilgi içeriyor olabilir.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="662"/>
+        <location filename="../cheatmanagerdialog.cpp" line="669"/>
         <source>Cheat File Text:</source>
         <translation>Hile Dosyası Yazısı:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="685"/>
+        <location filename="../cheatmanagerdialog.cpp" line="692"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
         <translation>PCSXR Hile Dosyaları (*.cht);;Tüm Dosyalar (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="686"/>
+        <location filename="../cheatmanagerdialog.cpp" line="693"/>
         <source>Export Cheats</source>
         <translation>Hileleri Dışarı Aktar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="691"/>
+        <location filename="../cheatmanagerdialog.cpp" line="698"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
         <translation>Hile dosyası kayıt edilemedi. İşlem kaydı daha detaylı bilgi içerebilir.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="696"/>
+        <location filename="../cheatmanagerdialog.cpp" line="703"/>
         <source>Confirm Clear</source>
         <translation>Temizlemeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="697"/>
+        <location filename="../cheatmanagerdialog.cpp" line="704"/>
         <source>Are you sure you want to remove all cheats? This is not reversible.</source>
         <translation>Tüm hileleri kaldırmak istediğinizden emin misiniz? Bu geri alınamaz.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="711"/>
+        <location filename="../cheatmanagerdialog.cpp" line="718"/>
         <source>Confirm Reset</source>
         <translation>Resetlemeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="712"/>
+        <location filename="../cheatmanagerdialog.cpp" line="719"/>
         <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
         <translation>Hile listesine resetlemek istediğinizden emin misiniz? Duckstation veritabanında olmayan tüm hileler YOK OLACAK.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="742"/>
+        <location filename="../cheatmanagerdialog.cpp" line="749"/>
         <source>Enter manual address:</source>
         <translation>Manuel Adresi Ekle:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="751"/>
+        <location filename="../cheatmanagerdialog.cpp" line="758"/>
         <source>Select data size:</source>
         <translation>Veri boyutunu seç:</translation>
     </message>
@@ -1802,17 +1807,17 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="2492"/>
+        <location filename="../../core/cheats.cpp" line="2770"/>
         <source>Gameshark</source>
         <translation>Gameshark</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2517"/>
+        <location filename="../../core/cheats.cpp" line="2795"/>
         <source>Manual</source>
         <translation>Manel</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2517"/>
+        <location filename="../../core/cheats.cpp" line="2795"/>
         <source>Automatic (Frame End)</source>
         <translation>Otomatik (Kare Sonu)</translation>
     </message>
@@ -3650,13 +3655,13 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="70"/>
+        <location filename="../enhancementsettingswidget.cpp" line="62"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>Kaliteli Renk Çizimi (24-Bit,Titremeyi Kapatır)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="77"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Orantılı Titreme (Renk titreme desenini çözünürlüğe büyütür)</translation>
     </message>
@@ -3671,222 +3676,218 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation>Yazılımsal çizici readback (VRAM&apos;dan CPU&apos;ya transferler için paralel çalış)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="86"/>
         <source>Multisample Antialiasing:</source>
-        <translation>Kenar Yumuşatma:</translation>
+        <translation type="vanished">Kenar Yumuşatma:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="99"/>
+        <location filename="../enhancementsettingswidget.ui" line="89"/>
         <source>Display Enhancements</source>
         <translation>Ekran İyileştirmeleri</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="105"/>
-        <location filename="../enhancementsettingswidget.cpp" line="54"/>
+        <location filename="../enhancementsettingswidget.ui" line="95"/>
+        <location filename="../enhancementsettingswidget.cpp" line="51"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>İnterlacingi Kapat (Progressive Çizim Zorla)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="112"/>
-        <location filename="../enhancementsettingswidget.cpp" line="80"/>
+        <location filename="../enhancementsettingswidget.ui" line="102"/>
+        <location filename="../enhancementsettingswidget.cpp" line="72"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>NTSC zamanlamalarını zorla (PAL&apos;da 60 Hertz)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="119"/>
+        <location filename="../enhancementsettingswidget.ui" line="109"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>24 Bit Görüntüde 4:3 en boy oranını zorla (Video ara sahnelerde geniş ekranı kapat)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="126"/>
+        <location filename="../enhancementsettingswidget.ui" line="116"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
         <translation>24 Bit Gösterim İçin Renk Yumuşatma (Video ara sahnelerdeki kare kareliği düzeltir)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="136"/>
+        <location filename="../enhancementsettingswidget.ui" line="126"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (Çarpık Yamuk Şekil Düzeltme Sistemi)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="142"/>
-        <location filename="../enhancementsettingswidget.cpp" line="108"/>
+        <location filename="../enhancementsettingswidget.ui" line="132"/>
+        <location filename="../enhancementsettingswidget.cpp" line="100"/>
         <source>Geometry Correction</source>
         <translation>Geometri Düzeltme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="149"/>
-        <location filename="../enhancementsettingswidget.cpp" line="111"/>
+        <location filename="../enhancementsettingswidget.ui" line="139"/>
+        <location filename="../enhancementsettingswidget.cpp" line="103"/>
         <source>Culling Correction</source>
         <translation>Model Es Geçmeyi Kapat</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="156"/>
-        <location filename="../enhancementsettingswidget.cpp" line="114"/>
+        <location filename="../enhancementsettingswidget.ui" line="146"/>
+        <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Texture Correction</source>
         <translation>Kaplama Düzeltme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="163"/>
-        <location filename="../enhancementsettingswidget.cpp" line="122"/>
+        <location filename="../enhancementsettingswidget.ui" line="153"/>
+        <location filename="../enhancementsettingswidget.cpp" line="114"/>
         <source>Preserve Projection Precision</source>
         <translation>Model Döşeme Kalitesini Koru</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="170"/>
-        <location filename="../enhancementsettingswidget.cpp" line="118"/>
+        <location filename="../enhancementsettingswidget.ui" line="160"/>
+        <location filename="../enhancementsettingswidget.cpp" line="110"/>
         <source>Depth Buffer (Low Compatibility)</source>
         <translation>Derinlik Verisi (Düşük Uyumluluk)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="177"/>
-        <location filename="../enhancementsettingswidget.cpp" line="124"/>
+        <location filename="../enhancementsettingswidget.ui" line="167"/>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>CPU Mode (Very Slow)</source>
         <translation>CPU Modu (Çok Yavaş)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="54"/>
-        <location filename="../enhancementsettingswidget.cpp" line="70"/>
-        <location filename="../enhancementsettingswidget.cpp" line="80"/>
-        <location filename="../enhancementsettingswidget.cpp" line="87"/>
-        <location filename="../enhancementsettingswidget.cpp" line="89"/>
-        <location filename="../enhancementsettingswidget.cpp" line="98"/>
-        <location filename="../enhancementsettingswidget.cpp" line="104"/>
-        <location filename="../enhancementsettingswidget.cpp" line="108"/>
-        <location filename="../enhancementsettingswidget.cpp" line="118"/>
-        <location filename="../enhancementsettingswidget.cpp" line="122"/>
-        <location filename="../enhancementsettingswidget.cpp" line="124"/>
+        <location filename="../enhancementsettingswidget.cpp" line="51"/>
+        <location filename="../enhancementsettingswidget.cpp" line="62"/>
+        <location filename="../enhancementsettingswidget.cpp" line="72"/>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
+        <location filename="../enhancementsettingswidget.cpp" line="81"/>
+        <location filename="../enhancementsettingswidget.cpp" line="90"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
+        <location filename="../enhancementsettingswidget.cpp" line="100"/>
+        <location filename="../enhancementsettingswidget.cpp" line="110"/>
+        <location filename="../enhancementsettingswidget.cpp" line="114"/>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="55"/>
+        <location filename="../enhancementsettingswidget.cpp" line="52"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Çizimi ve gösterimi progressive çizmeye zolra. &lt;br&gt;480interlaced oyunlardaki çizgi çizgi görüntüyü düzeltir. Genellike zarar gelmez.&lt;br&gt; &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="60"/>
+        <location filename="../enhancementsettingswidget.cpp" line="57"/>
         <source>Resolution Scale</source>
         <translation>Çözünürlük Kalitesi</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="61"/>
+        <location filename="../enhancementsettingswidget.cpp" line="58"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>Bunu yükseltmek 3D modellerin çizimini iyileştirir. Sadece donanım çizicilerinde çalışır. &lt;br&gt;Genellike zarar gelmez ve oyunlar çok daha güzel gözükür. Çözünürlük yükseltmek güçlü bir grafik kartı gerektirir.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="65"/>
         <source>Multisample Antialiasing</source>
-        <translation>Kenar Yumuşatma</translation>
+        <translation type="vanished">Kenar Yumuşatma</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="65"/>
         <source>Disabled</source>
-        <translation>Kapalı</translation>
+        <translation type="vanished">Kapalı</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation>3 Boyutlu nesneleri çizmek için kenar yumuşatma kullan. Pürüzlü çıkan model kenarları çözünürlük yükseltmeye göre daha az bir performans kaybıyla iyileştirir ama bazı oyunlarda çizim hataları oluşturabilir. Sadece donanımsal çiziciler deskteler.</translation>
+        <translation type="vanished">3 Boyutlu nesneleri çizmek için kenar yumuşatma kullan. Pürüzlü çıkan model kenarları çözünürlük yükseltmeye göre daha az bir performans kaybıyla iyileştirir ama bazı oyunlarda çizim hataları oluşturabilir. Sadece donanımsal çiziciler deskteler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="71"/>
+        <location filename="../enhancementsettingswidget.cpp" line="63"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>Konsolun renk titreme sistemini kapatıp onun yerine tam çözünürlükte renk hesaplaması yapar. Renk geçişlerini iyileştirsede bazı modellerin doku keskinliğini düşürür. Çoğu oyun ile uyumlu olsa da bazı oyunlarda efektler kırık çıkabilir. Sadece donanımsal çiziciler deskteler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="77"/>
-        <location filename="../enhancementsettingswidget.cpp" line="111"/>
-        <location filename="../enhancementsettingswidget.cpp" line="114"/>
+        <location filename="../enhancementsettingswidget.cpp" line="69"/>
+        <location filename="../enhancementsettingswidget.cpp" line="103"/>
+        <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Checked</source>
         <translation>Seçili</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="78"/>
+        <location filename="../enhancementsettingswidget.cpp" line="70"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>Renk titreme desenini ekran çözünürlüğüne gerer. Renk titreme desenini yüksel çözünürlüklerde daha göze batıcı yapar. &lt;br&gt;Genellike zarar gelmez ama sadece donanımsal çiziciler destekler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="81"/>
+        <location filename="../enhancementsettingswidget.cpp" line="73"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>Konsol PAL modunda çalışırken NTSC 60 Hertz kare zamanlamalarını kullanır. &lt;br&gt;Hızını kare saniye değerine göre ayarlayan oyunlar 17% daha hızlı çalışır. &lt;br&gt;Değişken kare saniye hızı olan oyunlarda oyunun hızını etkileyemeyebilir.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="87"/>
+        <location filename="../enhancementsettingswidget.cpp" line="79"/>
         <source>Force 4:3 For 24-bit Display</source>
         <translation>24 Bit Ekranda 4:3 En Boy Oranını Zorla</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
+        <location filename="../enhancementsettingswidget.cpp" line="80"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>24 Bit içerik gösterilince 4:3 en boy oranına geçer. Genellike video ara sahneler gibi.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="89"/>
+        <location filename="../enhancementsettingswidget.cpp" line="81"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
         <translation>24 Bit Gösterim İçin Renk Yumuşatma</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="90"/>
+        <location filename="../enhancementsettingswidget.cpp" line="82"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
         <translation>Renkler değişince oluşan kare kare görüntüyü yumuşatır genellikle video ara sahnelerde mesela. Sadece donanımsal çiziciler destekler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="93"/>
+        <location filename="../enhancementsettingswidget.cpp" line="85"/>
         <source>Texture Filtering</source>
         <translation>Doku Süzme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="95"/>
+        <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
         <translation>Modellerdeki kare kare olan dokuları doku süzme kullanarak yumuşatır. &lt;br&gt;Yüksek çizim çözünürlüklerinde daha etkilidir. Sadece donanımsal çizicilerde çalışır.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="98"/>
+        <location filename="../enhancementsettingswidget.cpp" line="90"/>
         <source>Widescreen Hack</source>
         <translation>Geniş Ekran Hilesi</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="99"/>
+        <location filename="../enhancementsettingswidget.cpp" line="91"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Model koordinatlarını geniş ekrana uyarlar ve basitinden daha geniş bir görüş alanı verir. &lt;br&gt;2 Boyutlu oyunlar yada önceden hazırlanmış arka plan kullanan oyunlar için bozulma yapabilir. &lt;br&gt;&lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="104"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Readback Tekrarlı Çizim İçin Yazılımsal Çizici Kullan</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="105"/>
+        <location filename="../enhancementsettingswidget.cpp" line="97"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Readback VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="109"/>
+        <location filename="../enhancementsettingswidget.cpp" line="101"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Titreyen modeller ve yamuk çıkan dokuları düzeltir. &lt;br&gt;Sadece donanımsal çizicilerle çalışır &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="112"/>
+        <location filename="../enhancementsettingswidget.cpp" line="104"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>Model es geçme çözünürlüğünü yükselterek modellerdeki yarık sorunlarını çözer. Geometri düzeltme açık olmalıdır.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="115"/>
+        <location filename="../enhancementsettingswidget.cpp" line="107"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>Perspektif odaklı olarak doku koordinatları ve renkleri hesaplanarak eğik ve büzük dokular düzeltilir. Geometri düzeltmesi açık olmalıdır.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="119"/>
+        <location filename="../enhancementsettingswidget.cpp" line="111"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
         <translation>Modellerin üst üste binip yanıp sönme yapmasını PGXP sisteminin koordinat verilerini kullanarak durdurmaya çalışır. Çoğu oyunla tam uyumlu değildir ama bazı oyunlar iyi yararlanır ve bazı oyunlar ise ince ayar ister.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="123"/>
+        <location filename="../enhancementsettingswidget.cpp" line="115"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>PGXP sisteminin hassasiyetini yükseltir. Bazı oyunlar için işe yarar.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="125"/>
+        <location filename="../enhancementsettingswidget.cpp" line="117"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
         <translation>Tüm komutlar için PGXP sistemini kullanır. Bazı oyunlar için gereklidir ve performansı düşürür.</translation>
     </message>
@@ -4382,119 +4383,119 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>8MB RAM Kullan (Yapımcı Konsolu)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="508"/>
+        <location filename="../gamepropertiesdialog.ui" line="511"/>
         <source>GPU Screen Display</source>
         <translation>Görüntü Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="514"/>
+        <location filename="../gamepropertiesdialog.ui" line="517"/>
         <source>Aspect Ratio:</source>
         <translation>En Boy Oranı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="536"/>
+        <location filename="../gamepropertiesdialog.ui" line="539"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="555"/>
+        <location filename="../gamepropertiesdialog.ui" line="558"/>
         <source>Crop Mode:</source>
         <translation>Kırpma Modu:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="565"/>
+        <location filename="../gamepropertiesdialog.ui" line="568"/>
         <source>Downsampling:</source>
         <translation>Downsampling:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="577"/>
+        <location filename="../gamepropertiesdialog.ui" line="580"/>
         <source>Linear Upscaling</source>
         <translation>Linear Büyütme</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="587"/>
+        <location filename="../gamepropertiesdialog.ui" line="590"/>
         <source>Integer Upscaling</source>
         <translation>Katlı Büyütme</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="599"/>
+        <location filename="../gamepropertiesdialog.ui" line="602"/>
         <source>Renderer:</source>
         <translation>Çizici:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="612"/>
+        <location filename="../gamepropertiesdialog.ui" line="615"/>
         <source>GPU Enhancements</source>
         <translation>GPU İyileştirmeleri</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="618"/>
+        <location filename="../gamepropertiesdialog.ui" line="621"/>
         <source>Resolution Scale:</source>
         <translation>Çözünürlük Kalitesi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="628"/>
+        <location filename="../gamepropertiesdialog.ui" line="631"/>
         <source>Multisample Antialiasing:</source>
         <translation>Multisample Kenar Yumuşatma:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="638"/>
+        <location filename="../gamepropertiesdialog.ui" line="641"/>
         <source>Texture Filtering:</source>
         <translation>Doku Filtreleme:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="650"/>
+        <location filename="../gamepropertiesdialog.ui" line="653"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Katlı Dithering:(Dithering desenini çözünürlüğüe oranla)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="660"/>
+        <location filename="../gamepropertiesdialog.ui" line="663"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>24 Bit Görüntüyü 4:3&apos;e zorla (Video ara sahne için geniş ekranı kapa)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="670"/>
+        <location filename="../gamepropertiesdialog.ui" line="673"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>NTSC zamanlamlarını zorla (PAL&apos;da 60hz)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="680"/>
+        <location filename="../gamepropertiesdialog.ui" line="683"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>Kaliteli renk çizimi (24 Bit, Ditheringi kapar)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="690"/>
+        <location filename="../gamepropertiesdialog.ui" line="693"/>
         <source>PGXP Geometry Correction</source>
         <translation>PGXP Geometri Düzeltmesi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="700"/>
+        <location filename="../gamepropertiesdialog.ui" line="703"/>
         <source>Widescreen Hack</source>
         <translation>Geniş Ekran Hilesi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="710"/>
+        <location filename="../gamepropertiesdialog.ui" line="713"/>
         <source>PGXP Preserve Projection Precision</source>
         <translation>PGXP Model Döşeme Kalitesini Koru</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="720"/>
+        <location filename="../gamepropertiesdialog.ui" line="723"/>
         <source>PGXP Depth Buffer</source>
         <translation>PGXP Derinlik Verisi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="268"/>
+        <location filename="../gamepropertiesdialog.ui" line="271"/>
         <source>Other Settings</source>
         <translation>Diğer Ayarlar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="274"/>
+        <location filename="../gamepropertiesdialog.ui" line="277"/>
         <source>CD-ROM Read Speedup:</source>
         <translation>CD-ROM Okuma Hızlandırması:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="282"/>
-        <location filename="../gamepropertiesdialog.ui" line="351"/>
-        <location filename="../gamepropertiesdialog.ui" line="422"/>
+        <location filename="../gamepropertiesdialog.ui" line="285"/>
+        <location filename="../gamepropertiesdialog.ui" line="354"/>
+        <location filename="../gamepropertiesdialog.ui" line="425"/>
         <location filename="../gamepropertiesdialog.cpp" line="134"/>
         <location filename="../gamepropertiesdialog.cpp" line="141"/>
         <location filename="../gamepropertiesdialog.cpp" line="148"/>
@@ -4512,313 +4513,313 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Değiştirilmemiş</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="287"/>
+        <location filename="../gamepropertiesdialog.ui" line="290"/>
         <source>None (Double Speed)</source>
         <translation>Hiç (2X)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="292"/>
+        <location filename="../gamepropertiesdialog.ui" line="295"/>
         <source>2x (Quad Speed)</source>
         <translation>2x (4X)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="297"/>
+        <location filename="../gamepropertiesdialog.ui" line="300"/>
         <source>3x (6x Speed)</source>
         <translation>3x (6x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="302"/>
+        <location filename="../gamepropertiesdialog.ui" line="305"/>
         <source>4x (8x Speed)</source>
         <translation>4x (8x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="307"/>
+        <location filename="../gamepropertiesdialog.ui" line="310"/>
         <source>5x (10x Speed)</source>
         <translation>5x (10x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="312"/>
+        <location filename="../gamepropertiesdialog.ui" line="315"/>
         <source>6x (12x Speed)</source>
         <translation>6x (12x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="317"/>
+        <location filename="../gamepropertiesdialog.ui" line="320"/>
         <source>7x (14x Speed)</source>
         <translation>7x (14x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="322"/>
+        <location filename="../gamepropertiesdialog.ui" line="325"/>
         <source>8x (16x Speed)</source>
         <translation>8x (16x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="327"/>
+        <location filename="../gamepropertiesdialog.ui" line="330"/>
         <source>9x (18x Speed)</source>
         <translation>9x (18x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="332"/>
+        <location filename="../gamepropertiesdialog.ui" line="335"/>
         <source>10x (20x Speed)</source>
         <translation>10x (20x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="340"/>
+        <location filename="../gamepropertiesdialog.ui" line="343"/>
         <source>CD-ROM Seek Speedup:</source>
         <translation>CD-ROM Dosya Arama Hızı Hızlandırma:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="356"/>
+        <location filename="../gamepropertiesdialog.ui" line="359"/>
         <source>Infinite/Instantaneous</source>
         <translation>Hemen/Anında</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="361"/>
+        <location filename="../gamepropertiesdialog.ui" line="364"/>
         <source>None (Normal Speed)</source>
         <translation>Hiç (Normal Hız)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="366"/>
+        <location filename="../gamepropertiesdialog.ui" line="369"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="371"/>
+        <location filename="../gamepropertiesdialog.ui" line="374"/>
         <source>3x</source>
         <translation>3x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="376"/>
+        <location filename="../gamepropertiesdialog.ui" line="379"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="381"/>
+        <location filename="../gamepropertiesdialog.ui" line="384"/>
         <source>5x</source>
         <translation>5x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="386"/>
+        <location filename="../gamepropertiesdialog.ui" line="389"/>
         <source>6x</source>
         <translation>6x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="391"/>
+        <location filename="../gamepropertiesdialog.ui" line="394"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="396"/>
+        <location filename="../gamepropertiesdialog.ui" line="399"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="401"/>
+        <location filename="../gamepropertiesdialog.ui" line="404"/>
         <source>9x</source>
         <translation>9x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="406"/>
+        <location filename="../gamepropertiesdialog.ui" line="409"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="414"/>
+        <location filename="../gamepropertiesdialog.ui" line="417"/>
         <source>Runahead Frames:</source>
         <translation>İleriden Hesaplanacak Kareler:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="427"/>
+        <location filename="../gamepropertiesdialog.ui" line="430"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="432"/>
+        <location filename="../gamepropertiesdialog.ui" line="435"/>
         <source>1 Frame</source>
         <translation>1 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="437"/>
+        <location filename="../gamepropertiesdialog.ui" line="440"/>
         <source>2 Frames</source>
         <translation>2 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="442"/>
+        <location filename="../gamepropertiesdialog.ui" line="445"/>
         <source>3 Frames</source>
         <translation>3 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="447"/>
+        <location filename="../gamepropertiesdialog.ui" line="450"/>
         <source>4 Frames</source>
         <translation>4 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="452"/>
+        <location filename="../gamepropertiesdialog.ui" line="455"/>
         <source>5 Frames</source>
         <translation>5 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="457"/>
+        <location filename="../gamepropertiesdialog.ui" line="460"/>
         <source>6 Frames</source>
         <translation>6 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="462"/>
+        <location filename="../gamepropertiesdialog.ui" line="465"/>
         <source>7 Frames</source>
         <translation>7 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="467"/>
+        <location filename="../gamepropertiesdialog.ui" line="470"/>
         <source>8 Frames</source>
         <translation>8 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="472"/>
+        <location filename="../gamepropertiesdialog.ui" line="475"/>
         <source>9 Frames</source>
         <translation>9 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="477"/>
+        <location filename="../gamepropertiesdialog.ui" line="480"/>
         <source>10 Frames</source>
         <translation>10 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="502"/>
+        <location filename="../gamepropertiesdialog.ui" line="505"/>
         <source>User Settings (Graphics)</source>
         <translation>Kullanıcı Ayarları (Grafikler)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="749"/>
+        <location filename="../gamepropertiesdialog.ui" line="752"/>
         <source>User Settings (Input)</source>
         <translation>Kullanıcı Ayarları (Kontroller)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="755"/>
+        <location filename="../gamepropertiesdialog.ui" line="758"/>
         <source>Controller Settings</source>
         <translation>Kol Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="761"/>
+        <location filename="../gamepropertiesdialog.ui" line="764"/>
         <source>Controller 1 Type:</source>
         <translation>Kol 1 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="771"/>
+        <location filename="../gamepropertiesdialog.ui" line="774"/>
         <source>Controller 2 Type:</source>
         <translation>Kol 2 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="781"/>
+        <location filename="../gamepropertiesdialog.ui" line="784"/>
         <source>Input Profile For Bindings:</source>
         <translation>Tuş Atamaları İçin Profil:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="791"/>
+        <location filename="../gamepropertiesdialog.ui" line="794"/>
         <source>Multitap Mode:</source>
         <translation>Multitap Modu:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="804"/>
+        <location filename="../gamepropertiesdialog.ui" line="807"/>
         <source>Memory Card Settings</source>
         <translation>Hafıza Kartı Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="810"/>
+        <location filename="../gamepropertiesdialog.ui" line="813"/>
         <source>Memory Card 1 Type:</source>
         <translation>Hafıza Kartı 1 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="820"/>
+        <location filename="../gamepropertiesdialog.ui" line="823"/>
         <source>Memory Card 1 Shared Path:</source>
         <translation>Hafıza Kartı 1 Paylaşılan Dizin:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="832"/>
-        <location filename="../gamepropertiesdialog.ui" line="863"/>
+        <location filename="../gamepropertiesdialog.ui" line="835"/>
+        <location filename="../gamepropertiesdialog.ui" line="866"/>
         <source>Browse...</source>
         <translation>Ara...</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="841"/>
+        <location filename="../gamepropertiesdialog.ui" line="844"/>
         <source>Memory Card 2 Type:</source>
         <translation>Hafıza Kartı 2 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="851"/>
+        <location filename="../gamepropertiesdialog.ui" line="854"/>
         <source>Memory Card 2 Shared Path:</source>
         <translation>Hafıza 2 Kartı Paylaşılan Dizin:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="889"/>
+        <location filename="../gamepropertiesdialog.ui" line="892"/>
         <source>Compatibility Settings</source>
         <translation>Uyumluluk Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="895"/>
+        <location filename="../gamepropertiesdialog.ui" line="898"/>
         <source>Traits</source>
         <translation>Özellikler</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="902"/>
+        <location filename="../gamepropertiesdialog.ui" line="905"/>
         <source>Overrides</source>
         <translation>Üstün Komutlar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="908"/>
+        <location filename="../gamepropertiesdialog.ui" line="911"/>
         <source>Display Active Offset:</source>
         <translation>Display Active Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="945"/>
+        <location filename="../gamepropertiesdialog.ui" line="948"/>
         <source>Display Line Offset:</source>
         <translation>Display Line Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="982"/>
+        <location filename="../gamepropertiesdialog.ui" line="985"/>
         <source>DMA Max Slice Ticks:</source>
         <translation>DMA Max Slice Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="999"/>
+        <location filename="../gamepropertiesdialog.ui" line="1002"/>
         <source>DMA Halt Ticks:</source>
         <translation>DMA Halt Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1016"/>
+        <location filename="../gamepropertiesdialog.ui" line="1019"/>
         <source>GPU FIFO Size:</source>
         <translation>GPU FIFO Size:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1030"/>
+        <location filename="../gamepropertiesdialog.ui" line="1033"/>
         <source>GPU Max Run Ahead:</source>
         <translation>GPU En Fazla İleri Hesaplama:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1047"/>
+        <location filename="../gamepropertiesdialog.ui" line="1050"/>
         <source>PGXP Geometry Tolerance:</source>
         <translation>PGXP Geometri Toleransı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1070"/>
+        <location filename="../gamepropertiesdialog.ui" line="1073"/>
         <source>PGXP Depth Threshold:</source>
         <translation>PGXP Derinlik Verisi Sınırı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1119"/>
+        <location filename="../gamepropertiesdialog.ui" line="1122"/>
         <source>Compute Hashes</source>
         <translation>Hash Hesapla</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1126"/>
+        <location filename="../gamepropertiesdialog.ui" line="1129"/>
         <source>Verify Dump</source>
         <translation>Dosyanın Doğruluğunu Doğrula</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1133"/>
+        <location filename="../gamepropertiesdialog.ui" line="1136"/>
         <source>Export Compatibility Info</source>
         <translation>Uyumluluk Bilgisini Dışarı Aktar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1140"/>
+        <location filename="../gamepropertiesdialog.ui" line="1143"/>
         <source>Close</source>
         <translation>Kapat</translation>
     </message>
@@ -7064,7 +7065,7 @@ Devam etmeye emin misiniz?</translation>
         <translation>Exclusive Tam Ekran Ele Geçirilemedi.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="521"/>
+        <location filename="../qthostinterface.cpp" line="539"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>Exlusive Tam Ekran Kaybedildi.</translation>
     </message>
@@ -7290,32 +7291,32 @@ Devam etmeye emin misiniz?</translation>
         <translation>Çizici %s oluşturulamadı Yazılımsal çiziciye geçiliyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1122"/>
+        <location filename="../../core/system.cpp" line="1120"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>UYARI:İşlemci saati (%u%%) durum kaydınkinden farklı (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1226"/>
+        <location filename="../../core/system.cpp" line="1224"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>Durum kaydındaki CD dosyası açılamadı &apos;%s&apos;: %s. Varolan dosya kullanılıyor &apos;%s&apos;, Bu dengesizliğe sebep olabilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2047"/>
+        <location filename="../../core/system.cpp" line="2045"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>CD dosyası açılamadı &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2057"/>
+        <location filename="../../core/system.cpp" line="2055"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>CD takıldı &apos;%s&apos; (%s).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2194"/>
+        <location filename="../../core/system.cpp" line="2192"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Devam CD&apos;sine geçilemedi %u şuradaki &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2201"/>
+        <location filename="../../core/system.cpp" line="2199"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Devam CD&apos;sine geçildi %s (%u) şuradaki &apos;%s&apos;.</translation>
     </message>
@@ -7332,7 +7333,7 @@ Devam etmeye emin misiniz?</translation>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1099"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3371"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3937"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3939"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Görsel efekt sırası yüklenemedi.</translation>
     </message>
@@ -7570,72 +7571,72 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation>Hile listesi silindi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3897"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3899"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Hile &apos;%s&apos; etkinleştirildi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3901"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3903"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Hile &apos;%s&apos; kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3917"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3919"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Şu hile uygulandı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3921"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3923"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Hile &apos;%s&apos; zaten uygulandı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3934"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3936"/>
         <source>Post-processing is now enabled.</source>
         <translation>Görsel efektler şimdi açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3941"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3943"/>
         <source>Post-processing is now disabled.</source>
         <translation>Görsel efektler şimdi kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3952"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3954"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Görsel efektler sırası yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3954"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3956"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Görsel efekt shaderları tekrar yüklendi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3991"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3993"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
         <translation>Geniş ekran hilesi şimdi açıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3998"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4000"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
         <translation>Geniş ekran hilesi şimdi kapatıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4013"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4015"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Her iki porttada hafıza kartı var.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4019"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4021"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 2 dolu ve Port 1 Boş.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4026"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4028"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 1 dolu ve Port 2 Boş.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4033"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4035"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation></translation>
     </message>
@@ -7915,7 +7916,7 @@ Açılamayan URL: %1</translation>
 <context>
     <name>QtHostInterface</name>
     <message>
-        <location filename="../qthostinterface.cpp" line="411"/>
+        <location filename="../qthostinterface.cpp" line="429"/>
         <source>No resume save state found.</source>
         <translation>Devam Durum Kayıdı Bulunamadı.</translation>
     </message>
@@ -7924,89 +7925,89 @@ Açılamayan URL: %1</translation>
         <translation type="vanished">Dosyadan...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="998"/>
+        <location filename="../qthostinterface.cpp" line="1016"/>
         <source>Load From File...</source>
         <translation>Dosyadan Yükle...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1000"/>
-        <location filename="../qthostinterface.cpp" line="1042"/>
+        <location filename="../qthostinterface.cpp" line="1018"/>
+        <location filename="../qthostinterface.cpp" line="1060"/>
         <source>Select Save State File</source>
         <translation>Durum Kaydı Dosyasını Seç</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1000"/>
-        <location filename="../qthostinterface.cpp" line="1042"/>
+        <location filename="../qthostinterface.cpp" line="1018"/>
+        <location filename="../qthostinterface.cpp" line="1060"/>
         <source>Save States (*.sav)</source>
         <translation>Durum Kayıtları (*.sav)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1037"/>
+        <location filename="../qthostinterface.cpp" line="1055"/>
         <source>Save To File...</source>
         <translation>Dosyaya Kaydet...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1014"/>
-        <location filename="../qthostinterface.cpp" line="1053"/>
-        <location filename="../qthostinterface.cpp" line="1095"/>
+        <location filename="../qthostinterface.cpp" line="1032"/>
+        <location filename="../qthostinterface.cpp" line="1071"/>
+        <location filename="../qthostinterface.cpp" line="1113"/>
         <source>Game Save %1 (%2)</source>
         <translation>Oyun Kayıdı %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1006"/>
+        <location filename="../qthostinterface.cpp" line="1024"/>
         <source>Undo Load State</source>
         <translation>Durum Kaydı Geri Alma Durum Kaydı</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1014"/>
-        <location filename="../qthostinterface.cpp" line="1053"/>
+        <location filename="../qthostinterface.cpp" line="1032"/>
+        <location filename="../qthostinterface.cpp" line="1071"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Oyun Kayıdı %1 (Boş)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1020"/>
-        <location filename="../qthostinterface.cpp" line="1059"/>
+        <location filename="../qthostinterface.cpp" line="1038"/>
+        <location filename="../qthostinterface.cpp" line="1077"/>
         <source>Global Save %1 (%2)</source>
         <translation>Evrensel Kayıt %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1020"/>
-        <location filename="../qthostinterface.cpp" line="1059"/>
+        <location filename="../qthostinterface.cpp" line="1038"/>
+        <location filename="../qthostinterface.cpp" line="1077"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Evrensel Kayıt %1 (Boş)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1064"/>
+        <location filename="../qthostinterface.cpp" line="1082"/>
         <source>Resume</source>
         <translation>Devam</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1067"/>
+        <location filename="../qthostinterface.cpp" line="1085"/>
         <source>Load State</source>
         <translation>Durum Kayıdı Yükle</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1088"/>
+        <location filename="../qthostinterface.cpp" line="1106"/>
         <source>Resume (%1)</source>
         <translation>Devam (%1)</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1103"/>
+        <location filename="../qthostinterface.cpp" line="1121"/>
         <source>Edit Memory Cards...</source>
         <translation>Hafıza Kartlarını Düzenle...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1151"/>
+        <location filename="../qthostinterface.cpp" line="1169"/>
         <source>Delete Save States...</source>
         <translation>Durum Kayıtlarını Sil...</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1157"/>
+        <location filename="../qthostinterface.cpp" line="1175"/>
         <source>Confirm Save State Deletion</source>
         <translation>Durum Kayıdı Silinişini Onayla</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1158"/>
+        <location filename="../qthostinterface.cpp" line="1176"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -8015,17 +8016,17 @@ The saves will not be recoverable.</source>
 Durum kayıtları kurtarılamayacak.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1195"/>
+        <location filename="../qthostinterface.cpp" line="1213"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Açık Hileler</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1197"/>
+        <location filename="../qthostinterface.cpp" line="1215"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Hileleri Uygula</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1519"/>
+        <location filename="../qthostinterface.cpp" line="1538"/>
         <source>Game ID: %1
 Game Title: %2
 Game Developer: %3
@@ -8042,19 +8043,19 @@ Başarımlar: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthostinterface.cpp" line="1529"/>
+        <location filename="../qthostinterface.cpp" line="1548"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n Puanlar</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1535"/>
+        <location filename="../qthostinterface.cpp" line="1554"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Durum Raporlama (Rich Presence) kapalı ya da desteklenmiyor.</translation>
     </message>
     <message>
-        <location filename="../qthostinterface.cpp" line="1539"/>
+        <location filename="../qthostinterface.cpp" line="1558"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Oyun açık değil ya da RetroAchievements müsait değil.</translation>
     </message>
@@ -8311,47 +8312,47 @@ Başarımlar: %5 (%6)
         <translation>Şu BIOS yüklenemedi. %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1184"/>
+        <location filename="../../core/system.cpp" line="1182"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Durum kayıdı uyumsuz: minimum sürüm %u ama durum kayıdı %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1193"/>
+        <location filename="../../core/system.cpp" line="1191"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Durum kayıdı uyumuz. maksimum sürüm %u ama durum kayıdı %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1234"/>
+        <location filename="../../core/system.cpp" line="1232"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Şu CD dosyası açılamadı &apos;%s&apos; şu durum kayıdı tarafından kullanılan:: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1252"/>
+        <location filename="../../core/system.cpp" line="1250"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Devam CD&apos;sine ulaşılamadı %u Şu CD&apos;nin &apos;%s&apos; Şu durum kayıdı tarafından kullanılan: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1857"/>
+        <location filename="../../core/system.cpp" line="1855"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>Oyunun kendi hafıza kartı şu slot için kullanılamıyor %u çünkü çalışan oyunun kodu yok. Tüm oyunlar için kullanılan kart kullanıyor şimdi o yüzden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1874"/>
+        <location filename="../../core/system.cpp" line="1872"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>Oyun bazlı hafıza kartınız şu slot için kullanılamıyor %u çünkü oyunun ismi yok. Tüm oyunlar için kullanılan kart kullanılıyor o yüzden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1894"/>
+        <location filename="../../core/system.cpp" line="1892"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>Şu slottaki oyun başlı hafıza kartı kullanılamıyor %u Çünkü çalışmakta olan oyunun bir dizini yok. Oyunlar arası paylaşılan kart kullanılıyor şimdi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2063"/>
+        <location filename="../../core/system.cpp" line="2061"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Oyun değişti, tüm hafıza kartları tekrardan yükleniyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2119"/>
+        <location filename="../../core/system.cpp" line="2117"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8372,7 +8373,7 @@ SBI dosyası eklemek için yönergeleri README dosyasından okuyunuz.
 Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2130"/>
+        <location filename="../../core/system.cpp" line="2128"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
