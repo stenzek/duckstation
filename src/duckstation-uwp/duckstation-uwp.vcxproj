@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="resources\fa-solid-900.ttf" />
+    <Font Include="resources\roboto-regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="database\chtdb.txt" />
