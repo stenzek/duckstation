@@ -374,6 +374,10 @@
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SLUS-01256" compatibility="5" region="NTSC-U" title="Arc the Lad Collection - The Making of Arc the Lad (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SLPS-01267" compatibility="5" region="NTSC-J" title="Arcade Gears - ImageFight &amp; XMultiply (Japan)">
     <compatibility>No Issues</compatibility>
   </entry>
@@ -729,6 +733,10 @@
   <entry code="SLUS-01324" compatibility="5" region="NTSC-U" title="Breath of Fire IV (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SLUS-00687" compatibility="5" region="NTSC-U" title="Brigandine - The Legend of Forsena (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SLUS-00110" compatibility="5" region="NTSC-U" title="Bubsy 3D - Furbitten Planet (USA)">
     <compatibility>No Issues</compatibility>
@@ -1420,6 +1428,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
+  <entry code="SLUSP01206" compatibility="5" region="NTSC-U" title="Dragon Warrior VII (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SLPS-00250" compatibility="5" region="NTSC-J" title="Drift King Shutokou Battle - Tsuchiya Keiichi &amp; Bandou Masaaki (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
@@ -1568,6 +1580,10 @@ Tetris with Card Captor Sakura (Japan)
     <version-tested>0.1-986-gfc911de1</version-tested>
     <upscaling-issues>Rendering is broken with any upscaling.</upscaling-issues>
   </entry>
+  <entry code="SLUS-00879" compatibility="5" region="NTSC-U" title="Final Fantasy Anthology - Final Fantasy V (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SLUS-00900" compatibility="5" region="NTSC-U" title="Final Fantasy Anthology - Final Fantasy VI (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1580-g136a9d60</version-tested>
@@ -1635,6 +1651,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01297" compatibility="5" region="NTSC-U" title="Final Fantasy IX (USA) (Disc 4)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
+  </entry>
+  <entry code="SLUS-01541" compatibility="5" region="NTSC-U" title="Final Fantasy Origins (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SCUS-94221" compatibility="5" region="NTSC-U" title="Final Fantasy Tactics (USA)">
     <compatibility>No Issues</compatibility>
@@ -1995,6 +2015,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2499-g770dd5a6</version-tested>
   </entry>
+  <entry code="SLUS-01375" compatibility="5" region="NTSC-U" title="Hoshigami - Ruining Blue Earth (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SCUS-94476" compatibility="5" region="NTSC-U" title="Hot Shots Golf 2 (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1641-gb2057ac6</version-tested>
@@ -2179,6 +2203,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-00677" compatibility="5" region="NTSC-U" title="Kagero - Deception II (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
+  </entry>
+  <entry code="SLUS-00631" compatibility="5" region="NTSC-U" title="Kartia - The Word of Fate (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SLPS-01010" compatibility="5" region="NTSC-J" title="Kaze no Klonoa - Door to Phantomile">
     <compatibility>No Issues</compatibility>
@@ -2408,6 +2436,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
   </entry>
+  <entry code="SLUS-00921" compatibility="5" region="NTSC-U" title="Lunar - Silver Star Story Complete (USA) (The Making of)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SLPS-02081" compatibility="5" region="NTSC-J" title="Lunar 2 - Eternal Blue (Japan) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
@@ -2415,6 +2447,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01071" compatibility="5" region="NTSC-U" title="Lunar 2 - Eternal Blue Complete (USA) (Disc 1)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1443-g7ab521f7</version-tested>
+  </entry>
+  <entry code="SLUS-01257" compatibility="5" region="NTSC-U" title="Lunar 2 - Eternal Blue Complete (USA) (The Making of)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SLPS-00416" compatibility="5" region="NTSC-J" title="Lupupu Cube - Lup Salad (Japan)">
     <compatibility>No Issues</compatibility>
@@ -4648,6 +4684,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1400-gb527118c</version-tested>
   </entry>
+  <entry code="SCUS-94484" compatibility="5" region="NTSC-U" title="Wild Arms 2 (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+  </entry>
   <entry code="SLUS-00201" compatibility="5" region="NTSC-U" title="Williams Arcade's Greatest Hits (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
@@ -4792,6 +4832,10 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLUS-01411" compatibility="5" region="NTSC-U" title="Yu-Gi-Oh! Forbidden Memories">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-941-g2e64f77</version-tested>
+  </entry>
+  <entry code="SLPS-03177" compatibility="5" region="NTSC-J" title="Yutona Eiyuu Senki - TearRingSaga (Japan)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
   </entry>
   <entry code="SLPS-03354" compatibility="5" region="NTSC-J" title="Zanac x Zanac (Japan)">
     <compatibility>No Issues</compatibility>
