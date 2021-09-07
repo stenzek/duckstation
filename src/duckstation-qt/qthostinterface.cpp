@@ -1279,6 +1279,7 @@ void QtHostInterface::setCheatEnabled(quint32 index, bool enabled)
   }
 
   SetCheatCodeState(index, enabled, g_settings.auto_load_cheats);
+  emit cheatEnabled(index, enabled);
 }
 
 void QtHostInterface::applyCheat(quint32 index)

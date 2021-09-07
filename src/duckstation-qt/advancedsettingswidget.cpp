@@ -5,8 +5,8 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                  std::string section, std::string key, bool default_value)
+static QCheckBox* addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                        std::string section, std::string key, bool default_value)
 {
   const int row = table->rowCount();
 
@@ -17,21 +17,25 @@ static void addBooleanTweakOption(QtHostInterface* host_interface, QTableWidget*
   table->setItem(row, 0, name_item);
 
   QCheckBox* cb = new QCheckBox(table);
-  SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  if (!section.empty() || !key.empty())
+    SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setBooleanTweakOption(QTableWidget* table, int row, bool value)
+static QCheckBox* setBooleanTweakOption(QTableWidget* table, int row, bool value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QCheckBox* cb = qobject_cast<QCheckBox*>(widget);
   Assert(cb);
   cb->setChecked(value);
+  return cb;
 }
 
-static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                   std::string section, std::string key, int min_value, int max_value,
-                                   int default_value)
+static QSpinBox* addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                        std::string section, std::string key, int min_value, int max_value,
+                                        int default_value)
 {
   const int row = table->rowCount();
 
@@ -44,21 +48,25 @@ static void addIntRangeTweakOption(QtHostInterface* host_interface, QTableWidget
   QSpinBox* cb = new QSpinBox(table);
   cb->setMinimum(min_value);
   cb->setMaximum(max_value);
-  SettingWidgetBinder::BindWidgetToIntSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+  if (!section.empty() || !key.empty())
+    SettingWidgetBinder::BindWidgetToIntSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setIntRangeTweakOption(QTableWidget* table, int row, int value)
+static QSpinBox* setIntRangeTweakOption(QTableWidget* table, int row, int value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QSpinBox* cb = qobject_cast<QSpinBox*>(widget);
   Assert(cb);
   cb->setValue(value);
+  return cb;
 }
 
-static void addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                     std::string section, std::string key, float min_value, float max_value,
-                                     float step_value, float default_value)
+static QDoubleSpinBox* addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                                std::string section, std::string key, float min_value, float max_value,
+                                                float step_value, float default_value)
 {
   const int row = table->rowCount();
 
@@ -72,27 +80,34 @@ static void addFloatRangeTweakOption(QtHostInterface* host_interface, QTableWidg
   cb->setMinimum(min_value);
   cb->setMaximum(max_value);
   cb->setSingleStep(step_value);
-  SettingWidgetBinder::BindWidgetToFloatSetting(host_interface, cb, std::move(section), std::move(key), default_value);
+
+  if (!section.empty() || !key.empty())
+  {
+    SettingWidgetBinder::BindWidgetToFloatSetting(host_interface, cb, std::move(section), std::move(key),
+                                                  default_value);
+  }
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
-static void setFloatRangeTweakOption(QTableWidget* table, int row, float value)
+static QDoubleSpinBox* setFloatRangeTweakOption(QTableWidget* table, int row, float value)
 {
   QWidget* widget = table->cellWidget(row, 1);
   QDoubleSpinBox* cb = qobject_cast<QDoubleSpinBox*>(widget);
   Assert(cb);
   cb->setValue(value);
+  return cb;
 }
 
 template<typename T>
-static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
-                                 std::string section, std::string key, std::optional<T> (*parse_callback)(const char*),
-                                 const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
-                                 const char* tr_context, u32 num_values, T default_value)
+static QComboBox* addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* table, QString name,
+                                       std::string section, std::string key,
+                                       std::optional<T> (*parse_callback)(const char*),
+                                       const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
+                                       const char* tr_context, u32 num_values, T default_value)
 {
   const int row = table->rowCount();
-  const std::string current_value =
-    host_interface->GetStringSettingValue(section.c_str(), key.c_str(), get_value_callback(default_value));
 
   table->insertRow(row);
 
@@ -104,9 +119,14 @@ static void addChoiceTweakOption(QtHostInterface* host_interface, QTableWidget* 
   for (u32 i = 0; i < num_values; i++)
     cb->addItem(qApp->translate(tr_context, get_display_callback(static_cast<T>(i))));
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
-                                               get_value_callback, default_value);
+  if (!section.empty() || !key.empty())
+  {
+    SettingWidgetBinder::BindWidgetToEnumSetting(host_interface, cb, std::move(section), std::move(key), parse_callback,
+                                                 get_value_callback, default_value);
+  }
+
   table->setCellWidget(row, 1, cb);
+  return cb;
 }
 
 template<typename T>
@@ -116,6 +136,36 @@ static void setChoiceTweakOption(QTableWidget* table, int row, T value)
   QComboBox* cb = qobject_cast<QComboBox*>(widget);
   Assert(cb);
   cb->setCurrentIndex(static_cast<int>(value));
+}
+
+static void addMSAATweakOption(QtHostInterface* host_interface, QTableWidget* table, const QString& name)
+{
+  const int row = table->rowCount();
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QComboBox* msaa = new QComboBox(table);
+  QtUtils::FillComboBoxWithMSAAModes(msaa);
+  const QVariant current_msaa_mode(QtUtils::GetMSAAModeValue(
+    static_cast<uint>(QtHostInterface::GetInstance()->GetIntSettingValue("GPU", "Multisamples", 1)),
+    QtHostInterface::GetInstance()->GetBoolSettingValue("GPU", "PerSampleShading", false)));
+  const int current_msaa_index = msaa->findData(current_msaa_mode);
+  if (current_msaa_index >= 0)
+    msaa->setCurrentIndex(current_msaa_index);
+  msaa->connect(msaa, QOverload<int>::of(&QComboBox::currentIndexChanged), [msaa](int index) {
+    uint multisamples;
+    bool ssaa;
+    QtUtils::DecodeMSAAModeValue(msaa->itemData(index), &multisamples, &ssaa);
+    QtHostInterface::GetInstance()->SetIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
+    QtHostInterface::GetInstance()->SetBoolSettingValue("GPU", "PerSampleShading", ssaa);
+    QtHostInterface::GetInstance()->applySettings(false);
+  });
+
+  table->setCellWidget(row, 1, msaa);
 }
 
 AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
@@ -151,6 +201,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                         "ShowEnhancements", false);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
                          0);
+
+  addMSAATweakOption(host_interface, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache",
                         false);
@@ -223,29 +275,36 @@ AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
-  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 4, false);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 5, -1.0f);
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 7, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 8, true);
-  setChoiceTweakOption(m_ui.tweakOptionTable, 9, Settings::DEFAULT_CPU_FASTMEM_MODE);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 10, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 15, Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 16, Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 17, static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 18, static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 19, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE));
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD));
-  setBooleanTweakOption(m_ui.tweakOptionTable, 21, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 22, true);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 23, false);
-  setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);
+  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);    // Disable all enhancements
+  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);     // Show status indicators
+  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);    // Show enhancement settings
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);       // Display FPS limit
+  setChoiceTweakOption(m_ui.tweakOptionTable, 4, 0);         // Multisample antialiasing
+  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);    // PGXP vertex cache
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, -1.0f); // PGXP geometry tolerance
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, 7,
+                           Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);                // PGXP depth clear threshold
+  setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);                              // Recompiler memory exceptions
+  setBooleanTweakOption(m_ui.tweakOptionTable, 9, true);                               // Recompiler block linking
+  setChoiceTweakOption(m_ui.tweakOptionTable, 10, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
+  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);                             // Recompiler Icache
+  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);                             // VRAM write texture replacement
+  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);                             // Preload texture replacements
+  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);                             // Dump replacable VRAM writes
+  setBooleanTweakOption(m_ui.tweakOptionTable, 15, false); // Set dumped VRAM write alpha channel
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 16,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 17,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 18,
+                         static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 19,
+                         static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
+  setIntRangeTweakOption(m_ui.tweakOptionTable, 21,
+                         static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
+  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);                       // Use debug host GPU device
+  setBooleanTweakOption(m_ui.tweakOptionTable, 23, true);                        // Increase timer resolution
+  setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);                       // Allow booting without SBI file
+  setBooleanTweakOption(m_ui.tweakOptionTable, 25, false);                       // Create save state backups
 }

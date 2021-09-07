@@ -47,9 +47,6 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
   connect(m_ui.pgxpEnable, &QCheckBox::stateChanged, this, &EnhancementSettingsWidget::updatePGXPSettingsEnabled);
   updatePGXPSettingsEnabled();
 
-  connect(m_ui.msaaMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &EnhancementSettingsWidget::msaaModeChanged);
-
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
     tr(
@@ -61,11 +58,6 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_inter
     tr("Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies "
        "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
        "higher resolutions. Higher resolutions require a more powerful GPU."));
-  dialog->registerWidgetHelp(
-    m_ui.msaaMode, tr("Multisample Antialiasing"), tr("Disabled"),
-    tr("Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower "
-       "cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering "
-       "errors in some games. Only applies to the hardware backends."));
   dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering (24-bit, disables dithering)"), tr("Unchecked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
@@ -139,14 +131,6 @@ void EnhancementSettingsWidget::updateScaledDitheringEnabled()
 void EnhancementSettingsWidget::setupAdditionalUi()
 {
   QtUtils::FillComboBoxWithResolutionScales(m_ui.resolutionScale);
-  QtUtils::FillComboBoxWithMSAAModes(m_ui.msaaMode);
-
-  const QVariant current_msaa_mode(
-    QtUtils::GetMSAAModeValue(static_cast<uint>(m_host_interface->GetIntSettingValue("GPU", "Multisamples", 1)),
-                              m_host_interface->GetBoolSettingValue("GPU", "PerSampleShading", false)));
-  const int current_msaa_index = m_ui.msaaMode->findData(current_msaa_mode);
-  if (current_msaa_index >= 0)
-    m_ui.msaaMode->setCurrentIndex(current_msaa_index);
 
   for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
   {
@@ -163,14 +147,4 @@ void EnhancementSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDepthBuffer->setEnabled(enabled);
   m_ui.pgxpPreserveProjPrecision->setEnabled(enabled);
   m_ui.pgxpCPU->setEnabled(enabled);
-}
-
-void EnhancementSettingsWidget::msaaModeChanged(int index)
-{
-  uint multisamples;
-  bool ssaa;
-  QtUtils::DecodeMSAAModeValue(m_ui.msaaMode->itemData(index), &multisamples, &ssaa);
-  m_host_interface->SetIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
-  m_host_interface->SetBoolSettingValue("GPU", "PerSampleShading", ssaa);
-  m_host_interface->applySettings(false);
 }

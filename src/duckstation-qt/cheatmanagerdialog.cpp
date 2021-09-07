@@ -179,6 +179,8 @@ void CheatManagerDialog::connectUi()
   connect(m_ui.watchTable, &QTableWidget::currentItemChanged, this, &CheatManagerDialog::watchCurrentItemChanged);
   connect(m_ui.scanTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::scanItemChanged);
   connect(m_ui.watchTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::watchItemChanged);
+
+  connect(QtHostInterface::GetInstance(), &QtHostInterface::cheatEnabled, this, &CheatManagerDialog::setCheatCheckState);
 }
 
 void CheatManagerDialog::showEvent(QShowEvent* event)
@@ -488,17 +490,22 @@ void CheatManagerDialog::activateCheat(u32 index)
   }
 
   const bool new_enabled = !cc.enabled;
-  QTreeWidgetItem* item = getItemForCheatIndex(index);
-  if (item)
-  {
-    QSignalBlocker sb(m_ui.cheatList);
-    item->setCheckState(0, new_enabled ? Qt::Checked : Qt::Unchecked);
-  }
+  setCheatCheckState(index, new_enabled);
 
   QtHostInterface::GetInstance()->executeOnEmulationThread([index, new_enabled]() {
     System::GetCheatList()->SetCodeEnabled(index, new_enabled);
     QtHostInterface::GetInstance()->SaveCheatList();
   });
+}
+
+void CheatManagerDialog::setCheatCheckState(u32 index, bool checked)
+{
+  QTreeWidgetItem* item = getItemForCheatIndex(index);
+  if (item)
+  {
+    QSignalBlocker sb(m_ui.cheatList);
+    item->setCheckState(0, checked ? Qt::Checked : Qt::Unchecked);
+  }
 }
 
 void CheatManagerDialog::newCategoryClicked()

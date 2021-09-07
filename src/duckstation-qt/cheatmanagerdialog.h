@@ -31,6 +31,7 @@ private Q_SLOTS:
   void cheatListItemActivated(QTreeWidgetItem* item);
   void cheatListItemChanged(QTreeWidgetItem* item, int column);
   void activateCheat(u32 index);
+  void setCheatCheckState(u32 index, bool checked);
   void newCategoryClicked();
   void addCodeClicked();
   void editCodeClicked();

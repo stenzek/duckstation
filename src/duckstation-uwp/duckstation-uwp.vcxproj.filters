@@ -287,6 +287,9 @@
     <Font Include="resources\fa-solid-900.ttf">
       <Filter>Data\resources</Filter>
     </Font>
+    <Font Include="resources\roboto-regular.ttf">
+      <Filter>Data\resources</Filter>
+    </Font>
   </ItemGroup>
   <ItemGroup>
     <Text Include="database\gamecontrollerdb.txt">

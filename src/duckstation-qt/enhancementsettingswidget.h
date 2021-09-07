@@ -18,7 +18,6 @@ public:
 private Q_SLOTS:
   void updateScaledDitheringEnabled();
   void updatePGXPSettingsEnabled();
-  void msaaModeChanged(int index);
 
 private:
   void setupAdditionalUi();
