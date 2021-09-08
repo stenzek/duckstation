@@ -39,6 +39,16 @@ bool SDLControllerInterface::Initialize(CommonHostInterface* host_interface)
     }
   }
 
+  const bool ds4_rumble_enabled = host_interface->GetBoolSettingValue("Main", "ControllerEnhancedMode", false);
+  if (ds4_rumble_enabled)
+  {
+    Log_InfoPrintf("Enabling PS4/PS5 enhanced mode.");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4, "true");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "true");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5, "true");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "true");
+  }
+
   if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
   {
     Log_ErrorPrintf("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");

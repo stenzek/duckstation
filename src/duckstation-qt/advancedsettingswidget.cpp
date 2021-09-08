@@ -199,6 +199,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(QtHostInterface* host_interface, 
                         "ShowStatusIndicators", true);
   addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Show Enhancement Settings"), "Display",
                         "ShowEnhancements", false);
+  addBooleanTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Controller Enhanced Mode (PS4/PS5)"), "Main",
+                        "ControllerEnhancedMode", false);
   addIntRangeTweakOption(m_host_interface, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000,
                          0);
 
@@ -275,36 +277,40 @@ AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
-  setBooleanTweakOption(m_ui.tweakOptionTable, 0, false);    // Disable all enhancements
-  setBooleanTweakOption(m_ui.tweakOptionTable, 1, true);     // Show status indicators
-  setBooleanTweakOption(m_ui.tweakOptionTable, 2, false);    // Show enhancement settings
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 3, 0);       // Display FPS limit
-  setChoiceTweakOption(m_ui.tweakOptionTable, 4, 0);         // Multisample antialiasing
-  setBooleanTweakOption(m_ui.tweakOptionTable, 5, false);    // PGXP vertex cache
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 6, -1.0f); // PGXP geometry tolerance
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, 7,
-                           Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);                // PGXP depth clear threshold
-  setBooleanTweakOption(m_ui.tweakOptionTable, 8, false);                              // Recompiler memory exceptions
-  setBooleanTweakOption(m_ui.tweakOptionTable, 9, true);                               // Recompiler block linking
-  setChoiceTweakOption(m_ui.tweakOptionTable, 10, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
-  setBooleanTweakOption(m_ui.tweakOptionTable, 11, false);                             // Recompiler Icache
-  setBooleanTweakOption(m_ui.tweakOptionTable, 12, false);                             // VRAM write texture replacement
-  setBooleanTweakOption(m_ui.tweakOptionTable, 13, false);                             // Preload texture replacements
-  setBooleanTweakOption(m_ui.tweakOptionTable, 14, false);                             // Dump replacable VRAM writes
-  setBooleanTweakOption(m_ui.tweakOptionTable, 15, false); // Set dumped VRAM write alpha channel
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 16,
+  int i = 0;
+
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show enhancement settings
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Controller enhanced mode (PS4/PS5)
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
+  setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, i++, -1.0f); // PGXP geometry tolerance
+  setFloatRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);                 // PGXP depth clear threshold
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Recompiler memory exceptions
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                              // Recompiler block linking
+  setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Recompiler Icache
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Set dumped VRAM write alpha channel
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 17,
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 18,
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                          static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 19,
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                          static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 20, static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
-  setIntRangeTweakOption(m_ui.tweakOptionTable, 21,
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                         static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
+  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                          static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
-  setBooleanTweakOption(m_ui.tweakOptionTable, 22, false);                       // Use debug host GPU device
-  setBooleanTweakOption(m_ui.tweakOptionTable, 23, true);                        // Increase timer resolution
-  setBooleanTweakOption(m_ui.tweakOptionTable, 24, false);                       // Allow booting without SBI file
-  setBooleanTweakOption(m_ui.tweakOptionTable, 25, false);                       // Create save state backups
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Use debug host GPU device
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase timer resolution
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Allow booting without SBI file
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Create save state backups
 }
