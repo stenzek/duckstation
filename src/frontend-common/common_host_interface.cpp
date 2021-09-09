@@ -3169,6 +3169,7 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
 
   si.SetStringValue("Main", "ControllerBackend",
                     ControllerInterface::GetBackendName(ControllerInterface::GetDefaultBackend()));
+  si.SetBoolValue("Main", "ControllerEnhancedMode", false);
 
   si.SetBoolValue("Display", "InternalResolutionScreenshots", false);
 

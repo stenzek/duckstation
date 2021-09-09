@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,14 +78,16 @@ typedef enum
  * Accelerometer sensor
  *
  * The accelerometer returns the current acceleration in SI meters per
- * second squared. This includes gravity, so a device at rest will have
- * an acceleration of SDL_STANDARD_GRAVITY straight down.
+ * second squared. This measurement includes the force of gravity, so
+ * a device at rest will have an value of SDL_STANDARD_GRAVITY away
+ * from the center of the earth.
  *
  * values[0]: Acceleration on the x axis
  * values[1]: Acceleration on the y axis
  * values[2]: Acceleration on the z axis
  *
- * For phones held in portrait mode, the axes are defined as follows:
+ * For phones held in portrait mode and game controllers held in front of you,
+ * the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
@@ -105,16 +107,17 @@ typedef enum
  * see positive rotation on that axis when it appeared to be rotating
  * counter-clockwise.
  *
- * values[0]: Angular speed around the x axis
- * values[1]: Angular speed around the y axis
- * values[2]: Angular speed around the z axis
+ * values[0]: Angular speed around the x axis (pitch)
+ * values[1]: Angular speed around the y axis (yaw)
+ * values[2]: Angular speed around the z axis (roll)
  *
- * For phones held in portrait mode, the axes are defined as follows:
+ * For phones held in portrait mode and game controllers held in front of you,
+ * the axes are defined as follows:
  * -X ... +X : left ... right
  * -Y ... +Y : bottom ... top
  * -Z ... +Z : farther ... closer
  * 
- * The axis data is not changed when the phone is rotated.
+ * The axis data is not changed when the phone or controller is rotated.
  *
  * \sa SDL_GetDisplayOrientation()
  */
@@ -122,118 +125,135 @@ typedef enum
 /* Function prototypes */
 
 /**
- *  \brief Count the number of sensors attached to the system right now
+ * Locking for multi-threaded access to the sensor API
+ *
+ * If you are using the sensor API or handling events from multiple threads
+ * you should use these locking functions to protect access to the sensors.
+ *
+ * In particular, you are guaranteed that the sensor list won't change, so the
+ * API functions that take a sensor index will be valid, and sensor events
+ * will not be delivered.
+ */
+extern DECLSPEC void SDLCALL SDL_LockSensors(void);
+extern DECLSPEC void SDLCALL SDL_UnlockSensors(void);
+
+/**
+ * Count the number of sensors attached to the system right now.
+ *
+ * \returns the number of sensors detected.
  */
 extern DECLSPEC int SDLCALL SDL_NumSensors(void);
 
 /**
- *  \brief Get the implementation dependent name of a sensor.
+ * Get the implementation dependent name of a sensor.
  *
- *  This can be called before any sensors are opened.
- * 
- *  \return The sensor name, or NULL if device_index is out of range.
+ * \param device_index The sensor to obtain name from
+ * \returns the sensor name, or NULL if `device_index` is out of range.
  */
 extern DECLSPEC const char *SDLCALL SDL_SensorGetDeviceName(int device_index);
 
 /**
- *  \brief Get the type of a sensor.
+ * Get the type of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor type, or SDL_SENSOR_INVALID if device_index is out of range.
+ * \param device_index The sensor to get the type from
+ * \returns the SDL_SensorType, or `SDL_SENSOR_INVALID` if `device_index` is
+ *          out of range.
  */
 extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetDeviceType(int device_index);
 
 /**
- *  \brief Get the platform dependent type of a sensor.
+ * Get the platform dependent type of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor platform dependent type, or -1 if device_index is out of range.
+ * \param device_index The sensor to check
+ * \returns the sensor platform dependent type, or -1 if `device_index` is out
+ *          of range.
  */
 extern DECLSPEC int SDLCALL SDL_SensorGetDeviceNonPortableType(int device_index);
 
 /**
- *  \brief Get the instance ID of a sensor.
+ * Get the instance ID of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor instance ID, or -1 if device_index is out of range.
+ * \param device_index The sensor to get instance id from
+ * \returns the sensor instance ID, or -1 if `device_index` is out of range.
  */
 extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetDeviceInstanceID(int device_index);
 
 /**
- *  \brief Open a sensor for use.
+ * Open a sensor for use.
  *
- *  The index passed as an argument refers to the N'th sensor on the system.
- *
- *  \return A sensor identifier, or NULL if an error occurred.
+ * \param device_index The sensor to open
+ * \returns an SDL_Sensor sensor object, or NULL if an error occurred.
  */
 extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorOpen(int device_index);
 
 /**
  * Return the SDL_Sensor associated with an instance id.
+ *
+ * \param instance_id The sensor from instance id
+ * \returns an SDL_Sensor object.
  */
 extern DECLSPEC SDL_Sensor *SDLCALL SDL_SensorFromInstanceID(SDL_SensorID instance_id);
 
 /**
- *  \brief Get the implementation dependent name of a sensor.
+ * Get the implementation dependent name of a sensor
  *
- *  \return The sensor name, or NULL if the sensor is NULL.
+ * \param sensor The SDL_Sensor object
+ * \returns the sensor name, or NULL if `sensor` is NULL.
  */
 extern DECLSPEC const char *SDLCALL SDL_SensorGetName(SDL_Sensor *sensor);
 
 /**
- *  \brief Get the type of a sensor.
+ * Get the type of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor type, or SDL_SENSOR_INVALID if the sensor is NULL.
+ * \param sensor The SDL_Sensor object to inspect
+ * \returns the SDL_SensorType type, or `SDL_SENSOR_INVALID` if `sensor` is
+ *          NULL.
  */
 extern DECLSPEC SDL_SensorType SDLCALL SDL_SensorGetType(SDL_Sensor *sensor);
 
 /**
- *  \brief Get the platform dependent type of a sensor.
+ * Get the platform dependent type of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor platform dependent type, or -1 if the sensor is NULL.
+ * \param sensor The SDL_Sensor object to inspect
+ * \returns the sensor platform dependent type, or -1 if `sensor` is NULL.
  */
 extern DECLSPEC int SDLCALL SDL_SensorGetNonPortableType(SDL_Sensor *sensor);
 
 /**
- *  \brief Get the instance ID of a sensor.
+ * Get the instance ID of a sensor.
  *
- *  This can be called before any sensors are opened.
- *
- *  \return The sensor instance ID, or -1 if the sensor is NULL.
+ * \param sensor The SDL_Sensor object to inspect
+ * \returns the sensor instance ID, or -1 if `sensor` is NULL.
  */
 extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetInstanceID(SDL_Sensor *sensor);
 
 /**
- *  Get the current state of an opened sensor.
+ * Get the current state of an opened sensor.
  *
- *  The number of values and interpretation of the data is sensor dependent.
+ * The number of values and interpretation of the data is sensor dependent.
  *
- *  \param sensor The sensor to query
- *  \param data A pointer filled with the current sensor state
- *  \param num_values The number of values to write to data
- *
- *  \return 0 or -1 if an error occurred.
+ * \param sensor The SDL_Sensor object to query
+ * \param data A pointer filled with the current sensor state
+ * \param num_values The number of values to write to data
+ * \returns 0 or -1 if an error occurred.
  */
 extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor * sensor, float *data, int num_values);
 
 /**
- *  Close a sensor previously opened with SDL_SensorOpen()
+ * Close a sensor previously opened with SDL_SensorOpen().
+ *
+ * \param sensor The SDL_Sensor object to close
  */
 extern DECLSPEC void SDLCALL SDL_SensorClose(SDL_Sensor * sensor);
 
 /**
- *  Update the current state of the open sensors.
+ * Update the current state of the open sensors.
  *
- *  This is called automatically by the event loop if sensor events are enabled.
+ * This is called automatically by the event loop if sensor events are
+ * enabled.
  *
- *  This needs to be called from the thread that initialized the sensor subsystem.
+ * This needs to be called from the thread that initialized the sensor
+ * subsystem.
  */
 extern DECLSPEC void SDLCALL SDL_SensorUpdate(void);
 
