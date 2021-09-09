@@ -20,6 +20,7 @@ class DebuggerWindow : public QMainWindow
 public:
   explicit DebuggerWindow(QWidget* parent = nullptr);
   ~DebuggerWindow();
+  void SetActive(bool status);
 
 Q_SIGNALS:
   void closed();
@@ -77,6 +78,7 @@ private:
   void editBreakpoint(QTreeWidgetItem* item);
   void deleteBreakpoint(QTreeWidgetItem* item);
   void refreshCodeViewSelectedAddress();
+  bool is_active = false;
 
   Ui::DebuggerWindow m_ui;
 

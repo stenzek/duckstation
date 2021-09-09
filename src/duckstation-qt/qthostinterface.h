@@ -67,6 +67,7 @@ public:
   bool AddValueToStringList(const char* section, const char* key, const char* value);
   bool RemoveValueFromStringList(const char* section, const char* key, const char* value);
   void RemoveSettingValue(const char* section, const char* key);
+  void RunLater(std::function<void()> func) override;
 
   TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,
                              int n = -1) const override;
@@ -222,7 +223,6 @@ protected:
   void ApplySettings(bool display_osd_messages) override;
 
   void SetMouseMode(bool relative, bool hide_cursor) override;
-  void RunLater(std::function<void()> func) override;
 
 private:
   enum : u32

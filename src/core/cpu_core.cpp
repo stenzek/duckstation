@@ -22,7 +22,6 @@ namespace CPU {
 static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
-static void FlushPipeline();
 
 State g_state;
 bool g_using_interpreter = false;
@@ -322,30 +321,6 @@ ALWAYS_INLINE_RELEASE static void UpdateLoadDelay()
   g_state.load_delay_reg = g_state.next_load_delay_reg;
   g_state.load_delay_value = g_state.next_load_delay_value;
   g_state.next_load_delay_reg = Reg::count;
-}
-
-ALWAYS_INLINE_RELEASE static void FlushPipeline()
-{
-  // loads are flushed
-  g_state.next_load_delay_reg = Reg::count;
-  if (g_state.load_delay_reg != Reg::count)
-  {
-    g_state.regs.r[static_cast<u8>(g_state.load_delay_reg)] = g_state.load_delay_value;
-    g_state.load_delay_reg = Reg::count;
-  }
-
-  // not in a branch delay slot
-  g_state.branch_was_taken = false;
-  g_state.next_instruction_is_branch_delay_slot = false;
-  g_state.current_instruction_pc = g_state.regs.pc;
-
-  // prefetch the next instruction
-  FetchInstruction();
-
-  // and set it as the next one to execute
-  g_state.current_instruction.bits = g_state.next_instruction.bits;
-  g_state.current_instruction_in_branch_delay_slot = false;
-  g_state.current_instruction_was_branch_taken = false;
 }
 
 ALWAYS_INLINE static u32 ReadReg(Reg rs)

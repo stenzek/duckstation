@@ -1,6 +1,7 @@
 #include "debuggerwindow.h"
 #include "core/cpu_core_private.h"
 #include "debuggermodels.h"
+#include "mainwindow.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QSignalBlocker>
@@ -21,8 +22,16 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
+void DebuggerWindow::SetActive(bool status)
+{
+  DebuggerWindow::is_active = status;
+}
+
 void DebuggerWindow::onEmulationPaused(bool paused)
 {
+  if (!DebuggerWindow::is_active)
+    return;
+
   if (paused)
   {
     setUIEnabled(true);

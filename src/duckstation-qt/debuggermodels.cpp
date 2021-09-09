@@ -1,6 +1,5 @@
 #include "debuggermodels.h"
 #include "core/cpu_core.h"
-#include "core/cpu_core.cpp"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
 #include <QtGui/QColor>
