@@ -1,7 +1,6 @@
 #include "debuggerwindow.h"
 #include "core/cpu_core_private.h"
 #include "debuggermodels.h"
-#include "mainwindow.h"
 #include "qthostinterface.h"
 #include "qtutils.h"
 #include <QtCore/QSignalBlocker>
