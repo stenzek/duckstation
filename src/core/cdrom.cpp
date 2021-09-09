@@ -444,6 +444,12 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 2: // always data FIFO
     {
+      if (m_data_fifo.IsEmpty())
+      {
+        Log_DevPrint("Data FIFO empty on read");
+        return 0x00;
+      }
+
       const u8 value = m_data_fifo.Pop();
       UpdateStatusRegister();
       Log_DebugPrintf("CDROM read data FIFO -> 0x%08X", ZeroExtend32(value));
