@@ -759,7 +759,7 @@ static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, P
   return (type == MemoryAccessType::Read) ? 1 : 0;
 }
 
-template<MemoryAccessType type, MemoryAccessSize size>
+template<MemoryAccessType type, MemoryAccessSize size, bool skip_redundant_writes>
 ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
 {
   offset &= g_ram_mask;
@@ -783,21 +783,59 @@ ALWAYS_INLINE static TickCount DoRAMAccess(u32 offset, u32& value)
   else
   {
     const u32 page_index = offset / HOST_PAGE_SIZE;
-    if (m_ram_code_bits[page_index])
-      CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+    if constexpr (skip_redundant_writes)
+    {
+      if constexpr (size == MemoryAccessSize::Byte)
+      {
+        if (g_ram[offset] != Truncate8(value))
+        {
+          g_ram[offset] = Truncate8(value);
+          if (m_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+      else if constexpr (size == MemoryAccessSize::HalfWord)
+      {
+        const u16 new_value = Truncate16(value);
+        u16 old_value;
+        std::memcpy(&old_value, &g_ram[offset], sizeof(old_value));
+        if (old_value != new_value)
+        {
+          std::memcpy(&g_ram[offset], &new_value, sizeof(u16));
+          if (m_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+      else if constexpr (size == MemoryAccessSize::Word)
+      {
+        u32 old_value;
+        std::memcpy(&old_value, &g_ram[offset], sizeof(u32));
+        if (old_value != value)
+        {
+          std::memcpy(&g_ram[offset], &value, sizeof(u32));
+          if (m_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+    }
+    else
+    {
+      if (m_ram_code_bits[page_index])
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
 
-    if constexpr (size == MemoryAccessSize::Byte)
-    {
-      g_ram[offset] = Truncate8(value);
-    }
-    else if constexpr (size == MemoryAccessSize::HalfWord)
-    {
-      const u16 temp = Truncate16(value);
-      std::memcpy(&g_ram[offset], &temp, sizeof(u16));
-    }
-    else if constexpr (size == MemoryAccessSize::Word)
-    {
-      std::memcpy(&g_ram[offset], &value, sizeof(u32));
+      if constexpr (size == MemoryAccessSize::Byte)
+      {
+        g_ram[offset] = Truncate8(value);
+      }
+      else if constexpr (size == MemoryAccessSize::HalfWord)
+      {
+        const u16 temp = Truncate16(value);
+        std::memcpy(&g_ram[offset], &temp, sizeof(u16));
+      }
+      else if constexpr (size == MemoryAccessSize::Word)
+      {
+        std::memcpy(&g_ram[offset], &value, sizeof(u32));
+      }
     }
   }
 
@@ -1546,7 +1584,7 @@ static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32&
 
   if (address < RAM_MIRROR_END)
   {
-    return DoRAMAccess<type, size>(address, value);
+    return DoRAMAccess<type, size, false>(address, value);
   }
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
   {
@@ -1864,42 +1902,93 @@ bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   return true;
 }
 
+template<MemoryAccessType type, MemoryAccessSize size>
+static ALWAYS_INLINE bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value)
+{
+  using namespace Bus;
+
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    {
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+      if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+        return DoScratchpadAccess<type, size>(address, value);
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    {
+      // Above 512mb raises an exception.
+      return false;
+    }
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+    }
+    break;
+  }
+
+  if (address < RAM_MIRROR_END)
+  {
+    return DoRAMAccess<type, size, true>(address, value);
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
+  }
+  else
+  {
+    return false;
+  }
+}
+
 bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 {
   u32 temp = 0;
-  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp);
+  if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp))
+    return false;
+
   *value = Truncate8(temp);
-  return (cycles >= 0);
+  return true;
 }
 
 bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 {
   u32 temp = 0;
-  const TickCount cycles = DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp);
+  if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp))
+    return false;
+
   *value = Truncate16(temp);
-  return (cycles >= 0);
+  return true;
 }
 
 bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
 {
-  return DoMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value) >= 0;
+  return DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
 }
 
 bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp) >= 0;
+  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
 }
 
 bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 {
   u32 temp = ZeroExtend32(value);
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp) >= 0;
+  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
 }
 
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
-  return DoMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value) >= 0;
+  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
 }
 
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
