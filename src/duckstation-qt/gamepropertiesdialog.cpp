@@ -311,7 +311,7 @@ void GamePropertiesDialog::populateGameSettings()
 
   populateBooleanUserSetting(m_ui.userEnableCPUClockSpeedControl, gs.cpu_overclock_enable);
   populateBooleanUserSetting(m_ui.userEnable8MBRAM, gs.enable_8mb_ram);
-  m_ui.userCPUClockSpeed->setEnabled(m_ui.userEnableCPUClockSpeedControl->checkState() != Qt::Unchecked);
+  m_ui.userCPUClockSpeed->setEnabled(m_ui.userEnableCPUClockSpeedControl->checkState() == Qt::Checked);
   updateCPUClockSpeedLabel();
 
   if (gs.cdrom_read_speedup.has_value())
@@ -858,14 +858,14 @@ void GamePropertiesDialog::connectUi()
 void GamePropertiesDialog::updateCPUClockSpeedLabel()
 {
   const int percent =
-    m_ui.userEnableCPUClockSpeedControl->checkState() != Qt::Unchecked ? m_ui.userCPUClockSpeed->value() : 100;
+    m_ui.userEnableCPUClockSpeedControl->checkState() == Qt::Checked ? m_ui.userCPUClockSpeed->value() : 100;
   const double frequency = (static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0;
   m_ui.userCPUClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
 }
 
 void GamePropertiesDialog::onEnableCPUClockSpeedControlChecked(int state)
 {
-  m_ui.userCPUClockSpeed->setEnabled(state != Qt::Unchecked);
+  m_ui.userCPUClockSpeed->setEnabled(state == Qt::Checked);
   updateCPUClockSpeedLabel();
 }
 
