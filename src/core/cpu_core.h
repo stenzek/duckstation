@@ -139,6 +139,8 @@ ALWAYS_INLINE bool InKernelMode()
 }
 
 // Memory reads variants which do not raise exceptions.
+// These methods do not support writing to MMIO addresses with side effects, and are
+// thus safe to call from the UI thread in debuggers, for example.
 bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value);
 bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
 bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value);

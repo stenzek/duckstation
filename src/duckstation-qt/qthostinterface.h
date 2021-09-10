@@ -51,6 +51,8 @@ public:
   bool Initialize() override;
   void Shutdown() override;
 
+  void RunLater(std::function<void()> func) override;
+
 public Q_SLOTS:
   void ReportError(const char* message) override;
   void ReportMessage(const char* message) override;

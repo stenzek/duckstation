@@ -1707,11 +1707,13 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
   Value shift = ShlValues(AndValues(address, Value::FromConstantU32(3)), Value::FromConstantU32(3)); // * 8
   address = AndValues(address, Value::FromConstantU32(~u32(3)));
 
-  Value mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
-
+  Value mem;
   if (cbi.instruction.op == InstructionOp::swl)
   {
-    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), ShlValues(Value::FromConstantU32(0xFFFFFF00), shift));
+    Value mask = ShlValues(Value::FromConstantU32(0xFFFFFF00), shift);
+    mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
+    EmitAnd(mem.GetHostRegister(), mem.GetHostRegister(), mask);
+    mask.ReleaseAndClear();
 
     Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     Value lhs = ShrValues(reg, SubValues(Value::FromConstantU32(24), shift, false));
@@ -1721,8 +1723,10 @@ bool CodeGenerator::Compile_StoreLeftRight(const CodeBlockInstruction& cbi)
   }
   else
   {
-    AndValueInPlace(mem,
-                    ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false)));
+    Value mask = ShrValues(Value::FromConstantU32(0x00FFFFFF), SubValues(Value::FromConstantU32(24), shift, false));
+    mem = EmitLoadGuestMemory(cbi, address, address_spec, RegSize_32);
+    AndValueInPlace(mem, mask);
+    mask.ReleaseAndClear();
 
     Value reg = m_register_cache.ReadGuestRegister(cbi.instruction.r.rt);
     Value lhs = ShlValues(reg, shift);
