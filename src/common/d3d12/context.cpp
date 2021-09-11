@@ -27,13 +27,13 @@ static PFN_D3D12_SERIALIZE_ROOT_SIGNATURE s_d3d12_serialize_root_signature;
 
 static bool LoadD3D12Library()
 {
-  if (!(s_d3d12_library = LoadLibrary("d3d12.dll")) ||
-      !(s_d3d12_create_device =
-          reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(s_d3d12_library, "D3D12CreateDevice"))) ||
-      !(s_d3d12_get_debug_interface =
-          reinterpret_cast<PFN_D3D12_GET_DEBUG_INTERFACE>(GetProcAddress(s_d3d12_library, "D3D12GetDebugInterface"))) ||
-      !(s_d3d12_serialize_root_signature = reinterpret_cast<PFN_D3D12_SERIALIZE_ROOT_SIGNATURE>(
-          GetProcAddress(s_d3d12_library, "D3D12SerializeRootSignature"))))
+  if ((s_d3d12_library = LoadLibrary("d3d12.dll")) == nullptr ||
+      (s_d3d12_create_device =
+         reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(s_d3d12_library, "D3D12CreateDevice"))) == nullptr ||
+      (s_d3d12_get_debug_interface = reinterpret_cast<PFN_D3D12_GET_DEBUG_INTERFACE>(
+         GetProcAddress(s_d3d12_library, "D3D12GetDebugInterface"))) == nullptr ||
+      (s_d3d12_serialize_root_signature = reinterpret_cast<PFN_D3D12_SERIALIZE_ROOT_SIGNATURE>(
+         GetProcAddress(s_d3d12_library, "D3D12SerializeRootSignature"))) == nullptr)
   {
     Log_ErrorPrintf("d3d12.dll could not be loaded.");
     s_d3d12_create_device = nullptr;
