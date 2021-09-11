@@ -20,7 +20,6 @@ constexpr HostReg RARG2 = Xbyak::Operand::RDX;
 constexpr HostReg RARG3 = Xbyak::Operand::R8;
 constexpr HostReg RARG4 = Xbyak::Operand::R9;
 constexpr u32 FUNCTION_CALL_SHADOW_SPACE = 32;
-constexpr u64 FUNCTION_CALL_STACK_ALIGNMENT = 16;
 #elif defined(ABI_SYSV)
 constexpr HostReg RCPUPTR = Xbyak::Operand::RBP;
 constexpr HostReg RMEMBASEPTR = Xbyak::Operand::RBX;
@@ -30,7 +29,6 @@ constexpr HostReg RARG2 = Xbyak::Operand::RSI;
 constexpr HostReg RARG3 = Xbyak::Operand::RDX;
 constexpr HostReg RARG4 = Xbyak::Operand::RCX;
 constexpr u32 FUNCTION_CALL_SHADOW_SPACE = 0;
-constexpr u64 FUNCTION_CALL_STACK_ALIGNMENT = 16;
 #endif
 
 static const Xbyak::Reg8 GetHostReg8(HostReg reg)
@@ -798,20 +796,20 @@ void CodeGenerator::EmitDiv(HostReg to_reg_quotient, HostReg to_reg_remainder, H
            to_reg_remainder != Xbyak::Operand::RAX && to_reg_remainder != Xbyak::Operand::RDX)
   {
     // store to the registers we want.. this could be optimized better
-    if (to_reg_quotient != HostReg_Count)
+    if (static_cast<u32>(to_reg_quotient) != HostReg_Count)
       m_emit->mov(GetHostReg64(to_reg_quotient), m_emit->rax);
-    if (to_reg_remainder != HostReg_Count)
+    if (static_cast<u32>(to_reg_remainder) != HostReg_Count)
       m_emit->mov(GetHostReg64(to_reg_remainder), m_emit->rdx);
   }
   else
   {
     // store to the registers we want.. this could be optimized better
-    if (to_reg_quotient != HostReg_Count)
+    if (static_cast<u32>(to_reg_quotient) != HostReg_Count)
     {
       m_emit->push(m_emit->rax);
       m_emit->pop(GetHostReg64(to_reg_quotient));
     }
-    if (to_reg_remainder != HostReg_Count)
+    if (static_cast<u32>(to_reg_remainder) != HostReg_Count)
     {
       m_emit->push(m_emit->rdx);
       m_emit->pop(GetHostReg64(to_reg_remainder));
