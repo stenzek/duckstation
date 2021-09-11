@@ -1938,6 +1938,16 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1308-g622e50fa</version-tested>
   </entry>
+  <entry code="SCUS-94457" compatibility="5" region="NTSC-U" title="Grandia (USA) (Disc 1)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+    <comments>Text boxes can have overlay issues  when Geometry Correction is enabled</comments>
+  </entry>
+  <entry code="SCUS-94465" compatibility="5" region="NTSC-U" title="Grandia (USA) (Disc 2)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4599-ga542fa85</version-tested>
+    <comments>Text boxes can have overlay issues  when Geometry Correction is enabled</comments>
+  </entry>
   <entry code="SLUS-01197" compatibility="5" region="NTSC-U" title="Grinch, The (USA) (En,Fr,Es)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-2433-g9089c973</version-tested>
@@ -3624,6 +3634,11 @@ Tetris with Card Captor Sakura (Japan)
   <entry code="SLPM-86959" compatibility="5" region="NTSC-J" title="Rockman X6 (Japan)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-884-g096ed21</version-tested>
+  </entry>
+  <entry code="SLUS-00724" compatibility="5" region="NTSC-U" title="Roll Away (USA)">
+    <compatibility>No Issues</compatibility>
+    <upscaling-issues>None</upscaling-issues>
+    <version-tested>0.1-3968-gd9151ceb</version-tested>
   </entry>
   <entry code="SLES-01660" compatibility="5" region="PAL" title="Rollcage (Europe) (En,Fr,De,Es,It)">
     <compatibility>No Issues</compatibility>
