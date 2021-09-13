@@ -1504,8 +1504,8 @@ void CommonHostInterface::DrawOSDMessages()
       break;
 
     const ImVec2 pos(position_x, position_y);
-    const ImVec2 text_size(
-      font->CalcTextSizeA(font->FontSize, max_width, -1.0f, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
+    const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), max_width,
+                                               msg.text.c_str(), msg.text.c_str() + msg.text.length()));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
     const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
