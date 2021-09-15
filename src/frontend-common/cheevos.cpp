@@ -1399,47 +1399,31 @@ void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
     SubmitLeaderboard(runtime_event->id, runtime_event->value);
 }
 
-// from cheats.cpp - do we want to move this somewhere else?
-template<typename T>
-static T DoMemoryRead(PhysicalMemoryAddress address)
-{
-  T result;
-
-  if ((address & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION &&
-      (address & CPU::DCACHE_OFFSET_MASK) < CPU::DCACHE_SIZE)
-  {
-    std::memcpy(&result, &CPU::g_state.dcache[address & CPU::DCACHE_OFFSET_MASK], sizeof(result));
-    return result;
-  }
-
-  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
-
-  if (address < Bus::RAM_MIRROR_END)
-  {
-    std::memcpy(&result, &Bus::g_ram[address & Bus::g_ram_mask], sizeof(result));
-    return result;
-  }
-
-  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
-  {
-    std::memcpy(&result, &Bus::g_bios[address & Bus::BIOS_MASK], sizeof(result));
-    return result;
-  }
-
-  result = static_cast<T>(0);
-  return result;
-}
-
 unsigned CheevosPeek(unsigned address, unsigned num_bytes, void* ud)
 {
   switch (num_bytes)
   {
     case 1:
-      return ZeroExtend32(DoMemoryRead<u8>(address));
+    {
+      u8 value = 0;
+      CPU::SafeReadMemoryByte(address, &value);
+      return value;
+    }
+
     case 2:
-      return ZeroExtend32(DoMemoryRead<u16>(address));
+    {
+      u16 value;
+      CPU::SafeReadMemoryHalfWord(address, &value);
+      return value;
+    }
+
     case 4:
-      return ZeroExtend32(DoMemoryRead<u32>(address));
+    {
+      u32 value;
+      CPU::SafeReadMemoryWord(address, &value);
+      return value;
+    }
+
     default:
       return 0;
   }
