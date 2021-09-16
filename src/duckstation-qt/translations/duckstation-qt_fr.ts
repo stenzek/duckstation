@@ -792,7 +792,7 @@
     <message>
         <location filename="../autoupdaterdialog.cpp" line="334"/>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
-        <translation>&lt;h4&gt;L&apos;installation de cette mise à jour permettra de télécharger %1 MB via votre connexion internet.&lt;/h4&gt;</translation>
+        <translation>&lt;h4&gt;L&apos;installation de cette mise à jour téléchargera %1 MB via votre connexion internet.&lt;/h4&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="360"/>
