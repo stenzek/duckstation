@@ -45,6 +45,7 @@ private:
   size_t m_highlight_end = 0;
 
   unsigned m_bytes_per_line;
+  int m_display_size;
 
   int m_char_width;
   int m_char_height;
