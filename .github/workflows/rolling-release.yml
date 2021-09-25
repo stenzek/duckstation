@@ -242,7 +242,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev qtwayland5 libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libqt5waylandclient5-dev libqt5waylandcompositor5-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
 
     - name: Compile build
       shell: bash
@@ -276,6 +276,18 @@ jobs:
       with:
         name: "linux-x64-appimage-qt-zsync"
         path: "build/duckstation-qt-x64.AppImage.zsync"
+
+    - name: Upload Wayland AppImage
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-wayland"
+        path: "build/duckstation-wayland-x64.AppImage"
+
+    - name: Upload Wayland AppImage zsync
+      uses: actions/upload-artifact@v1
+      with:
+        name: "linux-x64-appimage-wayland-zsync"
+        path: "build/duckstation-wayland-x64.AppImage.zsync"
 
 
   macos-build:
@@ -353,6 +365,16 @@ jobs:
         with:
           name: "linux-x64-appimage-qt-zsync"
 
+      - name: Download Wayland AppImage Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-wayland"
+
+      - name: Download Wayland AppImage zsync Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "linux-x64-appimage-wayland-zsync"
+          
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -372,6 +394,8 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
+            linux-x64-appimage-wayland/duckstation-wayland-x64.AppImage
+            linux-x64-appimage-wayland-zsync/duckstation-wayland-x64.AppImage.zsync
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -392,3 +416,5 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
+            linux-x64-appimage-wayland/duckstation-wayland-x64.AppImage
+            linux-x64-appimage-wayland-zsync/duckstation-wayland-x64.AppImage.zsync
