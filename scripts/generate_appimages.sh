@@ -87,20 +87,14 @@ ${BUILD_DIR}/squashfs-root/AppRun \
 # Patch AppRun to work around system Qt libraries being loaded ahead of bundled libraries
 sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH "$this_dir"/AppRun.wrapped "$@"|' \
   ${BUILD_DIR}/duckstation-qt.AppDir/AppRun
-  
-UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
-OUTPUT="duckstation-qt-x64.AppImage" \
-${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage \
-  --appdir=${BUILD_DIR}/duckstation-qt.AppDir
-  
-cp -r ${BUILD_DIR}/duckstation-qt.AppDir ${BUILD_DIR}/duckstation-wayland.AppDir
-mkdir -p ${BUILD_DIR}/duckstation-wayland.AppDir/usr/plugins
-mkdir -p ${BUILD_DIR}/duckstation-wayland.AppDir/usr/lib/dri
-cp /usr/lib/x86_64-linux-gnu/{libQt5WaylandClient.so.5,libEGL_mesa.so.0} ${BUILD_DIR}/duckstation-wayland.AppDir/usr/lib
-cp /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-wayland.AppDir/usr/lib/dri
-cp -r /usr/lib/x86_64-linux-gnu/qt5/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-wayland.AppDir/usr/plugins
 
-cat <<'EOF'>> ${BUILD_DIR}/duckstation-wayland.AppDir/apprun-hooks/linuxdeploy-plugin-qt-hook.sh
+mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
+mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
+cp /usr/lib/x86_64-linux-gnu/{libQt5WaylandClient.so.5,libEGL_mesa.so.0} ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib
+cp /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
+cp -r /usr/lib/x86_64-linux-gnu/qt5/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
+
+cat <<'EOF'>> ${BUILD_DIR}/duckstation-qt.AppDir/apprun-hooks/linuxdeploy-plugin-qt-hook.sh
 case "${WAYLAND_DISPLAY}" in
 	*wayland*)
 		export QT_QPA_PLATFORM=wayland
@@ -108,10 +102,10 @@ case "${WAYLAND_DISPLAY}" in
 esac
 EOF
   
-UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-wayland-x64.AppImage.zsync" \
-OUTPUT="duckstation-wayland-x64.AppImage" \
+UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
+OUTPUT="duckstation-qt-x64.AppImage" \
 ${BUILD_DIR}/linuxdeploy-plugin-appimage-x86_64.AppImage \
-  --appdir=${BUILD_DIR}/duckstation-wayland.AppDir  
+  --appdir=${BUILD_DIR}/duckstation-qt.AppDir  
 
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-nogui-x64.AppImage.zsync" \
 OUTPUT="duckstation-nogui-x64.AppImage" \
