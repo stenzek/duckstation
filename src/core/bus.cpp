@@ -1961,17 +1961,35 @@ bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
 
 bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
 {
-  u32 temp = 0;
-  if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp))
+  if ((addr & 1) == 0)
+  {
+    u32 temp = 0;
+    if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp))
+      return false;
+
+    *value = Truncate16(temp);
+    return true;
+  }
+
+  u8 low, high;
+  if (!SafeReadMemoryByte(addr, &low) || !SafeReadMemoryByte(addr + 1, &high))
     return false;
 
-  *value = Truncate16(temp);
+  *value = (ZeroExtend16(high) << 8) | ZeroExtend16(low);
   return true;
 }
 
 bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
 {
-  return DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+  if ((addr & 3) == 0)
+    return DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+
+  u16 low, high;
+  if (!SafeReadMemoryHalfWord(addr, &low) || !SafeReadMemoryHalfWord(addr + 2, &high))
+    return false;
+
+  *value = (ZeroExtend32(high) << 16) | ZeroExtend32(low);
+  return true;
 }
 
 bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
@@ -1982,13 +2000,22 @@ bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 
 bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
 {
-  u32 temp = ZeroExtend32(value);
-  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  if ((addr & 1) == 0)
+  {
+    u32 temp = ZeroExtend32(value);
+    return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  }
+
+  return SafeWriteMemoryByte(addr, Truncate8(value)) && SafeWriteMemoryByte(addr + 1, Truncate8(value >> 8));
 }
 
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
 {
-  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+  if ((addr & 3) == 0)
+    return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+
+  return SafeWriteMemoryHalfWord(addr, Truncate16(value >> 16)) &&
+         SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
 }
 
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
