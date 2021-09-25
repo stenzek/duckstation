@@ -277,18 +277,6 @@ jobs:
         name: "linux-x64-appimage-qt-zsync"
         path: "build/duckstation-qt-x64.AppImage.zsync"
 
-    - name: Upload Wayland AppImage
-      uses: actions/upload-artifact@v1
-      with:
-        name: "linux-x64-appimage-wayland"
-        path: "build/duckstation-wayland-x64.AppImage"
-
-    - name: Upload Wayland AppImage zsync
-      uses: actions/upload-artifact@v1
-      with:
-        name: "linux-x64-appimage-wayland-zsync"
-        path: "build/duckstation-wayland-x64.AppImage.zsync"
-
 
   macos-build:
     runs-on: macos-10.15
@@ -364,16 +352,6 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "linux-x64-appimage-qt-zsync"
-
-      - name: Download Wayland AppImage Artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: "linux-x64-appimage-wayland"
-
-      - name: Download Wayland AppImage zsync Artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: "linux-x64-appimage-wayland-zsync"
           
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
@@ -394,9 +372,7 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            linux-x64-appimage-wayland/duckstation-wayland-x64.AppImage
-            linux-x64-appimage-wayland-zsync/duckstation-wayland-x64.AppImage.zsync
-
+          
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -416,5 +392,4 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-            linux-x64-appimage-wayland/duckstation-wayland-x64.AppImage
-            linux-x64-appimage-wayland-zsync/duckstation-wayland-x64.AppImage.zsync
+             
