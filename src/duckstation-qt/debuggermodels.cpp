@@ -2,11 +2,14 @@
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
+#include "core/system.h"
 #include <QtGui/QColor>
 #include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QTreeView>
+
+Log_SetChannel(CPU::Core);
 
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
@@ -180,6 +183,34 @@ QVariant DebuggerCodeModel::headerData(int section, Qt::Orientation orientation,
     default:
       return QVariant();
   }
+}
+
+Qt::ItemFlags DebuggerCodeModel::flags(const QModelIndex& index) const
+{
+  if (index.column() == 2)
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  return QAbstractItemModel::flags(index);
+}
+
+bool DebuggerCodeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
+  {
+    bool ok;
+    QString value_str = value.toString();
+    u32 instruction;
+    if (value_str.startsWith("0x"))
+      instruction = value_str.mid(2).toUInt(&ok, 16);
+    else
+      instruction = value_str.toUInt(&ok, 16);
+    if (ok)
+    {
+      const VirtualMemoryAddress address = static_cast<u32>(getAddressForRow(index.row()));
+      std::memcpy(&Bus::g_ram[address & Bus::g_ram_mask], &instruction, sizeof(instruction));
+      return true;
+    }
+  }
+  return false;
 }
 
 bool DebuggerCodeModel::updateRegion(VirtualMemoryAddress address)
@@ -384,7 +415,7 @@ Qt::ItemFlags DebuggerRegistersModel::flags(const QModelIndex& index) const
 
 bool DebuggerRegistersModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-  if (index.isValid() && role == Qt::EditRole)
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
   {
     bool ok;
     QString value_str = value.toString();
@@ -477,7 +508,7 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role /*= Qt::Dis
 
 bool DebuggerStackModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-  if (index.isValid() && role == Qt::EditRole)
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
   {
     bool ok;
     QString value_str = value.toString();
