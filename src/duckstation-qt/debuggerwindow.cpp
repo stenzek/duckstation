@@ -550,6 +550,10 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.memoryRegionScratchpad, &QRadioButton::clicked,
           [this]() { setMemoryViewRegion(Bus::MemoryRegion::Scratchpad); });
   connect(m_ui.memoryRegionBIOS, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::BIOS); });
+  
+  connect(m_ui.memoryDisplayByte, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u8)); });
+  connect(m_ui.memoryDisplayHalfword, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u16)); });
+  connect(m_ui.memoryDisplayWord, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u32)); });
 
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &DebuggerWindow::onMemorySearchTriggered);
   connect(m_ui.memorySearchString, &QLineEdit::textChanged, this, &DebuggerWindow::onMemorySearchStringChanged);

@@ -36,15 +36,14 @@
     <addaction name="actionGoToPC"/>
     <addaction name="actionGoToAddress"/>
     <addaction name="actionDumpAddress"/>
-    <addaction name="separator"/>    
-    <addaction name="actionTrace"/>    
+    <addaction name="separator"/>
+    <addaction name="actionTrace"/>
     <addaction name="separator"/>
     <addaction name="actionStepInto"/>
     <addaction name="actionStepOver"/>
     <addaction name="actionStepOut"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
-
    </widget>
    <widget class="QMenu" name="menuBreakpoints">
     <property name="title">
@@ -82,7 +81,7 @@
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
-   <addaction name="separator"/>   
+   <addaction name="separator"/>
    <addaction name="actionTrace"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
@@ -205,6 +204,43 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QRadioButton" name="memoryDisplayByte">
+           <property name="text">
+            <string>1 Byte</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="memoryDisplayHalfword">
+           <property name="text">
+            <string>2 Bytes</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="memoryDisplayWord">
+           <property name="text">
+            <string>4 Bytes</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroup</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -481,8 +517,6 @@
     <string>Ctrl+T</string>
    </property>
   </action>
-  
-  
  </widget>
  <customwidgets>
   <customwidget>
@@ -496,4 +530,7 @@
   <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

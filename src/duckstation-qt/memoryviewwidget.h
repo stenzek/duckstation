@@ -20,6 +20,7 @@ public:
   void scrolltoOffset(size_t offset);
   void scrollToAddress(size_t address);
   void setFont(const QFont& font);
+  void setDisplaySize(int display_size);
 
 protected:
   void paintEvent(QPaintEvent*);

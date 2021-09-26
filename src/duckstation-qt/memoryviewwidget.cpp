@@ -89,6 +89,12 @@ void MemoryViewWidget::setFont(const QFont& font)
   updateMetrics();
 }
 
+void MemoryViewWidget::setDisplaySize(int display_size)
+{
+  m_display_size = display_size;
+  adjustContent();
+}
+
 void MemoryViewWidget::resizeEvent(QResizeEvent*)
 {
   adjustContent();
