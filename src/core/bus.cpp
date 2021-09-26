@@ -1914,7 +1914,10 @@ static ALWAYS_INLINE bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& 
     {
       address &= PHYSICAL_MEMORY_ADDRESS_MASK;
       if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
-        return DoScratchpadAccess<type, size>(address, value);
+      {
+        DoScratchpadAccess<type, size>(address, value);
+        return true;
+      }
     }
     break;
 
@@ -1937,16 +1940,18 @@ static ALWAYS_INLINE bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& 
 
   if (address < RAM_MIRROR_END)
   {
-    return DoRAMAccess<type, size, true>(address, value);
+    DoRAMAccess<type, size, true>(address, value);
+    return true;
   }
-  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  if constexpr (type == MemoryAccessType::Read)
   {
-    return DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
+    if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+    {
+      DoBIOSAccess<type, size>(static_cast<u32>(address - BIOS_BASE), value);
+      return true;
+    }
   }
-  else
-  {
-    return false;
-  }
+  return false;
 }
 
 bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
