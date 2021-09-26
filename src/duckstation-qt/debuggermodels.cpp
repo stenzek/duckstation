@@ -9,8 +9,6 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QTreeView>
 
-Log_SetChannel(CPU::Core);
-
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
 static constexpr u32 STACK_VALUE_SIZE = sizeof(u32);
@@ -59,7 +57,7 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
   if (index.column() < 0 || index.column() >= NUM_COLUMNS)
     return QVariant();
 
-  if (role == Qt::DisplayRole)
+  if (role == Qt::DisplayRole || role == Qt::EditRole)
   {
     const VirtualMemoryAddress address = getAddressForRow(index.row());
     switch (index.column())
@@ -137,6 +135,8 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
     if (hasBreakpointAtAddress(address))
       return QVariant(QColor(171, 97, 107));
 
+    if (address == selected_address)
+      return QColor(76, 76, 76);
     //     if (address == m_last_pc)
     //       return QApplication::palette().toolTipBase();
     if (address == m_last_pc)
@@ -275,7 +275,9 @@ void DebuggerCodeModel::setPC(VirtualMemoryAddress pc)
 
 void DebuggerCodeModel::setCurrentSelectedAddress(VirtualMemoryAddress address)
 {
+  VirtualMemoryAddress temp = selected_address;
   selected_address = address;
+  emitDataChangedForAddress(temp);
 }
 
 void DebuggerCodeModel::ensureAddressVisible(VirtualMemoryAddress address)

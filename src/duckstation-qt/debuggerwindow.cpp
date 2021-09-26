@@ -120,6 +120,7 @@ void DebuggerWindow::onGoToAddressTriggered()
   if (!address.has_value())
     return;
 
+  m_code_model->setCurrentSelectedAddress(address.value());
   scrollToCodeAddress(address.value());
 }
 
