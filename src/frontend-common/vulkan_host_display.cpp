@@ -11,8 +11,10 @@
 #include "common/vulkan/util.h"
 #include "common_host_interface.h"
 #include "core/shader_cache_version.h"
+
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+
 #include "postprocessing_shadergen.h"
 #include <array>
 Log_SetChannel(VulkanHostDisplay);
@@ -532,6 +534,10 @@ void VulkanHostDisplay::DestroyResources()
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
+  ImGui_ImplVulkan_LoadFunctions([](const char* function_name, void*) {
+    return vkGetInstanceProcAddr(g_vulkan_context->GetVulkanInstance(), function_name);
+  });
+
   ImGui_ImplVulkan_InitInfo vii = {};
   vii.Instance = g_vulkan_context->GetVulkanInstance();
   vii.PhysicalDevice = g_vulkan_context->GetPhysicalDevice();
@@ -539,6 +545,7 @@ bool VulkanHostDisplay::CreateImGuiContext()
   vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
   vii.Queue = g_vulkan_context->GetGraphicsQueue();
   vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
+  vii.DescriptorPool = g_vulkan_context->GetGlobalDescriptorPool();
   vii.MinImageCount = m_swap_chain->GetImageCount();
   vii.ImageCount = m_swap_chain->GetImageCount();
   vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -845,6 +852,8 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
 void VulkanHostDisplay::RenderImGui()
 {
   const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(), "Imgui");
+  ImGui_ImplVulkan_NewFrame();
+
   ImGui::Render();
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_vulkan_context->GetCurrentCommandBuffer());
 }

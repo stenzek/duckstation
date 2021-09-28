@@ -443,7 +443,7 @@ static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool
   }
   else
   {
-    if (ImGui::IsClippedEx(*bb, id, false))
+    if (ImGui::IsClippedEx(*bb, id))
     {
       *visible = false;
       *hovered = false;
@@ -705,7 +705,7 @@ bool FloatingButton(const char* text, float x, float y, float width, float heigh
   }
   else
   {
-    if (ImGui::IsClippedEx(bb, id, false))
+    if (ImGui::IsClippedEx(bb, id))
       return false;
   }
 
@@ -1053,7 +1053,7 @@ void NavTitle(const char* title, float height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_S
   ImGui::SameLine();
 
   ImRect bb(pos, pos + size);
-  if (ImGui::IsClippedEx(bb, 0, false))
+  if (ImGui::IsClippedEx(bb, 0))
     return;
 
   bb.Min.y += style.FramePadding.y;
@@ -1104,7 +1104,7 @@ bool NavButton(const char* title, bool is_active, bool enabled /* = true */, flo
   }
   else
   {
-    if (ImGui::IsClippedEx(bb, id, false))
+    if (ImGui::IsClippedEx(bb, id))
       return false;
   }
 

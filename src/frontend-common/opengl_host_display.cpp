@@ -807,6 +807,8 @@ bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
 
 void OpenGLHostDisplay::RenderImGui()
 {
+  ImGui_ImplOpenGL3_NewFrame();
+
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   GL::Program::ResetLastProgram();

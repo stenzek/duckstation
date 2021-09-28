@@ -620,6 +620,9 @@ bool D3D12HostDisplay::CreateResources()
   if (!m_display_uniform_buffer.Create(DISPLAY_UNIFORM_BUFFER_SIZE))
     return false;
 
+  if (!g_d3d12_context->GetDescriptorHeapManager().Allocate(&m_font_srv))
+    return false;
+
   return true;
 }
 
@@ -633,6 +636,7 @@ void D3D12HostDisplay::DestroyResources()
   m_display_uniform_buffer.Destroy(false);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_linear_sampler);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_point_sampler);
+  g_d3d12_context->GetDescriptorHeapManager().Free(&m_font_srv);
   m_software_cursor_pipeline.Reset();
   m_display_pipeline.Reset();
   m_display_root_signature.Reset();
@@ -643,8 +647,13 @@ bool D3D12HostDisplay::CreateImGuiContext()
   ImGui::GetIO().DisplaySize.x = static_cast<float>(m_window_info.surface_width);
   ImGui::GetIO().DisplaySize.y = static_cast<float>(m_window_info.surface_height);
 
-  return ImGui_ImplDX12_Init(g_d3d12_context->GetDevice(), D3D12::Context::NUM_COMMAND_LISTS,
-                             DXGI_FORMAT_R8G8B8A8_UNORM);
+  if (!ImGui_ImplDX12_Init(g_d3d12_context->GetDevice(), D3D12::Context::NUM_COMMAND_LISTS, DXGI_FORMAT_R8G8B8A8_UNORM,
+                           g_d3d12_context->GetDescriptorHeapManager().GetDescriptorHeap(), m_font_srv, m_font_srv))
+  {
+    return false;
+  }
+
+  return ImGui_ImplDX12_CreateDeviceObjects();
 }
 
 void D3D12HostDisplay::DestroyImGuiContext()
@@ -656,7 +665,7 @@ void D3D12HostDisplay::DestroyImGuiContext()
 
 bool D3D12HostDisplay::UpdateImGuiFontTexture()
 {
-  return ImGui_ImplDX12_CreateFontsTexture();
+  return ImGui_ImplDX12_CreateDeviceObjects();
 }
 
 bool D3D12HostDisplay::Render()

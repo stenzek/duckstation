@@ -735,7 +735,8 @@ void D3D11HostDisplay::DestroyImGuiContext()
 
 bool D3D11HostDisplay::UpdateImGuiFontTexture()
 {
-  ImGui_ImplDX11_CreateFontsTexture();
+  // This calls `ImGui_ImplDX11_CreateFontsTexture`
+  ImGui_ImplDX11_InvalidateDeviceObjects();
   return true;
 }
 
@@ -823,6 +824,8 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
 
 void D3D11HostDisplay::RenderImGui()
 {
+  ImGui_ImplDX11_NewFrame();
+
   ImGui::Render();
   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
