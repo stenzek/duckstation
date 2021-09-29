@@ -88,9 +88,18 @@ std::tuple<u32, u32> GPU::GetFullDisplayResolution(bool scaled /* = true */)
 
 void GPU::Reset(bool clear_vram)
 {
-  SoftReset();
+  m_GPUSTAT.bits = 0x14802000;
   m_set_texture_disable_mask = false;
   m_GPUREAD_latch = 0;
+  m_crtc_state.fractional_ticks = 0;
+  m_crtc_state.fractional_dot_ticks = 0;
+  m_crtc_state.current_tick_in_scanline = 0;
+  m_crtc_state.current_scanline = 0;
+  m_crtc_state.in_hblank = false;
+  m_crtc_state.in_vblank = false;
+  m_crtc_state.interlaced_field = 0;
+  m_crtc_state.interlaced_display_field = 0;
+  SoftReset();
   UpdateDisplay();
 }
 
@@ -100,20 +109,30 @@ void GPU::SoftReset()
   if (m_blitter_state == BlitterState::WritingVRAM)
     FinishVRAMWrite();
 
-  m_GPUSTAT.bits = 0x14802000;
+  m_GPUSTAT.texture_page_x_base = 0;
+  m_GPUSTAT.texture_page_y_base = 0;
+  m_GPUSTAT.semi_transparency_mode = GPUTransparencyMode::HalfBackgroundPlusHalfForeground;
+  m_GPUSTAT.texture_color_mode = GPUTextureMode::Palette4Bit;
+  m_GPUSTAT.dither_enable = false;
+  m_GPUSTAT.draw_to_displayed_field = false;
+  m_GPUSTAT.set_mask_while_drawing = false;
+  m_GPUSTAT.check_mask_before_draw = false;
+  m_GPUSTAT.reverse_flag = false;
+  m_GPUSTAT.texture_disable = false;
+  m_GPUSTAT.horizontal_resolution_2 = 0;
+  m_GPUSTAT.horizontal_resolution_1 = 0;
+  m_GPUSTAT.vertical_resolution = false;
   m_GPUSTAT.pal_mode = System::IsPALRegion();
+  m_GPUSTAT.display_area_color_depth_24 = false;
+  m_GPUSTAT.vertical_interlace = false;
+  m_GPUSTAT.display_disable = true;
+  m_GPUSTAT.dma_direction = DMADirection::Off;
   m_drawing_area.Set(0, 0, 0, 0);
   m_drawing_area_changed = true;
   m_drawing_offset = {};
   std::memset(&m_crtc_state.regs, 0, sizeof(m_crtc_state.regs));
   m_crtc_state.regs.horizontal_display_range = 0xC60260;
   m_crtc_state.regs.vertical_display_range = 0x3FC10;
-  m_crtc_state.fractional_ticks = 0;
-  m_crtc_state.fractional_dot_ticks = 0;
-  m_crtc_state.current_tick_in_scanline = 0;
-  m_crtc_state.current_scanline = 0;
-  m_crtc_state.in_hblank = false;
-  m_crtc_state.in_vblank = false;
   m_blitter_state = BlitterState::Idle;
   m_pending_command_ticks = 0;
   m_command_total_words = 0;
@@ -129,6 +148,7 @@ void GPU::SoftReset()
   UpdateCRTCConfig();
   UpdateCRTCTickEvent();
   UpdateCommandTickEvent();
+  UpdateGPUIdle();
 }
 
 bool GPU::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
