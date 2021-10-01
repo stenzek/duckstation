@@ -145,14 +145,11 @@ bool UWPHostInterface::CreateDisplay(bool fullscreen)
         GAMING_DEVICE_MODEL_INFORMATION gdinfo = {};
         if (SUCCEEDED(GetGamingDeviceModelInformation(&gdinfo)) && gdinfo.vendorId == GAMING_DEVICE_VENDOR_ID_MICROSOFT)
         {
-          if (gdinfo.deviceId != GAMING_DEVICE_DEVICE_ID_XBOX_ONE)
-          {
-            Log_InfoPrintf("Overriding core window size %ux%u with HDMI size %ux%u", wi.surface_width,
-                           wi.surface_height, hdmi_width, hdmi_height);
-            wi.surface_scale *= static_cast<float>(hdmi_width) / static_cast<float>(wi.surface_width);
-            wi.surface_width = hdmi_width;
-            wi.surface_height = hdmi_height;
-          }
+          Log_InfoPrintf("Overriding core window size %ux%u with HDMI size %ux%u", wi.surface_width,
+                         wi.surface_height, hdmi_width, hdmi_height);
+          wi.surface_scale *= static_cast<float>(hdmi_width) / static_cast<float>(wi.surface_width);
+          wi.surface_width = hdmi_width;
+          wi.surface_height = hdmi_height;
         }
       }
     }
