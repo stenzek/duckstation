@@ -1325,6 +1325,10 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-4693-gbbcf1c67</version-tested>
   </entry>
+  <entry code="SCUS-94636" compatibility="5" region="NTSC-U" title="Disney's Atlantis - The Lost Empire (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4739-g1cc6ee48</version-tested>
+  </entry>
   <entry code="SLUS-01242" compatibility="5" region="NTSC-U" title="Disney's Donald Duck - Goin' Quackers (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1333-g5a955a4</version-tested>
@@ -1377,9 +1381,17 @@ Tetris with Card Captor Sakura (Japan)
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-4423-g32ab7c13</version-tested>
   </entry>
+  <entry code="SLUS-01192" compatibility="5" region="NTSC-U" title="Disney-Pixar Buzz Lightyear of Star Command (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4739-g1cc6ee48</version-tested>
+  </entry>
   <entry code="SCUS-94635" compatibility="5" region="NTSC-U" title="Disney-Pixar Monsters, Inc. - Scream Team (USA)">
     <compatibility>No Issues</compatibility>
     <version-tested>0.1-1645-g42d49426</version-tested>
+  </entry>
+  <entry code="SLUS-00893" compatibility="5" region="NTSC-U" title="Disney-Pixar Toy Story 2 - Buzz Lightyear to the Rescue! (USA)">
+    <compatibility>No Issues</compatibility>
+    <version-tested>0.1-4739-g1cc6ee48</version-tested>
   </entry>
   <entry code="SLUS-01214" compatibility="5" region="NTSC-U" title="Disney-Pixar Toy Story Racer (USA)">
     <compatibility>No Issues</compatibility>
