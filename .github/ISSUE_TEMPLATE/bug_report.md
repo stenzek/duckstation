@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**YOU MUST FILL OUT THIS ISSUE TEMPLATE. IT IS NOT OPTIONAL.** Issues which are not created with the template **will be ignored and closed**.
+**YOU MUST FILL OUT THIS ISSUE TEMPLATE. IT IS NOT OPTIONAL.** Issues which are not created with the template **will be tag as invalid, ignored and closed**.
 
 Please read before creating a new issue:
 
@@ -33,11 +33,6 @@ Please read before creating a new issue:
 1. Have you installed any drivers or wrappers on your system, or do you have any programs like Steam open?
 2. Which controller backend are you using in general settings
 
-**Note:**
-If you are using Duckstation on Android device please consider the following before report:
-Are you using any kind of "memory optimizer" program such as: Ccleaner, Wisecleaner, Clean Master, Boost Android etc. ?
-(if so, please, consider create an exception on it first and test; or even remove / uninstall it retest and then, if the problem persists continue with the report.
-
 **Steps to reproduce**
 [Try to provide as much detail as possible to reproduce the issue]
 
@@ -45,7 +40,6 @@ Are you using any kind of "memory optimizer" program such as: Ccleaner, Wiseclea
 [Make sure they are all turned off before report]
 
 **Hardware/software**
-[If Android, which phone and Android version]
 [If desktop, your CPU, graphics card, and operating system]
 [GPU Renderer - D3D11/OpenGL/Vulkan]
 
