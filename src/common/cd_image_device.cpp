@@ -9,11 +9,8 @@
 #include <cmath>
 Log_SetChannel(CDImageDevice);
 
-enum : u32
-{
-  MAX_TRACK_NUMBER = 99,
-  ALL_SUBCODE_SIZE = 96,
-};
+static constexpr u32 MAX_TRACK_NUMBER = 99;
+static constexpr int ALL_SUBCODE_SIZE = 96;
 
 static u32 BEToU32(const u8* val)
 {
