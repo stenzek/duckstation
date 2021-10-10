@@ -1,5 +1,5 @@
 #pragma once
-#include "core/types.h"
+#include "types.h"
 #include <array>
 #include <optional>
 #include <xf86drm.h>
