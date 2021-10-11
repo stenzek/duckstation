@@ -131,7 +131,7 @@ void MDEC::DMARead(u32* words, u32 word_count)
     word_count -= words_to_read;
   }
 
-  Log_DebugPrintf("DMA read complete, %u bytes left", m_data_out_fifo.GetSize() * sizeof(u32));
+  Log_DebugPrintf("DMA read complete, %u bytes left", static_cast<u32>(m_data_out_fifo.GetSize() * sizeof(u32)));
   if (m_data_out_fifo.IsEmpty())
     Execute();
 }
@@ -540,7 +540,7 @@ void MDEC::CopyOutBlock()
   }
 
   Log_DebugPrintf("Block copied out, fifo size = %u (%u bytes)", m_data_out_fifo.GetSize(),
-                  m_data_out_fifo.GetSize() * sizeof(u32));
+                  static_cast<u32>(m_data_out_fifo.GetSize() * sizeof(u32)));
 
   // if we've copied out all blocks, command is complete
   m_state = (m_remaining_halfwords == 0) ? State::Idle : State::DecodingMacroblock;
