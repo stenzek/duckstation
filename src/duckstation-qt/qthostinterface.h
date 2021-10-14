@@ -33,8 +33,10 @@ class MainWindow;
 class QtDisplayWidget;
 
 Q_DECLARE_METATYPE(std::shared_ptr<SystemBootParameters>);
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
 Q_DECLARE_METATYPE(const GameListEntry*);
 Q_DECLARE_METATYPE(GPURenderer);
+#endif
 
 class QtHostInterface final : public QObject, public CommonHostInterface
 {
