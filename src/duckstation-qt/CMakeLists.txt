@@ -134,7 +134,7 @@ set(TS_FILES
 )
 
 set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
-qt5_add_translation(QM_FILES ${TS_FILES})
+qt6_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}")
