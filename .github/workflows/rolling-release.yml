@@ -242,11 +242,25 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qtbase5-dev qtbase5-dev-tools qtbase5-private-dev qt5-default qttools5-dev qtwayland5 libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libqt5waylandclient5-dev libqt5waylandcompositor5-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
+        sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
 
+    - name: Install Qt6
+      uses: WillBrennan/yaqti@2021.07.29
+      with:
+        version: '6.2.0'
+        os: 'linux'
+        platform: 'desktop'
+        modules: 'qtwaylandcompositor'
+        
     - name: Compile build
       shell: bash
+      env:
+        Qt6_DIR: "qt/6.2.0"
       run: |
+        export CMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/$Qt6_DIR/gcc_64
+        export Qt6_DIR=${CMAKE_PREFIX_PATH}/lib/cmake/Qt6/
+        sudo mv /usr/bin/qmake /usr/bin/qmake5
+        sudo ln -s ${GITHUB_WORKSPACE}/$(find qt/ -name qmake) /usr/bin        
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -G Ninja ..
