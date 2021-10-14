@@ -302,7 +302,7 @@ jobs:
     - name: Install packages
       shell: bash
       run: |
-        brew install qt5 sdl2 curl
+        brew install qt6 sdl2 curl
 
     - name: Clone mac externals
       shell: bash
@@ -314,8 +314,8 @@ jobs:
       run: |
         mkdir build
         cd build
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..
+        export MACOSX_DEPLOYMENT_TARGET=10.15
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt6_DIR=/usr/local/opt/qt@6/lib/cmake/Qt6 ..
         cmake --build . --parallel 2
         cd bin
         zip -r duckstation-mac-release.zip DuckStation.app/
