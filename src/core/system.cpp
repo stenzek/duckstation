@@ -2470,7 +2470,9 @@ void DoRunahead()
   if (frames_to_run > 0)
   {
     Common::Timer timer2;
+#ifdef PROFILE_MEMORY_SAVE_STATES
     const s32 temp = frames_to_run;
+#endif
 
     g_spu.SetAudioStream(s_runahead_audio_stream.get());
 
