@@ -90,9 +90,10 @@ sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_d
 
 mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
 mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
-cp /usr/lib/x86_64-linux-gnu/{libQt5WaylandClient.so.5,libEGL_mesa.so.0} ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib
+cp /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 ${BUILD_DIR}/duckstation-wayland.AppDir/usr/lib
+cp ${GITHUB_WORKSPACE}/qt/6.2.0/gcc_64/lib/libQt6WaylandClient.so.6 ${BUILD_DIR}/duckstation-wayland.AppDir/usr/lib
 cp /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
-cp -r /usr/lib/x86_64-linux-gnu/qt5/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
+cp -r ${GITHUB_WORKSPACE}/qt/6.2.0/gcc_64/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-wayland.AppDir/usr/plugins
 
 cat <<'EOF'>> ${BUILD_DIR}/duckstation-qt.AppDir/apprun-hooks/linuxdeploy-plugin-qt-hook.sh
 case "${WAYLAND_DISPLAY}" in
