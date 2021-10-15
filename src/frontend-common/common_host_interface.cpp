@@ -1362,13 +1362,12 @@ void CommonHostInterface::DrawEnhancementsOverlay()
       text.AppendString("/Depth");
   }
 
-  float shadow_offset, margin, spacing, position_y;
+  float shadow_offset, margin, position_y;
   ImFont* font;
 
   if (m_fullscreen_ui_enabled)
   {
     margin = ImGuiFullscreen::LayoutScale(10.0f);
-    spacing = margin;
     shadow_offset = ImGuiFullscreen::DPIScale(1.0f);
     font = ImGuiFullscreen::g_medium_font;
     position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
@@ -1378,7 +1377,6 @@ void CommonHostInterface::DrawEnhancementsOverlay()
     const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
     shadow_offset = 1.0f * scale;
     margin = 10.0f * scale;
-    spacing = 5.0f * scale;
     font = ImGui::GetFont();
     position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
   }
