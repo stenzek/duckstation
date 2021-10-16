@@ -137,8 +137,8 @@ set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNT
 qt6_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
-target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}")
-target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+target_include_directories(duckstation-qt PRIVATE "${Qt${QT_VERSION_MAJOR}Gui_PRIVATE_INCLUDE_DIRS}")
+target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt::Core Qt::Gui Qt::Widgets Qt::Network)
 
 if(WIN32)
   # We want a Windows subsystem application not console.
