@@ -60,7 +60,9 @@ int main(int argc, char* argv[])
   CrashHandler::Install();
 
   // Register any standard types we need elsewhere
+  #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
   qRegisterMetaType<std::optional<bool>>();
+  #endif
   qRegisterMetaType<std::function<void()>>();
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
