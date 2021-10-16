@@ -261,7 +261,7 @@ jobs:
       shell: bash
       env:
         QT5_DIR: "opt/qt515"   
-        Qt6_DIR: "qt/6.2.0"
+        QT6_DIR: "qt/6.2.0"
       run: |
         if [[ -e $QT6_DIR ]]; then
           export CMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/$QT6_DIR/gcc_64
