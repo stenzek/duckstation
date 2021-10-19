@@ -186,7 +186,7 @@ jobs:
         copy ${{ steps.write_signing_key.outputs.filePath }} src\duckstation-uwp\duckstation-uwp.pfx
 
     - name: Disable AppX signing
-      if: github.ref != 'refs/heads/master' || github.ref != 'refs/heads/dev'
+      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
       shell: powershell
       run: |
         (gc .\src\duckstation-uwp\duckstation-uwp.vcxproj) -replace '<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>', '<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>' | Out-File -encoding ASCII .\src\duckstation-uwp\duckstation-uwp.vcxproj
