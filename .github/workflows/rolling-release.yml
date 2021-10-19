@@ -185,6 +185,12 @@ jobs:
       run: |
         copy ${{ steps.write_signing_key.outputs.filePath }} src\duckstation-uwp\duckstation-uwp.pfx
 
+    - name: Disable AppX signing
+      if: github.ref != 'refs/heads/master' || github.ref != 'refs/heads/dev'
+      shell: powershell
+      run: |
+        (gc .\src\duckstation-uwp\duckstation-uwp.vcxproj) -replace '<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>', '<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>' | Out-File -encoding ASCII .\src\duckstation-uwp\duckstation-uwp.vcxproj
+
     - name: Restore nuget packages
       shell: cmd
       run: |
@@ -205,7 +211,6 @@ jobs:
         msbuild duckstation-uwp.sln /p:AppxBundle=Always /p:AppxPackageIsForStore=true /p:BuildAppxUploadPackageForUap=true /p:AppxBundlePlatforms="x64" /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
 
     - name: Grab AppX package
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
         copy build\ReleaseUWP-x64\duckstation-uwp\duckstation-uwp_1.0.0.0_Bundle\duckstation-uwp_1.0.0.0_x64_ReleaseUWP.appx duckstation-uwp.appx
@@ -217,7 +222,6 @@ jobs:
         Get-PfxCertificate -FilePath .\src\duckstation-uwp\duckstation-uwp.pfx | Export-Certificate -FilePath duckstation-uwp.der -Type CERT
 
     - name: Upload AppX package
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       uses: actions/upload-artifact@v1
       with:
         name: "windows-uwp"
