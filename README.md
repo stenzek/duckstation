@@ -159,11 +159,11 @@ If you have an external controller, you will need to map the buttons and sticks 
 
 ### Libretro Core
 
-DuckStation is available as a libretro core, which can be loaded into a frontend such as RetroArch. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
+DuckStation is available as a libretro core. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
 
 The libretro core is provided under the terms of the Creative Commons Attribution-NonCommercial-NoDerivatives International License (BY-NC-ND 4.0, https://creativecommons.org/licenses/by-nc-nd/4.0/). COMMERCIAL DISTRIBUTION AND USAGE IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute or utilize it with any paid applications, services, or products. This includes server side use in streaming environments. Put simply, it is free for personal use, but you are not allowed to utilize DuckStation to make money.
 
-The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the RetroArch buildbot/core updater, or from the links below. The changelog is viewable at https://www.duckstation.org/libretro/changelog.txt
+The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the links below. The changelog is viewable at https://www.duckstation.org/libretro/changelog.txt
 
 - Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
 - Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
