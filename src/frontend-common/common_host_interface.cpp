@@ -2859,6 +2859,25 @@ bool CommonHostInterface::ApplyInputProfile(const char* profile_path)
       if (!value.empty())
         m_settings_interface->SetStringValue(section_name, ssi.key, value.c_str());
     }
+
+    for (u32 autofire_index = 0; autofire_index < NUM_CONTROLLER_AUTOFIRE_BUTTONS; autofire_index++)
+    {
+      const auto button_key_name = TinyString::FromFormat("AutoFire%uButton", autofire_index + 1);
+      const std::string button_name(profile.GetStringValue(section_name, button_key_name, ""));
+      if (button_name.empty())
+        continue;
+
+      m_settings_interface->SetStringValue(section_name, button_key_name, button_name.c_str());
+
+      const auto binding_key_name = TinyString::FromFormat("AutoFire%u", autofire_index + 1);
+      const std::vector<std::string> bindings = profile.GetStringList(section_name, binding_key_name);
+      for (const std::string& binding : bindings)
+        m_settings_interface->AddToStringList(section_name, binding_key_name, binding.c_str());
+
+      const auto frequency_key_name = TinyString::FromFormat("AutoFire%uFrequency", autofire_index + 1);
+      const int frequency = profile.GetIntValue(section_name, frequency_key_name, DEFAULT_AUTOFIRE_FREQUENCY);
+      m_settings_interface->SetIntValue(section_name, frequency_key_name, frequency);
+    }
   }
 
   ReportFormattedMessage(TranslateString("OSDMessage", "Loaded input profile from '%s'"), profile_path);
@@ -2915,6 +2934,26 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path)
       const std::string value = m_settings_interface->GetStringValue(section_name, ssi.key, "");
       if (!value.empty())
         profile.SetStringValue(section_name, ssi.key, value.c_str());
+    }
+
+    for (u32 autofire_index = 0; autofire_index < NUM_CONTROLLER_AUTOFIRE_BUTTONS; autofire_index++)
+    {
+      const auto button_key_name = TinyString::FromFormat("AutoFire%uButton", autofire_index + 1);
+      const std::string button_name(m_settings_interface->GetStringValue(section_name, button_key_name, ""));
+      if (button_name.empty())
+        continue;
+
+      profile.SetStringValue(section_name, button_key_name, button_name.c_str());
+
+      const auto binding_key_name = TinyString::FromFormat("AutoFire%u", autofire_index + 1);
+      const std::vector<std::string> bindings = m_settings_interface->GetStringList(section_name, binding_key_name);
+      for (const std::string& binding : bindings)
+        profile.AddToStringList(section_name, binding_key_name, binding.c_str());
+
+      const auto frequency_key_name = TinyString::FromFormat("AutoFire%uFrequency", autofire_index + 1);
+      const int frequency =
+        m_settings_interface->GetIntValue(section_name, frequency_key_name, DEFAULT_AUTOFIRE_FREQUENCY);
+      profile.SetIntValue(section_name, frequency_key_name, frequency);
     }
   }
 
