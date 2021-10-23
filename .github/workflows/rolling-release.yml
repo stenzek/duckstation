@@ -46,6 +46,15 @@ jobs:
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
 
+    - name: Update RC version fields
+      shell: cmd
+      run: |
+        cd src\scmversion
+        call update_rc_version.bat
+        cd ..\..
+        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
+        git update-index --assume-unchanged src/duckstation-nogui/duckstation-nogui.rc
+
     - name: Compile x64 release build
       shell: cmd
       run: |
@@ -108,6 +117,14 @@ jobs:
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
 
+    - name: Update RC version fields
+      shell: cmd
+      run: |
+        cd src\scmversion
+        call update_rc_version.bat
+        cd ..\..
+        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
+        git update-index --assume-unchanged src/duckstation-nogui/duckstation-nogui.rc
 
     - name: Compile arm64 release build
       shell: cmd
