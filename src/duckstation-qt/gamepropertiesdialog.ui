@@ -70,58 +70,58 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Region:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QComboBox" name="region">
          <property name="enabled">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Compatibility:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QComboBox" name="compatibility"/>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>Upscaling Issues:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QLineEdit" name="upscalingIssues"/>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
           <string>Comments:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QLineEdit" name="comments"/>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
           <string>Version Tested:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLineEdit" name="versionTested"/>
@@ -135,14 +135,14 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0" colspan="2">
+       <item row="9" column="0" colspan="2">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Tracks:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="10" column="0" colspan="2">
         <widget class="QTableWidget" name="tracks">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
@@ -178,6 +178,28 @@
            <string>Hash</string>
           </property>
          </column>
+         <column>
+          <property name="text">
+           <string>Status</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="revision">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="placeholderText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_36">
+         <property name="text">
+          <string>Revision:</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -258,7 +280,7 @@
              <string>Enable 8MB RAM (Dev Console)</string>
             </property>
             <property name="tristate">
-              <bool>true</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1119,14 +1141,7 @@
      <item>
       <widget class="QPushButton" name="computeHashes">
        <property name="text">
-        <string>Compute Hashes</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="verifyDump">
-       <property name="text">
-        <string>Verify Dump</string>
+        <string>Compute &amp;&amp; Verify Hashes</string>
        </property>
       </widget>
      </item>

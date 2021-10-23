@@ -82,6 +82,17 @@ std::string HashToString(const Hash& hash)
                                          hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
 }
 
+std::optional<Hash> HashFromString(const std::string_view& str) {
+    auto decoded = StringUtil::DecodeHex(str);
+    if (decoded && decoded->size() == std::tuple_size_v<Hash>)
+    {
+        Hash result;
+        std::copy(decoded->begin(), decoded->end(), result.begin());
+        return result;
+    }
+    return std::nullopt;
+}
+
 bool GetImageHash(CDImage* image, Hash* out_hash,
                   ProgressCallback* progress_callback /*= ProgressCallback::NullProgressCallback*/)
 {

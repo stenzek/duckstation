@@ -10,6 +10,8 @@ QtProgressCallback::QtProgressCallback(QWidget* parent_widget, float show_delay)
   m_dialog.setWindowTitle(tr("DuckStation"));
   m_dialog.setMinimumSize(QSize(500, 0));
   m_dialog.setModal(parent_widget != nullptr);
+  m_dialog.setAutoClose(false);
+  m_dialog.setAutoReset(false);
   checkForDelayedShow();
 }
 
@@ -57,10 +59,9 @@ void QtProgressCallback::SetProgressValue(u32 value)
   BaseProgressCallback::SetProgressValue(value);
   checkForDelayedShow();
 
-  if (!m_dialog.isVisible() || static_cast<u32>(m_dialog.value()) == m_progress_range)
-    return;
+  if (m_dialog.isVisible() && static_cast<u32>(m_dialog.value()) != m_progress_range)
+    m_dialog.setValue(m_progress_value);
 
-  m_dialog.setValue(m_progress_value);
   QCoreApplication::processEvents();
 }
 
