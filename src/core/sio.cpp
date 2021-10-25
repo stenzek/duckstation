@@ -114,6 +114,8 @@ void SIO::SoftReset()
 {
   m_SIO_CTRL.bits = 0;
   m_SIO_STAT.bits = 0;
+  m_SIO_STAT.DSRINPUTLEVEL = true;
+  m_SIO_STAT.CTSINPUTLEVEL = true;
   m_SIO_STAT.TXDONE = true;
   m_SIO_STAT.TXRDY = true;
   m_SIO_MODE.bits = 0;
