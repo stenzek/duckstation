@@ -1,10 +1,9 @@
 #pragma once
+#include "common/cd_image_hasher.h"
 #include "core/types.h"
-#include <memory>
-#include <optional>
+#include <map>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 class CDImage;
@@ -33,12 +32,31 @@ public:
   bool Load();
   void Unload();
 
-  bool GetEntryForDisc(CDImage* image, GameDatabaseEntry* entry);
+  bool GetEntryForDisc(CDImage* image, GameDatabaseEntry* entry) const;
 
-  bool GetEntryForCode(const std::string_view& code, GameDatabaseEntry* entry);
+  bool GetEntryForCode(const std::string_view& code, GameDatabaseEntry* entry) const;
 
-  bool GetTitleAndSerialForDisc(CDImage* image, GameDatabaseEntry* entry);
-  //bool Get
+  // Map of track hashes for image verification
+  struct TrackData
+  {
+    TrackData(std::vector<std::string> codes, std::string revisionString, uint32_t revision)
+      : codes(codes), revisionString(revisionString), revision(revision)
+    {
+    }
+
+    friend bool operator==(const TrackData& left, const TrackData& right)
+    {
+      // 'revisionString' is deliberately ignored in comparisons as it's redundant with comparing 'revision'! Do not
+      // change!
+      return left.codes == right.codes && left.revision == right.revision;
+    }
+
+    std::vector<std::string> codes;
+    std::string revisionString;
+    uint32_t revision;
+  };
+  using TrackHashesMap = std::multimap<CDImageHasher::Hash, TrackData>;
+  TrackHashesMap GetTrackHashesMap() const;
 
 private:
   void* m_json = nullptr;

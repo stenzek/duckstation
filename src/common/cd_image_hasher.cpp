@@ -46,15 +46,19 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
 
   progress_callback->PushState();
 
-  progress_callback->SetProgressRange(2);
+  const bool dataTrack = track == 1;
+  progress_callback->SetProgressRange(dataTrack ? 1 : 2);
+
+  u8 progress = 0;
   for (u8 index = 0; index < INDICES_TO_READ; index++)
   {
-    progress_callback->SetProgressValue(index);
+    progress_callback->SetProgressValue(progress);
 
     // skip index 0 if data track
-    if (track == 1 && index == 0)
+    if (dataTrack && index == 0)
       continue;
 
+    progress++;
     progress_callback->PushState();
     if (!ReadIndex(image, track, index, digest, progress_callback))
     {
@@ -66,7 +70,7 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
     progress_callback->PopState();
   }
 
-  progress_callback->SetProgressValue(INDICES_TO_READ);
+  progress_callback->SetProgressValue(progress);
   progress_callback->PopState();
   return true;
 }
@@ -76,6 +80,17 @@ std::string HashToString(const Hash& hash)
   return StringUtil::StdStringFromFormat("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hash[0],
                                          hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8],
                                          hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
+}
+
+std::optional<Hash> HashFromString(const std::string_view& str) {
+    auto decoded = StringUtil::DecodeHex(str);
+    if (decoded && decoded->size() == std::tuple_size_v<Hash>)
+    {
+        Hash result;
+        std::copy(decoded->begin(), decoded->end(), result.begin());
+        return result;
+    }
+    return std::nullopt;
 }
 
 bool GetImageHash(CDImage* image, Hash* out_hash,

@@ -1,18 +1,23 @@
 #include "gamepropertiesdialog.h"
 #include "common/cd_image.h"
 #include "common/cd_image_hasher.h"
+#include "common/string_util.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "frontend-common/game_database.h"
 #include "frontend-common/game_list.h"
 #include "qthostinterface.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "rapidjson/document.h"
 #include "scmversion/scmversion.h"
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include <map>
+Log_SetChannel(GamePropertiesDialog);
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
@@ -71,6 +76,7 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
     m_ui.gameCode->setText(QStringLiteral("%1 / %2").arg(ge->code.c_str()).arg(hash_code.c_str()));
   else
     m_ui.gameCode->setText(QString::fromStdString(ge->code));
+  m_ui.revision->setText(tr("<not verified>"));
 
   m_ui.region->setCurrentIndex(static_cast<int>(ge->region));
 
@@ -83,7 +89,6 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
     m_ui.comments->setDisabled(true);
     m_ui.versionTested->setDisabled(true);
     m_ui.setToCurrent->setDisabled(true);
-    m_ui.verifyDump->setDisabled(true);
     m_ui.exportCompatibilityInfo->setDisabled(true);
   }
   else
@@ -261,6 +266,10 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
     m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFTotString(position)));
     m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFTotString(length)));
     m_ui.tracks->setItem(row, 4, new QTableWidgetItem(tr("<not computed>")));
+
+    QTableWidgetItem* status = new QTableWidgetItem(QString());
+    status->setTextAlignment(Qt::AlignCenter);
+    m_ui.tracks->setItem(row, 5, status);
   }
 }
 
@@ -532,7 +541,7 @@ void GamePropertiesDialog::resizeEvent(QResizeEvent* ev)
 
 void GamePropertiesDialog::onResize()
 {
-  QtUtils::ResizeColumnsForTableView(m_ui.tracks, {20, 85, 125, 125, -1});
+  QtUtils::ResizeColumnsForTableView(m_ui.tracks, {15, 85, 125, 125, -1, 25});
 }
 
 void GamePropertiesDialog::connectUi()
@@ -546,14 +555,12 @@ void GamePropertiesDialog::connectUi()
           &GamePropertiesDialog::saveCompatibilityInfoIfChanged);
   connect(m_ui.setToCurrent, &QPushButton::clicked, this, &GamePropertiesDialog::onSetVersionTestedToCurrentClicked);
   connect(m_ui.computeHashes, &QPushButton::clicked, this, &GamePropertiesDialog::onComputeHashClicked);
-  connect(m_ui.verifyDump, &QPushButton::clicked, this, &GamePropertiesDialog::onVerifyDumpClicked);
   connect(m_ui.exportCompatibilityInfo, &QPushButton::clicked, this,
           &GamePropertiesDialog::onExportCompatibilityInfoClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &QDialog::close);
   connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this](int index) {
     const bool show_buttons = index == 0;
     m_ui.computeHashes->setVisible(show_buttons);
-    m_ui.verifyDump->setVisible(show_buttons);
     m_ui.exportCompatibilityInfo->setVisible(show_buttons);
   });
 
@@ -924,15 +931,19 @@ void GamePropertiesDialog::onSetVersionTestedToCurrentClicked()
 
 void GamePropertiesDialog::onComputeHashClicked()
 {
-  if (m_tracks_hashed)
-    return;
+  if (m_redump_search_keyword.empty())
+  {
+    computeTrackHashes(m_redump_search_keyword);
 
-  computeTrackHashes();
-}
-
-void GamePropertiesDialog::onVerifyDumpClicked()
-{
-  QMessageBox::critical(this, tr("Not yet implemented"), tr("Not yet implemented"));
+    if (!m_redump_search_keyword.empty())
+      m_ui.computeHashes->setText(tr("Search on Redump.org"));
+  }
+  else
+  {
+    QtUtils::OpenURL(
+      this, StringUtil::StdStringFromFormat("http://redump.org/discs/quicksearch/%s", m_redump_search_keyword.c_str())
+              .c_str());
+  }
 }
 
 void GamePropertiesDialog::onExportCompatibilityInfoClicked()
@@ -952,7 +963,7 @@ void GamePropertiesDialog::onExportCompatibilityInfoClicked()
     QGuiApplication::clipboard()->setText(xml);
 }
 
-void GamePropertiesDialog::computeTrackHashes()
+void GamePropertiesDialog::computeTrackHashes(std::string& redump_keyword)
 {
   if (m_path.empty())
     return;
@@ -961,9 +972,25 @@ void GamePropertiesDialog::computeTrackHashes()
   if (!image)
     return;
 
+  // Kick off hash preparation asynchronously, as building the map of results may take a while
+  auto hashes_map_job = std::async(std::launch::async, [] {
+    GameDatabase::TrackHashesMap result;
+    GameDatabase db;
+    if (db.Load())
+    {
+      result = db.GetTrackHashesMap();
+    }
+    return result;
+  });
+
   QtProgressCallback progress_callback(this);
   progress_callback.SetProgressRange(image->GetTrackCount());
 
+  std::vector<CDImageHasher::Hash> track_hashes;
+  track_hashes.reserve(image->GetTrackCount());
+
+  // Calculate hashes
+  bool calculate_hash_success = true;
   for (u8 track = 1; track <= image->GetTrackCount(); track++)
   {
     progress_callback.SetProgressValue(track - 1);
@@ -973,14 +1000,98 @@ void GamePropertiesDialog::computeTrackHashes()
     if (!CDImageHasher::GetTrackHash(image.get(), track, &hash, &progress_callback))
     {
       progress_callback.PopState();
+      calculate_hash_success = false;
       break;
     }
-
-    QString hash_string(QString::fromStdString(CDImageHasher::HashToString(hash)));
+    track_hashes.emplace_back(hash);
 
     QTableWidgetItem* item = m_ui.tracks->item(track - 1, 4);
-    item->setText(hash_string);
+    item->setText(QString::fromStdString(CDImageHasher::HashToString(hash)));
 
     progress_callback.PopState();
+  }
+
+  // Verify hashes against gamedb
+  std::vector<bool> verification_results(image->GetTrackCount(), false);
+  if (calculate_hash_success)
+  {
+    std::string found_revision;
+    redump_keyword = CDImageHasher::HashToString(track_hashes.front());
+
+    progress_callback.SetStatusText("Verifying hashes...");
+    progress_callback.SetProgressValue(image->GetTrackCount());
+
+    const auto hashes_map = hashes_map_job.get();
+
+    // Verification strategy used:
+    // 1. First, find all matches for the data track
+    //    If none are found, fail verification for all tracks
+    // 2. For each data track match, try to match all audio tracks
+    //    If all match, assume this revision. Else, try other revisions,
+    //    and accept the one with the most matches.
+    auto data_track_matches = hashes_map.equal_range(track_hashes[0]);
+    if (data_track_matches.first != data_track_matches.second)
+    {
+      auto best_data_match = data_track_matches.second;
+      for (auto iter = data_track_matches.first; iter != data_track_matches.second; ++iter)
+      {
+        std::vector<bool> current_verification_results(image->GetTrackCount(), false);
+        const auto& data_track_attribs = iter->second;
+        current_verification_results[0] = true; // Data track already matched
+
+        for (auto audio_tracks_iter = std::next(track_hashes.begin()); audio_tracks_iter != track_hashes.end();
+             ++audio_tracks_iter)
+        {
+          auto audio_track_matches = hashes_map.equal_range(*audio_tracks_iter);
+          for (auto audio_iter = audio_track_matches.first; audio_iter != audio_track_matches.second; ++audio_iter)
+          {
+            // If audio track comes from the same revision and code as the data track, "pass" it
+            if (audio_iter->second == data_track_attribs)
+            {
+              current_verification_results[std::distance(track_hashes.begin(), audio_tracks_iter)] = true;
+              break;
+            }
+          }
+        }
+
+        const auto old_matches_count = std::count(verification_results.begin(), verification_results.end(), true);
+        const auto new_matches_count =
+          std::count(current_verification_results.begin(), current_verification_results.end(), true);
+
+        if (new_matches_count > old_matches_count)
+        {
+          best_data_match = iter;
+          verification_results = current_verification_results;
+          // If all elements got matched, early out
+          if (new_matches_count >= static_cast<ptrdiff_t>(verification_results.size()))
+          {
+            break;
+          }
+        }
+      }
+
+      found_revision = best_data_match->second.revisionString;
+    }
+
+    m_ui.revision->setText(!found_revision.empty() ? QString::fromStdString(found_revision) : QStringLiteral("-"));
+  }
+
+  for (u8 track = 0; track < image->GetTrackCount(); track++)
+  {
+    QTableWidgetItem* hash_text = m_ui.tracks->item(track, 4);
+    QTableWidgetItem* status_text = m_ui.tracks->item(track, 5);
+    QBrush brush;
+    if (verification_results[track])
+    {
+      brush = QColor(0, 200, 0);
+      status_text->setText(QString::fromUtf8(u8"\u2713"));
+    }
+    else
+    {
+      brush = QColor(200, 0, 0);
+      status_text->setText(QString::fromUtf8(u8"\u2715"));
+    }
+    status_text->setForeground(brush);
+    hash_text->setForeground(brush);
   }
 }

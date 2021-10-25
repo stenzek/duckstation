@@ -16,7 +16,6 @@
   "maxPlayers": 2,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
@@ -30,10 +29,14 @@
   "codes": [
    "SLPM-80238"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 443733024,
-    "md5": "0aa29df886d9f4f3ec5340bdd3b4f3be"
+    "tracks": [
+     {
+      "size": 443733024,
+      "md5": "0aa29df886d9f4f3ec5340bdd3b4f3be"
+     }
+    ]
    }
   ]
  },
@@ -54,17 +57,21 @@
   "maxPlayers": 2,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 583415952,
-    "md5": "39a936ea7521157838d4e67b24f62f15"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 583415952,
+      "md5": "39a936ea7521157838d4e67b24f62f15"
+     }
+    ]
+   }
   ]
  },
  {
@@ -84,7 +91,6 @@
   "maxPlayers": 2,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
@@ -109,57 +115,61 @@
   "maxPlayers": 2,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 314812848,
-    "md5": "7bdc7092aef04c6bec7e78cdfe3d9a81"
-   },
-   {
-    "size": 16800336,
-    "md5": "0e56bd53edeccf372fe863b3e88afc30"
-   },
-   {
-    "size": 32365872,
-    "md5": "26d0704b0adca0f286966e98b0178ef4"
-   },
-   {
-    "size": 29376480,
-    "md5": "4b8d1b94e030b53e1148106d6553e7c7"
-   },
-   {
-    "size": 38142384,
-    "md5": "7509e628d3288a8aae99b9661dbdcd49"
-   },
-   {
-    "size": 46576656,
-    "md5": "d63d8c6c8395eefb2513386296ff1d4d"
-   },
-   {
-    "size": 39278400,
-    "md5": "81db2ab2cf5987f42a69da1bd256426e"
-   },
-   {
-    "size": 39553584,
-    "md5": "9b16cfa7fbb6221e383f162dfb896f1b"
-   },
-   {
-    "size": 5924688,
-    "md5": "9f938e86c6332f674662903585dc7c30"
-   },
-   {
-    "size": 30312576,
-    "md5": "db4e1e6dabecc6afc6428b4280ecd210"
-   },
-   {
-    "size": 32365872,
-    "md5": "26d0704b0adca0f286966e98b0178ef4"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 314812848,
+      "md5": "7bdc7092aef04c6bec7e78cdfe3d9a81"
+     },
+     {
+      "size": 16800336,
+      "md5": "0e56bd53edeccf372fe863b3e88afc30"
+     },
+     {
+      "size": 32365872,
+      "md5": "26d0704b0adca0f286966e98b0178ef4"
+     },
+     {
+      "size": 29376480,
+      "md5": "4b8d1b94e030b53e1148106d6553e7c7"
+     },
+     {
+      "size": 38142384,
+      "md5": "7509e628d3288a8aae99b9661dbdcd49"
+     },
+     {
+      "size": 46576656,
+      "md5": "d63d8c6c8395eefb2513386296ff1d4d"
+     },
+     {
+      "size": 39278400,
+      "md5": "81db2ab2cf5987f42a69da1bd256426e"
+     },
+     {
+      "size": 39553584,
+      "md5": "9b16cfa7fbb6221e383f162dfb896f1b"
+     },
+     {
+      "size": 5924688,
+      "md5": "9f938e86c6332f674662903585dc7c30"
+     },
+     {
+      "size": 30312576,
+      "md5": "db4e1e6dabecc6afc6428b4280ecd210"
+     },
+     {
+      "size": 32365872,
+      "md5": "26d0704b0adca0f286966e98b0178ef4"
+     }
+    ]
+   }
   ]
  },
  {
@@ -168,26 +178,30 @@
   "codes": [
    "SLPM-80421"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 257513424,
-    "md5": "e3cd52984734e99231b9908768d6db51"
-   },
-   {
-    "size": 30312576,
-    "md5": "db4e1e6dabecc6afc6428b4280ecd210"
-   },
-   {
-    "size": 38142384,
-    "md5": "7509e628d3288a8aae99b9661dbdcd49"
-   },
-   {
-    "size": 39553584,
-    "md5": "9b16cfa7fbb6221e383f162dfb896f1b"
-   },
-   {
-    "size": 32365872,
-    "md5": "26d0704b0adca0f286966e98b0178ef4"
+    "tracks": [
+     {
+      "size": 257513424,
+      "md5": "e3cd52984734e99231b9908768d6db51"
+     },
+     {
+      "size": 30312576,
+      "md5": "db4e1e6dabecc6afc6428b4280ecd210"
+     },
+     {
+      "size": 38142384,
+      "md5": "7509e628d3288a8aae99b9661dbdcd49"
+     },
+     {
+      "size": 39553584,
+      "md5": "9b16cfa7fbb6221e383f162dfb896f1b"
+     },
+     {
+      "size": 32365872,
+      "md5": "26d0704b0adca0f286966e98b0178ef4"
+     }
+    ]
    }
   ]
  },
@@ -208,17 +222,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 574189056,
-    "md5": "abf66f269698c4d8b944504cb1637ce6"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 574189056,
+      "md5": "abf66f269698c4d8b944504cb1637ce6"
+     }
+    ]
+   }
   ]
  },
  {
@@ -238,21 +256,25 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 225954288,
-    "md5": "b217cc68ea266f22378add75c3f209b5"
-   },
-   {
-    "size": 42296016,
-    "md5": "903ebfcecf448137351f6a33e94381c4"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 225954288,
+      "md5": "b217cc68ea266f22378add75c3f209b5"
+     },
+     {
+      "size": 42296016,
+      "md5": "903ebfcecf448137351f6a33e94381c4"
+     }
+    ]
+   }
   ]
  },
  {
@@ -272,7 +294,6 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
@@ -297,7 +318,6 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
@@ -323,22 +343,26 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 12432672,
-    "md5": "a734cef9a92e0f5a2253b4f68f27cb9a"
-   },
-   {
-    "size": 703217424,
-    "md5": "1a1eb01e177f034f93e352e76bcaab06"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 12432672,
+      "md5": "a734cef9a92e0f5a2253b4f68f27cb9a"
+     },
+     {
+      "size": 703217424,
+      "md5": "1a1eb01e177f034f93e352e76bcaab06"
+     }
+    ]
+   }
   ]
  },
  {
@@ -359,25 +383,29 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 22567440,
-    "md5": "1c3dedb2d2aa71e08d0fc4c33e8e7bc6"
-   },
-   {
-    "size": 690735360,
-    "md5": "b4967477c3fe0e3221b042bbd70c246b"
-   },
-   {
-    "size": 32993856,
-    "md5": "09285c27ca804ac6a8539d789b07fe4d"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 22567440,
+      "md5": "1c3dedb2d2aa71e08d0fc4c33e8e7bc6"
+     },
+     {
+      "size": 690735360,
+      "md5": "b4967477c3fe0e3221b042bbd70c246b"
+     },
+     {
+      "size": 32993856,
+      "md5": "09285c27ca804ac6a8539d789b07fe4d"
+     }
+    ]
+   }
   ]
  },
  {
@@ -397,18 +425,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 570611664,
-    "md5": "00bcb9f419b44c2f9dd8c9e89e488841"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 570611664,
+      "md5": "00bcb9f419b44c2f9dd8c9e89e488841"
+     }
+    ]
+   }
   ]
  },
  {
@@ -428,18 +460,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 569706144,
-    "md5": "0ecc6d05b7e7974fe1b85c487d1c12e2"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 569706144,
+      "md5": "0ecc6d05b7e7974fe1b85c487d1c12e2"
+     }
+    ]
+   }
   ]
  },
  {
@@ -459,18 +495,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 724728816,
-    "md5": "8e3be93549b74b1a10bbd574bcf3e08f"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 724728816,
+      "md5": "8e3be93549b74b1a10bbd574bcf3e08f"
+     }
+    ]
+   }
   ]
  },
  {
@@ -490,18 +530,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 725182752,
-    "md5": "22f47a02a820d76b483a97d078c05c05"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 725182752,
+      "md5": "22f47a02a820d76b483a97d078c05c05"
+     }
+    ]
+   }
   ]
  },
  {
@@ -521,18 +565,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 727325424,
-    "md5": "687837b7247025862a89e1d18eebcfcd"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 727325424,
+      "md5": "687837b7247025862a89e1d18eebcfcd"
+     }
+    ]
+   }
   ]
  },
  {
@@ -552,18 +600,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 727292496,
-    "md5": "27a4de3117889274d73659354f38a6b3"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 727292496,
+      "md5": "27a4de3117889274d73659354f38a6b3"
+     }
+    ]
+   }
   ]
  },
  {
@@ -583,18 +635,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 727299552,
-    "md5": "95eb2b104ab37cac40f356f4c07b7698"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 727299552,
+      "md5": "95eb2b104ab37cac40f356f4c07b7698"
+     }
+    ]
+   }
   ]
  },
  {
@@ -614,18 +670,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 726429312,
-    "md5": "7b1e0d16d3fb734a15f8d861d8f2ee06"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 726429312,
+      "md5": "7b1e0d16d3fb734a15f8d861d8f2ee06"
+     }
+    ]
+   }
   ]
  },
  {
@@ -634,10 +694,14 @@
   "codes": [
    "SLUS-00978"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 750278592,
-    "md5": "1e50b7d0db4ecdffdf6a47ac9d64f85c"
+    "tracks": [
+     {
+      "size": 750278592,
+      "md5": "1e50b7d0db4ecdffdf6a47ac9d64f85c"
+     }
+    ]
    }
   ]
  },
@@ -658,18 +722,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 572408592,
-    "md5": "99e49671ee69aafda867d3eede2a3c00"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 572408592,
+      "md5": "99e49671ee69aafda867d3eede2a3c00"
+     }
+    ]
+   }
   ]
  },
  {
@@ -689,18 +757,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 564764592,
-    "md5": "c29c76010d733417139bc2b41d701cff"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 564764592,
+      "md5": "c29c76010d733417139bc2b41d701cff"
+     }
+    ]
+   }
   ]
  },
  {
@@ -720,18 +792,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 573594000,
-    "md5": "cd844bb94308eff3dda5e3ecb4a3c907"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 573594000,
+      "md5": "cd844bb94308eff3dda5e3ecb4a3c907"
+     }
+    ]
+   }
   ]
  },
  {
@@ -751,18 +827,22 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 565672464,
-    "md5": "9192da77d65952142b9b46f9862930fe"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 565672464,
+      "md5": "9192da77d65952142b9b46f9862930fe"
+     }
+    ]
+   }
   ]
  },
  {
@@ -782,18 +862,22 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 547510320,
-    "md5": "cbbec2f35e7b09e879a8d1d70bcd443b"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 547510320,
+      "md5": "cbbec2f35e7b09e879a8d1d70bcd443b"
+     }
+    ]
+   }
   ]
  },
  {
@@ -813,18 +897,22 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 552463632,
-    "md5": "cbd238103dbcbf5bc26299f2db6e873a"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 552463632,
+      "md5": "cbd238103dbcbf5bc26299f2db6e873a"
+     }
+    ]
+   }
   ]
  },
  {
@@ -844,18 +932,22 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 565011552,
-    "md5": "2a51a718419e8d16e20e0ac8b5e59d24"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 565011552,
+      "md5": "2a51a718419e8d16e20e0ac8b5e59d24"
+     }
+    ]
+   }
   ]
  },
  {
@@ -876,18 +968,22 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 362012784,
-    "md5": "17ac1624d397c35e77956e766912a055"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 362012784,
+      "md5": "17ac1624d397c35e77956e766912a055"
+     }
+    ]
+   }
   ]
  },
  {
@@ -896,10 +992,14 @@
   "codes": [
    "SLPM-80351"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 362012784,
-    "md5": "27402c16d11558ed190d137f13213d31"
+    "tracks": [
+     {
+      "size": 362012784,
+      "md5": "27402c16d11558ed190d137f13213d31"
+     }
+    ]
    }
   ]
  },
@@ -920,18 +1020,22 @@
   "maxPlayers": 4,
   "minBlocks": 2,
   "maxBlocks": 2,
-  "tracks": [
-   {
-    "size": 496330800,
-    "md5": "fb2b5461641ae87cd1644ca33ca95d13"
-   }
-  ],
   "vibration": false,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 496330800,
+      "md5": "fb2b5461641ae87cd1644ca33ca95d13"
+     }
+    ]
+   }
   ]
  },
  {
@@ -951,22 +1055,26 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 4,
-  "tracks": [
-   {
-    "size": 36293712,
-    "md5": "430468b9a6860e79b85472877e8ce019"
-   },
-   {
-    "size": 33508944,
-    "md5": "308db86e70bdb4192f6c3603a9451a45"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 36293712,
+      "md5": "430468b9a6860e79b85472877e8ce019"
+     },
+     {
+      "size": 33508944,
+      "md5": "308db86e70bdb4192f6c3603a9451a45"
+     }
+    ]
+   }
   ]
  },
  {
@@ -986,22 +1094,26 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 4,
-  "tracks": [
-   {
-    "size": 36764112,
-    "md5": "aec2a27b77c867ef517a1dd2b19e2c0f"
-   },
-   {
-    "size": 33508944,
-    "md5": "308db86e70bdb4192f6c3603a9451a45"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 36764112,
+      "md5": "aec2a27b77c867ef517a1dd2b19e2c0f"
+     },
+     {
+      "size": 33508944,
+      "md5": "308db86e70bdb4192f6c3603a9451a45"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1021,73 +1133,77 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 5,
-  "tracks": [
-   {
-    "size": 291904368,
-    "md5": "83ffe83e6b14502c53ee38c553e85636"
-   },
-   {
-    "size": 11143776,
-    "md5": "68f79c90a6e94ea713e28445147dbe30"
-   },
-   {
-    "size": 11557728,
-    "md5": "16bd299972ada8257a57dbdf7d899044"
-   },
-   {
-    "size": 8239056,
-    "md5": "3dfb269bba005c2bdfff94bae26df6de"
-   },
-   {
-    "size": 11891712,
-    "md5": "62b4a6f2d0f9ad44d31ec59777040cee"
-   },
-   {
-    "size": 9250416,
-    "md5": "1694074192b7fae553ace3669d6ed8b4"
-   },
-   {
-    "size": 13175904,
-    "md5": "0f0c4ca38ddb0d8483debed4543a2312"
-   },
-   {
-    "size": 15741936,
-    "md5": "af2098c344ca07050b8f65b183b10352"
-   },
-   {
-    "size": 5797680,
-    "md5": "90e1d632889aa48a82b462368a79a17e"
-   },
-   {
-    "size": 5122656,
-    "md5": "174ab16e535b4ac94e366ea9f3cb2f0d"
-   },
-   {
-    "size": 6028176,
-    "md5": "46f369bed8a2a57ef36d0fb4c24c2147"
-   },
-   {
-    "size": 5868240,
-    "md5": "9938683f6bc844e8ab7f636c84180ece"
-   },
-   {
-    "size": 7088928,
-    "md5": "e6850233ee92211a031dbe7caab1b423"
-   },
-   {
-    "size": 6472704,
-    "md5": "bffbbdedce43863da7a420070958c859"
-   },
-   {
-    "size": 8939952,
-    "md5": "959dcadabadb5ca8c65a73f34db0735a"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 291904368,
+      "md5": "83ffe83e6b14502c53ee38c553e85636"
+     },
+     {
+      "size": 11143776,
+      "md5": "68f79c90a6e94ea713e28445147dbe30"
+     },
+     {
+      "size": 11557728,
+      "md5": "16bd299972ada8257a57dbdf7d899044"
+     },
+     {
+      "size": 8239056,
+      "md5": "3dfb269bba005c2bdfff94bae26df6de"
+     },
+     {
+      "size": 11891712,
+      "md5": "62b4a6f2d0f9ad44d31ec59777040cee"
+     },
+     {
+      "size": 9250416,
+      "md5": "1694074192b7fae553ace3669d6ed8b4"
+     },
+     {
+      "size": 13175904,
+      "md5": "0f0c4ca38ddb0d8483debed4543a2312"
+     },
+     {
+      "size": 15741936,
+      "md5": "af2098c344ca07050b8f65b183b10352"
+     },
+     {
+      "size": 5797680,
+      "md5": "90e1d632889aa48a82b462368a79a17e"
+     },
+     {
+      "size": 5122656,
+      "md5": "174ab16e535b4ac94e366ea9f3cb2f0d"
+     },
+     {
+      "size": 6028176,
+      "md5": "46f369bed8a2a57ef36d0fb4c24c2147"
+     },
+     {
+      "size": 5868240,
+      "md5": "9938683f6bc844e8ab7f636c84180ece"
+     },
+     {
+      "size": 7088928,
+      "md5": "e6850233ee92211a031dbe7caab1b423"
+     },
+     {
+      "size": 6472704,
+      "md5": "bffbbdedce43863da7a420070958c859"
+     },
+     {
+      "size": 8939952,
+      "md5": "959dcadabadb5ca8c65a73f34db0735a"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1096,10 +1212,14 @@
   "codes": [
    "SLPM-80643"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 113110032,
-    "md5": "b670159d2b47801cf2f38b994cc67265"
+    "tracks": [
+     {
+      "size": 113110032,
+      "md5": "b670159d2b47801cf2f38b994cc67265"
+     }
+    ]
    }
   ]
  },
@@ -1109,10 +1229,14 @@
   "codes": [
    "LSP-99012101"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 622045200,
-    "md5": "ee1465881af16eaaed52446ae3f895c2"
+    "tracks": [
+     {
+      "size": 622045200,
+      "md5": "ee1465881af16eaaed52446ae3f895c2"
+     }
+    ]
    }
   ]
  },
@@ -1122,10 +1246,14 @@
   "codes": [
    "LSP-99012201"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 620871552,
-    "md5": "2d370a51efb3e6e865df38e807c1bf29"
+    "tracks": [
+     {
+      "size": 620871552,
+      "md5": "2d370a51efb3e6e865df38e807c1bf29"
+     }
+    ]
    }
   ]
  },
@@ -1135,10 +1263,14 @@
   "codes": [
    "LSP-99012401"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 620125968,
-    "md5": "20b892d7cc5af4df4fcbca28b9b41461"
+    "tracks": [
+     {
+      "size": 620125968,
+      "md5": "20b892d7cc5af4df4fcbca28b9b41461"
+     }
+    ]
    }
   ]
  },
@@ -1159,18 +1291,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 482529264,
-    "md5": "3b914b3624566b2504394ad4b89101d3"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 482529264,
+      "md5": "3b914b3624566b2504394ad4b89101d3"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1179,10 +1315,14 @@
   "codes": [
    "SLPM-80181"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 163870896,
-    "md5": "f78574ff6e65c47988579e9b79807bc3"
+    "tracks": [
+     {
+      "size": 163870896,
+      "md5": "f78574ff6e65c47988579e9b79807bc3"
+     }
+    ]
    }
   ]
  },
@@ -1203,7 +1343,6 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
@@ -1229,45 +1368,85 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 106148112,
-    "md5": "e3b5ab6c8e2baf21d5e2350c2f9d4c02"
-   },
-   {
-    "size": 60213552,
-    "md5": "f5f2aeda976a2d838b88e5990911f3fa"
-   },
-   {
-    "size": 66371088,
-    "md5": "b5d8552ab743eae5f574f001ccf74771"
-   },
-   {
-    "size": 54460560,
-    "md5": "8f0b0f35f82e1b0b6effcbe015937ee2"
-   },
-   {
-    "size": 67222512,
-    "md5": "d014cbfa47039d05ac7fda432e62a9ff"
-   },
-   {
-    "size": 63391104,
-    "md5": "506dcab5884e4d13df177bfbf1700fe7"
-   },
-   {
-    "size": 63035952,
-    "md5": "9276a8ddb0653016cf6bf9a0d1825b97"
-   },
-   {
-    "size": 63035952,
-    "md5": "9276a8ddb0653016cf6bf9a0d1825b97"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 217026096,
+      "md5": "30affebacd10a8dda1336fb3b5fd09b0"
+     },
+     {
+      "size": 59858400,
+      "md5": "c15996314b8ff0ccefb6814d23a5b31f"
+     },
+     {
+      "size": 48081936,
+      "md5": "d44b1825f6fba4b9d0eca01970657568"
+     },
+     {
+      "size": 66015936,
+      "md5": "cc4913b09d47dc47565673c3094deace"
+     },
+     {
+      "size": 54105408,
+      "md5": "5da9100b0b1ffcdf344149c9ffbce5b5"
+     },
+     {
+      "size": 66867360,
+      "md5": "ce995531a48e85e9267ff40fefd6602c"
+     },
+     {
+      "size": 63035952,
+      "md5": "5f8b7185a903f51c238fbb92cf93c265"
+     },
+     {
+      "size": 63035952,
+      "md5": "5f8b7185a903f51c238fbb92cf93c265"
+     }
+    ]
+   },
+   {
+    "tracks": [
+     {
+      "size": 106148112,
+      "md5": "e3b5ab6c8e2baf21d5e2350c2f9d4c02"
+     },
+     {
+      "size": 60213552,
+      "md5": "f5f2aeda976a2d838b88e5990911f3fa"
+     },
+     {
+      "size": 66371088,
+      "md5": "b5d8552ab743eae5f574f001ccf74771"
+     },
+     {
+      "size": 54460560,
+      "md5": "8f0b0f35f82e1b0b6effcbe015937ee2"
+     },
+     {
+      "size": 67222512,
+      "md5": "d014cbfa47039d05ac7fda432e62a9ff"
+     },
+     {
+      "size": 63391104,
+      "md5": "506dcab5884e4d13df177bfbf1700fe7"
+     },
+     {
+      "size": 63035952,
+      "md5": "9276a8ddb0653016cf6bf9a0d1825b97"
+     },
+     {
+      "size": 63035952,
+      "md5": "9276a8ddb0653016cf6bf9a0d1825b97"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1287,18 +1466,22 @@
   "maxPlayers": 1,
   "minBlocks": 8,
   "maxBlocks": 8,
-  "tracks": [
-   {
-    "size": 153021120,
-    "md5": "7102e0c28698e3ddc388e498718717ef"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 153021120,
+      "md5": "7102e0c28698e3ddc388e498718717ef"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1322,7 +1505,6 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
@@ -1348,7 +1530,6 @@
   "maxPlayers": 1,
   "minBlocks": 6,
   "maxBlocks": 6,
-  "tracks": [],
   "vibration": false,
   "multitap": true,
   "linkCable": false,
@@ -1374,18 +1555,22 @@
   "maxPlayers": 1,
   "minBlocks": 6,
   "maxBlocks": 6,
-  "tracks": [
-   {
-    "size": 567690480,
-    "md5": "4c916beebb9276eea17fde1cef463742"
-   }
-  ],
   "vibration": false,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 567690480,
+      "md5": "4c916beebb9276eea17fde1cef463742"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1406,18 +1591,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 514107216,
-    "md5": "f951303ecd658fc999e50bcea56239e9"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 514107216,
+      "md5": "f951303ecd658fc999e50bcea56239e9"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1437,18 +1626,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 518470176,
-    "md5": "67782896378880abf754266aeb87e424"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 518470176,
+      "md5": "67782896378880abf754266aeb87e424"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1468,18 +1661,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 618284352,
-    "md5": "af94e2d323346b910b490540587a4cc8"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 618284352,
+      "md5": "af94e2d323346b910b490540587a4cc8"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1499,18 +1696,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 532488096,
-    "md5": "86ca552366ae5c92e4622344465c22bc"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 532488096,
+      "md5": "86ca552366ae5c92e4622344465c22bc"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1530,18 +1731,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 561695232,
-    "md5": "1130242f030354439ee1d7c16cf10bdc"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 561695232,
+      "md5": "1130242f030354439ee1d7c16cf10bdc"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1562,18 +1767,22 @@
   "maxPlayers": 1,
   "minBlocks": 3,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 514612896,
-    "md5": "99dfc6639e0dd006bfd8c1f276d7466c"
-   }
-  ],
   "vibration": true,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 514612896,
+      "md5": "99dfc6639e0dd006bfd8c1f276d7466c"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1593,45 +1802,49 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 45511200,
-    "md5": "638c2731be64cd1016c0b0aae8f38ca3"
-   },
-   {
-    "size": 59239824,
-    "md5": "615a9010e794059afbc19f099dd7d22b"
-   },
-   {
-    "size": 80473680,
-    "md5": "038cd73ad8b6cbf8d66ab4f0476dac90"
-   },
-   {
-    "size": 76818672,
-    "md5": "4220b29e5b6fb6403a9434b9cf6ab791"
-   },
-   {
-    "size": 65345616,
-    "md5": "45579fcb67b37da4ce1d846d24a72d82"
-   },
-   {
-    "size": 61152000,
-    "md5": "6a9781b441267aa545f3202b9499630d"
-   },
-   {
-    "size": 76776336,
-    "md5": "61efc4bd04c27763ceafad20ba70b6a6"
-   },
-   {
-    "size": 76776336,
-    "md5": "61efc4bd04c27763ceafad20ba70b6a6"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 45511200,
+      "md5": "638c2731be64cd1016c0b0aae8f38ca3"
+     },
+     {
+      "size": 59239824,
+      "md5": "615a9010e794059afbc19f099dd7d22b"
+     },
+     {
+      "size": 80473680,
+      "md5": "038cd73ad8b6cbf8d66ab4f0476dac90"
+     },
+     {
+      "size": 76818672,
+      "md5": "4220b29e5b6fb6403a9434b9cf6ab791"
+     },
+     {
+      "size": 65345616,
+      "md5": "45579fcb67b37da4ce1d846d24a72d82"
+     },
+     {
+      "size": 61152000,
+      "md5": "6a9781b441267aa545f3202b9499630d"
+     },
+     {
+      "size": 76776336,
+      "md5": "61efc4bd04c27763ceafad20ba70b6a6"
+     },
+     {
+      "size": 76776336,
+      "md5": "61efc4bd04c27763ceafad20ba70b6a6"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1651,45 +1864,49 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 3,
-  "tracks": [
-   {
-    "size": 45715824,
-    "md5": "5a012d2f8dc067ebd18ac4a549a07029"
-   },
-   {
-    "size": 56064624,
-    "md5": "cdf83a9a3659bc2bf226c1c2e3b552cd"
-   },
-   {
-    "size": 80120880,
-    "md5": "e713ffe56e7fe4adf727de13b4be61ff"
-   },
-   {
-    "size": 76465872,
-    "md5": "83272bfa50de710b448fa5a2fb157ed4"
-   },
-   {
-    "size": 64992816,
-    "md5": "12986d35b9795ed1586c462f22064482"
-   },
-   {
-    "size": 60799200,
-    "md5": "fea34fafff0ae6d05456d5cc9778b979"
-   },
-   {
-    "size": 76423536,
-    "md5": "e31b40c08a6bd16e837f6c6576732dc9"
-   },
-   {
-    "size": 19733280,
-    "md5": "33fe3437d343d5a13aca90b5e123cccd"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 45715824,
+      "md5": "5a012d2f8dc067ebd18ac4a549a07029"
+     },
+     {
+      "size": 56064624,
+      "md5": "cdf83a9a3659bc2bf226c1c2e3b552cd"
+     },
+     {
+      "size": 80120880,
+      "md5": "e713ffe56e7fe4adf727de13b4be61ff"
+     },
+     {
+      "size": 76465872,
+      "md5": "83272bfa50de710b448fa5a2fb157ed4"
+     },
+     {
+      "size": 64992816,
+      "md5": "12986d35b9795ed1586c462f22064482"
+     },
+     {
+      "size": 60799200,
+      "md5": "fea34fafff0ae6d05456d5cc9778b979"
+     },
+     {
+      "size": 76423536,
+      "md5": "e31b40c08a6bd16e837f6c6576732dc9"
+     },
+     {
+      "size": 19733280,
+      "md5": "33fe3437d343d5a13aca90b5e123cccd"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1714,18 +1931,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 250916064,
-    "md5": "a3f2c0ccc5f661672a511d2e2dd0feb5"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 250916064,
+      "md5": "a3f2c0ccc5f661672a511d2e2dd0feb5"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1750,62 +1971,66 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 134614368,
-    "md5": "14335238949a9b429c635723a49d7874"
-   },
-   {
-    "size": 60220608,
-    "md5": "f98826f4cc22ed80dc83d06329eb9bb7"
-   },
-   {
-    "size": 28859040,
-    "md5": "4213086843577f7f562940d898ff3c1b"
-   },
-   {
-    "size": 33398400,
-    "md5": "01867094202897fa1f67273a9aaec802"
-   },
-   {
-    "size": 37319184,
-    "md5": "da02ffef927771ccf0c7077f3fbd6fd2"
-   },
-   {
-    "size": 32695152,
-    "md5": "ba81b6b154b26d5851c93743f2fc66ae"
-   },
-   {
-    "size": 33059712,
-    "md5": "4fabbb1e692e03de6e659bfa79653fbc"
-   },
-   {
-    "size": 37368576,
-    "md5": "368d664d7b74d65c7f6e26619c054b2b"
-   },
-   {
-    "size": 26128368,
-    "md5": "287069a1b41900afd7f57e660fd78251"
-   },
-   {
-    "size": 41945568,
-    "md5": "3f4d9bb8e44aba51c052ebe415f8013b"
-   },
-   {
-    "size": 52774176,
-    "md5": "a76184f49b999056fee2c844b25444e2"
-   },
-   {
-    "size": 32335296,
-    "md5": "2974200696fd3edc500b2d5838a6797b"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 134614368,
+      "md5": "14335238949a9b429c635723a49d7874"
+     },
+     {
+      "size": 60220608,
+      "md5": "f98826f4cc22ed80dc83d06329eb9bb7"
+     },
+     {
+      "size": 28859040,
+      "md5": "4213086843577f7f562940d898ff3c1b"
+     },
+     {
+      "size": 33398400,
+      "md5": "01867094202897fa1f67273a9aaec802"
+     },
+     {
+      "size": 37319184,
+      "md5": "da02ffef927771ccf0c7077f3fbd6fd2"
+     },
+     {
+      "size": 32695152,
+      "md5": "ba81b6b154b26d5851c93743f2fc66ae"
+     },
+     {
+      "size": 33059712,
+      "md5": "4fabbb1e692e03de6e659bfa79653fbc"
+     },
+     {
+      "size": 37368576,
+      "md5": "368d664d7b74d65c7f6e26619c054b2b"
+     },
+     {
+      "size": 26128368,
+      "md5": "287069a1b41900afd7f57e660fd78251"
+     },
+     {
+      "size": 41945568,
+      "md5": "3f4d9bb8e44aba51c052ebe415f8013b"
+     },
+     {
+      "size": 52774176,
+      "md5": "a76184f49b999056fee2c844b25444e2"
+     },
+     {
+      "size": 32335296,
+      "md5": "2974200696fd3edc500b2d5838a6797b"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1825,17 +2050,21 @@
   "maxPlayers": 2,
   "minBlocks": 2,
   "maxBlocks": 2,
-  "tracks": [
-   {
-    "size": 451685136,
-    "md5": "bad20f3fb4a3e87e331e2f02b8abd8ef"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 451685136,
+      "md5": "bad20f3fb4a3e87e331e2f02b8abd8ef"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1855,17 +2084,21 @@
   "maxPlayers": 2,
   "minBlocks": 2,
   "maxBlocks": 2,
-  "tracks": [
-   {
-    "size": 451692192,
-    "md5": "6a8ecfccdcb6e56aa54efcc8bd38b2df"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 451692192,
+      "md5": "6a8ecfccdcb6e56aa54efcc8bd38b2df"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1885,21 +2118,25 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 5,
-  "tracks": [
-   {
-    "size": 9624384,
-    "md5": "9c9b25e8c212a2b74b2fcfe901e1262d"
-   },
-   {
-    "size": 480212544,
-    "md5": "54550879a29fba580194967a2ba863fb"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 9624384,
+      "md5": "9c9b25e8c212a2b74b2fcfe901e1262d"
+     },
+     {
+      "size": 480212544,
+      "md5": "54550879a29fba580194967a2ba863fb"
+     }
+    ]
+   }
   ]
  },
  {
@@ -1919,110 +2156,114 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 191979648,
-    "md5": "f15b89e9f21405de114f236d2b5f86e0"
-   },
-   {
-    "size": 17741136,
-    "md5": "fbcd46eaf857ebb188142126cdab144f"
-   },
-   {
-    "size": 15593760,
-    "md5": "0d54e892c5e62ca5ec921104cd7fb638"
-   },
-   {
-    "size": 16626288,
-    "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
-   },
-   {
-    "size": 15798384,
-    "md5": "a793417119c793b139f92541f238966d"
-   },
-   {
-    "size": 15311520,
-    "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
-   },
-   {
-    "size": 14669424,
-    "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
-   },
-   {
-    "size": 14982240,
-    "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
-   },
-   {
-    "size": 15327984,
-    "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
-   },
-   {
-    "size": 15960672,
-    "md5": "4c1defe2e81939c74979ac99650d0564"
-   },
-   {
-    "size": 18794832,
-    "md5": "435b0a2e66453c0307850ae33eeb5d29"
-   },
-   {
-    "size": 18366768,
-    "md5": "cc74437d4fa4c6601247447dd9287f25"
-   },
-   {
-    "size": 14596512,
-    "md5": "0e98ae81150e7f26b5f124b974ef18ad"
-   },
-   {
-    "size": 14787024,
-    "md5": "b49ab396375441c7a98e6ed50a245fc6"
-   },
-   {
-    "size": 17148432,
-    "md5": "ff24f9708335e38df74a08d808c58f4e"
-   },
-   {
-    "size": 15840720,
-    "md5": "7f09ad595d47dafa019f9820658b54af"
-   },
-   {
-    "size": 15492624,
-    "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
-   },
-   {
-    "size": 15036336,
-    "md5": "c04ad21da44af51c91ccb523e5d24972"
-   },
-   {
-    "size": 15647856,
-    "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
-   },
-   {
-    "size": 15069264,
-    "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
-   },
-   {
-    "size": 15375024,
-    "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
-   },
-   {
-    "size": 12792528,
-    "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
-   },
-   {
-    "size": 11089680,
-    "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
-   },
-   {
-    "size": 11089680,
-    "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController",
    "PlayStationMouse"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 191979648,
+      "md5": "f15b89e9f21405de114f236d2b5f86e0"
+     },
+     {
+      "size": 17741136,
+      "md5": "fbcd46eaf857ebb188142126cdab144f"
+     },
+     {
+      "size": 15593760,
+      "md5": "0d54e892c5e62ca5ec921104cd7fb638"
+     },
+     {
+      "size": 16626288,
+      "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
+     },
+     {
+      "size": 15798384,
+      "md5": "a793417119c793b139f92541f238966d"
+     },
+     {
+      "size": 15311520,
+      "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
+     },
+     {
+      "size": 14669424,
+      "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
+     },
+     {
+      "size": 14982240,
+      "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
+     },
+     {
+      "size": 15327984,
+      "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
+     },
+     {
+      "size": 15960672,
+      "md5": "4c1defe2e81939c74979ac99650d0564"
+     },
+     {
+      "size": 18794832,
+      "md5": "435b0a2e66453c0307850ae33eeb5d29"
+     },
+     {
+      "size": 18366768,
+      "md5": "cc74437d4fa4c6601247447dd9287f25"
+     },
+     {
+      "size": 14596512,
+      "md5": "0e98ae81150e7f26b5f124b974ef18ad"
+     },
+     {
+      "size": 14787024,
+      "md5": "b49ab396375441c7a98e6ed50a245fc6"
+     },
+     {
+      "size": 17148432,
+      "md5": "ff24f9708335e38df74a08d808c58f4e"
+     },
+     {
+      "size": 15840720,
+      "md5": "7f09ad595d47dafa019f9820658b54af"
+     },
+     {
+      "size": 15492624,
+      "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
+     },
+     {
+      "size": 15036336,
+      "md5": "c04ad21da44af51c91ccb523e5d24972"
+     },
+     {
+      "size": 15647856,
+      "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
+     },
+     {
+      "size": 15069264,
+      "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
+     },
+     {
+      "size": 15375024,
+      "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
+     },
+     {
+      "size": 12792528,
+      "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
+     },
+     {
+      "size": 11089680,
+      "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
+     },
+     {
+      "size": 11089680,
+      "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2042,110 +2283,114 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 192160752,
-    "md5": "ce745a83fc7af7bd06347403307bc6ed"
-   },
-   {
-    "size": 17741136,
-    "md5": "fbcd46eaf857ebb188142126cdab144f"
-   },
-   {
-    "size": 15593760,
-    "md5": "0d54e892c5e62ca5ec921104cd7fb638"
-   },
-   {
-    "size": 16626288,
-    "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
-   },
-   {
-    "size": 15798384,
-    "md5": "a793417119c793b139f92541f238966d"
-   },
-   {
-    "size": 15311520,
-    "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
-   },
-   {
-    "size": 14669424,
-    "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
-   },
-   {
-    "size": 14982240,
-    "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
-   },
-   {
-    "size": 15327984,
-    "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
-   },
-   {
-    "size": 15960672,
-    "md5": "4c1defe2e81939c74979ac99650d0564"
-   },
-   {
-    "size": 18794832,
-    "md5": "435b0a2e66453c0307850ae33eeb5d29"
-   },
-   {
-    "size": 18366768,
-    "md5": "cc74437d4fa4c6601247447dd9287f25"
-   },
-   {
-    "size": 14596512,
-    "md5": "0e98ae81150e7f26b5f124b974ef18ad"
-   },
-   {
-    "size": 14787024,
-    "md5": "b49ab396375441c7a98e6ed50a245fc6"
-   },
-   {
-    "size": 17148432,
-    "md5": "ff24f9708335e38df74a08d808c58f4e"
-   },
-   {
-    "size": 15840720,
-    "md5": "7f09ad595d47dafa019f9820658b54af"
-   },
-   {
-    "size": 15492624,
-    "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
-   },
-   {
-    "size": 15036336,
-    "md5": "c04ad21da44af51c91ccb523e5d24972"
-   },
-   {
-    "size": 15647856,
-    "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
-   },
-   {
-    "size": 15069264,
-    "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
-   },
-   {
-    "size": 15375024,
-    "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
-   },
-   {
-    "size": 12792528,
-    "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
-   },
-   {
-    "size": 11089680,
-    "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
-   },
-   {
-    "size": 33908784,
-    "md5": "369ff3006396bbca8d9a1fb9cc125af9"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController",
    "PlayStationMouse"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 192160752,
+      "md5": "ce745a83fc7af7bd06347403307bc6ed"
+     },
+     {
+      "size": 17741136,
+      "md5": "fbcd46eaf857ebb188142126cdab144f"
+     },
+     {
+      "size": 15593760,
+      "md5": "0d54e892c5e62ca5ec921104cd7fb638"
+     },
+     {
+      "size": 16626288,
+      "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
+     },
+     {
+      "size": 15798384,
+      "md5": "a793417119c793b139f92541f238966d"
+     },
+     {
+      "size": 15311520,
+      "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
+     },
+     {
+      "size": 14669424,
+      "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
+     },
+     {
+      "size": 14982240,
+      "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
+     },
+     {
+      "size": 15327984,
+      "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
+     },
+     {
+      "size": 15960672,
+      "md5": "4c1defe2e81939c74979ac99650d0564"
+     },
+     {
+      "size": 18794832,
+      "md5": "435b0a2e66453c0307850ae33eeb5d29"
+     },
+     {
+      "size": 18366768,
+      "md5": "cc74437d4fa4c6601247447dd9287f25"
+     },
+     {
+      "size": 14596512,
+      "md5": "0e98ae81150e7f26b5f124b974ef18ad"
+     },
+     {
+      "size": 14787024,
+      "md5": "b49ab396375441c7a98e6ed50a245fc6"
+     },
+     {
+      "size": 17148432,
+      "md5": "ff24f9708335e38df74a08d808c58f4e"
+     },
+     {
+      "size": 15840720,
+      "md5": "7f09ad595d47dafa019f9820658b54af"
+     },
+     {
+      "size": 15492624,
+      "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
+     },
+     {
+      "size": 15036336,
+      "md5": "c04ad21da44af51c91ccb523e5d24972"
+     },
+     {
+      "size": 15647856,
+      "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
+     },
+     {
+      "size": 15069264,
+      "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
+     },
+     {
+      "size": 15375024,
+      "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
+     },
+     {
+      "size": 12792528,
+      "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
+     },
+     {
+      "size": 11089680,
+      "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
+     },
+     {
+      "size": 33908784,
+      "md5": "369ff3006396bbca8d9a1fb9cc125af9"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2165,110 +2410,114 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 192184272,
-    "md5": "d6329ebd49d0e7a79d8d490e91a53ad7"
-   },
-   {
-    "size": 17741136,
-    "md5": "fbcd46eaf857ebb188142126cdab144f"
-   },
-   {
-    "size": 15593760,
-    "md5": "0d54e892c5e62ca5ec921104cd7fb638"
-   },
-   {
-    "size": 16626288,
-    "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
-   },
-   {
-    "size": 15798384,
-    "md5": "a793417119c793b139f92541f238966d"
-   },
-   {
-    "size": 15311520,
-    "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
-   },
-   {
-    "size": 14669424,
-    "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
-   },
-   {
-    "size": 14982240,
-    "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
-   },
-   {
-    "size": 15327984,
-    "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
-   },
-   {
-    "size": 15960672,
-    "md5": "4c1defe2e81939c74979ac99650d0564"
-   },
-   {
-    "size": 18794832,
-    "md5": "435b0a2e66453c0307850ae33eeb5d29"
-   },
-   {
-    "size": 18366768,
-    "md5": "cc74437d4fa4c6601247447dd9287f25"
-   },
-   {
-    "size": 14596512,
-    "md5": "0e98ae81150e7f26b5f124b974ef18ad"
-   },
-   {
-    "size": 14787024,
-    "md5": "b49ab396375441c7a98e6ed50a245fc6"
-   },
-   {
-    "size": 17148432,
-    "md5": "ff24f9708335e38df74a08d808c58f4e"
-   },
-   {
-    "size": 15840720,
-    "md5": "7f09ad595d47dafa019f9820658b54af"
-   },
-   {
-    "size": 15492624,
-    "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
-   },
-   {
-    "size": 15036336,
-    "md5": "c04ad21da44af51c91ccb523e5d24972"
-   },
-   {
-    "size": 15647856,
-    "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
-   },
-   {
-    "size": 15069264,
-    "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
-   },
-   {
-    "size": 15375024,
-    "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
-   },
-   {
-    "size": 12792528,
-    "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
-   },
-   {
-    "size": 11089680,
-    "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
-   },
-   {
-    "size": 11089680,
-    "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController",
    "PlayStationMouse"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 192184272,
+      "md5": "d6329ebd49d0e7a79d8d490e91a53ad7"
+     },
+     {
+      "size": 17741136,
+      "md5": "fbcd46eaf857ebb188142126cdab144f"
+     },
+     {
+      "size": 15593760,
+      "md5": "0d54e892c5e62ca5ec921104cd7fb638"
+     },
+     {
+      "size": 16626288,
+      "md5": "f34f82ae49de147a47cc27e3f1c6e0b1"
+     },
+     {
+      "size": 15798384,
+      "md5": "a793417119c793b139f92541f238966d"
+     },
+     {
+      "size": 15311520,
+      "md5": "0f6dc52a63dff9be319c35a3e4bfa9dd"
+     },
+     {
+      "size": 14669424,
+      "md5": "bfcae8fa5457084e4b5fcc6fbc312235"
+     },
+     {
+      "size": 14982240,
+      "md5": "c54d6ba6ee8a7feb48fcf94fc9e8c7d4"
+     },
+     {
+      "size": 15327984,
+      "md5": "04e90c6a55b03d4fc6a155d3ae4a36c5"
+     },
+     {
+      "size": 15960672,
+      "md5": "4c1defe2e81939c74979ac99650d0564"
+     },
+     {
+      "size": 18794832,
+      "md5": "435b0a2e66453c0307850ae33eeb5d29"
+     },
+     {
+      "size": 18366768,
+      "md5": "cc74437d4fa4c6601247447dd9287f25"
+     },
+     {
+      "size": 14596512,
+      "md5": "0e98ae81150e7f26b5f124b974ef18ad"
+     },
+     {
+      "size": 14787024,
+      "md5": "b49ab396375441c7a98e6ed50a245fc6"
+     },
+     {
+      "size": 17148432,
+      "md5": "ff24f9708335e38df74a08d808c58f4e"
+     },
+     {
+      "size": 15840720,
+      "md5": "7f09ad595d47dafa019f9820658b54af"
+     },
+     {
+      "size": 15492624,
+      "md5": "a2e16b5cc0b0410c28b526b2bb43fd9f"
+     },
+     {
+      "size": 15036336,
+      "md5": "c04ad21da44af51c91ccb523e5d24972"
+     },
+     {
+      "size": 15647856,
+      "md5": "4a822903bb6fc203b6ddc39c07dfd82f"
+     },
+     {
+      "size": 15069264,
+      "md5": "d5b6fd907159dbc6118ea9f8f26ab64e"
+     },
+     {
+      "size": 15375024,
+      "md5": "afd2d58b0c4c64f833b701aaf39ddb6e"
+     },
+     {
+      "size": 12792528,
+      "md5": "3ff98f092840e3b1ebbdcb124bd79c51"
+     },
+     {
+      "size": 11089680,
+      "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
+     },
+     {
+      "size": 11089680,
+      "md5": "8fa3520e0b8532cb5ee101bdad582dd9"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2288,73 +2537,77 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 137389728,
-    "md5": "ab6d9113d26a67597e18097e8a497f9a"
-   },
-   {
-    "size": 18390288,
-    "md5": "2a4cb19212c3c454da8099428a546443"
-   },
-   {
-    "size": 20608224,
-    "md5": "13e6b50513a19dfff6e8fb294e56cd93"
-   },
-   {
-    "size": 20782272,
-    "md5": "a6cb315dd2f519478f2bc4729e3880e3"
-   },
-   {
-    "size": 11428368,
-    "md5": "acb2b2966ec730a24d1b310430b44f11"
-   },
-   {
-    "size": 16746240,
-    "md5": "2d9888148c1235f20804356e8c1a2be2"
-   },
-   {
-    "size": 20544720,
-    "md5": "821e5103a19921fe531749787f9dd9f9"
-   },
-   {
-    "size": 34581456,
-    "md5": "fa29a9425300b10d51d18c70bc749cb2"
-   },
-   {
-    "size": 35971488,
-    "md5": "d6ad36ad7bf1fb08cfcc3166901ecf0b"
-   },
-   {
-    "size": 61827024,
-    "md5": "47546b859a6cf67c664d01469aae8817"
-   },
-   {
-    "size": 39243120,
-    "md5": "eb92dba75208b18e6ceaeb499445d05e"
-   },
-   {
-    "size": 1425312,
-    "md5": "5d93ec1dc6963c773ccf4b04eaef5d4b"
-   },
-   {
-    "size": 1742832,
-    "md5": "0eeb2b42447871f226ba0668a8627a65"
-   },
-   {
-    "size": 1223040,
-    "md5": "df99f1374e7b68b2824d64e4713f0980"
-   },
-   {
-    "size": 61827024,
-    "md5": "47546b859a6cf67c664d01469aae8817"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 137389728,
+      "md5": "ab6d9113d26a67597e18097e8a497f9a"
+     },
+     {
+      "size": 18390288,
+      "md5": "2a4cb19212c3c454da8099428a546443"
+     },
+     {
+      "size": 20608224,
+      "md5": "13e6b50513a19dfff6e8fb294e56cd93"
+     },
+     {
+      "size": 20782272,
+      "md5": "a6cb315dd2f519478f2bc4729e3880e3"
+     },
+     {
+      "size": 11428368,
+      "md5": "acb2b2966ec730a24d1b310430b44f11"
+     },
+     {
+      "size": 16746240,
+      "md5": "2d9888148c1235f20804356e8c1a2be2"
+     },
+     {
+      "size": 20544720,
+      "md5": "821e5103a19921fe531749787f9dd9f9"
+     },
+     {
+      "size": 34581456,
+      "md5": "fa29a9425300b10d51d18c70bc749cb2"
+     },
+     {
+      "size": 35971488,
+      "md5": "d6ad36ad7bf1fb08cfcc3166901ecf0b"
+     },
+     {
+      "size": 61827024,
+      "md5": "47546b859a6cf67c664d01469aae8817"
+     },
+     {
+      "size": 39243120,
+      "md5": "eb92dba75208b18e6ceaeb499445d05e"
+     },
+     {
+      "size": 1425312,
+      "md5": "5d93ec1dc6963c773ccf4b04eaef5d4b"
+     },
+     {
+      "size": 1742832,
+      "md5": "0eeb2b42447871f226ba0668a8627a65"
+     },
+     {
+      "size": 1223040,
+      "md5": "df99f1374e7b68b2824d64e4713f0980"
+     },
+     {
+      "size": 61827024,
+      "md5": "47546b859a6cf67c664d01469aae8817"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2374,17 +2627,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 295375920,
-    "md5": "14f20d3fbd9b690c92ffd371b2de3aa1"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 295375920,
+      "md5": "14f20d3fbd9b690c92ffd371b2de3aa1"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2404,17 +2661,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 396968208,
-    "md5": "e72f3a7cc88eca43fe810974ed2007c8"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 396968208,
+      "md5": "e72f3a7cc88eca43fe810974ed2007c8"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2434,22 +2695,26 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 340649568,
-    "md5": "cb9531f57344c64b6d4596e2d974f9ca"
-   },
-   {
-    "size": 26732832,
-    "md5": "a38b3b88c2f359fa7b57a0c490572904"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 340649568,
+      "md5": "cb9531f57344c64b6d4596e2d974f9ca"
+     },
+     {
+      "size": 26732832,
+      "md5": "a38b3b88c2f359fa7b57a0c490572904"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2458,14 +2723,18 @@
   "codes": [
    "SCUS-94365"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 88625712,
-    "md5": "521b1af85fd96ee516a456f48af61d5b"
-   },
-   {
-    "size": 12999504,
-    "md5": "c8f9ffaedc5a7067fa443625321f2cc7"
+    "tracks": [
+     {
+      "size": 88625712,
+      "md5": "521b1af85fd96ee516a456f48af61d5b"
+     },
+     {
+      "size": 12999504,
+      "md5": "c8f9ffaedc5a7067fa443625321f2cc7"
+     }
+    ]
    }
   ]
  },
@@ -2486,33 +2755,37 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 555335424,
-    "md5": "5d2d683ec1f31ef39af6a3c933f6a297"
-   },
-   {
-    "size": 18721920,
-    "md5": "156e707322b34772faeacd92ecf37638"
-   },
-   {
-    "size": 14970480,
-    "md5": "e1690112d1ab3453e8c78a46cca2d887"
-   },
-   {
-    "size": 55486032,
-    "md5": "44f9f0fe9b8b32ad5d1a02146c87f5dc"
-   },
-   {
-    "size": 49422576,
-    "md5": "fee8584a95817f2f18d02e0284b9978a"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 555335424,
+      "md5": "5d2d683ec1f31ef39af6a3c933f6a297"
+     },
+     {
+      "size": 18721920,
+      "md5": "156e707322b34772faeacd92ecf37638"
+     },
+     {
+      "size": 14970480,
+      "md5": "e1690112d1ab3453e8c78a46cca2d887"
+     },
+     {
+      "size": 55486032,
+      "md5": "44f9f0fe9b8b32ad5d1a02146c87f5dc"
+     },
+     {
+      "size": 49422576,
+      "md5": "fee8584a95817f2f18d02e0284b9978a"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2532,33 +2805,37 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 516597984,
-    "md5": "3222c5a7f83caebf1f535a11383e79ad"
-   },
-   {
-    "size": 18721920,
-    "md5": "156e707322b34772faeacd92ecf37638"
-   },
-   {
-    "size": 14970480,
-    "md5": "e1690112d1ab3453e8c78a46cca2d887"
-   },
-   {
-    "size": 55486032,
-    "md5": "44f9f0fe9b8b32ad5d1a02146c87f5dc"
-   },
-   {
-    "size": 49422576,
-    "md5": "fee8584a95817f2f18d02e0284b9978a"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 516597984,
+      "md5": "3222c5a7f83caebf1f535a11383e79ad"
+     },
+     {
+      "size": 18721920,
+      "md5": "156e707322b34772faeacd92ecf37638"
+     },
+     {
+      "size": 14970480,
+      "md5": "e1690112d1ab3453e8c78a46cca2d887"
+     },
+     {
+      "size": 55486032,
+      "md5": "44f9f0fe9b8b32ad5d1a02146c87f5dc"
+     },
+     {
+      "size": 49422576,
+      "md5": "fee8584a95817f2f18d02e0284b9978a"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2578,17 +2855,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 517244784,
-    "md5": "523b93ee1f9d9977ccec30010554171a"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 517244784,
+      "md5": "523b93ee1f9d9977ccec30010554171a"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2608,17 +2889,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 549834096,
-    "md5": "1731cf500b9258382c44a2018fa9d149"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 549834096,
+      "md5": "1731cf500b9258382c44a2018fa9d149"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2638,17 +2923,21 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 611214240,
-    "md5": "3dc98506bd5e9bcbefbb553caccc083b"
-   }
-  ],
   "vibration": false,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 611214240,
+      "md5": "3dc98506bd5e9bcbefbb553caccc083b"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2671,69 +2960,73 @@
   "maxPlayers": 2,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 18846576,
-    "md5": "2a04c2f05c360f4c77f80257df76ef26"
-   },
-   {
-    "size": 30164400,
-    "md5": "e21b000566678b817dfe298b56e7cb28"
-   },
-   {
-    "size": 10464048,
-    "md5": "98e4964f9fca0d740f099bdb4a558045"
-   },
-   {
-    "size": 22685040,
-    "md5": "a684a5fe27eb77d9220ee3072cba04f6"
-   },
-   {
-    "size": 21436128,
-    "md5": "95761d9ea2e6e81548e702f0e7c711d9"
-   },
-   {
-    "size": 24907680,
-    "md5": "77d3d30f746b0f4fb57531f143e8c3b7"
-   },
-   {
-    "size": 15709008,
-    "md5": "ab34be3439ec710a6e7acb80d645848e"
-   },
-   {
-    "size": 5063856,
-    "md5": "25b6b9470037303fa448aff0222d442c"
-   },
-   {
-    "size": 11792928,
-    "md5": "23981457ce7cbc036fa572b6e26083c1"
-   },
-   {
-    "size": 4631088,
-    "md5": "17947cd33f46eb6c94109b7120138d4c"
-   },
-   {
-    "size": 33219648,
-    "md5": "7d2073986152d5f2ae8fd32c7bab782e"
-   },
-   {
-    "size": 5882352,
-    "md5": "305e66eb1787b68358f308db77f80712"
-   },
-   {
-    "size": 5169696,
-    "md5": "0b0f085b902ccf2f1c26602841d32cf1"
-   },
-   {
-    "size": 33219648,
-    "md5": "7d2073986152d5f2ae8fd32c7bab782e"
-   }
-  ],
   "vibration": false,
   "multitap": true,
   "linkCable": false,
   "controllers": [
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 18846576,
+      "md5": "2a04c2f05c360f4c77f80257df76ef26"
+     },
+     {
+      "size": 30164400,
+      "md5": "e21b000566678b817dfe298b56e7cb28"
+     },
+     {
+      "size": 10464048,
+      "md5": "98e4964f9fca0d740f099bdb4a558045"
+     },
+     {
+      "size": 22685040,
+      "md5": "a684a5fe27eb77d9220ee3072cba04f6"
+     },
+     {
+      "size": 21436128,
+      "md5": "95761d9ea2e6e81548e702f0e7c711d9"
+     },
+     {
+      "size": 24907680,
+      "md5": "77d3d30f746b0f4fb57531f143e8c3b7"
+     },
+     {
+      "size": 15709008,
+      "md5": "ab34be3439ec710a6e7acb80d645848e"
+     },
+     {
+      "size": 5063856,
+      "md5": "25b6b9470037303fa448aff0222d442c"
+     },
+     {
+      "size": 11792928,
+      "md5": "23981457ce7cbc036fa572b6e26083c1"
+     },
+     {
+      "size": 4631088,
+      "md5": "17947cd33f46eb6c94109b7120138d4c"
+     },
+     {
+      "size": 33219648,
+      "md5": "7d2073986152d5f2ae8fd32c7bab782e"
+     },
+     {
+      "size": 5882352,
+      "md5": "305e66eb1787b68358f308db77f80712"
+     },
+     {
+      "size": 5169696,
+      "md5": "0b0f085b902ccf2f1c26602841d32cf1"
+     },
+     {
+      "size": 33219648,
+      "md5": "7d2073986152d5f2ae8fd32c7bab782e"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2753,18 +3046,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 551478144,
-    "md5": "82721094cbe6539bb22c1fe4efb1e066"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 551478144,
+      "md5": "82721094cbe6539bb22c1fe4efb1e066"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2773,10 +3070,14 @@
   "codes": [
    "SLED-02435"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 201604032,
-    "md5": "3cc3b6a9da221230fb8cea79e7704782"
+    "tracks": [
+     {
+      "size": 201604032,
+      "md5": "3cc3b6a9da221230fb8cea79e7704782"
+     }
+    ]
    }
   ]
  },
@@ -2797,18 +3098,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 551344080,
-    "md5": "e68771e91206ae8cdbea70e57c14c695"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 551344080,
+      "md5": "e68771e91206ae8cdbea70e57c14c695"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2828,18 +3133,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 551268816,
-    "md5": "7ba7755f9f5184d25d05cd391a29073b"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 551268816,
+      "md5": "7ba7755f9f5184d25d05cd391a29073b"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2859,18 +3168,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 540854160,
-    "md5": "355e1fed8e13a751b82a7b8e67d53716"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 540854160,
+      "md5": "355e1fed8e13a751b82a7b8e67d53716"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2894,18 +3207,22 @@
   "maxPlayers": 1,
   "minBlocks": 2,
   "maxBlocks": 2,
-  "tracks": [
-   {
-    "size": 510800304,
-    "md5": "a9ac09d76274bee783a92917fff6b670"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 510800304,
+      "md5": "a9ac09d76274bee783a92917fff6b670"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2925,62 +3242,66 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 64992816,
-    "md5": "9745862137018f1a10970502663efe22"
-   },
-   {
-    "size": 24369072,
-    "md5": "6500a30d7afa3789eb4a7877a80ae820"
-   },
-   {
-    "size": 42662928,
-    "md5": "c6762d7983404594b2392d6e31134d82"
-   },
-   {
-    "size": 38003616,
-    "md5": "bc74b7e73ad0d5032a5b2841ee585f7c"
-   },
-   {
-    "size": 33003264,
-    "md5": "8239b143bfcd976f31186a12ed93988e"
-   },
-   {
-    "size": 38448144,
-    "md5": "3143659ddc74ca53a68c732c0b830c1e"
-   },
-   {
-    "size": 47096448,
-    "md5": "8b1d3ea31245747069f9d45184c2b4bb"
-   },
-   {
-    "size": 44297568,
-    "md5": "9b94b1268431fba94e34ccf7aad026ec"
-   },
-   {
-    "size": 48808704,
-    "md5": "3a304d7e20fcae4443b30ec63ce62970"
-   },
-   {
-    "size": 29202432,
-    "md5": "a08d30046381389e5fd766a87a231109"
-   },
-   {
-    "size": 85024800,
-    "md5": "0a4c5d00fa2db63c25f76906a9a35794"
-   },
-   {
-    "size": 32302368,
-    "md5": "afadcd27514f92953a2a00448cab31a4"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 64992816,
+      "md5": "9745862137018f1a10970502663efe22"
+     },
+     {
+      "size": 24369072,
+      "md5": "6500a30d7afa3789eb4a7877a80ae820"
+     },
+     {
+      "size": 42662928,
+      "md5": "c6762d7983404594b2392d6e31134d82"
+     },
+     {
+      "size": 38003616,
+      "md5": "bc74b7e73ad0d5032a5b2841ee585f7c"
+     },
+     {
+      "size": 33003264,
+      "md5": "8239b143bfcd976f31186a12ed93988e"
+     },
+     {
+      "size": 38448144,
+      "md5": "3143659ddc74ca53a68c732c0b830c1e"
+     },
+     {
+      "size": 47096448,
+      "md5": "8b1d3ea31245747069f9d45184c2b4bb"
+     },
+     {
+      "size": 44297568,
+      "md5": "9b94b1268431fba94e34ccf7aad026ec"
+     },
+     {
+      "size": 48808704,
+      "md5": "3a304d7e20fcae4443b30ec63ce62970"
+     },
+     {
+      "size": 29202432,
+      "md5": "a08d30046381389e5fd766a87a231109"
+     },
+     {
+      "size": 85024800,
+      "md5": "0a4c5d00fa2db63c25f76906a9a35794"
+     },
+     {
+      "size": 32302368,
+      "md5": "afadcd27514f92953a2a00448cab31a4"
+     }
+    ]
+   }
   ]
  },
  {
@@ -2989,10 +3310,14 @@
   "codes": [
    "SLPM-80387"
   ],
-  "tracks": [
+  "track_data": [
    {
-    "size": 450104592,
-    "md5": "22b15b7e5691dd4acf8205c43f6e8726"
+    "tracks": [
+     {
+      "size": 450104592,
+      "md5": "22b15b7e5691dd4acf8205c43f6e8726"
+     }
+    ]
    }
   ]
  },
@@ -3013,18 +3338,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 709026864,
-    "md5": "5e6fc15b377fcd282e611c23bf55e2c1"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 709026864,
+      "md5": "5e6fc15b377fcd282e611c23bf55e2c1"
+     }
+    ]
+   }
   ]
  },
  {
@@ -3044,18 +3373,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 751734480,
-    "md5": "37c7722eccb48b0493a137c83f2de15f"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 751734480,
+      "md5": "37c7722eccb48b0493a137c83f2de15f"
+     }
+    ]
+   }
   ]
  },
  {
@@ -3075,18 +3408,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 743643600,
-    "md5": "2f24204b8d1ec4a2f782f2a577101475"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 743643600,
+      "md5": "2f24204b8d1ec4a2f782f2a577101475"
+     }
+    ]
+   }
   ]
  },
  {
@@ -3106,18 +3443,22 @@
   "maxPlayers": 1,
   "minBlocks": 1,
   "maxBlocks": 1,
-  "tracks": [
-   {
-    "size": 658583520,
-    "md5": "00bfbdd68d2c7f908fca1ff93b8c690c"
-   }
-  ],
   "vibration": true,
   "multitap": false,
   "linkCable": false,
   "controllers": [
    "AnalogController",
    "DigitalController"
+  ],
+  "track_data": [
+   {
+    "tracks": [
+     {
+      "size": 658583520,
+      "md5": "00bfbdd68d2c7f908fca1ff93b8c690c"
+     }
+    ]
+   }
   ]
  }
 ]

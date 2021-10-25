@@ -34,7 +34,6 @@ private Q_SLOTS:
 
   void onSetVersionTestedToCurrentClicked();
   void onComputeHashClicked();
-  void onVerifyDumpClicked();
   void onExportCompatibilityInfoClicked();
   void updateCPUClockSpeedLabel();
   void onEnableCPUClockSpeedControlChecked(int state);
@@ -49,7 +48,7 @@ private:
   void connectBooleanUserSetting(QCheckBox* cb, std::optional<bool>* value);
   void saveGameSettings();
   void fillEntryFromUi(GameListCompatibilityEntry* entry);
-  void computeTrackHashes();
+  void computeTrackHashes(std::string& redump_keyword);
   void onResize();
   void onUserAspectRatioChanged();
 
@@ -61,9 +60,9 @@ private:
   std::string m_path;
   std::string m_game_code;
   std::string m_game_title;
+  std::string m_redump_search_keyword;
 
   GameSettings::Entry m_game_settings;
 
   bool m_compatibility_info_changed = false;
-  bool m_tracks_hashed = false;
 };

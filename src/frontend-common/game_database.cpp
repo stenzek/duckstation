@@ -8,6 +8,8 @@
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 #include <iomanip>
+#include <memory>
+#include <optional>
 #include <sstream>
 Log_SetChannel(GameDatabase);
 
@@ -87,6 +89,23 @@ static bool GetUIntFromObject(const rapidjson::Value& object, const char* key, u
   return true;
 }
 
+static bool GetArrayOfStringsFromObject(const rapidjson::Value& object, const char* key, std::vector<std::string>* dest)
+{
+  dest->clear();
+  auto member = object.FindMember(key);
+  if (member == object.MemberEnd() || !member->value.IsArray())
+    return false;
+
+  for (const rapidjson::Value& str : member->value.GetArray())
+  {
+    if (str.IsString())
+    {
+      dest->emplace_back(str.GetString(), str.GetStringLength());
+    }
+  }
+  return true;
+}
+
 static const rapidjson::Value* FindDatabaseEntry(const std::string_view& code, rapidjson::Document* json)
 {
   for (const rapidjson::Value& current : json->GetArray())
@@ -129,7 +148,7 @@ static const rapidjson::Value* FindDatabaseEntry(const std::string_view& code, r
   return nullptr;
 }
 
-bool GameDatabase::GetEntryForCode(const std::string_view& code, GameDatabaseEntry* entry)
+bool GameDatabase::GetEntryForCode(const std::string_view& code, GameDatabaseEntry* entry) const
 {
   if (!m_json)
     return false;
@@ -213,7 +232,88 @@ bool GameDatabase::GetEntryForCode(const std::string_view& code, GameDatabaseEnt
   return true;
 }
 
-bool GameDatabase::GetEntryForDisc(CDImage* image, GameDatabaseEntry* entry)
+GameDatabase::TrackHashesMap GameDatabase::GetTrackHashesMap() const
+{
+  TrackHashesMap result;
+
+  auto json = static_cast<const rapidjson::Document*>(m_json);
+
+  for (const rapidjson::Value& current : json->GetArray())
+  {
+    if (!current.IsObject())
+    {
+      Log_WarningPrintf("entry is not an object");
+      continue;
+    }
+
+    std::vector<std::string> codes;
+    if (!GetArrayOfStringsFromObject(current, "codes", &codes))
+    {
+      Log_WarningPrintf("codes member is missing");
+      continue;
+    }
+
+    auto track_data = current.FindMember("track_data");
+    if (track_data == current.MemberEnd())
+    {
+      Log_WarningPrintf("track_data member is missing");
+      continue;
+    }
+
+    if (!track_data->value.IsArray())
+    {
+      Log_WarningPrintf("track_data is not an array");
+      continue;
+    }
+
+    uint32_t revision = 0;
+    for (const rapidjson::Value& track_revisions : track_data->value.GetArray())
+    {
+      if (!track_revisions.IsObject())
+      {
+        Log_WarningPrintf("track_data is not an array of object");
+        continue;
+      }
+
+      auto tracks = track_revisions.FindMember("tracks");
+      if (tracks == track_revisions.MemberEnd())
+      {
+        Log_WarningPrintf("tracks member is missing");
+        continue;
+      }
+
+      if (!tracks->value.IsArray())
+      {
+        Log_WarningPrintf("tracks is not an array");
+        continue;
+      }
+
+      std::string revisionString;
+      GetStringFromObject(track_revisions, "version", &revisionString);
+
+      for (const rapidjson::Value& track : tracks->value.GetArray())
+      {
+        auto md5_field = track.FindMember("md5");
+        if (md5_field == track.MemberEnd() || !md5_field->value.IsString())
+        {
+          continue;
+        }
+
+        auto md5 = CDImageHasher::HashFromString(
+          std::string_view(md5_field->value.GetString(), md5_field->value.GetStringLength()));
+        if (md5)
+        {
+          result.emplace(std::piecewise_construct, std::forward_as_tuple(md5.value()),
+                         std::forward_as_tuple(codes, revisionString, revision));
+        }
+      }
+      revision++;
+    }
+  }
+  return result;
+}
+
+bool GameDatabase::GetEntryForDisc(CDImage* image, GameDatabaseEntry* entry) const
 {
   std::string exe_name_code(System::GetGameCodeForImage(image, false));
   if (!exe_name_code.empty() && GetEntryForCode(exe_name_code, entry))
