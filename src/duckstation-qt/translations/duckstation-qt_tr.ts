@@ -1812,17 +1812,17 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="2770"/>
+        <location filename="../../core/cheats.cpp" line="2761"/>
         <source>Gameshark</source>
         <translation>Gameshark</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2795"/>
+        <location filename="../../core/cheats.cpp" line="2786"/>
         <source>Manual</source>
         <translation>Manel</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2795"/>
+        <location filename="../../core/cheats.cpp" line="2786"/>
         <source>Automatic (Frame End)</source>
         <translation>Otomatik (Kare Sonu)</translation>
     </message>
@@ -1868,17 +1868,17 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
 <context>
     <name>CommonHostInterface</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2290"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2288"/>
         <source>Are you sure you want to stop emulation?</source>
         <translation>Emülasyonu durdurmak istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2295"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2293"/>
         <source>The current state will be saved.</source>
         <translation>Şimdiki durum kayıt edilecek.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3027"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3064"/>
         <source>Invalid version %u (%s version %u)</source>
         <translatorcomment>Weird Garip</translatorcomment>
         <translation>Geçersiz Sürüm %u (%s Sürüm %u)</translation>
@@ -4363,504 +4363,526 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Hash</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="187"/>
+        <location filename="../gamepropertiesdialog.ui" line="209"/>
         <source>User Settings (Console)</source>
         <translation>Kullanıcı Ayarları (Konsol)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="193"/>
+        <location filename="../gamepropertiesdialog.ui" line="215"/>
         <source>CPU Clock Speed Control</source>
         <translation>İşlemci Saat Hızı Kontrolü</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="201"/>
+        <location filename="../gamepropertiesdialog.ui" line="223"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>İşlemci Saat Hızı Kontrolünü Aç (Hız Yükseltme/Azaltma)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="224"/>
+        <location filename="../gamepropertiesdialog.ui" line="246"/>
         <source>100% (effective 33.3mhz)</source>
         <translation>100% (Hız 33.3mhz)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="258"/>
+        <location filename="../gamepropertiesdialog.ui" line="280"/>
         <source>Enable 8MB RAM (Dev Console)</source>
         <translation>8MB RAM Kullan (Yapımcı Konsolu)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="511"/>
+        <location filename="../gamepropertiesdialog.ui" line="533"/>
         <source>GPU Screen Display</source>
         <translation>Görüntü Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="517"/>
+        <location filename="../gamepropertiesdialog.ui" line="539"/>
         <source>Aspect Ratio:</source>
         <translation>En Boy Oranı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="539"/>
+        <location filename="../gamepropertiesdialog.ui" line="561"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="558"/>
+        <location filename="../gamepropertiesdialog.ui" line="580"/>
         <source>Crop Mode:</source>
         <translation>Kırpma Modu:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="568"/>
+        <location filename="../gamepropertiesdialog.ui" line="590"/>
         <source>Downsampling:</source>
         <translation>Downsampling:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="580"/>
+        <location filename="../gamepropertiesdialog.ui" line="602"/>
         <source>Linear Upscaling</source>
         <translation>Linear Büyütme</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="590"/>
+        <location filename="../gamepropertiesdialog.ui" line="612"/>
         <source>Integer Upscaling</source>
         <translation>Katlı Büyütme</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="602"/>
+        <location filename="../gamepropertiesdialog.ui" line="624"/>
         <source>Renderer:</source>
         <translation>Çizici:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="615"/>
+        <location filename="../gamepropertiesdialog.ui" line="637"/>
         <source>GPU Enhancements</source>
         <translation>GPU İyileştirmeleri</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="621"/>
+        <location filename="../gamepropertiesdialog.ui" line="643"/>
         <source>Resolution Scale:</source>
         <translation>Çözünürlük Kalitesi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="631"/>
+        <location filename="../gamepropertiesdialog.ui" line="653"/>
         <source>Multisample Antialiasing:</source>
         <translation>Multisample Kenar Yumuşatma:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="641"/>
+        <location filename="../gamepropertiesdialog.ui" line="663"/>
         <source>Texture Filtering:</source>
         <translation>Doku Filtreleme:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="653"/>
+        <location filename="../gamepropertiesdialog.ui" line="675"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Katlı Dithering:(Dithering desenini çözünürlüğüe oranla)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="663"/>
+        <location filename="../gamepropertiesdialog.ui" line="685"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>24 Bit Görüntüyü 4:3&apos;e zorla (Video ara sahne için geniş ekranı kapa)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="673"/>
+        <location filename="../gamepropertiesdialog.ui" line="695"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>NTSC zamanlamlarını zorla (PAL&apos;da 60hz)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="683"/>
+        <location filename="../gamepropertiesdialog.ui" line="705"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>Kaliteli renk çizimi (24 Bit, Ditheringi kapar)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="693"/>
+        <location filename="../gamepropertiesdialog.ui" line="715"/>
         <source>PGXP Geometry Correction</source>
         <translation>PGXP Geometri Düzeltmesi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="703"/>
+        <location filename="../gamepropertiesdialog.ui" line="725"/>
         <source>Widescreen Hack</source>
         <translation>Geniş Ekran Hilesi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="713"/>
+        <location filename="../gamepropertiesdialog.ui" line="735"/>
         <source>PGXP Preserve Projection Precision</source>
         <translation>PGXP Model Döşeme Kalitesini Koru</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="723"/>
+        <location filename="../gamepropertiesdialog.ui" line="745"/>
         <source>PGXP Depth Buffer</source>
         <translation>PGXP Derinlik Verisi</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="271"/>
+        <location filename="../gamepropertiesdialog.ui" line="293"/>
         <source>Other Settings</source>
         <translation>Diğer Ayarlar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="277"/>
+        <location filename="../gamepropertiesdialog.ui" line="183"/>
+        <source>Status</source>
+        <translation>Durum</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="201"/>
+        <source>Revision:</source>
+        <translation>Sürüm:</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.ui" line="299"/>
         <source>CD-ROM Read Speedup:</source>
         <translation>CD-ROM Okuma Hızlandırması:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="285"/>
-        <location filename="../gamepropertiesdialog.ui" line="354"/>
-        <location filename="../gamepropertiesdialog.ui" line="425"/>
-        <location filename="../gamepropertiesdialog.cpp" line="134"/>
-        <location filename="../gamepropertiesdialog.cpp" line="141"/>
-        <location filename="../gamepropertiesdialog.cpp" line="148"/>
-        <location filename="../gamepropertiesdialog.cpp" line="155"/>
-        <location filename="../gamepropertiesdialog.cpp" line="162"/>
-        <location filename="../gamepropertiesdialog.cpp" line="165"/>
-        <location filename="../gamepropertiesdialog.cpp" line="168"/>
-        <location filename="../gamepropertiesdialog.cpp" line="175"/>
-        <location filename="../gamepropertiesdialog.cpp" line="181"/>
-        <location filename="../gamepropertiesdialog.cpp" line="187"/>
-        <location filename="../gamepropertiesdialog.cpp" line="193"/>
-        <location filename="../gamepropertiesdialog.cpp" line="197"/>
-        <location filename="../gamepropertiesdialog.cpp" line="203"/>
+        <location filename="../gamepropertiesdialog.ui" line="307"/>
+        <location filename="../gamepropertiesdialog.ui" line="376"/>
+        <location filename="../gamepropertiesdialog.ui" line="447"/>
+        <location filename="../gamepropertiesdialog.cpp" line="139"/>
+        <location filename="../gamepropertiesdialog.cpp" line="146"/>
+        <location filename="../gamepropertiesdialog.cpp" line="153"/>
+        <location filename="../gamepropertiesdialog.cpp" line="160"/>
+        <location filename="../gamepropertiesdialog.cpp" line="167"/>
+        <location filename="../gamepropertiesdialog.cpp" line="170"/>
+        <location filename="../gamepropertiesdialog.cpp" line="173"/>
+        <location filename="../gamepropertiesdialog.cpp" line="180"/>
+        <location filename="../gamepropertiesdialog.cpp" line="186"/>
+        <location filename="../gamepropertiesdialog.cpp" line="192"/>
+        <location filename="../gamepropertiesdialog.cpp" line="198"/>
+        <location filename="../gamepropertiesdialog.cpp" line="202"/>
+        <location filename="../gamepropertiesdialog.cpp" line="208"/>
         <source>(unchanged)</source>
         <translation>Değiştirilmemiş</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="290"/>
+        <location filename="../gamepropertiesdialog.ui" line="312"/>
         <source>None (Double Speed)</source>
         <translation>Hiç (2X)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="295"/>
+        <location filename="../gamepropertiesdialog.ui" line="317"/>
         <source>2x (Quad Speed)</source>
         <translation>2x (4X)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="300"/>
+        <location filename="../gamepropertiesdialog.ui" line="322"/>
         <source>3x (6x Speed)</source>
         <translation>3x (6x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="305"/>
+        <location filename="../gamepropertiesdialog.ui" line="327"/>
         <source>4x (8x Speed)</source>
         <translation>4x (8x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="310"/>
+        <location filename="../gamepropertiesdialog.ui" line="332"/>
         <source>5x (10x Speed)</source>
         <translation>5x (10x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="315"/>
+        <location filename="../gamepropertiesdialog.ui" line="337"/>
         <source>6x (12x Speed)</source>
         <translation>6x (12x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="320"/>
+        <location filename="../gamepropertiesdialog.ui" line="342"/>
         <source>7x (14x Speed)</source>
         <translation>7x (14x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="325"/>
+        <location filename="../gamepropertiesdialog.ui" line="347"/>
         <source>8x (16x Speed)</source>
         <translation>8x (16x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="330"/>
+        <location filename="../gamepropertiesdialog.ui" line="352"/>
         <source>9x (18x Speed)</source>
         <translation>9x (18x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="335"/>
+        <location filename="../gamepropertiesdialog.ui" line="357"/>
         <source>10x (20x Speed)</source>
         <translation>10x (20x)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="343"/>
+        <location filename="../gamepropertiesdialog.ui" line="365"/>
         <source>CD-ROM Seek Speedup:</source>
         <translation>CD-ROM Dosya Arama Hızı Hızlandırma:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="359"/>
+        <location filename="../gamepropertiesdialog.ui" line="381"/>
         <source>Infinite/Instantaneous</source>
         <translation>Hemen/Anında</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="364"/>
+        <location filename="../gamepropertiesdialog.ui" line="386"/>
         <source>None (Normal Speed)</source>
         <translation>Hiç (Normal Hız)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="369"/>
+        <location filename="../gamepropertiesdialog.ui" line="391"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="374"/>
+        <location filename="../gamepropertiesdialog.ui" line="396"/>
         <source>3x</source>
         <translation>3x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="379"/>
+        <location filename="../gamepropertiesdialog.ui" line="401"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="384"/>
+        <location filename="../gamepropertiesdialog.ui" line="406"/>
         <source>5x</source>
         <translation>5x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="389"/>
+        <location filename="../gamepropertiesdialog.ui" line="411"/>
         <source>6x</source>
         <translation>6x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="394"/>
+        <location filename="../gamepropertiesdialog.ui" line="416"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="399"/>
+        <location filename="../gamepropertiesdialog.ui" line="421"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="404"/>
+        <location filename="../gamepropertiesdialog.ui" line="426"/>
         <source>9x</source>
         <translation>9x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="409"/>
+        <location filename="../gamepropertiesdialog.ui" line="431"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="417"/>
+        <location filename="../gamepropertiesdialog.ui" line="439"/>
         <source>Runahead Frames:</source>
         <translation>İleriden Hesaplanacak Kareler:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="430"/>
+        <location filename="../gamepropertiesdialog.ui" line="452"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="435"/>
+        <location filename="../gamepropertiesdialog.ui" line="457"/>
         <source>1 Frame</source>
         <translation>1 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="440"/>
+        <location filename="../gamepropertiesdialog.ui" line="462"/>
         <source>2 Frames</source>
         <translation>2 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="445"/>
+        <location filename="../gamepropertiesdialog.ui" line="467"/>
         <source>3 Frames</source>
         <translation>3 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="450"/>
+        <location filename="../gamepropertiesdialog.ui" line="472"/>
         <source>4 Frames</source>
         <translation>4 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="455"/>
+        <location filename="../gamepropertiesdialog.ui" line="477"/>
         <source>5 Frames</source>
         <translation>5 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="460"/>
+        <location filename="../gamepropertiesdialog.ui" line="482"/>
         <source>6 Frames</source>
         <translation>6 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="465"/>
+        <location filename="../gamepropertiesdialog.ui" line="487"/>
         <source>7 Frames</source>
         <translation>7 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="470"/>
+        <location filename="../gamepropertiesdialog.ui" line="492"/>
         <source>8 Frames</source>
         <translation>8 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="475"/>
+        <location filename="../gamepropertiesdialog.ui" line="497"/>
         <source>9 Frames</source>
         <translation>9 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="480"/>
+        <location filename="../gamepropertiesdialog.ui" line="502"/>
         <source>10 Frames</source>
         <translation>10 Kare</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="505"/>
+        <location filename="../gamepropertiesdialog.ui" line="527"/>
         <source>User Settings (Graphics)</source>
         <translation>Kullanıcı Ayarları (Grafikler)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="752"/>
+        <location filename="../gamepropertiesdialog.ui" line="774"/>
         <source>User Settings (Input)</source>
         <translation>Kullanıcı Ayarları (Kontroller)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="758"/>
+        <location filename="../gamepropertiesdialog.ui" line="780"/>
         <source>Controller Settings</source>
         <translation>Kol Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="764"/>
+        <location filename="../gamepropertiesdialog.ui" line="786"/>
         <source>Controller 1 Type:</source>
         <translation>Kol 1 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="774"/>
+        <location filename="../gamepropertiesdialog.ui" line="796"/>
         <source>Controller 2 Type:</source>
         <translation>Kol 2 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="784"/>
+        <location filename="../gamepropertiesdialog.ui" line="806"/>
         <source>Input Profile For Bindings:</source>
         <translation>Tuş Atamaları İçin Profil:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="794"/>
+        <location filename="../gamepropertiesdialog.ui" line="816"/>
         <source>Multitap Mode:</source>
         <translation>Multitap Modu:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="807"/>
+        <location filename="../gamepropertiesdialog.ui" line="829"/>
         <source>Memory Card Settings</source>
         <translation>Hafıza Kartı Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="813"/>
+        <location filename="../gamepropertiesdialog.ui" line="835"/>
         <source>Memory Card 1 Type:</source>
         <translation>Hafıza Kartı 1 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="823"/>
+        <location filename="../gamepropertiesdialog.ui" line="845"/>
         <source>Memory Card 1 Shared Path:</source>
         <translation>Hafıza Kartı 1 Paylaşılan Dizin:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="835"/>
-        <location filename="../gamepropertiesdialog.ui" line="866"/>
+        <location filename="../gamepropertiesdialog.ui" line="857"/>
+        <location filename="../gamepropertiesdialog.ui" line="888"/>
         <source>Browse...</source>
         <translation>Ara...</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="844"/>
+        <location filename="../gamepropertiesdialog.ui" line="866"/>
         <source>Memory Card 2 Type:</source>
         <translation>Hafıza Kartı 2 Tipi:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="854"/>
+        <location filename="../gamepropertiesdialog.ui" line="876"/>
         <source>Memory Card 2 Shared Path:</source>
         <translation>Hafıza 2 Kartı Paylaşılan Dizin:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="892"/>
+        <location filename="../gamepropertiesdialog.ui" line="914"/>
         <source>Compatibility Settings</source>
         <translation>Uyumluluk Ayarları</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="898"/>
+        <location filename="../gamepropertiesdialog.ui" line="920"/>
         <source>Traits</source>
         <translation>Özellikler</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="905"/>
+        <location filename="../gamepropertiesdialog.ui" line="927"/>
         <source>Overrides</source>
         <translation>Üstün Komutlar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="911"/>
+        <location filename="../gamepropertiesdialog.ui" line="933"/>
         <source>Display Active Offset:</source>
         <translation>Display Active Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="948"/>
+        <location filename="../gamepropertiesdialog.ui" line="970"/>
         <source>Display Line Offset:</source>
         <translation>Display Line Offset:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="985"/>
+        <location filename="../gamepropertiesdialog.ui" line="1007"/>
         <source>DMA Max Slice Ticks:</source>
         <translation>DMA Max Slice Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1002"/>
+        <location filename="../gamepropertiesdialog.ui" line="1024"/>
         <source>DMA Halt Ticks:</source>
         <translation>DMA Halt Ticks:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1019"/>
+        <location filename="../gamepropertiesdialog.ui" line="1041"/>
         <source>GPU FIFO Size:</source>
         <translation>GPU FIFO Size:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1033"/>
+        <location filename="../gamepropertiesdialog.ui" line="1055"/>
         <source>GPU Max Run Ahead:</source>
         <translation>GPU En Fazla İleri Hesaplama:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1050"/>
+        <location filename="../gamepropertiesdialog.ui" line="1072"/>
         <source>PGXP Geometry Tolerance:</source>
         <translation>PGXP Geometri Toleransı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1073"/>
+        <location filename="../gamepropertiesdialog.ui" line="1095"/>
         <source>PGXP Depth Threshold:</source>
         <translation>PGXP Derinlik Verisi Sınırı:</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1122"/>
+        <location filename="../gamepropertiesdialog.ui" line="1144"/>
+        <source>Compute &amp;&amp; Verify Hashes</source>
+        <translation>Dosya sağlamalarını hesapla ve online karşılaştır</translation>
+    </message>
+    <message>
         <source>Compute Hashes</source>
-        <translation>Hash Hesapla</translation>
+        <translation type="vanished">Hash Hesapla</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1129"/>
         <source>Verify Dump</source>
-        <translation>Dosyanın Doğruluğunu Doğrula</translation>
+        <translation type="vanished">Dosyanın Doğruluğunu Doğrula</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1136"/>
+        <location filename="../gamepropertiesdialog.ui" line="1151"/>
         <source>Export Compatibility Info</source>
         <translation>Uyumluluk Bilgisini Dışarı Aktar</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.ui" line="1143"/>
+        <location filename="../gamepropertiesdialog.ui" line="1158"/>
         <source>Close</source>
         <translation>Kapat</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="66"/>
+        <location filename="../gamepropertiesdialog.cpp" line="71"/>
         <source>Game Properties - %1</source>
         <translation>Oyun Bilgileri - %1</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="263"/>
+        <location filename="../gamepropertiesdialog.cpp" line="79"/>
+        <source>&lt;not verified&gt;</source>
+        <translation>&lt;dosya sağlaması onaylanmamış&gt;</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.cpp" line="268"/>
         <source>&lt;not computed&gt;</source>
         <translation>Hesaplanmamış</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="747"/>
-        <location filename="../gamepropertiesdialog.cpp" line="770"/>
+        <location filename="../gamepropertiesdialog.cpp" line="754"/>
+        <location filename="../gamepropertiesdialog.cpp" line="777"/>
         <source>Select path to memory card image</source>
         <translation>Hafıza kartı dosyası dizinini seçin</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="863"/>
+        <location filename="../gamepropertiesdialog.cpp" line="870"/>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2MHz)</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="935"/>
-        <source>Not yet implemented</source>
-        <translation>Daha Hazırlanmadı</translation>
+        <location filename="../gamepropertiesdialog.cpp" line="939"/>
+        <source>Search on Redump.org</source>
+        <translation>Dosya sağlamasını online karşılaştır</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="949"/>
+        <source>Not yet implemented</source>
+        <translation type="vanished">Daha Hazırlanmadı</translation>
+    </message>
+    <message>
+        <location filename="../gamepropertiesdialog.cpp" line="960"/>
         <source>Compatibility Info Export</source>
         <translation>Uyumluluk Bilgisi Dışarı Aktarma</translation>
     </message>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="949"/>
+        <location filename="../gamepropertiesdialog.cpp" line="960"/>
         <source>Press OK to copy to clipboard.</source>
         <translation>Panoya kopyalamak için OK&apos;a basın.</translation>
     </message>
@@ -5218,454 +5240,454 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2246"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2253"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2256"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2262"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2265"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2271"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2277"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2283"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2312"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2319"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2332"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2244"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2251"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2254"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2260"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2263"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2269"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2275"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2281"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2310"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2317"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2330"/>
         <source>General</source>
         <translation>Genel</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2247"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2245"/>
         <source>Open Quick Menu</source>
         <translation>Ekspres Menü Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2254"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2252"/>
         <source>Fast Forward</source>
         <translation>İleri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2257"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2255"/>
         <source>Toggle Fast Forward</source>
         <translation>İleri Sarmayı Aç/Kapa</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2263"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2261"/>
         <source>Turbo</source>
         <translation>Turbo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2266"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2264"/>
         <source>Toggle Turbo</source>
         <translation>Turboyu Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2272"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2270"/>
         <source>Toggle Fullscreen</source>
         <translation>Tam Ekranı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2278"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2276"/>
         <source>Toggle Pause</source>
         <translation>Duraklatmayı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2284"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2282"/>
         <source>Power Off System</source>
         <translation>Sistemi Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2350"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2348"/>
         <source>Reset System</source>
         <translation>Sisteme Reset At</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2313"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2311"/>
         <source>Save Screenshot</source>
         <translation>Ekran Görüntüsü Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2320"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2318"/>
         <source>Open Achievement List</source>
         <translation>Başarımlar Listesini Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2333"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2331"/>
         <source>Open Leaderboard List</source>
         <translation>Lider Sıralaması Listesini Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2349"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2355"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2366"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2373"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2385"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2389"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2400"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2413"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2347"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2353"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2364"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2371"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2383"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2387"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2398"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2411"/>
         <source>System</source>
         <translation>Sistem</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2356"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2354"/>
         <source>Change Disc</source>
         <translation>CD&apos;yi Değiştir</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2367"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2365"/>
         <source>Swap Memory Card Slots</source>
         <translation>Hafıza Kartı Slotlarını Birbirleriyle Değiştir</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2374"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2372"/>
         <source>Frame Step</source>
         <translation>Kare İleri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2386"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2384"/>
         <source>Rewind</source>
         <translation>Geri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2390"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2388"/>
         <source>Toggle Cheats</source>
         <translation>Hileleri Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2401"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2399"/>
         <source>Toggle Patch Codes</source>
         <translation>Yama Kodlarını Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2414"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2412"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
         <translation>İşlemci Hız Aşırtmayı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2441"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2447"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2472"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2478"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2484"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2490"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2496"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2505"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2513"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2532"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2439"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2445"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2470"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2476"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2482"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2488"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2494"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2503"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2511"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2530"/>
         <source>Graphics</source>
         <translation>Grafikler</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2442"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2440"/>
         <source>Toggle Software Rendering</source>
         <translation>Yazılımsal Çizmeyi Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2448"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2446"/>
         <source>Toggle PGXP</source>
         <translation>PGXP&apos;yi Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2473"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2471"/>
         <source>Increase Resolution Scale</source>
         <translation>Çözünürlüğü Yükselt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2479"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2477"/>
         <source>Decrease Resolution Scale</source>
         <translation>Çözünürlüğü Azalt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2485"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2483"/>
         <source>Toggle Post-Processing</source>
         <translation>Görsel Efektleri Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2491"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2489"/>
         <source>Reload Post Processing Shaders</source>
         <translation>Görsel Efekt Shaderlarını Tekrar Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2497"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2495"/>
         <source>Reload Texture Replacements</source>
         <translation>Doku Paketlerini Tekrar Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2506"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2504"/>
         <source>Toggle Widescreen</source>
         <translation>Geniş Ekranı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2514"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2512"/>
         <source>Toggle PGXP Depth Buffer</source>
         <translation>PGXP Derinlik Verisini Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2533"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2531"/>
         <source>Toggle PGXP CPU Mode</source>
         <translation>PGXP CPU Modunu Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2561"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2571"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2576"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2581"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2587"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2595"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2606"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2616"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2627"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2559"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2569"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2574"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2579"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2585"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2593"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2604"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2614"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2625"/>
         <source>Save States</source>
         <translation>Durum Kayıtları</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2562"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2560"/>
         <source>Load From Selected Slot</source>
         <translation>Seçili Slotu Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2572"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2570"/>
         <source>Save To Selected Slot</source>
         <translation>Seçili Slota Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2577"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2575"/>
         <source>Select Previous Save Slot</source>
         <translation>Önceki Durum Kaydı Slotunu Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2582"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2580"/>
         <source>Select Next Save Slot</source>
         <translation>Sonraki Durum Kayıtı Slotunu Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2588"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2586"/>
         <source>Undo Load State</source>
         <translation>Durum Kaydı Geri Al</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2636"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2634"/>
         <source>Load Game State 1</source>
         <translation>Durum Kaydı 1 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2637"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2635"/>
         <source>Load Game State 2</source>
         <translation>Durum Kaydı 2 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2638"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2636"/>
         <source>Load Game State 3</source>
         <translation>Durum Kaydı 3 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2639"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2637"/>
         <source>Load Game State 4</source>
         <translation>Durum Kaydı 4 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2640"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2638"/>
         <source>Load Game State 5</source>
         <translation>Durum Kaydı 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2641"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2639"/>
         <source>Load Game State 6</source>
         <translation>Durum Kaydı 6 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2642"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2640"/>
         <source>Load Game State 7</source>
         <translation>Durum Kaydı 7 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2643"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2641"/>
         <source>Load Game State 8</source>
         <translation>Durum Kaydı 8 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2644"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2642"/>
         <source>Load Game State 9</source>
         <translation>Durum Kaydı 9 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2645"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2643"/>
         <source>Load Game State 10</source>
         <translation>Durum Kaydı 10 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2646"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2644"/>
         <source>Save Game State 1</source>
         <translation>Durum Kaydı 1 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2647"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2645"/>
         <source>Save Game State 2</source>
         <translation>Durum Kaydı 2 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2648"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2646"/>
         <source>Save Game State 3</source>
         <translation>Durum Kaydı 3 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2649"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2647"/>
         <source>Save Game State 4</source>
         <translation>Durum Kaydı 4 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2650"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2648"/>
         <source>Save Game State 5</source>
         <translation>Durum Kaydı 5 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2651"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2649"/>
         <source>Save Game State 6</source>
         <translation>Durum Kaydı 6 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2652"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2650"/>
         <source>Save Game State 7</source>
         <translation>Durum Kaydı 7 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2653"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2651"/>
         <source>Save Game State 8</source>
         <translation>Durum Kaydı 8 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2654"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2652"/>
         <source>Save Game State 9</source>
         <translation>Durum Kaydı 9 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2655"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2653"/>
         <source>Save Game State 10</source>
         <translation>Durum Kaydı 10 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2656"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2654"/>
         <source>Load Global State 1</source>
         <translation>Evrensel Kayıt 1 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2657"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2655"/>
         <source>Load Global State 2</source>
         <translation>Evrensel Kayıt 2 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2658"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2656"/>
         <source>Load Global State 3</source>
         <translation>Evrensel Kayıt 3 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2659"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2657"/>
         <source>Load Global State 4</source>
         <translation>Evrensel Kayıt 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2660"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2658"/>
         <source>Load Global State 5</source>
         <translation>Evrensel Kayıt 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2661"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2659"/>
         <source>Load Global State 6</source>
         <translation>Evrensel Kayıt 6 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2662"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2660"/>
         <source>Load Global State 7</source>
         <translation>Evrensel Kayıt 7 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2663"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2661"/>
         <source>Load Global State 8</source>
         <translation>Evrensel Kayıt 8 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2664"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2662"/>
         <source>Load Global State 9</source>
         <translation>Evrensel Kayıt 9 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2665"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2663"/>
         <source>Load Global State 10</source>
         <translation>Evrensel Kayıt 10 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2666"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2664"/>
         <source>Save Global State 1</source>
         <translation>Evrensel Kayıt 1 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2667"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2665"/>
         <source>Save Global State 2</source>
         <translation>Evrensel Kayıt 2 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2668"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2666"/>
         <source>Save Global State 3</source>
         <translation>Evrensel Kayıt 3 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2669"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2667"/>
         <source>Save Global State 4</source>
         <translation>Evrensel Kayıt 4 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2670"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2668"/>
         <source>Save Global State 5</source>
         <translation>Evrensel Kayıt 5 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2671"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2669"/>
         <source>Save Global State 6</source>
         <translation>Evrensel Kayıt 6 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2672"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2670"/>
         <source>Save Global State 7</source>
         <translation>Evrensel Kayıt 7 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2673"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2671"/>
         <source>Save Global State 8</source>
         <translation>Evrensel Kayıt 8 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2674"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2672"/>
         <source>Save Global State 9</source>
         <translation>Evrensel Kayıt 9 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2675"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2673"/>
         <source>Save Global State 10</source>
         <translation>Evrensel Kayıt 10 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2680"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2693"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2704"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2717"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2678"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2691"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2702"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2715"/>
         <source>Audio</source>
         <translation>Ses</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2681"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2679"/>
         <source>Toggle Mute</source>
         <translation>Sesi Sustur Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2694"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2692"/>
         <source>Toggle CD Audio Mute</source>
         <translation>CD-Müzik Sustur Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2705"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2703"/>
         <source>Volume Up</source>
         <translation>Ses Yükselt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2718"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2716"/>
         <source>Volume Down</source>
         <translation>Ses Azalt</translation>
     </message>
@@ -6786,7 +6808,7 @@ Devam etmeye emin misiniz?</translation>
 <context>
     <name>MemoryCardSettingsWidget</name>
     <message>
-        <location filename="../gamepropertiesdialog.cpp" line="18"/>
+        <location filename="../gamepropertiesdialog.cpp" line="23"/>
         <location filename="../memorycardsettingswidget.cpp" line="16"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
         <translation>Tüm Hafıza Kartı Tipleri (*.mcd *.mcr *.mc)</translation>
@@ -7337,25 +7359,25 @@ Devam etmeye emin misiniz?</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1099"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3372"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3940"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3409"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3977"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Görsel efekt sırası yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1563"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1561"/>
         <source>No cheats are loaded.</source>
         <translation>Hiç bir hile yüklenmedi.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1569"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1567"/>
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform>%n hileler aktif.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../frontend-common/common_host_interface.cpp" line="1570"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="1568"/>
         <source>%n cheats are now inactive.</source>
         <translation>
             <numerusform>%n hileler şimdi aktif değil.</numerusform>
@@ -7378,139 +7400,139 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Turbo durduruldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2181"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2179"/>
         <source>Hotkey unavailable because achievements hardcore mode is active.</source>
         <translation>Kısayol tuşu kapalı çünkü hardcore mod açık.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2326"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2324"/>
         <source>Achievements are disabled or unavailable for this game.</source>
         <translation>Başarımlar kapatılmış yada oyun için yok.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2339"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2337"/>
         <source>Leaderboards are disabled or unavailable for this game.</source>
         <translation>Lider sıralaması kapatılmış yada oyun için yok.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2220"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2218"/>
         <source>Rewinding...</source>
         <translation>Geri Sarılıyor...</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2213"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2211"/>
         <source>Rewinding is not enabled.</source>
         <translation>Geri sarma etkinleştirilmemiş.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2221"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2219"/>
         <source>Stopped rewinding.</source>
         <translation>Geri sarma durduruldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2427"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2425"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
         <translation>İşlemci saat hızı kontrolü açıldı (%u%% / %.3f MHz).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2432"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2430"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
         <translation>İşlemci saat hızı kontrolu kapatıldı (%.3f MHz).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2457"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2455"/>
         <source>PGXP is now enabled.</source>
         <translation>PGXP Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2458"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2456"/>
         <source>PGXP is now disabled.</source>
         <translation>PGXP Kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2500"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2498"/>
         <source>Texture replacements reloaded.</source>
         <translation>Doku paketleri tekrar yüklendi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2526"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2524"/>
         <source>PGXP Depth Buffer is now enabled.</source>
         <translation>PGXP Derinlik Bilgisi Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2527"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2525"/>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>PGXP Derinlik Bilgisi Kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2542"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2540"/>
         <source>PGXP CPU mode is now enabled.</source>
         <translation>PGXP CPU Modu Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2543"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2541"/>
         <source>PGXP CPU mode is now disabled.</source>
         <translation>PGXP CPU Modu kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2688"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2686"/>
         <source>Volume: Muted</source>
         <translation>Ses: Susturuldu</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2690"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2714"/>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2727"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2688"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2712"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2725"/>
         <source>Volume: %d%%</source>
         <translation>Ses: %d%%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2699"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2697"/>
         <source>CD Audio Muted.</source>
         <translation>CD Müziği Susturuldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2700"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2698"/>
         <source>CD Audio Unmuted.</source>
         <translation>CD Müziğü Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="2866"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="2883"/>
         <source>Loaded input profile from &apos;%s&apos;</source>
         <translation>Şuradan kol profili yüklendi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3570"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3607"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Şuraya ses kaydı başlatıldı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3575"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3612"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Şuraya ses kaydı başlatılamadı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3585"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3622"/>
         <source>Stopped dumping audio.</source>
         <translation>Ses kaydı durduruldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3615"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3652"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Ekran görüntüsü dosyası &apos;%s&apos; zaten var.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3627"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3664"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Şuraya ekran görüntüsü kaydedilemedi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3631"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3668"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Ekran görüntüsü şuraya kaydedildi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3719"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3756"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
@@ -7519,22 +7541,22 @@ Desteklenen kollar: %s
 Yukarıdaki listeden bir kol ayarlayın.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3742"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3779"/>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
         <translation>Kol profili &apos;%s&apos; bulunamadı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3749"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3786"/>
         <source>Using input profile &apos;%s&apos;.</source>
         <translation>Şu kol profili kullanılıyor &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3775"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3812"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Şuradan hileler yüklenemedi &apos;%s&apos;.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3781"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3818"/>
         <source>%n cheats are enabled. This may result in instability.</source>
         <translation>
             <numerusform>%n tane hile etkin. Bu dengesizliğe sebep olabilir.</numerusform>
@@ -7559,89 +7581,89 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3827"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3864"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Şuraya hile listesi kaydedilemedi &apos;%s&apos;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3843"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3880"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
         <translation>
             <numerusform>%n hileler şuraya kaydedildi &apos;%s&apos;.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3858"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3895"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>Hile listesi silindi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3900"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3937"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Hile &apos;%s&apos; etkinleştirildi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3904"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3941"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Hile &apos;%s&apos; kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3920"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3957"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Şu hile uygulandı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3924"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3961"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Hile &apos;%s&apos; zaten uygulandı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3937"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3974"/>
         <source>Post-processing is now enabled.</source>
         <translation>Görsel efektler şimdi açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3944"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3981"/>
         <source>Post-processing is now disabled.</source>
         <translation>Görsel efektler şimdi kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3955"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3992"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Görsel efektler sırası yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3957"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="3994"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Görsel efekt shaderları tekrar yüklendi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="3994"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4031"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
         <translation>Geniş ekran hilesi şimdi açıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4001"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4038"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
         <translation>Geniş ekran hilesi şimdi kapatıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4016"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4053"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Her iki porttada hafıza kartı var.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4022"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4059"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 2 dolu ve Port 1 Boş.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4029"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4066"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 1 dolu ve Port 2 Boş.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host_interface.cpp" line="4036"/>
+        <location filename="../../frontend-common/common_host_interface.cpp" line="4073"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation></translation>
     </message>
@@ -8073,22 +8095,22 @@ Başarımlar: %5 (%6)
         <translation>DuckStation</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="29"/>
+        <location filename="../qtprogresscallback.cpp" line="31"/>
         <source>Cancel</source>
         <translation>İptal</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="89"/>
+        <location filename="../qtprogresscallback.cpp" line="90"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="94"/>
+        <location filename="../qtprogresscallback.cpp" line="95"/>
         <source>Question</source>
         <translation>Soru</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="100"/>
+        <location filename="../qtprogresscallback.cpp" line="101"/>
         <source>Information</source>
         <translation>Bilgi</translation>
     </message>
