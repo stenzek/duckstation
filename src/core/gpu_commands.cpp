@@ -203,7 +203,7 @@ bool GPU::HandleClearCacheCommand()
 
 bool GPU::HandleInterruptRequestCommand()
 {
-  Log_WarningPrintf("GP0 interrupt request");
+  Log_DebugPrintf("GP0 interrupt request");
   if (!m_GPUSTAT.interrupt_request)
   {
     m_GPUSTAT.interrupt_request = true;
