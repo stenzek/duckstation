@@ -145,8 +145,8 @@ bool UWPHostInterface::CreateDisplay(bool fullscreen)
         GAMING_DEVICE_MODEL_INFORMATION gdinfo = {};
         if (SUCCEEDED(GetGamingDeviceModelInformation(&gdinfo)) && gdinfo.vendorId == GAMING_DEVICE_VENDOR_ID_MICROSOFT)
         {
-          Log_InfoPrintf("Overriding core window size %ux%u with HDMI size %ux%u", wi.surface_width,
-                         wi.surface_height, hdmi_width, hdmi_height);
+          Log_InfoPrintf("Overriding core window size %ux%u with HDMI size %ux%u", wi.surface_width, wi.surface_height,
+                         hdmi_width, hdmi_height);
           wi.surface_scale *= static_cast<float>(hdmi_width) / static_cast<float>(wi.surface_width);
           wi.surface_width = hdmi_width;
           wi.surface_height = hdmi_height;
@@ -501,13 +501,17 @@ void UWPHostInterface::OnClosed(const IInspectable&, const winrt::Windows::UI::C
 void UWPHostInterface::OnSizeChanged(const IInspectable&,
                                      const winrt::Windows::UI::Core::WindowSizeChangedEventArgs& args)
 {
-  const auto size = args.Size();
-  const s32 width = static_cast<s32>(size.Width * m_display->GetWindowScale());
-  const s32 height = static_cast<s32>(size.Height * m_display->GetWindowScale());
   if (IsEmulationThreadRunning())
   {
+    const auto size = args.Size();
+    const float width = size.Width;
+    const float height = size.Height;
     RunLater([this, width, height]() {
-      m_display->ResizeRenderWindow(width, height);
+      if (!m_display)
+        return;
+
+      m_display->ResizeRenderWindow(static_cast<s32>(width * m_display->GetWindowScale()),
+                                    static_cast<s32>(height * m_display->GetWindowScale()));
       OnHostDisplayResized();
     });
   }
