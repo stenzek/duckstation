@@ -188,10 +188,10 @@ void BaseProgressCallback::PopState()
       static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)state->progress_range) :
       state->progress_value;
 
-  SetCancellable(state->cancellable);
-  SetStatusText(state->status_text);
-  SetProgressRange(state->progress_range);
-  SetProgressValue(new_progress_value);
+  m_cancellable = state->cancellable;
+  m_status_text = std::move(state->status_text);
+  m_progress_range = state->progress_range;
+  m_progress_value = new_progress_value;
 
   m_base_progress_value = state->base_progress_value;
   m_saved_state = state->next_saved_state;
