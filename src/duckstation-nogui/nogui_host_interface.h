@@ -31,6 +31,9 @@ public:
 
   void RunLater(std::function<void()> callback) override;
 
+  virtual void OnDisplayInvalidated() override;
+  virtual void OnSystemPerformanceCountersUpdated() override;
+
 protected:
   enum : u32
   {

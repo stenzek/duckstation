@@ -89,6 +89,10 @@ void NoGUIHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "OpenQuickMenu", "Keyboard/Escape");
 }
 
+void NoGUIHostInterface::OnDisplayInvalidated() {}
+
+void NoGUIHostInterface::OnSystemPerformanceCountersUpdated() {}
+
 bool NoGUIHostInterface::CreateDisplay(bool fullscreen)
 {
   std::optional<WindowInfo> wi = GetPlatformWindowInfo();

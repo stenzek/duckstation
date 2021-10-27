@@ -16,6 +16,8 @@ public:
   static std::unique_ptr<NoGUIHostInterface> Create();
 
 protected:
+  void SetMouseMode(bool relative, bool hide_cursor) override;
+
   bool CreatePlatformWindow() override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;

@@ -2,7 +2,7 @@
 #include "core/host_interface.h"
 #include "regtest_settings_interface.h"
 
-class RegTestHostInterface : public HostInterface
+class RegTestHostInterface final : public HostInterface
 {
 public:
   RegTestHostInterface();
@@ -34,11 +34,21 @@ public:
 
   std::unique_ptr<ByteStream> OpenPackageFile(const char* path, u32 flags) override;
 
+  void OnSystemPerformanceCountersUpdated() override;
+  void OnDisplayInvalidated() override;
+
 protected:
   bool AcquireHostDisplay() override;
   void ReleaseHostDisplay() override;
 
   std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend) override;
+
+  void OnSystemCreated() override;
+  void OnSystemPaused(bool paused) override;
+  void OnSystemDestroyed() override;
+  void OnControllerTypeChanged(u32 slot) override;
+
+  void SetMouseMode(bool relative, bool hide_cursor) override;
 
 private:
   void LoadGameSettingsDatabase();

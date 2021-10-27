@@ -21,6 +21,8 @@ public:
   bool SetFullscreen(bool enabled) override;
 
 protected:
+  void SetMouseMode(bool relative, bool hide_cursor) override;
+
   void PollAndUpdate() override;
 
   std::optional<HostKeyCode> GetHostKeyCode(const std::string_view key_code) const override;

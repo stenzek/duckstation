@@ -104,8 +104,6 @@ void RegTestHostInterface::GetGameInfo(const char* path, CDImage* image, std::st
 void RegTestHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
                                                 const std::string& game_title)
 {
-  HostInterface::OnRunningGameChanged(path, image, game_code, game_title);
-
   Log_InfoPrintf("Game Path: %s", path.c_str());
   Log_InfoPrintf("Game Code: %s", game_code.c_str());
   Log_InfoPrintf("Game Title: %s", game_title.c_str());
@@ -127,6 +125,10 @@ void RegTestHostInterface::OnRunningGameChanged(const std::string& path, CDImage
 
   UpdateSettings();
 }
+
+void RegTestHostInterface::OnSystemPerformanceCountersUpdated() {}
+
+void RegTestHostInterface::OnDisplayInvalidated() {}
 
 std::string RegTestHostInterface::GetStringSettingValue(const char* section, const char* key,
                                                         const char* default_value /*= ""*/)
@@ -283,6 +285,16 @@ std::unique_ptr<AudioStream> RegTestHostInterface::CreateAudioStream(AudioBacken
 {
   return AudioStream::CreateNullAudioStream();
 }
+
+void RegTestHostInterface::OnSystemCreated() {}
+
+void RegTestHostInterface::OnSystemPaused(bool paused) {}
+
+void RegTestHostInterface::OnSystemDestroyed() {}
+
+void RegTestHostInterface::OnControllerTypeChanged(u32 slot) {}
+
+void RegTestHostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
 
 static void PrintCommandLineVersion()
 {

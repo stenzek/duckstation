@@ -1913,7 +1913,18 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
   const u32 ticks = TimingEvents::GetGlobalTickCounter();
   if (IsSeeking() || IsReadingOrPlaying() || !m_secondary_status.motor_on)
   {
-    // set by the event
+    // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the last
+    // physical LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
+    // Mad Panic Coaster to go into a seek+play loop.
+    if ((m_secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
+        m_current_lba != m_physical_lba)
+    {
+      Log_WarningPrintf("Jumping to hold position [%u->%u] while %s first sector", m_physical_lba, m_current_lba,
+                        (m_drive_state == DriveState::Reading) ? "reading" : "playing");
+      SetHoldPosition(m_current_lba, true);
+    }
+
+    // Otherwise, this gets updated by the read event.
     return;
   }
 

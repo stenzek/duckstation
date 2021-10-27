@@ -111,6 +111,8 @@ void VTYHostInterface::PollAndUpdate()
   NoGUIHostInterface::PollAndUpdate();
 }
 
+void VTYHostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
+
 void VTYHostInterface::OpenEVDevFDs()
 {
   for (int i = 0; i < 1000; i++)

@@ -29,6 +29,8 @@ protected:
 
   void PollAndUpdate() override;
 
+  void SetMouseMode(bool relative, bool hide_cursor) override;
+
 private:
   static void SIGTERMHandler(int sig);
 

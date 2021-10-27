@@ -784,8 +784,6 @@ void QtHostInterface::OnSystemDestroyed()
 
 void QtHostInterface::OnSystemPerformanceCountersUpdated()
 {
-  HostInterface::OnSystemPerformanceCountersUpdated();
-
   GPURenderer renderer = GPURenderer::Count;
   u32 render_width = 0;
   u32 render_height = 0;

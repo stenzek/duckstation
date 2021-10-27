@@ -456,25 +456,6 @@ bool HostInterface::SaveState(const char* filename)
   return result;
 }
 
-void HostInterface::OnSystemCreated() {}
-
-void HostInterface::OnSystemPaused(bool paused) {}
-
-void HostInterface::OnSystemDestroyed() {}
-
-void HostInterface::OnSystemPerformanceCountersUpdated() {}
-
-void HostInterface::OnDisplayInvalidated() {}
-
-void HostInterface::OnSystemStateSaved(bool global, s32 slot) {}
-
-void HostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
-                                         const std::string& game_title)
-{
-}
-
-void HostInterface::OnControllerTypeChanged(u32 slot) {}
-
 std::string HostInterface::GetShaderCacheBasePath() const
 {
   return GetUserDirectoryRelativePath("cache/");
@@ -1197,13 +1178,3 @@ void HostInterface::RecreateSystem()
   System::ResetThrottler();
   OnDisplayInvalidated();
 }
-
-void HostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
-
-void HostInterface::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
-                                         int progress_value /*= -1*/)
-{
-  Log_InfoPrintf("Loading: %s %d of %d-%d", message, progress_value, progress_min, progress_max);
-}
-
-void HostInterface::GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title) {}

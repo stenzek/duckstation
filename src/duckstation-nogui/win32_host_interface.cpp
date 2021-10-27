@@ -57,6 +57,8 @@ bool Win32HostInterface::RegisterWindowClass()
   return true;
 }
 
+void Win32HostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
+
 bool Win32HostInterface::CreatePlatformWindow()
 {
   m_hwnd = CreateWindowExW(WS_EX_CLIENTEDGE, WINDOW_CLASS_NAME, L"DuckStation", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,

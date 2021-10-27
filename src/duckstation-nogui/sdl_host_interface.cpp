@@ -260,6 +260,8 @@ std::optional<CommonHostInterface::HostKeyCode> SDLHostInterface::GetHostKeyCode
   return static_cast<HostKeyCode>(*code);
 }
 
+void SDLHostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
+
 void SDLHostInterface::PollAndUpdate()
 {
   // Process SDL events before the controller interface can steal them.

@@ -840,11 +840,7 @@ bool CommonHostInterface::SaveState(bool global, s32 slot)
 
   std::string save_path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(code.c_str(), slot);
   RenameCurrentSaveStateToBackup(save_path.c_str());
-  if (!SaveState(save_path.c_str()))
-    return false;
-
-  OnSystemStateSaved(global, slot);
-  return true;
+  return SaveState(save_path.c_str());
 }
 
 bool CommonHostInterface::CanResumeSystemFromFile(const char* filename)
@@ -1090,8 +1086,6 @@ void CommonHostInterface::SetUserDirectory()
 
 void CommonHostInterface::OnSystemCreated()
 {
-  HostInterface::OnSystemCreated();
-
   if (m_fullscreen_ui_enabled)
     FullscreenUI::SystemCreated();
 
@@ -1127,8 +1121,6 @@ void CommonHostInterface::OnSystemDestroyed()
   if (m_display)
     m_display->SetDisplayMaxFPS(0.0f);
 
-  HostInterface::OnSystemDestroyed();
-
   if (m_fullscreen_ui_enabled)
     FullscreenUI::SystemDestroyed();
 
@@ -1139,8 +1131,6 @@ void CommonHostInterface::OnSystemDestroyed()
 void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage* image, const std::string& game_code,
                                                const std::string& game_title)
 {
-  HostInterface::OnRunningGameChanged(path, image, game_code, game_title);
-
   if (g_settings.apply_game_settings)
     ApplySettings(true);
 
@@ -1166,8 +1156,6 @@ void CommonHostInterface::OnRunningGameChanged(const std::string& path, CDImage*
 
 void CommonHostInterface::OnControllerTypeChanged(u32 slot)
 {
-  HostInterface::OnControllerTypeChanged(slot);
-
   UpdateInputMap();
 }
 
@@ -2821,8 +2809,8 @@ bool CommonHostInterface::ApplyInputProfile(const char* profile_path)
       continue;
     }
 
+    // We don't need to call ControllerTypeChanged here because we're already updating the input map.
     g_settings.controller_types[controller_index - 1] = *ctype;
-    HostInterface::OnControllerTypeChanged(controller_index - 1);
 
     m_settings_interface->SetStringValue(section_name, "Type", Settings::GetControllerTypeName(*ctype));
 
