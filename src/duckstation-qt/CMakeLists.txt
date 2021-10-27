@@ -134,11 +134,11 @@ set(TS_FILES
 )
 
 set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
-qt5_add_translation(QM_FILES ${TS_FILES})
+qt_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
-target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
-target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+target_include_directories(duckstation-qt PRIVATE "${Qt${QT_VERSION_MAJOR}Gui_PRIVATE_INCLUDE_DIRS}")
+target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt::Core Qt::Gui Qt::Widgets Qt::Network)
 
 if(WIN32)
   # We want a Windows subsystem application not console.
@@ -185,13 +185,19 @@ if(APPLE)
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
   # Copy Qt plugins into the bundle
-  get_target_property(qtcocoa_location Qt5::QCocoaIntegrationPlugin LOCATION)
-  target_sources(duckstation-qt PRIVATE "${qtcocoa_location}")
-  set_source_files_properties("${qtcocoa_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/platforms)
-
-  get_target_property(qtmacstyle_location Qt5::QMacStylePlugin LOCATION)
-  target_sources(duckstation-qt PRIVATE "${qtmacstyle_location}")
-  set_source_files_properties("${qtmacstyle_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/styles)
+  # Retrieve the absolute path to qmake and then use that path to find
+  # the binaries
+  get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
+  get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+  find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+  find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
+  
+  add_custom_command(TARGET duckstation-qt POST_BUILD
+  COMMAND "${MACDEPLOYQT_EXECUTABLE}"
+      "$<TARGET_FILE_DIR:duckstation-qt>/../.."
+      -always-overwrite
+  COMMENT "Running macdeployqt..."
+  )
 
   # Copy resources into the bundle
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/data")
