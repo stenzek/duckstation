@@ -257,6 +257,7 @@ jobs:
       QTVER: 5.15.2
       QTVERMIN: 515
       UBUNTU_VER: focal
+      QT6VERSION: 6.2.0
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -272,7 +273,7 @@ jobs:
     - name: Install Qt6
       uses: WillBrennan/yaqti@2021.07.29
       with:
-        version: '6.2.0'
+        version: "${{ env.QT6VERSION }}"
         os: 'linux'
         platform: 'desktop'
         modules: 'qtwaylandcompositor'
@@ -280,8 +281,8 @@ jobs:
     - name: Compile build
       shell: bash
       env:
-        QT5_DIR: "opt/qt515"   
-        QT6_DIR: "qt/6.2.0"
+        QT5_DIR: "opt/qt${{ env.QTVERMIN }}"   
+        QT6_DIR: "qt/${{ env.QT6VERSION }}"
       run: |
         if [[ -e $QT6_DIR ]]; then
           export CMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/$QT6_DIR/gcc_64
