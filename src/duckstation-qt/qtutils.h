@@ -6,7 +6,9 @@
 #include <initializer_list>
 #include <optional>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
 Q_DECLARE_METATYPE(std::optional<bool>);
+#endif
 Q_DECLARE_METATYPE(std::function<void()>);
 
 class ByteStream;
