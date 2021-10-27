@@ -88,11 +88,23 @@ ${BUILD_DIR}/squashfs-root/AppRun \
 sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH "$this_dir"/AppRun.wrapped "$@"|' \
   ${BUILD_DIR}/duckstation-qt.AppDir/AppRun
 
+if [[ $(qmake -v | grep 'Qt' | awk ' { print $4 } ' | cut -d '.' -f 1) > 5 ]]; then
+	QTPATH=${GITHUB_WORKSPACE}/$QT6_DIR/gcc_64
+	QTVER=6
+else
+	QTPATH=/$QT5_DIR/
+	QTVER=5
+fi
+
+echo "QTPATH $QTPATH"
+echo "QTVER $QTVER"
+
 mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
 mkdir -p ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
-cp /usr/lib/x86_64-linux-gnu/{libQt5WaylandClient.so.5,libEGL_mesa.so.0} ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib
-cp /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
-cp -r /usr/lib/x86_64-linux-gnu/qt5/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
+cp -v /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib
+cp -v ${QTPATH}/lib/{libQt${QTVER}WaylandClient.so.${QTVER},libQt${QTVER}XcbQpa.so.${QTVER}} ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib
+cp -v /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-qt.AppDir/usr/lib/dri
+cp -rv ${QTPATH}/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
 
 cat <<'EOF'>> ${BUILD_DIR}/duckstation-qt.AppDir/apprun-hooks/linuxdeploy-plugin-qt-hook.sh
 case "${WAYLAND_DISPLAY}" in
