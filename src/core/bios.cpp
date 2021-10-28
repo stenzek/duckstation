@@ -246,7 +246,7 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
   if (std::memcmp(header.id, expected_id, sizeof(expected_id)) != 0)
     return false;
 
-  if (header.file_size > (sizeof(PSEXEHeader) + file_size))
+  if ((header.file_size + sizeof(PSEXEHeader)) > file_size)
     return false;
 
   return true;
