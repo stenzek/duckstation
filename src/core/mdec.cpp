@@ -595,26 +595,28 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
     m_remaining_halfwords--;
 
     m_current_coefficient += ((n >> 10) & 0x3F) + 1;
-    if (m_current_coefficient >= 64)
+    if (m_current_coefficient < 64)
+    {
+      s32 val = (SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) *
+                   static_cast<s32>(ZeroExtend32(qt[m_current_coefficient])) * static_cast<s32>(m_current_q_scale) +
+                 4) /
+                8;
+
+      if (m_current_q_scale == 0)
+        val = SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * 2;
+
+      val = std::clamp(val, -0x400, 0x3FF);
+      if (m_current_q_scale > 0)
+        blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
+      else if (m_current_q_scale == 0)
+        blk[m_current_coefficient] = static_cast<s16>(val);
+    }
+
+    if (m_current_coefficient >= 63)
     {
       m_current_coefficient = 64;
       return true;
     }
-
-    s32 val = (SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) *
-                 static_cast<s32>(ZeroExtend32(qt[m_current_coefficient])) * static_cast<s32>(m_current_q_scale) +
-               4) /
-              8;
-
-    if (m_current_q_scale == 0)
-      val = SignExtendN<10, s32>(static_cast<s32>(n & 0x3FF)) * 2;
-
-    val = std::clamp(val, -0x400, 0x3FF);
-    // val = val * static_cast<s32>(ZeroExtend32(scalezag[i]));
-    if (m_current_q_scale > 0)
-      blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
-    else if (m_current_q_scale == 0)
-      blk[m_current_coefficient] = static_cast<s16>(val);
   }
 
   return false;
