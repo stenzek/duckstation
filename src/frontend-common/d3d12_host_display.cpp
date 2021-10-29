@@ -241,18 +241,7 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     return false;
   }
 
-#if 0
-  // we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
-  ComPtr<IDXGIDevice> dxgi_device;
-  if (FAILED(m_device.As(&dxgi_device)) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))) ||
-      FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.GetAddressOf()))))
-  {
-    Log_WarningPrint("Failed to get parent adapter/device/factory");
-    return false;
-  }
-#else
   m_dxgi_factory = std::move(temp_dxgi_factory);
-#endif
 
   m_allow_tearing_supported = false;
   ComPtr<IDXGIFactory5> dxgi_factory5;
