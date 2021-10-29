@@ -235,6 +235,10 @@ void UWPHostInterface::RequestExit()
                         [this]() { winrt::Windows::ApplicationModel::Core::CoreApplication::Exit(); });
 }
 
+void UWPHostInterface::SetMouseMode(bool relative, bool hide_cursor)
+{
+}
+
 void UWPHostInterface::Run()
 {
   if (!Initialize())
@@ -381,6 +385,14 @@ void UWPHostInterface::RunLater(std::function<void()> callback)
 {
   std::unique_lock<std::mutex> lock(m_queued_callbacks_lock);
   m_queued_callbacks.push_back(std::move(callback));
+}
+
+void UWPHostInterface::OnDisplayInvalidated()
+{
+}
+
+void UWPHostInterface::OnSystemPerformanceCountersUpdated()
+{
 }
 
 bool UWPHostInterface::IsFullscreen() const

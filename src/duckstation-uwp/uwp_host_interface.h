@@ -47,6 +47,9 @@ public:
 
   void RunLater(std::function<void()> callback) override;
 
+  void OnDisplayInvalidated() override;
+  void OnSystemPerformanceCountersUpdated() override;
+
   bool IsFullscreen() const override;
   bool SetFullscreen(bool enabled) override;
 
@@ -73,6 +76,8 @@ protected:
 
   void PollAndUpdate() override;
   void RequestExit() override;
+
+  void SetMouseMode(bool relative, bool hide_cursor) override;
 
   bool CreateDisplay(bool fullscreen);
   void DestroyDisplay();
