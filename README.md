@@ -13,23 +13,9 @@ DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusi
 
 A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
-## Latest News
-Older entries are available at https://github.com/stenzek/duckstation/blob/master/NEWS.md
-
-- 2021/07/25: Ability to boot games directly from CD-ROM added. You may want to reduce the readahead size to reduce hitches on seek/loading.
-- 2021/07/11: UWP/Xbox one port added. Follow the instructions in "Universal Windows Platform / Xbox One" below.
-- 2021/07/10: Direct3D 12 hardware renderer added. It does not support downsampling or postprocessing (was mainly intended for Xbox).
-- 2021/06/25: Ability to undelete files from memory card editor added.
-- 2021/06/22: Measured achievements for RetroAchievements added.
-- 2021/06/19: Leaderboards for RetroAchievements added.
-- 2021/06/01: Auto loading/applying of PPF patches added.
-- 2021/05/23: Save RAM (srm) support added to libretro core.
-- 2021/05/23: CD-ROM seek speedup enhancement added.
-- 2021/05/16: Auto fire (toggle pressing) buttons added.
-
 ## Features
 
-DuckStation features a fully-featured frontend built using Qt, as well as a fullscreen/TV UI based on Dear ImGui. An Android version has been started, but is not yet feature complete.
+DuckStation features a fully-featured frontend built using Qt, as well as a fullscreen/TV UI based on Dear ImGui.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
@@ -146,8 +132,6 @@ If you must use an APK, download links are:
 
 Download link: https://www.duckstation.org/android/duckstation-android.apk
 
-Preview/beta download link: https://www.duckstation.org/android/duckstation-android-beta.apk
-
 Changelog link: https://www.duckstation.org/android/changelog.txt
 
 To use:
@@ -156,6 +140,14 @@ To use:
 3. Tap a game to start. When you start a game for the first time it will prompt you to import a BIOS image.
 
 If you have an external controller, you will need to map the buttons and sticks in settings.
+
+### LibCrypt protection and SBI files
+
+A number of PAL region games use LibCrypt protection, requiring additional CD subchannel information to run properly. libcrypt not functioning usually manifests as hanging or crashing, but can sometimes affect gameplay too, depending on how the game implemented it.
+
+For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
+
+For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
 
 ### Libretro Core
 
@@ -171,25 +163,6 @@ The core is maintained by a third party, and is not provided as part of the GitH
 - Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
 - Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
 - Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
-
-### Region detection and BIOS images
-By default, DuckStation will emulate the region check present in the CD-ROM controller of the console. This means that when the region of the console does not match the disc, it will refuse to boot, giving a "Please insert PlayStation CD-ROM" message. DuckStation supports automatic detection disc regions, and if you set the console region to auto-detect as well, this should never be a problem.
-
-If you wish to use auto-detection, you do not need to change the BIOS path each time you switch regions. Simply place the BIOS images for the other regions in the **same directory** as the configured image. This will probably be in the `bios/` subdirectory. Then set the console region to "Auto-Detect", and everything should work fine. The console/log will tell you if you are missing the image for the disc's region.
-
-Some users have been confused by the "BIOS Path" option, the reason it is a path and not a directory is so that an unknown BIOS revision can be used/tested.
-
-Alternatively, the region checking can be disabled in the console options tab. This is the only way to play unlicensed games or homebrew which does not supply a correct region string on the disc, aside from using fastboot which skips the check entirely.
-
-Mismatching the disc and console regions with the check disabled is supported, but may break games if they are patching the BIOS and expecting specific content.
-
-### LibCrypt protection and SBI files
-
-A number of PAL region games use LibCrypt protection, requiring additional CD subchannel information to run properly. libcrypt not functioning usually manifests as hanging or crashing, but can sometimes affect gameplay too, depending on how the game implemented it.
-
-For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
-
-For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
 
 ## Building
 
@@ -277,9 +250,6 @@ Hotkeys:
  - **ALT+ENTER:** Toggle fullscreen
  - **Tab:** Temporarily disable speed limiter
  - **Space:** Pause/resume emulation
- 
-## Tests
- - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 
 ## Screenshots
 <p align="center">
