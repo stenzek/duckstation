@@ -222,6 +222,7 @@ bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
 
 static void setCardTableItemProperties(QTableWidgetItem* item, const MemoryCardImage::FileInfo& fi)
 {
+  item->setFlags(item->flags() & ~(Qt::ItemIsEditable));
   if (fi.deleted)
   {
     item->setBackground(Qt::darkRed);
