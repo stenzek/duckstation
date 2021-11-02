@@ -88,7 +88,9 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     }
     if (track_file_index == m_files.size())
     {
-      const std::string track_full_filename(FileSystem::BuildRelativePath(m_filename, track_filename));
+      const std::string track_full_filename(!FileSystem::IsAbsolutePath(track_filename) ?
+                                              FileSystem::BuildRelativePath(m_filename, track_filename) :
+                                              track_filename);
       std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
       if (!track_fp && track_file_index == 0)
       {
