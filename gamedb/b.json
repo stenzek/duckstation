@@ -5991,7 +5991,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -15219,7 +15220,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -15256,7 +15258,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -15291,7 +15294,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -20665,7 +20669,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -20824,7 +20829,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -20927,7 +20933,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -21554,7 +21561,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -21648,7 +21656,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {
@@ -21806,7 +21815,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGecon"
   ],
   "track_data": [
    {

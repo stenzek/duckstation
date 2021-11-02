@@ -745,7 +745,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -847,7 +848,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -881,7 +883,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {

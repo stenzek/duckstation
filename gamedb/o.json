@@ -1318,7 +1318,8 @@
   "multitap": false,
   "linkCable": false,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -5736,7 +5737,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -5855,7 +5857,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -5975,7 +5978,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -6038,7 +6042,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -6113,7 +6118,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -6138,7 +6144,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ]
  },
  {
@@ -6329,7 +6336,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -7247,7 +7255,8 @@
   "multitap": false,
   "linkCable": true,
   "controllers": [
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -7299,7 +7308,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -7334,7 +7344,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
@@ -7386,7 +7397,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NeGcon"
   ],
   "track_data": [
    {
