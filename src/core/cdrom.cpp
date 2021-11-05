@@ -1064,7 +1064,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
             ClearDriveState();
           }
         }
-        else if (m_drive_state != DriveState::SeekingImplicit)
+        else if (m_drive_state != DriveState::SeekingImplicit && m_drive_state != DriveState::ShellOpening)
         {
           // if we're seeking or reading, we need to add time to the current seek/read
           const TickCount change_ticks = GetTicksForSpeedChange();
