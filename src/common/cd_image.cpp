@@ -338,8 +338,10 @@ void CDImage::ClearTOC()
 void CDImage::CopyTOC(const CDImage* image)
 {
   m_lba_count = image->m_lba_count;
-  m_indices.clear();
+  decltype(m_indices)().swap(m_indices);
+  decltype(m_tracks)().swap(m_tracks);
   m_indices.reserve(image->m_indices.size());
+  m_tracks.reserve(image->m_tracks.size());
 
   // Damn bitfield copy constructor...
   for (const Index& index : image->m_indices)
