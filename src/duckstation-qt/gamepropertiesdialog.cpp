@@ -16,6 +16,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include <future>
 #include <map>
 Log_SetChannel(GamePropertiesDialog);
 
