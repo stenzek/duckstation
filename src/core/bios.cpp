@@ -247,7 +247,10 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
     return false;
 
   if ((header.file_size + sizeof(PSEXEHeader)) > file_size)
-    return false;
+  {
+    Log_WarningPrintf("Incorrect file size in PS-EXE header: %u bytes should not be greater than %u bytes",
+                      header.file_size, file_size - sizeof(PSEXEHeader));
+  }
 
   return true;
 }

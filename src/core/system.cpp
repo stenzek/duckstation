@@ -1659,16 +1659,17 @@ static bool LoadEXEToRAM(const char* filename, bool patch_bios)
     }
   }
 
-  if (header.file_size >= 4)
+  const u32 file_data_size = std::min<u32>(file_size - sizeof(BIOS::PSEXEHeader), header.file_size);
+  if (file_data_size >= 4)
   {
-    std::vector<u32> data_words((header.file_size + 3) / 4);
-    if (std::fread(data_words.data(), header.file_size, 1, fp) != 1)
+    std::vector<u32> data_words((file_data_size + 3) / 4);
+    if (std::fread(data_words.data(), file_data_size, 1, fp) != 1)
     {
       std::fclose(fp);
       return false;
     }
 
-    const u32 num_words = header.file_size / 4;
+    const u32 num_words = file_data_size / 4;
     u32 address = header.load_address;
     for (u32 i = 0; i < num_words; i++)
     {
@@ -1711,7 +1712,8 @@ bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
   std::memcpy(&header, buffer_ptr, sizeof(header));
   buffer_ptr += sizeof(header);
 
-  if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(buffer_end - buffer_ptr)))
+  const u32 file_size = static_cast<u32>(static_cast<u32>(buffer_end - buffer_ptr));
+  if (!BIOS::IsValidPSExeHeader(header, file_size))
     return false;
 
   if (header.memfill_size > 0)
@@ -1725,15 +1727,16 @@ bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
     }
   }
 
-  if (header.file_size >= 4)
+  const u32 file_data_size = std::min<u32>(file_size - sizeof(BIOS::PSEXEHeader), header.file_size);
+  if (file_data_size >= 4)
   {
-    std::vector<u32> data_words((header.file_size + 3) / 4);
-    if ((buffer_end - buffer_ptr) < header.file_size)
+    std::vector<u32> data_words((file_data_size + 3) / 4);
+    if ((buffer_end - buffer_ptr) < file_data_size)
       return false;
 
-    std::memcpy(data_words.data(), buffer_ptr, header.file_size);
+    std::memcpy(data_words.data(), buffer_ptr, file_data_size);
 
-    const u32 num_words = header.file_size / 4;
+    const u32 num_words = file_data_size / 4;
     u32 address = header.load_address;
     for (u32 i = 0; i < num_words; i++)
     {
