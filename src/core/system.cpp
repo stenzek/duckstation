@@ -1804,10 +1804,6 @@ bool SetExpansionROM(const char* filename)
 void StallCPU(TickCount ticks)
 {
   CPU::AddPendingTicks(ticks);
-#if 0
-  if (CPU::GetPendingTicks() >= CPU::GetDowncount() && !m_running_events)
-    RunEvents();
-#endif
 }
 
 Controller* GetController(u32 slot)

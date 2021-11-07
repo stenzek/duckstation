@@ -300,7 +300,7 @@ u16 SPU::ReadRegister(u32 offset)
           return m_voices[voice_index].right_volume.current_level;
       }
 
-      Log_ErrorPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
+      Log_DevPrintf("Unknown SPU register read: offset 0x%X (address 0x%08X)", offset, offset | SPU_BASE);
       return UINT16_C(0xFFFF);
     }
   }
@@ -584,8 +584,8 @@ void SPU::WriteRegister(u32 offset, u16 value)
         return;
       }
 
-      Log_ErrorPrintf("Unknown SPU register write: offset 0x%X (address 0x%08X) value 0x%04X", offset,
-                      offset | SPU_BASE, ZeroExtend32(value));
+      Log_DevPrintf("Unknown SPU register write: offset 0x%X (address 0x%08X) value 0x%04X", offset, offset | SPU_BASE,
+                    ZeroExtend32(value));
       return;
     }
   }
