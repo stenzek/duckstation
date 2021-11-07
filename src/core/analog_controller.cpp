@@ -259,9 +259,6 @@ void AnalogController::ProcessAnalogModeToggle()
   else
   {
     SetAnalogMode(!m_analog_mode);
-
-    // Manually toggling controller mode resets and disables rumble configuration
-    m_rumble_unlocked = false;
     ResetRumbleConfig();
 
     // TODO: Mode switch detection (0x00 returned on certain commands instead of 0x5A)
@@ -567,8 +564,11 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
       if (m_command_step == (static_cast<s32>(m_response_length) - 1))
       {
-        m_rumble_unlocked = true;
         m_configuration_mode = (m_rx_buffer[2] == 1);
+
+        if (m_configuration_mode)
+          m_rumble_unlocked = true;
+
         Log_DevPrintf("0x%02x(%s) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
       }
     }
