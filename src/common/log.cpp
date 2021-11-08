@@ -213,7 +213,7 @@ static ALWAYS_INLINE void FormatLogMessageAndPrintW(const char* channelName, con
   callback(wmessage_buf, wmessage_buflen);
 
   if (wmessage_buf != wbuf)
-    std::free(wbuf);
+    std::free(wmessage_buf);
 
   if (message_buf != buf)
     std::free(message_buf);
