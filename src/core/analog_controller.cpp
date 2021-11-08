@@ -31,8 +31,10 @@ void AnalogController::Reset()
   m_configuration_mode = false;
   m_motor_state.fill(0);
 
-  m_rumble_unlocked = false;
+  m_dualshock_enabled = false;
   ResetRumbleConfig();
+
+  m_status_byte = 0x5A;
 
   if (m_force_analog_on_reset)
   {
@@ -56,10 +58,11 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
   const bool old_analog_mode = m_analog_mode;
 
   sw.Do(&m_analog_mode);
-  sw.Do(&m_rumble_unlocked);
+  sw.Do(&m_dualshock_enabled);
   sw.DoEx(&m_legacy_rumble_unlocked, 44, false);
   sw.Do(&m_configuration_mode);
   sw.Do(&m_command_param);
+  sw.DoEx(&m_status_byte, 55, static_cast<u8>(0x5A));
 
   u16 button_state = m_button_state;
   sw.DoEx(&button_state, 44, static_cast<u16>(0xFFFF));
@@ -259,12 +262,10 @@ void AnalogController::ProcessAnalogModeToggle()
   else
   {
     SetAnalogMode(!m_analog_mode);
-
-    // Manually toggling controller mode resets and disables rumble configuration
-    m_rumble_unlocked = false;
     ResetRumbleConfig();
 
-    // TODO: Mode switch detection (0x00 returned on certain commands instead of 0x5A)
+    if (m_dualshock_enabled)
+      m_status_byte = 0x00;
   }
 }
 
@@ -366,21 +367,21 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::ReadPad;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (data_in == 0x43)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::ConfigModeSetMode;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x44)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::SetAnalogMode;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         ResetRumbleConfig();
       }
@@ -389,35 +390,35 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::GetAnalogMode;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x01, 0x02, BoolToUInt8(m_analog_mode), 0x02, 0x01, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x01, 0x02, BoolToUInt8(m_analog_mode), 0x02, 0x01, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x46)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::Command46;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x47)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::Command47;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x4C)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::Command4C;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
       else if (m_configuration_mode && data_in == 0x4D)
       {
         Assert(m_command_step == 0);
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::GetSetRumble;
-        m_tx_buffer = {GetIDByte(), GetStatusByte(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
         m_rumble_config_large_motor_index = -1;
         m_rumble_config_small_motor_index = -1;
@@ -443,7 +444,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         {
           m_tx_buffer[m_command_step] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
         }
         break;
@@ -452,7 +453,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         {
           m_tx_buffer[m_command_step] = Truncate8(m_button_state >> 8);
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
           {
             SetMotorStateForConfigIndex(rumble_index, data_in);
           }
@@ -469,7 +470,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           if (m_configuration_mode || m_analog_mode)
             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightX)];
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
         }
         break;
@@ -479,7 +480,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           if (m_configuration_mode || m_analog_mode)
             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::RightY)];
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
         }
         break;
@@ -489,7 +490,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           if (m_configuration_mode || m_analog_mode)
             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftX)];
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
         }
         break;
@@ -499,7 +500,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           if (m_configuration_mode || m_analog_mode)
             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::LeftY)];
 
-          if (m_rumble_unlocked)
+          if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
         }
         break;
@@ -567,8 +568,14 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
       if (m_command_step == (static_cast<s32>(m_response_length) - 1))
       {
-        m_rumble_unlocked = true;
         m_configuration_mode = (m_rx_buffer[2] == 1);
+
+        if (m_configuration_mode)
+        {
+          m_dualshock_enabled = true;
+          m_status_byte = 0x5A;
+        }
+
         Log_DevPrintf("0x%02x(%s) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
       }
     }

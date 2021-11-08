@@ -109,9 +109,6 @@ private:
   u8 GetModeID() const;
   u8 GetIDByte() const;
 
-  // TODO: Return 0x00 on manual toggles
-  constexpr u8 GetStatusByte() const { return 0x5A; };
-
   void SetAnalogMode(bool enabled);
   void ProcessAnalogModeToggle();
   void SetMotorState(u8 motor, u8 value);
@@ -128,7 +125,7 @@ private:
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;
-  bool m_rumble_unlocked = false;
+  bool m_dualshock_enabled = false;
   bool m_configuration_mode = false;
 
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
@@ -144,6 +141,7 @@ private:
   int m_rumble_config_small_motor_index = -1;
 
   bool m_analog_toggle_queued = false;
+  u8 m_status_byte = 0x5A;
 
   // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
   u8 m_digital_mode_extra_halfwords = 0;
