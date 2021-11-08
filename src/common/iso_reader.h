@@ -148,4 +148,9 @@ private:
   u32 m_track_number;
 
   ISOPrimaryVolumeDescriptor m_pvd = {};
+
+public:
+  const ISOPrimaryVolumeDescriptor& getPVD() const { 
+      return m_pvd;
+  };
 };
