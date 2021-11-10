@@ -193,12 +193,12 @@ bool File::ParseLine(const char* line, u32 line_number, Common::Error* error)
   }
 
   // stuff we definitely ignore
-  if (TokenMatch(command, "CATALOG") || TokenMatch(command, "CDTEXTFILE") || TokenMatch(command, "CATALOG") ||
-      TokenMatch(command, "ISRC") || TokenMatch("command", "TRACK_ISRC") || TokenMatch(command, "TITLE") ||
-      TokenMatch(command, "PERFORMER") || TokenMatch(command, "SONGWRITER") || TokenMatch(command, "COMPOSER") ||
-      TokenMatch(command, "ARRANGER") || TokenMatch(command, "MESSAGE") || TokenMatch(command, "DISC_ID") ||
-      TokenMatch(command, "GENRE") || TokenMatch(command, "TOC_INFO1") || TokenMatch(command, "TOC_INFO2") ||
-      TokenMatch(command, "UPC_EAN") || TokenMatch(command, "SIZE_INFO"))
+  if (TokenMatch(command, "CATALOG") || TokenMatch(command, "CDTEXTFILE") || TokenMatch(command, "ISRC") ||
+      TokenMatch(command, "TRACK_ISRC") || TokenMatch(command, "TITLE") || TokenMatch(command, "PERFORMER") ||
+      TokenMatch(command, "SONGWRITER") || TokenMatch(command, "COMPOSER") || TokenMatch(command, "ARRANGER") ||
+      TokenMatch(command, "MESSAGE") || TokenMatch(command, "DISC_ID") || TokenMatch(command, "GENRE") ||
+      TokenMatch(command, "TOC_INFO1") || TokenMatch(command, "TOC_INFO2") || TokenMatch(command, "UPC_EAN") ||
+      TokenMatch(command, "SIZE_INFO"))
   {
     return true;
   }
