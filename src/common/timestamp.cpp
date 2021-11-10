@@ -1,6 +1,7 @@
 #include "timestamp.h"
 #include <cstring>
 #include <ctime>
+#include <tuple>
 
 #if defined(_WIN32)
 
@@ -222,232 +223,48 @@ bool Timestamp::operator!=(const Timestamp& other) const
 bool Timestamp::operator<(const Timestamp& other) const
 {
 #if defined(_WIN32)
-
-  if (m_value.wYear > other.m_value.wYear)
-    return false;
-  else if (m_value.wYear < other.m_value.wYear)
-    return true;
-
-  if (m_value.wMonth > other.m_value.wMonth)
-    return false;
-  else if (m_value.wMonth < other.m_value.wMonth)
-    return true;
-
-  if (m_value.wDay > other.m_value.wDay)
-    return false;
-  else if (m_value.wDay < other.m_value.wDay)
-    return true;
-
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
-  if (m_value.wMinute > other.m_value.wMinute)
-    return false;
-  else if (m_value.wMinute < other.m_value.wMinute)
-    return true;
-
-  if (m_value.wSecond > other.m_value.wSecond)
-    return false;
-  else if (m_value.wSecond < other.m_value.wSecond)
-    return true;
-
-  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
-    return false;
-  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.wYear, m_value.wMonth, m_value.wDay, m_value.wHour, m_value.wMinute, m_value.wSecond,
+                  m_value.wMilliseconds) < std::tie(other.m_value.wYear, other.m_value.wMonth, other.m_value.wDay,
+                                                    other.m_value.wHour, other.m_value.wMinute, other.m_value.wSecond,
+                                                    other.m_value.wMilliseconds);
 #else
-
-  if (m_value.tv_sec > other.m_value.tv_sec)
-    return false;
-  else if (m_value.tv_sec < other.m_value.tv_sec)
-    return true;
-
-  if (m_value.tv_usec > other.m_value.tv_usec)
-    return false;
-  else if (m_value.tv_usec < other.m_value.tv_usec)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.tv_sec, m_value.tv_usec) < std::tie(other.m_value.tv_sec, other.m_value.tv_usec);
 #endif
 }
 
 bool Timestamp::operator<=(const Timestamp& other) const
 {
 #if defined(_WIN32)
-
-  if (m_value.wYear > other.m_value.wYear)
-    return false;
-  else if (m_value.wYear < other.m_value.wYear)
-    return true;
-
-  if (m_value.wMonth > other.m_value.wMonth)
-    return false;
-  else if (m_value.wMonth < other.m_value.wMonth)
-    return true;
-
-  if (m_value.wDay > other.m_value.wDay)
-    return false;
-  else if (m_value.wDay < other.m_value.wDay)
-    return true;
-
-  if (m_value.wHour > other.m_value.wHour)
-    return false;
-  else if (m_value.wHour < other.m_value.wHour)
-    return true;
-
-  if (m_value.wMinute > other.m_value.wMinute)
-    return false;
-  else if (m_value.wMinute < other.m_value.wMinute)
-    return true;
-
-  if (m_value.wSecond > other.m_value.wSecond)
-    return false;
-  else if (m_value.wSecond <= other.m_value.wSecond)
-    return true;
-
-  if (m_value.wMilliseconds > other.m_value.wMilliseconds)
-    return false;
-  else if (m_value.wMilliseconds < other.m_value.wMilliseconds)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.wYear, m_value.wMonth, m_value.wDay, m_value.wHour, m_value.wMinute, m_value.wSecond,
+                  m_value.wMilliseconds) <= std::tie(other.m_value.wYear, other.m_value.wMonth, other.m_value.wDay,
+                                                     other.m_value.wHour, other.m_value.wMinute, other.m_value.wSecond,
+                                                     other.m_value.wMilliseconds);
 #else
-
-  if (m_value.tv_sec > other.m_value.tv_sec)
-    return false;
-  else if (m_value.tv_sec < other.m_value.tv_sec)
-    return true;
-
-  if (m_value.tv_usec > other.m_value.tv_usec)
-    return false;
-  else if (m_value.tv_usec <= other.m_value.tv_usec)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.tv_sec, m_value.tv_usec) <= std::tie(other.m_value.tv_sec, other.m_value.tv_usec);
 #endif
 }
 
 bool Timestamp::operator>(const Timestamp& other) const
 {
 #if defined(_WIN32)
-
-  if (m_value.wYear < other.m_value.wYear)
-    return false;
-  else if (m_value.wYear > other.m_value.wYear)
-    return true;
-
-  if (m_value.wMonth < other.m_value.wMonth)
-    return false;
-  else if (m_value.wMonth > other.m_value.wMonth)
-    return true;
-
-  if (m_value.wDay < other.m_value.wDay)
-    return false;
-  else if (m_value.wDay > other.m_value.wDay)
-    return true;
-
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
-  if (m_value.wMinute < other.m_value.wMinute)
-    return false;
-  else if (m_value.wMinute > other.m_value.wMinute)
-    return true;
-
-  if (m_value.wSecond < other.m_value.wSecond)
-    return false;
-  else if (m_value.wSecond > other.m_value.wSecond)
-    return true;
-
-  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
-    return false;
-  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.wYear, m_value.wMonth, m_value.wDay, m_value.wHour, m_value.wMinute, m_value.wSecond,
+                  m_value.wMilliseconds) > std::tie(other.m_value.wYear, other.m_value.wMonth, other.m_value.wDay,
+                                                    other.m_value.wHour, other.m_value.wMinute, other.m_value.wSecond,
+                                                    other.m_value.wMilliseconds);
 #else
-
-  if (m_value.tv_sec < other.m_value.tv_sec)
-    return false;
-  else if (m_value.tv_sec > other.m_value.tv_sec)
-    return true;
-
-  if (m_value.tv_usec < other.m_value.tv_usec)
-    return false;
-  else if (m_value.tv_usec > other.m_value.tv_usec)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.tv_sec, m_value.tv_usec) > std::tie(other.m_value.tv_sec, other.m_value.tv_usec);
 #endif
 }
 
 bool Timestamp::operator>=(const Timestamp& other) const
 {
 #if defined(_WIN32)
-
-  if (m_value.wYear < other.m_value.wYear)
-    return false;
-  else if (m_value.wYear > other.m_value.wYear)
-    return true;
-
-  if (m_value.wMonth < other.m_value.wMonth)
-    return false;
-  else if (m_value.wMonth > other.m_value.wMonth)
-    return true;
-
-  if (m_value.wDay < other.m_value.wDay)
-    return false;
-  else if (m_value.wDay > other.m_value.wDay)
-    return true;
-
-  if (m_value.wHour < other.m_value.wHour)
-    return false;
-  else if (m_value.wHour > other.m_value.wHour)
-    return true;
-
-  if (m_value.wMinute < other.m_value.wMinute)
-    return false;
-  else if (m_value.wMinute > other.m_value.wMinute)
-    return true;
-
-  if (m_value.wSecond < other.m_value.wSecond)
-    return false;
-  else if (m_value.wSecond >= other.m_value.wSecond)
-    return true;
-
-  if (m_value.wMilliseconds < other.m_value.wMilliseconds)
-    return false;
-  else if (m_value.wMilliseconds > other.m_value.wMilliseconds)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.wYear, m_value.wMonth, m_value.wDay, m_value.wHour, m_value.wMinute, m_value.wSecond,
+                  m_value.wMilliseconds) >= std::tie(other.m_value.wYear, other.m_value.wMonth, other.m_value.wDay,
+                                                     other.m_value.wHour, other.m_value.wMinute, other.m_value.wSecond,
+                                                     other.m_value.wMilliseconds);
 #else
-
-  if (m_value.tv_sec < other.m_value.tv_sec)
-    return false;
-  else if (m_value.tv_sec > other.m_value.tv_sec)
-    return true;
-
-  if (m_value.tv_usec < other.m_value.tv_usec)
-    return false;
-  else if (m_value.tv_usec >= other.m_value.tv_usec)
-    return true;
-
-  return false;
-
+  return std::tie(m_value.tv_sec, m_value.tv_usec) >= std::tie(other.m_value.tv_sec, other.m_value.tv_usec);
 #endif
 }
 
