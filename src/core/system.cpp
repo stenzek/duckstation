@@ -72,6 +72,7 @@ static bool SetExpansionROM(const char* filename);
 /// Opens CD image, preloading if needed.
 static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload,
                                             bool check_for_patches);
+static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 static bool ShouldCheckForImagePatches();
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
@@ -369,15 +370,23 @@ std::string GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
 
 std::string GetGameHashCodeForImage(CDImage* cdi)
 {
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return {};
+
   std::string exe_name;
   std::vector<u8> exe_buffer;
   if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))
     return {};
 
+  const u32 track_1_length = cdi->GetTrackLength(1);
+
   XXH64_state_t* state = XXH64_createState();
   XXH64_reset(state, 0x4242D00C);
   XXH64_update(state, exe_name.c_str(), exe_name.size());
   XXH64_update(state, exe_buffer.data(), exe_buffer.size());
+  XXH64_update(state, &iso.GetPVD(), sizeof(ISOReader::ISOPrimaryVolumeDescriptor));
+  XXH64_update(state, &track_1_length, sizeof(track_1_length));
   const u64 hash = XXH64_digest(state);
   XXH64_freeState(state);
 
@@ -385,7 +394,7 @@ std::string GetGameHashCodeForImage(CDImage* cdi)
   return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
 }
 
-static std::string GetExecutableNameForImage(CDImage* cdi, ISOReader& iso, bool strip_subdirectories)
+static std::string GetExecutableNameForImage(ISOReader& iso, bool strip_subdirectories)
 {
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
@@ -478,18 +487,14 @@ std::string GetExecutableNameForImage(CDImage* cdi)
   if (!iso.Open(cdi, 1))
     return {};
 
-  return GetExecutableNameForImage(cdi, iso, true);
+  return GetExecutableNameForImage(iso, true);
 }
 
-bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data)
 {
-  ISOReader iso;
-  if (!iso.Open(cdi, 1))
-    return false;
-
   bool result = false;
 
-  std::string executable_path(GetExecutableNameForImage(cdi, iso, false));
+  std::string executable_path(GetExecutableNameForImage(iso, false));
   Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
   if (!executable_path.empty())
   {
@@ -514,6 +519,15 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
     *out_executable_name = std::move(executable_path);
 
   return true;
+}
+
+bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+{
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return false;
+
+  return ReadExecutableFromImage(iso, out_executable_name, out_executable_data);
 }
 
 DiscRegion GetRegionForCode(std::string_view code)

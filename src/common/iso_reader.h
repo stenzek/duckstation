@@ -15,16 +15,6 @@ public:
     SECTOR_SIZE = 2048
   };
 
-  ISOReader();
-  ~ISOReader();
-
-  bool Open(CDImage* image, u32 track_number);
-
-  std::vector<std::string> GetFilesInDirectory(const char* path);
-
-  bool ReadFile(const char* path, std::vector<u8>* data);
-
-private:
 #pragma pack(push, 1)
 
   struct ISOVolumeDescriptorHeader
@@ -138,6 +128,20 @@ private:
 
 #pragma pack(pop)
 
+  ISOReader();
+  ~ISOReader();
+
+  ALWAYS_INLINE const CDImage* GetImage() const { return m_image; }
+  ALWAYS_INLINE u32 GetTrackNumber() const { return m_track_number; }
+  ALWAYS_INLINE const ISOPrimaryVolumeDescriptor& GetPVD() const { return m_pvd; }
+
+  bool Open(CDImage* image, u32 track_number);
+
+  std::vector<std::string> GetFilesInDirectory(const char* path);
+
+  bool ReadFile(const char* path, std::vector<u8>* data);
+
+private:
   bool ReadPVD();
 
   std::optional<ISODirectoryEntry> LocateFile(const char* path);
