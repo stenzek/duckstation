@@ -47,9 +47,9 @@ public:
 
   void refresh();
 
-  bool titlesLessThan(int left_row, int right_row, bool ascending) const;
+  bool titlesLessThan(int left_row, int right_row) const;
 
-  bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column, bool ascending) const;
+  bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
 
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }

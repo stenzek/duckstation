@@ -375,7 +375,7 @@ void GameListModel::refresh()
   endResetModel();
 }
 
-bool GameListModel::titlesLessThan(int left_row, int right_row, bool ascending) const
+bool GameListModel::titlesLessThan(int left_row, int right_row) const
 {
   if (left_row < 0 || left_row >= static_cast<int>(m_game_list->GetEntryCount()) || right_row < 0 ||
       right_row >= static_cast<int>(m_game_list->GetEntryCount()))
@@ -385,12 +385,10 @@ bool GameListModel::titlesLessThan(int left_row, int right_row, bool ascending) 
 
   const GameListEntry& left = m_game_list->GetEntries().at(left_row);
   const GameListEntry& right = m_game_list->GetEntries().at(right_row);
-  return ascending ? (StringUtil::Strcasecmp(left.title.c_str(), right.title.c_str()) < 0) :
-                     (StringUtil::Strcasecmp(right.title.c_str(), left.title.c_str()) > 0);
+  return (StringUtil::Strcasecmp(left.title.c_str(), right.title.c_str()) < 0);
 }
 
-bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column,
-                             bool ascending) const
+bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
 {
   if (!left_index.isValid() || !right_index.isValid())
     return false;
@@ -410,23 +408,21 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_Type:
     {
       if (left.type == right.type)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
-      return ascending ? (static_cast<int>(left.type) < static_cast<int>(right.type)) :
-                         (static_cast<int>(right.type) > static_cast<int>(left.type));
+      return (static_cast<int>(left.type) < static_cast<int>(right.type));
     }
 
     case Column_Code:
     {
       if (left.code == right.code)
-        return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (StringUtil::Strcasecmp(left.code.c_str(), right.code.c_str()) < 0) :
-                         (StringUtil::Strcasecmp(right.code.c_str(), left.code.c_str()) > 0);
+        return titlesLessThan(left_row, right_row);
+      return (StringUtil::Strcasecmp(left.code.c_str(), right.code.c_str()) < 0);
     }
 
     case Column_Title:
     {
-      return titlesLessThan(left_row, right_row, ascending);
+      return titlesLessThan(left_row, right_row);
     }
 
     case Column_FileTitle:
@@ -434,68 +430,62 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       const std::string_view file_title_left(FileSystem::GetFileTitleFromPath(left.path));
       const std::string_view file_title_right(FileSystem::GetFileTitleFromPath(right.path));
       if (file_title_left == file_title_right)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
       const std::size_t smallest = std::min(file_title_left.size(), file_title_right.size());
-      return ascending ? (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0) :
-                         (StringUtil::Strncasecmp(file_title_right.data(), file_title_left.data(), smallest) > 0);
+      return (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0);
     }
 
     case Column_Region:
     {
       if (left.region == right.region)
-        return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (static_cast<int>(left.region) < static_cast<int>(right.region)) :
-                         (static_cast<int>(right.region) > static_cast<int>(left.region));
+        return titlesLessThan(left_row, right_row);
+      return (static_cast<int>(left.region) < static_cast<int>(right.region));
     }
 
     case Column_Compatibility:
     {
       if (left.compatibility_rating == right.compatibility_rating)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
-      return ascending ? (static_cast<int>(left.compatibility_rating) < static_cast<int>(right.compatibility_rating)) :
-                         (static_cast<int>(right.compatibility_rating) > static_cast<int>(left.compatibility_rating));
+      return (static_cast<int>(left.compatibility_rating) < static_cast<int>(right.compatibility_rating));
     }
 
     case Column_Size:
     {
       if (left.total_size == right.total_size)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
-      return ascending ? (left.total_size < right.total_size) : (right.total_size > left.total_size);
+      return (left.total_size < right.total_size);
     }
 
     case Column_Genre:
     {
       if (left.genre == right.genre)
-        return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (StringUtil::Strcasecmp(left.genre.c_str(), right.genre.c_str()) < 0) :
-                         (StringUtil::Strcasecmp(right.genre.c_str(), left.genre.c_str()) > 0);
+        return titlesLessThan(left_row, right_row);
+      return (StringUtil::Strcasecmp(left.genre.c_str(), right.genre.c_str()) < 0);
     }
 
     case Column_Developer:
     {
       if (left.developer == right.developer)
-        return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (StringUtil::Strcasecmp(left.developer.c_str(), right.developer.c_str()) < 0) :
-                         (StringUtil::Strcasecmp(right.developer.c_str(), left.developer.c_str()) > 0);
+        return titlesLessThan(left_row, right_row);
+      return (StringUtil::Strcasecmp(left.developer.c_str(), right.developer.c_str()) < 0);
     }
 
     case Column_Publisher:
     {
       if (left.publisher == right.publisher)
-        return titlesLessThan(left_row, right_row, ascending);
-      return ascending ? (StringUtil::Strcasecmp(left.publisher.c_str(), right.publisher.c_str()) < 0) :
-                         (StringUtil::Strcasecmp(right.publisher.c_str(), left.publisher.c_str()) > 0);
+        return titlesLessThan(left_row, right_row);
+      return (StringUtil::Strcasecmp(left.publisher.c_str(), right.publisher.c_str()) < 0);
     }
 
     case Column_Year:
     {
       if (left.release_date == right.release_date)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
-      return ascending ? (left.release_date < right.release_date) : (right.release_date > left.release_date);
+      return (left.release_date < right.release_date);
     }
 
     case Column_Players:
@@ -503,9 +493,9 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       u8 left_players = (left.min_players << 4) + left.max_players;
       u8 right_players = (right.min_players << 4) + right.max_players;
       if (left_players == right_players)
-        return titlesLessThan(left_row, right_row, ascending);
+        return titlesLessThan(left_row, right_row);
 
-      return ascending ? (left_players < right_players) : (right_players > left_players);
+      return (left_players < right_players);
     }
 
     default:
