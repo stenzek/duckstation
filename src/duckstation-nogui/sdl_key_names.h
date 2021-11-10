@@ -268,7 +268,7 @@ struct SDLKeyModifierEntry
 
 static const std::array<SDLKeyModifierEntry, 4> s_sdl_key_modifiers = {
   {{KMOD_LSHIFT, static_cast<SDL_Keymod>(KMOD_LSHIFT | KMOD_RSHIFT), SDLK_LSHIFT, SDLK_RSHIFT, "Shift"},
-   {KMOD_LCTRL, static_cast<SDL_Keymod>(KMOD_LCTRL | KMOD_LCTRL), SDLK_LCTRL, SDLK_RCTRL, "Control"},
+   {KMOD_LCTRL, static_cast<SDL_Keymod>(KMOD_LCTRL | KMOD_RCTRL), SDLK_LCTRL, SDLK_RCTRL, "Control"},
    {KMOD_LALT, static_cast<SDL_Keymod>(KMOD_LALT | KMOD_RALT), SDLK_LALT, SDLK_RALT, "Alt"},
    {KMOD_LGUI, static_cast<SDL_Keymod>(KMOD_LGUI | KMOD_RGUI), SDLK_LGUI, SDLK_RGUI, "Meta"}}};
 
