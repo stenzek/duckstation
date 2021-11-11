@@ -1059,7 +1059,7 @@ void QtHostInterface::populateSaveStateMenu(const char* game_code, QMenu* menu)
     if (path.isEmpty())
       return;
 
-    SaveState(path.toUtf8().constData());
+    saveState(path);
   });
   menu->addSeparator();
 
