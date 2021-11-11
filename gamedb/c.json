@@ -12289,19 +12289,15 @@
   "name": "Chrono Cross (Japan) (Disc 1)",
   "codes": [
    "SLPM-87395",
-   "SLPS-02364",
+   "HASH-753EB8647043CE02",
    "SLPS-02777",
-   "SLPS-91464",
-   "SLPS-02356",
-   "SLPS-02359",
-   "SLPS-02373",
-   "SLPS-02378"
+   "SLPS-91464"
   ],
   "languages": [
    "Japanese"
   ],
-  "publisher": "Ving",
-  "developer": "Ving",
+  "publisher": "Squaresoft",
+  "developer": "Squaresoft",
   "releaseDate": "1999-10-21",
   "genre": "Tactical RPG",
   "minPlayers": 1,
@@ -12331,19 +12327,15 @@
   "name": "Chrono Cross (Japan) (Disc 2)",
   "codes": [
    "SLPM-87396",
-   "SLPS-02365",
+   "HASH-BCEC05C9F299F1F9",
    "SLPS-02778",
-   "SLPS-91465",
-   "SLPS-02356",
-   "SLPS-02359",
-   "SLPS-02373",
-   "SLPS-02378"
+   "SLPS-91465"
   ],
   "languages": [
    "Japanese"
   ],
-  "publisher": "Ving",
-  "developer": "Ving",
+  "publisher": "Squaresoft",
+  "developer": "Squaresoft",
   "releaseDate": "1999-10-21",
   "genre": "Tactical RPG",
   "minPlayers": 1,
