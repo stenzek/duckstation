@@ -88,7 +88,7 @@ ${BUILD_DIR}/squashfs-root/AppRun \
 sed -i 's|exec "$this_dir"/AppRun.wrapped "$@"|exec env LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH "$this_dir"/AppRun.wrapped "$@"|' \
   ${BUILD_DIR}/duckstation-qt.AppDir/AppRun
 
-if [[ $(qmake -v | grep 'Qt' | awk ' { print $4 } ' | cut -d '.' -f 1) > 5 ]]; then
+if [ $(qmake -v | awk ' END { print $4 } ' | cut -d '.' -f 1) -gt 5 ]; then
 	QTPATH=${GITHUB_WORKSPACE}/$QT6_DIR/gcc_64
 	QTVER=6
 else
