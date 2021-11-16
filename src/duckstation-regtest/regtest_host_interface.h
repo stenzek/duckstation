@@ -17,6 +17,8 @@ public:
   bool ConfirmMessage(const char* message) override;
 
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
+  void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f) override;
+  void RemoveKeyedOSDMessage(std::string key) override;
   void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1,
                             int progress_value = -1) override;
   void GetGameInfo(const char* path, CDImage* image, std::string* code, std::string* title) override;

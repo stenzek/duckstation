@@ -229,11 +229,6 @@ bool HostInterface::ConfirmFormattedMessage(const char* format, ...)
   return ConfirmMessage(message.c_str());
 }
 
-void HostInterface::AddOSDMessage(std::string message, float duration /* = 2.0f */)
-{
-  Log_InfoPrintf("OSD: %s", message.c_str());
-}
-
 void HostInterface::AddFormattedOSDMessage(float duration, const char* format, ...)
 {
   std::va_list ap;
@@ -242,6 +237,16 @@ void HostInterface::AddFormattedOSDMessage(float duration, const char* format, .
   va_end(ap);
 
   AddOSDMessage(std::move(message), duration);
+}
+
+void HostInterface::AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...)
+{
+  std::va_list ap;
+  va_start(ap, format);
+  std::string message = StringUtil::StdStringFromFormatV(format, ap);
+  va_end(ap);
+
+  AddKeyedOSDMessage(std::move(key), std::move(message), duration);
 }
 
 std::string HostInterface::GetBIOSDirectory()

@@ -223,6 +223,8 @@ public:
 
   /// Adds OSD messages, duration is in seconds.
   void AddOSDMessage(std::string message, float duration = 2.0f) override;
+  void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f) override;
+  void RemoveKeyedOSDMessage(std::string key) override;
   void ClearOSDMessages();
 
   /// async message queue bookeeping for. Should be called on UI thread.
@@ -353,6 +355,7 @@ protected:
 
   struct OSDMessage
   {
+    std::string key;
     std::string text;
     Common::Timer time;
     float duration;

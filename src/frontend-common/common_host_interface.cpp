@@ -1389,6 +1389,27 @@ void CommonHostInterface::AddOSDMessage(std::string message, float duration /*= 
   m_osd_posted_messages.push_back(std::move(msg));
 }
 
+void CommonHostInterface::AddKeyedOSDMessage(std::string key, std::string message, float duration /*= 2.0f*/)
+{
+  OSDMessage msg;
+  msg.key = std::move(key);
+  msg.text = std::move(message);
+  msg.duration = duration;
+
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  m_osd_posted_messages.push_back(std::move(msg));
+}
+
+void CommonHostInterface::RemoveKeyedOSDMessage(std::string key)
+{
+  OSDMessage msg;
+  msg.key = std::move(key);
+  msg.duration = 0.0f;
+
+  std::unique_lock<std::mutex> lock(m_osd_messages_lock);
+  m_osd_posted_messages.push_back(std::move(msg));
+}
+
 void CommonHostInterface::ClearOSDMessages()
 {
   {
@@ -1425,7 +1446,23 @@ void CommonHostInterface::AcquirePendingOSDMessages()
         break;
 
       if (g_settings.display_show_osd_messages)
-        m_osd_active_messages.push_back(std::move(m_osd_posted_messages.front()));
+      {
+        OSDMessage& new_msg = m_osd_posted_messages.front();
+        std::deque<OSDMessage>::iterator iter;
+        if (!new_msg.key.empty() && (iter = std::find_if(m_osd_active_messages.begin(), m_osd_active_messages.end(),
+                                                         [&new_msg](const OSDMessage& other) {
+                                                           return new_msg.key == other.key;
+                                                         })) != m_osd_active_messages.end())
+        {
+          iter->text = std::move(new_msg.text);
+          iter->duration = new_msg.duration;
+          iter->time = new_msg.time;
+        }
+        else
+        {
+          m_osd_active_messages.push_back(std::move(new_msg));
+        }
+      }
 
       m_osd_posted_messages.pop_front();
 

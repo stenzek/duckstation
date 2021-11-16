@@ -70,8 +70,11 @@ public:
   bool ConfirmFormattedMessage(const char* format, ...) printflike(2, 3);
 
   /// Adds OSD messages, duration is in seconds.
-  virtual void AddOSDMessage(std::string message, float duration = 2.0f);
+  virtual void AddOSDMessage(std::string message, float duration = 2.0f) = 0;
+  virtual void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f) = 0;
+  virtual void RemoveKeyedOSDMessage(std::string key) = 0;
   void AddFormattedOSDMessage(float duration, const char* format, ...) printflike(3, 4);
+  void AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...) printflike(3, 4);
 
   /// Returns the base user directory path.
   ALWAYS_INLINE const std::string& GetUserDirectory() const { return m_user_directory; }

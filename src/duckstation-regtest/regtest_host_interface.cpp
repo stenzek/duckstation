@@ -77,6 +77,13 @@ void RegTestHostInterface::AddOSDMessage(std::string message, float duration /*=
   Log_InfoPrintf("OSD: %s", message.c_str());
 }
 
+void RegTestHostInterface::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
+{
+  Log_InfoPrintf("OSD: %s", message.c_str());
+}
+
+void RegTestHostInterface::RemoveKeyedOSDMessage(std::string key) {}
+
 void RegTestHostInterface::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/,
                                                 int progress_max /*= -1*/, int progress_value /*= -1*/)
 {
