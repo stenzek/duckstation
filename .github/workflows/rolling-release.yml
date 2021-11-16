@@ -258,6 +258,7 @@ jobs:
       QTVERMIN: 515
       UBUNTU_VER: focal
       QT6VERSION: 6.2.0
+      USE_QT6: true
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -269,27 +270,23 @@ jobs:
         sudo add-apt-repository -y ppa:beineri/opt-qt-${QTVER}-${UBUNTU_VER}
         sudo apt-get update
         sudo apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev qt${QTVERMIN}base qt${QTVERMIN}declarative qt${QTVERMIN}xmlpatterns qt${QTVERMIN}svg qt${QTVERMIN}tools qt${QTVERMIN}translations qt${QTVERMIN}wayland qt${QTVERMIN}webengine libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev
-
-    - name: Install Qt6
-      uses: WillBrennan/yaqti@2021.07.29
-      with:
-        version: "${{ env.QT6VERSION }}"
-        os: 'linux'
-        platform: 'desktop'
-        modules: 'qtwaylandcompositor'
         
     - name: Compile build
       shell: bash
       env:
         QT5_DIR: "opt/qt${{ env.QTVERMIN }}"   
-        QT6_DIR: "qt/${{ env.QT6VERSION }}"
+        QT6_DIR: "dep/msvc/qt/${{ env.QT6VERSION }}"
       run: |
-        if [[ -e $QT6_DIR ]]; then
-          export CMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/$QT6_DIR/gcc_64
-          export Qt6_DIR=${CMAKE_PREFIX_PATH}/lib/cmake/Qt6/
-          sudo mv /usr/bin/qmake /usr/bin/qmake5
-          sudo ln -s ${GITHUB_WORKSPACE}/$(find qt/ -name qmake) /usr/bin
+        if [[ ${{ env.USE_QT6 }} == true ]]; then 
+        QT_CMAKE_VER="-DUSE_QT6=ON"
+          if [[ ! -e $QT6_DIR ]]; then
+            curl -sSfLO https://github.com/qurious-pixel/duckstation-ext-qt-minimal/releases/download/v6.2.0/Qt_6.2.0.tar.gz
+            tar -xf Qt_6.2.0.tar.gz -C dep/msvc/qt/
+          fi
+        sudo mv /usr/bin/qmake /usr/bin/qmake5
+        sudo ln -s $(find $GITHUB_WORKSPACE/${QT6_DIR} -name qmake) /usr/bin    
         else
+          QT_CMAKE_VER="-DUSE_QT6=OFF"
           export CMAKE_PREFIX_PATH=/$QT5_DIR/lib/cmake
           export Qt5_DIR=${CMAKE_PREFIX_PATH}/Qt5/
           sudo mv /usr/bin/qmake /usr/bin/qmake5
@@ -298,7 +295,7 @@ jobs:
         echo "Qt version $(qmake -v | grep 'Qt' | awk ' { print $4 } ')"       
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -G Ninja ..
+        cmake ${QT_CMAKE_VER} -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -G Ninja ..
         ninja
         ../scripts/generate_appimages.sh $(pwd)
 
