@@ -2460,6 +2460,42 @@ void CommonHostInterface::RegisterSystemHotkeys()
         }
       }
     });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("IncreaseEmulationSpeed"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Increase Emulation Speed")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.emulation_speed += 0.1f;
+                     UpdateSpeedLimiterState();
+                     AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
+                                                 TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("DecreaseEmulationSpeed"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Decrease Emulation Speed")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.emulation_speed = std::max(g_settings.emulation_speed - 0.1f, 0.1f);
+                     UpdateSpeedLimiterState();
+                     AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
+                                                 TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
+                   }
+                 });
+
+  RegisterHotkey(StaticString(TRANSLATABLE("Hotkeys", "System")), StaticString("ResetEmulationSpeed"),
+                 StaticString(TRANSLATABLE("Hotkeys", "Reset Emulation Speed")), [this](bool pressed) {
+                   if (pressed && System::IsValid())
+                   {
+                     g_settings.emulation_speed = GetFloatSettingValue("Main", "EmulationSpeed", 1.0f);
+                     UpdateSpeedLimiterState();
+                     AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
+                                                 TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
+                   }
+                 });
 }
 
 void CommonHostInterface::RegisterGraphicsHotkeys()
