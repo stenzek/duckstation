@@ -59,28 +59,6 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="loadPreset">
-       <property name="text">
-        <string>Load Preset</string>
-       </property>
-       <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/document-save.png</normaloff>:/icons/document-save.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="savePreset">
-       <property name="text">
-        <string>Save Preset</string>
-       </property>
-       <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>

@@ -10,8 +10,6 @@ PostProcessingSettingsWidget::PostProcessingSettingsWidget(QtHostInterface* host
   m_ui.setupUi(this);
   m_ui.widget->setOptionsButtonVisible(false);
   m_ui.reload->setEnabled(false);
-  m_ui.loadPreset->setEnabled(false);
-  m_ui.savePreset->setEnabled(false);
   updateShaderConfigPanel(-1);
   connectUi();
 
