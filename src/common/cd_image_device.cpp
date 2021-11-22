@@ -255,8 +255,8 @@ bool CDImageDeviceWin32::Open(const char* filename, Common::Error* error)
                 static_cast<u32>(m_lba_count));
   for (u32 i = 0; i < m_tracks.size(); i++)
   {
-    Log_DevPrintf(" Track %u: Start %u, length %u, mode %u, control 0x%02X", i,
-                  static_cast<u32>(m_tracks[i].track_number), static_cast<u32>(m_tracks[i].start_lba),
+    Log_DevPrintf(" Track %u: Start %u, length %u, mode %u, control 0x%02X", static_cast<u32>(m_tracks[i].track_number),
+                  static_cast<u32>(m_tracks[i].start_lba), static_cast<u32>(m_tracks[i].length),
                   static_cast<u32>(m_tracks[i].mode), static_cast<u32>(m_tracks[i].control.bits));
   }
   for (u32 i = 0; i < m_indices.size(); i++)
