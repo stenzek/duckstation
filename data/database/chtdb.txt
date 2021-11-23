@@ -113590,7 +113590,6 @@ A0010A4C 00008021
 90010A4C 8C70006C
 00000000 FFFF
 00000000 FFFF
-
 #True Endurance tweak (NTSC-J 1.1)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
