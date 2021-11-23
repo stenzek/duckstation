@@ -28034,6 +28034,92 @@ A7016A7A 02250000
 D121F88A AEB4
 A7016A88 80000000
 00000000 FFFF
+#L3 to toggle Mirror (tap) and HUD (hold)
+A403EC74 02602021
+D7010001 00000200
+A0029524 1040000C
+;Always on
+90029524 00000001
+A0029524 0800A556
+;Default
+90029524 1040000C
+A0029524 00000000
+;Always off
+90029524 0800A556
+;Fixup canary
+A0029524 00000001
+90029524 00000000
+00000000 FFFF
+00000000 FFFF
+A403EC74 02602021
+D701003C 00000200
+F5029434 0022A530
+F5029436 14400800
+F5029424 BA060000
+F5029426 0C000000
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race
+A401F888 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A92BC 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F888 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A92BC 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FFA89 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F888 AEB40008
+C40A92BC 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
+#True Endurance tweak
+;"Help" the game unload segments that normally are left unwritten to,
+;so further cheat detection is more reliable. This is safe as it overwrites dead code.
+;Reset the race overlay for Arcade
+A00529DC 801EFB39
+80057054 0000
+;Reset the race overlay for Simulation
+A0052A70 000000F6
+80057054 0000
+;Sets 2h Rome Endurance to 255 laps and hides the lap counter
+A4057054 260201C0
+;Set the endurance flag manually for 255 lap races, so replays work properly
+E01D586B 00FF
+E0046F69 0000
+30046F69 0001
+;Time limited race off
+E0046F69 0000
+;Restore the max laps counter
+A602CE24 00020006
+;Time limited race on
+C4046F69 0000
+;Turn off the max laps counter
+A702CE24 00060002
+;Set laps to 255
+E01D586B 0063
+301D586B 00FF
+00000000 FFFF
+00000000 FFFF
 
 ; [ Gran Turismo 2 (USA, v1.1) (1999) (Sony Computer Entertainment America) {SCUS-94455} <gt2a> ]
 :SCUS-94455
@@ -28130,18 +28216,7 @@ A61D5476 00020001
 A61FFA82 02000300
 #More Misc.\Replay Screen Clear (Arcade Disc)
 A61FFA8A 02000300
-#Widescreen 16-9
-D0010000 FFE8
-8007B2FC 0156
-D0010000 FFD0
-8007B2FC 03DE
-D0010000 FFE0
-8007B2FC 01AC
-8007B2FE 3402
-#Widescreen 16-9 option Better Graphics
-8006744C 0060
-8006744E 3404
-#16:9 Widescreen 2.0
+#16:9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -28213,7 +28288,7 @@ A701CDF4 00B30086
 A701CDFC FFCEFFDB
 A701CE04 03200258
 00000000 FFFF
-#21:9 Widescreen 2.0
+#21:9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -28410,6 +28485,92 @@ D121F88A AEB4
 A7016A7A 02250000
 D121F88A AEB4
 A7016A88 80000000
+00000000 FFFF
+#L3 to toggle Mirror (tap) and HUD (hold)
+A403EC6C 02602021
+D7010001 00000200
+A002951C 1040000C
+;Always on
+9002951C 00000001
+A002951C 0800A554
+;Default
+9002951C 1040000C
+A002951C 00000000
+;Always off
+9002951C 0800A554
+;Fixup canary
+A002951C 00000001
+9002951C 00000000
+00000000 FFFF
+00000000 FFFF
+A403EC6C 02602021
+D701003C 00000200
+F502942C 0022A52E
+F502942E 14400800
+F502941C BA040000
+F502941E 0C000000
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race
+A401F888 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A92BC 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F888 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A92BC 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FFA89 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F888 AEB40008
+C40A92BC 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
+#True Endurance tweak
+;"Help" the game unload segments that normally are left unwritten to,
+;so further cheat detection is more reliable. This is safe as it overwrites dead code.
+A0052A64 801EF8EF
+;Reset the race overlay for Arcade
+80057010 0000
+;Reset the race overlay for Simulation
+A0052B20 000000E7
+80057010 0000
+;Sets 2h Rome Endurance to 255 laps and hides the lap counter
+A4057010 260201C0
+;Set the endurance flag manually for 255 lap races, so replays work properly
+E01D563B 00FF
+E0046ED5 0000
+30046ED5 0001
+;Time limited race off
+E0046ED5 0000
+;Restore the max laps counter
+A602CE1C 00020006
+;Time limited race on
+C4046ED5 0000
+;Turn off the max laps counter
+A702CE1C 00060002
+;Set laps to 255
+E01D563B 0063
+301D563B 00FF
+00000000 FFFF
 00000000 FFFF
 
 ; [ Gran Turismo 2 (USA, v1.0) (1999) (Sony Computer Entertainment America) {SCUS-94455} <gt2b> ]
@@ -84650,18 +84811,7 @@ D01C97DA FFFE
 #Play Any Race With Any Car In Simulation Mode
 D0014908 000C
 8001490A 1000
-#Widescreen 16-9
-D0010000 FFE8
-8007B3E0 0156
-D0010000 FFD0
-8007B3E0 03DE
-D0010000 FFE0
-8007B3E0 01AC
-8007B3E2 3402
-#Widescreen 16-9 Better Graphics (Optional)
-8006752C 0060
-8006752E 3404
-#16:9 Widescreen 2.0
+#16:9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -84733,7 +84883,7 @@ A701CD68 00B30086
 A701CD70 FFCEFFDB
 A701CD78 03200258
 00000000 FFFF
-#21:9 Widescreen 2.0
+#21:9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -84848,6 +84998,92 @@ D121F886 AEB4
 A7016A76 02250000
 D121F886 AEB4
 A7016A84 80000000
+00000000 FFFF
+#L3 to toggle Mirror (tap) and HUD (hold)
+A403EC50 02602021
+D7010001 00000200
+A0029520 1040000C
+;Always on
+90029520 00000001
+A0029520 0800A555
+;Default
+90029520 1040000C
+A0029520 00000000
+;Always off
+90029520 0800A555
+;Fixup canary
+A0029520 00000001
+90029520 00000000
+00000000 FFFF
+00000000 FFFF
+A403EC50 02602021
+D701003C 00000200
+F5029430 0022A52F
+F5029432 14400800
+F5029420 BA120000
+F5029422 0C000000
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race
+A401F884 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A954C 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F884 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A954C 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FFA89 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F884 AEB40008
+C40A954C 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
+#True Endurance tweak
+;"Help" the game unload segments that normally are left unwritten to,
+;so further cheat detection is more reliable. This is safe as it overwrites dead code.
+;Reset the race overlay for Arcade
+A0052988 801EFB39
+80057090 0000
+;Reset the race overlay for Simulation
+A00529DC 000000F6
+80057090 0000
+;Sets 2h Rome Endurance to 255 laps and hides the lap counter
+A4057090 260201C0
+;Set the endurance flag manually for 255 lap races, so replays work properly
+E01D589B 00FF
+E0046F49 0000
+30046F49 0001
+;Time limited race off
+E0046F49 0000
+;Restore the max laps counter
+A602CE60 00020006
+;Time limited race on
+C4046F49 0000
+;Turn off the max laps counter
+A702CE60 00060002
+;Set laps to 255
+E01D589B 0063
+301D589B 00FF
+00000000 FFFF
 00000000 FFFF
 
 ; [ Grand Theft Auto 2 (Euro, Rev. 1) (1999) (Rockstar Games) {SLES-01404#} <gta2e> ]
@@ -112783,10 +113019,24 @@ D0091238 0000
 8003725C 0000
 
 ; [ Gradius Gaiden (Japan) Rev 1 {SLP-86103} ]
+;:SLP-86103
+;This game currently has no cheats
+
 ; [ Gradius Gaiden (Japan) {SLP-86042} ]
+;:SLP-86042
+;This game currently has no cheats
+
 ; [ Gran Turismo (France) Demo {SCED-01279} ]
+;:SCED-01279
+;This game currently has no cheats
+
 ; [ Gran Turismo (Japan) (Test Drive Disc) {PCPX-96085} ]
+;:PCPX-96085
+;This game currently has no cheats
+
 ; [ Gran Turismo (Japan) Demo {PAPX-90026} ]
+;:PAPX-90026
+;This game currently has no cheats
 
 ; [ Gran Turismo (Japan, Asia) {SCPS-10045} ]
 :SCPS-10045
@@ -112902,28 +113152,6 @@ D01F068A FFFE
 50000B02 0000
 801C9DE8 FFFF
 301C9F45 0001
-#Widescreen 16-9 v1.0
-D0010000 FFE8
-8007AEBC 0156
-D0010000 FFD0
-8007AEBC 03DE
-D0010000 FFE0
-8007AEBC 01AC
-8007AEBE 3402
-#Widescreen 16-9 v1.0 - Better Graphics (Optional)
-80067054 0060
-80067056 3404
-#Widescreen 16-9 V1.1
-D0010000 FFE8
-8007B28C 0156
-D0010000 FFD0
-8007B28C 03DE
-D0010000 FFE0
-8007B28C 01AC
-8007B28E 3402
-#Widescreen 16-9 v1.1 - Better Graphics (Optional)
-800673BC 0060
-800673BE 3404
 #16:9 Widescreen 2.0 (NTSC-J 1.0)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
@@ -113140,7 +113368,7 @@ A701C9D4 00B30066
 A701C9DC FFCEFFE4
 A701C9E4 032001C9
 00000000 FFFF
-#21:9 Widescreen 2.0 (NTSC-J 1.1)
+#21:9 Widescreen (NTSC-J 1.1)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -113304,10 +113532,196 @@ A7016A72 02250000
 D121F882 AEB4
 A7016A80 80000000
 00000000 FFFF
+#L3 to toggle Mirror (tap) and HUD (hold) (NTSC-J 1.1)
+A403EBF0 02602021
+D7010001 00000200
+A0029544 1040000C
+;Always on
+90029544 00000001
+A0029544 0800A55E
+;Default
+90029544 1040000C
+A0029544 00000000
+;Always off
+90029544 0800A55E
+;Fixup canary
+A0029544 00000001
+90029544 00000000
+00000000 FFFF
+00000000 FFFF
+A403EBF0 02602021
+D701003C 00000200
+F5029454 0022A538
+F5029456 14400800
+F5029444 BA0E0000
+F5029446 0C000000
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race (Simulation Disc) (NTSC-J 1.1)
+A401F880 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A937C 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F880 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A937C 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FF9AD 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F880 AEB40008
+C40A937C 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
+
+#True Endurance tweak (NTSC-J 1.1)
+;"Help" the game unload segments that normally are left unwritten to,
+;so further cheat detection is more reliable. This is safe as it overwrites dead code.
+;Reset the race overlay for Arcade
+A00527D4 801EF999
+80056F24 0000
+;Reset the race overlay for Simulation
+A005257C 000000F6
+80056F24 0000
+;Sets 2h Rome Endurance to 255 laps and hides the lap counter
+A4056F24 260201C0
+;Set the endurance flag manually for 255 lap races, so replays work properly
+E01D56CB 00FF
+E0046EC5 0000
+30046EC5 0001
+;Time limited race off
+E0046EC5 0000
+;Restore the max laps counter
+A602CE44 00020006
+;Time limited race on
+C4046EC5 0000
+;Turn off the max laps counter
+A702CE44 00060002
+;Set laps to 255
+E01D56CB 0063
+301D56CB 00FF
+00000000 FFFF
+00000000 FFFF
+#L3 to toggle Mirror (tap) and HUD (hold) (NTSC-J 1.0)
+A403EC18 02602021
+D7010001 00000200
+A0029474 1040000C
+;Always on
+90029474 00000001
+A0029474 0800A52A
+;Default
+90029474 1040000C
+A0029474 00000000
+;Always off
+90029474 0800A52A
+;Fixup canary
+A0029474 00000001
+90029474 00000000
+00000000 FFFF
+00000000 FFFF
+A403EC18 02602021
+D701003C 00000200
+F5029384 0022A504
+F5029386 14400800
+F5029374 B9DC0000
+F5029376 0C000000
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race (Simulation Disc) (NTSC-J 1.0)
+A401F794 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A9D1C 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F794 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A9D1C 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FFA81 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F794 AEB40008
+C40A9D1C 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
+#Enable extra cameras in race (Arcade Disc) (NTSC-J 1.0)
+A401F794 AEB40008
+A701031C 00030009
+A7010370 40F045C1
+;Replay off
+C30A9D0C 0001
+A701171C 0106010E
+A7011778 45E945D7
+00000000 FFFF
+00000000 FFFF
+A401F794 AEB40008
+;Hold R1 to trigger a cinematic camera
+;Replay off
+C30A9D0C 0001
+D701001E 01000008
+F5010148 40B6427F
+F5010A4C 006C8021
+F5010A4E 8C700000
+301FFA89 0002
+00000000 FFFF
+00000000 FFFF
+00000000 FFFF
+;Restore everything when replay is enabled
+A401F794 AEB40008
+C40A9D0C 0000
+D001171C 010E
+8001171C 0106
+D0011778 45D7
+80011778 45E9
+A0010A4C 00008021
+90010A4C 8C70006C
+00000000 FFFF
+00000000 FFFF
 
 ; [ Gran Turismo 2 (Disc 2) (Gran Turismo) (Japan) Rev 1 {SCPS-91327} ]
+;:SCPS-91327
+;This game currently has no cheats
+
 ; [ Gran Turismo 2 (Japan) (Test Drive Disc) {PAPX-90054} ]
+;:PAPX-90054
+;This game currently has no cheats
+
 ; [ Gran Turismo 2 (Un CD Bonus) (France) {SCED-02904} ]
+;:SCED-02904
+;This game currently has no cheats
 
 ; [ Grand Theft Auto (Europe) (EDC Platinum, Collector's Edition) {SLES-00032} ]
 :SLES-00032
