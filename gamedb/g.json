@@ -7541,7 +7541,8 @@
   "controllers": [
    "AnalogController",
    "DigitalController",
-   "PlayStationMouse"
+   "PlayStationMouse",
+   "NamcoGuncon"
   ],
   "track_data": [
    {

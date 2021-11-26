@@ -18218,7 +18218,9 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon",
+   "KonamiJustifier"
   ],
   "track_data": [
    {
@@ -25196,7 +25198,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ],
   "track_data": [
    {

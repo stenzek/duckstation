@@ -3665,7 +3665,8 @@
   "linkCable": false,
   "controllers": [
    "AnalogController",
-   "DigitalController"
+   "DigitalController",
+   "NamcoGuncon"
   ],
   "track_data": [
    {
