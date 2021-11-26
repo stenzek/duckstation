@@ -3730,7 +3730,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="116"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation type="unfinished">Сглаживание цветности для 24-Битного отображения (уменьшение блочности цвета FMV)</translation>
+        <translation type="unfinished">Сглаживание цветности для 24-битного отображения (уменьшение блочности цвета FMV)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="126"/>
