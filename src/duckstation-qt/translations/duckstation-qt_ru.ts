@@ -5430,7 +5430,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2489"/>
         <source>Reset Emulation Speed</source>
-        <translation>Сброс скорости эмуляции</translation>
+        <translation>Сбросить скорость эмуляции</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2542"/>
