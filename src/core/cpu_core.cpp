@@ -539,6 +539,8 @@ ALWAYS_INLINE_RELEASE void Cop0DataBreakpointCheck(VirtualMemoryAddress address)
   DispatchCop0Breakpoint();
 }
 
+#ifdef _DEBUG
+
 static void TracePrintInstruction()
 {
   const u32 pc = g_state.current_instruction_pc;
@@ -558,6 +560,8 @@ static void TracePrintInstruction()
 
   std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
+
+#endif
 
 static void PrintInstruction(u32 bits, u32 pc, Registers* regs, const char* prefix)
 {
