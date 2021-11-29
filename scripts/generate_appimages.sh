@@ -95,11 +95,11 @@ cp /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so ${BUILD_DIR}/duckstation-qt.AppDi
 cp -r /usr/lib/x86_64-linux-gnu/qt5/plugins/{xcbglintegrations,platforms,wayland-graphics-integration-client,wayland-decoration-client,wayland-shell-integration} ${BUILD_DIR}/duckstation-qt.AppDir/usr/plugins
 
 cat <<'EOF'>> ${BUILD_DIR}/duckstation-qt.AppDir/apprun-hooks/linuxdeploy-plugin-qt-hook.sh
-case "${WAYLAND_DISPLAY}" in
-	*wayland*)
+if [[ "${WAYLAND_DISPLAY}" == "wayland"* ]]; then
+	if [ -z ${QT_QPA_PLATFORM} ]; then
 		export QT_QPA_PLATFORM=wayland
-		;;
-esac
+	fi
+fi
 EOF
   
 UPDATE_INFORMATION="zsync|https://github.com/stenzek/duckstation/releases/download/latest/duckstation-qt-x64.AppImage.zsync" \
