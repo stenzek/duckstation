@@ -67,7 +67,6 @@ static bool SaveMemoryState(MemorySaveState* mss);
 static bool LoadMemoryState(const MemorySaveState& mss);
 
 static bool LoadEXE(const char* filename);
-static bool SetExpansionROM(const char* filename);
 
 /// Opens CD image, preloading if needed.
 static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload,
@@ -1773,6 +1772,9 @@ bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
   return true;
 }
 
+#if 0
+// currently not used until EXP1 is implemented
+
 bool SetExpansionROM(const char* filename)
 {
   std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
@@ -1800,6 +1802,7 @@ bool SetExpansionROM(const char* filename)
   Bus::SetExpansionROM(std::move(data));
   return true;
 }
+#endif
 
 void StallCPU(TickCount ticks)
 {
