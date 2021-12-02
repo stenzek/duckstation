@@ -75,7 +75,7 @@ static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_
 static bool ShouldCheckForImagePatches();
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
-static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display);
+static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display, bool is_memory_state);
 static void DoRunFrame();
 static bool CreateGPU(GPURenderer renderer);
 
@@ -1056,10 +1056,8 @@ bool CreateGPU(GPURenderer renderer)
   return true;
 }
 
-bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display, bool is_memory_state)
 {
-  const bool is_memory_state = (host_texture != nullptr);
-
   if (!sw.DoMarker("System"))
     return false;
 
@@ -1071,7 +1069,12 @@ bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_di
     return false;
 
   if (sw.IsReading())
-    CPU::CodeCache::Flush();
+  {
+    if (is_memory_state)
+      CPU::CodeCache::InvalidateAll();
+    else
+      CPU::CodeCache::Flush();
+  }
 
   // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
   // saves using imprecise values for a frame in 30fps games.
@@ -1309,7 +1312,7 @@ bool DoLoadState(ByteStream* state, bool force_software_renderer, bool update_di
     return false;
 
   StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
-  if (!DoState(sw, nullptr, update_display))
+  if (!DoState(sw, nullptr, update_display, false))
     return false;
 
   if (s_state == State::Starting)
@@ -1398,7 +1401,7 @@ bool SaveState(ByteStream* state, u32 screenshot_size /* = 256 */)
     g_gpu->RestoreGraphicsAPIState();
 
     StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-    const bool result = DoState(sw, nullptr, false);
+    const bool result = DoState(sw, nullptr, false, false);
 
     g_gpu->ResetGraphicsAPIState();
 
@@ -2307,7 +2310,7 @@ bool LoadMemoryState(const MemorySaveState& mss)
 
   StateWrapper sw(mss.state_stream.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
   HostDisplayTexture* host_texture = mss.vram_texture.get();
-  if (!DoState(sw, &host_texture, true))
+  if (!DoState(sw, &host_texture, true, true))
   {
     g_host_interface->ReportError("Failed to load memory save state, resetting.");
     Reset();
@@ -2326,7 +2329,7 @@ bool SaveMemoryState(MemorySaveState* mss)
 
   HostDisplayTexture* host_texture = mss->vram_texture.release();
   StateWrapper sw(mss->state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  if (!DoState(sw, &host_texture, false))
+  if (!DoState(sw, &host_texture, false, true))
   {
     Log_ErrorPrint("Failed to create rewind state.");
     delete host_texture;
