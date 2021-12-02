@@ -836,42 +836,59 @@ void InvalidCodeFunction()
 
 #endif
 
+static void InvalidateBlock(CodeBlock* block)
+{
+  // Invalidate forces the block to be checked again.
+  Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
+  block->invalidated = true;
+
+  if (block->can_link)
+  {
+    const u32 frame_number = System::GetFrameNumber();
+    const u32 frame_diff = frame_number - block->invalidate_frame_number;
+    if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
+    {
+      Log_DevPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
+      block->can_link = false;
+    }
+    else
+    {
+      // It's been a while since this block was modified, so it's all good.
+      block->invalidate_frame_number = frame_number;
+    }
+  }
+
+  UnlinkBlock(block);
+
+#ifdef WITH_RECOMPILER
+  SetFastMap(block->GetPC(), FastCompileBlockFunction);
+#endif
+}
+
 void InvalidateBlocksWithPageIndex(u32 page_index)
 {
   DebugAssert(page_index < Bus::RAM_8MB_CODE_PAGE_COUNT);
   auto& blocks = m_ram_block_map[page_index];
   for (CodeBlock* block : blocks)
-  {
-    // Invalidate forces the block to be checked again.
-    Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
-    block->invalidated = true;
-
-    if (block->can_link)
-    {
-      const u32 frame_number = System::GetFrameNumber();
-      const u32 frame_diff = frame_number - block->invalidate_frame_number;
-      if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
-      {
-        Log_DevPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
-        block->can_link = false;
-      }
-      else
-      {
-        // It's been a while since this block was modified, so it's all good.
-        block->invalidate_frame_number = frame_number;
-      }
-    }
-
-    UnlinkBlock(block);
-
-#ifdef WITH_RECOMPILER
-    SetFastMap(block->GetPC(), FastCompileBlockFunction);
-#endif
-  }
+    InvalidateBlock(block);
 
   // Block will be re-added next execution.
   blocks.clear();
   Bus::ClearRAMCodePage(page_index);
+}
+
+void InvalidateAll()
+{
+  for (auto& it : s_blocks)
+  {
+    CodeBlock* block = it.second;
+    if (block && !block->invalidated)
+      InvalidateBlock(block);
+  }
+
+  Bus::ClearRAMCodePageFlags();
+  for (auto& it : m_ram_block_map)
+    it.clear();
 }
 
 void RemoveReferencesToBlock(CodeBlock* block)
