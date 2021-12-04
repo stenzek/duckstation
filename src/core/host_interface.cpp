@@ -689,14 +689,6 @@ void HostInterface::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.rewind_enable = false;
   }
 #endif
-
-  // rewinding causes issues with mmap fastmem, so just use LUT
-  if ((g_settings.rewind_enable || g_settings.IsRunaheadEnabled()) && g_settings.IsUsingFastmem() &&
-      g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
-  {
-    Log_WarningPrintf("Disabling mmap fastmem due to rewind being enabled");
-    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
-  }
 }
 
 void HostInterface::SaveSettings(SettingsInterface& si)
