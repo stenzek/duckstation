@@ -67,9 +67,6 @@ void StopTrace()
 
 void WriteToExecutionLog(const char* format, ...)
 {
-  std::va_list ap;
-  va_start(ap, format);
-
   if (!s_log_file_opened)
   {
     s_log_file = FileSystem::OpenCFile("cpu_log.txt", "wb");
@@ -78,13 +75,15 @@ void WriteToExecutionLog(const char* format, ...)
 
   if (s_log_file)
   {
+    std::va_list ap;
+    va_start(ap, format);
     std::vfprintf(s_log_file, format, ap);
+    va_end(ap);
+
 #ifdef _DEBUG
     std::fflush(s_log_file);
 #endif
   }
-
-  va_end(ap);
 }
 
 void Initialize()
