@@ -3,6 +3,7 @@
 #include "ui_memorycardeditordialog.h"
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
@@ -44,7 +45,13 @@ private:
     QTableWidget* table = nullptr;
     QLabel* blocks_free_label = nullptr;
     QPushButton* save_button = nullptr;
+    QPushButton* import_button = nullptr;
+    QPushButton* import_file_button = nullptr;
+    QPushButton* format_button = nullptr;
   };
+
+  void createCardButtons(Card* card, QDialogButtonBox* buttonBox);
+  void connectCardUi(Card* card, QDialogButtonBox* buttonBox);
 
   void connectUi();
   void populateComboBox(QComboBox* cb);
@@ -68,6 +75,11 @@ private:
   void updateButtonState();
 
   Ui::MemoryCardEditorDialog m_ui;
+  QPushButton* m_deleteFile;
+  QPushButton* m_undeleteFile;
+  QPushButton* m_exportFile;
+  QPushButton* m_moveLeft;
+  QPushButton* m_moveRight;
 
   Card m_card_a;
   Card m_card_b;

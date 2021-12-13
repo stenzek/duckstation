@@ -115,7 +115,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
      <item>
       <widget class="QLabel" name="status">
        <property name="text">
@@ -124,22 +124,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="login">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>&amp;Login</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancel">
-       <property name="text">
-        <string>&amp;Cancel</string>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel</set>
        </property>
       </widget>
      </item>

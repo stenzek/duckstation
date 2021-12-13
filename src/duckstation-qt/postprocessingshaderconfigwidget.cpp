@@ -1,8 +1,8 @@
 #include "postprocessingshaderconfigwidget.h"
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 
 using FrontendCommon::PostProcessingShader;
@@ -129,9 +129,9 @@ void PostProcessingShaderConfigWidget::createUi()
     }
   }
 
-  QPushButton* reset_button = new QPushButton(tr("Reset to Defaults"), this);
-  connect(reset_button, &QPushButton::clicked, this, &PostProcessingShaderConfigWidget::onResetToDefaultsClicked);
-  m_layout->addWidget(reset_button, row, 0, 1, 1);
+  QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::RestoreDefaults, this);
+  connect(button_box, &QDialogButtonBox::clicked, this, &PostProcessingShaderConfigWidget::onResetToDefaultsClicked);
+  m_layout->addWidget(button_box, row, 0, 1, -1);
 
   row++;
   m_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0, 1, 3);
@@ -157,9 +157,9 @@ PostProcessingShaderConfigDialog::PostProcessingShaderConfigDialog(QWidget* pare
   connect(m_widget, &PostProcessingShaderConfigWidget::configChanged, this,
           &PostProcessingShaderConfigDialog::onConfigChanged);
 
-  QPushButton* close_button = new QPushButton(tr("Close"), this);
-  connect(close_button, &QPushButton::clicked, this, &PostProcessingShaderConfigDialog::onCloseClicked);
-  m_widget->getLayout()->addWidget(close_button, m_widget->getLayout()->rowCount() - 1, 2, 1, 2);
+  QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Close, this);
+  connect(button_box, &QDialogButtonBox::rejected, this, &PostProcessingShaderConfigDialog::onCloseClicked);
+  m_widget->getLayout()->addWidget(button_box, m_widget->getLayout()->rowCount() - 1, 2, 1, 2);
 }
 
 PostProcessingShaderConfigDialog::~PostProcessingShaderConfigDialog() = default;

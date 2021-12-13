@@ -2,6 +2,7 @@
 #include "frontend-common/game_settings.h"
 #include "ui_gamepropertiesdialog.h"
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QPushButton>
 #include <array>
 
 struct GameListEntry;
@@ -54,6 +55,8 @@ private:
 
   Ui::GamePropertiesDialog m_ui;
   std::array<QCheckBox*, static_cast<u32>(GameSettings::Trait::Count)> m_trait_checkboxes{};
+  QPushButton* m_exportCompatibilityInfo;
+  QPushButton* m_computeHashes;
 
   QtHostInterface* m_host_interface;
 

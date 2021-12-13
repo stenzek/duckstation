@@ -90,7 +90,7 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
     m_ui.comments->setDisabled(true);
     m_ui.versionTested->setDisabled(true);
     m_ui.setToCurrent->setDisabled(true);
-    m_ui.exportCompatibilityInfo->setDisabled(true);
+    m_exportCompatibilityInfo->setDisabled(true);
   }
   else
   {
@@ -127,6 +127,9 @@ void GamePropertiesDialog::populateCompatibilityInfo(const std::string& game_cod
 
 void GamePropertiesDialog::setupAdditionalUi()
 {
+  m_computeHashes = m_ui.buttonBox->addButton(tr("Compute && Verify Hashes"), QDialogButtonBox::ActionRole);
+  m_exportCompatibilityInfo = m_ui.buttonBox->addButton(tr("Export Compatibility Info"), QDialogButtonBox::ActionRole);
+
   for (u8 i = 0; i < static_cast<u8>(DiscRegion::Count); i++)
     m_ui.region->addItem(qApp->translate("DiscRegion", Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(i))));
 
@@ -555,14 +558,14 @@ void GamePropertiesDialog::connectUi()
   connect(m_ui.upscalingIssues, &QLineEdit::editingFinished, this,
           &GamePropertiesDialog::saveCompatibilityInfoIfChanged);
   connect(m_ui.setToCurrent, &QPushButton::clicked, this, &GamePropertiesDialog::onSetVersionTestedToCurrentClicked);
-  connect(m_ui.computeHashes, &QPushButton::clicked, this, &GamePropertiesDialog::onComputeHashClicked);
-  connect(m_ui.exportCompatibilityInfo, &QPushButton::clicked, this,
+  connect(m_computeHashes, &QPushButton::clicked, this, &GamePropertiesDialog::onComputeHashClicked);
+  connect(m_exportCompatibilityInfo, &QPushButton::clicked, this,
           &GamePropertiesDialog::onExportCompatibilityInfoClicked);
-  connect(m_ui.close, &QPushButton::clicked, this, &QDialog::close);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::close);
   connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this](int index) {
     const bool show_buttons = index == 0;
-    m_ui.computeHashes->setVisible(show_buttons);
-    m_ui.exportCompatibilityInfo->setVisible(show_buttons);
+    m_computeHashes->setVisible(show_buttons);
+    m_exportCompatibilityInfo->setVisible(show_buttons);
   });
 
   connect(m_ui.userRunaheadFrames, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
@@ -937,7 +940,7 @@ void GamePropertiesDialog::onComputeHashClicked()
     computeTrackHashes(m_redump_search_keyword);
 
     if (!m_redump_search_keyword.empty())
-      m_ui.computeHashes->setText(tr("Search on Redump.org"));
+      m_computeHashes->setText(tr("Search on Redump.org"));
   }
   else
   {

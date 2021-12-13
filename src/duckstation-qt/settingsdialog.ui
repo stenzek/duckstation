@@ -27,6 +27,21 @@
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="1">
+    <widget class="QStackedWidget" name="settingsContainer">
+     <property name="minimumSize">
+      <size>
+       <width>500</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="page"/>
+     <widget class="QWidget" name="page_2"/>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QListWidget" name="settingsCategory">
      <property name="sizePolicy">
@@ -58,7 +73,8 @@
        <string>General Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="GeneralSettings"/>
+       <iconset theme="GeneralSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -66,7 +82,8 @@
        <string>BIOS Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="BIOSSettings"/>
+       <iconset theme="BIOSSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -74,7 +91,8 @@
        <string>Console Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="ConsoleSettings"/>
+       <iconset theme="ConsoleSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -82,7 +100,8 @@
        <string>Emulation Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="EmulationSettings"/>
+       <iconset theme="EmulationSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -90,7 +109,8 @@
        <string>Game List Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="GamelistSettings"/>
+       <iconset theme="GamelistSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -98,7 +118,8 @@
        <string>Hotkey Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="HotkeySettings"/>
+       <iconset theme="HotkeySettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -106,7 +127,8 @@
        <string>Controller Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="ControllerSettings"/>
+       <iconset theme="ControllerSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -114,7 +136,8 @@
        <string>Memory Card Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="MemorycardSettings"/>
+       <iconset theme="MemorycardSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -122,7 +145,8 @@
        <string>Display Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="DisplaySettings"/>
+       <iconset theme="DisplaySettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -130,7 +154,8 @@
        <string>Enhancement Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="EnhancementSettings"/>
+       <iconset theme="EnhancementSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -138,7 +163,8 @@
        <string>Post-Processing Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="PostprocessingSettings"/>
+       <iconset theme="PostprocessingSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -146,7 +172,8 @@
        <string>Audio Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="AudioSettings"/>
+       <iconset theme="AudioSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -154,7 +181,8 @@
        <string>Achievement Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="AchievementsSettings"/>
+       <iconset theme="AchievementsSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
      <item>
@@ -162,24 +190,17 @@
        <string>Advanced Settings</string>
       </property>
       <property name="icon">
-       <iconset theme="AdvancedSettings"/>
+       <iconset theme="AdvancedSettings">
+        <normaloff>.</normaloff>.</iconset>
       </property>
      </item>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QStackedWidget" name="settingsContainer">
-     <property name="minimumSize">
-      <size>
-       <width>500</width>
-       <height>0</height>
-      </size>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close|QDialogButtonBox::RestoreDefaults</set>
      </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="page"/>
-     <widget class="QWidget" name="page_2"/>
     </widget>
    </item>
    <item row="1" column="0" colspan="2">
@@ -200,40 +221,6 @@
       <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QPushButton" name="restoreDefaultsButton">
-       <property name="text">
-        <string>Restore Defaults</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="closeButton">
-       <property name="text">
-        <string>Close</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>
