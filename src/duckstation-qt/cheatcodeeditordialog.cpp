@@ -84,6 +84,6 @@ void CheatCodeEditorDialog::fillUi()
 
 void CheatCodeEditorDialog::connectUi()
 {
-  connect(m_ui.save, &QPushButton::clicked, this, &CheatCodeEditorDialog::saveClicked);
-  connect(m_ui.cancel, &QPushButton::clicked, this, &CheatCodeEditorDialog::cancelClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &CheatCodeEditorDialog::saveClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &CheatCodeEditorDialog::cancelClicked);
 }

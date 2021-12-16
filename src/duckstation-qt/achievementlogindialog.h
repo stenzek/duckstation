@@ -1,6 +1,7 @@
 #pragma once
 #include "ui_achievementlogindialog.h"
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QPushButton>
 
 class AchievementLoginDialog : public QDialog
 {
@@ -21,4 +22,5 @@ private:
   bool canEnableLoginButton() const;
 
   Ui::AchievementLoginDialog m_ui;
+  QPushButton* m_login;
 };

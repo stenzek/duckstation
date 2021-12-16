@@ -7,6 +7,9 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent) : QDialog(parent
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+  m_login = m_ui.buttonBox->addButton(tr("&Login"), QDialogButtonBox::AcceptRole);
+  m_login->setEnabled(false);
   connectUi();
 }
 
@@ -48,10 +51,10 @@ void AchievementLoginDialog::processLoginResult(bool result)
 
 void AchievementLoginDialog::connectUi()
 {
-  connect(m_ui.login, &QPushButton::clicked, this, &AchievementLoginDialog::loginClicked);
-  connect(m_ui.cancel, &QPushButton::clicked, this, &AchievementLoginDialog::cancelClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &AchievementLoginDialog::loginClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &AchievementLoginDialog::cancelClicked);
 
-  auto enableLoginButton = [this](const QString&) { m_ui.login->setEnabled(canEnableLoginButton()); };
+  auto enableLoginButton = [this](const QString&) { m_login->setEnabled(canEnableLoginButton()); };
   connect(m_ui.userName, &QLineEdit::textChanged, enableLoginButton);
   connect(m_ui.password, &QLineEdit::textChanged, enableLoginButton);
 }
@@ -60,8 +63,8 @@ void AchievementLoginDialog::enableUI(bool enabled)
 {
   m_ui.userName->setEnabled(enabled);
   m_ui.password->setEnabled(enabled);
-  m_ui.cancel->setEnabled(enabled);
-  m_ui.login->setEnabled(enabled && canEnableLoginButton());
+  m_ui.buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(enabled);
+  m_login->setEnabled(enabled && canEnableLoginButton());
 }
 
 bool AchievementLoginDialog::canEnableLoginButton() const

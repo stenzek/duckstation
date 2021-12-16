@@ -19,16 +19,24 @@ MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+  m_deleteFile = m_ui.centerButtonBox->addButton(tr("Delete File"), QDialogButtonBox::ActionRole);
+  m_undeleteFile = m_ui.centerButtonBox->addButton(tr("Undelete File"), QDialogButtonBox::ActionRole);
+  m_exportFile = m_ui.centerButtonBox->addButton(tr("Export File"), QDialogButtonBox::ActionRole);
+  m_moveLeft = m_ui.centerButtonBox->addButton(tr("<<"), QDialogButtonBox::ActionRole);
+  m_moveRight = m_ui.centerButtonBox->addButton(tr(">>"), QDialogButtonBox::ActionRole);
+
   m_card_a.path_cb = m_ui.cardAPath;
   m_card_a.table = m_ui.cardA;
   m_card_a.blocks_free_label = m_ui.cardAUsage;
-  m_card_a.save_button = m_ui.saveCardA;
   m_card_b.path_cb = m_ui.cardBPath;
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
-  m_card_b.save_button = m_ui.saveCardB;
 
+  createCardButtons(&m_card_a, m_ui.buttonBoxA);
+  createCardButtons(&m_card_b, m_ui.buttonBoxB);
   connectUi();
+  connectCardUi(&m_card_a, m_ui.buttonBoxA);
+  connectCardUi(&m_card_b, m_ui.buttonBoxB);
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
 
@@ -98,14 +106,30 @@ void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
   m_card_b.path_cb->setCurrentIndex(0);
 }
 
+void MemoryCardEditorDialog::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
+{
+  card->format_button = buttonBox->addButton(tr("Format Card"), QDialogButtonBox::ActionRole);
+  card->import_file_button = buttonBox->addButton(tr("Import File..."), QDialogButtonBox::ActionRole);
+  card->import_button = buttonBox->addButton(tr("Import Card..."), QDialogButtonBox::ActionRole);
+  card->save_button = buttonBox->addButton(tr("Save"), QDialogButtonBox::ActionRole);
+}
+
+void MemoryCardEditorDialog::connectCardUi(Card* card, QDialogButtonBox* buttonBox)
+{
+  connect(card->save_button, &QPushButton::clicked, [this, card] { saveCard(card); });
+  connect(card->format_button, &QPushButton::clicked, [this, card] { formatCard(card); });
+  connect(card->import_file_button, &QPushButton::clicked, [this, card] { importSaveFile(card); });
+  connect(card->import_button, &QPushButton::clicked, [this, card] { importCard(card); });
+}
+
 void MemoryCardEditorDialog::connectUi()
 {
   connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorDialog::onCardASelectionChanged);
   connect(m_ui.cardB, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorDialog::onCardBSelectionChanged);
-  connect(m_ui.moveLeft, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
-  connect(m_ui.moveRight, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
-  connect(m_ui.deleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doDeleteFile);
-  connect(m_ui.undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doUndeleteFile);
+  connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
+  connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
+  connect(m_deleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doDeleteFile);
+  connect(m_undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doUndeleteFile);
 
   connect(m_ui.cardAPath, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this](int index) { loadCardFromComboBox(&m_card_a, index); });
@@ -115,15 +139,7 @@ void MemoryCardEditorDialog::connectUi()
   connect(m_ui.newCardB, &QPushButton::clicked, [this]() { newCard(&m_card_b); });
   connect(m_ui.openCardA, &QPushButton::clicked, [this]() { openCard(&m_card_a); });
   connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
-  connect(m_ui.saveCardA, &QPushButton::clicked, [this]() { saveCard(&m_card_a); });
-  connect(m_ui.saveCardB, &QPushButton::clicked, [this]() { saveCard(&m_card_b); });
-  connect(m_ui.importCardA, &QPushButton::clicked, [this]() { importCard(&m_card_a); });
-  connect(m_ui.importCardB, &QPushButton::clicked, [this]() { importCard(&m_card_b); });
-  connect(m_ui.formatCardA, &QPushButton::clicked, [this]() { formatCard(&m_card_a); });
-  connect(m_ui.formatCardB, &QPushButton::clicked, [this]() { formatCard(&m_card_b); });
-  connect(m_ui.exportFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doExportSaveFile);
-  connect(m_ui.importFileToCardA, &QPushButton::clicked, [this]() { importSaveFile(&m_card_a); });
-  connect(m_ui.importFileToCardB, &QPushButton::clicked, [this]() { importSaveFile(&m_card_b); });
+  connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doExportSaveFile);
 }
 
 void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
@@ -222,6 +238,7 @@ bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
 
 static void setCardTableItemProperties(QTableWidgetItem* item, const MemoryCardImage::FileInfo& fi)
 {
+  item->setFlags(item->flags() & ~(Qt::ItemIsEditable));
   if (fi.deleted)
   {
     item->setBackground(Qt::darkRed);
@@ -579,15 +596,11 @@ void MemoryCardEditorDialog::updateButtonState()
   const bool card_a_present = !m_card_a.filename.empty();
   const bool card_b_present = !m_card_b.filename.empty();
   const bool both_cards_present = card_a_present && card_b_present;
-  m_ui.deleteFile->setEnabled(has_selection);
-  m_ui.undeleteFile->setEnabled(is_deleted);
-  m_ui.exportFile->setEnabled(has_selection);
-  m_ui.moveLeft->setEnabled(both_cards_present && has_selection && is_card_b);
-  m_ui.moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
-  m_ui.importCardA->setEnabled(card_a_present);
-  m_ui.importCardB->setEnabled(card_b_present);
-  m_ui.importFileToCardA->setEnabled(card_a_present);
-  m_ui.importFileToCardB->setEnabled(card_b_present);
-  m_ui.formatCardA->setEnabled(card_a_present);
-  m_ui.formatCardB->setEnabled(card_b_present);
+  m_deleteFile->setEnabled(has_selection);
+  m_undeleteFile->setEnabled(is_deleted);
+  m_exportFile->setEnabled(has_selection);
+  m_moveLeft->setEnabled(both_cards_present && has_selection && is_card_b);
+  m_moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
+  m_ui.buttonBoxA->setEnabled(card_a_present);
+  m_ui.buttonBoxB->setEnabled(card_b_present);
 }

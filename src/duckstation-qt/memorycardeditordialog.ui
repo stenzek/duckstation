@@ -97,7 +97,7 @@
     </layout>
    </item>
    <item row="2" column="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
      <item>
       <widget class="QLabel" name="cardBUsage">
        <property name="text">
@@ -106,49 +106,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="formatCardB">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Format Card</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="importFileToCardB">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Import File...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="importCardB">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Import Card...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="saveCardB">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Save</string>
+      <widget class="QDialogButtonBox" name="buttonBoxB">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::NoButton</set>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
      <item>
       <widget class="QLabel" name="cardAUsage">
        <property name="text">
@@ -157,42 +124,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="formatCardA">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Format Card</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="importFileToCardA">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Import File...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="importCardA">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Import Card...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="saveCardA">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Save</string>
+      <widget class="QDialogButtonBox" name="buttonBoxA">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::NoButton</set>
        </property>
       </widget>
      </item>
@@ -276,72 +210,15 @@
      </column>
     </widget>
    </item>
-   <item row="1" column="2">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <widget class="QPushButton" name="deleteFile">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Delete File</string>
-       </property>
-      </widget>
-     </item>
-    <item>
-      <widget class="QPushButton" name="undeleteFile">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Undelete File</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="exportFile">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Export File</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="moveLeft">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>&lt;&lt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="moveRight">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>&gt;&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+   <item row="1" column="1">
+    <widget class="QDialogButtonBox" name="centerButtonBox">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::NoButton</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
