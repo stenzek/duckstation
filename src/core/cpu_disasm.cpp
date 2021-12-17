@@ -170,6 +170,12 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
 {
   dest->Clear();
 
+  if (inst.bits == 0)
+  {
+    dest->AppendString("nop");
+    return;
+  }
+
   const char* str = format;
   while (*str != '\0')
   {
@@ -197,36 +203,43 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
     }
     else if (std::strncmp(str, "shamt", 5) == 0)
     {
-      dest->AppendFormattedString("%d", ZeroExtend32(inst.r.shamt.GetValue()));
+      const s32 shamt = static_cast<s32>(ZeroExtend32(inst.r.shamt.GetValue()));
+      if (shamt < 0)
+        dest->AppendFormattedString("-%x", shamt * -1);
+      else
+        dest->AppendFormattedString("%x", shamt);
       str += 5;
     }
     else if (std::strncmp(str, "immu", 4) == 0)
     {
-      dest->AppendFormattedString("%u", inst.i.imm_zext32());
+      dest->AppendFormattedString("0x%04x", inst.i.imm_zext32());
       str += 4;
     }
     else if (std::strncmp(str, "imm", 3) == 0)
     {
       // dest->AppendFormattedString("%d", static_cast<int>(inst.i.imm_sext32()));
-      dest->AppendFormattedString("%04x", inst.i.imm_zext32());
+      dest->AppendFormattedString("0x%04x", inst.i.imm_zext32());
       str += 3;
     }
     else if (std::strncmp(str, "rel", 3) == 0)
     {
       const u32 target = (pc + UINT32_C(4)) + (inst.i.imm_sext32() << 2);
-      dest->AppendFormattedString("%08x", target);
+      dest->AppendFormattedString("0x%08x", target);
       str += 3;
     }
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->AppendFormattedString("%d(%s)", offset, GetRegName(inst.i.rs));
+      if (offset < 0)
+        dest->AppendFormattedString("-0x%x(%s)", offset * -1, GetRegName(inst.i.rs));
+      else
+        dest->AppendFormattedString("0x%x(%s)", offset, GetRegName(inst.i.rs));
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
     {
       const u32 target = ((pc + UINT32_C(4)) & UINT32_C(0xF0000000)) | (inst.j.target << 2);
-      dest->AppendFormattedString("%08x", target);
+      dest->AppendFormattedString("0x%08x", target);
       str += 2;
     }
     else if (std::strncmp(str, "copcc", 5) == 0)

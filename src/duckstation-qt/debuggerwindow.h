@@ -20,6 +20,7 @@ class DebuggerWindow : public QMainWindow
 public:
   explicit DebuggerWindow(QWidget* parent = nullptr);
   ~DebuggerWindow();
+  void SetActive(bool status);
 
 Q_SIGNALS:
   void closed();
@@ -50,9 +51,14 @@ private Q_SLOTS:
   void onStepIntoActionTriggered();
   void onStepOverActionTriggered();
   void onStepOutActionTriggered();
+  void onCodeViewPressed(QModelIndex index);
+  void onCodeViewCurrentChanged(QModelIndex current, QModelIndex previous);
   void onCodeViewItemActivated(QModelIndex index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
+  void onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column);
+  void onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column);
+  void onBreakpointsWidgetMenuRequested(const QPoint& pos);
 
 
 private:
@@ -62,13 +68,17 @@ private:
   void createModels();
   void setUIEnabled(bool enabled);
   void setMemoryViewRegion(Bus::MemoryRegion region);
-  void toggleBreakpoint(VirtualMemoryAddress address);
+  void toggleBreakpoint(DebugAddress dbg);
   void clearBreakpoints();
   std::optional<VirtualMemoryAddress> getSelectedCodeAddress();
   bool tryFollowLoadStore(VirtualMemoryAddress address);
   void scrollToCodeAddress(VirtualMemoryAddress address);
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
+  void editBreakpoint(QTreeWidgetItem* item);
+  void deleteBreakpoint(QTreeWidgetItem* item);
+  void refreshCodeViewSelectedAddress();
+  bool is_active = false;
 
   Ui::DebuggerWindow m_ui;
 

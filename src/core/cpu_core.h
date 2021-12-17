@@ -169,7 +169,7 @@ using BreakpointCallback = bool (*)(VirtualMemoryAddress address);
 
 struct Breakpoint
 {
-  VirtualMemoryAddress address;
+  DebugAddress dbg;
   BreakpointCallback callback;
   u32 number;
   u32 hit_count;
@@ -183,12 +183,15 @@ using BreakpointList = std::vector<Breakpoint>;
 bool HasAnyBreakpoints();
 bool HasBreakpointAtAddress(VirtualMemoryAddress address);
 BreakpointList GetBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
-bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);
-bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback);
-bool RemoveBreakpoint(VirtualMemoryAddress address);
+bool AddBreakpoint(DebugAddress dbg, bool auto_clear = false, bool enabled = true);
+bool AddBreakpointWithCallback(DebugAddress dbg, BreakpointCallback callback);
+bool RemoveBreakpoint(DebugAddress dbg);
 void ClearBreakpoints();
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
+void SetBreakpointEnable(int index, bool is_enable);
+DebugAddress GetBreakpointDebugAddress(int index);
+void SetBreakpointDebugAddress(int index, DebugAddress dbg);
 
 extern bool TRACE_EXECUTION;
 

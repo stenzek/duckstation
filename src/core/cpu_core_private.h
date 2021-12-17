@@ -111,6 +111,30 @@ bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks);
 void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size);
 
+ALWAYS_INLINE_RELEASE void FlushPipeline()
+{
+  // loads are flushed
+  g_state.next_load_delay_reg = Reg::count;
+  if (g_state.load_delay_reg != Reg::count)
+  {
+    g_state.regs.r[static_cast<u8>(g_state.load_delay_reg)] = g_state.load_delay_value;
+    g_state.load_delay_reg = Reg::count;
+  }
+
+  // not in a branch delay slot
+  g_state.branch_was_taken = false;
+  g_state.next_instruction_is_branch_delay_slot = false;
+  g_state.current_instruction_pc = g_state.regs.pc;
+
+  // prefetch the next instruction
+  FetchInstruction();
+
+  // and set it as the next one to execute
+  g_state.current_instruction.bits = g_state.next_instruction.bits;
+  g_state.current_instruction_in_branch_delay_slot = false;
+  g_state.current_instruction_was_branch_taken = false;
+}
+
 ALWAYS_INLINE void AddGTETicks(TickCount ticks)
 {
   g_state.gte_completion_tick = g_state.pending_ticks + ticks + 1;

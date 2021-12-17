@@ -8,6 +8,7 @@ MemoryViewWidget::MemoryViewWidget(QWidget* parent /* = nullptr */, size_t addre
   : QAbstractScrollArea(parent)
 {
   m_bytes_per_line = 16;
+  m_display_size = 1;
 
   updateMetrics();
 
@@ -88,6 +89,12 @@ void MemoryViewWidget::setFont(const QFont& font)
   updateMetrics();
 }
 
+void MemoryViewWidget::setDisplaySize(int display_size)
+{
+  m_display_size = display_size;
+  adjustContent();
+}
+
 void MemoryViewWidget::resizeEvent(QResizeEvent*)
 {
   adjustContent();
@@ -116,6 +123,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent*)
 
   y += m_char_height;
 
+  // Painting addresses
   const unsigned num_rows = static_cast<unsigned>(m_end_offset - m_start_offset) / m_bytes_per_line;
   for (unsigned row = 0; row <= num_rows; row++)
   {
@@ -139,38 +147,51 @@ void MemoryViewWidget::paintEvent(QPaintEvent*)
   const int HEX_CHAR_WIDTH = 4 * m_char_width;
 
   x = lx - offsetX;
-  for (unsigned col = 0; col < m_bytes_per_line; col++)
+  for (unsigned col = 0; col < m_bytes_per_line / m_display_size; col++)
   {
     if ((col % 2) != 0)
-      painter.fillRect(x, 0, HEX_CHAR_WIDTH, height(), viewport()->palette().color(QPalette::AlternateBase));
+      painter.fillRect(x, 0, HEX_CHAR_WIDTH * m_display_size, height(), viewport()->palette().color(QPalette::AlternateBase));
 
-    x += HEX_CHAR_WIDTH;
+    x += HEX_CHAR_WIDTH * m_display_size;
   }
 
+  // Painting addresses indexes
   y = m_char_height;
   x = lx - offsetX + m_char_width;
-  for (unsigned col = 0; col < m_bytes_per_line; col++)
+  for (unsigned col = 0; col < m_bytes_per_line; col += m_display_size)
   {
     painter.drawText(x, y, QString::asprintf("%02X", col));
-    x += HEX_CHAR_WIDTH;
+    x += HEX_CHAR_WIDTH * m_display_size;
   }
 
   painter.drawLine(0, y + 3, width(), y + 3);
   y += m_char_height;
 
+  // Painting adresses values
   size_t offset = m_start_offset;
   for (unsigned row = 0; row <= num_rows; row++)
   {
     x = lx - offsetX + m_char_width;
-    for (unsigned col = 0; col < m_bytes_per_line && offset < m_data_size; col++, offset++)
+    for (unsigned col = 0; col < (m_bytes_per_line / m_display_size) && offset < m_data_size; col++, offset += m_display_size)
     {
-      unsigned char value;
+      unsigned int value;
       std::memcpy(&value, static_cast<const unsigned char*>(m_data) + offset, sizeof(value));
       if (offset >= m_highlight_start && offset < m_highlight_end)
         painter.fillRect(x - m_char_width, y - m_char_height + 3, HEX_CHAR_WIDTH, m_char_height, highlight_color);
 
-      painter.drawText(x, y, QString::asprintf("%02X", value));
-      x += HEX_CHAR_WIDTH;
+      if (m_display_size == 1)
+      {
+        painter.drawText(x, y, QString::asprintf("%02X", value & 0xFF));
+      }
+      else if (m_display_size == 2)
+      {
+        painter.drawText(x, y, QString::asprintf("%04X", value & 0xFFFF));
+      }
+      else
+      {
+        painter.drawText(x, y, QString::asprintf("%08X", value));
+      }
+      x += HEX_CHAR_WIDTH * m_display_size;
     }
     y += m_char_height;
   }
@@ -180,6 +201,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent*)
 
   lx += m_char_width;
 
+  // Painting address ASCII index
   y = m_char_height;
   x = (lx - offsetX);
   for (unsigned col = 0; col < m_bytes_per_line; col++)
@@ -191,6 +213,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent*)
 
   y += m_char_height;
 
+  // Painting address ASCII
   offset = m_start_offset;
   for (unsigned row = 0; row <= num_rows; row++)
   {

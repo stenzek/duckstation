@@ -2,10 +2,12 @@
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/cpu_disasm.h"
+#include "core/system.h"
 #include <QtGui/QColor>
 #include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QTreeView>
 
 static constexpr int NUM_COLUMNS = 5;
 static constexpr int STACK_RANGE = 128;
@@ -55,7 +57,7 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
   if (index.column() < 0 || index.column() >= NUM_COLUMNS)
     return QVariant();
 
-  if (role == Qt::DisplayRole)
+  if (role == Qt::DisplayRole || role == Qt::EditRole)
   {
     const VirtualMemoryAddress address = getAddressForRow(index.row());
     switch (index.column())
@@ -95,7 +97,7 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
       case 4:
       {
         // Comment
-        if (address != m_last_pc)
+        if (address != m_last_pc && address != selected_address)
           return QVariant();
 
         u32 instruction_bits;
@@ -133,6 +135,8 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
     if (hasBreakpointAtAddress(address))
       return QVariant(QColor(171, 97, 107));
 
+    if (address == selected_address)
+      return QColor(76, 76, 76);
     //     if (address == m_last_pc)
     //       return QApplication::palette().toolTipBase();
     if (address == m_last_pc)
@@ -179,6 +183,34 @@ QVariant DebuggerCodeModel::headerData(int section, Qt::Orientation orientation,
     default:
       return QVariant();
   }
+}
+
+Qt::ItemFlags DebuggerCodeModel::flags(const QModelIndex& index) const
+{
+  if (index.column() == 2)
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  return QAbstractItemModel::flags(index);
+}
+
+bool DebuggerCodeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
+  {
+    bool ok;
+    QString value_str = value.toString();
+    u32 instruction;
+    if (value_str.startsWith("0x"))
+      instruction = value_str.mid(2).toUInt(&ok, 16);
+    else
+      instruction = value_str.toUInt(&ok, 16);
+    if (ok)
+    {
+      const VirtualMemoryAddress address = static_cast<u32>(getAddressForRow(index.row()));
+      std::memcpy(&Bus::g_ram[address & Bus::g_ram_mask], &instruction, sizeof(instruction));
+      return true;
+    }
+  }
+  return false;
 }
 
 bool DebuggerCodeModel::updateRegion(VirtualMemoryAddress address)
@@ -241,6 +273,13 @@ void DebuggerCodeModel::setPC(VirtualMemoryAddress pc)
   }
 }
 
+void DebuggerCodeModel::setCurrentSelectedAddress(VirtualMemoryAddress address)
+{
+  VirtualMemoryAddress temp = selected_address;
+  selected_address = address;
+  emitDataChangedForAddress(temp);
+}
+
 void DebuggerCodeModel::ensureAddressVisible(VirtualMemoryAddress address)
 {
   updateRegion(address);
@@ -288,6 +327,16 @@ DebuggerRegistersModel::DebuggerRegistersModel(QObject* parent /*= nullptr*/) : 
 
 DebuggerRegistersModel::~DebuggerRegistersModel() {}
 
+void DebuggerRegistersModel::setCodeModel(DebuggerCodeModel* model)
+{
+  code_model = model;
+}
+
+void DebuggerRegistersModel::setCodeView(QTreeView* view)
+{
+  code_view = view;
+}
+
 int DebuggerRegistersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
   return static_cast<int>(CPU::Reg::count);
@@ -327,6 +376,8 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt:
         if (CPU::g_state.regs.r[reg_index] != m_old_reg_values[reg_index])
           return QColor(255, 50, 50);
       }
+      else if (role == Qt::EditRole)
+        return QString::asprintf("%08X", CPU::g_state.regs.r[reg_index]);
     }
     break;
 
@@ -355,6 +406,55 @@ QVariant DebuggerRegistersModel::headerData(int section, Qt::Orientation orienta
     default:
       return QVariant();
   }
+}
+
+Qt::ItemFlags DebuggerRegistersModel::flags(const QModelIndex& index) const
+{
+  if (index.column() == 1)
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  return QAbstractItemModel::flags(index);
+}
+
+bool DebuggerRegistersModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
+  {
+    bool ok;
+    QString value_str = value.toString();
+    u32 reg_value;
+    if (value_str.startsWith("0x"))
+      reg_value = value_str.mid(2).toUInt(&ok, 16);
+    else
+      reg_value = value_str.toUInt(&ok, 16);
+    if (ok)
+    {
+      u32 reg_index = static_cast<u32>(index.row());
+      if (reg_index == 34)                              // special case for PC
+      {
+        CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
+        CPU::FlushPipeline();
+      }
+      else if (reg_index == 35)                         // special case for NPC
+        CPU::g_state.regs.npc = reg_value & 0xFFFFFFFC; // making sure it's divisible by 4
+      else
+        CPU::g_state.regs.r[reg_index] = reg_value;
+
+      // Update code view comments with the new register value
+      code_model->setPC(CPU::g_state.regs.pc);
+      code_model->ensureAddressVisible(CPU::g_state.regs.pc);
+      int row = code_model->getRowForAddress(CPU::g_state.regs.pc);
+      if (row >= 0)
+      {
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+        code_view->scrollTo(code_model->index(row, 0));
+      }
+
+      emit dataChanged(index, index, {role});
+
+      return true;
+    }
+  }
+  return false;
 }
 
 void DebuggerRegistersModel::invalidateView()
@@ -388,7 +488,7 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role /*= Qt::Dis
   if (index.column() < 0 || index.column() > 1)
     return QVariant();
 
-  if (role != Qt::DisplayRole)
+  if (role != Qt::DisplayRole && role != Qt::EditRole)
     return QVariant();
 
   const u32 sp = CPU::g_state.regs.sp;
@@ -402,7 +502,33 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role /*= Qt::Dis
   if (!CPU::SafeReadMemoryWord(address, &value))
     return tr("<invalid>");
 
-  return QString::asprintf("0x%08X", ZeroExtend32(value));
+  if (role == Qt::DisplayRole)
+    return QString::asprintf("0x%08X", ZeroExtend32(value));
+
+  return QString::asprintf("%08X", ZeroExtend32(value));
+}
+
+bool DebuggerStackModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+  if (System::IsPaused() && index.isValid() && role == Qt::EditRole)
+  {
+    bool ok;
+    QString value_str = value.toString();
+    u32 stack_value;
+    if (value_str.startsWith("0x"))
+      stack_value = value_str.mid(2).toUInt(&ok, 16);
+    else
+      stack_value = value_str.toUInt(&ok, 16);
+    if (ok)
+    {
+      const u32 sp = CPU::g_state.regs.sp;
+      const VirtualMemoryAddress address =
+        (sp - static_cast<u32>(STACK_RANGE * STACK_VALUE_SIZE)) + static_cast<u32>(index.row()) * STACK_VALUE_SIZE;
+      std::memcpy(&Bus::g_ram[address & Bus::g_ram_mask], &stack_value, sizeof(stack_value));
+      return true;
+    }
+  }
+  return false;
 }
 
 QVariant DebuggerStackModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
@@ -422,6 +548,13 @@ QVariant DebuggerStackModel::headerData(int section, Qt::Orientation orientation
     default:
       return QVariant();
   }
+}
+
+Qt::ItemFlags DebuggerStackModel::flags(const QModelIndex& index) const
+{
+  if (index.column() == 1)
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  return QAbstractItemModel::flags(index);
 }
 
 void DebuggerStackModel::invalidateView()

@@ -22,7 +22,6 @@ namespace CPU {
 static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
-static void FlushPipeline();
 
 State g_state;
 bool g_using_interpreter = false;
@@ -35,7 +34,8 @@ static bool s_trace_to_log = false;
 static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
 static std::vector<Breakpoint> s_breakpoints;
 static u32 s_breakpoint_counter = 1;
-static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+static u32 s_last_execution_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+static u32 s_last_data_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 static bool s_single_step = false;
 
 bool IsTraceEnabled()
@@ -95,7 +95,8 @@ void Initialize()
   g_state.use_debug_dispatcher = false;
   s_breakpoints.clear();
   s_breakpoint_counter = 1;
-  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_last_execution_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_last_data_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   s_single_step = false;
 
   UpdateFastmemBase();
@@ -322,30 +323,6 @@ ALWAYS_INLINE_RELEASE static void UpdateLoadDelay()
   g_state.next_load_delay_reg = Reg::count;
 }
 
-ALWAYS_INLINE_RELEASE static void FlushPipeline()
-{
-  // loads are flushed
-  g_state.next_load_delay_reg = Reg::count;
-  if (g_state.load_delay_reg != Reg::count)
-  {
-    g_state.regs.r[static_cast<u8>(g_state.load_delay_reg)] = g_state.load_delay_value;
-    g_state.load_delay_reg = Reg::count;
-  }
-
-  // not in a branch delay slot
-  g_state.branch_was_taken = false;
-  g_state.next_instruction_is_branch_delay_slot = false;
-  g_state.current_instruction_pc = g_state.regs.pc;
-
-  // prefetch the next instruction
-  FetchInstruction();
-
-  // and set it as the next one to execute
-  g_state.current_instruction.bits = g_state.next_instruction.bits;
-  g_state.current_instruction_in_branch_delay_slot = false;
-  g_state.current_instruction_was_branch_taken = false;
-}
-
 ALWAYS_INLINE static u32 ReadReg(Reg rs)
 {
   return g_state.regs.r[static_cast<u8>(rs)];
@@ -539,6 +516,104 @@ ALWAYS_INLINE_RELEASE void Cop0DataBreakpointCheck(VirtualMemoryAddress address)
   DispatchCop0Breakpoint();
 }
 
+// range1 = [a, b]: represents any range of addresses that can have a breakpoint
+// range2 = [c, d]: represents the current address being checked, and it's at most a word
+// return: a mask of data intersection
+ALWAYS_INLINE_RELEASE u32 AddressRangeIntersection(u32 a, u32 b, u32 c, u32 d)
+{
+  // test impossible intersections
+  if (d < a)
+    return 0;
+  if (c > b) 
+    return 0;
+
+  u32 min = std::max(a, c);
+  u32 max = std::min(b, d);
+  if (a <= min && b >= max)
+  {
+    u32 mask = 0;
+    while (max > min)
+    {
+      mask = mask << 4;
+      mask |= 0xFF;
+      max--;
+    }
+    while (min > c)
+    {
+      mask = mask << 4;
+      min--;
+    }
+
+    return mask;
+  }
+  return 0;
+}
+
+template<MemoryAccessType type>
+ALWAYS_INLINE_RELEASE void DataBreakpointCheck(VirtualMemoryAddress address, u32 size, u32 old_val=0, u32 new_val=0)
+{
+  if (System::IsPaused())
+    return;
+
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    u32 count = static_cast<u32>(s_breakpoints.size());
+    for (u32 i = 0; i < count; i++)
+    {
+      Breakpoint& bp = s_breakpoints[i];
+      if (!bp.enabled || !(bp.dbg.debug_type & DebugType::Read))
+        continue;
+
+      if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
+      {
+        bp.hit_count++;
+        g_host_interface->ReportFormattedDebuggerMessage("Hit read breakpoint at PC=0x%08X, reading address 0x%08X",
+                                                          g_state.regs.pc, bp.dbg.address);
+        g_host_interface->PauseSystem(true);
+        return;
+      }
+    }
+  }
+  else
+  {
+    if constexpr (type == MemoryAccessType::Write)
+    {
+      u32 count = static_cast<u32>(s_breakpoints.size());
+      for (u32 i = 0; i < count; i++)
+      {
+        Breakpoint& bp = s_breakpoints[i];
+        if (!bp.enabled)
+          continue;
+
+        if (bp.dbg.debug_type & DebugType::Written)
+        {
+          if (AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size))
+          {
+            bp.hit_count++;
+            g_host_interface->ReportFormattedDebuggerMessage("Hit write breakpoint at PC=0x%08X, writing to address 0x%08X",
+                                                             g_state.regs.pc, bp.dbg.address);
+            g_host_interface->PauseSystem(true);
+            return;
+          }
+          return;
+        }
+        if (bp.dbg.debug_type & DebugType::Changed)
+        {
+          u32 mask = AddressRangeIntersection(bp.dbg.address, bp.dbg.address + bp.dbg.size, address, address + size);
+          if (mask && ((old_val & mask) != (new_val & mask)))
+          {
+            bp.hit_count++;
+            g_host_interface->ReportFormattedDebuggerMessage("Hit data changed breakpoint at PC=0x%08X, writing to address 0x%08X",
+                                                             g_state.regs.pc, bp.dbg.address);
+            g_host_interface->PauseSystem(true);
+            return;
+          }
+        }
+      }
+    }
+  }
+}
+
 static void TracePrintInstruction()
 {
   const u32 pc = g_state.current_instruction_pc;
@@ -625,6 +700,111 @@ void DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instru
     DisassembleAndPrint(disasm_addr, (i == 0) ? "---->" : "");
     disasm_addr += sizeof(u32);
   }
+}
+
+ALWAYS_INLINE_RELEASE static bool ConditionalBreakpointLookAhead()
+{
+  const u32 pc = g_state.regs.pc;
+  Instruction inst = g_state.next_instruction;
+
+  if (System::IsPaused() || pc == s_last_data_breakpoint_check_pc)
+    return false;
+
+  // Skip nops. Makes PGXP-CPU quicker, but also the regular interpreter.
+  if (inst.bits == 0)
+    return false;
+
+  switch (inst.op)
+  {
+    case InstructionOp::lb:
+    case InstructionOp::lbu:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u8));
+    }
+    break;
+    case InstructionOp::lh:
+    case InstructionOp::lhu:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u16));
+    }
+    break;
+    case InstructionOp::lw:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      DataBreakpointCheck<MemoryAccessType::Read>(addr, sizeof(u32));
+    }
+    break;
+    case InstructionOp::lwl:
+    case InstructionOp::lwr:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr, sizeof(u32));
+    }
+    break;
+    case InstructionOp::sb:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      u8 old_value;
+      if (!SafeReadMemoryByte(addr, &old_value))
+        return false;
+      u8 new_value = Truncate8(ReadReg(inst.i.rt));
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u8), old_value, new_value);
+    }
+    break;
+    case InstructionOp::sh:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      u16 old_value;
+      if (!SafeReadMemoryHalfWord(addr, &old_value))
+        return false;
+      u16 new_value = Truncate16(ReadReg(inst.i.rt));
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u16), old_value, new_value);
+    }
+    break;
+    case InstructionOp::sw:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      u32 old_value;
+      if (!SafeReadMemoryWord(addr, &old_value))
+        return false;
+      u32 new_value = ReadReg(inst.i.rt);
+      DataBreakpointCheck<MemoryAccessType::Write>(addr, sizeof(u32), old_value, new_value);
+    }
+    break;
+    case InstructionOp::swl:
+    case InstructionOp::swr:
+    {
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
+      u32 old_value;
+      if (!SafeReadMemoryWord(aligned_addr, &old_value))
+        return false;
+
+      const u32 reg_value = ReadReg(inst.i.rt);
+      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
+
+      u32 new_value;
+      if (inst.op == InstructionOp::swl)
+      {
+        const u32 mem_mask = UINT32_C(0xFFFFFF00) << shift;
+        new_value = (old_value & mem_mask) | (reg_value >> (24 - shift));
+      }
+      else
+      {
+        const u32 mem_mask = UINT32_C(0x00FFFFFF) >> (24 - shift);
+        new_value = (old_value & mem_mask) | (reg_value << shift);
+      }
+
+      DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr, sizeof(u32), old_value, new_value);
+    }
+    break;
+  }
+
+  s_last_data_breakpoint_check_pc = pc;
+  return System::IsPaused();
 }
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -1650,7 +1830,7 @@ bool HasBreakpointAtAddress(VirtualMemoryAddress address)
 {
   for (const Breakpoint& bp : s_breakpoints)
   {
-    if (bp.address == address)
+    if (address >= bp.dbg.address && bp.dbg.address + bp.dbg.size > address)
       return true;
   }
 
@@ -1675,54 +1855,85 @@ BreakpointList GetBreakpointList(bool include_auto_clear, bool include_callbacks
   return bps;
 }
 
-bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
+void SetBreakpointEnable(int index, bool is_enable)
 {
-  if (HasBreakpointAtAddress(address))
+  s_breakpoints[index].enabled = is_enable;
+}
+
+DebugAddress GetBreakpointDebugAddress(int index)
+{
+  return s_breakpoints[index].dbg;
+}
+
+void SetBreakpointDebugAddress(int index, DebugAddress dbg)
+{
+  s_breakpoints[index].dbg = dbg;
+}
+
+bool AddBreakpoint(DebugAddress dbg, bool auto_clear, bool enabled)
+{
+  if (HasBreakpointAtAddress(dbg.address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", address, static_cast<unsigned>(auto_clear));
+  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", dbg.address, static_cast<unsigned>(auto_clear));
 
-  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
+  Breakpoint bp{dbg, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
   s_breakpoints.push_back(std::move(bp));
   UpdateDebugDispatcherFlag();
 
   if (!auto_clear)
   {
     g_host_interface->ReportFormattedDebuggerMessage(
-      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), address);
+      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), dbg.address);
   }
 
   return true;
 }
 
-bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback)
+bool AddBreakpointWithCallback(DebugAddress dbg, BreakpointCallback callback)
 {
-  if (HasBreakpointAtAddress(address))
+  if (HasBreakpointAtAddress(dbg.address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint with callback at %08X", address);
+  Log_InfoPrintf("Adding breakpoint with callback at %08X", dbg.address);
 
-  Breakpoint bp{address, callback, 0, 0, false, true};
+  Breakpoint bp{dbg, callback, 0, 0, false, true};
   s_breakpoints.push_back(std::move(bp));
   UpdateDebugDispatcherFlag();
   return true;
 }
 
-bool RemoveBreakpoint(VirtualMemoryAddress address)
+bool RemoveBreakpoint(DebugAddress dbg)
 {
-  auto it = std::find_if(s_breakpoints.begin(), s_breakpoints.end(),
-                         [address](const Breakpoint& bp) { return bp.address == address; });
-  if (it == s_breakpoints.end())
+  u32 count = static_cast<u32>(s_breakpoints.size());
+  u32 index = count;
+  for (u32 i = 0; i < count; i++)
+  {
+    if (s_breakpoints[i].dbg.address == dbg.address)
+    {
+      index = i;
+      break;
+    }
+  }
+
+  if (index == count)
     return false;
 
   g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
+    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), dbg.address);
 
-  s_breakpoints.erase(it);
+  for (u32 i = index + 1; i < count; i++)
+    s_breakpoints[i].number--;
+
+  s_breakpoints.erase(s_breakpoints.begin() + index);
+  s_breakpoint_counter--;
   UpdateDebugDispatcherFlag();
 
-  if (address == s_last_breakpoint_check_pc)
-    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  if (dbg.address == s_last_execution_breakpoint_check_pc)
+    s_last_execution_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
+  if (dbg.address == s_last_data_breakpoint_check_pc)
+    s_last_data_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 
   return true;
 }
@@ -1730,20 +1941,24 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
 void ClearBreakpoints()
 {
   s_breakpoints.clear();
-  s_breakpoint_counter = 0;
-  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_breakpoint_counter = 1;
+  s_last_execution_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_last_data_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   UpdateDebugDispatcherFlag();
 }
 
 bool AddStepOverBreakpoint()
 {
-  u32 bp_pc = g_state.regs.pc;
+  DebugAddress bp_pc;
+  bp_pc.address = g_state.regs.pc;
+  bp_pc.debug_type = DebugType::Executed;
+  bp_pc.size = 4;
 
   Instruction inst;
-  if (!SafeReadInstruction(bp_pc, &inst.bits))
+  if (!SafeReadInstruction(bp_pc.address, &inst.bits))
     return false;
 
-  bp_pc += sizeof(Instruction);
+  bp_pc.address += sizeof(Instruction);
 
   if (!IsCallInstruction(inst))
   {
@@ -1752,7 +1967,7 @@ bool AddStepOverBreakpoint()
     return false;
   }
 
-  if (!SafeReadInstruction(bp_pc, &inst.bits))
+  if (!SafeReadInstruction(bp_pc.address, &inst.bits))
     return false;
 
   if (IsBranchInstruction(inst))
@@ -1763,10 +1978,10 @@ bool AddStepOverBreakpoint()
   }
 
   // skip the delay slot
-  bp_pc += sizeof(Instruction);
+  bp_pc.address += sizeof(Instruction);
 
   g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc.address);
 
   return AddBreakpoint(bp_pc, true);
 }
@@ -1774,13 +1989,17 @@ bool AddStepOverBreakpoint()
 bool AddStepOutBreakpoint(u32 max_instructions_to_search)
 {
   // find the branch-to-ra instruction.
-  u32 ret_pc = g_state.regs.pc;
+  DebugAddress ret_pc;
+  ret_pc.address = g_state.regs.pc;
+  ret_pc.debug_type = DebugType::Executed;
+  ret_pc.size = 4;
+
   for (u32 i = 0; i < max_instructions_to_search; i++)
   {
-    ret_pc += sizeof(Instruction);
+    ret_pc.address += sizeof(Instruction);
 
     Instruction inst;
-    if (!SafeReadInstruction(ret_pc, &inst.bits))
+    if (!SafeReadInstruction(ret_pc.address, &inst.bits))
     {
       g_host_interface->ReportFormattedDebuggerMessage(
         g_host_interface->TranslateString("DebuggerMessage",
@@ -1792,7 +2011,7 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
     if (IsReturnInstruction(inst))
     {
       g_host_interface->ReportFormattedDebuggerMessage(
-        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc.address);
 
       return AddBreakpoint(ret_pc, true);
     }
@@ -1806,7 +2025,7 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
   return false;
 }
 
-ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
+ALWAYS_INLINE_RELEASE static bool ExecutionBreakpointCheck()
 {
   const u32 pc = g_state.regs.pc;
 
@@ -1816,11 +2035,11 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
   {
     ForceDispatcherExit();
     s_single_step = false;
-    s_last_breakpoint_check_pc = pc;
+    s_last_execution_breakpoint_check_pc = pc;
     return false;
   }
 
-  if (pc == s_last_breakpoint_check_pc)
+  if (pc == s_last_execution_breakpoint_check_pc)
   {
     // we don't want to trigger the same breakpoint which just paused us repeatedly.
     return false;
@@ -1830,7 +2049,7 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
   for (u32 i = 0; i < count;)
   {
     Breakpoint& bp = s_breakpoints[i];
-    if (!bp.enabled || bp.address != pc)
+    if (!bp.enabled || !(bp.dbg.debug_type & DebugType::Executed) || bp.dbg.address != pc)
     {
       i++;
       continue;
@@ -1865,13 +2084,13 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
       }
       else
       {
-        g_host_interface->ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
+        g_host_interface->ReportFormattedDebuggerMessage("Hit execution breakpoint at PC=0x%08X.", pc);
         i++;
       }
     }
   }
 
-  s_last_breakpoint_check_pc = pc;
+  s_last_execution_breakpoint_check_pc = pc;
   return System::IsPaused();
 }
 
@@ -1893,11 +2112,8 @@ static void ExecuteImpl()
       {
         Cop0ExecutionBreakpointCheck();
 
-        if (BreakpointCheck())
-        {
-          // continue is measurably faster than break on msvc for some reason
-          continue;
-        }
+        if (ExecutionBreakpointCheck() || ConditionalBreakpointLookAhead())
+          continue; // continue is measurably faster than break on msvc for some reason
       }
 
       g_state.interrupt_delay = false;

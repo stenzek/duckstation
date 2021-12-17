@@ -13,16 +13,24 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
 {
   m_ui.setupUi(this);
   setupAdditionalUi();
-  connectSignals();
   createModels();
+  connectSignals();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
   setUIEnabled(false);
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
 
+void DebuggerWindow::SetActive(bool status)
+{
+  DebuggerWindow::is_active = status;
+}
+
 void DebuggerWindow::onEmulationPaused(bool paused)
 {
+  if (!DebuggerWindow::is_active)
+    return;
+
   if (paused)
   {
     setUIEnabled(true);
@@ -92,7 +100,11 @@ void DebuggerWindow::onRunToCursorTriggered()
     return;
   }
 
-  CPU::AddBreakpoint(addr.value(), true, true);
+  DebugAddress dbg;
+  dbg.address = addr.value();
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
+  CPU::AddBreakpoint(dbg, true, true);
   QtHostInterface::GetInstance()->pauseSystem(false);
 }
 
@@ -104,17 +116,18 @@ void DebuggerWindow::onGoToPCTriggered()
 void DebuggerWindow::onGoToAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"), true);
+    QtUtils::PromptForAddress(this, windowTitle(), true);
   if (!address.has_value())
     return;
 
+  m_code_model->setCurrentSelectedAddress(address.value());
   scrollToCodeAddress(address.value());
 }
 
 void DebuggerWindow::onDumpAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"), false);
+    QtUtils::PromptForAddress(this, windowTitle(), false);
   if (!address.has_value())
     return;
 
@@ -144,18 +157,18 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"), true);
-  if (!address.has_value())
+  DebugAddress dbg = QtUtils::PromptForDebugAddress(this, windowTitle(), "", "");
+
+  if (!dbg.debug_type)
     return;
 
-  if (CPU::HasBreakpointAtAddress(address.value()))
+  if (CPU::HasBreakpointAtAddress(dbg.address))
   {
     QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
     return;
   }
 
-  toggleBreakpoint(address.value());
+  toggleBreakpoint(dbg);
 }
 
 void DebuggerWindow::onToggleBreakpointTriggered()
@@ -164,12 +177,17 @@ void DebuggerWindow::onToggleBreakpointTriggered()
   if (!address.has_value())
     return;
 
-  toggleBreakpoint(address.value());
+  DebugAddress dbg;
+  dbg.address = address.value();
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
+  toggleBreakpoint(dbg);
 }
 
 void DebuggerWindow::onClearBreakpointsTriggered()
 {
   clearBreakpoints();
+  refreshBreakpointList();
 }
 
 void DebuggerWindow::onStepIntoActionTriggered()
@@ -208,17 +226,38 @@ void DebuggerWindow::onStepOutActionTriggered()
   QtHostInterface::GetInstance()->pauseSystem(false);
 }
 
+void DebuggerWindow::refreshCodeViewSelectedAddress()
+{
+  std::optional<VirtualMemoryAddress> address = getSelectedCodeAddress();
+  if (address.has_value())
+    m_code_model->setCurrentSelectedAddress(address.value());
+}
+
+void DebuggerWindow::onCodeViewPressed(QModelIndex index)
+{
+  refreshCodeViewSelectedAddress();
+}
+
+void DebuggerWindow::onCodeViewCurrentChanged(QModelIndex current, QModelIndex previous)
+{
+  refreshCodeViewSelectedAddress();
+}
+
 void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
 {
   if (!index.isValid())
     return;
 
   const VirtualMemoryAddress address = m_code_model->getAddressForIndex(index);
+  DebugAddress dbg;
+  dbg.address = address;
+  dbg.debug_type = DebugType::Executed;
+  dbg.size = 4;
   switch (index.column())
   {
     case 0: // breakpoint
     case 3: // disassembly
-      toggleBreakpoint(address);
+      toggleBreakpoint(dbg);
       break;
 
     case 1: // address
@@ -232,11 +271,94 @@ void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
   }
 }
 
+void DebuggerWindow::onBreakpointsWidgetItemChanged(QTreeWidgetItem* item, int column)
+{
+  if (column == 0)
+  {
+    bool ok;
+    int index = item->text(0).toInt(&ok);
+    if (ok)
+    {
+      if (item->checkState(column) == Qt::Unchecked)
+        CPU::SetBreakpointEnable(index - 1, false);
+      else
+        CPU::SetBreakpointEnable(index - 1, true);
+    }
+  }
+}
+
+void DebuggerWindow::editBreakpoint(QTreeWidgetItem* item)
+{
+  bool ok;
+  int index = item->text(0).toInt(&ok);
+  if (ok)
+  {
+    DebugAddress curr_dbg = CPU::GetBreakpointDebugAddress(index - 1);
+    DebugAddress new_dbg = QtUtils::PromptForDebugAddress(this, windowTitle(), item->text(1).mid(2), QString::number(curr_dbg.size),
+                                                      (curr_dbg.debug_type & DebugType::Read) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Written) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Changed) ? Qt::Checked : Qt::Unchecked,
+                                                      (curr_dbg.debug_type & DebugType::Executed) ? Qt::Checked : Qt::Unchecked);
+    if (!new_dbg.debug_type)
+      return;
+    if (curr_dbg.address == new_dbg.address)
+      CPU::SetBreakpointDebugAddress(index - 1, new_dbg);
+    else
+    {
+      if (CPU::HasBreakpointAtAddress(new_dbg.address))
+        QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
+      else
+      {
+        CPU::RemoveBreakpoint(curr_dbg);
+        CPU::AddBreakpoint(new_dbg);
+        refreshBreakpointList();
+      }
+    }
+  }
+}
+
+void DebuggerWindow::deleteBreakpoint(QTreeWidgetItem* item)
+{
+  bool ok;
+  int index = item->text(0).toInt(&ok);
+  if (ok)
+  {
+    DebugAddress dbg = CPU::GetBreakpointDebugAddress(index - 1);
+    CPU::RemoveBreakpoint(dbg);
+    refreshBreakpointList();
+  }
+}
+
+void DebuggerWindow::onBreakpointWidgetItemDoubleClicked(QTreeWidgetItem* item, int column)
+{
+  editBreakpoint(item);
+}
+
+void DebuggerWindow::onBreakpointsWidgetMenuRequested(const QPoint& pos)
+{
+  QTreeWidgetItem* item = m_ui.breakpointsWidget->itemAt(pos);
+  if (!item)
+    return;
+
+  QMenu menu(tr("Breakpoint menu"), this);
+  menu.addAction("Edit");
+  menu.addAction("Delete");
+  QAction* action = menu.exec(m_ui.breakpointsWidget->viewport()->mapToGlobal(pos));
+
+  if (action == nullptr)
+    return;
+  if (action->text() == "Edit")
+    editBreakpoint(item);
+  else if (action->text() == "Delete")
+    deleteBreakpoint(item);
+}
+
 void DebuggerWindow::onMemorySearchTriggered()
 {
   m_ui.memoryView->clearHighlightRange();
 
   const QString pattern_str = m_ui.memorySearchString->text();
+  qsizetype str_size = pattern_str.length();
   if (pattern_str.isEmpty())
     return;
 
@@ -245,55 +367,72 @@ void DebuggerWindow::onMemorySearchTriggered()
   u8 spattern = 0;
   u8 smask = 0;
   bool msb = false;
+  bool is_string = false;
 
-  pattern.reserve(static_cast<size_t>(pattern_str.length()) / 2);
-  mask.reserve(static_cast<size_t>(pattern_str.length()) / 2);
+  pattern.reserve(static_cast<size_t>(str_size) / 2);
+  mask.reserve(static_cast<size_t>(str_size) / 2);
 
-  for (int i = 0; i < pattern_str.length(); i++)
+  if (pattern_str[0].unicode() == '"' && pattern_str[str_size - 1].unicode() == '"')
   {
-    const QChar ch = pattern_str[i];
-    if (ch == ' ')
-      continue;
-
-    if (ch == '?')
+    is_string = true;
+    smask = 0xFF;
+    for (int i = 1; i < str_size - 1; i++)
     {
-      spattern = (spattern << 4);
-      smask = (smask << 4);
-    }
-    else if (ch.isDigit())
-    {
-      spattern = (spattern << 4) | static_cast<u8>(ch.digitValue());
-      smask = (smask << 4) | 0xF;
-    }
-    else if (ch.unicode() >= 'a' && ch.unicode() <= 'f')
-    {
-      spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'a'));
-      smask = (smask << 4) | 0xF;
-    }
-    else if (ch.unicode() >= 'A' && ch.unicode() <= 'F')
-    {
-      spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'A'));
-      smask = (smask << 4) | 0xF;
-    }
-    else
-    {
-      QMessageBox::critical(this, windowTitle(),
-                            tr("Invalid search pattern. It should contain hex digits or question marks."));
-      return;
-    }
-
-    if (msb)
-    {
+      spattern = static_cast<u8>(pattern_str[i].toLatin1());
       pattern.push_back(spattern);
       mask.push_back(smask);
       spattern = 0;
-      smask = 0;
     }
-
-    msb = !msb;
   }
 
-  if (msb)
+  if (!is_string)
+  {
+    for (int i = 0; i < str_size; i++)
+    {
+      const QChar ch = pattern_str[i];
+      if (ch == ' ')
+        continue;
+
+      if (ch == '?')
+      {
+        spattern = (spattern << 4);
+        smask = (smask << 4);
+      }
+      else if (ch.isDigit())
+      {
+        spattern = (spattern << 4) | static_cast<u8>(ch.digitValue());
+        smask = (smask << 4) | 0xF;
+      }
+      else if (ch.unicode() >= 'a' && ch.unicode() <= 'f')
+      {
+        spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'a'));
+        smask = (smask << 4) | 0xF;
+      }
+      else if (ch.unicode() >= 'A' && ch.unicode() <= 'F')
+      {
+        spattern = (spattern << 4) | (0xA + static_cast<u8>(ch.unicode() - 'A'));
+        smask = (smask << 4) | 0xF;
+      }
+      else
+      {
+        QMessageBox::critical(this, windowTitle(),
+                              tr("Invalid search pattern or string. Patterns should contain hex digits or question marks; strings should start and end with double quotes."));
+        return;
+      }
+
+      if (msb)
+      {
+        pattern.push_back(spattern);
+        mask.push_back(smask);
+        spattern = 0;
+        smask = 0;
+      }
+
+      msb = !msb;
+    }
+  }
+
+  if (msb && !is_string)
   {
     // partial byte on the end
     spattern = (spattern << 4);
@@ -305,7 +444,7 @@ void DebuggerWindow::onMemorySearchTriggered()
   if (pattern.empty())
   {
     QMessageBox::critical(this, windowTitle(),
-                          tr("Invalid search pattern. It should contain hex digits or question marks."));
+                          tr("Invalid search pattern or string. Patterns should contain hex digits or question marks; strings should start and end with double quotes."));
     return;
   }
 
@@ -396,13 +535,25 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionToggleBreakpoint, &QAction::triggered, this, &DebuggerWindow::onToggleBreakpointTriggered);
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
+  connect(m_ui.codeView, &QTreeView::pressed, this, &DebuggerWindow::onCodeViewPressed);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
+  connect(m_ui.codeView->selectionModel(), &QItemSelectionModel::currentChanged, this,
+          &DebuggerWindow::onCodeViewCurrentChanged);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointsWidgetItemChanged);
+  connect(m_ui.breakpointsWidget, &QWidget::customContextMenuRequested, this,
+          &DebuggerWindow::onBreakpointsWidgetMenuRequested);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::itemDoubleClicked, this,
+          &DebuggerWindow::onBreakpointWidgetItemDoubleClicked);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });
   connect(m_ui.memoryRegionScratchpad, &QRadioButton::clicked,
           [this]() { setMemoryViewRegion(Bus::MemoryRegion::Scratchpad); });
   connect(m_ui.memoryRegionBIOS, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::BIOS); });
+  
+  connect(m_ui.memoryDisplayByte, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u8)); });
+  connect(m_ui.memoryDisplayHalfword, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u16)); });
+  connect(m_ui.memoryDisplayWord, &QRadioButton::clicked, [this]() { m_ui.memoryView->setDisplaySize(sizeof(u32)); });
 
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &DebuggerWindow::onMemorySearchTriggered);
   connect(m_ui.memorySearchString, &QLineEdit::textChanged, this, &DebuggerWindow::onMemorySearchStringChanged);
@@ -427,6 +578,8 @@ void DebuggerWindow::createModels()
   m_ui.codeView->setColumnWidth(4, m_ui.codeView->width() - (40 + 80 + 80 + 250));
 
   m_registers_model = std::make_unique<DebuggerRegistersModel>();
+  m_registers_model.get()->setCodeModel(m_code_model.get());
+  m_registers_model.get()->setCodeView(m_ui.codeView);
   m_ui.registerView->setModel(m_registers_model.get());
   // m_ui->registerView->resizeRowsToContents();
 
@@ -437,6 +590,7 @@ void DebuggerWindow::createModels()
   m_ui.breakpointsWidget->setColumnWidth(1, 80);
   m_ui.breakpointsWidget->setColumnWidth(2, 40);
   m_ui.breakpointsWidget->setRootIsDecorated(false);
+  m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 void DebuggerWindow::setUIEnabled(bool enabled)
@@ -491,21 +645,21 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
   m_ui.memoryView->repaint();
 }
 
-void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
+void DebuggerWindow::toggleBreakpoint(DebugAddress dbg)
 {
-  const bool new_bp_state = !CPU::HasBreakpointAtAddress(address);
+  const bool new_bp_state = !CPU::HasBreakpointAtAddress(dbg.address);
   if (new_bp_state)
   {
-    if (!CPU::AddBreakpoint(address, false))
+    if (!CPU::AddBreakpoint(dbg, false))
       return;
   }
   else
   {
-    if (!CPU::RemoveBreakpoint(address))
+    if (!CPU::RemoveBreakpoint(dbg))
       return;
   }
 
-  m_code_model->setBreakpointState(address, new_bp_state);
+  m_code_model->setBreakpointState(dbg.address, new_bp_state);
   refreshBreakpointList();
 }
 
@@ -562,10 +716,10 @@ void DebuggerWindow::refreshBreakpointList()
   for (const CPU::Breakpoint& bp : bps)
   {
     QTreeWidgetItem* item = new QTreeWidgetItem();
-    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setFlags(item->flags() | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
     item->setCheckState(0, bp.enabled ? Qt::Checked : Qt::Unchecked);
     item->setText(0, QString::asprintf("%u", bp.number));
-    item->setText(1, QString::asprintf("0x%08X", bp.address));
+    item->setText(1, QString::asprintf("0x%08X", bp.dbg.address));
     item->setText(2, QString::asprintf("%u", bp.hit_count));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }

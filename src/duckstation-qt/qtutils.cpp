@@ -1,14 +1,19 @@
 #include "qtutils.h"
 #include "common/byte_stream.h"
 #include "common/make_array.h"
+#include "core/types.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QKeyEvent>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
@@ -745,7 +750,7 @@ void FillComboBoxWithEmulationSpeeds(QComboBox* cb)
   }
 }
 
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code)
+std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, bool code)
 {
   const QString address_str(
     QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
@@ -770,6 +775,150 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   }
 
   return address;
+}
+
+DebugAddress PromptForDebugAddress(QWidget* parent, const QString& title, const QString& default_address,
+                                   const QString& default_size, int default_read, int default_write,
+                                   int default_changed, int default_exec)
+{
+  DebugAddress ret;
+
+  QDialog* display = new QDialog(parent);
+  display->setWindowTitle("New Breakpoint");
+
+  QGridLayout* grid = new QGridLayout();
+
+  QLabel* address_label = new QLabel(parent);
+  address_label->setText("Enter memory address (hex):");
+
+  QLineEdit* address_line = new QLineEdit();
+  address_line->setText(default_address);
+
+  QLabel* address_size_label = new QLabel(parent);
+  address_size_label->setText("Enter data size:");
+
+  QLineEdit* address_size_line = new QLineEdit();
+  address_size_line->setText(default_size);
+
+  QLabel* dbg_label = new QLabel(parent);
+  dbg_label->setText("Break when this memory is:");
+
+  QWidget* checkbox_display = new QWidget();
+  QGridLayout* checkbox_grid = new QGridLayout();
+
+  QCheckBox* is_read = new QCheckBox("Read");
+  is_read->setCheckState((Qt::CheckState) default_read);
+  QCheckBox* is_write = new QCheckBox("Written");
+  is_write->setCheckState((Qt::CheckState) default_write);
+  QCheckBox* is_changed = new QCheckBox("Changed");
+  is_changed->setCheckState((Qt::CheckState) default_changed);
+  QCheckBox* is_exec = new QCheckBox("Executed");
+  is_exec->setCheckState((Qt::CheckState) default_exec);
+
+  checkbox_display->setLayout(checkbox_grid);
+
+  checkbox_grid->addWidget(is_read, 0, 0);
+  checkbox_grid->addWidget(is_write, 0, 1);
+  checkbox_grid->addWidget(is_changed, 1, 0);
+  checkbox_grid->addWidget(is_exec, 1, 1);
+
+  QDialogButtonBox* button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+  QObject::connect(button_box, SIGNAL(accepted()), display, SLOT(accept()));
+  QObject::connect(button_box, SIGNAL(rejected()), display, SLOT(reject()));
+
+  grid->addWidget(address_label, 0, 0);
+  grid->addWidget(address_line, 1, 0);
+  grid->addWidget(address_size_label, 2, 0);
+  grid->addWidget(address_size_line, 3, 0);
+  grid->addWidget(dbg_label, 4, 0);
+  grid->addWidget(checkbox_display, 5, 0, Qt::AlignLeft);
+  grid->addWidget(button_box, 7, 0, Qt::AlignCenter);
+
+  display->setLayout(grid);
+  int res = display->exec();
+  
+  if (res == QDialog::Accepted)
+  {
+    if (is_read->checkState() == Qt::Unchecked && is_write->checkState() == Qt::Unchecked &&
+      is_changed->checkState() == Qt::Unchecked && is_exec->checkState() == Qt::Unchecked)
+    {
+      is_exec->setCheckState(Qt::Checked); // if nothing was selected, assume it is an exec breakpoint   
+    }
+
+    bool ok;
+    QString address_str = address_line->text();
+    u32 address;
+    if (address_str.startsWith("0x"))
+      address = address_str.mid(2).toUInt(&ok, 16);
+    else
+      address = address_str.toUInt(&ok, 16);
+    if (is_exec->checkState() == Qt::Checked)
+      address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
+
+    if (!ok)
+    {
+      QMessageBox::critical(
+        parent, title,
+        qApp->translate("New Breakpoint", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      return ret;
+    }
+
+    ret.address = address;
+
+    if (is_read->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugType::Read;
+    if (is_write->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugType::Written;
+    if (is_changed->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugType::Changed;
+    if (is_exec->checkState() == Qt::Checked)
+      ret.debug_type = ret.debug_type | DebugType::Executed;
+
+    QString size_str = address_size_line->text();
+    u32 address_size;
+    if (size_str.startsWith("0x"))
+      address_size = size_str.mid(2).toUInt(&ok, 16);
+    else
+      address_size = size_str.toUInt(&ok);
+
+    if (!ok)
+    {
+      if (is_exec->checkState() == Qt::Checked)
+      {
+        ret.size = 4; // assume 4 bytes for execution breakpoints
+      }
+      else
+      {
+        if (size_str.size() == 0)
+        {
+          // assume the user is using the greatest possible size among word, halfword and byte
+          if (!(address & 0x3))
+            ret.size = 4;
+          else if (!(address & 0x1))
+            ret.size = 2;
+          else
+            ret.size = 1;
+        }
+        else
+        {
+          QMessageBox::critical(
+            parent, title,
+            qApp->translate("New Breakpoint", "Invalid size. It should be in hex (0xF) or decimal (15)."));
+          ret.debug_type = 0;
+          return ret;
+        }
+      }
+    }
+    else
+    {
+      ret.size = address_size;
+    }
+
+    return ret;
+  }
+
+  return ret;
 }
 
 } // namespace QtUtils

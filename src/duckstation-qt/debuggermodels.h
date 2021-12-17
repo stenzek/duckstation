@@ -4,6 +4,7 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QAbstractTableModel>
 #include <QtGui/QPixmap>
+#include <QtWidgets/QTreeView>
 #include <map>
 
 class DebuggerCodeModel : public QAbstractTableModel
@@ -18,6 +19,8 @@ public:
   virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
   virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+  virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
+  virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
   // Returns the row for this instruction pointer
   void resetCodeView(VirtualMemoryAddress start_address);
@@ -27,6 +30,7 @@ public:
   VirtualMemoryAddress getAddressForIndex(QModelIndex index) const;
   void setPC(VirtualMemoryAddress pc);
   void ensureAddressVisible(VirtualMemoryAddress address);
+  void setCurrentSelectedAddress(VirtualMemoryAddress address);
   void setBreakpointList(std::vector<VirtualMemoryAddress> bps);
   void setBreakpointState(VirtualMemoryAddress address, bool enabled);
   void clearBreakpoints();
@@ -41,6 +45,7 @@ private:
   VirtualMemoryAddress m_code_region_start = 0;
   VirtualMemoryAddress m_code_region_end = 0;
   VirtualMemoryAddress m_last_pc = 0;
+  VirtualMemoryAddress selected_address = 0xFFFFFFFF;
   std::vector<VirtualMemoryAddress> m_breakpoints;
 
   QPixmap m_pc_pixmap;
@@ -54,17 +59,23 @@ class DebuggerRegistersModel : public QAbstractListModel
 public:
   DebuggerRegistersModel(QObject* parent = nullptr);
   virtual ~DebuggerRegistersModel();
+  void setCodeModel(DebuggerCodeModel* model);
+  void setCodeView(QTreeView* view);
 
   virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
   virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+  virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
+  virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
   void invalidateView();
   void saveCurrentValues();
 
 private:
   u32 m_old_reg_values[static_cast<u32>(CPU::Reg::count)] = {};
+  DebuggerCodeModel* code_model;
+  QTreeView* code_view;
 };
 
 class DebuggerStackModel : public QAbstractListModel
@@ -78,7 +89,9 @@ public:
   virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
   virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+  virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
   virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+  virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
   void invalidateView();
 };

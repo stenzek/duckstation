@@ -20,6 +20,7 @@ public:
   void scrolltoOffset(size_t offset);
   void scrollToAddress(size_t address);
   void setFont(const QFont& font);
+  void setDisplaySize(int display_size);
 
 protected:
   void paintEvent(QPaintEvent*);
@@ -45,6 +46,7 @@ private:
   size_t m_highlight_end = 0;
 
   unsigned m_bytes_per_line;
+  int m_display_size;
 
   int m_char_width;
   int m_char_height;

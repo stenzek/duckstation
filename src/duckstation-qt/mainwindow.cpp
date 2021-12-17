@@ -1826,6 +1826,7 @@ void MainWindow::openCPUDebugger()
   m_debugger_window->setWindowIcon(windowIcon());
   connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
   m_debugger_window->show();
+  m_debugger_window->SetActive(true);
 
   // the debugger will miss the pause event above (or we were already paused), so fire it now
   m_debugger_window->onEmulationPaused(true);
@@ -1834,6 +1835,7 @@ void MainWindow::openCPUDebugger()
 void MainWindow::onCPUDebuggerClosed()
 {
   Assert(m_debugger_window);
+  m_debugger_window->SetActive(false);
   m_debugger_window->deleteLater();
   m_debugger_window = nullptr;
 }

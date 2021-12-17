@@ -17,6 +17,21 @@ enum class MemoryAccessSize : u32
   Word
 };
 
+struct DebugAddress
+{
+  VirtualMemoryAddress address;
+  u32 size;
+  u8 debug_type = 0;
+};
+
+enum DebugType : u8
+{
+  Read = 1,
+  Written = 2,
+  Changed = 4,
+  Executed = 8
+};
+
 using TickCount = s32;
 
 enum class ConsoleRegion
