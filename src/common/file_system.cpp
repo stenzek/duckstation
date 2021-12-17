@@ -2480,10 +2480,16 @@ std::string GetWorkingDirectory()
   while (!getcwd(buffer.data(), buffer.size()))
   {
     if (errno != ERANGE)
-      return {};
+    {
+      buffer.clear();
+      break;
+    }
 
     buffer.resize(buffer.size() * 2);
   }
+
+  if (!buffer.empty())
+    buffer.resize(std::strlen(buffer.c_str()));
 
   return buffer;
 }
