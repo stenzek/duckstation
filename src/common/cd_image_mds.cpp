@@ -149,6 +149,8 @@ bool CDImageMds::OpenAndParse(const char* filename, Common::Error* error)
 
     TrackEntry track;
     std::memcpy(&track, &mds[track_offset], sizeof(track));
+    track_offset += sizeof(TrackEntry);
+
     if (PackedBCDToBinary(track.track_number) != track_number)
     {
       Log_ErrorPrintf("Unexpected track number 0x%02X in track %u", track.track_number, track_number);
