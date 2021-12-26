@@ -148,7 +148,7 @@ jobs:
       run: |
         del /Q bin\ARM64\*.pdb bin\ARM64\*.exp bin\ARM64\*.lib bin\ARM64\*.iobj bin\ARM64\*.ipdb bin\ARM64\common-tests*
         rename bin\ARM64\updater-ARM64-ReleaseLTCG.exe updater.exe
-                
+
     - name: Create arm64 release archive
       shell: cmd
       run: |
@@ -271,7 +271,7 @@ jobs:
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=ON -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -G Ninja ..
-        ninja
+        cmake --build . --parallel
         ../scripts/generate_appimages.sh $(pwd)
 
     - name: Upload NoGUI AppImage
@@ -309,7 +309,7 @@ jobs:
     - name: Install packages
       shell: bash
       run: |
-        brew install qt5 sdl2 curl
+        brew install qt5 sdl2 curl ninja
 
     - name: Clone mac externals
       shell: bash
@@ -322,8 +322,8 @@ jobs:
         mkdir build
         cd build
         export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..
-        cmake --build . --parallel 2
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 -G Ninja ..
+        cmake --build . --parallel
         cd bin
         zip -r duckstation-mac-release.zip DuckStation.app/
 
@@ -373,7 +373,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "linux-x64-appimage-qt-zsync"
-          
+
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -393,7 +393,7 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-          
+
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -413,4 +413,3 @@ jobs:
             linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
             linux-x64-appimage-qt/duckstation-qt-x64.AppImage
             linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-             
