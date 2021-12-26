@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a bug in DuckStation
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      **Please read before creating a new bug report:**
+      1. Make sure there is not already an issue for this bug by [searching in **both** open and closed issues](https://github.com/stenzek/duckstation/issues?q=is%3Aissue+sort%3Aupdated-desc+).
+      2. All enhancements **must** be off. To quickly disable all enhancements with affecting your normal configuration, you can check **Disable All Enhancements** in Advanced Options.
+      3. All advanced options **must** be at their default values.
+      4. No cheats may be active. If you were using cheats, they should be disabled, and the game must be rebooted before reporting the bug.
+      5. Do not share save state files. (Sharing memory card files is OK.)
+      6. Verify your BIOS and game dumps, as we can not assist with issues resulting from bad dumps.
+      7. If playing PAL region software, please check whether or not the game has LibCrypt protection. If it does, make sure you have a [correct SBI file](https://github.com/stenzek/duckstation#libcrypt-protection-and-sbi-files).
+      8. Please post your bug report in English, as this is the only language spoken by the developers. The [Discord server](https://discord.gg/Buktv3t) has many helpful people if you need help translating.
+      9. Issues about the libretro core will be deleted (you will be blocked from the repository if you create such an issue). That core is not DuckStation, it is a broken fork, and has nothing to do with us.
+
+- type: input
+  attributes:
+    label: Game details
+    description: |
+      Specify the game's serial code, full name and region (USA, Europe, Japan).
+    placeholder: SLUS-00404 Ace Combat 2 (USA)
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Description of the issue/bug
+    description: |
+      Describe what you are seeing and/or hearing during gameplay. What doesn't work, and how do you expect it to work instead?
+      You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: |
+      Try to provide as much detail as possible to reproduce the issue.
+      Having reproducible issues is a *prerequisite* for contributors to be able to solve them.
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Software and hardware information
+    description: |
+      For desktops and laptops, specify your OS version, CPU and graphics card information (model and driver version).
+      For mobile devices, specify your OS version and device model name.
+    placeholder: Windows 10, Intel Core i7-7500U, Intel HD Graphics 620 (27.20.100.9616)
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: DuckStation version
+    description: |
+      Specify your DuckStation version and how you installed it (GitHub Releases, GitHub Actions, compiled from source, …).
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: DuckStation rendering backend
+    description: |
+      Specify the DuckStation rendering backend you were using when reporting this issue.
+      If you can reproduce this issue using more than one rendering backend, mention it in the **Description of the issue/bug** section above.
+      When reporting a graphics-related issue, please test all the rendering backends you can before submitting the issue.
+    options:
+      - Software
+      - Direct3D 11
+      - Direct3D 12
+      - OpenGL
+      - Vulkan
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: DuckStation controller backend, drivers and wrappers
+    description: |
+      Which controller backend are you using in DuckStation's General Settings?
+      Have you installed any drivers or wrappers on your system, or do you have any programs like Steam open?
+      If so, specify which drivers/wrappers you are using.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Additional context
+    description: |
+      Add any other context about the problem here.
