@@ -169,7 +169,7 @@ The core is maintained by a third party, and is not provided as part of the GitH
 ### Windows
 Requirements:
  - Visual Studio 2019
- 
+
 1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git -b dev`).
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
 3. Build solution.
@@ -191,24 +191,26 @@ Requirements (Debian/Ubuntu package names):
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
 2. Create a build directory, either in-tree or elsewhere.
-3. Run cmake to configure the build system. Assuming a build subdirectory of `build-release`, `cd build-release && cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..`.
-4. Compile the source code. For the example above, run `ninja`.
+3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
+4. Compile the source code. For the example above, run `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/duckstation-qt`.
 
 ### macOS
-**NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk, things may be horribly broken.
+**NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk; things may be horribly broken. Vulkan support may be unstable, so sticking to OpenGL or software renderer is recommended.
 
-Requirements:
- - CMake (installed by default? otherwise, `brew install cmake`)
+Requirements (can be installed with [Homebrew](https://brew.sh/)):
+ - CMake (installed by default? Otherwise, run `brew install cmake`)
  - SDL2 (`brew install sdl2`)
  - Qt 5 (`brew install qt5`)
 
-1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
-2. Clone the mac externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
-2. Create a build directory, either in-tree or elsewhere, e.g. `mkdir build-release`, `cd build-release`.
-3. Run cmake to configure the build system: `cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/usr/local/opt/qt@5/lib/cmake/Qt5 ..`. You may need to tweak `Qt5_DIR` depending on your system.
-4. Compile the source code: `make`. Use `make -jN` where `N` is the number of CPU cores in your system for a faster build.
-5. Run the binary, located in the build directory under `bin/DuckStation.app`.
+Optional (recommended for faster builds):
+ - Ninja (`brew install ninja`)
+
+1. Clone the repository. Submodules aren't necessary; there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
+2. Clone the macOS externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
+3. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/opt/homebrew/opt/qt@5/lib/cmake/Qt5` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds. Depending on your system, the `Qt5_DIR` value may have to be different (e.g. `/usr/local/opt/qt@5/lib/cmake/Qt5`).
+4. Compile the source code: `cmake --build build-release --parallel`.
+5. Run the binary, located in the build directory under `bin/DuckStation.app`. If the app crashes on startup, resign it using [macOS Gatekeeper Helper](https://github.com/wynioux/macOS-GateKeeper-Helper).
 
 ## User Directories
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
