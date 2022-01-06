@@ -649,6 +649,9 @@ recompile:
   AddBlockToHostCodeMap(block);
 #endif
 
+  // block is valid again
+  block->invalidated = false;
+
   // re-insert into the block map since we removed it earlier.
   s_blocks.emplace(block->key.bits, block);
   return true;
@@ -836,7 +839,7 @@ void InvalidCodeFunction()
 
 #endif
 
-static void InvalidateBlock(CodeBlock* block)
+static void InvalidateBlock(CodeBlock* block, bool allow_frame_invalidation)
 {
   // Invalidate forces the block to be checked again.
   Log_DebugPrintf("Invalidating block at 0x%08X", block->GetPC());
@@ -845,16 +848,24 @@ static void InvalidateBlock(CodeBlock* block)
   if (block->can_link)
   {
     const u32 frame_number = System::GetFrameNumber();
-    const u32 frame_diff = frame_number - block->invalidate_frame_number;
-    if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
+    if (allow_frame_invalidation)
     {
-      Log_DevPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
-      block->can_link = false;
+      const u32 frame_diff = frame_number - block->invalidate_frame_number;
+      if (frame_diff <= INVALIDATE_THRESHOLD_TO_DISABLE_LINKING)
+      {
+        Log_DevPrintf("Block 0x%08X has been invalidated in %u frames, disabling linking", block->GetPC(), frame_diff);
+        block->can_link = false;
+      }
+      else
+      {
+        // It's been a while since this block was modified, so it's all good.
+        block->invalidate_frame_number = frame_number;
+      }
     }
     else
     {
-      // It's been a while since this block was modified, so it's all good.
-      block->invalidate_frame_number = frame_number;
+      // don't trigger frame number based invalidation for this block (e.g. memory save states)
+      block->invalidate_frame_number = frame_number - INVALIDATE_THRESHOLD_TO_DISABLE_LINKING - 1;
     }
   }
 
@@ -870,7 +881,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index)
   DebugAssert(page_index < Bus::RAM_8MB_CODE_PAGE_COUNT);
   auto& blocks = m_ram_block_map[page_index];
   for (CodeBlock* block : blocks)
-    InvalidateBlock(block);
+    InvalidateBlock(block, true);
 
   // Block will be re-added next execution.
   blocks.clear();
@@ -883,7 +894,7 @@ void InvalidateAll()
   {
     CodeBlock* block = it.second;
     if (block && !block->invalidated)
-      InvalidateBlock(block);
+      InvalidateBlock(block, false);
   }
 
   Bus::ClearRAMCodePageFlags();
