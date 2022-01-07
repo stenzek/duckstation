@@ -324,7 +324,7 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
         }
 
         /* calculate the true offset and update the counters for the next INDEX marker */
-        offset += sector_offset * previous_sector_size;
+        offset += (int64_t)sector_offset * previous_sector_size;
         previous_sector_size = sector_size;
         previous_index_sector_offset += sector_offset;
 
@@ -334,7 +334,7 @@ static void* cdreader_open_cue_track(const char* path, uint32_t track)
           {
             char message[128];
             char* scan = mode;
-            while (*scan && !isspace(*scan))
+            while (*scan && !isspace((unsigned char)*scan))
               ++scan;
             *scan = '\0';
 
@@ -589,43 +589,43 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track)
         ++ptr;
 
       /* line format: [trackid] [lba] [type] [sectorsize] [file] [?] */
-      while (isspace(*ptr))
+      while (isspace((unsigned char)*ptr))
         ++ptr;
 
       current_track = (uint32_t)atoi(ptr);
       if (track && current_track != track)
         continue;
 
-      while (isdigit(*ptr))
+      while (isdigit((unsigned char)*ptr))
         ++ptr;
       ++ptr;
 
-      while (isspace(*ptr))
+      while (isspace((unsigned char)*ptr))
         ++ptr;
 
       lba = atoi(ptr);
-      while (isdigit(*ptr))
+      while (isdigit((unsigned char)*ptr))
         ++ptr;
       ++ptr;
 
-      while (isspace(*ptr))
+      while (isspace((unsigned char)*ptr))
         ++ptr;
 
       track_type = atoi(ptr);
-      while (isdigit(*ptr))
+      while (isdigit((unsigned char)*ptr))
         ++ptr;
       ++ptr;
 
-      while (isspace(*ptr))
+      while (isspace((unsigned char)*ptr))
         ++ptr;
 
       ptr2 = sector_size;
-      while (isdigit(*ptr))
+      while (isdigit((unsigned char)*ptr))
         *ptr2++ = *ptr++;
       *ptr2 = '\0';
       ++ptr;
 
-      while (isspace(*ptr))
+      while (isspace((unsigned char)*ptr))
         ++ptr;
 
       ptr2 = file;
