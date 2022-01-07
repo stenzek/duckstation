@@ -4,7 +4,6 @@
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/platform.h"
-#include "common/string.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
 #include "common_host_interface.h"
@@ -1374,6 +1373,15 @@ std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement)
 {
   std::pair<u32, u32> result;
   rc_runtime_get_achievement_measured(&s_rcheevos_runtime, achievement.id, &result.first, &result.second);
+  return result;
+}
+
+TinyString GetAchievementProgressText(const Achievement& achievement)
+{
+  TinyString result;
+  rc_runtime_format_achievement_measured(&s_rcheevos_runtime, achievement.id, result.GetWriteableCharArray(),
+                                         result.GetWritableBufferSize());
+  result.UpdateSize();
   return result;
 }
 

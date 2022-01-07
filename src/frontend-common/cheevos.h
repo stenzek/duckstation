@@ -1,4 +1,5 @@
 #pragma once
+#include "common/string.h"
 #include "core/types.h"
 #include <functional>
 #include <optional>
@@ -114,6 +115,7 @@ u32 GetLeaderboardCount();
 bool IsLeaderboardTimeType(const Leaderboard& leaderboard);
 
 std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement);
+TinyString GetAchievementProgressText(const Achievement& achievement);
 
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
 void SubmitLeaderboard(u32 leaderboard_id, int value);
