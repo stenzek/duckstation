@@ -4,7 +4,6 @@
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/platform.h"
-#include "common/string.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
 #include "common_host_interface.h"
@@ -1206,18 +1205,14 @@ std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(co
   }
   else
   {
+    s_last_queried_lboard = id;
+    s_lboard_entries.reset();
+
     // TODO: Add paging? For now, stick to defaults
     char url[512];
 
-    size_t written = 0;
-    rc_url_build_dorequest(url, sizeof(url), &written, "lbinfo", s_username.c_str());
-    rc_url_append_unum(url, sizeof(url), &written, "i", id);
-    rc_url_append_unum(url, sizeof(url), &written, "c",
-                       15); // Just over what a single page can store, should be a reasonable amount for now
-    // rc_url_append_unum(url, sizeof(url), &written, "o", 0);
-
-    s_last_queried_lboard = id;
-    s_lboard_entries.reset();
+    // Just over what a single page can store, should be a reasonable amount for now
+    rc_url_get_lboard_entries_near_user(url, sizeof(url), id, s_username.c_str(), 15);
     s_http_downloader->CreateRequest(url, GetLbInfoCallback);
   }
 
@@ -1378,6 +1373,15 @@ std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement)
 {
   std::pair<u32, u32> result;
   rc_runtime_get_achievement_measured(&s_rcheevos_runtime, achievement.id, &result.first, &result.second);
+  return result;
+}
+
+TinyString GetAchievementProgressText(const Achievement& achievement)
+{
+  TinyString result;
+  rc_runtime_format_achievement_measured(&s_rcheevos_runtime, achievement.id, result.GetWriteableCharArray(),
+                                         result.GetWritableBufferSize());
+  result.UpdateSize();
   return result;
 }
 

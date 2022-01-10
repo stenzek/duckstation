@@ -4101,7 +4101,6 @@ static void DrawAchievement(const Cheevos::Achievement& cheevo)
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
-  SmallString text;
 
   ImGui::PushFont(g_large_font);
   ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo.title.c_str(), cheevo.title.c_str() + cheevo.title.size(),
@@ -4129,7 +4128,7 @@ static void DrawAchievement(const Cheevos::Achievement& cheevo)
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
                       ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor()));
 
-    text.Format("%u / %u", progress.first, progress.second);
+    const TinyString text(GetAchievementProgressText(cheevo));
     const ImVec2 text_size = ImGui::CalcTextSize(text);
     const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));

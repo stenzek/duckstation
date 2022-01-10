@@ -11,6 +11,9 @@ int rc_url_award_cheevo(char* buffer, size_t size, const char* user_name, const 
 
 int rc_url_submit_lboard(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned lboard_id, int value);
 
+int rc_url_get_lboard_entries(char* buffer, size_t size, unsigned lboard_id, unsigned first_index, unsigned count);
+int rc_url_get_lboard_entries_near_user(char* buffer, size_t size, unsigned lboard_id, const char* user_name, unsigned count);
+
 int rc_url_get_gameid(char* buffer, size_t size, const char* hash);
 
 int rc_url_get_patch(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned gameid);
@@ -27,13 +30,6 @@ int rc_url_post_playing(char* buffer, size_t size, const char* user_name, const 
 
 int rc_url_ping(char* url_buffer, size_t url_buffer_size, char* post_buffer, size_t post_buffer_size,
                 const char* user_name, const char* login_token, unsigned gameid, const char* rich_presence);
-
-// Custom exports, static in upstream rcheevos
-int rc_url_build_dorequest(char* url_buffer, size_t url_buffer_size, size_t* buffer_offset, const char* api, const char* user_name);
-
-int rc_url_append_unum(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, unsigned value);
-
-int rc_url_append_str(char* buffer, size_t buffer_size, size_t* buffer_offset, const char* param, const char* value);
 
 #ifdef __cplusplus
 }
