@@ -668,7 +668,7 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
 
   if (force_preload || g_settings.cdrom_load_image_to_ram)
   {
-    if (media->HasSubImages())
+    if (media->HasSubImages() && media->GetSubImageCount() > 1)
     {
       g_host_interface->AddFormattedOSDMessage(
         15.0f,
