@@ -272,13 +272,6 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="cdromRegionCheck">
-          <property name="text">
-           <string>Enable Region Check</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="cdromLoadImageToRAM">
           <property name="text">
@@ -286,10 +279,24 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="cdromRegionCheck">
+          <property name="text">
+           <string>Enable Region Check</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
          <widget class="QCheckBox" name="cdromLoadImagePatches">
           <property name="text">
            <string>Apply Image Patches</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="cdromPreCacheCHD">
+          <property name="text">
+           <string>Pre-cache CHD Images</string>
           </property>
          </widget>
         </item>

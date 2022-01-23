@@ -557,6 +557,7 @@ void HostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetIntValue("CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
   si.SetBoolValue("CDROM", "RegionCheck", false);
   si.SetBoolValue("CDROM", "LoadImageToRAM", false);
+  si.SetBoolValue("CDROM", "PreCacheCHD", false);
   si.SetBoolValue("CDROM", "MuteCDAudio", false);
   si.SetIntValue("CDROM", "ReadSpeedup", 1);
   si.SetIntValue("CDROM", "SeekSpeedup", 1);

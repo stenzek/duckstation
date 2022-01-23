@@ -20,7 +20,7 @@ using FileSystem::FTell64;
 class CDImagePBP final : public CDImage
 {
 public:
-  CDImagePBP() = default;
+  CDImagePBP(OpenFlags open_flags) : CDImage(open_flags) {}
   ~CDImagePBP() override;
 
   bool Open(const char* filename, Common::Error* error);
@@ -891,9 +891,9 @@ std::string CDImagePBP::GetSubImageMetadata(u32 index, const std::string_view& t
   return CDImage::GetSubImageMetadata(index, type);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImagePBP> image = std::make_unique<CDImagePBP>();
+  std::unique_ptr<CDImagePBP> image = std::make_unique<CDImagePBP>(open_flags);
   if (!image->Open(filename, error))
     return {};
 

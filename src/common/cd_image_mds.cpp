@@ -32,7 +32,7 @@ static_assert(sizeof(TrackEntry) == 0x50, "TrackEntry is 0x50 bytes");
 class CDImageMds : public CDImage
 {
 public:
-  CDImageMds();
+  CDImageMds(OpenFlags open_flags);
   ~CDImageMds() override;
 
   bool OpenAndParse(const char* filename, Common::Error* error);
@@ -49,7 +49,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageMds::CDImageMds() = default;
+CDImageMds::CDImageMds(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageMds::~CDImageMds()
 {
@@ -293,9 +293,9 @@ bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageMds> image = std::make_unique<CDImageMds>();
+  std::unique_ptr<CDImageMds> image = std::make_unique<CDImageMds>(open_flags);
   if (!image->OpenAndParse(filename, error))
     return {};
 

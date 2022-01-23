@@ -146,7 +146,7 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   if (System::IsPsfFileName(path.c_str()))
     return GetPsfListEntry(path.c_str(), entry);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), CDImage::OpenFlags::None, nullptr);
   if (!cdi)
     return false;
 

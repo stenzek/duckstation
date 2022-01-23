@@ -13,7 +13,7 @@ Log_SetChannel(CDImageMemory);
 class CDImageM3u : public CDImage
 {
 public:
-  CDImageM3u();
+  CDImageM3u(OpenFlags open_flags);
   ~CDImageM3u() override;
 
   bool Open(const char* path, Common::Error* Error);
@@ -43,7 +43,7 @@ private:
   u32 m_current_image_index = UINT32_C(0xFFFFFFFF);
 };
 
-CDImageM3u::CDImageM3u() = default;
+CDImageM3u::CDImageM3u(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageM3u::~CDImageM3u() = default;
 
@@ -130,7 +130,7 @@ bool CDImageM3u::SwitchSubImage(u32 index, Common::Error* error)
     return true;
 
   const Entry& entry = m_entries[index];
-  std::unique_ptr<CDImage> new_image = CDImage::Open(entry.filename.c_str(), error);
+  std::unique_ptr<CDImage> new_image = CDImage::Open(entry.filename.c_str(), GetOpenFlags(), error);
   if (!new_image)
   {
     Log_ErrorPrintf("Failed to load subimage %u (%s)", index, entry.filename.c_str());
@@ -169,9 +169,9 @@ bool CDImageM3u::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return m_current_image->ReadSubChannelQ(subq, index, lba_in_index);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageM3u> image = std::make_unique<CDImageM3u>();
+  std::unique_ptr<CDImageM3u> image = std::make_unique<CDImageM3u>(open_flags);
   if (!image->Open(filename, error))
     return {};
 

@@ -329,7 +329,7 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region)
 
 std::string GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, CDImage::OpenFlags::None, nullptr);
   if (!cdi)
     return {};
 
@@ -615,7 +615,7 @@ std::optional<DiscRegion> GetRegionForPath(const char* image_path)
   else if (IsPsfFileName(image_path))
     return GetRegionForPsf(image_path);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, CDImage::OpenFlags::None, nullptr);
   if (!cdi)
     return {};
 
@@ -662,7 +662,11 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
 
 std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload, bool check_for_patches)
 {
-  std::unique_ptr<CDImage> media = CDImage::Open(path, error);
+  CDImage::OpenFlags open_flags = CDImage::OpenFlags::None;
+  if (g_settings.cdrom_precache_chd && !g_settings.cdrom_load_image_to_ram)
+    open_flags |= CDImage::OpenFlags::PreCache;
+
+  std::unique_ptr<CDImage> media = CDImage::Open(path, open_flags, error);
   if (!media)
     return {};
 
@@ -692,7 +696,7 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
       path, FileSystem::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf")));
     if (FileSystem::FileExists(ppf_filename.c_str()))
     {
-      media = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(media));
+      media = CDImage::OverlayPPFPatch(ppf_filename.c_str(), CDImage::OpenFlags::None, std::move(media));
       if (!media)
       {
         g_host_interface->AddFormattedOSDMessage(

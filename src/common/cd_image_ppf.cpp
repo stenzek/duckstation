@@ -18,7 +18,7 @@ enum : u32
 class CDImagePPF : public CDImage
 {
 public:
-  CDImagePPF();
+  CDImagePPF(OpenFlags open_flags);
   ~CDImagePPF() override;
 
   bool Open(const char* filename, std::unique_ptr<CDImage> parent_image);
@@ -46,7 +46,7 @@ private:
   u32 m_replacement_offset = 0;
 };
 
-CDImagePPF::CDImagePPF() = default;
+CDImagePPF::CDImagePPF(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImagePPF::~CDImagePPF() = default;
 
@@ -429,10 +429,10 @@ bool CDImagePPF::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 }
 
 std::unique_ptr<CDImage>
-CDImage::OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
+CDImage::OverlayPPFPatch(const char* filename, OpenFlags open_flags, std::unique_ptr<CDImage> parent_image,
                          ProgressCallback* progress /* = ProgressCallback::NullProgressCallback */)
 {
-  std::unique_ptr<CDImagePPF> ppf_image = std::make_unique<CDImagePPF>();
+  std::unique_ptr<CDImagePPF> ppf_image = std::make_unique<CDImagePPF>(open_flags);
   if (!ppf_image->Open(filename, std::move(parent_image)))
     return {};
 

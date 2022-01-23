@@ -14,7 +14,7 @@ Log_SetChannel(CDImageCueSheet);
 class CDImageCueSheet : public CDImage
 {
 public:
-  CDImageCueSheet();
+  CDImageCueSheet(OpenFlags open_flags);
   ~CDImageCueSheet() override;
 
   bool OpenAndParse(const char* filename, Common::Error* error);
@@ -37,7 +37,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageCueSheet::CDImageCueSheet() = default;
+CDImageCueSheet::CDImageCueSheet(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageCueSheet::~CDImageCueSheet()
 {
@@ -330,9 +330,9 @@ bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA 
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCueSheetImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenCueSheetImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageCueSheet> image = std::make_unique<CDImageCueSheet>();
+  std::unique_ptr<CDImageCueSheet> image = std::make_unique<CDImageCueSheet>(open_flags);
   if (!image->OpenAndParse(filename, error))
     return {};
 

@@ -54,6 +54,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromPreCacheCHD, "CDROM", "PreCacheCHD", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImagePatches, "CDROM",
                                                "LoadImagePatches", false);
   SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1);
@@ -97,6 +98,11 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
        "cases also eliminates stutter when games initiate audio track playback."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromPreCacheCHD, tr("Pre-cache CHD Images"), tr("Unchecked"),
+    tr("Pre-caches CHD images to RAM without decompressing them. This is a \"weaker\" version of the preload option "
+       "and only supported for CHD images. Useful when using M3U files to load CHD images where full preload to RAM "
+       "won't work."));
   dialog->registerWidgetHelp(m_ui.cdromLoadImagePatches, tr("Apply Image Patches"), tr("Unchecked"),
                              tr("Automatically applies patches to disc images when they are present in the same "
                                 "directory. Currently only PPF patches are supported with this option."));
@@ -113,10 +119,13 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
   connect(m_ui.cdromReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged);
+  connect(m_ui.cdromLoadImageToRAM, &QCheckBox::stateChanged, this,
+          &ConsoleSettingsWidget::updateCdromPreCacheCHDEnabled);
   connect(m_ui.multitapMode, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this](int index) { emit multitapModeChanged(); });
 
   calculateCPUClockValue();
+  updateCdromPreCacheCHDEnabled();
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
@@ -170,6 +179,11 @@ void ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged(int value)
 {
   m_host_interface->SetIntSettingValue("CDROM", "ReadSpeedup", value + 1);
   m_host_interface->applySettings();
+}
+
+void ConsoleSettingsWidget::updateCdromPreCacheCHDEnabled()
+{
+  m_ui.cdromPreCacheCHD->setEnabled(!m_ui.cdromLoadImageToRAM->isChecked());
 }
 
 void ConsoleSettingsWidget::calculateCPUClockValue()

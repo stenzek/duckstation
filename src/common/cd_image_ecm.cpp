@@ -158,7 +158,7 @@ static void eccedc_generate(u8* sector, int type)
 class CDImageEcm : public CDImage
 {
 public:
-  CDImageEcm();
+  CDImageEcm(OpenFlags open_flags);
   ~CDImageEcm() override;
 
   bool Open(const char* filename, Common::Error* error);
@@ -213,7 +213,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageEcm::CDImageEcm() = default;
+CDImageEcm::CDImageEcm(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageEcm::~CDImageEcm()
 {
@@ -546,9 +546,9 @@ bool CDImageEcm::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenEcmImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenEcmImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageEcm> image = std::make_unique<CDImageEcm>();
+  std::unique_ptr<CDImageEcm> image = std::make_unique<CDImageEcm>(open_flags);
   if (!image->Open(filename, error))
     return {};
 

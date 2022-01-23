@@ -62,7 +62,7 @@ void GamePropertiesDialog::populate(const GameListEntry* ge)
   const QString title_qstring(QString::fromStdString(ge->title));
 
   std::string hash_code;
-  std::unique_ptr<CDImage> cdi(CDImage::Open(ge->path.c_str(), nullptr));
+  std::unique_ptr<CDImage> cdi(CDImage::Open(ge->path.c_str(), CDImage::OpenFlags::None, nullptr));
   if (cdi)
   {
     hash_code = System::GetGameHashCodeForImage(cdi.get());
@@ -253,7 +253,7 @@ void GamePropertiesDialog::populateTracksInfo(const std::string& image_path)
   m_ui.tracks->clearContents();
   m_path = image_path;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str(), nullptr);
+  std::unique_ptr<CDImage> image = CDImage::Open(image_path.c_str(), CDImage::OpenFlags::None, nullptr);
   if (!image)
     return;
 
@@ -972,7 +972,7 @@ void GamePropertiesDialog::computeTrackHashes(std::string& redump_keyword)
   if (m_path.empty())
     return;
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), nullptr);
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), CDImage::OpenFlags::None, nullptr);
   if (!image)
     return;
 

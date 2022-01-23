@@ -44,7 +44,7 @@ static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
 class CDImageCHD : public CDImage
 {
 public:
-  CDImageCHD();
+  CDImageCHD(OpenFlags open_flags);
   ~CDImageCHD() override;
 
   bool Open(const char* filename, Common::Error* error);
@@ -75,7 +75,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageCHD::CDImageCHD() = default;
+CDImageCHD::CDImageCHD(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageCHD::~CDImageCHD()
 {
@@ -106,6 +106,17 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
       error->SetMessage(chd_error_string(err));
 
     return false;
+  }
+
+  if ((GetOpenFlags() & OpenFlags::PreCache) != OpenFlags::None)
+  {
+    const chd_error err = chd_precache(m_chd);
+    if (err != CHDERR_NONE)
+    {
+      Log_WarningPrintf("Failed to pre-cache CHD '%s': %s", filename, chd_error_string(err));
+      if (error)
+        error->SetMessage(chd_error_string(err));
+    }
   }
 
   const chd_header* header = chd_get_header(m_chd);
@@ -374,9 +385,9 @@ bool CDImageCHD::ReadHunk(u32 hunk_index)
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>();
+  std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>(open_flags);
   if (!image->Open(filename, error))
     return {};
 

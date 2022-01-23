@@ -15,7 +15,13 @@ class Error;
 class CDImage
 {
 public:
-  CDImage();
+  enum class OpenFlags : u8
+  {
+    None = 0,
+    PreCache = (1 << 0), // Pre-cache image to RAM, if supported.
+  };
+
+  CDImage(OpenFlags open_flags);
   virtual ~CDImage();
 
   using LBA = u32;
@@ -210,18 +216,19 @@ public:
   static bool IsDeviceName(const char* filename);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> Open(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, OpenFlags open_flags, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, OpenFlags open_flags, Common::Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
-  static std::unique_ptr<CDImage> OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
+  static std::unique_ptr<CDImage> OverlayPPFPatch(const char* filename, OpenFlags open_flags,
+                                                  std::unique_ptr<CDImage> parent_image,
                                                   ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
   // Accessors.
@@ -248,6 +255,7 @@ public:
   const std::vector<Index>& GetIndices() const { return m_indices; }
   const Track& GetTrack(u32 track) const;
   const Index& GetIndex(u32 i) const;
+  OpenFlags GetOpenFlags() const { return m_open_flags; }
 
   // Seek to data LBA.
   bool Seek(LBA lba);
@@ -324,4 +332,8 @@ private:
   const Index* m_current_index = nullptr;
   LBA m_position_in_index = 0;
   LBA m_position_in_track = 0;
+
+  OpenFlags m_open_flags;
 };
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(CDImage::OpenFlags);

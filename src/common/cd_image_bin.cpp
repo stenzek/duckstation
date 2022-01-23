@@ -9,7 +9,7 @@ Log_SetChannel(CDImageBin);
 class CDImageBin : public CDImage
 {
 public:
-  CDImageBin();
+  CDImageBin(OpenFlags open_flags);
   ~CDImageBin() override;
 
   bool Open(const char* filename, Common::Error* error);
@@ -27,7 +27,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageBin::CDImageBin() = default;
+CDImageBin::CDImageBin(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageBin::~CDImageBin()
 {
@@ -133,9 +133,9 @@ bool CDImageBin::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageBin> image = std::make_unique<CDImageBin>();
+  std::unique_ptr<CDImageBin> image = std::make_unique<CDImageBin>(open_flags);
   if (!image->Open(filename, error))
     return {};
 

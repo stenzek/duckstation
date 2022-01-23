@@ -66,7 +66,7 @@ static void DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
 class CDImageDeviceWin32 : public CDImage
 {
 public:
-  CDImageDeviceWin32();
+  CDImageDeviceWin32(OpenFlags open_flags);
   ~CDImageDeviceWin32() override;
 
   bool Open(const char* filename, Common::Error* error);
@@ -101,7 +101,7 @@ private:
   std::array<u8, SUBCHANNEL_BYTES_PER_FRAME> m_subq;
 };
 
-CDImageDeviceWin32::CDImageDeviceWin32() = default;
+CDImageDeviceWin32::CDImageDeviceWin32(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageDeviceWin32::~CDImageDeviceWin32()
 {
@@ -473,9 +473,9 @@ bool CDImageDeviceWin32::DetermineReadMode()
   return false;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
-  std::unique_ptr<CDImageDeviceWin32> image = std::make_unique<CDImageDeviceWin32>();
+  std::unique_ptr<CDImageDeviceWin32> image = std::make_unique<CDImageDeviceWin32>(open_flags);
   if (!image->Open(filename, error))
     return {};
 
@@ -525,7 +525,7 @@ bool CDImage::IsDeviceName(const char* filename)
 
 #else
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
   return {};
 }

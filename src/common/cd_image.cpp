@@ -6,7 +6,7 @@
 #include <array>
 Log_SetChannel(CDImage);
 
-CDImage::CDImage() = default;
+CDImage::CDImage(OpenFlags open_flags) : m_open_flags(open_flags) {}
 
 CDImage::~CDImage() = default;
 
@@ -16,7 +16,7 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
   return sizes[static_cast<u32>(mode)];
 }
 
-std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::Open(const char* filename, OpenFlags open_flags, Common::Error* error)
 {
   const char* extension;
 
@@ -38,36 +38,36 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* erro
 
   if (StringUtil::Strcasecmp(extension, ".cue") == 0)
   {
-    return OpenCueSheetImage(filename, error);
+    return OpenCueSheetImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
            StringUtil::Strcasecmp(extension, ".iso") == 0)
   {
-    return OpenBinImage(filename, error);
+    return OpenBinImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
   {
-    return OpenCHDImage(filename, error);
+    return OpenCHDImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".ecm") == 0)
   {
-    return OpenEcmImage(filename, error);
+    return OpenEcmImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
   {
-    return OpenMdsImage(filename, error);
+    return OpenMdsImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".pbp") == 0)
   {
-    return OpenPBPImage(filename, error);
+    return OpenPBPImage(filename, open_flags, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".m3u") == 0)
   {
-    return OpenM3uImage(filename, error);
+    return OpenM3uImage(filename, open_flags, error);
   }
 
   if (IsDeviceName(filename))
-    return OpenDeviceImage(filename, error);
+    return OpenDeviceImage(filename, open_flags, error);
 
 #undef CASE_COMPARE
 

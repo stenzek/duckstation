@@ -10,7 +10,7 @@ Log_SetChannel(CDImageMemory);
 class CDImageMemory : public CDImage
 {
 public:
-  CDImageMemory();
+  CDImageMemory(OpenFlags open_flags);
   ~CDImageMemory() override;
 
   bool CopyImage(CDImage* image, ProgressCallback* progress);
@@ -27,7 +27,7 @@ private:
   CDSubChannelReplacement m_sbi;
 };
 
-CDImageMemory::CDImageMemory() = default;
+CDImageMemory::CDImageMemory(OpenFlags open_flags) : CDImage(open_flags) {}
 
 CDImageMemory::~CDImageMemory()
 {
@@ -143,7 +143,7 @@ bool CDImageMemory::ReadSectorFromIndex(void* buffer, const Index& index, LBA lb
 std::unique_ptr<CDImage>
 CDImage::CreateMemoryImage(CDImage* image, ProgressCallback* progress /* = ProgressCallback::NullProgressCallback */)
 {
-  std::unique_ptr<CDImageMemory> memory_image = std::make_unique<CDImageMemory>();
+  std::unique_ptr<CDImageMemory> memory_image = std::make_unique<CDImageMemory>(image->GetOpenFlags());
   if (!memory_image->CopyImage(image, progress))
     return {};
 

@@ -969,7 +969,7 @@ void GameChanged()
   if (path.empty() || s_game_path == path)
     return;
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), CDImage::OpenFlags::None, nullptr);
   if (!cdi)
   {
     Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
@@ -1002,7 +1002,7 @@ void GameChanged(const std::string& path, CDImage* image)
 
   if (image && image->HasSubImages() && image->GetCurrentSubImage() != 0)
   {
-    std::unique_ptr<CDImage> image_copy(CDImage::Open(image->GetFileName().c_str(), nullptr));
+    std::unique_ptr<CDImage> image_copy(CDImage::Open(image->GetFileName().c_str(), CDImage::OpenFlags::None, nullptr));
     if (!image_copy)
     {
       Log_ErrorPrintf("Failed to reopen image '%s'", image->GetFileName().c_str());
