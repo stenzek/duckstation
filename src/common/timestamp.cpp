@@ -281,13 +281,13 @@ Timestamp& Timestamp::operator=(const Timestamp& other)
 
 #if defined(_WIN32)
 
-// http://support.microsoft.com/kb/167296
+// https://docs.microsoft.com/en-us/windows/win32/sysinfo/converting-a-time-t-value-to-a-file-time
 static void UnixTimeToFileTime(time_t t, LPFILETIME pft)
 {
-  LONGLONG ll;
-  ll = Int32x32To64(t, 10000000ULL) + 116444736000000000ULL;
-  pft->dwLowDateTime = (DWORD)ll;
-  pft->dwHighDateTime = ll >> 32;
+  ULARGE_INTEGER time_value;
+  time_value.QuadPart = (t * 10000000LL) + 116444736000000000LL;
+  pft->dwLowDateTime = time_value.LowPart;
+  pft->dwHighDateTime = time_value.HighPart;
 }
 static void UnixTimeToSystemTime(time_t t, LPSYSTEMTIME pst)
 {
