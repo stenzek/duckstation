@@ -18,12 +18,10 @@
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
     <ClCompile Include="icon.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
-    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="inhibit_screensaver.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="input_overlay_ui.cpp" />
@@ -63,12 +61,10 @@
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
     <ClInclude Include="icon.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="imgui_impl_dx12.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="imgui_impl_vulkan.h" />
-    <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="inhibit_screensaver.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="input_overlay_ui.h" />

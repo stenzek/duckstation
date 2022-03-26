@@ -23,14 +23,10 @@ add_library(frontend-common
   ini_settings_interface.h
   input_overlay_ui.cpp
   input_overlay_ui.h
-  imgui_fullscreen.cpp
-  imgui_fullscreen.h
   imgui_impl_opengl3.cpp
   imgui_impl_opengl3.h
   imgui_impl_vulkan.cpp
   imgui_impl_vulkan.h
-  imgui_styles.cpp
-  imgui_styles.h  
   opengl_host_display.cpp
   opengl_host_display.h
   postprocessing_chain.cpp

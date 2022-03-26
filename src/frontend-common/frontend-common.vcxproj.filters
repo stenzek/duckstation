@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="icon.cpp" />
-    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_controller_interface.cpp" />
     <ClCompile Include="sdl_initializer.cpp" />
@@ -24,7 +23,6 @@
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="dinput_controller_interface.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
     <ClCompile Include="cheevos.cpp" />
@@ -37,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
-    <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="sdl_audio_stream.h" />
     <ClInclude Include="sdl_controller_interface.h" />
     <ClInclude Include="sdl_initializer.h" />
@@ -59,7 +56,6 @@
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="dinput_controller_interface.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="fullscreen_ui_progress_callback.h" />
     <ClInclude Include="cheevos.h" />

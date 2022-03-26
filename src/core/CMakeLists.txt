@@ -57,6 +57,10 @@ add_library(core
     host_interface.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
+    imgui_styles.cpp
+    imgui_styles.h  
+    imgui_fullscreen.cpp
+    imgui_fullscreen.h
     interrupt_controller.cpp
     interrupt_controller.h
     libcrypt_game_codes.cpp

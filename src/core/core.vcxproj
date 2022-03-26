@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
     <ClCompile Include="analog_controller.cpp" />
     <ClCompile Include="analog_joystick.cpp" />
@@ -50,6 +49,8 @@
     <ClCompile Include="host_display.cpp" />
     <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
+    <ClCompile Include="imgui_fullscreen.cpp" />
+    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="libcrypt_game_codes.cpp" />
     <ClCompile Include="mdec.cpp" />
@@ -117,6 +118,8 @@
     <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
+    <ClInclude Include="imgui_fullscreen.h" />
+    <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="libcrypt_game_codes.h" />
     <ClInclude Include="mdec.h" />
@@ -143,20 +146,15 @@
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{868B98C8-65A1-494B-8346-250A73A48C0A}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\StaticLibrary.props" />
-
   <Import Project="core.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

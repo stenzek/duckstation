@@ -8,8 +8,8 @@
 #include "common/string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "core/host_display.h"
-#include "core/host_interface.h"
+#include "host_display.h"
+#include "host_interface.h"
 #include "imgui_internal.h"
 #include "imgui_styles.h"
 #include <cmath>

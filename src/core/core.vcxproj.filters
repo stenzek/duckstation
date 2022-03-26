@@ -56,9 +56,10 @@
     <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="libcrypt_game_codes.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
-    <ClCompile Include="gdb_protocol.h" />
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="gpu_hw_d3d12.cpp" />
+    <ClCompile Include="imgui_fullscreen.cpp" />
+    <ClCompile Include="imgui_styles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -120,5 +121,8 @@
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="multitap.h" />
     <ClInclude Include="gpu_hw_d3d12.h" />
+    <ClInclude Include="gdb_protocol.h" />
+    <ClInclude Include="imgui_fullscreen.h" />
+    <ClInclude Include="imgui_styles.h" />
   </ItemGroup>
 </Project>

@@ -17,6 +17,8 @@
 #include "core/gpu.h"
 #include "core/host_display.h"
 #include "core/host_interface_progress_callback.h"
+#include "core/imgui_fullscreen.h"
+#include "core/imgui_styles.h"
 #include "core/resources.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -24,10 +26,8 @@
 #include "game_list.h"
 #include "icon.h"
 #include "imgui.h"
-#include "imgui_fullscreen.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
-#include "imgui_styles.h"
 #include "scmversion/scmversion.h"
 #include <bitset>
 #include <thread>
