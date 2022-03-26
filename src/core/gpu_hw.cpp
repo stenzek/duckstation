@@ -5,15 +5,13 @@
 #include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "gpu_sw_backend.h"
+#include "imgui.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
 #include <cmath>
 #include <sstream>
 #include <tuple>
-#ifdef WITH_IMGUI
-#include "imgui.h"
-#endif
 Log_SetChannel(GPU_HW);
 
 template<typename T>
@@ -1403,7 +1401,6 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
     m_renderer_stats = {};
   }
 
-#ifdef WITH_IMGUI
   if (ImGui::CollapsingHeader("Renderer Statistics", ImGuiTreeNodeFlags_DefaultOpen))
   {
     static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
@@ -1472,7 +1469,6 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
 
     ImGui::Columns(1);
   }
-#endif
 }
 
 GPU_HW::ShaderCompileProgressTracker::ShaderCompileProgressTracker(std::string title, u32 total)

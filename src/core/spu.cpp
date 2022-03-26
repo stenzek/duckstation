@@ -7,11 +7,9 @@
 #include "common/wav_writer.h"
 #include "dma.h"
 #include "host_interface.h"
+#include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#ifdef WITH_IMGUI
-#include "imgui.h"
-#endif
 Log_SetChannel(SPU);
 
 SPU g_spu;
@@ -1921,7 +1919,6 @@ void SPU::UpdateEventInterval()
 
 void SPU::DrawDebugStateWindow()
 {
-#ifdef WITH_IMGUI
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
@@ -2102,5 +2099,4 @@ void SPU::DrawDebugStateWindow()
   }
 
   ImGui::End();
-#endif
 }

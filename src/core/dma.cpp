@@ -7,14 +7,12 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
+#include "imgui.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
-#ifdef WITH_IMGUI
-#include "imgui.h"
-#endif
 Log_SetChannel(DMA);
 
 static u32 GetAddressMask()
@@ -621,7 +619,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
 void DMA::DrawDebugStateWindow()
 {
-#ifdef WITH_IMGUI
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Req", "Direction", "Chopping", "Mode", "Busy", "Enable", "Priority", "IRQ", "Flag"}};
@@ -697,5 +694,4 @@ void DMA::DrawDebugStateWindow()
 
   ImGui::Columns(1);
   ImGui::End();
-#endif
 }
