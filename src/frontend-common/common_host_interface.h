@@ -134,11 +134,8 @@ public:
   virtual void DestroySystem() override;
 
   /// Returns the settings interface.
-  ALWAYS_INLINE SettingsInterface* GetSettingsInterface() const { return m_settings_interface.get(); }
-  ALWAYS_INLINE std::lock_guard<std::recursive_mutex> GetSettingsLock()
-  {
-    return std::lock_guard<std::recursive_mutex>(m_settings_mutex);
-  }
+  SettingsInterface* GetSettingsInterface() override;
+  std::lock_guard<std::recursive_mutex> GetSettingsLock() override;
 
   /// Returns the game list.
   ALWAYS_INLINE GameList* GetGameList() const { return m_game_list.get(); }
@@ -312,7 +309,7 @@ public:
   virtual void* GetTopLevelWindowHandle() const;
 
   /// Called when achievements data is loaded.
-  virtual void OnAchievementsRefreshed();
+  virtual void OnAchievementsRefreshed() override;
 
   /// Opens a file in the DuckStation "package".
   /// This is the APK for Android builds, or the program directory for standalone builds.

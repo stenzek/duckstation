@@ -2,11 +2,9 @@
 
 #include "fullscreen_ui.h"
 #include "IconsFontAwesome5.h"
-#include "cheevos.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/lru_cache.h"
 #include "common/make_array.h"
 #include "common/string.h"
 #include "common/string_util.h"
@@ -32,6 +30,10 @@
 #include <bitset>
 #include <thread>
 Log_SetChannel(FullscreenUI);
+
+#ifdef WITH_CHEEVOS
+#include "core/cheevos.h"
+#endif
 
 static constexpr float LAYOUT_MAIN_MENU_BAR_SIZE = 20.0f; // Should be DPI scaled, not layout scaled!
 
@@ -64,6 +66,7 @@ using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
+using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -123,8 +126,7 @@ static std::optional<u32> s_open_leaderboard_id;
 static bool LoadResources();
 static void DestroyResources();
 
-static HostDisplayTexture* GetCachedTexture(const std::string& name);
-static ImTextureID ResolveTextureHandle(const std::string& name);
+static std::unique_ptr<HostDisplayTexture> LoadTextureCallback(const char* path);
 
 static std::unique_ptr<HostDisplayTexture> s_app_icon_texture;
 static std::unique_ptr<HostDisplayTexture> s_placeholder_texture;
@@ -135,7 +137,6 @@ static std::unique_ptr<HostDisplayTexture> s_fallback_disc_texture;
 static std::unique_ptr<HostDisplayTexture> s_fallback_exe_texture;
 static std::unique_ptr<HostDisplayTexture> s_fallback_psf_texture;
 static std::unique_ptr<HostDisplayTexture> s_fallback_playlist_texture;
-static LRUCache<std::string, std::unique_ptr<HostDisplayTexture>> s_texture_cache;
 
 //////////////////////////////////////////////////////////////////////////
 // Settings
@@ -215,9 +216,11 @@ static std::thread s_game_list_load_thread;
 bool Initialize(CommonHostInterface* host_interface)
 {
   s_host_interface = host_interface;
-  s_texture_cache.SetMaxCapacity(128);
-  if (!LoadResources())
+  if (!ImGuiFullscreen::Initialize() || !LoadResources())
+  {
+    ImGuiFullscreen::Shutdown();
     return false;
+  }
 
   s_settings_copy.Load(*s_host_interface->GetSettingsInterface());
   LoadSettings();
@@ -225,7 +228,7 @@ bool Initialize(CommonHostInterface* host_interface)
 
   ImGuiFullscreen::UpdateLayoutScale();
   ImGuiFullscreen::UpdateFonts();
-  ImGuiFullscreen::SetResolveTextureFunction(ResolveTextureHandle);
+  ImGuiFullscreen::SetLoadTextureFunction(LoadTextureCallback);
 
   if (System::IsValid())
     SystemCreated();
@@ -337,6 +340,7 @@ void Shutdown()
   s_cover_image_map.clear();
   s_nav_input_values = {};
   DestroyResources();
+  ImGuiFullscreen::Shutdown();
 
   s_host_interface = nullptr;
 }
@@ -460,7 +464,6 @@ bool LoadResources()
 
 void DestroyResources()
 {
-  s_texture_cache.Clear();
   s_app_icon_texture.reset();
   s_placeholder_texture.reset();
   s_fallback_playlist_texture.reset();
@@ -506,6 +509,11 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
   return texture;
 }
 
+std::unique_ptr<HostDisplayTexture> LoadTextureCallback(const char* path)
+{
+  return LoadTexture(path, false);
+}
+
 std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback /*= true*/)
 {
   const std::string path(StringUtil::StdStringFromFormat("resources" FS_OSPATH_SEPARATOR_STR "%s", name));
@@ -525,29 +533,6 @@ std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool a
     Panic("Failed to create placeholder texture");
 
   return texture;
-}
-
-HostDisplayTexture* GetCachedTexture(const std::string& name)
-{
-  std::unique_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
-  if (!tex_ptr)
-  {
-    std::unique_ptr<HostDisplayTexture> tex = LoadTexture(name.c_str(), false);
-    tex_ptr = s_texture_cache.Insert(name, std::move(tex));
-  }
-
-  return tex_ptr->get();
-}
-
-ImTextureID ResolveTextureHandle(const std::string& name)
-{
-  HostDisplayTexture* tex = GetCachedTexture(name);
-  return tex ? tex->GetHandle() : nullptr;
-}
-
-bool InvalidateCachedTexture(const std::string& path)
-{
-  return s_texture_cache.Remove(path);
 }
 
 //////////////////////////////////////////////////////////////////////////

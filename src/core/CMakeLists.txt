@@ -157,3 +157,12 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
 else()
   message("Not building recompiler")
 endif()
+
+if(ENABLE_CHEEVOS)
+  target_sources(core PRIVATE
+    cheevos.cpp
+    cheevos.h
+  )
+  target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
+  target_link_libraries(core PRIVATE rcheevos rapidjson)
+endif()

@@ -48,7 +48,7 @@ Log_SetChannel(QtHostInterface);
 #endif
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/cheevos.h"
+#include "core/cheevos.h"
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()

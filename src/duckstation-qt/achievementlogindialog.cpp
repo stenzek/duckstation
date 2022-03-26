@@ -1,5 +1,5 @@
 #include "achievementlogindialog.h"
-#include "frontend-common/cheevos.h"
+#include "core/cheevos.h"
 #include "qthostinterface.h"
 #include <QtWidgets/QMessageBox>
 

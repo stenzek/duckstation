@@ -29,7 +29,6 @@
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shadergen.cpp" />
-    <ClCompile Include="cheevos.cpp" />
     <ClCompile Include="save_state_selector_ui.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
@@ -72,7 +71,6 @@
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shadergen.h" />
-    <ClInclude Include="cheevos.h" />
     <ClInclude Include="save_state_selector_ui.h" />
     <ClInclude Include="sdl_audio_stream.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>

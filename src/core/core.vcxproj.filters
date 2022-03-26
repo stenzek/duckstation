@@ -60,6 +60,7 @@
     <ClCompile Include="gpu_hw_d3d12.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_styles.cpp" />
+    <ClCompile Include="cheevos.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -124,5 +125,6 @@
     <ClInclude Include="gdb_protocol.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_styles.h" />
+    <ClInclude Include="cheevos.h" />
   </ItemGroup>
 </Project>

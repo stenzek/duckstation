@@ -5,12 +5,14 @@
 #include <string>
 #include <vector>
 
+class HostDisplayTexture;
+
 namespace ImGuiFullscreen {
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
          static_cast<float>(hex & 0xFFu) / 255.0f, static_cast<float>(alpha) / 255.0f)
 
-using ResolveTextureHandleCallback = ImTextureID (*)(const std::string& path);
+using LoadTextureFunction = std::unique_ptr<HostDisplayTexture>(*)(const char* path);
 
 static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
@@ -26,10 +28,16 @@ extern ImFont* g_standard_font;
 extern ImFont* g_medium_font;
 extern ImFont* g_large_font;
 
+extern bool g_initialized;
 extern float g_layout_scale;
 extern float g_layout_padding_left;
 extern float g_layout_padding_top;
 extern float g_menu_bar_size;
+
+static ALWAYS_INLINE bool IsInitialized()
+{
+  return g_initialized;
+}
 
 static ALWAYS_INLINE float DPIScale(float v)
 {
@@ -132,6 +140,12 @@ static ALWAYS_INLINE ImVec4 UISecondaryTextColor()
   return HEX_TO_IMVEC4(0xffffff, 0xff);
 }
 
+/// Initializes, setting up any state.
+bool Initialize();
+
+/// Shuts down, clearing all state.
+void Shutdown();
+
 void SetFontFilename(std::string filename);
 void SetFontData(std::vector<u8> data);
 void SetIconFontFilename(std::string icon_font_filename);
@@ -142,8 +156,10 @@ void SetFontGlyphRanges(const ImWchar* glyph_ranges);
 /// Changes the menu bar size. Don't forget to call UpdateLayoutScale() and UpdateFonts().
 void SetMenuBarSize(float size);
 
-/// Resolves a texture name to a handle.
-void SetResolveTextureFunction(ResolveTextureHandleCallback callback);
+/// Texture cache.
+HostDisplayTexture* GetCachedTexture(const std::string& name);
+bool InvalidateCachedTexture(const std::string& path);
+void SetLoadTextureFunction(LoadTextureFunction callback);
 
 /// Rebuilds fonts to a new scale if needed. Returns true if fonts have changed and the texture needs updating.
 bool UpdateFonts();

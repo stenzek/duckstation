@@ -4,6 +4,7 @@
 #include "IconsFontAwesome5.h"
 #include "common/assert.h"
 #include "common/easing.h"
+#include "common/lru_cache.h"
 #include "common/file_system.h"
 #include "common/string.h"
 #include "common/string_util.h"
@@ -21,6 +22,8 @@ static void DrawChoiceDialog();
 static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
 static void DrawNotifications(ImVec2& position, float spacing);
 
+bool g_initialized = false;
+
 ImFont* g_standard_font = nullptr;
 ImFont* g_medium_font = nullptr;
 ImFont* g_large_font = nullptr;
@@ -37,9 +40,11 @@ static std::vector<u8> s_text_font_data;
 static std::vector<u8> s_icon_font_data;
 static float s_font_size = 15.0f;
 static const ImWchar* s_font_glyph_range = nullptr;
-static ResolveTextureHandleCallback s_resolve_texture_handle = nullptr;
+static LoadTextureFunction s_load_texture = nullptr;
 
 static u32 s_menu_button_index = 0;
+
+static LRUCache<std::string, std::unique_ptr<HostDisplayTexture>> s_texture_cache;
 
 void SetFontFilename(const char* filename)
 {
@@ -93,9 +98,26 @@ void SetMenuBarSize(float size)
   g_menu_bar_size = size;
 }
 
-void SetResolveTextureFunction(ResolveTextureHandleCallback callback)
+HostDisplayTexture* GetCachedTexture(const std::string& name)
 {
-  s_resolve_texture_handle = callback;
+  std::unique_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+  if (!tex_ptr)
+  {
+    std::unique_ptr<HostDisplayTexture> tex = s_load_texture(name.c_str());
+    tex_ptr = s_texture_cache.Insert(name, std::move(tex));
+  }
+
+  return tex_ptr->get();
+}
+
+bool InvalidateCachedTexture(const std::string& path)
+{
+  return s_texture_cache.Remove(path);
+}
+
+void SetLoadTextureFunction(LoadTextureFunction callback)
+{
+  s_load_texture = callback;
 }
 
 static ImFont* AddTextFont(float size /*= 15.0f*/)
@@ -977,6 +999,7 @@ static ImGuiID s_enum_choice_button_id = 0;
 static s32 s_enum_choice_button_value = 0;
 static bool s_enum_choice_button_set = false;
 
+
 bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled, float height, ImFont* font, ImFont* summary_font)
@@ -1747,11 +1770,11 @@ void DrawNotifications(ImVec2& position, float spacing)
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
-    if (!notif.badge_path.empty() && s_resolve_texture_handle)
+    if (!notif.badge_path.empty())
     {
-      ImTextureID tex = s_resolve_texture_handle(notif.badge_path);
+      HostDisplayTexture* tex = GetCachedTexture(notif.badge_path);
       if (tex)
-        dl->AddImage(tex, badge_min, badge_max);
+        dl->AddImage(static_cast<ImTextureID>(tex->GetHandle()), badge_min, badge_max);
     }
 
     const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
@@ -1767,6 +1790,42 @@ void DrawNotifications(ImVec2& position, float spacing)
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
   }
+}
+
+bool Initialize()
+{
+  s_texture_cache.SetMaxCapacity(128);
+  g_initialized = true;
+  return true;
+}
+
+void Shutdown()
+{
+  g_standard_font = nullptr;
+  g_medium_font = nullptr;
+  g_large_font = nullptr;
+
+  s_texture_cache.Clear();
+
+  s_notifications.clear();
+  s_background_progress_dialogs.clear();
+  s_choice_dialog_open = false;
+  s_choice_dialog_checkable = false;
+  s_choice_dialog_title = {};
+  s_choice_dialog_options.clear();
+  s_choice_dialog_callback = {};
+  s_enum_choice_button_id = 0;
+  s_enum_choice_button_value = 0;
+  s_enum_choice_button_set = false;
+  s_file_selector_open = false;
+  s_file_selector_directory = false;
+  s_file_selector_title = {};
+  s_file_selector_callback = {};
+  s_file_selector_current_directory = {};
+  s_file_selector_filters.clear();
+  s_file_selector_items.clear();
+
+  g_initialized = false;
 }
 
 } // namespace ImGuiFullscreen

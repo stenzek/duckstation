@@ -52,7 +52,7 @@
 #endif
 
 #ifdef WITH_CHEEVOS
-#include "cheevos.h"
+#include "core/cheevos.h"
 #endif
 
 #ifdef _WIN32
@@ -500,9 +500,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
 
 void CommonHostInterface::OnAchievementsRefreshed()
 {
-#ifdef WITH_CHEEVOS
   // noop
-#endif
 }
 
 void CommonHostInterface::PollAndUpdate()
@@ -3541,6 +3539,16 @@ std::vector<std::string> CommonHostInterface::GetSettingStringList(const char* s
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   return m_settings_interface->GetStringList(section, key);
+}
+
+SettingsInterface* CommonHostInterface::GetSettingsInterface()
+{
+  return m_settings_interface.get();
+}
+
+std::lock_guard<std::recursive_mutex> CommonHostInterface::GetSettingsLock()
+{
+  return std::lock_guard<std::recursive_mutex>(m_settings_mutex);
 }
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)

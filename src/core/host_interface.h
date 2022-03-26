@@ -41,6 +41,7 @@ public:
 
   /// Access to host display.
   ALWAYS_INLINE HostDisplay* GetDisplay() const { return m_display.get(); }
+  ALWAYS_INLINE bool HasDisplay() const { return static_cast<bool>(m_display.get()); }
 
   /// Access to host audio stream.
   ALWAYS_INLINE AudioStream* GetAudioStream() const { return m_audio_stream.get(); }
@@ -123,6 +124,10 @@ public:
   /// Returns a string list from the configuration.
   virtual std::vector<std::string> GetSettingStringList(const char* section, const char* key) = 0;
 
+  /// Returns the settings interface.
+  virtual SettingsInterface* GetSettingsInterface() = 0;
+  virtual std::lock_guard<std::recursive_mutex> GetSettingsLock() = 0;
+
   /// Translates a string to the current language.
   virtual TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr,
                                      int n = -1) const;
@@ -155,6 +160,9 @@ public:
 
   /// Called when the display is invalidated (e.g. a state is loaded).
   virtual void OnDisplayInvalidated() = 0;
+
+  /// Called when achievements data is loaded.
+  virtual void OnAchievementsRefreshed() = 0;
 
 protected:
   virtual bool AcquireHostDisplay() = 0;

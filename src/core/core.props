@@ -4,10 +4,11 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions>WITH_CHEEVOS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">WITH_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64') And ('$(BuildingForUWP)'!='true')">WITH_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\xbyak\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">$(SolutionDir)dep\vixl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -16,7 +17,7 @@
 
   <ItemDefinitionGroup>
     <Lib>
-      <AdditionalDependencies>$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)vulkan-loader\vulkan-loader.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)vulkan-loader\vulkan-loader.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='ARM64'">$(RootBuildDir)vixl\vixl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
