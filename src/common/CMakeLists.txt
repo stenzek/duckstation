@@ -246,6 +246,27 @@ if(APPLE)
   )
 endif()
 
+if(ENABLE_CHEEVOS)
+  target_sources(common PRIVATE
+    http_downloader.cpp
+    http_downloader.h
+  )
+  if(WIN32)
+    target_sources(common PRIVATE
+      http_downloader_winhttp.cpp
+      http_downloader_winhttp.h
+    )
+  elseif(NOT ANDROID)
+    target_sources(common PRIVATE
+      http_downloader_curl.cpp
+      http_downloader_curl.h
+    )
+    target_link_libraries(common PRIVATE
+      CURL::libcurl
+    )
+  endif()
+endif()
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   # We need -lrt for shm_unlink
   target_link_libraries(common PRIVATE rt)

@@ -1,7 +1,7 @@
 #include "http_downloader.h"
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/timer.h"
+#include "assert.h"
+#include "log.h"
+#include "timer.h"
 Log_SetChannel(HTTPDownloader);
 
 static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;

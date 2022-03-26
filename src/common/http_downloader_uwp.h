@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include "http_downloader.h"
 
 #include "common/windows_headers.h"

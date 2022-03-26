@@ -17,13 +17,6 @@
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
-    <ClCompile Include="http_downloader.cpp" />
-    <ClCompile Include="http_downloader_uwp.cpp">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="http_downloader_winhttp.cpp">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
@@ -69,13 +62,6 @@
     <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="game_settings.h" />
-    <ClInclude Include="http_downloader.h" />
-    <ClInclude Include="http_downloader_uwp.h">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="http_downloader_winhttp.h">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="icon.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />

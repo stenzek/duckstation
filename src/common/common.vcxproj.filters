@@ -134,6 +134,9 @@
     <ClInclude Include="d3d12\shader_cache.h">
       <Filter>d3d12</Filter>
     </ClInclude>
+    <ClInclude Include="http_downloader_uwp.h" />
+    <ClInclude Include="http_downloader_winhttp.h" />
+    <ClInclude Include="http_downloader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -264,6 +267,9 @@
       <Filter>d3d12</Filter>
     </ClCompile>
     <ClCompile Include="cd_image_device.cpp" />
+    <ClCompile Include="http_downloader_winhttp.cpp" />
+    <ClCompile Include="http_downloader.cpp" />
+    <ClCompile Include="http_downloader_uwp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
