@@ -146,20 +146,15 @@ if(WIN32)
     d3d11/stream_buffer.h
     d3d11/texture.cpp
     d3d11/texture.h
+    gl/context_wgl.cpp
+    gl/context_wgl.h
+    thirdparty/StackWalker.cpp
+    thirdparty/StackWalker.h
+    win32_progress_callback.cpp
+    win32_progress_callback.h
     windows_headers.h
   )
   target_link_libraries(common PRIVATE d3dcompiler.lib)
-
-  if(NOT LIBRETRO)
-    target_sources(common PRIVATE
-      gl/context_wgl.cpp
-      gl/context_wgl.h
-      thirdparty/StackWalker.cpp
-      thirdparty/StackWalker.h
-      win32_progress_callback.cpp
-      win32_progress_callback.h
-    )
-  endif()
 endif()
 
 if(ANDROID)
@@ -245,9 +240,6 @@ endif()
 if(APPLE)
   # Needed for Vulkan Swap Chain.
   target_link_libraries(common PRIVATE "objc")
-endif()
-
-if(APPLE AND NOT BUILD_LIBRETRO_CORE)
   target_sources(common PRIVATE
     gl/context_agl.mm
     gl/context_agl.h

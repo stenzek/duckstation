@@ -14,7 +14,6 @@ struct WindowInfo
     MacOS,
     Android,
     Display,
-    Libretro,
   };
 
   enum class SurfaceFormat

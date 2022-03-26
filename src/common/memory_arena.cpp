@@ -113,15 +113,7 @@ static std::string GetFileMappingName()
 #error Unknown platform.
 #endif
 
-#ifdef LIBRETRO
-  // libretro second-instance runahead is insane, and loads a second copy of the module in the same process, which means
-  // we'd overlap the memory mapping for the "primary" core. Work around this by taking the address of this function,
-  // which should be unique per instance.
-  std::string ret(StringUtil::StdStringFromFormat("duckstation_%u_%p", pid, ((void*)&GetFileMappingName)));
-#else
-  std::string ret(StringUtil::StdStringFromFormat("duckstation_%u", pid));
-#endif
-
+  const std::string ret(StringUtil::StdStringFromFormat("duckstation_%u", pid));
   Log_InfoPrintf("File mapping name: %s", ret.c_str());
   return ret;
 }
