@@ -250,10 +250,6 @@ void CommonHostInterface::PowerOffSystem(bool save_resume_state)
 void CommonHostInterface::ResetSystem()
 {
   HostInterface::ResetSystem();
-
-#ifdef WITH_CHEEVOS
-  Cheevos::Reset();
-#endif
 }
 
 static void PrintCommandLineVersion(const char* frontend_name)
@@ -767,10 +763,6 @@ bool CommonHostInterface::UndoLoadState()
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
-
-#ifdef WITH_CHEEVOS
-  Cheevos::Reset();
-#endif
 
   Log_InfoPrintf("Loaded undo save state.");
   m_undo_load_state.reset();

@@ -6,6 +6,7 @@
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/platform.h"
+#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
 #include "core/bios.h"
@@ -310,6 +311,69 @@ void Update()
   }
 }
 
+bool DoState(StateWrapper& sw)
+{
+  // if we're inactive, we still need to skip the data (if any)
+  if (!g_active)
+  {
+    u32 data_size = 0;
+    sw.Do(&data_size);
+    if (data_size > 0)
+      sw.SkipBytes(data_size);
+
+    return !sw.HasError();
+  }
+
+  if (sw.IsReading())
+  {
+    u32 data_size = 0;
+    sw.Do(&data_size);
+    if (data_size == 0)
+    {
+      // reset runtime, no data (state might've been created without cheevos)
+      Log_DevPrintf("State is missing cheevos data, resetting runtime");
+      rc_runtime_reset(&s_rcheevos_runtime);
+      return !sw.HasError();
+    }
+
+    const std::unique_ptr<u8[]> data(new u8[data_size]);
+    sw.DoBytes(data.get(), data_size);
+    if (sw.HasError())
+      return false;
+
+    const int result = rc_runtime_deserialize_progress(&s_rcheevos_runtime, data.get(), nullptr);
+    if (result != RC_OK)
+    {
+      Log_WarningPrintf("Failed to deserialize cheevos state (%d), resetting", result);
+      rc_runtime_reset(&s_rcheevos_runtime);
+    }
+
+    return true;
+  }
+  else
+  {
+    // internally this happens twice.. not great.
+    const int size = rc_runtime_progress_size(&s_rcheevos_runtime, nullptr);
+
+    u32 data_size = (size >= 0) ? static_cast<u32>(size) : 0;
+    std::unique_ptr<u8[]> data(new u8[data_size]);
+
+    const int result = rc_runtime_serialize_progress(data.get(), &s_rcheevos_runtime, nullptr);
+    if (result != RC_OK)
+    {
+      // set data to zero, effectively serializing nothing
+      Log_WarningPrintf("Failed to serialize cheevos state (%d)", result);
+      data_size = 0;
+    }
+
+    sw.Do(&data_size);
+    if (data_size > 0)
+      sw.DoBytes(data.get(), data_size);
+
+    return !sw.HasError();
+  }
+}
+
 bool IsLoggedIn()
 {
   return s_logged_in;
@@ -410,8 +474,8 @@ bool LoginAsync(const char* username, const char* password)
   if (ImGuiFullscreen::IsInitialized())
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(
-      "cheevos_async_login", g_host_interface->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0,
-      1, 0);
+      "cheevos_async_login", g_host_interface->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0, 1,
+      0);
   }
 
   SendLogin(username, password, s_http_downloader.get(), LoginASyncCallback);
@@ -545,8 +609,8 @@ static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bo
     SmallString clean_name(badge_name);
     FileSystem::SanitizeFileName(clean_name);
     return g_host_interface->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
-                                                            "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
-                                                            clean_name.GetCharArray(), locked ? "_lock" : "");
+                                                          "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
+                                                          clean_name.GetCharArray(), locked ? "_lock" : "");
   }
 }
 
@@ -1019,9 +1083,9 @@ void GameChanged(const std::string& path, CDImage* image)
 
   if (s_game_hash.empty())
   {
-    g_host_interface->AddOSDMessage(g_host_interface->TranslateStdString(
-                                        "OSDMessage", "Failed to read executable from disc. Achievements disabled."),
-                                      10.0f);
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Failed to read executable from disc. Achievements disabled."),
+      10.0f);
     return;
   }
 

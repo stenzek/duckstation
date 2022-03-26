@@ -6,6 +6,7 @@
 #include <string>
 
 class CDImage;
+class StateWrapper;
 
 namespace Cheevos {
 
@@ -79,7 +80,9 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
                 bool include_unofficial);
 void Reset();
 void Shutdown();
+
 void Update();
+bool DoState(StateWrapper& sw);
 
 bool IsLoggedIn();
 bool IsTestModeActive();

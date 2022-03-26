@@ -45,6 +45,10 @@
 #include <thread>
 Log_SetChannel(System);
 
+#ifdef WITH_CHEEVOS
+#include "cheevos.h"
+#endif
+
 // #define PROFILE_MEMORY_SAVE_STATES 1
 
 SystemBootParameters::SystemBootParameters() = default;
@@ -71,7 +75,8 @@ static bool LoadEXE(const char* filename);
 /// Opens CD image, preloading if needed.
 static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload,
                                             bool check_for_patches);
-static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data);
+static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
+                                    std::vector<u8>* out_executable_data);
 static bool ShouldCheckForImagePatches();
 
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
@@ -1142,6 +1147,33 @@ bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_di
     UpdateOverclock();
   }
 
+  if (!is_memory_state)
+  {
+    if (sw.GetVersion() >= 56)
+    {
+      if (!sw.DoMarker("Cheevos"))
+        return false;
+
+#ifdef WITH_CHEEVOS
+      if (!Cheevos::DoState(sw))
+        return false;
+#else
+      // if we compiled without cheevos, we need to toss out the data from states which were
+      u32 data_size = 0;
+      sw.Do(&data_size);
+      if (data_size > 0)
+        sw.SkipBytes(data_size);
+#endif
+    }
+    else
+    {
+#ifdef WITH_CHEEVOS
+      // loading an old state without cheevos, so reset the runtime
+      Cheevos::Reset();
+#endif
+    }
+  }
+
   return !sw.HasError();
 }
 
@@ -1171,6 +1203,10 @@ void Reset()
   s_internal_frame_number = 0;
   TimingEvents::Reset();
   ResetPerformanceCounters();
+
+#ifdef WITH_CHEEVOS
+  Cheevos::Reset();
+#endif
 
   g_gpu->ResetGraphicsAPIState();
 }

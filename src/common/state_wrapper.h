@@ -188,6 +188,18 @@ public:
     Do(data);
   }
 
+  void SkipBytes(size_t count)
+  {
+    if (m_mode != Mode::Read)
+    {
+      m_error = true;
+      return;
+    }
+
+    if (!m_error)
+      m_error = !m_stream->SeekRelative(static_cast<s64>(count));
+  }
+
 private:
   ByteStream* m_stream;
   Mode m_mode;
