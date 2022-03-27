@@ -194,7 +194,7 @@ void GraphicsPipelineBuilder::SetNoCullRasterizationState()
 void GraphicsPipelineBuilder::SetDepthState(bool depth_test, bool depth_write, D3D12_COMPARISON_FUNC compare_op)
 {
   m_desc.DepthStencilState.DepthEnable = depth_test;
-  m_desc.DepthStencilState.DepthWriteMask = depth_test ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+  m_desc.DepthStencilState.DepthWriteMask = depth_write ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
   m_desc.DepthStencilState.DepthFunc = compare_op;
 }
 
