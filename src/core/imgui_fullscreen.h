@@ -2,6 +2,7 @@
 #include "common/types.h"
 #include "imgui.h"
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 

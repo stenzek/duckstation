@@ -7,13 +7,14 @@
 #include "core/controller.h"
 #include "core/gpu.h"
 #include "core/host_display.h"
+#include "core/imgui_fullscreen.h"
+#include "core/imgui_styles.h"
 #include "core/system.h"
 #include "frontend-common/controller_interface.h"
 #include "frontend-common/d3d11_host_display.h"
 #include "frontend-common/d3d12_host_display.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/icon.h"
-#include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -235,9 +236,7 @@ void UWPHostInterface::RequestExit()
                         [this]() { winrt::Windows::ApplicationModel::Core::CoreApplication::Exit(); });
 }
 
-void UWPHostInterface::SetMouseMode(bool relative, bool hide_cursor)
-{
-}
+void UWPHostInterface::SetMouseMode(bool relative, bool hide_cursor) {}
 
 void UWPHostInterface::Run()
 {
@@ -387,13 +386,9 @@ void UWPHostInterface::RunLater(std::function<void()> callback)
   m_queued_callbacks.push_back(std::move(callback));
 }
 
-void UWPHostInterface::OnDisplayInvalidated()
-{
-}
+void UWPHostInterface::OnDisplayInvalidated() {}
 
-void UWPHostInterface::OnSystemPerformanceCountersUpdated()
-{
-}
+void UWPHostInterface::OnSystemPerformanceCountersUpdated() {}
 
 bool UWPHostInterface::IsFullscreen() const
 {
