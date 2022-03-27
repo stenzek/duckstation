@@ -15,6 +15,8 @@
 #include "core/gpu.h"
 #include "core/gte.h"
 #include "core/host_display.h"
+#include "core/imgui_fullscreen.h"
+#include "core/imgui_styles.h"
 #include "core/mdec.h"
 #include "core/pgxp.h"
 #include "core/save_state_version.h"
@@ -27,8 +29,6 @@
 #include "game_list.h"
 #include "icon.h"
 #include "imgui.h"
-#include "imgui_fullscreen.h"
-#include "imgui_styles.h"
 #include "inhibit_screensaver.h"
 #include "ini_settings_interface.h"
 #include "input_overlay_ui.h"
@@ -52,7 +52,7 @@
 #endif
 
 #ifdef WITH_CHEEVOS
-#include "cheevos.h"
+#include "core/cheevos.h"
 #endif
 
 #ifdef _WIN32
@@ -250,10 +250,6 @@ void CommonHostInterface::PowerOffSystem(bool save_resume_state)
 void CommonHostInterface::ResetSystem()
 {
   HostInterface::ResetSystem();
-
-#ifdef WITH_CHEEVOS
-  Cheevos::Reset();
-#endif
 }
 
 static void PrintCommandLineVersion(const char* frontend_name)
@@ -500,9 +496,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
 
 void CommonHostInterface::OnAchievementsRefreshed()
 {
-#ifdef WITH_CHEEVOS
   // noop
-#endif
 }
 
 void CommonHostInterface::PollAndUpdate()
@@ -769,10 +763,6 @@ bool CommonHostInterface::UndoLoadState()
 
   System::ResetPerformanceCounters();
   System::ResetThrottler();
-
-#ifdef WITH_CHEEVOS
-  Cheevos::Reset();
-#endif
 
   Log_InfoPrintf("Loaded undo save state.");
   m_undo_load_state.reset();
@@ -3541,6 +3531,16 @@ std::vector<std::string> CommonHostInterface::GetSettingStringList(const char* s
 {
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
   return m_settings_interface->GetStringList(section, key);
+}
+
+SettingsInterface* CommonHostInterface::GetSettingsInterface()
+{
+  return m_settings_interface.get();
+}
+
+std::lock_guard<std::recursive_mutex> CommonHostInterface::GetSettingsLock()
+{
+  return std::lock_guard<std::recursive_mutex>(m_settings_mutex);
 }
 
 void CommonHostInterface::SetTimerResolutionIncreased(bool enabled)

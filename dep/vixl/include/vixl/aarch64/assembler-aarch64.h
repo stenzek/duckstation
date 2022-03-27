@@ -35,6 +35,11 @@
 #include "../utils-vixl.h"
 #include "operands-aarch64.h"
 
+#ifdef _MSC_VER
+// This is defined in arm_neon.h on MSVC.
+#undef mvn
+#endif
+
 namespace vixl {
 namespace aarch64 {
 

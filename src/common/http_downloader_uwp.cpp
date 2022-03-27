@@ -1,8 +1,8 @@
 #include "http_downloader_uwp.h"
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/string_util.h"
-#include "common/timer.h"
+#include "assert.h"
+#include "log.h"
+#include "string_util.h"
+#include "timer.h"
 #include <algorithm>
 Log_SetChannel(HTTPDownloaderWinHttp);
 

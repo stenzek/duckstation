@@ -137,6 +137,8 @@ void RegTestHostInterface::OnSystemPerformanceCountersUpdated() {}
 
 void RegTestHostInterface::OnDisplayInvalidated() {}
 
+void RegTestHostInterface::OnAchievementsRefreshed() {}
+
 std::string RegTestHostInterface::GetStringSettingValue(const char* section, const char* key,
                                                         const char* default_value /*= ""*/)
 {
@@ -161,6 +163,16 @@ float RegTestHostInterface::GetFloatSettingValue(const char* section, const char
 std::vector<std::string> RegTestHostInterface::GetSettingStringList(const char* section, const char* key)
 {
   return m_settings_interface.GetStringList(section, key);
+}
+
+SettingsInterface* RegTestHostInterface::GetSettingsInterface()
+{
+  return &m_settings_interface;
+}
+
+std::lock_guard<std::recursive_mutex> RegTestHostInterface::GetSettingsLock()
+{
+  return std::lock_guard<std::recursive_mutex>(m_settings_mutex);
 }
 
 void RegTestHostInterface::UpdateSettings()

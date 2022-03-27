@@ -23,14 +23,10 @@ add_library(frontend-common
   ini_settings_interface.h
   input_overlay_ui.cpp
   input_overlay_ui.h
-  imgui_fullscreen.cpp
-  imgui_fullscreen.h
   imgui_impl_opengl3.cpp
   imgui_impl_opengl3.h
   imgui_impl_vulkan.cpp
   imgui_impl_vulkan.h
-  imgui_styles.cpp
-  imgui_styles.h  
   opengl_host_display.cpp
   opengl_host_display.h
   postprocessing_chain.cpp
@@ -110,34 +106,6 @@ endif()
 if(ENABLE_DISCORD_PRESENCE)
   target_compile_definitions(frontend-common PUBLIC -DWITH_DISCORD_PRESENCE=1)
   target_link_libraries(frontend-common PRIVATE discord-rpc)
-endif()
-
-if(ENABLE_CHEEVOS)
-  target_sources(frontend-common PRIVATE
-    http_downloader.cpp
-    http_downloader.h
-  )
-  if(WIN32)
-    target_sources(frontend-common PRIVATE
-      http_downloader_winhttp.cpp
-      http_downloader_winhttp.h
-    )
-  elseif(NOT ANDROID)
-    target_sources(frontend-common PRIVATE
-      http_downloader_curl.cpp
-      http_downloader_curl.h
-    )
-    target_link_libraries(frontend-common PRIVATE
-      CURL::libcurl
-    )
-  endif()
-
-  target_sources(frontend-common PRIVATE
-    cheevos.cpp
-    cheevos.h
-  )
-  target_compile_definitions(frontend-common PUBLIC -DWITH_CHEEVOS=1)
-  target_link_libraries(frontend-common PRIVATE rcheevos rapidjson)
 endif()
 
 # Copy the provided data directory to the output directory.

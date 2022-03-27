@@ -1,10 +1,10 @@
 #include "input_overlay_ui.h"
 #include "common_host_interface.h"
+#include "core/imgui_fullscreen.h"
 #include "core/pad.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "fullscreen_ui.h"
-#include "imgui_fullscreen.h"
 
 static CommonHostInterface* GetHostInterface()
 {

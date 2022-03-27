@@ -57,6 +57,10 @@ add_library(core
     host_interface.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
+    imgui_styles.cpp
+    imgui_styles.h  
+    imgui_fullscreen.cpp
+    imgui_fullscreen.h
     interrupt_controller.cpp
     interrupt_controller.h
     libcrypt_game_codes.cpp
@@ -118,7 +122,6 @@ target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
 target_link_libraries(core PRIVATE glad stb xxhash imgui)
-target_compile_definitions(core PUBLIC "-DWITH_IMGUI=1")
 
 if(WIN32)
   target_sources(core PRIVATE
@@ -153,4 +156,13 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
   message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
+endif()
+
+if(ENABLE_CHEEVOS)
+  target_sources(core PRIVATE
+    cheevos.cpp
+    cheevos.h
+  )
+  target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
+  target_link_libraries(core PRIVATE rcheevos rapidjson)
 endif()

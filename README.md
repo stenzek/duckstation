@@ -1,5 +1,5 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
-[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Libretro Core](#libretro-core) | [Building](#building) | [Disclaimers](#disclaimers)
+[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Discord Server:** https://discord.gg/Buktv3t
 
@@ -43,7 +43,7 @@ Other features include:
  - Automatic updates for Windows builds
  - Automatic content scanning - game titles/hashes are provided by redump.org
  - Optional automatic switching of memory cards for each game
- - Supports loading cheats from libretro or PCSXR format lists
+ - Supports loading cheats from existing lists
  - Memory card editor and save importer
  - Emulated CPU overclocking
  - Integrated and remote debugging
@@ -148,21 +148,6 @@ A number of PAL region games use LibCrypt protection, requiring additional CD su
 For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
 
 For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
-
-### Libretro Core
-
-DuckStation is available as a libretro core. It supports most features of the full frontend, within the constraints and limitations of being a libretro core.
-
-The libretro core is provided under the terms of the Creative Commons Attribution-NonCommercial-NoDerivatives International License (BY-NC-ND 4.0, https://creativecommons.org/licenses/by-nc-nd/4.0/). COMMERCIAL DISTRIBUTION AND USAGE IS PROHIBITED. By downloading the libretro core, you agree that you will not distribute or utilize it with any paid applications, services, or products. This includes server side use in streaming environments. Put simply, it is free for personal use, but you are not allowed to utilize DuckStation to make money.
-
-The core is maintained by a third party, and is not provided as part of the GitHub release. You can download the core through the links below. The changelog is viewable at https://www.duckstation.org/libretro/changelog.txt
-
-- Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
-- Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
-- Android armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_armv7.zip
-- Linux x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_x64.zip
-- Linux AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_aarch64.zip
-- Linux armv7 (32-bit): https://www.duckstation.org/libretro/duckstation_libretro_linux_armv7.zip
 
 ## Building
 

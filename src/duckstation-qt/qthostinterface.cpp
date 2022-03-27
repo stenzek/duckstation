@@ -8,12 +8,12 @@
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/gpu.h"
+#include "core/imgui_fullscreen.h"
+#include "core/imgui_styles.h"
 #include "core/memory_card.h"
 #include "core/system.h"
 #include "frontend-common/fullscreen_ui.h"
 #include "frontend-common/game_list.h"
-#include "frontend-common/imgui_fullscreen.h"
-#include "frontend-common/imgui_styles.h"
 #include "frontend-common/ini_settings_interface.h"
 #include "frontend-common/opengl_host_display.h"
 #include "frontend-common/sdl_audio_stream.h"
@@ -48,7 +48,7 @@ Log_SetChannel(QtHostInterface);
 #endif
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/cheevos.h"
+#include "core/cheevos.h"
 #endif
 
 QtHostInterface::QtHostInterface(QObject* parent) : QObject(parent), CommonHostInterface()

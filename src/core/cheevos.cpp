@@ -1,19 +1,20 @@
 #include "cheevos.h"
+#include "common/assert.h"
 #include "common/cd_image.h"
 #include "common/file_system.h"
+#include "common/http_downloader.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/platform.h"
+#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "common/timestamp.h"
-#include "common_host_interface.h"
 #include "core/bios.h"
 #include "core/bus.h"
 #include "core/cpu_core.h"
 #include "core/host_display.h"
 #include "core/system.h"
-#include "fullscreen_ui.h"
-#include "http_downloader.h"
+#include "host_interface.h"
 #include "imgui_fullscreen.h"
 #include "rapidjson/document.h"
 #include "rc_url.h"
@@ -86,11 +87,6 @@ static u32 s_total_image_downloads;
 static u32 s_completed_image_downloads;
 static bool s_image_download_progress_active;
 
-static ALWAYS_INLINE CommonHostInterface* GetHostInterface()
-{
-  return static_cast<CommonHostInterface*>(g_host_interface);
-}
-
 static void FormattedError(const char* format, ...) printflike(1, 2);
 static void FormattedError(const char* format, ...)
 {
@@ -103,7 +99,7 @@ static void FormattedError(const char* format, ...)
 
   va_end(ap);
 
-  GetHostInterface()->AddOSDMessage(str.GetCharArray(), 10.0f);
+  g_host_interface->AddOSDMessage(str.GetCharArray(), 10.0f);
   Log_ErrorPrint(str.GetCharArray());
 }
 
@@ -222,7 +218,7 @@ static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboard
   }
 
   if (had_game)
-    GetHostInterface()->OnAchievementsRefreshed();
+    g_host_interface->OnAchievementsRefreshed();
 }
 
 static void ClearGamePath()
@@ -255,8 +251,8 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
   rc_runtime_init(&s_rcheevos_runtime);
 
   s_last_ping_time.Reset();
-  s_username = GetHostInterface()->GetStringSettingValue("Cheevos", "Username");
-  s_login_token = GetHostInterface()->GetStringSettingValue("Cheevos", "Token");
+  s_username = g_host_interface->GetStringSettingValue("Cheevos", "Username");
+  s_login_token = g_host_interface->GetStringSettingValue("Cheevos", "Token");
   s_logged_in = (!s_username.empty() && !s_login_token.empty());
 
   if (IsLoggedIn() && System::IsValid())
@@ -288,7 +284,7 @@ void Shutdown()
   std::string().swap(s_username);
   std::string().swap(s_login_token);
   s_logged_in = false;
-  GetHostInterface()->OnAchievementsRefreshed();
+  g_host_interface->OnAchievementsRefreshed();
 
   g_active = false;
   rc_runtime_destroy(&s_rcheevos_runtime);
@@ -312,6 +308,69 @@ void Update()
       if (static_cast<s32>(s_last_ping_time.GetTimeSeconds()) >= ping_frequency)
         SendPing();
     }
+  }
+}
+
+bool DoState(StateWrapper& sw)
+{
+  // if we're inactive, we still need to skip the data (if any)
+  if (!g_active)
+  {
+    u32 data_size = 0;
+    sw.Do(&data_size);
+    if (data_size > 0)
+      sw.SkipBytes(data_size);
+
+    return !sw.HasError();
+  }
+
+  if (sw.IsReading())
+  {
+    u32 data_size = 0;
+    sw.Do(&data_size);
+    if (data_size == 0)
+    {
+      // reset runtime, no data (state might've been created without cheevos)
+      Log_DevPrintf("State is missing cheevos data, resetting runtime");
+      rc_runtime_reset(&s_rcheevos_runtime);
+      return !sw.HasError();
+    }
+
+    const std::unique_ptr<u8[]> data(new u8[data_size]);
+    sw.DoBytes(data.get(), data_size);
+    if (sw.HasError())
+      return false;
+
+    const int result = rc_runtime_deserialize_progress(&s_rcheevos_runtime, data.get(), nullptr);
+    if (result != RC_OK)
+    {
+      Log_WarningPrintf("Failed to deserialize cheevos state (%d), resetting", result);
+      rc_runtime_reset(&s_rcheevos_runtime);
+    }
+
+    return true;
+  }
+  else
+  {
+    // internally this happens twice.. not great.
+    const int size = rc_runtime_progress_size(&s_rcheevos_runtime, nullptr);
+
+    u32 data_size = (size >= 0) ? static_cast<u32>(size) : 0;
+    std::unique_ptr<u8[]> data(new u8[data_size]);
+
+    const int result = rc_runtime_serialize_progress(data.get(), &s_rcheevos_runtime, nullptr);
+    if (result != RC_OK)
+    {
+      // set data to zero, effectively serializing nothing
+      Log_WarningPrintf("Failed to serialize cheevos state (%d)", result);
+      data_size = 0;
+    }
+
+    sw.Do(&data_size);
+    if (data_size > 0)
+      sw.DoBytes(data.get(), data_size);
+
+    return !sw.HasError();
   }
 }
 
@@ -367,12 +426,12 @@ static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader:
 
   // save to config
   {
-    std::lock_guard<std::recursive_mutex> guard(GetHostInterface()->GetSettingsLock());
-    GetHostInterface()->GetSettingsInterface()->SetStringValue("Cheevos", "Username", username.c_str());
-    GetHostInterface()->GetSettingsInterface()->SetStringValue("Cheevos", "Token", login_token.c_str());
-    GetHostInterface()->GetSettingsInterface()->SetStringValue(
+    std::lock_guard<std::recursive_mutex> guard(g_host_interface->GetSettingsLock());
+    g_host_interface->GetSettingsInterface()->SetStringValue("Cheevos", "Username", username.c_str());
+    g_host_interface->GetSettingsInterface()->SetStringValue("Cheevos", "Token", login_token.c_str());
+    g_host_interface->GetSettingsInterface()->SetStringValue(
       "Cheevos", "LoginTimestamp", TinyString::FromFormat("%" PRIu64, Timestamp::Now().AsUnixTimestamp()));
-    GetHostInterface()->GetSettingsInterface()->Save();
+    g_host_interface->GetSettingsInterface()->Save();
   }
 
   if (g_active)
@@ -389,7 +448,7 @@ static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader:
 
 static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
-  if (GetHostInterface()->IsFullscreenUIEnabled())
+  if (ImGuiFullscreen::IsInitialized())
     ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
 
   LoginCallback(status_code, data);
@@ -412,11 +471,11 @@ bool LoginAsync(const char* username, const char* password)
   if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
     return false;
 
-  if (GetHostInterface()->IsFullscreenUIEnabled())
+  if (ImGuiFullscreen::IsInitialized())
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(
-      "cheevos_async_login", GetHostInterface()->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0,
-      1, 0);
+      "cheevos_async_login", g_host_interface->TranslateStdString("Cheevos", "Logging in to RetroAchivements..."), 0, 1,
+      0);
   }
 
   SendLogin(username, password, s_http_downloader.get(), LoginASyncCallback);
@@ -448,7 +507,7 @@ bool Login(const char* username, const char* password)
   SendLogin(username, password, http_downloader.get(), LoginCallback);
   http_downloader->WaitForAllRequests();
 
-  return !GetHostInterface()->GetStringSettingValue("Cheevos", "Token").empty();
+  return !g_host_interface->GetStringSettingValue("Cheevos", "Token").empty();
 }
 
 void Logout()
@@ -462,17 +521,17 @@ void Logout()
       std::string().swap(s_username);
       std::string().swap(s_login_token);
       s_logged_in = false;
-      GetHostInterface()->OnAchievementsRefreshed();
+      g_host_interface->OnAchievementsRefreshed();
     }
   }
 
   // remove from config
-  std::lock_guard<std::recursive_mutex> guard(GetHostInterface()->GetSettingsLock());
+  std::lock_guard<std::recursive_mutex> guard(g_host_interface->GetSettingsLock());
   {
-    GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Username");
-    GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "Token");
-    GetHostInterface()->GetSettingsInterface()->DeleteValue("Cheevos", "LoginTimestamp");
-    GetHostInterface()->GetSettingsInterface()->Save();
+    g_host_interface->GetSettingsInterface()->DeleteValue("Cheevos", "Username");
+    g_host_interface->GetSettingsInterface()->DeleteValue("Cheevos", "Token");
+    g_host_interface->GetSettingsInterface()->DeleteValue("Cheevos", "LoginTimestamp");
+    g_host_interface->GetSettingsInterface()->Save();
   }
 }
 
@@ -494,7 +553,7 @@ static void UpdateImageDownloadProgress()
     return;
   }
 
-  if (!GetHostInterface()->IsFullscreenUIEnabled())
+  if (!ImGuiFullscreen::IsInitialized())
     return;
 
   std::string message(g_host_interface->TranslateStdString("Cheevos", "Downloading achievement resources..."));
@@ -528,7 +587,7 @@ static void DownloadImage(std::string url, std::string cache_filename)
       return;
     }
 
-    FullscreenUI::InvalidateCachedTexture(cache_filename);
+    ImGuiFullscreen::InvalidateCachedTexture(cache_filename);
     UpdateImageDownloadProgress();
   };
 
@@ -549,9 +608,9 @@ static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bo
     // well, this comes from the internet.... :)
     SmallString clean_name(badge_name);
     FileSystem::SanitizeFileName(clean_name);
-    return GetHostInterface()->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
-                                                            "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
-                                                            clean_name.GetCharArray(), locked ? "_lock" : "");
+    return g_host_interface->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
+                                                          "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
+                                                          clean_name.GetCharArray(), locked ? "_lock" : "");
   }
 }
 
@@ -575,30 +634,30 @@ static void DisplayAchievementSummary()
 {
   std::string title = s_game_title;
   if (g_challenge_mode)
-    title += GetHostInterface()->TranslateString("Cheevos", " (Hardcore Mode)");
+    title += g_host_interface->TranslateString("Cheevos", " (Hardcore Mode)");
 
   std::string summary;
   if (GetAchievementCount() > 0)
   {
     summary = StringUtil::StdStringFromFormat(
-      GetHostInterface()->TranslateString("Cheevos", "You have earned %u of %u achievements, and %u of %u points."),
+      g_host_interface->TranslateString("Cheevos", "You have earned %u of %u achievements, and %u of %u points."),
       GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
   }
   else
   {
-    summary = GetHostInterface()->TranslateString("Cheevos", "This game has no achievements.");
+    summary = g_host_interface->TranslateString("Cheevos", "This game has no achievements.");
   }
   if (GetLeaderboardCount() > 0)
   {
     summary.push_back('\n');
     if (g_challenge_mode)
     {
-      summary.append(GetHostInterface()->TranslateString("Cheevos", "Leaderboards are enabled."));
+      summary.append(g_host_interface->TranslateString("Cheevos", "Leaderboards are enabled."));
     }
     else
     {
       summary.append(
-        GetHostInterface()->TranslateString("Cheevos", "Leaderboards are DISABLED because Hardcore Mode is off."));
+        g_host_interface->TranslateString("Cheevos", "Leaderboards are DISABLED because Hardcore Mode is off."));
     }
   }
 
@@ -649,7 +708,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
   SendPlaying();
   UpdateRichPresence();
   SendPing();
-  GetHostInterface()->OnAchievementsRefreshed();
+  g_host_interface->OnAchievementsRefreshed();
 }
 
 static void GetUserUnlocks()
@@ -694,7 +753,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   std::string icon_name(GetOptionalString(patch_data, "ImageIcon"));
   if (!icon_name.empty())
   {
-    s_game_icon = GetHostInterface()->GetUserDirectoryRelativePath(
+    s_game_icon = g_host_interface->GetUserDirectoryRelativePath(
       "cache" FS_OSPATH_SEPARATOR_STR "achievement_gameicon" FS_OSPATH_SEPARATOR_STR "%u.png", g_game_id);
     if (!FileSystem::FileExists(s_game_icon.c_str()))
     {
@@ -825,7 +884,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
     {
       ActivateLockedAchievements();
       DisplayAchievementSummary();
-      GetHostInterface()->OnAchievementsRefreshed();
+      g_host_interface->OnAchievementsRefreshed();
     }
   }
   else
@@ -1024,9 +1083,9 @@ void GameChanged(const std::string& path, CDImage* image)
 
   if (s_game_hash.empty())
   {
-    GetHostInterface()->AddOSDMessage(GetHostInterface()->TranslateStdString(
-                                        "OSDMessage", "Failed to read executable from disc. Achievements disabled."),
-                                      10.0f);
+    g_host_interface->AddOSDMessage(
+      g_host_interface->TranslateStdString("OSDMessage", "Failed to read executable from disc. Achievements disabled."),
+      10.0f);
     return;
   }
 
@@ -1070,7 +1129,7 @@ static void UpdateRichPresence()
     const bool had_rich_presence = !s_rich_presence_string.empty();
     s_rich_presence_string.clear();
     if (had_rich_presence)
-      GetHostInterface()->OnAchievementsRefreshed();
+      g_host_interface->OnAchievementsRefreshed();
 
     return;
   }
@@ -1079,7 +1138,7 @@ static void UpdateRichPresence()
     return;
 
   s_rich_presence_string.assign(buffer);
-  GetHostInterface()->OnAchievementsRefreshed();
+  g_host_interface->OnAchievementsRefreshed();
 }
 
 static void SendPingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)

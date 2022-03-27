@@ -5,14 +5,12 @@
 #include "common/platform.h"
 #include "common/state_wrapper.h"
 #include "dma.h"
+#include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
 #include <cmath>
-#ifdef WITH_IMGUI
-#include "imgui.h"
-#endif
 Log_SetChannel(CDROM);
 
 #if defined(CPU_X64)
@@ -2722,7 +2720,6 @@ void CDROM::ClearSectorBuffers()
 
 void CDROM::DrawDebugWindow()
 {
-#ifdef WITH_IMGUI
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
@@ -2919,5 +2916,4 @@ void CDROM::DrawDebugWindow()
   }
 
   ImGui::End();
-#endif
 }

@@ -1,7 +1,7 @@
 #include "fullscreen_ui_progress_callback.h"
 #include "common/log.h"
 #include "core/host_interface.h"
-#include "imgui_fullscreen.h"
+#include "core/imgui_fullscreen.h"
 Log_SetChannel(ProgressCallback);
 
 namespace FullscreenUI {

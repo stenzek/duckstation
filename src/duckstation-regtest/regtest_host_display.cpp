@@ -159,7 +159,6 @@ bool RegTestHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat forma
 bool RegTestHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
                                                u32* out_pitch)
 {
-  const u32 pixel_size = GetDisplayPixelFormatSize(format);
   const u32 pitch = Common::AlignUpPow2(width * GetDisplayPixelFormatSize(format), 4);
   const u32 required_size = height * pitch;
   if (m_frame_buffer.size() != (required_size / 4))

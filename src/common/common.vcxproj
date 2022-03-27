@@ -40,6 +40,13 @@
     <ClInclude Include="gl\texture.h" />
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="heap_array.h" />
+    <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="http_downloader_uwp.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="http_downloader_winhttp.h">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="image.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
@@ -125,6 +132,13 @@
     <ClCompile Include="gl\shader_cache.cpp" />
     <ClCompile Include="gl\stream_buffer.cpp" />
     <ClCompile Include="gl\texture.cpp" />
+    <ClCompile Include="http_downloader.cpp" />
+    <ClCompile Include="http_downloader_uwp.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="http_downloader_winhttp.cpp">
+      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="image.cpp" />
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />

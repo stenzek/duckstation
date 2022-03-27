@@ -24,7 +24,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 if(NOT ANDROID)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
-  option(BUILD_LIBRETRO_CORE "Build a libretro core" OFF)
   option(BUILD_REGTEST "Build regression test runner" OFF)
   option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
   option(ENABLE_CHEEVOS "Build with RetroAchievements support" ON)
@@ -42,7 +41,7 @@ endif()
 if((LINUX OR FREEBSD) OR ANDROID)
   option(USE_EGL "Support EGL OpenGL context creation" ON)
 endif()
-if((LINUX OR FREEBSD) AND NOT ANDROID AND NOT BUILD_LIBRETRO_CORE)
+if((LINUX OR FREEBSD) AND NOT ANDROID)
   option(USE_DRMKMS "Support DRM/KMS OpenGL contexts" OFF)
   option(USE_FBDEV "Support FBDev OpenGL contexts" OFF)
   option(USE_EVDEV "Support EVDev controller interface" ON)
@@ -79,40 +78,6 @@ if(ANDROID)
 
   # Cheevos are always on.
   set(ENABLE_CHEEVOS ON)
-endif()
-
-
-# Disable platform integration when building for libretro.
-if(BUILD_LIBRETRO_CORE)
-  message("Building libretro core, disabling platform integration.")
-
-  if(USE_EGL)
-    set(USE_EGL OFF)
-  endif()
-  if(BUILD_NOGUI_FRONTEND)
-    set(BUILD_NOGUI_FRONTEND OFF)
-  endif()
-  if(BUILD_QT_FRONTEND)
-    set(BUILD_QT_FRONTEND OFF)
-  endif()
-  if(ENABLE_DISCORD_PRESENCE)
-    set(ENABLE_DISCORD_PRESENCE OFF)
-  endif()
-  if(ENABLE_CHEEVOS)
-    set(ENABLE_CHEEVOS OFF)
-  endif()
-  if(USE_SDL2)
-    set(USE_SDL2 OFF)
-  endif()
-  if(USE_X11)
-    set(USE_X11 OFF)
-  endif()
-  if(USE_WAYLAND)
-    set(USE_WAYLAND OFF)
-  endif()
-
-  # Force PIC when compiling a libretro core.
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 
@@ -225,7 +190,7 @@ endif()
 
 
 # Default symbol visibility to hidden, that way we don't go through the PLT for intra-library calls.
-if(ANDROID OR BUILD_LIBRETRO_CORE)
+if(ANDROID)
   set(CMAKE_C_VISIBILITY_PRESET hidden)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -284,8 +249,7 @@ endif()
 
 
 # Write binaries to a seperate directory.
-if(WIN32 AND NOT BUILD_LIBRETRO_CORE)
-  # For Windows, use the source directory, except for libretro.
+if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/${CPU_ARCH}")
 else()
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
@@ -312,6 +276,6 @@ enable_testing()
 add_subdirectory(dep)
 add_subdirectory(src)
 
-if(ANDROID AND NOT BUILD_LIBRETRO_CORE)
+if(ANDROID)
   add_subdirectory(android/app/src/cpp)
 endif()

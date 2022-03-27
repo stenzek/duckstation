@@ -63,7 +63,6 @@ bool IsBindingInput();
 bool HandleKeyboardBinding(const char* keyName, bool pressed);
 
 std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback = true);
-bool InvalidateCachedTexture(const std::string& path);
 
 // Returns true if the message has been dismissed.
 bool DrawErrorWindow(const char* message);
