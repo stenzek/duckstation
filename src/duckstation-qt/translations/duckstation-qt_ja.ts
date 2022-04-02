@@ -1340,17 +1340,17 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="32"/>
         <source>&amp;Add Group...</source>
-        <translation>グループを追加...</translation>
+        <translation>グループを追加(&amp;A)...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="39"/>
         <source>&amp;Add Code...</source>
-        <translation>コードを追加...</translation>
+        <translation>コードを追加(&amp;A)...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="46"/>
         <source>&amp;Edit Code...</source>
-        <translation>コードを編集(&amp;E)</translation>
+        <translation>コードを編集(&amp;E)...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="56"/>
@@ -2546,7 +2546,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1805"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation>%08X でのステップアウトの %u 命令の後に、戻り命令が見つかりません。</translation>
+        <translation>ステップアウトするために必要なリターン命令が以降 %u 個の命令中にありません(%08X)。</translation>
     </message>
 </context>
 <context>
@@ -5347,17 +5347,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2455"/>
         <source>Increase Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション速度を上げる</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2467"/>
         <source>Decrease Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション速度を下げる</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2479"/>
         <source>Reset Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション速度をリセット</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2532"/>
@@ -7172,7 +7172,7 @@ Are you sure you want to continue?</source>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2473"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2485"/>
         <source>Emulation speed set to %u%%.</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション速度を%u%%に設定しました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2597"/>
@@ -7275,12 +7275,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4107"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
-        <translation>ワイドスクリーンハック (ディスプレイのアスペクト比で3Dをレンダリング)</translation>
+        <translation>ワイドスクリーンハックが有効になりました。アスペクト比は %s に設定されました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4114"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
-        <translation>ワイドスクリーンハック (ディスプレイのアスペクト比で3Dをレンダリング)</translation>
+        <translation>ワイドスクリーンハックが無効になりました。アスペクト比は %s に設定されました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4129"/>
@@ -7472,7 +7472,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/pad.cpp" line="71"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
-        <translation>ステートセーブには、ポート %uにコントローラータイプ %s が含まれていますが、 %s が使用されています。切り替えます。</translation>
+        <translation>ステートセーブにはコントローラータイプ %s (ポート %u)が含まれていますが、 %s が使用されています。切り替えます。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="79"/>
@@ -7502,7 +7502,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="958"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
-        <translation>CD-ROM シークの高速化はインスタントに設定されています。これにより、不安定になる可能性があります。</translation>
+        <translation>CD-ROM シークの高速化は %ux (実効速度 %ux)に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="967"/>
@@ -7512,12 +7512,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="975"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation>CD-ROM シークの高速化はインスタントに設定されています。これにより、不安定になる可能性があります。</translation>
+        <translation>CD-ROM シークの高速化は %ux に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1052"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
-        <translation>ホストインターフェイスの初期化に失敗しました。続行できません。</translation>
+        <translation>%s レンダラーの初期化に失敗しました。代わりにソフトウェアレンダラーを使用します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1141"/>
@@ -7537,12 +7537,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="2247"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
-        <translation>&apos;%s&apos;のサブイメージ %uへの切り替えに失敗しました: %s。</translation>
+        <translation>サブイメージ %u (&apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2254"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation>&apos;%s&apos;のサブイメージ %s (%u) へ切り替えました。</translation>
+        <translation>サブイメージ %s (%u 枚目、&apos;%s&apos; 内)に切り替えました。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2110"/>
@@ -8078,7 +8078,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../frontend-common/save_state_selector_ui.cpp" line="254"/>
         <source>Global Slot %d</source>
-        <translation>グローバルステート</translation>
+        <translation>グローバルスロット %d</translation>
     </message>
     <message>
         <location filename="../../frontend-common/save_state_selector_ui.cpp" line="258"/>
@@ -8272,12 +8272,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/system.cpp" line="1284"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>ステートセーブからCDイメージ &apos;%s&apos;を開くことができませんでした: %s.</translation>
+        <translation>ステートセーブで使用していたCDイメージ &apos;%s&apos;を開くことができませんでした: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1302"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>ステートセーブからのCDイメージ&apos;%s&apos; のサブイメージ％uへの切り替えに失敗しました: %s.。 </translation>
+        <translation>ステートセーブで使用していたサブイメージ %u (CDイメージ &apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1910"/>
@@ -8329,7 +8329,7 @@ Please check the README for instructions on how to add an SBI file.
 Do you wish to continue?</source>
         <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
 
-％s：％s
+%s: %s
 
 ゲームは正しく実行されない可能性があります。
 
