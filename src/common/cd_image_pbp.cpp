@@ -423,7 +423,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
         break;
     }
 
-    if (m_disc_offsets.size() < 2)
+    if (m_disc_offsets.size() < 1)
     {
       Log_ErrorPrintf("Invalid number of discs (%u) in multi-disc PBP file", static_cast<u32>(m_disc_offsets.size()));
       return false;
