@@ -2744,7 +2744,15 @@ A60F9B20 0000FFFF
 
 ; [ Arc the Lad Collection - The Making of Arc the Lad (USA) (2002) (Working Designs) {SLUS-01256} <arcmakof> ]
 ;:SLUS-01256
-;This game currently has no cheats
+#Boot secret "Slime Time" game "Hold L1+R1"
+A7018A5A 24001443
+D7200000 0000000C
+A7018A5A 14432400
+
+#Boot game into secret debug mode "Hold L2+R2"
+A7018A02 24001443
+D7200000 00000003
+A7018A02 14432400
 
 ; [ Area 51 (USA, v1.1) (1997) (Atari Interactive) {SLUS-00164} <area51> ]
 :SLUS-00164
@@ -4032,6 +4040,45 @@ C01C41AA FBFF
 #Max Green Crystals + Unlock Extra Stuff:You must start a game then quit to have the "Concept Art" and "Model Viewer" unlocked
 8009676C 0032
 
+#Teleport to radio from anywhere "Press L3"
+A70144F6 24001040
+D7200000 00000200
+A70144F6 10402400
+
+#Walk through walls "Press R3 to toggle on/off"
+D7010001 01000400
+F505768E 10402400
+F5058F72 10401000
+
+#Moon jump & walk in air (Hold X to moon jump, release and hold x again to walk in air)
+A703ED12 10001040
+A7056A72 24001040
+D7200000 00000040
+A703ED12 10401000
+A7056A72 10402400
+
+#Walk in air "Hold triangle" (Do not combine with moon jump code, jump in mid-air is fine)
+A703ED12 10001040
+D7200000 00000010
+A703ED12 10401000
+
+#Boomerang has infinite range "Hold circle, release to return boomerang"
+A70172CE 10001060
+D7200000 00000020
+A70172CE 10601000
+
+#Throw boomerang through walls
+A70170C6 04402400
+
+#Boomerang hits spawn copies of your character
+A702900A 14622400
+
+#Jump in mid-air while walking
+A7056A72 10402400
+
+#Leave foot prints
+A7037D26 14621000
+
 ; [ A-Train - Trains, Power, Money (USA) (1996) (Maxis) {SLUS-00003} <atrain> ]
 :SLUS-00003
 #Infinite Money
@@ -5155,7 +5202,10 @@ A706B650 10000C00
 
 ; [ Big Ol' Bass 2 (USA) (2000) (Konami of America) {SLUS-01259} <bigobas2> ]
 ;:SLUS-01259
-;This game currently has no cheats
+#Hook fish from anywhere "Press L3 when bait is underwater"
+A70369FA 24000620
+D7200000 00000200
+A70369FA 06202400
 
 ; [ Big Strike Bowling (USA) (2003) (Gotham Games) {SLUS-01478} <bigsbowl> ]
 :SLUS-01478
@@ -11917,6 +11967,12 @@ D10DC210 0031
 D00DC210 0000
 D10DC210 0031
 
+; [ Chrono Cross NTSC-U]
+#Equip and use whatever element you want at any level
+A70CAEAA 14402400
+A71E4C5E 14402400
+A71E4C8E 10402400
+
 ; [ MTV Celebrity Deathmatch (USA) (2003) (Gotham Games) {SLUS-01453} <celebdm> ]
 :SLUS-01453
 #P1 Infinite Energy
@@ -12765,6 +12821,39 @@ D007D718 0000
 50003901 0001
 3001088C 0000
 
+; [ Crash Bandicoot 8 april proto ]
+#Unlock 60fps
+A7034FBE 04812400
+
+#Walk through walls hold "L2 + R2"
+A7027A9A 10001440
+D7200000 00000003
+A7027A9A 14401000
+
+#Destroy boxes from anywhere "Hold L1 + R1"
+
+A7026CDA 24000C00
+D7200000 0000000C
+A7026CDA 0C002400
+
+#Secret levels "See info"
+E0050EDC 0000
+80014B1C 8021
+E0050EDC 0000
+80014B1E 00A0
+E0050EDC 0050
+80014B1C 0004
+E0050EDC 0050
+80014B1E 3410
+E0050EDC 0044
+80014B1C 000B
+E0050EDC 0044
+80014B1E 3410
+E0050EDC 0048
+80014B1C 000D
+E0050EDC 0048
+80014B1E 3410
+
 ; [ Crash Bandicoot (USA) (1996) (Sony Computer Entertainment America) {SCUS-94900} <crash> ]
 :SCUS-94900
 #Infinite Time (Aku Aku Invincibility)
@@ -13222,6 +13311,16 @@ C200C006 0002
 80008236 0800
 80008238 0004
 8000823A A486
+
+; [ Croc 1 NTSC-U FPS Unlock PS1]
+#FPS unlock
+A705934A 10401000
+
+#Alternative FPS unlock
+A705921E 04811400
+
+#FPS uncap + 60FPS lock
+A7014606 14521000
 
 ; [ Croc 2 (USA) (1999) (Fox Interactive) {SLUS-00634} <croc2> ]
 :SLUS-00634
@@ -17355,6 +17454,61 @@ D00B1418 0004
 D20B7D40 3500
 100B7D40 0010
 
+; [Dino Crisis NTSC-U][SLUS-00922][PS1][Duckstation format]
+
+#Walk through NPC's
+A707FE32 1A001000
+
+#Camera angle side
+A7026456 0C022400
+
+#Camera angle upside down
+A7026436 0C022400
+
+#Camera angle straight
+A70263FA 0C022400
+
+#Camera angle from above
+A70263EE 0C012400
+
+#Camera angle far away
+A7026ADE 0C002400
+
+#Screen shake effect
+A704A5E6 0C012400
+
+#60 FPS (Doubles game speed)
+A7087972 0C021400
+
+#Matrix mode "Hold L2"
+A704A556 24000C01
+A70836AA 24001440
+A70556CA 24001440
+A704A2FE 24001440
+A704A4D6 24001653
+A70218DE 24001040
+A7060716 10001040
+A70EBBAA 10001440
+A702FAFE 10001440
+A70EBB0A 10001440
+A70EE3A2 10001440
+A70EBAFE 10001440
+A70EA576 10001440
+D7200000 00000001
+A704A556 0C012400
+A70836AA 14402400
+A70556CA 14402400
+A704A2FE 14402400
+A704A4D6 16532400
+A70218DE 10402400
+A7060716 10401000
+A70EBBAA 14401000
+A702FAFE 14401000
+A70EBB0A 14401000
+A70EE3A2 14401000
+A70EBAFE 14401000
+A70EA576 14401000
+
 ; [ Dino Crisis (USA, v1.0) (1999) (Capcom Entertainment) {SLUS-00922} <dinocrisa> ]
 :SLUS-00922
 #Infinite Health
@@ -19721,6 +19875,15 @@ D0176E18 6425
 #Have All Magic/Max Level
 50000801 0000
 300A2E06 0003
+
+#Collect items from anywhere
+A7034A72 14401000
+
+#Hit anywhere with weapon
+A70419BA 14402400
+A7042552 14402400
+A70425BE 14402400
+A70419F6 10401000
 
 ; [ Dragon Warrior VII (USA) (2001) (Enix America) {SLUS-01206 / SLUS-01346} <dwarr7> ]
 :SLUS-01206
@@ -24762,6 +24925,101 @@ C200C00C 00000004
 900786BC F0F0F0F0
 900786C0 F0F0F0F0
 800786C4 F0F0
+#Easier escapes from battles
+D005F146 0003
+800AE9E6 2400
+
+#Summon OP Odin  "Press/hold R3 in/before-battle"
+C005F146 00000003
+D7000000 00000400
+900ADFBC 34050007
+300ED470 00000001
+300ED540 00000001
+300ED610 00000001
+300ED6E0 00000001
+
+#Receive 100 items after-battle
+D005F146 0003
+800AF03C 0064
+D005F146 0003
+800AF03E 3402
+
+#Entire party can share GF's
+D01EA52A 1462
+801EA52A 2400
+
+#Everyone has all GF available in-battle
+80022F14 FFFF
+80022F16 3405
+
+#Carding an enemy gives 100 cards
+D005F146 0003
+80023940 00E3
+D005F146 0003
+80023942 3403
+
+#Infinite item usage in-battle
+D005F146 0003
+800DA17E 2400
+
+#Draw 100 magic (Battle)
+D00A34E8 BCD6
+800A3506 1000
+
+#Draw 100 magic (Field)
+D00B603C 846D
+800B605A 1000
+
+#Draw 100 magic (World)
+D00B9EF8 BF81
+800B9EF4 0064
+
+#Overworld fast travel "Hold R3 to bring up map and use left analog to travel"
+A709B992 240010C0
+A70B0272 10001040
+A709966E 24001462
+A709E0BA 24001040
+A704D606 240010A0
+A702BFDE 10001040
+A70AF132 10001462
+D7200000 00000400
+A709B992 10C02400
+A70B0272 10401000
+A709966E 14622400
+A709E0BA 10402400
+A704D606 10A02400
+A702BFDE 10401000
+A70AF132 14621000
+D009966E 00002400
+800C4D28 00000000
+00000000 0000FFFF
+D7000000 00200400
+D009966E 00002400
+600C9868 00000190
+00000000 0000FFFF
+D7000000 00800400
+D009966E 00002400
+610C9868 00000190
+00000000 0000FFFF
+D7000000 00400400
+D009966E 00002400
+600C986C 00000190
+00000000 0000FFFF
+D7000000 00100400
+D009966E 00002400
+610C986C 00000190
+
+#Walk Anywhere On The World Map + No Enc "Hold Square"
+E0082DEE 0080
+800A44E4 0000
+E0082DEE 0000
+800A44E4 0002
+E0082DEE 0080
+80078DF8 001B
+E0082DEE 0000
+80078DF8 0000
+D005F146 0003
+800A44E4 0018
 
 ; [ Final Fantasy IX (USA, v1.1) (2000) (Square Electronic Arts) {SLUS-01251GH / SLUS-01295GH / SLUS-01296GH / SLUS-01297GH} <ffant9> ]
 :SLUS-01251
@@ -29115,6 +29373,30 @@ D0066CCC 0414
 900A02BC FFFFFFFF
 #P1 Open All Levels
 800A02BA 0007
+
+; [ Heart Of Darkness ] [NTSC-U]
+#Auto kill enemies "Press L3 to toggle on/off"
+D7010001 00000200
+F50356F6 14402400
+
+#Hit anywhere "Press R3 to toggle on/off"
+D7010001 01000400
+F503EE76 14401000
+F5029B5E 10402400
+F503B59E 10402400
+F50299DA 10402400
+F5036426 10402400
+
+#More aggresive lightning gun
+A7026B02 16222400
+
+#Underwater effect
+A705CE02 10641000
+
+#Throw full powered fire balls instantly
+A70282FE 14402400
+A70284EE 14442400
+A702A0F6 10621000
 
 ; [ Hellboy - Asylum Seeker (USA) (2003) (DreamCatcher Interactive) {SLUS-01414} <hellboy> ]
 :SLUS-01414
@@ -34771,6 +35053,51 @@ D7100000 0000000C
 #Widescreen 16-9
 A7AF88FC 19991333
 
+#One hit kills 
+A7045F5E 1C802400
+
+#Moon Jump
+A7044CFA 24001040
+A7044BAA 24001040
+A706C5F6 24001440
+D7200000 00000020
+A7044CFA 10402400
+A7044BAA 10402400
+A706C5F6 14402400
+
+#No fall damage
+A7044FF2 10401000
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 01000200
+F506400A 14401000
+F506B3C6 14402400
+F50412FA 14512400
+
+#Use right analog to turn camera 
+A702FEF2 10001062
+D7200000 00020000
+A702FEF2 10621000
+00000000 0000FFFF
+A702FEFA 24001462
+D7200000 00080000
+A702FEFA 14622400
+
+#Use right analog to turn camera inverted
+A702FEF2 10001062
+D7200000 00080000
+A702FEF2 10621000
+00000000 0000FFFF
+A702FEFA 24001462
+D7200000 00020000
+A702FEFA 14622400
+
+#Clear water turns darker in some places
+A7022656 10201000
+
+#FPS Uncap
+A70A3F32 10401000
+
 ; [ MediEvil II (USA) (2000) (Sony Computer Entertainment America) {SCUS-94564} <medievl2> ]
 :SCUS-94564
 #Infinite Health
@@ -35345,6 +35672,17 @@ D00D1C0C 0016
 800E9116 0005
 #Press R1+R2 For Cheat Options (main menu)
 80077456 1000
+
+; [ Metal Gear Solid ][NTSC-U]
+#FPS unlocker
+A701FD2A 0C021400
+
+#Pause doesn't darken screen or mute music
+A704BB22 10A01000
+A7087012 12001000
+
+#Stealth camo doesn't make you translucent
+A706381A 0C002400
 
 ; [ Metal Gear Solid (USA, v1.1) (1998) (Konami of America) {SLUS-00594, SLUS-00594P3 / SLUS-00776, SLUS-00776P3} <mgs> ]
 :SLUS-00594
@@ -37147,6 +37485,34 @@ A60B34D0 00000001
 900985C4 0F8FFFF2
 #Unlock All Extra Modes
 8009C814 0003
+
+#Walk through walls "Press and hold L3"
+A70B35D6 100010A0
+D7200000 00000200
+A70B35D6 10A01000
+
+#Walk through walls alternate "Hold L1+R1"
+A70B35D6 100010A0
+D7200000 0000000C
+A70B35D6 10A01000
+
+#Hold X to hover jump
+A70C71DA 24001040
+D7200000 00000040
+A70C71DA 10402400
+
+#Attach arms to head
+A7040426 0C012400
+
+#Spin head around "Hold R3"
+A70CD6DE 24001040
+A70CD6AE 24001440
+D7200000 00000400
+A70CD6DE 10402400
+A70CD6AE 14402400
+
+#Disable FPS lock
+A7010F62 14402400
 
 ; [ Master of Monsters - Disciples of Gaia (USA) (1998) (ASCII Entertainment Software) {SLUS-00595} <mmonster> ]
 :SLUS-00595
@@ -42019,6 +42385,92 @@ F40DBC1E 00AA0800
 00AAAAAA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
+; [Parasite Eve 2][NTSC-U]
+#Turn Aya and NPC's invisible
+A70182E6 00402400
+
+#Clear see through menu without lines 
+A70455EA 0C012400
+
+#Clear see through menu with lines
+A7045EF6 0C012400
+
+#Hide use
+A70D4F36 0C002400
+
+#Hide P.Energy
+A70CE6BA 0C002400
+
+#Hide map
+A70D529A 0C002400
+
+#Hide option
+A70CE7A2 0C002400
+
+#Hide key item
+A70D5036 0C002400
+
+#Hide exit
+A70CE8FA 0C002400
+
+#Mute Audio
+A704E506 0C012400
+
+#Speed up game "hold R3"
+A7027D7E 24000C00
+D7200000 00000400
+A7027D7E 0C002400
+
+#Force and cap game to 60 FPS
+A7014D42 0C002400
+
+#Turn screen black
+A7018726 0C002400
+
+#Remove Aya's right arm
+A703C7D6 0C002400
+
+#Turning Aya makes her head spin
+A70B4522 0C022400
+
+#Aya can moon jump "Hold Circle"
+A70DB72C 0008FFD0
+A70DB72E 03E027BD
+A70DB730 00000003
+A70DB732 00002404
+D7200000 00000020
+A70DB72C FFD00008
+A70DB72E 27BD03E0
+A70DB730 00030000
+A70DB732 24040000
+
+#Display full map
+A703EA26 0C002400
+
+#Quick draw weapon
+A7105876 14401000
+
+#Display ammo even out of battle
+A70A34DA 14622400
+
+#Disable huds out of battle
+A70A4472 14622400
+
+#Hide aiming crosshair
+A70D9ED6 10401000
+
+#Skip battle intro animation
+A70A3F42 14821000
+
+#Hit anywhere "Weapons"
+A70DC04A 1E201000
+A70DBAF6 10621000
+A70DBFFE 1C402400
+A70DC40A 10402400
+
+#Aim assist 
+A710946E 10402400
+
 ; [ Parasite Eve (USA) (1998) (Square Electronic Arts) {SLUS-00662 / SLUS-00668} <paraseve> ]
 :SLUS-00662
 :SLUS-00668
@@ -44387,6 +44839,10 @@ A610F468 0000FFFF
 800D7306 0064
 800D730C 0064
 
+; [ Rayman 1 NTSC-U ]
+#Disable forced sidescrolling in scrolling levels
+A715899A 14401000
+
 ; [ Rayman (USA) (1995) (Ubi Soft Entertainment Software) {SLUS-00005} <rayman> ]
 :SLUS-00005
 #Infinite Lives
@@ -45068,6 +45524,21 @@ D00AB554 0001
 #Drive In Water
 80082044 67DC
 
+; [ Resident Evil 1.5 ]
+#Disable bitmasks
+A7039662 0C012400
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 02000200
+F502C21A 0C012400
+F501A58A 00402400
+F5019F52 10401000
+
+#Almighty push! "Press R2"
+A7109412 24000C00
+D7200000 00000002
+A7109412 0C002400
+
 ; [ Resident Evil (USA) (1996) (Capcom Entertainment) {SLUS-00170} <revil> ]
 :SLUS-00170
 #Infinite Health Chris
@@ -45391,12 +45862,50 @@ E00CCBC9 0000000F
 #Giraffe Jill
 A70CCCE0 40A4407C
 
+; [ Resident Evil 3 Nemesis ]
+#Most puzzle answers are always correct (Hold L1 on last digit or exiting puzzle menu)
+A7052C82 10001062
+D7200000 00000004
+A7052C82 10621000
+
+#Nemesis shoots poisonous rockets
+900A1AE0 AE020004
+900A1AE4 34020001
+900A1AE8 00000000
+900A1AEC 3C0A800C
+900A1AF0 354ACBC8
+900A1AF4 954B0000
+900A1AF8 00000000
+900A1AFC 340C0002
+900A1B00 3C0D800C
+900A1B04 35ADCC97
+900A1B08 34090802
+900A1B0C 152B0002
+900A1B10 00000000
+900A1B14 A1AC0000
+900A1B18 00000000
+900A1B1C 34090902
+900A1B20 152B0002
+900A1B24 00000000
+900A1B28 A1AC0000
+900A1B2C 03E00008
+900A1B30 00000000
+9004770C 0C0286B8
+90047710 00000000
+
 ; [ Resident Evil - Director's Cut (USA) (1997) (Capcom Entertainment) {SLUS-00551} <revildc> ]
 :SLUS-00551
 #Quick Turn (Down + Square)
 E00CF845 0040
 E00CF848 0080
 100C5198 03E8
+
+; [ Resident Evil 3 NTSC-U]
+#Invincibility
+A7038CCA 10402400
+
+#Nemesis Rocket Launcher hits from anywhere
+A7047596 10402400
 
 ; [ Resident Evil - Director's Cut - Dual Shock Ver. (USA) (1998) (Capcom Entertainment) {SLUS-00747} <revildcds> ]
 :SLUS-00747
@@ -45485,6 +45994,49 @@ A7101356 10401000
 A710223A 18401000
 #Widescreen 16-9
 A7065B90 10000C00
+
+#See through walls
+A706D252 10401400
+
+#Alley zombie back attacks you
+A702BC9A 10C01000
+
+#Invisible enemies + npc
+A706D342 14402400
+
+#Enemies will one hit kill you
+A70844AA 14401000
+
+#Remove Firing Speed Cap + Turbo Fire 
+A7077D4C FFFE0000
+A7077D4E 24A23402
+E00B3CC4 00000028
+300B3CC4 00000008
+
+#Inf ammo
+A706FDC2 A4822400
+
+#Blood red filter
+A7082622 10401400
+
+#Press R3 to toggle hud on/off
+D7010001 01000400
+F5093406 14401400
+F5092F8A 10401400
+F506D682 14401000
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 02000200
+F507FF8E 14401000
+F507E3F6 10601000
+
+#Matrix mode ++ "Press L3 to toggle on/off"
+D7010001 04000200
+F506D252 10401400
+F5082622 10401400
+F507FF8E 14401000
+F507E3F6 10601000
+F507C9DA 12401000
 
 ; [ Re-Volt (USA) (1999) (Acclaim Entertainment) {SLUS-00851} <revolt> ]
 :SLUS-00851
@@ -45801,6 +46353,20 @@ D00895CA FFFF
 #Sapphire 2nd + 4th Impact'S-Infinite Time
 D00895CA FFFF
 800BC37A 2400
+#One hit kills "Activate/deactivate before encountering enemies on screen"
+A709E614 02D43000
+A709E616 A6710C00
+A700C000 00000001
+A700C002 00003411
+A700C004 000002D4
+A700C006 0000A671
+A700C008 00000008
+A700C00A 000003E0
+
+#Press select to kill enemies
+A70A7596 24001C40
+D7200000 00000100
+A70A7596 1C402400
 
 ; [ Risk - The Game of Global Domination (USA) (1997) (Hasbro Interactive) {SLUS-00616} <risk> ]
 :SLUS-00616
@@ -46555,6 +47121,9 @@ A60D81CA 000037FF
 #Always Hear The Checkpoint Chim Noise
 8007C368 761E
 8007C3F8 01E6
+
+#40 FPS unlock (Might speed up game)
+A7063B4A 10401000
 
 ; [ Rescue Heroes - Molten Menace (USA) (2001) (Mattel Interactive) {SLUS-01373} <rscheros> ]
 :SLUS-01373
@@ -49592,6 +50161,17 @@ A70CEDF2 10401000
 A70C6FE0 10000C00
 A70C6FF0 10000C00
 
+#60fps USA
+A70A88F0 00020001
+
+#60fps JAP
+A70AB38C 00020001
+
+#Turbo fire "Hold R2+X"
+A7044A92 10001040
+D7200000 00000042
+A7044A92 10401000
+
 ; [ Silhouette Mirage (USA) (1999) (Working Designs) {SLUS-00728B, SLUS-00728C} <silhouet> ]
 :SLUS-00728
 :SLUS-00728B
@@ -50597,6 +51177,40 @@ A71C1FB6 14401400
 D0097490 0010
 3003C708 0020
 
+#Moon jump (Alucard)
+A710FE46 10001040
+D7200000 00000040
+A710FE46 10401000
+
+#Walk through walls "Hold L2"
+A710CAA6 24001202
+A710C58A 24001440
+A710CAAE 10001040
+A710D16A 10001602
+A710D422 10001602
+D7200000 00000001
+A710CAA6 12022400
+A710C58A 14402400
+A710CAAE 10401000
+A710D16A 16021000
+A710D422 16021000
+
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F510CAA6 12022400
+F510C58A 14402400
+F510CAAE 10401000
+F510D16A 16021000
+F510D422 16021000
+
+#Stairs don't slow you down
+A7109C62 14821000
+A7109CEE 14821000
+
+#Death doesn't steal Alucards shit
+A71C006A 10401000
+A710AB86 10601000
+
 ; [ Soul Blade (USA, v1.1) (1998) (Namco Hometek) {SLUS-00240} <soulblad> ]
 :SLUS-00240
 #P1 Infinite HP
@@ -51065,6 +51679,9 @@ D01BF09A 0080
 30016433 00FF
 #Infinite Poison (On Pickup)
 30016435 00FF
+#Remove restrictions on map (Basically unlocks all levels)
+A701BDD2 14601000
+A701BE42 14621000
 
 ; [ Spider-Man (USA) (2000) (Activision) {SLUS-00875} <spidermn> ]
 :SLUS-00875
@@ -51096,6 +51713,59 @@ A7048C42 AE032400
 #Widescreen 16-9
 A70B5930 10000400
 A70B5934 19990666
+
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F5080116 05E01000
+F50800E6 05C01400
+
+#Punches and kicks hit anywhere "Press R3 + D-pad up to toggle on/off"
+D7010001 02001400
+F505510A 10402400
+F505506E 10402400
+
+#Collect items from anywhere "Press R3 + D-pad down to toggle on/off"
+D7010001 03004400
+F5045AFA 10402400
+
+#Moon jump + hover "Hold X on the way down to slowly hover downwards"
+A7045822 10001860
+D7200000 00000040
+A7045822 18601000
+00000000 0000FFFF
+A704578A 10001C60
+D7200000 00000040
+A704578A 1C601000
+
+#All suits have stealth ability "Press L2 to toggle on/off"
+A703EC76 14832400
+
+#All suits have invincibility ability
+A704AFA6 10621000
+
+#All suits have infinite webbing
+A7048BFA 10621000
+
+#See through almost anything "Hold R3"
+A70766CE 24001060
+D7200000 00000400
+A70766CE 10602400
+
+#Faster spider web balls
+A704241E 10402400
+
+#Turbo fire spider web balls "D-pad up + triangle"
+A705A372 10001040
+D7200000 00001010
+A705A372 10401000
+
+#Turbo fire spider web balls "Left analog-up + triangle"
+A705A372 10001040
+D7200000 00100010
+A705A372 10401000
+
+#Shadow Spider Man
+A707664E 10401000
 
 ; [ Spider-Man 2 - Enter - Electro (USA) (2001) (Activision) {SLUS-01378, SLUS-01378GH} <spiderm2> ]
 :SLUS-01378
@@ -53156,6 +53826,10 @@ D00D27E2 0100
 90073784 00000000
 #Infinite Credits
 800D784C 0009
+
+#Hit anywhere
+A703F7D2 16401000
+A703E98E 14402400
 
 ; [ Suikoden (USA, v1.1) (1997) (Konami of America) {SLUS-00292} <suikoden> ]
 :SLUS-00292
@@ -58790,6 +59464,18 @@ D00A2EB8 8BA0
 D00ADA88 B6AB
 800ADA58 0013
 
+; [ Tetris PLUS ] [PS1] [NTSC-U]
+#Slow motion (Classic mode)
+A70A7E16 0C022400
+
+#Matrix mode "Press L3 to toggle on off" (Classic mode)
+D7010001 00000200
+F50991DA 10801000
+F50A417A 1C401000
+
+#Freeze/unfreeze timer (Classic mode)
+A709FFE6 14401000
+
 ; [ Thunder Force V - Perfect System (USA) (1998) (Working Designs) {SLUS-00727A} <tf5> ]
 :SLUS-00727
 :SLUS-00727A
@@ -59188,6 +59874,15 @@ D00ADA88 B6AB
 300A8248 00FF
 #More Misc.\P2 Super Max Turning
 300A8249 00FF
+
+; [ Tony Hawk's Pro Skater 2 USA ]
+#Infinite hang time for tricks "Press L3 to toggle on/off"
+D7010001 01000200
+F509A166 0C021400
+
+#Wireframe mode "Press R3 to toggle on/off"
+D7010001 02000400 
+A7039F9E 0C002400
 
 ; [ Tony Hawk's Pro Skater 2 (USA) (2000) (Activision) {SLUS-01066, SLUS-01066GH} <thps2> ]
 :SLUS-01066
@@ -61433,6 +62128,39 @@ D009C9D8 4000
 #Infinite Time And Fuel For Gocart Race
 900A60E0 00830004
 
+#Left and right scroll is never stationary (Part 1)
+A702A9AA 10401000
+A702A9DA 10401000
+A702A8B6 10401000
+
+#Don't clip through ground (Part 2)
+A704268E 14402400
+
+#Disable event messages 
+A702DF2A 14401000
+
+#Disable AP received messages 
+A7031BDA 10401000
+
+#Disable item acquired messages 
+A7030F16 10622400
+
+#Hit pigs from anywhere
+A7052E82 10432400
+
+#Hover jumps "Hold X"
+A70F1F42 10001062
+D7200000 00000040
+A70F1F42 10621000
+
+#Multi-jump "Tap X repeatedly"
+A70F259E 24001040
+D7010001 01000040
+A70F259E 10402400
+
+#Tomba air dives
+A70EE126 10401000
+
 ; [ Tomba! 2 - The Evil Swine Return (USA) (1999) (Sony Computer Entertainment America) {SCUS-94454} <tomba2> ]
 :SCUS-94454
 #Infinite Health
@@ -61638,6 +62366,10 @@ A7050CDA 00432400
 #Widescreen 16-9
 8002CA58 4CCC
 8002CA60 CCCC
+#Add feedback vibration to square button
+A7078A66 24001840
+D7200000 00000080
+A7078A66 18402400
 
 ; [ Disney/Pixar Toy Story 2 - Buzz Lightyear to the Rescue! (USA, v1.0) (1999) (Activision) {SLUS-00893} <toystor2a> ]
 :SLUS-00893
@@ -85301,6 +86033,17 @@ A705B14A 8C822400
 #Ghost Mode
 900ACA68 00000000
 
+#Ghost mode "L3 on/R3 off"
+D7000000 00000200
+8000C000 00001000
+00000000 0000FFFF
+D7000000 00000400
+8000C000 00000000
+00000000 0000FFFF
+C000C000 00001000
+800ACA68 00000000
+800ACA6A 00000000
+
 ; [ Metal Gear Solid: Special Missions (Euro) (1999) (Konami of Europe) {SLES-02136} <mgssm> ]
 :SLES-02136
 #Infinite Health
@@ -85951,6 +86694,66 @@ AAAAAAAA AAAAAAAA
 0500AAAA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
+; [ Resident Evil Survivor ][NTSC-U]
+#Matrix mode "No extra visual effects" (Press circle to toggle on/off)
+D7010001 02000020
+F507FF8E 14401000
+F507E3F6 10601000
+
+#Matrix mode ++ (Press circle to toggle on/off)
+D7010001 04000020
+F506D252 10401400
+F5082622 10401400
+F507FF8E 14401000
+F507E3F6 10601000
+F507C9DA 12401000
+
+#Free cam (Includes improved controls)
+A707C9DA 12401000
+A70820AA 1A001000
+A70F3BFA 10622400
+A7078A16 A4822400
+A7078A32 A4822400
+A7078A4A A4802400
+A7092EDE 10401000
+D7000000 00000002
+610A85DC 00000032
+00000000 0000FFFF
+D7000000 00000001
+600A85DC 00000032
+00000000 0000FFFF
+D7000000 00040000
+600A865C 00000016
+00000000 0000FFFF
+D7000000 00010000
+610A865C 00000016
+00000000 0000FFFF
+A707786E 24001040
+D7200000 00080000
+A707786E 10402400
+00000000 0000FFFF
+A70777FA 24001040
+D7200000 00020000
+A70777FA 10402400
+00000000 0000FFFF
+A707749E 24001040
+D7200000 00000200
+A707749E 10402400
+00000000 0000FFFF
+A70774CA 24001040
+D7200000 00000400
+A70774CA 10402400
+00000000 0000FFFF
+A701196A 24001040
+D7200000 00100200
+A701196A 10402400
+00000000 0000FFFF
+D7000000 00400400
+600A865C 00000016
+00000000 0000FFFF
+D7000000 00100400
+610A865C 00000016
+
 ; [ Resident Evil: Survivor (Euro) (2000) (Eidos Interactive) {SLES-02732} <revilsrve> ]
 :SLES-02732
 #Infinite Health
@@ -86391,6 +87194,14 @@ D3098729 0102
 3009840D 0002
 #Widescreen 16-9
 8009806C 0C00
+
+#Wide screen part 1 (Stretch)
+A706E298 28420000
+A706E29A 00050000
+
+#Widescreen part 2 (Camera distance)
+A706E29C 30820000
+A706E29E 00060000
 
 ; [ Theme Hospital (Euro) (1998) (Electronic Arts) {SLES-00627} <themehose> ]
 ;:SLES-00627
@@ -90295,6 +91106,17 @@ A604192E 002000C8
 8003A2D6 00FF
 #Infinite Weapon 3
 8004196A 00C8
+#FPS unlock "Might want to underclock"
+A70164E6 04612400
+
+#Use right analog to look up/down
+A7079AA2 24001040
+D7200000 00040000
+A7079AA2 10402400
+00000000 0000FFFF
+A7079AE6 24001040
+D7200000 00010000
+A7079AE6 10402400
 
 ; [ Armored Core (Japan) (Highlight Disc) {SLP-80118} ]
 ; [ Armored Core (Japan) (Test Operation Disc) {SLP-80111} ]
@@ -91787,6 +92609,13 @@ A60BF0A4 FFFF0000
 800CF562 0606
 #Batgirl Codes\Max Speed
 800CF560 9632
+
+; [ Batman & Robin NTSC-U ]
+#Remove Batman's cape
+A703A6D6 0C002400
+
+#Batman is invisible except for his cape
+A703A21A 0C012400
 
 ; [ Batman & Robin (Italy) {SLES-01220} ]
 ; [ Batman Forever: The Arcade Game (Europe) {SLES-00525} ]
@@ -94018,6 +94847,11 @@ D01B19C8 001B
 801B1A1C 0018
 D01B19C8 001B
 801B1A1E AE43
+
+; [ Breath of fire IV NTSC-U ]
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200 
+F51D16E6 12932400
 
 ; [ Breath of Fire IV: Utsurowazaru Mono (Japan) {SLP-87159} ]
 ; [ Breed Master (Japan) {SLP-87054} ]
@@ -103177,6 +104011,49 @@ D007AD52 F0FF
 #Vie infinie et grains à fond
 900A91B0 000F3209
 
+; [ Disney-Pixar A Bugs Life v1.1 ][NTSC-U]
+#Moon jump
+A7048D72 10001440
+D7200000 00000040
+A7048D72 14401000
+
+#Collect anything from anywhere "Press L3 to toggle on/off"
+D7010001 01000200
+F5053C62 10402400
+
+#Destroy enemies from anywhere "Press R3 to toggle on/off"
+D7010001 02000400
+F504D62A 04411400
+
+#Invincibility no hit
+A704AE8E 10401000
+
+#Invincibility
+A704A792 1C601000
+
+#Infinite lives
+A705B334 FFFF0000
+
+#Instant training mission unravel
+A704D29E 18402400
+
+#Remove skybox
+A703D9B6 10622400
+
+#Turbo fire berry throw
+A704908E 24001462
+D7200000 00000080
+A704908E 14622400
+
+#Skip FMV's + entrance menu
+A70B6A9A 0C012400
+A70B88C6 10402400
+
+#Walk through walls "Hold L2+R2"
+A7034A9E 10001840
+D7200000 00000003
+A7034A9E 18401000
+
 ; [ Disney/Pixar A Bug's Life (Japan) {SLP-86330} ]
 ; [ Disney/Pixar A Bug's Life: Atelier de Jeux (France) {SCES-02459} ]
 ; [ Disney/Pixar A Bug's Life: Disney's Activity Centre (Europe) {SCES-02014} ]
@@ -103420,6 +104297,28 @@ D0082974 2000
 800100FC FFFF
 900100F4 FFFFFFFF
 300100F3 00FF
+
+; [ Disney-Pixar Monsters, Inc. - Scream Team][NTSC-U]
+#Moon jump hold "L1+R1+X"
+A7036B94 FFB00072
+A7036B96 34029662
+D7200000 0000004C
+A7036B94 0072FFB0
+A7036B96 96623402
+
+#Moon jump hold "X"
+A7036B94 FFB00072
+A7036B96 34029662
+D7200000 00000040
+A7036B94 0072FFB0
+A7036B96 96623402
+
+#Hold L1+R1 to no clip
+A7030ED2 100010B0
+A703C746 24000C00
+D7200000 0000000C
+A703C746 0C002400
+A7030ED2 10B01000
 
 ; [ Disney/Pixar Monsters, Inc.: SkrÃ¦mmeÃ¸en (Denmark) (Platinum) {SCES-03760} ]
 :SCES-03760
@@ -106754,6 +107653,11 @@ D01FF41A BFEF
 8010468A 0002
 #Have Extra Characters
 A6104784 00000009
+
+; [ Evil Dead - Hail to the King ]
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F50252DE 12601000
 
 ; [ Evil Dead: Hail to the King (Europe) {SLES-03428 | SLES-13428} ]
 :SLES-03428
@@ -117261,6 +118165,24 @@ D01293EA 00C8
 #Enable Bonus Movie Cheat
 800500DA 2400
 
+; [ Jackie Chan Stunt Master ][ NTSC-U ]
+#Widescreen hack 
+A7073FBA 0C022400
+A7073EEA 0C022400
+
+#Widescreen hack 
+A7073FBA 0C022400
+
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F5092386 14401000
+F507B846 10E01000
+
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F5092386 14401000
+F507B846 10E01000
+
 ; [ Jade Cocoon: Die Tamamayu Legende (Germany) {SLES-02203} ]
 :SLES-02203
 #Max Yan
@@ -118208,6 +119130,71 @@ D00BA3BA FEEF
 ; [ KKND Krossfire (Germany) {SLES-01617} ]
 ; [ Kaeru no Ehon: Nakushita Kioku o Motomete (Japan) Demo {SLP-80460} ]
 ; [ Kaette Kita Cyborg Kuro-chan (Japan) {SLP-87174} ]
+
+#Infinite lives (All characters)
+A7051652 24422400
+
+#Invincibility (All characters)
+A702DF0A 14401000
+
+#Unlock cyborg Kuro (Press up in menu)
+A70D8ECC 00000001
+
+#Walk through obstacles (All characters)
+A704F3D2 10401000
+
+#Turbo fire Kuro (All projectile weapons except FT)
+A705683A 10601000
+A7057732 10601000
+A70550F2 10401000
+
+#Turbo fire Cyborg Kuro (Best not combine codes with normal Kuro)
+A705683A 10601000
+A7057732 10601000
+A70550F2 10401000
+A7055C1E 10601000
+
+#Turbo fire Matabi (All projectile weapons except MT and NC)
+A705E47A 10401000
+A7060662 10401000
+
+#Turbo fire Mie ((All projectile weapons except FT)
+A705A1BE 10401000
+A705B2C2 10401000
+A705C07E 10401000
+
+#Infinite ammo (All characters P1)
+300D8F42 00000003
+300D8F44 00000023
+300D8F46 00000032
+300D8F48 0000001E
+300D8F4A 00000006
+
+#Main infinite weapon hit anywhere (All characters)
+A702DC5E 14402400
+A702DC76 14402400
+A702DC82 14402400
+
+#Instant dash double press (All characters)
+A7052022 14512400
+
+#Instant dash one time press (All characters)
+A7052022 14512400
+A704E6B2 14402400
+A704E6FA 14402400
+
+#30 FPS "Slow motion, press L3 to toggle on/off"
+D7010001 01000200
+F50C4FDA 04811000
+
+#FPS Unlock
+A70C5116 10401000
+
+#Enhanced Reverb
+A70C307E 10402400
+
+#Enhanced stereo delay parts
+A70C2EDE 10401000
 
 ; [ Kaette Kita Pachio-kun: Dream Collection (Japan) {SLPS-01384} ]
 :SLPS-01384
@@ -123423,6 +124410,20 @@ D0155464 0080
 #Infinite Health On (Press Select & Up)
 D00D51FA FFEE
 80035360 0004
+; [ Megaman X5 ][SLUS-01334]
+#Matrix mode "Pres L3 to toggle on/off
+D7010001 01000200
+F5021FFA 10402400
+F5022106 10401000
+F5022226 10401000
+F5022432 14401000
+
+; [ MegamanX6 USA ]
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 01000200
+F5020082 10401000
+F50527D2 14431000
+F50202CE 10401000
 
 ; [ Mega Man X6 (Europe) {SLES-03778} ]
 
@@ -136067,6 +137068,12 @@ A60BABD4 00010009
 #P2 Infinite Lock
 800D5E9E 0008
 
+; [ Rayman NTSC-U ]
+#Enable Rayman's Helicopter Power Anywhere "Press L3 to toggle on/off"
+D7010001 01000200
+F51838FA 10402400
+F5183AE6 10402400
+
 ; [ Rayman (Europe) (EDC Original) {SLES-00049} ]
 :SLES-00049
 #Infinite Health
@@ -144725,6 +145732,20 @@ D006C6F4 0000
 3006C6F4 D903
 
 ; [ Spyro 2: Ripto's Rage! + Crash Team Racing (USA) {SCUS-94632} ]
+
+; [ Spyro 2 riptos rage ]
+#SP2 LOD Duckstation ("Press L3 to toggle on/off")
+D7010001 00000200
+F5023E2A 04612400
+F5025252 05011000
+F50251EA 05011000
+F5025182 05011000
+F5024DD6 05011000
+F5024D06 05011000
+F5024D6E 05011000
+F5024C9E 05011000
+F5024C1E 05601000
+F5024C2E 05601000
 
 ; [ Spyro the Dragon (Japan) (Shokai Genteiban) {SCPS-10083} ]
 :SCPS-10083
@@ -161456,6 +162477,72 @@ D01FBD7E 0108
 #Album fully opened
 50002402 0000
 80010200 0101
+
+; [ Worlds Scariest Police Chases ]
+#Infinite health all levels (P1)
+A70707E4 00023000
+A70707E6 A7C20C00
+A700C000 00000002
+A700C002 0000A7C2
+A700C004 00000000
+A700C006 00003402
+A700C008 00000000
+A700C00A 0000AFC2
+A700C00C 00000008
+A700C00E 000003E0
+
+#Disable visual damage (Works for all cars until it catches fire)
+A70710BE 10401000
+
+#FPS Uncap
+A701C28A 0C032400
+
+#Disable police chase free play
+A7077FAE 10401000
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 01000200
+F507C2EE 16602400
+F507BFC2 10402400
+F507C04A 10401000
+
+#Drive through walls "Press R3 to toggle on/off"
+D7010001 02000400
+F50539AA 10401000
+
+#Pedestrians don't try to dodge your car
+A7087F0A 04401000
+
+#Perpetual damage
+A7050DF2 0C012400
+
+#Invincible cars V1 (All cars)
+A7070792 10C01000
+
+#Invincible cars V2 (All cars)
+A70B3C8A 10401000
+A707053A 10401000
+
+#Infinite health all levels (P1 only)
+A70707E4 00023000
+A70707E6 A7C20C00
+A700C000 00000002
+A700C002 0000A7C2
+A700C004 00000000
+A700C006 00003402
+A700C008 00000000
+A700C00A 0000AFC2
+A700C00C 00000008
+A700C00E 000003E0
+
+#No visual damage (All cars unless on fire)
+A70710BE 10401000
+
+#Turbo fire v1
+A706B41A 0C012400
+
+#Turbo fire v2
+A706ADEA 10621000
 
 ; [ World's Scariest Police Chases (Europe) {SLES-03425} ]
 :SLES-03425
