@@ -15,6 +15,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <map>
 #include <optional>
 Log_SetChannel(CDImageCHD);
@@ -51,6 +52,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
+  PrecacheResult Precache(ProgressCallback* progress) override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -297,6 +299,20 @@ bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
 bool CDImageCHD::HasNonStandardSubchannel() const
 {
   return (m_sbi.GetReplacementSectorCount() > 0);
+}
+
+CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
+{
+  const std::string_view title(FileSystem::GetFileNameFromPath(m_filename));
+  progress->SetFormattedStatusText("Precaching %.*s...", static_cast<int>(title.size()), title.data());
+  progress->SetProgressRange(100);
+
+  auto callback = [](size_t pos, size_t total, void* param) {
+    const u32 percent = static_cast<u32>((pos * 100) / total);
+    static_cast<ProgressCallback*>(param)->SetProgressValue(std::min<u32>(percent, 100));
+  };
+  return (chd_precache_progress(m_chd, callback, progress) == CHDERR_NONE) ? CDImage::PrecacheResult::Success :
+                                                                             CDImage::PrecacheResult::ReadError;
 }
 
 // There's probably a more efficient way of doing this with vectorization...

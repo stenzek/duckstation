@@ -50,6 +50,9 @@
 
 #include "LzmaEnc.h"
 #include "LzmaDec.h"
+#if defined(__PS3__) || defined(__PSL1GHT__)
+#define __MACTYPES__
+#endif
 #include "zlib.h"
 
 #undef TRUE
@@ -430,7 +433,7 @@ static void *lzma_fast_alloc(void *p, size_t size)
 	addr = (uint32_t *)malloc(size + sizeof(uint32_t) + LZMA_MIN_ALIGNMENT_BYTES);
 	if (addr==NULL)
 		return NULL;
-	for (int scan = 0; scan < MAX_LZMA_ALLOCS; scan++)
+	for (scan = 0; scan < MAX_LZMA_ALLOCS; scan++)
 	{
 		if (codec->allocptr[scan] == NULL)
 		{
@@ -794,8 +797,7 @@ static chd_error cdfl_codec_init(void *codec, uint32_t hunkbytes)
 #endif
 
 	/* flac decoder init */
-	flac_decoder_init(&cdfl->decoder);
-	if (cdfl->decoder.decoder == NULL)
+	if (flac_decoder_init(&cdfl->decoder))
 		return CHDERR_OUT_OF_MEMORY;
 
 	return CHDERR_NONE;
@@ -1161,7 +1163,7 @@ static inline int chd_compressed(chd_header* header) {
 static chd_error decompress_v5_map(chd_file* chd, chd_header* header)
 {
 	int result = 0;
-	int hunknum;
+	uint32_t hunknum;
 	int repcount = 0;
 	uint8_t lastcomp = 0;
 	uint32_t last_self = 0;
@@ -1383,8 +1385,15 @@ CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, 
 		EARLY_EXIT(err = CHDERR_UNSUPPORTED_VERSION);
 
 	/* if we need a parent, make sure we have one */
-	if (parent == NULL && (newchd->header.flags & CHDFLAGS_HAS_PARENT))
-		EARLY_EXIT(err = CHDERR_REQUIRES_PARENT);
+	if (parent == NULL)
+	{
+		/* Detect parent requirement for versions below 5 */
+		if (newchd->header.version < 5 && newchd->header.flags & CHDFLAGS_HAS_PARENT)
+			EARLY_EXIT(err = CHDERR_REQUIRES_PARENT);
+		/* Detection for version 5 and above - if parentsha1 != 0, we have a parent */
+		else if (newchd->header.version >= 5 && memcmp(nullsha1, newchd->header.parentsha1, sizeof(newchd->header.parentsha1)) != 0)
+			EARLY_EXIT(err = CHDERR_REQUIRES_PARENT);
+	}
 
 	/* make sure we have a valid parent */
 	if (parent != NULL)
@@ -1521,12 +1530,19 @@ cleanup:
     memory
 -------------------------------------------------*/
 
-CHD_EXPORT chd_error chd_precache(chd_file *chd)
+CHD_EXPORT chd_error chd_precache(chd_file* chd)
 {
+	return chd_precache_progress(chd, NULL, NULL);
+}
+
+CHD_EXPORT chd_error chd_precache_progress(chd_file *chd, void(*progress)(size_t pos, size_t total, void* param), void* param)
+{
+#define PRECACHE_CHUNK_SIZE 16 * 1024 * 1024
+
 #ifdef _MSC_VER
-	size_t size, count;
+	size_t size, done, req_count, count, last_update_done, update_interval;
 #else
-	ssize_t size, count;
+	ssize_t size, done, req_count, count, last_update_done, update_interval;
 #endif
 
 	if (chd->file_cache == NULL)
@@ -1539,12 +1555,31 @@ CHD_EXPORT chd_error chd_precache(chd_file *chd)
 		if (chd->file_cache == NULL)
 			return CHDERR_OUT_OF_MEMORY;
 		core_fseek(chd->file, 0, SEEK_SET);
-		count = core_fread(chd->file, chd->file_cache, size);
-		if (count != size)
+
+		done = 0;
+		last_update_done = 0;
+		update_interval = ((size + 99) / 100);
+
+		while (done < size)
 		{
-			free(chd->file_cache);
-			chd->file_cache = NULL;
-			return CHDERR_READ_ERROR;
+			req_count = size - done;
+			if (req_count > PRECACHE_CHUNK_SIZE)
+				req_count = PRECACHE_CHUNK_SIZE;
+
+			count = core_fread(chd->file, chd->file_cache + done, req_count);
+			if (count != req_count)
+			{
+				free(chd->file_cache);
+				chd->file_cache = NULL;
+				return CHDERR_READ_ERROR;
+			}
+
+			done += req_count;
+			if (progress != NULL && (done - last_update_done) >= update_interval && done != size)
+			{
+				last_update_done = done;
+				progress(done, size, param);
+			}
 		}
 	}
 
@@ -1560,6 +1595,12 @@ CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, 
 {
 	chd_error err;
 	core_file *file = NULL;
+
+	if (filename == NULL)
+	{
+		err = CHDERR_INVALID_PARAMETER;
+		goto cleanup;
+	}
 
 	/* choose the proper mode */
 	switch(mode)
@@ -1677,6 +1718,9 @@ CHD_EXPORT void chd_close(chd_file *chd)
 	if (chd->file_cache)
 		free(chd->file_cache);
 
+	if (chd->parent)
+		chd_close(chd->parent);
+
 	/* free our memory */
 	free(chd);
 }
@@ -1748,6 +1792,41 @@ CHD_EXPORT const chd_header *chd_get_header(chd_file *chd)
 		return NULL;
 
 	return &chd->header;
+}
+
+/*-------------------------------------------------
+    chd_read_header - read CHD header data
+	from file into the pointed struct
+-------------------------------------------------*/
+CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header)
+{
+	chd_error err = CHDERR_NONE;
+	chd_file chd;
+
+	/* punt if NULL */
+	if (filename == NULL || header == NULL)
+		EARLY_EXIT(err = CHDERR_INVALID_PARAMETER);
+
+	/* open the file */
+	chd.file = core_fopen(filename);
+	if (chd.file == NULL)
+		EARLY_EXIT(err = CHDERR_FILE_NOT_FOUND);
+
+	/* attempt to read the header */
+	err = header_read(&chd, header);
+	if (err != CHDERR_NONE)
+		EARLY_EXIT(err);
+
+	/* validate the header */
+	err = header_validate(header);
+	if (err != CHDERR_NONE)
+		EARLY_EXIT(err);
+
+cleanup:
+	if (chd.file != NULL)
+		core_fclose(chd.file);
+
+	return err;
 }
 
 /***************************************************************************
@@ -2124,9 +2203,9 @@ static UINT8* hunk_read_compressed(chd_file *chd, UINT64 offset, size_t size)
 static chd_error hunk_read_uncompressed(chd_file *chd, UINT64 offset, size_t size, UINT8 *dest)
 {
 #ifdef _MSC_VER
-  size_t bytes;
+	size_t bytes;
 #else
-  ssize_t bytes;
+	ssize_t bytes;
 #endif
 	if (chd->file_cache != NULL)
 	{
@@ -2344,13 +2423,33 @@ static chd_error hunk_read_into_memory(chd_file *chd, UINT32 hunknum, UINT8 *des
 				return hunk_read_into_memory(chd, blockoffs, dest);
 
 			case COMPRESSION_PARENT:
-#if 0
-				/* TODO */
-				if (m_parent_missing)
+				if (chd->parent == NULL)
 					return CHDERR_REQUIRES_PARENT;
-				return m_parent->read_bytes(uint64_t(blockoffs) * uint64_t(m_parent->unit_bytes()), dest, m_hunkbytes);
-#endif
-				return CHDERR_DECOMPRESSION_ERROR;
+				UINT8 units_in_hunk = chd->header.hunkbytes / chd->header.unitbytes;
+
+				/* blockoffs is aligned to units_in_hunk */
+				if (blockoffs % units_in_hunk == 0) {
+					return hunk_read_into_memory(chd->parent, blockoffs / units_in_hunk, dest);
+				/* blockoffs is not aligned to units_in_hunk */
+				} else {
+					UINT32 unit_in_hunk = blockoffs % units_in_hunk;
+					UINT8 *buf = malloc(chd->header.hunkbytes);
+					/* Read first half of hunk which contains blockoffs */
+					err = hunk_read_into_memory(chd->parent, blockoffs / units_in_hunk, buf);
+					if (err != CHDERR_NONE) {
+						free(buf);
+						return err;
+					}
+					memcpy(dest, buf + unit_in_hunk * chd->header.unitbytes, (units_in_hunk - unit_in_hunk) * chd->header.unitbytes);
+					/* Read second half of hunk which contains blockoffs */
+					err = hunk_read_into_memory(chd->parent, (blockoffs / units_in_hunk) + 1, buf);
+					if (err != CHDERR_NONE) {
+						free(buf);
+						return err;
+					}
+					memcpy(dest + (units_in_hunk - unit_in_hunk) * chd->header.unitbytes, buf, unit_in_hunk * chd->header.unitbytes);
+					free(buf);
+				}
 		}
 		return CHDERR_NONE;
 	}
@@ -2375,7 +2474,7 @@ static chd_error map_read(chd_file *chd)
 	UINT8 cookie[MAP_ENTRY_SIZE];
 	UINT32 count;
 	chd_error err;
-	int i;
+	UINT32 i;
 
 	/* first allocate memory */
 	chd->map = (map_entry *)malloc(sizeof(chd->map[0]) * chd->header.totalhunks);
@@ -2545,8 +2644,6 @@ static void zlib_codec_free(void *codec)
 	/* deinit the streams */
 	if (data != NULL)
 	{
-		int i;
-
 		inflateEnd(&data->inflater);
 
 		/* free our fast memory */

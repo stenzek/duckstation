@@ -1,11 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\msvc\vsprops\Configurations.props" />
-
   <ItemGroup Condition="'$(Configuration)'!='DebugUWP' And '$(Configuration)'!='ReleaseUWP'">
-    <ProjectReference Include="..\libFLAC\libFLAC.vcxproj">
-      <Project>{97cbd3cb-cbc7-4d52-abde-f0ae7b794a5d}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\lzma\lzma.vcxproj">
       <Project>{dd944834-7899-4c1c-a4c1-064b5009d239}</Project>
     </ProjectReference>
@@ -13,7 +9,6 @@
       <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
     </ProjectReference>
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="src\libchdr_bitstream.c" />
     <ClCompile Include="src\libchdr_cdrom.c" />
@@ -22,6 +17,7 @@
     <ClCompile Include="src\libchdr_huffman.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\dr_libs\dr_flac.h" />
     <ClInclude Include="include\libchdr\bitstream.h" />
     <ClInclude Include="include\libchdr\cdrom.h" />
     <ClInclude Include="include\libchdr\chd.h" />
@@ -30,20 +26,15 @@
     <ClInclude Include="include\libchdr\flac.h" />
     <ClInclude Include="include\libchdr\huffman.h" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{425D6C99-D1C8-43C2-B8AC-4D7B1D941017}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\msvc\vsprops\StaticLibrary.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>FLAC__NO_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\libFLAC\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <Import Project="..\msvc\vsprops\Targets.props" />
 </Project>
