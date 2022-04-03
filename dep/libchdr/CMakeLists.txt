@@ -15,5 +15,5 @@ add_library(libchdr
 )
 
 target_include_directories(libchdr PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(libchdr PRIVATE zlib lzma libFLAC)
+target_link_libraries(libchdr PRIVATE zlib lzma)
 
