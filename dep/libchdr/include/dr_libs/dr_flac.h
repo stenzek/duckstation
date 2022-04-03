@@ -4686,7 +4686,7 @@ static drflac_bool32 drflac__decode_samples_with_residual__rice__neon_64(drflac_
 
     /* For this version we are doing one sample at a time. */
     while (pDecodedSamples < pDecodedSamplesEnd) {
-        int64x2_t prediction128;
+        int64x2_t prediction128 = vdupq_n_s64(0);
         uint32x4_t zeroCountPart128;
         uint32x4_t riceParamPart128;
 
