@@ -347,7 +347,7 @@ struct _chd_verify_result
     FUNCTION PROTOTYPES
 ***************************************************************************/
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #ifdef CHD_DLL
 #ifdef CHD_DLL_EXPORTS
 #define CHD_EXPORT __declspec(dllexport)
@@ -355,7 +355,6 @@ struct _chd_verify_result
 #define CHD_EXPORT __declspec(dllimport)
 #endif
 #else
-// Static library.
 #define CHD_EXPORT
 #endif
 #else
@@ -393,6 +392,8 @@ CHD_EXPORT const char *chd_error_string(chd_error err);
 /* return a pointer to the extracted CHD header data */
 CHD_EXPORT const chd_header *chd_get_header(chd_file *chd);
 
+/* read CHD header data from file into the pointed struct */
+CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header);
 
 
 

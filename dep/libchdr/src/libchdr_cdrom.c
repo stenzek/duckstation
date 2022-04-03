@@ -15,7 +15,7 @@
     schemes will differ after track 1!
 
 ***************************************************************************/
-#include <assert.h>
+
 #include <string.h>
 
 #include <libchdr/cdrom.h>

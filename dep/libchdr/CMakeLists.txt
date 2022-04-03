@@ -1,4 +1,5 @@
 add_library(libchdr
+  include/dr_libs/dr_flac.h
   include/libchdr/bitstream.h
   include/libchdr/cdrom.h
   include/libchdr/chd.h
