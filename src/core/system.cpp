@@ -683,11 +683,22 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
     else
     {
       HostInterfaceProgressCallback callback;
-      std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
-      if (memory_image)
-        media = std::move(memory_image);
-      else
-        Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
+      const CDImage::PrecacheResult res = media->Precache(&callback);
+      if (res == CDImage::PrecacheResult::Unsupported)
+      {
+        // fall back to copy precaching
+        std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
+        if (memory_image)
+          media = std::move(memory_image);
+        else
+          Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
+      }
+      else if (res != CDImage::PrecacheResult::Success)
+      {
+        g_host_interface->AddOSDMessage(
+          g_host_interface->TranslateStdString("OSDMessage", "Precaching CD image failed, it may be unreliable."),
+          15.0f);
+      }
     }
   }
 

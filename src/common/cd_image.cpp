@@ -324,6 +324,11 @@ std::string CDImage::GetSubImageMetadata(u32 index, const std::string_view& type
   return {};
 }
 
+CDImage::PrecacheResult CDImage::Precache(ProgressCallback* progress /*= ProgressCallback::NullProgressCallback*/)
+{
+  return PrecacheResult::Unsupported;
+}
+
 void CDImage::ClearTOC()
 {
   m_lba_count = 0;

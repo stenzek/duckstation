@@ -57,6 +57,13 @@ public:
     Mode2Raw      // 2352 bytes per sector
   };
 
+  enum class PrecacheResult : u8
+  {
+    Unsupported,
+    ReadError,
+    Success,
+  };
+
   struct SectorHeader
   {
     u8 minute;
@@ -293,6 +300,9 @@ public:
 
   // Retrieve sub-image metadata.
   virtual std::string GetSubImageMetadata(u32 index, const std::string_view& type) const;
+
+  // Returns true if the source supports precaching, which may be more optimal than an in-memory copy.
+  virtual PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
 protected:
   void ClearTOC();
