@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="achievementsettingswidget.cpp" />
@@ -255,6 +254,7 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
     <QtUi Include="achievementsettingswidget.ui">
       <FileType>Document</FileType>
@@ -264,7 +264,6 @@
     </QtUi>
     <None Include="debuggerwindow.ui" />
   </ItemGroup>
-
   <ItemGroup>
     <CommonDataFiles Include="$(SolutionDir)data\**\*.*">
       <InProject>false</InProject>
@@ -274,23 +273,17 @@
     <Message Text="Copying common data files" Importance="High" />
     <Copy SourceFiles="@(CommonDataFiles)" DestinationFolder="$(BinaryOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28F14272-0EC4-41BB-849F-182ADB81AF70}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
   <Import Project="..\..\dep\msvc\vsprops\QtCompile.props" />
-
   <Import Project="..\frontend-common\frontend-common.props" />
-
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>$(RootBuildDir)frontend-common\frontend-common.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
-
   <Import Project="..\..\dep\msvc\vsprops\QtCompile.targets" />
 </Project>

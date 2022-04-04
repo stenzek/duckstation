@@ -182,6 +182,9 @@
     <None Include="translations\duckstation-qt_tr.ts">
       <Filter>translations</Filter>
     </None>
+    <None Include="translations\duckstation-qt_es-es.ts">
+      <Filter>translations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="translations\duckstation-qt_de.ts">
