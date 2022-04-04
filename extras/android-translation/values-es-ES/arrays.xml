@@ -5,19 +5,13 @@
         <item>NTSC-U (EE. UU.)</item>
         <item>PAL (Europa, Australia)</item>
     </string-array>
-    <string-array name="settings_console_region_values">
-        <item>Automática</item>
-        <item>NTSC-J</item>
-        <item>NTSC-U</item>
-        <item>PAL</item>
-    </string-array>
     <string-array name="settings_cpu_execution_mode_entries">
-        <item>Intérprete (el más lento)</item>
+        <item>Intérprete (lo más lento)</item>
         <item>Intérprete en caché (rápido)</item>
         <item>Recompilador (más rápido)</item>
     </string-array>
     <string-array name="settings_cpu_fastmem_mode_entries">
-        <item>Deshabilitado (El más lento)</item>
+        <item>Deshabilitado (lo más lento)</item>
         <item>MMap (por hardware, el más rápido, sólo para 64 bits)</item>
         <item>LUT (más rápido)</item>
     </string-array>
@@ -46,7 +40,7 @@
     </string-array>
     <string-array name="settings_display_crop_mode_entries">
         <item>No recortar</item>
-        <item>Sólo el área de sobrescaneo</item>
+        <item>Solo el área de sobrescaneo</item>
         <item>Todos los bordes</item>
     </string-array>
     <string-array name="settings_display_aspect_ratio_names">
@@ -70,8 +64,8 @@
     </string-array>
     <string-array name="settings_controller_type_entries">
         <item>Ninguno</item>
-        <item>Control digital (Mando)</item>
-        <item>Control analógico (DualShock)</item>
+        <item>Mando digital (Mando)</item>
+        <item>Mando analógico (DualShock)</item>
         <item>Joystick analógico</item>
         <item>NeGcon</item>
         <item>GunCon</item>
@@ -87,13 +81,13 @@
     <string-array name="emulation_touchscreen_menu">
         <item>Cambiar tipo</item>
         <item>Cambiar opacidad</item>
-        <item>Agregar/Quitar botones</item>
+        <item>Añadir/Quitar botones</item>
         <item>Mover botones</item>
         <item>Escalar botones</item>
     </string-array>
     <string-array name="touchscreen_layout_menu">
         <item>Cambiar opacidad</item>
-        <item>Agregar/Quitar botones</item>
+        <item>Añadir/Quitar botones</item>
         <item>Mover botones</item>
         <item>Escalar botones</item>
         <item>Reiniciar disposición</item>
@@ -114,8 +108,8 @@
     <string-array name="settings_touchscreen_controller_view_entries">
         <item>Ninguno</item>
         <item>Mando digital</item>
-        <item>Mando con una palanca analógica</item>
-        <item>Mando con dos palancas analógicas</item>
+        <item>Mando con un stick analógico</item>
+        <item>Mando con dos sticks analógicos</item>
         <item>Pistola de luz</item>
     </string-array>
     <string-array name="settings_audio_backend_entries">
@@ -124,10 +118,10 @@
         <item>OpenSL ES (recomendado)</item>
     </string-array>
     <string-array name="settings_audio_buffer_size_entries">
-        <item>1024 fotogramas (23.22ms)</item>
-        <item>2048 fotogramas (46.44ms, recomendado)</item>
-        <item>3072 fotogramas (69.66ms)</item>
-        <item>4096 fotogramas (92.88ms)</item>
+        <item>1024 fotogramas (23,22ms)</item>
+        <item>2048 fotogramas (46,44ms, recomendado)</item>
+        <item>3072 fotogramas (69,66ms)</item>
+        <item>4096 fotogramas (92,88ms)</item>
     </string-array>
     <string-array name="settings_log_level_entries">
         <item>Ninguno</item>
