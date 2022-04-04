@@ -964,7 +964,17 @@ void MainWindow::setupAdditionalUi()
     QAction* action = language_group->addAction(it.first);
     action->setCheckable(true);
     action->setChecked(current_language == it.second);
-    action->setIcon(QIcon(QStringLiteral(":/icons/flags/%1.png").arg(it.second)));
+
+    QString icon_filename(QStringLiteral(":/icons/flags/%1.png").arg(it.second));
+    if (!QFile::exists(icon_filename))
+    {
+      // try without the suffix (e.g. es-es -> es)
+      const int pos = it.second.lastIndexOf('-');
+      if (pos >= 0)
+        icon_filename = QStringLiteral(":/icons/flags/%1.png").arg(it.second.left(pos));
+    }
+    action->setIcon(QIcon(icon_filename));
+
     m_ui.menuSettingsLanguage->addAction(action);
     action->setData(it.second);
     connect(action, &QAction::triggered, [this, action]() {
