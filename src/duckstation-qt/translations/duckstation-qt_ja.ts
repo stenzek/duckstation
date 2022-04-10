@@ -2726,7 +2726,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="364"/>
         <source>&amp;Close</source>
-        <translation>閉じる(C)</translation>
+        <translation>閉じる(&amp;C)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="373"/>
@@ -7983,7 +7983,7 @@ Achievements: %5 (%6)
         <location filename="../qthostinterface.cpp" line="1016"/>
         <location filename="../qthostinterface.cpp" line="1058"/>
         <source>Save States (*.sav)</source>
-        <translation>ステートセーブ</translation>
+        <translation>ステートセーブ(*.sav)</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="1119"/>
