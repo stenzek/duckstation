@@ -267,10 +267,6 @@
 ;                      It will then poke all following codes for rest of cheat
 ;  00000000 FFFF       or until it reaches the 00000000 FFFF line.
 ;
-;* 52XXXXXX YYYYYYYY - Register Master Code, if ($XXXXXX) contains 0xYYYYYYYY poke
-;  00000000 FFFF       all following codes for rest of the cheat or until it reaches
-;                      the 00000000 FFFF line.
-;
 ;  Other Code Types
 ;  ****************
 ;  These are only needed on hardware when you can't enable & disable codes after
@@ -304,21 +300,25 @@
 ;* 510000XX TTTTTTTT - 8-Bit Address Write from Register, Poke address TTTTTTTT
 ;                      with the 8-bit contents of Register XX. 
 ;                      u8Poke TTTTTTTT, RegXX
-;* 510100XX TTTTTTTT - 8-Bit Address Read to Register, Peek the 8bit contents of
+;* 510100XX TTTTTTTT - 8-Bit Address Read to Register, Peek the 8-bit contents of
 ;                      address TTTTTTTT and store it in Register XX.
 ;                      u8Poke RegXX, (TTTTTTTT) 
 ;* 510200XX 000000ZZ - 8-Bit Indirect Register Write, poke ZZ to the 32-Bit 
 ;                      address stored in Register XX.
 ;                      u8Poke (RegXX), ZZ 
-;* 5103YYXX 000000ZZ - 8-Bit Register Addition, add ZZ and the 8 bit contents 
+;* 5103YYXX 000000ZZ - 8-Bit Register Addition, add ZZ and the 8-bit contents 
 ;                      of Register YY together and write it to Register XX.
 ;                      u8Poke RegXX, RegYY + ZZ                  
 ;* 5104YYXX 000000ZZ - 8-Bit Indirect Register Write with addition, add ZZ and  
-;                      the 8 bit contents of Register YY together and write it  
+;                      the 8-bit contents of Register YY together and write it  
 ;                      to the 32-Bit address stored in Register XX.
 ;                      u8Poke (RegXX), RegYY + ZZ  
 ;* 510500XX 000000ZZ - 8-Bit Direct Register Write, poke ZZ to Register XX.
 ;                      u8Poke RegXX, ZZ  
+;* 5106YYXX ZZZZZZZZ - 8-Bit Indirect Register Read, Peek the 8-bit contents
+;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
+;                      to Register XX.
+;                      u8Poke RegXX, (RegYY + ZZZZZZZZ)
 ;
 ; 16 BIT operations:
 ; ==================
@@ -340,6 +340,10 @@
 ;                      u16Poke (RegXX), RegYY + ZZZZ 
 ;* 514500XX 0000ZZZZ - 16-Bit Direct Register Write, poke ZZZZ to Register XX.
 ;                      u16Poke RegXX, ZZZZ  
+;* 5146YYXX ZZZZZZZZ - 16-Bit Indirect Register Read, Peek the 16-bit contents
+;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
+;                      to Register XX.
+;                      u16Poke RegXX, (RegYY + ZZZZZZZZ)
 ;
 ; 32 BIT operations:
 ; ==================
@@ -363,6 +367,10 @@
 ;* 518500XX ZZZZZZZZ - 32-Bit Direct Register Write, poke ZZZZZZZZ to Register XX.
 ;                      u32Poke RegXX, ZZZZZZZZ. Note: This is useful to write
 ;                      the actual address to a register.  
+;* 5186YYXX ZZZZZZZZ - 32-Bit Indirect Register Read, Peek the 32-bit contents
+;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
+;                      to Register XX.
+;                      u32Poke RegXX, (RegYY + ZZZZZZZZ)
 ;
 ; Generic Register Operations:
 ; ============================
