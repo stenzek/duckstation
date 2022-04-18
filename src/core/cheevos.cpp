@@ -43,6 +43,7 @@ enum : s32
   NO_RICH_PRESENCE_PING_FREQUENCY = RICH_PRESENCE_PING_FREQUENCY * 2
 };
 
+static void FormattedError(const char* format, ...) printflike(1, 2);
 static void CheevosEventHandler(const rc_runtime_event_t* runtime_event);
 static unsigned CheevosPeek(unsigned address, unsigned num_bytes, void* ud);
 static void ActivateLockedAchievements();
@@ -51,9 +52,37 @@ static void DeactivateAchievement(Achievement* achievement);
 static void SendPing();
 static void SendPlaying();
 static void UpdateRichPresence();
-
-/// Uses a temporarily (second) CD image to resolve the hash.
 static void GameChanged();
+static std::string GetErrorFromResponseJSON(const rapidjson::Document& doc);
+static void LogFailedResponseJSON(const FrontendCommon::HTTPDownloader::Request::Data& data);
+static bool ParseResponseJSON(const char* request_type, s32 status_code,
+                              const FrontendCommon::HTTPDownloader::Request::Data& data, rapidjson::Document& doc,
+                              const char* success_field = "Success");
+static Achievement* GetAchievementByID(u32 id);
+static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboards = true);
+static void ClearGamePath();
+static std::string GetUserAgent();
+static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader,
+                      FrontendCommon::HTTPDownloader::Request::Callback callback);
+static void UpdateImageDownloadProgress();
+static void DownloadImage(std::string url, std::string cache_filename);
+static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bool cache_path);
+static std::string ResolveBadgePath(const char* badge_name, bool locked);
+static void DisplayAchievementSummary();
+static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void GetUserUnlocks();
+static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void GetPatches(u32 game_id);
+static std::string GetGameHash(CDImage* cdi);
+static void GetGameIdCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void SendPlayingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void UpdateRichPresence();
+static void SendPingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
+static void SubmitLeaderboardCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data);
 
 bool g_active = false;
 bool g_challenge_mode = false;
@@ -83,22 +112,41 @@ static std::string s_game_developer;
 static std::string s_game_publisher;
 static std::string s_game_release_date;
 static std::string s_game_icon;
-static std::vector<Achievement> s_achievements;
-static std::vector<Leaderboard> s_leaderboards;
+static std::vector<Cheevos::Achievement> s_achievements;
+static std::vector<Cheevos::Leaderboard> s_leaderboards;
 
 static bool s_has_rich_presence = false;
 static std::string s_rich_presence_string;
 static Common::Timer s_last_ping_time;
 
 static u32 s_last_queried_lboard;
-static std::optional<std::vector<LeaderboardEntry>> s_lboard_entries;
+static std::optional<std::vector<Cheevos::LeaderboardEntry>> s_lboard_entries;
 
 static u32 s_total_image_downloads;
 static u32 s_completed_image_downloads;
 static bool s_image_download_progress_active;
 
-static void FormattedError(const char* format, ...) printflike(1, 2);
-static void FormattedError(const char* format, ...)
+} // namespace Cheevos
+
+template<typename T>
+static std::string GetOptionalString(const T& value, const char* key)
+{
+  if (!value.HasMember(key) || !value[key].IsString())
+    return std::string();
+
+  return value[key].GetString();
+}
+
+template<typename T>
+static u32 GetOptionalUInt(const T& value, const char* key)
+{
+  if (!value.HasMember(key) || !value[key].IsUint())
+    return 0;
+
+  return value[key].GetUint();
+}
+
+void Cheevos::FormattedError(const char* format, ...)
 {
   std::va_list ap;
   va_start(ap, format);
@@ -113,7 +161,7 @@ static void FormattedError(const char* format, ...)
   Log_ErrorPrint(str.GetCharArray());
 }
 
-static std::string GetErrorFromResponseJSON(const rapidjson::Document& doc)
+std::string Cheevos::GetErrorFromResponseJSON(const rapidjson::Document& doc)
 {
   if (doc.HasMember("Error") && doc["Error"].IsString())
     return doc["Error"].GetString();
@@ -121,15 +169,15 @@ static std::string GetErrorFromResponseJSON(const rapidjson::Document& doc)
   return "";
 }
 
-static void LogFailedResponseJSON(const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::LogFailedResponseJSON(const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   const std::string str_data(reinterpret_cast<const char*>(data.data()), data.size());
   Log_ErrorPrintf("API call failed. Response JSON was:\n%s", str_data.c_str());
 }
 
-static bool ParseResponseJSON(const char* request_type, s32 status_code,
-                              const FrontendCommon::HTTPDownloader::Request::Data& data, rapidjson::Document& doc,
-                              const char* success_field = "Success")
+bool Cheevos::ParseResponseJSON(const char* request_type, s32 status_code,
+                                const FrontendCommon::HTTPDownloader::Request::Data& data, rapidjson::Document& doc,
+                                const char* success_field)
 {
   if (status_code != HTTP_OK || data.empty())
   {
@@ -158,25 +206,7 @@ static bool ParseResponseJSON(const char* request_type, s32 status_code,
   return true;
 }
 
-template<typename T>
-static std::string GetOptionalString(const T& value, const char* key)
-{
-  if (!value.HasMember(key) || !value[key].IsString())
-    return std::string();
-
-  return value[key].GetString();
-}
-
-template<typename T>
-static u32 GetOptionalUInt(const T& value, const char* key)
-{
-  if (!value.HasMember(key) || !value[key].IsUint())
-    return 0;
-
-  return value[key].GetUint();
-}
-
-static Achievement* GetAchievementByID(u32 id)
+static Cheevos::Achievement* Cheevos::GetAchievementByID(u32 id)
 {
   for (Achievement& ach : s_achievements)
   {
@@ -187,7 +217,7 @@ static Achievement* GetAchievementByID(u32 id)
   return nullptr;
 }
 
-static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboards = true)
+void Cheevos::ClearGameInfo(bool clear_achievements, bool clear_leaderboards)
 {
   const bool had_game = (g_game_id != 0);
 
@@ -231,19 +261,19 @@ static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboard
     g_host_interface->OnAchievementsRefreshed();
 }
 
-static void ClearGamePath()
+void Cheevos::ClearGamePath()
 {
   std::string().swap(s_game_path);
   std::string().swap(s_game_hash);
 }
 
-static std::string GetUserAgent()
+std::string Cheevos::GetUserAgent()
 {
   return StringUtil::StdStringFromFormat("DuckStation for %s (%s) %s", SYSTEM_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
-bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence, bool challenge_mode,
-                bool include_unofficial)
+bool Cheevos::Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_rich_presence,
+                         bool challenge_mode, bool include_unofficial)
 {
   s_http_downloader = FrontendCommon::HTTPDownloader::Create(GetUserAgent().c_str());
   if (!s_http_downloader)
@@ -275,7 +305,7 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
   return true;
 }
 
-void Reset()
+void Cheevos::Reset()
 {
   if (!g_active)
     return;
@@ -292,7 +322,7 @@ void Reset()
   rc_runtime_reset(&s_rcheevos_runtime);
 }
 
-void Shutdown()
+void Cheevos::Shutdown()
 {
   if (!g_active)
     return;
@@ -314,7 +344,7 @@ void Shutdown()
   s_http_downloader.reset();
 }
 
-void Update()
+void Cheevos::Update()
 {
   s_http_downloader->PollRequests();
 
@@ -343,7 +373,7 @@ void Update()
   }
 }
 
-bool DoState(StateWrapper& sw)
+bool Cheevos::DoState(StateWrapper& sw)
 {
   // if we're inactive, we still need to skip the data (if any)
   if (!g_active)
@@ -453,42 +483,42 @@ bool DoState(StateWrapper& sw)
   }
 }
 
-bool IsLoggedIn()
+bool Cheevos::IsLoggedIn()
 {
   return s_logged_in;
 }
 
-bool IsTestModeActive()
+bool Cheevos::IsTestModeActive()
 {
   return s_test_mode;
 }
 
-bool IsUnofficialTestModeActive()
+bool Cheevos::IsUnofficialTestModeActive()
 {
   return s_unofficial_test_mode;
 }
 
-bool IsUsingFirstDiscFromPlaylist()
+bool Cheevos::IsUsingFirstDiscFromPlaylist()
 {
   return s_use_first_disc_from_playlist;
 }
 
-bool IsRichPresenceEnabled()
+bool Cheevos::IsRichPresenceEnabled()
 {
   return s_rich_presence_enabled;
 }
 
-const std::string& GetUsername()
+const std::string& Cheevos::GetUsername()
 {
   return s_username;
 }
 
-const std::string& GetRichPresenceString()
+const std::string& Cheevos::GetRichPresenceString()
 {
   return s_rich_presence_string;
 }
 
-static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Login", status_code, data, doc))
@@ -525,7 +555,7 @@ static void LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloader:
   }
 }
 
-static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   if (ImGuiFullscreen::IsInitialized())
     ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
@@ -533,8 +563,8 @@ static void LoginASyncCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   LoginCallback(status_code, data);
 }
 
-static void SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader,
-                      FrontendCommon::HTTPDownloader::Request::Callback callback)
+void Cheevos::SendLogin(const char* username, const char* password, FrontendCommon::HTTPDownloader* http_downloader,
+                        FrontendCommon::HTTPDownloader::Request::Callback callback)
 {
   char url[768] = {};
   int res = rc_url_login_with_password(url, sizeof(url), username, password);
@@ -543,7 +573,7 @@ static void SendLogin(const char* username, const char* password, FrontendCommon
   http_downloader->CreateRequest(url, std::move(callback));
 }
 
-bool LoginAsync(const char* username, const char* password)
+bool Cheevos::LoginAsync(const char* username, const char* password)
 {
   s_http_downloader->WaitForAllRequests();
 
@@ -561,7 +591,7 @@ bool LoginAsync(const char* username, const char* password)
   return true;
 }
 
-bool Login(const char* username, const char* password)
+bool Cheevos::Login(const char* username, const char* password)
 {
   if (g_active)
     s_http_downloader->WaitForAllRequests();
@@ -589,7 +619,7 @@ bool Login(const char* username, const char* password)
   return !g_host_interface->GetStringSettingValue("Cheevos", "Token").empty();
 }
 
-void Logout()
+void Cheevos::Logout()
 {
   if (g_active)
   {
@@ -614,7 +644,7 @@ void Logout()
   }
 }
 
-static void UpdateImageDownloadProgress()
+void Cheevos::UpdateImageDownloadProgress()
 {
   static const char* str_id = "cheevo_image_download";
 
@@ -651,7 +681,7 @@ static void UpdateImageDownloadProgress()
   }
 }
 
-static void DownloadImage(std::string url, std::string cache_filename)
+void Cheevos::DownloadImage(std::string url, std::string cache_filename)
 {
   auto callback = [cache_filename](s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data) {
     s_completed_image_downloads++;
@@ -676,7 +706,7 @@ static void DownloadImage(std::string url, std::string cache_filename)
   s_http_downloader->CreateRequest(std::move(url), std::move(callback));
 }
 
-static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bool cache_path)
+std::string Cheevos::GetBadgeImageFilename(const char* badge_name, bool locked, bool cache_path)
 {
   if (!cache_path)
   {
@@ -693,7 +723,7 @@ static std::string GetBadgeImageFilename(const char* badge_name, bool locked, bo
   }
 }
 
-static std::string ResolveBadgePath(const char* badge_name, bool locked)
+std::string Cheevos::ResolveBadgePath(const char* badge_name, bool locked)
 {
   char url[256];
 
@@ -709,7 +739,7 @@ static std::string ResolveBadgePath(const char* badge_name, bool locked)
   return cache_path;
 }
 
-static void DisplayAchievementSummary()
+void Cheevos::DisplayAchievementSummary()
 {
   std::string title = s_game_title;
   if (g_challenge_mode)
@@ -743,7 +773,7 @@ static void DisplayAchievementSummary()
   ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
 }
 
-static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Get User Unlocks", status_code, data, doc))
@@ -790,7 +820,7 @@ static void GetUserUnlocksCallback(s32 status_code, const FrontendCommon::HTTPDo
   g_host_interface->OnAchievementsRefreshed();
 }
 
-static void GetUserUnlocks()
+void Cheevos::GetUserUnlocks()
 {
   char url[512];
   int res = rc_url_get_unlock_list(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), g_game_id,
@@ -800,7 +830,7 @@ static void GetUserUnlocks()
   s_http_downloader->CreateRequest(url, GetUserUnlocksCallback);
 }
 
-static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   ClearGameInfo();
 
@@ -977,7 +1007,7 @@ static void GetPatchesCallback(s32 status_code, const FrontendCommon::HTTPDownlo
   }
 }
 
-static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Get Leaderboard Info", status_code, data, doc))
@@ -1040,7 +1070,7 @@ static void GetLbInfoCallback(s32 status_code, const FrontendCommon::HTTPDownloa
   }
 }
 
-static void GetPatches(u32 game_id)
+void Cheevos::GetPatches(u32 game_id)
 {
   char url[512];
   int res = rc_url_get_patch(url, sizeof(url), s_username.c_str(), s_login_token.c_str(), game_id);
@@ -1049,7 +1079,7 @@ static void GetPatches(u32 game_id)
   s_http_downloader->CreateRequest(url, GetPatchesCallback);
 }
 
-static std::string GetGameHash(CDImage* cdi)
+std::string Cheevos::GetGameHash(CDImage* cdi)
 {
   std::string executable_name;
   std::vector<u8> executable_data;
@@ -1087,7 +1117,7 @@ static std::string GetGameHash(CDImage* cdi)
   return hash_str;
 }
 
-static void GetGameIdCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::GetGameIdCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Get Game ID", status_code, data, doc))
@@ -1101,7 +1131,7 @@ static void GetGameIdCallback(s32 status_code, const FrontendCommon::HTTPDownloa
   GetPatches(game_id);
 }
 
-void GameChanged()
+void Cheevos::GameChanged()
 {
   Assert(System::IsValid());
 
@@ -1120,7 +1150,7 @@ void GameChanged()
   GameChanged(path, cdi.get());
 }
 
-void GameChanged(const std::string& path, CDImage* image)
+void Cheevos::GameChanged(const std::string& path, CDImage* image)
 {
   if (s_game_path == path)
     return;
@@ -1185,7 +1215,7 @@ void GameChanged(const std::string& path, CDImage* image)
   s_http_downloader->CreateRequest(url, GetGameIdCallback);
 }
 
-static void SendPlayingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::SendPlayingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Post Activity", status_code, data, doc))
@@ -1194,7 +1224,7 @@ static void SendPlayingCallback(s32 status_code, const FrontendCommon::HTTPDownl
   Log_InfoPrintf("Playing game updated to %u (%s)", g_game_id, s_game_title.c_str());
 }
 
-void SendPlaying()
+void Cheevos::SendPlaying()
 {
   if (!HasActiveGame())
     return;
@@ -1206,7 +1236,7 @@ void SendPlaying()
   s_http_downloader->CreateRequest(url, SendPlayingCallback);
 }
 
-static void UpdateRichPresence()
+void Cheevos::UpdateRichPresence()
 {
   if (!s_has_rich_presence)
     return;
@@ -1230,14 +1260,14 @@ static void UpdateRichPresence()
   g_host_interface->OnAchievementsRefreshed();
 }
 
-static void SendPingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::SendPingCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Ping", status_code, data, doc))
     return;
 }
 
-void SendPing()
+void Cheevos::SendPing()
 {
   if (!HasActiveGame())
     return;
@@ -1252,32 +1282,32 @@ void SendPing()
   s_last_ping_time.Reset();
 }
 
-const std::string& GetGameTitle()
+const std::string& Cheevos::GetGameTitle()
 {
   return s_game_title;
 }
 
-const std::string& GetGameDeveloper()
+const std::string& Cheevos::GetGameDeveloper()
 {
   return s_game_developer;
 }
 
-const std::string& GetGamePublisher()
+const std::string& Cheevos::GetGamePublisher()
 {
   return s_game_publisher;
 }
 
-const std::string& GetGameReleaseDate()
+const std::string& Cheevos::GetGameReleaseDate()
 {
   return s_game_release_date;
 }
 
-const std::string& GetGameIcon()
+const std::string& Cheevos::GetGameIcon()
 {
   return s_game_icon;
 }
 
-bool EnumerateAchievements(std::function<bool(const Achievement&)> callback)
+bool Cheevos::EnumerateAchievements(std::function<bool(const Achievement&)> callback)
 {
   for (const Achievement& cheevo : s_achievements)
   {
@@ -1288,7 +1318,7 @@ bool EnumerateAchievements(std::function<bool(const Achievement&)> callback)
   return true;
 }
 
-u32 GetUnlockedAchiementCount()
+u32 Cheevos::GetUnlockedAchiementCount()
 {
   u32 count = 0;
   for (const Achievement& cheevo : s_achievements)
@@ -1300,12 +1330,12 @@ u32 GetUnlockedAchiementCount()
   return count;
 }
 
-u32 GetAchievementCount()
+u32 Cheevos::GetAchievementCount()
 {
   return static_cast<u32>(s_achievements.size());
 }
 
-u32 GetMaximumPointsForGame()
+u32 Cheevos::GetMaximumPointsForGame()
 {
   u32 points = 0;
   for (const Achievement& cheevo : s_achievements)
@@ -1314,7 +1344,7 @@ u32 GetMaximumPointsForGame()
   return points;
 }
 
-u32 GetCurrentPointsForGame()
+u32 Cheevos::GetCurrentPointsForGame()
 {
   u32 points = 0;
   for (const Achievement& cheevo : s_achievements)
@@ -1326,7 +1356,7 @@ u32 GetCurrentPointsForGame()
   return points;
 }
 
-bool EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback)
+bool Cheevos::EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback)
 {
   for (const Leaderboard& lboard : s_leaderboards)
   {
@@ -1337,7 +1367,8 @@ bool EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback)
   return true;
 }
 
-std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(const LeaderboardEntry&)> callback)
+std::optional<bool> Cheevos::TryEnumerateLeaderboardEntries(u32 id,
+                                                            std::function<bool(const LeaderboardEntry&)> callback)
 {
   if (id == s_last_queried_lboard)
   {
@@ -1367,7 +1398,7 @@ std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(co
   return std::nullopt;
 }
 
-const Leaderboard* GetLeaderboardByID(u32 id)
+const Cheevos::Leaderboard* Cheevos::GetLeaderboardByID(u32 id)
 {
   for (const Leaderboard& lb : s_leaderboards)
   {
@@ -1378,17 +1409,17 @@ const Leaderboard* GetLeaderboardByID(u32 id)
   return nullptr;
 }
 
-u32 GetLeaderboardCount()
+u32 Cheevos::GetLeaderboardCount()
 {
   return static_cast<u32>(s_leaderboards.size());
 }
 
-bool IsLeaderboardTimeType(const Leaderboard& leaderboard)
+bool Cheevos::IsLeaderboardTimeType(const Leaderboard& leaderboard)
 {
   return leaderboard.format != RC_FORMAT_SCORE && leaderboard.format != RC_FORMAT_VALUE;
 }
 
-void ActivateLockedAchievements()
+void Cheevos::ActivateLockedAchievements()
 {
   for (Achievement& cheevo : s_achievements)
   {
@@ -1397,7 +1428,7 @@ void ActivateLockedAchievements()
   }
 }
 
-bool ActivateAchievement(Achievement* achievement)
+bool Cheevos::ActivateAchievement(Achievement* achievement)
 {
   if (achievement->active)
     return true;
@@ -1416,7 +1447,7 @@ bool ActivateAchievement(Achievement* achievement)
   return true;
 }
 
-void DeactivateAchievement(Achievement* achievement)
+void Cheevos::DeactivateAchievement(Achievement* achievement)
 {
   if (!achievement->active)
     return;
@@ -1427,7 +1458,7 @@ void DeactivateAchievement(Achievement* achievement)
   Log_DevPrintf("Deactivated achievement %s (%u)", achievement->title.c_str(), achievement->id);
 }
 
-static void UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   rapidjson::Document doc;
   if (!ParseResponseJSON("Award Cheevo", status_code, data, doc))
@@ -1436,13 +1467,13 @@ static void UnlockAchievementCallback(s32 status_code, const FrontendCommon::HTT
   // we don't really need to do anything here
 }
 
-static void SubmitLeaderboardCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
+void Cheevos::SubmitLeaderboardCallback(s32 status_code, const FrontendCommon::HTTPDownloader::Request::Data& data)
 {
   // Force the next leaderboard query to repopulate everything, just in case the user wants to see their new score
   s_last_queried_lboard = 0;
 }
 
-void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
+void Cheevos::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 {
   Achievement* achievement = GetAchievementByID(achievement_id);
   if (!achievement)
@@ -1497,7 +1528,7 @@ void UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
   s_http_downloader->CreateRequest(url, UnlockAchievementCallback);
 }
 
-void SubmitLeaderboard(u32 leaderboard_id, int value)
+void Cheevos::SubmitLeaderboard(u32 leaderboard_id, int value)
 {
   if (s_test_mode)
   {
@@ -1517,14 +1548,14 @@ void SubmitLeaderboard(u32 leaderboard_id, int value)
   s_http_downloader->CreateRequest(url, SubmitLeaderboardCallback);
 }
 
-std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement)
+std::pair<u32, u32> Cheevos::GetAchievementProgress(const Achievement& achievement)
 {
   std::pair<u32, u32> result;
   rc_runtime_get_achievement_measured(&s_rcheevos_runtime, achievement.id, &result.first, &result.second);
   return result;
 }
 
-TinyString GetAchievementProgressText(const Achievement& achievement)
+TinyString Cheevos::GetAchievementProgressText(const Achievement& achievement)
 {
   TinyString result;
   rc_runtime_format_achievement_measured(&s_rcheevos_runtime, achievement.id, result.GetWriteableCharArray(),
@@ -1533,7 +1564,7 @@ TinyString GetAchievementProgressText(const Achievement& achievement)
   return result;
 }
 
-void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
+void Cheevos::CheevosEventHandler(const rc_runtime_event_t* runtime_event)
 {
   static const char* events[] = {"RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED", "RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED",
                                  "RC_RUNTIME_EVENT_ACHIEVEMENT_RESET",     "RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED",
@@ -1551,7 +1582,7 @@ void CheevosEventHandler(const rc_runtime_event_t* runtime_event)
     SubmitLeaderboard(runtime_event->id, runtime_event->value);
 }
 
-unsigned CheevosPeek(unsigned address, unsigned num_bytes, void* ud)
+unsigned Cheevos::CheevosPeek(unsigned address, unsigned num_bytes, void* ud)
 {
   switch (num_bytes)
   {
@@ -1585,6 +1616,9 @@ unsigned CheevosPeek(unsigned address, unsigned num_bytes, void* ud)
 
 #include "RA_Consoles.h"
 
+namespace Cheevos::RAIntegration {
+static void InitializeRAIntegration(void* main_window_handle);
+
 static int RACallbackIsActive();
 static void RACallbackCauseUnpause();
 static void RACallbackCausePause();
@@ -1594,8 +1628,9 @@ static void RACallbackResetEmulator();
 static void RACallbackLoadROM(const char* unused);
 static unsigned char RACallbackReadMemory(unsigned int address);
 static void RACallbackWriteMemory(unsigned int address, unsigned char value);
+} // namespace Cheevos::RAIntegration
 
-void SwitchToRAIntegration()
+void Cheevos::SwitchToRAIntegration()
 {
   g_using_raintegration = true;
   g_raintegration_initialized = false;
@@ -1603,7 +1638,7 @@ void SwitchToRAIntegration()
   s_logged_in = true;
 }
 
-static void InitializeRAIntegration(void* main_window_handle)
+void Cheevos::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
   RA_InitClient((HWND)main_window_handle, "DuckStation", g_scm_tag_str);
   RA_SetUserAgentDetail(Cheevos::GetUserAgent().c_str());
@@ -1626,7 +1661,7 @@ static void InitializeRAIntegration(void* main_window_handle)
   std::atexit(RA_Shutdown);
 }
 
-void RAIntegration::MainWindowChanged(void* new_handle)
+void Cheevos::RAIntegration::MainWindowChanged(void* new_handle)
 {
   if (g_raintegration_initialized)
   {
@@ -1637,13 +1672,13 @@ void RAIntegration::MainWindowChanged(void* new_handle)
   InitializeRAIntegration(new_handle);
 }
 
-void RAIntegration::GameChanged()
+void Cheevos::RAIntegration::GameChanged()
 {
   g_game_id = RA_IdentifyHash(s_game_hash.c_str());
   RA_ActivateGame(g_game_id);
 }
 
-std::vector<std::pair<int, const char*>> RAIntegration::GetMenuItems()
+std::vector<std::pair<int, const char*>> Cheevos::RAIntegration::GetMenuItems()
 {
   // NOTE: I *really* don't like doing this. But sadly it's the only way we can integrate with Qt.
   static constexpr int IDM_RA_RETROACHIEVEMENTS = 1700;
@@ -1696,52 +1731,52 @@ std::vector<std::pair<int, const char*>> RAIntegration::GetMenuItems()
   return ret;
 }
 
-void RAIntegration::ActivateMenuItem(int item)
+void Cheevos::RAIntegration::ActivateMenuItem(int item)
 {
   RA_InvokeDialog(item);
 }
 
-int RACallbackIsActive()
+int Cheevos::RAIntegration::RACallbackIsActive()
 {
   return static_cast<int>(HasActiveGame());
 }
 
-void RACallbackCauseUnpause()
+void Cheevos::RAIntegration::RACallbackCauseUnpause()
 {
   if (System::IsValid())
     g_host_interface->PauseSystem(false);
 }
 
-void RACallbackCausePause()
+void Cheevos::RAIntegration::RACallbackCausePause()
 {
   if (System::IsValid())
     g_host_interface->PauseSystem(true);
 }
 
-void RACallbackRebuildMenu()
+void Cheevos::RAIntegration::RACallbackRebuildMenu()
 {
   // unused, we build the menu on demand
 }
 
-void RACallbackEstimateTitle(char* buf)
+void Cheevos::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
   StringUtil::Strlcpy(buf, System::GetRunningTitle(), 256);
 }
 
-void RACallbackResetEmulator()
+void Cheevos::RAIntegration::RACallbackResetEmulator()
 {
   g_challenge_mode = RA_HardcoreModeIsActive() != 0;
   if (System::IsValid())
     g_host_interface->ResetSystem();
 }
 
-void RACallbackLoadROM(const char* unused)
+void Cheevos::RAIntegration::RACallbackLoadROM(const char* unused)
 {
   // unused
   UNREFERENCED_PARAMETER(unused);
 }
 
-unsigned char RACallbackReadMemory(unsigned int address)
+unsigned char Cheevos::RAIntegration::RACallbackReadMemory(unsigned int address)
 {
   if (!System::IsValid())
     return 0;
@@ -1751,7 +1786,7 @@ unsigned char RACallbackReadMemory(unsigned int address)
   return value;
 }
 
-void RACallbackWriteMemory(unsigned int address, unsigned char value)
+void Cheevos::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
   if (!System::IsValid())
     return;
@@ -1760,5 +1795,3 @@ void RACallbackWriteMemory(unsigned int address, unsigned char value)
 }
 
 #endif
-
-} // namespace Cheevos
