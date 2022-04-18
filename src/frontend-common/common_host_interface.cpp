@@ -113,6 +113,11 @@ bool CommonHostInterface::Initialize()
   CreateImGuiContext();
 
 #ifdef WITH_CHEEVOS
+#ifdef WITH_RAINTEGRATION
+  if (GetBoolSettingValue("Cheevos", "UseRAIntegration", false))
+    Cheevos::SwitchToRAIntegration();
+#endif
+
   UpdateCheevosActive();
 #endif
 
@@ -3287,6 +3292,10 @@ void CommonHostInterface::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   si.DeleteValue("Cheevos", "Username");
   si.DeleteValue("Cheevos", "Token");
+
+#ifdef WITH_RAINTEGRATION
+  si.SetBoolValue("Cheevos", "UseRAIntegration", false);
+#endif
 #endif
 }
 
@@ -4376,6 +4385,11 @@ void CommonHostInterface::UpdateCheevosActive()
   const bool cheevos_use_first_disc_from_playlist = GetBoolSettingValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   const bool cheevos_rich_presence = GetBoolSettingValue("Cheevos", "RichPresence", true);
   const bool cheevos_hardcore = GetBoolSettingValue("Cheevos", "ChallengeMode", false);
+
+#ifdef WITH_RAINTEGRATION
+  if (Cheevos::IsUsingRAIntegration())
+    return;
+#endif
 
   if (cheevos_enabled != Cheevos::IsActive() || cheevos_test_mode != Cheevos::IsTestModeActive() ||
       cheevos_unofficial_test_mode != Cheevos::IsUnofficialTestModeActive() ||
