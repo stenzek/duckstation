@@ -22,10 +22,15 @@
 #include "scmversion/scmversion.h"
 #include <algorithm>
 #include <cstdarg>
+#include <cstdlib>
 #include <functional>
 #include <string>
 #include <vector>
 Log_SetChannel(Cheevos);
+
+#ifdef WITH_RAINTEGRATION
+#include "RA_Interface.h"
+#endif
 
 namespace Cheevos {
 
@@ -59,6 +64,11 @@ static bool s_test_mode = false;
 static bool s_unofficial_test_mode = false;
 static bool s_use_first_disc_from_playlist = true;
 static bool s_rich_presence_enabled = false;
+
+#ifdef WITH_RAINTEGRATION
+bool g_using_raintegration = false;
+bool g_raintegration_initialized = false;
+#endif
 
 static rc_runtime_t s_rcheevos_runtime;
 static std::unique_ptr<FrontendCommon::HTTPDownloader> s_http_downloader;
@@ -244,6 +254,10 @@ bool Initialize(bool test_mode, bool use_first_disc_from_playlist, bool enable_r
 
   g_active = true;
   g_challenge_mode = challenge_mode;
+#ifdef WITH_RAINTEGRATION
+  g_using_raintegration = false;
+#endif
+
   s_test_mode = test_mode;
   s_unofficial_test_mode = include_unofficial;
   s_use_first_disc_from_playlist = use_first_disc_from_playlist;
@@ -265,6 +279,14 @@ void Reset()
 {
   if (!g_active)
     return;
+
+#ifdef WITH_RAINTEGRATION
+  if (IsUsingRAIntegration())
+  {
+    RA_OnReset();
+    return;
+  }
+#endif
 
   Log_DevPrint("Resetting rcheevos state...");
   rc_runtime_reset(&s_rcheevos_runtime);
@@ -298,6 +320,16 @@ void Update()
 
   if (HasActiveGame())
   {
+#ifdef WITH_RAINTEGRATION
+    if (IsUsingRAIntegration())
+    {
+      if (g_raintegration_initialized)
+        RA_DoAchievementsFrame();
+
+      return;
+    }
+#endif
+
     rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &CheevosPeek, nullptr, nullptr);
     UpdateRichPresence();
 
@@ -332,7 +364,20 @@ bool DoState(StateWrapper& sw)
     {
       // reset runtime, no data (state might've been created without cheevos)
       Log_DevPrintf("State is missing cheevos data, resetting runtime");
+#ifdef WITH_RAINTEGRATION
+      if (IsUsingRAIntegration())
+      {
+        if (g_raintegration_initialized)
+          RA_OnReset();
+      }
+      else
+      {
+        rc_runtime_reset(&s_rcheevos_runtime);
+      }
+#else
       rc_runtime_reset(&s_rcheevos_runtime);
+#endif
+
       return !sw.HasError();
     }
 
@@ -341,30 +386,64 @@ bool DoState(StateWrapper& sw)
     if (sw.HasError())
       return false;
 
-    const int result = rc_runtime_deserialize_progress(&s_rcheevos_runtime, data.get(), nullptr);
-    if (result != RC_OK)
+#ifdef WITH_RAINTEGRATION
+    if (IsUsingRAIntegration() && g_raintegration_initialized)
     {
-      Log_WarningPrintf("Failed to deserialize cheevos state (%d), resetting", result);
-      rc_runtime_reset(&s_rcheevos_runtime);
+      RA_RestoreState(reinterpret_cast<const char*>(data.get()));
     }
+    else
+    {
+      const int result = rc_runtime_deserialize_progress(&s_rcheevos_runtime, data.get(), nullptr);
+      if (result != RC_OK)
+      {
+        Log_WarningPrintf("Failed to deserialize cheevos state (%d), resetting", result);
+        rc_runtime_reset(&s_rcheevos_runtime);
+      }
+    }
+#endif
 
     return true;
   }
   else
   {
-    // internally this happens twice.. not great.
-    const int size = rc_runtime_progress_size(&s_rcheevos_runtime, nullptr);
+    u32 data_size;
+    std::unique_ptr<u8[]> data;
 
-    u32 data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-    std::unique_ptr<u8[]> data(new u8[data_size]);
-
-    const int result = rc_runtime_serialize_progress(data.get(), &s_rcheevos_runtime, nullptr);
-    if (result != RC_OK)
+#ifdef WITH_RAINTEGRATION
+    if (IsUsingRAIntegration())
     {
-      // set data to zero, effectively serializing nothing
-      Log_WarningPrintf("Failed to serialize cheevos state (%d)", result);
-      data_size = 0;
+      if (g_raintegration_initialized)
+      {
+        const int size = RA_CaptureState(nullptr, 0);
+
+        data_size = (size >= 0) ? static_cast<u32>(size) : 0;
+        data = std::unique_ptr<u8[]>(new u8[data_size]);
+
+        const int result = RA_CaptureState(reinterpret_cast<char*>(data.get()), static_cast<int>(data_size));
+        if (result != static_cast<int>(data_size))
+        {
+          Log_WarningPrint("Failed to serialize cheevos state from RAIntegration.");
+          data_size = 0;
+        }
+      }
     }
+    else
+    {
+      // internally this happens twice.. not great.
+      const int size = rc_runtime_progress_size(&s_rcheevos_runtime, nullptr);
+
+      data_size = (size >= 0) ? static_cast<u32>(size) : 0;
+      data = std::unique_ptr<u8[]>(new u8[data_size]);
+
+      const int result = rc_runtime_serialize_progress(data.get(), &s_rcheevos_runtime, nullptr);
+      if (result != RC_OK)
+      {
+        // set data to zero, effectively serializing nothing
+        Log_WarningPrintf("Failed to serialize cheevos state (%d)", result);
+        data_size = 0;
+      }
+    }
+#endif
 
     sw.Do(&data_size);
     if (data_size > 0)
@@ -468,7 +547,7 @@ bool LoginAsync(const char* username, const char* password)
 {
   s_http_downloader->WaitForAllRequests();
 
-  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
+  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0 || IsUsingRAIntegration())
     return false;
 
   if (ImGuiFullscreen::IsInitialized())
@@ -487,7 +566,7 @@ bool Login(const char* username, const char* password)
   if (g_active)
     s_http_downloader->WaitForAllRequests();
 
-  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0)
+  if (s_logged_in || std::strlen(username) == 0 || std::strlen(password) == 0 || IsUsingRAIntegration())
     return false;
 
   if (g_active)
@@ -1016,8 +1095,10 @@ static void GetGameIdCallback(s32 status_code, const FrontendCommon::HTTPDownloa
 
   const u32 game_id = (doc.HasMember("GameID") && doc["GameID"].IsUint()) ? doc["GameID"].GetUint() : 0;
   Log_InfoPrintf("Server returned GameID %u", game_id);
-  if (game_id != 0)
-    GetPatches(game_id);
+  if (game_id == 0)
+    return;
+
+  GetPatches(game_id);
 }
 
 void GameChanged()
@@ -1088,6 +1169,14 @@ void GameChanged(const std::string& path, CDImage* image)
       10.0f);
     return;
   }
+
+#ifdef WITH_RAINTEGRATION
+  if (IsUsingRAIntegration())
+  {
+    RAIntegration::GameChanged();
+    return;
+  }
+#endif
 
   char url[256];
   int res = rc_url_get_gameid(url, sizeof(url), s_game_hash.c_str());
@@ -1491,5 +1580,185 @@ unsigned CheevosPeek(unsigned address, unsigned num_bytes, void* ud)
       return 0;
   }
 }
+
+#ifdef WITH_RAINTEGRATION
+
+#include "RA_Consoles.h"
+
+static int RACallbackIsActive();
+static void RACallbackCauseUnpause();
+static void RACallbackCausePause();
+static void RACallbackRebuildMenu();
+static void RACallbackEstimateTitle(char* buf);
+static void RACallbackResetEmulator();
+static void RACallbackLoadROM(const char* unused);
+static unsigned char RACallbackReadMemory(unsigned int address);
+static void RACallbackWriteMemory(unsigned int address, unsigned char value);
+
+void SwitchToRAIntegration()
+{
+  g_using_raintegration = true;
+  g_raintegration_initialized = false;
+  g_active = true;
+  s_logged_in = true;
+}
+
+static void InitializeRAIntegration(void* main_window_handle)
+{
+  RA_InitClient((HWND)main_window_handle, "DuckStation", g_scm_tag_str);
+  RA_SetUserAgentDetail(Cheevos::GetUserAgent().c_str());
+
+  RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,
+                            RACallbackEstimateTitle, RACallbackResetEmulator, RACallbackLoadROM);
+  RA_SetConsoleID(PlayStation);
+
+  // Apparently this has to be done early, or the memory inspector doesn't work.
+  // That's a bit unfortunate, because the RAM size can vary between games, and depending on the option.
+  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, Bus::RAM_2MB_SIZE);
+
+  // Fire off a login anyway. Saves going into the menu and doing it.
+  RA_AttemptLogin(0);
+
+  g_challenge_mode = RA_HardcoreModeIsActive() != 0;
+  g_raintegration_initialized = true;
+
+  // this is pretty lame, but we may as well persist until we exit anyway
+  std::atexit(RA_Shutdown);
+}
+
+void RAIntegration::MainWindowChanged(void* new_handle)
+{
+  if (g_raintegration_initialized)
+  {
+    RA_UpdateHWnd((HWND)new_handle);
+    return;
+  }
+
+  InitializeRAIntegration(new_handle);
+}
+
+void RAIntegration::GameChanged()
+{
+  g_game_id = RA_IdentifyHash(s_game_hash.c_str());
+  RA_ActivateGame(g_game_id);
+}
+
+std::vector<std::pair<int, const char*>> RAIntegration::GetMenuItems()
+{
+  // NOTE: I *really* don't like doing this. But sadly it's the only way we can integrate with Qt.
+  static constexpr int IDM_RA_RETROACHIEVEMENTS = 1700;
+  static constexpr int IDM_RA_OVERLAYSETTINGS = 1701;
+  static constexpr int IDM_RA_FILES_MEMORYBOOKMARKS = 1703;
+  static constexpr int IDM_RA_FILES_ACHIEVEMENTS = 1704;
+  static constexpr int IDM_RA_FILES_MEMORYFINDER = 1705;
+  static constexpr int IDM_RA_FILES_LOGIN = 1706;
+  static constexpr int IDM_RA_FILES_LOGOUT = 1707;
+  static constexpr int IDM_RA_FILES_ACHIEVEMENTEDITOR = 1708;
+  static constexpr int IDM_RA_HARDCORE_MODE = 1710;
+  static constexpr int IDM_RA_REPORTBROKENACHIEVEMENTS = 1711;
+  static constexpr int IDM_RA_GETROMCHECKSUM = 1712;
+  static constexpr int IDM_RA_OPENUSERPAGE = 1713;
+  static constexpr int IDM_RA_OPENGAMEPAGE = 1714;
+  static constexpr int IDM_RA_PARSERICHPRESENCE = 1716;
+  static constexpr int IDM_RA_TOGGLELEADERBOARDS = 1717;
+  static constexpr int IDM_RA_NON_HARDCORE_WARNING = 1718;
+
+  std::vector<std::pair<int, const char*>> ret;
+
+  const char* username = RA_UserName();
+  if (!username || std::strlen(username) == 0)
+  {
+    ret.emplace_back(IDM_RA_FILES_LOGIN, "&Login");
+  }
+  else
+  {
+    ret.emplace_back(IDM_RA_FILES_LOGOUT, "Log&out");
+    ret.emplace_back(0, nullptr);
+    ret.emplace_back(IDM_RA_OPENUSERPAGE, "Open my &User Page");
+    ret.emplace_back(IDM_RA_OPENGAMEPAGE, "Open this &Game's Page");
+    ret.emplace_back(0, nullptr);
+    ret.emplace_back(IDM_RA_HARDCORE_MODE, "&Hardcore Mode");
+    ret.emplace_back(IDM_RA_NON_HARDCORE_WARNING, "Non-Hardcore &Warning");
+    ret.emplace_back(0, nullptr);
+    ret.emplace_back(IDM_RA_TOGGLELEADERBOARDS, "Enable &Leaderboards");
+    ret.emplace_back(IDM_RA_OVERLAYSETTINGS, "O&verlay Settings");
+    ret.emplace_back(0, nullptr);
+    ret.emplace_back(IDM_RA_FILES_ACHIEVEMENTS, "Assets Li&st");
+    ret.emplace_back(IDM_RA_FILES_ACHIEVEMENTEDITOR, "Assets &Editor");
+    ret.emplace_back(IDM_RA_FILES_MEMORYFINDER, "&Memory Inspector");
+    ret.emplace_back(IDM_RA_FILES_MEMORYBOOKMARKS, "Memory &Bookmarks");
+    ret.emplace_back(IDM_RA_PARSERICHPRESENCE, "Rich &Presence Monitor");
+    ret.emplace_back(0, nullptr);
+    ret.emplace_back(IDM_RA_REPORTBROKENACHIEVEMENTS, "&Report Achievement Problem");
+    ret.emplace_back(IDM_RA_GETROMCHECKSUM, "View Game H&ash");
+  }
+
+  return ret;
+}
+
+void RAIntegration::ActivateMenuItem(int item)
+{
+  RA_InvokeDialog(item);
+}
+
+int RACallbackIsActive()
+{
+  return static_cast<int>(HasActiveGame());
+}
+
+void RACallbackCauseUnpause()
+{
+  if (System::IsValid())
+    g_host_interface->PauseSystem(false);
+}
+
+void RACallbackCausePause()
+{
+  if (System::IsValid())
+    g_host_interface->PauseSystem(true);
+}
+
+void RACallbackRebuildMenu()
+{
+  // unused, we build the menu on demand
+}
+
+void RACallbackEstimateTitle(char* buf)
+{
+  StringUtil::Strlcpy(buf, System::GetRunningTitle(), 256);
+}
+
+void RACallbackResetEmulator()
+{
+  g_challenge_mode = RA_HardcoreModeIsActive() != 0;
+  if (System::IsValid())
+    g_host_interface->ResetSystem();
+}
+
+void RACallbackLoadROM(const char* unused)
+{
+  // unused
+  UNREFERENCED_PARAMETER(unused);
+}
+
+unsigned char RACallbackReadMemory(unsigned int address)
+{
+  if (!System::IsValid())
+    return 0;
+
+  u8 value = 0;
+  CPU::SafeReadMemoryByte(address, &value);
+  return value;
+}
+
+void RACallbackWriteMemory(unsigned int address, unsigned char value)
+{
+  if (!System::IsValid())
+    return;
+
+  CPU::SafeWriteMemoryByte(address, value);
+}
+
+#endif
 
 } // namespace Cheevos

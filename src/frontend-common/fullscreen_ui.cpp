@@ -2328,6 +2328,17 @@ void DrawSettingsWindow()
 
       case SettingsPage::AchievementsSetings:
       {
+#ifdef WITH_RAINTEGRATION
+        if (Cheevos::IsUsingRAIntegration())
+        {
+          BeginMenuButtons();
+          ActiveButton(ICON_FA_BAN "  RAIntegration is being used instead of the built-in cheevos implementation.",
+                       false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+          EndMenuButtons();
+          break;
+        }
+#endif
+
 #ifdef WITH_CHEEVOS
         BeginMenuButtons();
 
