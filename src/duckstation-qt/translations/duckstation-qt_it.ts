@@ -7004,7 +7004,7 @@ Questo scaricherà circa 4 MB attraverso la tua connessione internet attuale.</t
     <message>
         <location filename="../mainwindow.cpp" line="560"/>
         <source>Select disc drive:</source>
-        <translation>Selezione Drive Disco</translation>
+        <translation>Selezione Drive Disco:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="591"/>
