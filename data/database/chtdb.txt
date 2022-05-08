@@ -28953,6 +28953,31 @@ D0010000 FFE0
 ;:SCUS-94588
 ;This game currently has no cheats
 
+; [Grand Theft Auto][PS1][NTSC-U][Duckstation format]
+
+#Push game cap to 30 fps
+A7122906 0C042400
+
+#Walk off ledges and through fences
+A705673E 14621000
+
+#Walk off/up ledges and through fences, bounce of buildings
+A7096402 10401000
+
+#Zoom in x1
+A70D6AD6 0C032400
+
+#Zoom in x2
+A70D6AD6 0C032400
+A70D6A96 0C032400
+
+#Hide yellow pointer arrow
+A70B894E 0C012400
+
+#Stop traffic "Press L3 to turn on/off"
+D7010001 01000200
+F509DA7E 14402400
+
 ; [ Grand Theft Auto (USA) (1998) (Take-Two Interactive Software) {SLUS-00106, SLUS-00106GH, SLUS-00106CE} <gta> ]
 :SLUS-00106
 :SLUS-00106GH
@@ -45619,6 +45644,14 @@ A7044832 90A33403
 #Character Alternative Costume:You will need to restart the game after turning this cheat off
 A704483A 30622400
 
+#Take control over demo mode (Activate when demo is running)
+A7031EAA 04401000
+A702B2DA 10401000
+A702A73A 14401000
+A703AEC2 10401000
+A702B2C6 14602400
+A702A1A2 10622400
+
 ; [ Resident Evil 2 (USA) (1998) (Capcom Entertainment) {SLUS-00421 / SLUS-00592} <revil2> ]
 :SLUS-00421
 :SLUS-00592
@@ -50170,7 +50203,7 @@ A70C6FE0 10000C00
 A70C6FF0 10000C00
 
 #60fps USA
-A70A88F0 00020001
+A70A8FF0 00020001
 
 #60fps JAP
 A70AB38C 00020001
@@ -145798,6 +145831,34 @@ F5024C2E 05601000
 8006C464 070A
 #And (rising gradually to jump) airborne
 8006CC44 05FF
+
+#Collect gems from anywhere
+C006A900 00000000
+F4070000 00AAFFFF
+AAAAAA14 00000000
+0C00AA86 00000000
+AAAA0024 AAAAAAAA
+AAAAAAAA AAAAAAAA
+
+#Talk to NPC's from anywhere
+A703CA0E 0C002400
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 01000200
+F504304A 04401000
+
+#No swim interval cap 
+F4076000 00AAFFFF
+AAAA4014 28000424
+AAAA0108 00000000
+AAAA0010 AAAAAAAA
+AAAAAAAA AAAAAAAA
+D7100000 00000080
+F4076000 00AAFFFF
+AAAA0010 28000424
+AAAA0108 00000000
+AAAA4014 AAAAAAAA
+AAAAAAAA AAAAAAAA
 
 ; [ Spyro: Year of the Dragon (USA) Demo {SCUS-94615} ]
 ; [ Square Maniacs '98 (Japan) {SLP-80306} ]
