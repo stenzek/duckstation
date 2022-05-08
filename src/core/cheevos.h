@@ -4,6 +4,8 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 class CDImage;
 class StateWrapper;
@@ -50,6 +52,25 @@ struct LeaderboardEntry
 extern bool g_active;
 extern bool g_challenge_mode;
 extern u32 g_game_id;
+
+// RAIntegration only exists for Windows, so no point checking it on other platforms.
+#ifdef WITH_RAINTEGRATION
+
+extern bool g_using_raintegration;
+
+static ALWAYS_INLINE bool IsUsingRAIntegration()
+{
+  return g_using_raintegration;
+}
+
+#else
+
+static ALWAYS_INLINE bool IsUsingRAIntegration()
+{
+  return false;
+}
+
+#endif
 
 ALWAYS_INLINE bool IsActive()
 {
@@ -122,5 +143,16 @@ TinyString GetAchievementProgressText(const Achievement& achievement);
 
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
 void SubmitLeaderboard(u32 leaderboard_id, int value);
+
+#ifdef WITH_RAINTEGRATION
+void SwitchToRAIntegration();
+
+namespace RAIntegration {
+void MainWindowChanged(void* new_handle);
+void GameChanged();
+std::vector<std::pair<int, const char*>> GetMenuItems();
+void ActivateMenuItem(int item);
+} // namespace RAIntegration
+#endif
 
 } // namespace Cheevos

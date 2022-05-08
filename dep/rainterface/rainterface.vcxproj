@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\msvc\vsprops\Configurations.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E4357877-D459-45C7-B8F6-DCBB587BB528}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="RA_Consoles.h" />
+    <ClInclude Include="RA_Emulators.h" />
+    <ClInclude Include="RA_Interface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RA_Interface.cpp" />
+  </ItemGroup>
+  <Import Project="..\msvc\vsprops\StaticLibrary.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="..\msvc\vsprops\Targets.props" />
+</Project>
