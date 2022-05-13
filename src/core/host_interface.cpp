@@ -1074,8 +1074,8 @@ void HostInterface::ToggleSoftwareRendering()
 
   const GPURenderer new_renderer = g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  AddFormattedOSDMessage(5.0f, TranslateString("OSDMessage", "Switching to %s renderer..."),
-                         Settings::GetRendererDisplayName(new_renderer));
+  AddKeyedFormattedOSDMessage("SoftwareRendering", 5.0f, TranslateString("OSDMessage", "Switching to %s renderer..."),
+                              Settings::GetRendererDisplayName(new_renderer));
   System::RecreateGPU(new_renderer);
   OnDisplayInvalidated();
 }
