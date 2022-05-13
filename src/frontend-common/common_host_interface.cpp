@@ -2594,24 +2594,25 @@ void CommonHostInterface::RegisterGraphicsHotkeys()
                    if (pressed && System::IsValid())
                    {
                      g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
+                     if (!g_settings.gpu_pgxp_enable)
+                       return;
+
                      g_gpu->RestoreGraphicsAPIState();
                      g_gpu->UpdateSettings();
                      g_gpu->ResetGraphicsAPIState();
                      System::ClearMemorySaveStates();
-                     AddOSDMessage(g_settings.gpu_pgxp_cpu ?
-                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now enabled.") :
-                                     TranslateStdString("OSDMessage", "PGXP CPU mode is now disabled."),
-                                   5.0f);
+                     AddKeyedOSDMessage("TogglePGXPCPU",
+                                        g_settings.gpu_pgxp_cpu ?
+                                          TranslateStdString("OSDMessage", "PGXP CPU mode is now enabled.") :
+                                          TranslateStdString("OSDMessage", "PGXP CPU mode is now disabled."),
+                                        5.0f);
 
-                     if (g_settings.gpu_pgxp_enable)
-                     {
-                       PGXP::Shutdown();
-                       PGXP::Initialize();
+                     PGXP::Shutdown();
+                     PGXP::Initialize();
 
-                       // we need to recompile all blocks if pgxp is toggled on/off
-                       if (g_settings.IsUsingCodeCache())
-                         CPU::CodeCache::Flush();
-                     }
+                     // we need to recompile all blocks if pgxp is toggled on/off
+                     if (g_settings.IsUsingCodeCache())
+                       CPU::CodeCache::Flush();
                    }
                  });
 }
@@ -4056,14 +4057,14 @@ void CommonHostInterface::TogglePostProcessing()
   g_settings.display_post_processing = !g_settings.display_post_processing;
   if (g_settings.display_post_processing)
   {
-    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now enabled."), 10.0f);
+    AddKeyedOSDMessage("PostProcessing", TranslateStdString("OSDMessage", "Post-processing is now enabled."), 10.0f);
 
     if (!m_display->SetPostProcessingChain(g_settings.display_post_process_chain))
       AddOSDMessage(TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
   }
   else
   {
-    AddOSDMessage(TranslateStdString("OSDMessage", "Post-processing is now disabled."), 10.0f);
+    AddKeyedOSDMessage("PostProcessing", TranslateStdString("OSDMessage", "Post-processing is now disabled."), 10.0f);
     m_display->SetPostProcessingChain({});
   }
 }
@@ -4112,15 +4113,17 @@ void CommonHostInterface::ToggleWidescreen()
 
   if (g_settings.gpu_widescreen_hack)
   {
-    AddFormattedOSDMessage(
-      5.0f, TranslateString("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to %s."),
+    AddKeyedFormattedOSDMessage(
+      "WidescreenHack", 5.0f,
+      TranslateString("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to %s."),
       TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
         .GetCharArray());
   }
   else
   {
-    AddFormattedOSDMessage(
-      5.0f, TranslateString("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to %s."),
+    AddKeyedFormattedOSDMessage(
+      "WidescreenHack", 5.0f,
+      TranslateString("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to %s."),
       TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
         .GetCharArray());
   }
