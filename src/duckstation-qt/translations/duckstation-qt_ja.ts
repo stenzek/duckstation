@@ -344,7 +344,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="202"/>
         <source>Controller Enhanced Mode (PS4/PS5)</source>
-        <translation>コントローラ拡張モード (PS4 / PS5)</translation>
+        <translation>コントローラー拡張モード (PS4 / PS5)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="207"/>
@@ -549,13 +549,13 @@ Login token generated on %2.</source>
         <location filename="../../core/analog_controller.cpp" line="94"/>
         <location filename="../../core/analog_controller.cpp" line="245"/>
         <source>Controller %u switched to analog mode.</source>
-        <translation>コントローラ %u がアナログモードに切り替わりました。</translation>
+        <translation>コントローラー %u がアナログモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="95"/>
         <location filename="../../core/analog_controller.cpp" line="246"/>
         <source>Controller %u switched to digital mode.</source>
-        <translation>コントローラ %u がデジタルモードに切り替わりました。</translation>
+        <translation>コントローラー %u がデジタルモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="258"/>
@@ -719,13 +719,13 @@ Login token generated on %2.</source>
         <location filename="../../core/analog_joystick.cpp" line="55"/>
         <location filename="../../core/analog_joystick.cpp" line="178"/>
         <source>Controller %u switched to analog mode.</source>
-        <translation>コントローラ %u がアナログモードに切り替わりました。</translation>
+        <translation>コントローラー %u がアナログモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="56"/>
         <location filename="../../core/analog_joystick.cpp" line="179"/>
         <source>Controller %u switched to digital mode.</source>
-        <translation>コントローラ %u がデジタルモードに切り替わりました。</translation>
+        <translation>コントローラー %u がデジタルモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="326"/>
@@ -1113,7 +1113,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="328"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。この更新をインストールする前に、&lt;br&gt;ゲームをメモリカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;保存状態の警告&lt;/h2&gt;&lt;p&gt;この更新プログラムをインストールすると、保存状態が&lt;b&gt;互換性&lt;/b&gt;がなくなります。この更新をインストールする前に、&lt;br&gt;ゲームをメモリーカードに保存したことを確認してください。保存していないと、進行状況が失われます。&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="336"/>
@@ -1646,7 +1646,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="641"/>
         <source>Load Watch</source>
-        <translation>ウォッチを読込み</translation>
+        <translation>ウォッチを読み込み</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="654"/>
@@ -2076,7 +2076,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="311"/>
         <source>Controller Ports</source>
-        <translation>コントローラポート</translation>
+        <translation>コントローラーポート</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="317"/>
@@ -2203,7 +2203,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="88"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>CD-ROM ピックアップレンズがディスクのさまざまな領域に移動 (シーク)するためのシミュレーション時間を短縮します。&lt;br&gt;読込時間を改善できますが、CD-ROM の動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
+        <translation>CD-ROM ピックアップレンズがディスクのさまざまな領域に移動 (シーク)するためのシミュレーション時間を短縮します。&lt;br&gt;読み込み時間を改善できますが、CD-ROM の動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
@@ -2243,7 +2243,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="105"/>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation>指定されたコントローラポートでマルチタップを有効にします。マルチタップに対応しないゲームでは、使用しないでください。</translation>
+        <translation>指定されたコントローラーポートでマルチタップを有効にします。マルチタップに対応しないゲームでは、使用しないでください。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="129"/>
@@ -2312,12 +2312,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="169"/>
         <source>Controller Type:</source>
-        <translation>コントローラタイプ:</translation>
+        <translation>コントローラータイプ:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="200"/>
         <source>Load Profile</source>
-        <translation>プロファイル読込み</translation>
+        <translation>プロファイル読み込み</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="204"/>
@@ -2332,12 +2332,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="212"/>
         <source>Clear Bindings</source>
-        <translation>割当をクリア</translation>
+        <translation>割り当てをクリア</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="213"/>
         <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation>割当られているすべてのボタン設定をクリアしてもよろしいですか？元に戻すことはできません。</translation>
+        <translation>割り当てられているすべてのボタン設定をクリアしてもよろしいですか？元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="227"/>
@@ -2348,7 +2348,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="230"/>
         <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation>すべてのボタン設定を再割当してもよろしいですか？現在割当られているすべてのボタン設定は、元に戻せないようにクリアされます。確認後、再割当が開始されます。</translation>
+        <translation>すべてのボタン設定を再割り当てしてもよろしいですか？現在割り当てられているすべてのボタン設定は、元に戻せないようにクリアされます。確認後、再割り当てが開始されます。</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="53"/>
@@ -2365,12 +2365,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="271"/>
         <source>Button Bindings:</source>
-        <translation>ボタン割当:</translation>
+        <translation>ボタン割り当て:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="308"/>
         <source>Axis Bindings:</source>
-        <translation>Axis 軸割当:</translation>
+        <translation>Axis 軸割り当て:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="347"/>
@@ -2989,12 +2989,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="221"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>強制的にポップンコントローラ扱いにする</translation>
+        <translation>強制的にポップンコントローラー扱いにする</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="222"/>
         <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
-        <translation>デジタルコントローラーを強制的にポップンコントローラとして機能させます。</translation>
+        <translation>デジタルコントローラーを強制的にポップンコントローラーとして機能させます。</translation>
     </message>
 </context>
 <context>
@@ -3160,7 +3160,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="253"/>
         <location filename="../displaysettingswidget.cpp" line="157"/>
         <source>Show Controller Input</source>
-        <translation>コントローラ入力を表示</translation>
+        <translation>コントローラー入力を表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="179"/>
@@ -4149,7 +4149,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../gamelistsearchdirectoriesmodel.cpp" line="31"/>
         <source>Recursive</source>
-        <translation>再読込(常に)</translation>
+        <translation>再読み込み(常に)</translation>
     </message>
 </context>
 <context>
@@ -4636,22 +4636,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="780"/>
         <source>Controller Settings</source>
-        <translation>コントローラ設定</translation>
+        <translation>コントローラー設定</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="786"/>
         <source>Controller 1 Type:</source>
-        <translation>コントローラ タイプ 1:</translation>
+        <translation>コントローラー タイプ 1:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="796"/>
         <source>Controller 2 Type:</source>
-        <translation>コントローラ タイプ 2:</translation>
+        <translation>コントローラー タイプ 2:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="806"/>
         <source>Input Profile For Bindings:</source>
-        <translation>入力割当プロファイル:</translation>
+        <translation>入力割り当てプロファイル:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="829"/>
@@ -4666,7 +4666,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="845"/>
         <source>Memory Card 1 Shared Path:</source>
-        <translation>メモリカード1共有パス:</translation>
+        <translation>メモリーカード1共有パス:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="866"/>
@@ -4676,7 +4676,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="876"/>
         <source>Memory Card 2 Shared Path:</source>
-        <translation>メモリカード2共有パス:</translation>
+        <translation>メモリーカード2共有パス:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="857"/>
@@ -4801,7 +4801,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../gamepropertiesdialog.cpp" line="758"/>
         <location filename="../gamepropertiesdialog.cpp" line="781"/>
         <source>Select path to memory card image</source>
-        <translation>メモリカードイメージのパスを選択します</translation>
+        <translation>メモリーカードイメージのパスを選択します</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="874"/>
@@ -4960,7 +4960,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../generalsettingswidget.ui" line="101"/>
         <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Load Devices From Save States</source>
-        <translation>ステートセーブからデバイスを読込む</translation>
+        <translation>ステートセーブからデバイスを読み込む</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
@@ -4996,7 +4996,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../generalsettingswidget.ui" line="94"/>
         <location filename="../generalsettingswidget.cpp" line="77"/>
         <source>Automatically Load Cheats</source>
-        <translation>自動的にチートを読込む</translation>
+        <translation>自動的にチートを読み込む</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="108"/>
@@ -5038,7 +5038,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.ui" line="133"/>
         <source>Controller Backend:</source>
-        <translation>コントローラバックエンド:</translation>
+        <translation>コントローラーバックエンド:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="46"/>
@@ -5105,7 +5105,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.cpp" line="70"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
-        <translation>有効にすると、保存状態が読み込まれたときにメモリカードとコントローラの情報を上書きします。これにより、保存が失われ、コントローラータイプの&lt;br&gt;不一致が発生する可能性があります。確定的な保存状態の場合は、このオプションを有効にします。それ以外の場合は無効のままにします。</translation>
+        <translation>有効にすると、保存状態が読み込まれたときにメモリーカードとコントローラーの情報を上書きします。これにより、保存が失われ、コントローラータイプの&lt;br&gt;不一致が発生する可能性があります。確定的な保存状態の場合は、このオプションを有効にします。それ以外の場合は無効のままにします。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="75"/>
@@ -5130,12 +5130,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.cpp" line="79"/>
         <source>Controller Backend</source>
-        <translation>コントローラバックエンド</translation>
+        <translation>コントローラーバックエンド</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="82"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation>コントローラ入力に使用されるバックエンドを決定します。 Windows ユーザーは、互換性のために SDL2 よりも XInput を使用することが良い場合があります。</translation>
+        <translation>コントローラー入力に使用されるバックエンドを決定します。 Windows ユーザーは、互換性のために SDL2 よりも XInput を使用することが良い場合があります。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="93"/>
@@ -5405,7 +5405,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2623"/>
         <source>Load From Selected Slot</source>
-        <translation>選択したスロットから読込む</translation>
+        <translation>選択したスロットから読み込む</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2633"/>
@@ -5666,22 +5666,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../inputbindingdialog.ui" line="26"/>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>コントローラ&#x3000;0/ボタン○ の割り当て</translation>
+        <translation>コントローラー&#x3000;0/ボタン○ の割り当て</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="45"/>
         <source>Add Binding</source>
-        <translation>割当を追加</translation>
+        <translation>割り当てを追加</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="52"/>
         <source>Remove Binding</source>
-        <translation>割当を削除</translation>
+        <translation>割り当てを削除</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="59"/>
         <source>Clear Bindings</source>
-        <translation>割当をクリア</translation>
+        <translation>割り当てをクリア</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="22"/>
@@ -5873,7 +5873,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="856"/>
         <source>Open Memory Card Directory...</source>
-        <translation>メモリカードディレクトリを開く...</translation>
+        <translation>メモリーカードディレクトリを開く...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="861"/>
@@ -5938,7 +5938,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="392"/>
         <source>&amp;Controller Settings...</source>
-        <translation>コントローラ設定...(&amp;C)</translation>
+        <translation>コントローラー設定...(&amp;C)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="400"/>
@@ -6462,12 +6462,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.cpp" line="1785"/>
         <location filename="../mainwindow.cpp" line="1794"/>
         <source>Memory Card Not Found</source>
-        <translation>メモリカードが見つかりません</translation>
+        <translation>メモリーカードが見つかりません</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1761"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>メモリカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は存在しません。
+        <translation>メモリーカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は存在しません。
 空のメモリーカードを作成しますか？</translation>
     </message>
     <message>
@@ -6479,7 +6479,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.cpp" line="1786"/>
         <location filename="../mainwindow.cpp" line="1795"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>メモリカード &apos;%1&apos; が見つかりませんでした。ゲームを開始し、保存(作成)してください。</translation>
+        <translation>メモリーカード &apos;%1&apos; が見つかりませんでした。ゲームを開始し、保存(作成)してください。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1833"/>
@@ -6553,7 +6553,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="11"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>すべてのメモリカードタイプ (*.mcd *.mcr *.mc)</translation>
+        <translation>すべてのメモリーカードタイプ (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="78"/>
@@ -6622,7 +6622,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditordialog.cpp" line="228"/>
         <location filename="../memorycardeditordialog.cpp" line="338"/>
         <source>Failed to load memory card image.</source>
-        <translation>メモリカードイメージのロードに失敗しました。</translation>
+        <translation>メモリーカードイメージのロードに失敗しました。</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="15"/>
@@ -6632,17 +6632,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="379"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>メモリカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は保存していません。閉じる前に保存しますか？</translation>
+        <translation>メモリーカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は保存していません。閉じる前に保存しますか？</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="378"/>
         <source>Save memory card?</source>
-        <translation>メモリカードを保存しますか？</translation>
+        <translation>メモリーカードを保存しますか？</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="13"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation>すべてのインポート可能なメモリカードタイプ (*.mcd *.mcr *.mc *.gme)</translation>
+        <translation>すべてのインポート可能なメモリーカードタイプ (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="43"/>
@@ -6731,17 +6731,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="513"/>
         <source>Failed to import memory card. The log may contain more information.</source>
-        <translation>メモリカードのインポートに失敗しました。ログには、より多くの情報が含まれている場合があります。</translation>
+        <translation>メモリーカードのインポートに失敗しました。ログには、より多くの情報が含まれている場合があります。</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="530"/>
         <source>Format memory card?</source>
-        <translation>メモリカードをフォーマットしますか？</translation>
+        <translation>メモリーカードをフォーマットしますか？</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="531"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation>メモリカードをフォーマットすると、すべての保存が破棄され、回復できなくなります。&lt;br&gt;フォーマットされるメモリーカードは&lt;br&gt;&apos;%1&apos;&lt;br&gt;にあります</translation>
+        <translation>メモリーカードをフォーマットすると、すべての保存が破棄され、回復できなくなります。&lt;br&gt;フォーマットされるメモリーカードは&lt;br&gt;&apos;%1&apos;&lt;br&gt;にあります</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="552"/>
@@ -6751,7 +6751,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="560"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation>保存のインポートに失敗しました。メモリカードに十分なスペースがあるかどうか、または同じ名前の既存の保存がすでに存在するかどうかを確認してください。</translation>
+        <translation>保存のインポートに失敗しました。メモリーカードに十分なスペースがあるかどうか、または同じ名前の既存の保存がすでに存在するかどうかを確認してください。</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="413"/>
@@ -6796,7 +6796,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="43"/>
         <source>Memory Card Directory:</source>
-        <translation>メモリカードディレクトリ:</translation>
+        <translation>メモリーカードディレクトリ:</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="61"/>
@@ -6808,7 +6808,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardsettingswidget.cpp" line="68"/>
         <location filename="../memorycardsettingswidget.cpp" line="73"/>
         <source>Use Single Card For Sub-Images</source>
-        <translation>サブイメージにメモリカード(1枚分)を使用する</translation>
+        <translation>サブイメージにメモリーカード(1枚分)を使用する</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="74"/>
@@ -6843,12 +6843,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="165"/>
         <source>Select path to memory card image</source>
-        <translation>メモリカードイメージのパスを選択します</translation>
+        <translation>メモリーカードイメージのパスを選択します</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="190"/>
         <source>Select path to memory card directory</source>
-        <translation>メモリカードイメージのパスを選択します</translation>
+        <translation>メモリーカードイメージのパスを選択します</translation>
     </message>
 </context>
 <context>
@@ -7285,22 +7285,22 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4141"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
-        <translation>メモリカードポートを交換しました。両方のポートにメモリカードがあります。</translation>
+        <translation>メモリーカードポートを交換しました。両方のポートにメモリーカードがあります。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4147"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
-        <translation>メモリカードポートを交換しました。ポート2にはメモリカードがあり、ポート1は空です。</translation>
+        <translation>メモリーカードポートを交換しました。ポート2にはメモリーカードがあり、ポート1は空です。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4154"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
-        <translation>メモリカードポートを交換しました。ポート1にはメモリカードがあり、ポート2は空です。</translation>
+        <translation>メモリーカードポートを交換しました。ポート1にはメモリーカードがあり、ポート2は空です。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="4161"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
-        <translation>メモリカードポートを交換しました。どちらのポートにもメモリカードはありません。</translation>
+        <translation>メモリーカードポートを交換しました。どちらのポートにもメモリーカードはありません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="3981"/>
@@ -7452,22 +7452,22 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/pad.cpp" line="175"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
-        <translation>ステートセーブのメモリカード %u は、現在のカードデータと一致します。再プラグシミュレーション。</translation>
+        <translation>ステートセーブのメモリーカード %u は、現在のカードデータと一致します。再プラグシミュレーション。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="193"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
-        <translation>メモリカード %u は保存状態にありますが、システムには存在しません。カードを無視します。</translation>
+        <translation>メモリーカード %u は保存状態にありますが、システムには存在しません。カードを無視します。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="216"/>
         <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation>メモリカード %u はシステムに存在しますが、保存状態ではありません。カードを取り外します。</translation>
+        <translation>メモリーカード %u はシステムに存在しますが、保存状態ではありません。カードを取り外します。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="134"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
-        <translation>メモリカード %u はステートセーブにありますが、システムには存在しません。仮カードを作成します。</translation>
+        <translation>メモリーカード %u はステートセーブにありますが、システムには存在しません。仮カードを作成します。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="71"/>
@@ -7482,7 +7482,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/pad.cpp" line="207"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
-        <translation>メモリカード %u はシステムに存在しますが、保存状態ではありません。カードを取り外します。</translation>
+        <translation>メモリーカード %u はシステムに存在しますが、保存状態ではありません。カードを取り外します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="680"/>
@@ -7597,17 +7597,17 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/memory_card.cpp" line="277"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation>メモリカード&apos;%s&apos;を読み取れず、フォーマットできませんでした。</translation>
+        <translation>メモリーカード&apos;%s&apos;を読み取れず、フォーマットできませんでした。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="313"/>
         <source>Failed to save memory card to &apos;%s&apos;</source>
-        <translation>メモリカードを &apos;%s&apos;に保存できませんでした</translation>
+        <translation>メモリーカードを &apos;%s&apos;に保存できませんでした</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="322"/>
         <source>Saved memory card to &apos;%s&apos;</source>
-        <translation>メモリカード &apos;%s&apos;に保存されました</translation>
+        <translation>メモリーカード &apos;%s&apos;に保存されました</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="334"/>
@@ -7632,7 +7632,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="44"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
-        <translation>アナログモードの強制は、ゲームの設定によって無効になります。コントローラはデジタルモードで起動します。</translation>
+        <translation>アナログモードの強制は、ゲームの設定によって無効になります。コントローラーはデジタルモードで起動します。</translation>
     </message>
     <message>
         <location filename="../../core/cheevos.cpp" line="1198"/>
@@ -7654,7 +7654,7 @@ Please configure a supported controller from the list above.</source>
     <message numerus="yes">
         <source>Loaded %n cheats from list.</source>
         <translation type="vanished">
-            <numerusform>リストから %n チートを読込みました。</numerusform>
+            <numerusform>リストから %n チートを読み込みました。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -7680,7 +7680,7 @@ Please configure a supported controller from the list above.</source>
     <message numerus="yes">
         <source>Loaded %n cheats from database.</source>
         <translation type="vanished">
-            <numerusform>データベースから、%n チートを読込みました。</numerusform>
+            <numerusform>データベースから、%n チートを読み込みました。</numerusform>
         </translation>
     </message>
 </context>
@@ -7785,7 +7785,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="54"/>
         <source>&amp;Reload Shaders</source>
-        <translation>シェーダー再読込(&amp;R)</translation>
+        <translation>シェーダー再読み込み(&amp;R)</translation>
     </message>
     <message>
         <source>Load Preset</source>
@@ -8136,7 +8136,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="127"/>
         <source>Controller Settings</source>
-        <translation>コントローラ設定</translation>
+        <translation>コントローラー設定</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="136"/>
@@ -8199,7 +8199,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStation がゲームリストに入力するために検索したディレクトリを示しています。&lt;br&gt;ディレクトリは、追加、削除、および再読込/再読込無しに切り替えることができます。</translation>
+        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStation がゲームリストに入力するために検索したディレクトリを示しています。&lt;br&gt;ディレクトリは、追加、削除、および再読み込み/再読み込み無しに切り替えることができます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="118"/>
@@ -8209,12 +8209,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="124"/>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。&lt;br&gt;割当をクリックするとカウントダウンが開始され、割当てるキーまたはコントローラーボタン/軸を押してください。 &lt;br&gt; (振動の場合は、振動するコントローラーの任意のボタン/軸を押します。)ボタンが押されずにタイマーが経過した場合、割当ては変更されません。&lt;br&gt;割当てをクリアするには、ボタンを右クリックします。複数のボタンを割当てるには、Shift キーを押しながらボタンをクリックします。</translation>
+        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。&lt;br&gt;割り当てをクリックするとカウントダウンが開始され、割り当てるキーまたはコントローラーボタン/軸を押してください。 &lt;br&gt; (振動の場合は、振動するコントローラーの任意のボタン/軸を押します。)ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。&lt;br&gt;割り当てをクリアするには、ボタンを右クリックします。複数のボタンを割り当てるには、Shift キーを押しながらボタンをクリックします。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="132"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation>&lt;strong&gt;メモリカードの設定&lt;/strong&gt;&lt;hr&gt;このページでは、メモリカードエミュレーションが機能するモードと、これらのカードのイメージをディスクのどこに保存するかを設定できます。</translation>
+        <translation>&lt;strong&gt;メモリーカードの設定&lt;/strong&gt;&lt;hr&gt;このページでは、メモリーカードエミュレーションが機能するモードと、これらのカードのイメージをディスクのどこに保存するかを設定できます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="135"/>
@@ -8287,17 +8287,17 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/system.cpp" line="1921"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation>実行中のゲームにはコードがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+        <translation>実行中のゲームにはコードがないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1938"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>実行中のゲームには名称がないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+        <translation>実行中のゲームには名称がないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1958"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation>実行中のゲームのパスがないため、ゲームごとのメモリカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
+        <translation>実行中のゲームのパスがないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2194"/>
@@ -8319,7 +8319,7 @@ SBI ファイルの名前は、ディスクイメージの名前と一致する�
     <message>
         <location filename="../../core/system.cpp" line="2127"/>
         <source>Game changed, reloading memory cards.</source>
-        <translation>ゲームが変更され、メモリカードがリロードされました。</translation>
+        <translation>ゲームが変更され、メモリーカードがリロードされました。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2183"/>
