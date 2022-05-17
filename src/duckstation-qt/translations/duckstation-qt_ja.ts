@@ -6,7 +6,7 @@
     <message>
         <location filename="../aboutdialog.ui" line="14"/>
         <source>About DuckStation</source>
-        <translation>DuckStationについて</translation>
+        <translation>DuckStation について</translation>
     </message>
     <message>
         <location filename="../aboutdialog.ui" line="101"/>
@@ -21,7 +21,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="31"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStationは、Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM &lt;/span&gt; コンソールの無料のオープンソースシミュレーター/エミュレーターであり、プレイアビリティ、スピード、および長期的なメンテナンス性に重点を置いています。(日本語翻訳：mikakunin)</translation>
+        <translation>DuckStation は、Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM &lt;/span&gt; コンソールの無料のオープンソースシミュレーター/エミュレーターであり、プレイアビリティ、スピード、および長期的なメンテナンス性に重点を置いています。(日本語翻訳：mikakunin)</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="34"/>
@@ -45,18 +45,18 @@
         <location filename="../achievementlogindialog.ui" line="29"/>
         <source>RetroAchievements Login</source>
         <comment>Window title</comment>
-        <translation>RetroAchievementsログイン</translation>
+        <translation>RetroAchievements ログイン</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="57"/>
         <source>RetroAchievements Login</source>
         <comment>Header text</comment>
-        <translation>RetroAchievementsログイン</translation>
+        <translation>RetroAchievements ログイン</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
         <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>以下に retroachievements.org のユーザー名とパスワードを入力してください。  パスワードはDuckStationに保存されず、代わりにアクセストークンが生成されて
+        <translation>以下に retroachievements.org のユーザー名とパスワードを入力してください。  パスワードは DuckStation に保存されず、代わりにアクセストークンが生成されて
 使用されます。</translation>
     </message>
     <message>
@@ -105,7 +105,7 @@
     </message>
     <message>
         <source>RetroAchievements Login</source>
-        <translation type="vanished">RetroAchievementsログイン</translation>
+        <translation type="vanished">RetroAchievements ログイン</translation>
     </message>
 </context>
 <context>
@@ -169,7 +169,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="139"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStationは、RetroAchievementsを実績データベースとして使用し、進行状況を追跡します。&lt;br&gt;使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;で、&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;アカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、&lt;br&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation は、RetroAchievements を実績データベースとして使用し、進行状況を追跡します。&lt;br&gt;使用するには、 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;で、&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;アカウントにサインアップしてください。ゲーム内でアチーブメントリストを表示するには、&lt;br&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;メニューから選択&lt;/span&gt;します。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
@@ -196,17 +196,17 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="29"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>有効にしてログインすると、DuckStationは起動時に実績を検索します。</translation>
+        <translation>有効にしてログインすると、DuckStation は起動時に実績を検索します。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="31"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
-        <translation>有効にすると、DuckStationはすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
+        <translation>有効にすると、DuckStation はすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="35"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>有効にすると、DuckStationは非公式セットからの実績を一覧表示します。&lt;br&gt;これらの実績はRetroAchievementsによって記録されないため、毎回ロックが解除されることに注意してください。</translation>
+        <translation>有効にすると、DuckStation は非公式セットからの実績を一覧表示します。&lt;br&gt;これらの実績は RetroAchievements によって記録されないため、毎回ロックが解除されることに注意してください。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="39"/>
@@ -280,12 +280,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.ui" line="40"/>
         <source>Log Level:</source>
-        <translation>ログレベル :</translation>
+        <translation>ログレベル:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="50"/>
         <source>Log Filters:</source>
-        <translation>ログフィルター :</translation>
+        <translation>ログフィルター:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
@@ -329,7 +329,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="209"/>
         <source>PGXP Vertex Cache</source>
-        <translation>PGXP頂点キャッシュを有効にする</translation>
+        <translation>PGXP 頂点キャッシュを有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="198"/>
@@ -354,12 +354,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="211"/>
         <source>PGXP Geometry Tolerance</source>
-        <translation>PGXPジオメトリトレランス(形状公差)を有効にする</translation>
+        <translation>PGXP ジオメトリトレランス(形状公差)を有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="213"/>
         <source>PGXP Depth Clear Threshold</source>
-        <translation>PGXPクリア深度 しきい値</translation>
+        <translation>PGXP クリア深度 しきい値</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="218"/>
@@ -374,12 +374,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="224"/>
         <source>Enable Recompiler ICache</source>
-        <translation>ICacheの再コンパイルを有効にする</translation>
+        <translation>ICache の再コンパイルを有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="227"/>
         <source>Enable VRAM Write Texture Replacement</source>
-        <translation>VRAM書き込みテクスチャ置換を有効にする</translation>
+        <translation>VRAM 書き込みテクスチャ置換を有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="229"/>
@@ -389,32 +389,32 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="231"/>
         <source>Dump Replaceable VRAM Writes</source>
-        <translation>書き換え可能なVRAM書き込みをダンプする</translation>
+        <translation>書き換え可能な VRAM 書き込みをダンプする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="233"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
-        <translation>ダンプ済みVRAM書き込みアルファチャネルを設定する</translation>
+        <translation>ダンプ済み VRAM 書き込みアルファチャネルを設定する</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="235"/>
         <source>Minimum Dumped VRAM Write Width</source>
-        <translation>最小ダンプVRAM書き込み幅</translation>
+        <translation>最小ダンプ VRAM 書き込み幅</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="238"/>
         <source>Minimum Dumped VRAM Write Height</source>
-        <translation>最小ダンプVRAM書き込み高</translation>
+        <translation>最小ダンプ VRAM 書き込み高</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="242"/>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA転送間のギャップの最大サイズ</translation>
+        <translation>DMA 転送間のギャップの最大サイズ</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="244"/>
         <source>DMA Halt Ticks</source>
-        <translation>DMA転送停止周波数</translation>
+        <translation>DMA 転送停止周波数</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="246"/>
@@ -424,12 +424,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="248"/>
         <source>GPU Max Run-Ahead</source>
-        <translation>GPU最大先行実行(Run-Ahead)</translation>
+        <translation>GPU 最大先行実行(Run-Ahead)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Allow Booting Without SBI File</source>
-        <translation>SBIファイルなしでの起動を許可する</translation>
+        <translation>SBI ファイルなしでの起動を許可する</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="259"/>
@@ -477,7 +477,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="271"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
-        <translation>ログをユーザーディレクトリのduckstation.logに記録します。</translation>
+        <translation>ログをユーザーディレクトリの duckstation.log に記録します。</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="273"/>
@@ -487,7 +487,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="204"/>
         <source>Display FPS Limit</source>
-        <translation>FPS制限を表示</translation>
+        <translation>FPS 制限を表示</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="196"/>
@@ -523,7 +523,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="250"/>
         <source>Use Debug Host GPU Device</source>
-        <translation>デバッグホストGPUデバイスを使用する</translation>
+        <translation>デバッグホスト GPU デバイスを使用する</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="272"/>
@@ -536,11 +536,11 @@ Login token generated on %2.</source>
     </message>
     <message>
         <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">デバッグデバイスとシェーダーを使用して、それらをサポートするAPIをレンダリングできるようにします。エミュレータをデバッグするときにのみ使用する必要があります。</translation>
+        <translation type="vanished">デバッグデバイスとシェーダーを使用して、それらをサポートする API をレンダリングできるようにします。エミュレータをデバッグするときにのみ使用する必要があります。</translation>
     </message>
     <message>
         <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
-        <translation type="vanished">CPUの命令キャッシュをリコンパイラでシミュレートするかどうかを決定します。パフォーマンスをわずかに犠牲にして精度を向上させます。ゲームの実行速度が速すぎる場合は、このオプションを有効にしてみてください。</translation>
+        <translation type="vanished">CPU の命令キャッシュをリコンパイラでシミュレートするかどうかを決定します。パフォーマンスをわずかに犠牲にして精度を向上させます。ゲームの実行速度が速すぎる場合は、このオプションを有効にしてみてください。</translation>
     </message>
 </context>
 <context>
@@ -700,7 +700,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="805"/>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOneコントローラー。</translation>
+        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOne コントローラー。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="810"/>
@@ -840,7 +840,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="362"/>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOneコントローラー。</translation>
+        <translation>アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例：DualShock 4、XboxOne コントローラー。</translation>
     </message>
 </context>
 <context>
@@ -853,7 +853,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/settings.cpp" line="853"/>
         <source>Cubeb</source>
-        <translation>Cubebライブラリ</translation>
+        <translation>Cubeb ライブラリ</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="856"/>
@@ -896,7 +896,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="93"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
-        <translation>最大レイテンシ― : 0 フレーム (0.00ms)</translation>
+        <translation>最大レイテンシ―: 0 フレーム (0.00ms)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="103"/>
@@ -941,7 +941,7 @@ Login token generated on %2.</source>
         <location filename="../audiosettingswidget.ui" line="232"/>
         <location filename="../audiosettingswidget.cpp" line="63"/>
         <source>Mute CD Audio</source>
-        <translation>CD音声をミュート</translation>
+        <translation>CD 音声をミュート</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="167"/>
@@ -957,7 +957,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="41"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>オーディオバックエンドは、エミュレーターによって生成されたフレームがホストに送信される方法を決定します。 Cubebは最小のレイテンシーを提供します。問題が発生した場合は、SDLバックエンドを試してください。 nullバックエンドは、すべてのホストオーディオ出力を無効にします。</translation>
+        <translation>オーディオバックエンドは、エミュレーターによって生成されたフレームがホストに送信される方法を決定します。 Cubeb は最小のレイテンシーを提供します。問題が発生した場合は、SDL バックエンドを試してください。 null バックエンドは、すべてのホストオーディオ出力を無効にします。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="45"/>
@@ -967,7 +967,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="46"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>バッファサイズは、ホストによってプル動作する音声のチャンクサイズを決定します。値を小さくすると出力レイテンシーが減少しますが、&lt;br&gt;エミュレーション速度に一貫性がない場合は問題が発生する可能性があります。 Cubebバックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、&lt;br&gt;レイテンシーが大幅に変わることはないことに注意してください。</translation>
+        <translation>バッファサイズは、ホストによってプル動作する音声のチャンクサイズを決定します。値を小さくすると出力レイテンシーが減少しますが、&lt;br&gt;エミュレーション速度に一貫性がない場合は問題が発生する可能性があります。 Cubeb バックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、&lt;br&gt;レイテンシーが大幅に変わることはないことに注意してください。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="50"/>
@@ -1011,7 +1011,7 @@ Login token generated on %2.</source>
         <location filename="../audiosettingswidget.cpp" line="86"/>
         <source>Maximum Latency: %n frames (%1ms)</source>
         <translation>
-            <numerusform>最大レイテンシ― : %n フレーム (%1ms)</numerusform>
+            <numerusform>最大レイテンシ―: %n フレーム (%1ms)</numerusform>
         </translation>
     </message>
     <message>
@@ -1027,7 +1027,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="64"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation>CD-ROMからCD-DAとXAの両方の音声を強制的にミュートします。一部のゲームでバックグラウンドミュージックを無効にするために使用できます。</translation>
+        <translation>CD-ROM から CD-DA と XA の両方の音声を強制的にミュートします。一部のゲームでバックグラウンドミュージックを無効にするために使用できます。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
@@ -1058,7 +1058,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../autoupdaterdialog.ui" line="60"/>
         <source>Current Version: </source>
-        <translation>使用バージョン : </translation>
+        <translation>使用バージョン: </translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="67"/>
@@ -1093,7 +1093,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="236"/>
         <source>Current Version: %1 (%2)</source>
-        <translation>使用バージョン : %1 (%2)</translation>
+        <translation>使用バージョン: %1 (%2)</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="238"/>
@@ -1123,7 +1123,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="340"/>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
-        <translation>&lt;h4&gt;この更新をインストールすると、インターネット接続を介して %1 MBがダウンロードされます。&lt;/h4&gt;</translation>
+        <translation>&lt;h4&gt;この更新をインストールすると、インターネット接続を介して %1 MB がダウンロードされます。&lt;/h4&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="368"/>
@@ -1146,22 +1146,22 @@ Login token generated on %2.</source>
     <message>
         <location filename="../biossettingswidget.ui" line="32"/>
         <source>BIOS Selection</source>
-        <translation>BIOSの選択</translation>
+        <translation>BIOS の選択</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="48"/>
         <source>PAL (Europe, Australia):</source>
-        <translation>PAL (ヨーロッパ, オーストラリア) :</translation>
+        <translation>PAL (ヨーロッパ, オーストラリア):</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="55"/>
         <source>NTSC-J (Japan):</source>
-        <translation>NTSC-J (日本) :</translation>
+        <translation>NTSC-J (日本):</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="62"/>
         <source>NTSC-U/C (US/Canada):</source>
-        <translation>NTSC-U/C (US, カナダ) :</translation>
+        <translation>NTSC-U/C (US, カナダ):</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="104"/>
@@ -1176,12 +1176,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../biossettingswidget.ui" line="123"/>
         <source>BIOS Directory</source>
-        <translation>BIOSディレクトリ</translation>
+        <translation>BIOS ディレクトリ</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="129"/>
         <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>DuckStationは、このディレクトリのBIOSイメージを検索します。</translation>
+        <translation>DuckStation は、このディレクトリの BIOS イメージを検索します。</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="144"/>
@@ -1197,13 +1197,13 @@ Login token generated on %2.</source>
         <location filename="../biossettingswidget.ui" line="162"/>
         <location filename="../biossettingswidget.cpp" line="96"/>
         <source>Fast Boot</source>
-        <translation>高速ブート(BIOSスキップ)</translation>
+        <translation>高速ブート(BIOS スキップ)</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="169"/>
         <location filename="../biossettingswidget.cpp" line="99"/>
         <source>Enable TTY Output</source>
-        <translation>TTY出力を有効にする</translation>
+        <translation>TTY 出力を有効にする</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="16"/>
@@ -1224,12 +1224,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
         <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
-        <translation>コンソールの起動アニメーションをスキップするようにBIOSにパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
+        <translation>コンソールの起動アニメーションをスキップするように BIOS にパッチを適用します。すべてのゲームで機能するわけではありませんが、通常は安全に有効にできます。</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="100"/>
         <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation>printf（）への呼び出しをログに記録するようにBIOSにパッチを適用します。デバッグ時にのみ使用し、ゲームを中断する可能性があります。</translation>
+        <translation>printf（）への呼び出しをログに記録するように BIOS にパッチを適用します。デバッグ時にのみ使用し、ゲームを中断する可能性があります。</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="155"/>
@@ -1756,7 +1756,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="719"/>
         <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
-        <translation>チートリストをリセットしてもよろしいですか？DuckStationデータベースにないチートは失われます。</translation>
+        <translation>チートリストをリセットしてもよろしいですか？DuckStation データベースにないチートは失われます。</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="749"/>
@@ -1822,7 +1822,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/cheevos.cpp" line="586"/>
         <source>Logging in to RetroAchivements...</source>
-        <translation>RetroAchivementsにログイン...</translation>
+        <translation>RetroAchivements にログイン...</translation>
     </message>
     <message>
         <location filename="../../core/cheevos.cpp" line="668"/>
@@ -1911,23 +1911,23 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="38"/>
         <source>Region:</source>
-        <translation>リージョン :</translation>
+        <translation>リージョン:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="58"/>
         <source>CPU Emulation</source>
-        <translation>CPUエミュレーション</translation>
+        <translation>CPU エミュレーション</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="64"/>
         <source>Execution Mode:</source>
-        <translation>実行モード :</translation>
+        <translation>実行モード:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="48"/>
         <location filename="../consolesettingswidget.cpp" line="74"/>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RAMを有効にする(開発コンソール)</translation>
+        <translation>8MB RAM を有効にする(開発コンソール)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="78"/>
@@ -1943,12 +1943,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="137"/>
         <source>CD-ROM Emulation</source>
-        <translation>CD-ROMエミュレーション(注:読取速度の変更は不具合が出る場合があります)</translation>
+        <translation>CD-ROM エミュレーション(注:読取速度の変更は不具合が出る場合があります)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="146"/>
         <source>Read Speedup:</source>
-        <translation>CD-ROM読取速度:</translation>
+        <translation>CD-ROM 読取速度:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="154"/>
@@ -2010,7 +2010,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="207"/>
         <source>Seek Speedup:</source>
-        <translation>CD-ROMシーク速度:</translation>
+        <translation>CD-ROM シーク速度:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="218"/>
@@ -2031,7 +2031,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="233"/>
         <source>3x</source>
-        <translation>3x (720p用)</translation>
+        <translation>3x (720p 用)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="238"/>
@@ -2041,12 +2041,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="243"/>
         <source>5x</source>
-        <translation>5x (1080p用)</translation>
+        <translation>5x (1080p 用)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="248"/>
         <source>6x</source>
-        <translation>6x (1440p用)</translation>
+        <translation>6x (1440p 用)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="253"/>
@@ -2092,7 +2092,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="285"/>
         <source>Preload Image To RAM</source>
-        <translation>RAMにイメージを先読みする</translation>
+        <translation>RAM にイメージを先読みする</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="69"/>
@@ -2106,24 +2106,24 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="75"/>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>通常は開発コンソールに存在する、追加の6MBのRAMを有効にして、合計2 + 6 = 8MBのRAMにします。この追加のRAMを使用するには、&lt;br&gt;ゲームでより大きなヒープサイズを使用する必要があります。メモリミラーに依存するゲームを壊す可能性があるため、互換性のあるmodでのみ使用する必要があります。</translation>
+        <translation>通常は開発コンソールに存在する、追加の 6MB の RAM を有効にして、合計2 + 6 = 8MB の RAM にします。この追加の RAM を使用するには、&lt;br&gt;ゲームでより大きなヒープサイズを使用する必要があります。メモリミラーに依存するゲームを壊す可能性があるため、互換性のある mod でのみ使用する必要があります。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="79"/>
         <location filename="../consolesettingswidget.cpp" line="97"/>
         <source>Preload Image to RAM</source>
-        <translation>イメージをRAMに先読みする</translation>
+        <translation>イメージを RAM に先読みする</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="80"/>
         <location filename="../consolesettingswidget.cpp" line="98"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
-        <translation>ゲームイメージをRAMにロードします。ゲームプレイ中に信頼性が低下する可能性のあるネットワークパスに役立ちます。&lt;br&gt;場合によっては、ゲームが音声トラックの再生を開始するときのスタッターも排除されます。</translation>
+        <translation>ゲームイメージを RAM にロードします。ゲームプレイ中に信頼性が低下する可能性のあるネットワークパスに役立ちます。&lt;br&gt;場合によっては、ゲームが音声トラックの再生を開始するときのスタッターも排除されます。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="84"/>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>指定された読取速度でCD-ROMの読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。&lt;br&gt;一部のゲームでは読み込み速度が向上する場合がありますが、他のゲームでは不具合が出る場合もあります。</translation>
+        <translation>指定された読取速度で CD-ROM の読み取りを高速化します。倍速読み取りにのみ適用され、音声の再生中は無視されます。&lt;br&gt;一部のゲームでは読み込み速度が向上する場合がありますが、他のゲームでは不具合が出る場合もあります。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="94"/>
@@ -2168,7 +2168,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="67"/>
         <source>Determines how the emulated CPU executes instructions.</source>
-        <translation>エミュレートされたCPUが命令を実行する方法を決定します。</translation>
+        <translation>エミュレートされた CPU が命令を実行する方法を決定します。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="70"/>
@@ -2178,7 +2178,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="71"/>
         <source>Overclocking Percentage</source>
-        <translation>CPUオーバークロック警告</translation>
+        <translation>CPU オーバークロック警告</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="71"/>
@@ -2193,17 +2193,17 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="83"/>
         <source>CD-ROM Read Speedup</source>
-        <translation>CD-ROM読取速度</translation>
+        <translation>CD-ROM 読取速度</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>CD-ROM Seek Speedup</source>
-        <translation>CD-ROMシーク速度</translation>
+        <translation>CD-ROM シーク速度</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="88"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>CD-ROMピックアップレンズがディスクのさまざまな領域に移動（シーク）するためのシミュレーション時間を短縮します。&lt;br&gt;読込時間を改善できますが、CD-ROMの動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
+        <translation>CD-ROM ピックアップレンズがディスクのさまざまな領域に移動（シーク）するためのシミュレーション時間を短縮します。&lt;br&gt;読込時間を改善できますが、CD-ROM の動作が速くなることを期待しないでください。クラッシュするゲームもあります。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="90"/>
@@ -2218,7 +2218,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread. Higher sector numbers can reduce spikes when streaming FMVs or audio on slower storage or when using compression formats such as CHD.</source>
-        <translation>ワーカースレッドでCDデータを非同期に読み取り/解凍することにより、エミュレーションの問題を軽減します。&lt;br&gt;セクター番号を大きくすると、低速のストレージでビデオ映像または音声をストリーミングする、またはCHDなどの圧縮形式を使用するときに&lt;br&gt;スパイクを減らすことができます。</translation>
+        <translation>ワーカースレッドで CD データを非同期に読み取り/解凍することにより、エミュレーションの問題を軽減します。&lt;br&gt;セクター番号を大きくすると、低速のストレージでビデオ映像または音声をストリーミングする、または CHD などの圧縮形式を使用するときに&lt;br&gt;スパイクを減らすことができます。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="95"/>
@@ -2252,7 +2252,7 @@ Login token generated on %2.</source>
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>CPUオーバークロックを有効にすると、ゲームが中断し、バグが発生し、パフォーマンスが低下し、システム要件が大幅に増加する可能性があります。
+        <translation>CPU オーバークロックを有効にすると、ゲームが中断し、バグが発生し、パフォーマンスが低下し、システム要件が大幅に増加する可能性があります。
 
 このオプションを有効にすると、オーバークロックを無効にしてもバグが発生することを確認しない限り、バグレポートを作成しないことに同意したことになります。
 
@@ -2271,7 +2271,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="135"/>
         <source>CPU Overclocking Warning</source>
-        <translation>CPUオーバークロック警告</translation>
+        <translation>CPU オーバークロック警告</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="166"/>
@@ -2312,7 +2312,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="169"/>
         <source>Controller Type:</source>
-        <translation>コントローラタイプ :</translation>
+        <translation>コントローラタイプ:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="200"/>
@@ -2370,7 +2370,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswidget.cpp" line="308"/>
         <source>Axis Bindings:</source>
-        <translation>Axis軸割当 :</translation>
+        <translation>Axis 軸割当:</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="347"/>
@@ -2408,7 +2408,7 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingswidget.cpp" line="534"/>
         <location filename="../controllersettingswidget.cpp" line="574"/>
         <source>Select path to input profile ini</source>
-        <translation>プロファイルiniを入力するためのパスを選択します</translation>
+        <translation>プロファイル ini を入力するためのパスを選択します</translation>
     </message>
     <message>
         <location filename="../controllersettingswidget.cpp" line="558"/>
@@ -2536,7 +2536,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1789"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation>関数endの検索中に、 %08X で命令の読み取りに失敗しました。</translation>
+        <translation>関数 end の検索中に、 %08X で命令の読み取りに失敗しました。</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1798"/>
@@ -2791,12 +2791,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="433"/>
         <source>Go To PC</source>
-        <translation>PCに移動</translation>
+        <translation>PC に移動</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="436"/>
         <source>&amp;Go To PC</source>
-        <translation>PCに移動(&amp;G)</translation>
+        <translation>PC に移動(&amp;G)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="439"/>
@@ -2864,13 +2864,13 @@ This warning will only be shown once.</source>
         <location filename="../debuggerwindow.cpp" line="130"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation>cpu_log.txtへのトレースログが開始されました。
-このファイルは数ギガバイトになる可能性があるため、SSDの容量に注意してください。</translation>
+        <translation>cpu_log.txt へのトレースログが開始されました。
+このファイルは数ギガバイトになる可能性があるため、SSD の容量に注意してください。</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="136"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation>cpu_log.txtへのトレースログが停止しました。</translation>
+        <translation>cpu_log.txt へのトレースログが停止しました。</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="154"/>
@@ -2911,7 +2911,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="768"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>無効なアドレス。 16進数（0x12345678または12345678）である必要があります</translation>
+        <translation>無効なアドレス。 16進数（0x12345678 または12345678）である必要があります</translation>
     </message>
 </context>
 <context>
@@ -3076,7 +3076,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="48"/>
         <source>Adapter:</source>
-        <translation>アダプタ :</translation>
+        <translation>アダプタ:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="58"/>
@@ -3115,7 +3115,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="116"/>
         <source>Aspect Ratio:</source>
-        <translation>アスペクト比 :</translation>
+        <translation>アスペクト比:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="138"/>
@@ -3125,7 +3125,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="157"/>
         <source>Crop:</source>
-        <translation>トリミング :</translation>
+        <translation>トリミング:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="167"/>
@@ -3154,7 +3154,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="239"/>
         <location filename="../displaysettingswidget.cpp" line="148"/>
         <source>Show Display FPS</source>
-        <translation>ディスプレイFPSを表示</translation>
+        <translation>ディスプレイ FPS を表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="253"/>
@@ -3205,7 +3205,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="80"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>コンソール/ゲームのビジュアルのレンダリングに使用するバックエンドを選択します。 &lt;br&gt;システムとハードウェアによっては、Direct3D11およびOpenGLハードウェアバックエンドが利用できる場合があります。 &lt;br&gt;ソフトウェアレンダラーは最高の互換性を提供しますが、最も遅く、拡張機能はありません。</translation>
+        <translation>コンソール/ゲームのビジュアルのレンダリングに使用するバックエンドを選択します。 &lt;br&gt;システムとハードウェアによっては、Direct3D11 および OpenGL ハードウェアバックエンドが利用できる場合があります。 &lt;br&gt;ソフトウェアレンダラーは最高の互換性を提供しますが、最も遅く、拡張機能はありません。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="84"/>
@@ -3221,7 +3221,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation>システムに複数のGPUまたはアダプターが含まれている場合は、ハードウェアレンダラーに使用するGPUを選択できます。 &lt;br&gt;このオプションは、Direct3DおよびVulkanでのみサポートされています。 OpenGLは常にデフォルトのデバイスを使用します。</translation>
+        <translation>システムに複数の GPU またはアダプターが含まれている場合は、ハードウェアレンダラーに使用する GPU を選択できます。 &lt;br&gt;このオプションは、Direct3D および Vulkan でのみサポートされています。 OpenGL は常にデフォルトのデバイスを使用します。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="88"/>
@@ -3266,7 +3266,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。混合2D / 3Dゲームで 全体的な画質を向上させることができますが、&lt;br&gt;純粋な3Dゲームでは無効にする必要があります。 ハードウェアレンダラーにのみ適用されます。 </translation>
+        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。混合 2D / 3D ゲームで 全体的な画質を向上させることができますが、&lt;br&gt;純粋な 3D ゲームでは無効にする必要があります。 ハードウェアレンダラーにのみ適用されます。 </translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="106"/>
@@ -3300,7 +3300,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="114"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>表示領域にパディングを追加して、ホスト上のピクセルとコンソール内のピクセルの比率が整数になるようにします。 &lt;br&gt;一部の2Dゲームでは、画像が鮮明になる場合があります。</translation>
+        <translation>表示領域にパディングを追加して、ホスト上のピクセルとコンソール内のピクセルの比率が整数になるようにします。 &lt;br&gt;一部の 2D ゲームでは、画像が鮮明になる場合があります。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="117"/>
@@ -3315,7 +3315,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="124"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>このオプションを有効にすると、DuckStationの更新レートが現在のモニターまたは画面と一致します。 &lt;br&gt;垂直同期が不可能な場合（100％以外の速度で実行している場合など）、垂直同期は自動的に無効になります。</translation>
+        <translation>このオプションを有効にすると、DuckStation の更新レートが現在のモニターまたは画面と一致します。 &lt;br&gt;垂直同期が不可能な場合（100％以外の速度で実行している場合など）、垂直同期は自動的に無効になります。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="127"/>
@@ -3325,7 +3325,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="131"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。&lt;br&gt;これにより、Vulkanレンダラーのパフォーマンスを大幅に向上させることができます。</translation>
+        <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドにフレームを表示します。&lt;br&gt;これにより、Vulkan レンダラーのパフォーマンスを大幅に向上させることができます。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="134"/>
@@ -3335,13 +3335,13 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="138"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSyncとオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。&lt;br&gt;リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
+        <translation>VSync とオーディオリサンプリングの両方の設定が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が1％未満増加する可能性がありますが、可能な限りスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、[ホストのリフレッシュレートに同期]は有効になりません。&lt;br&gt;リフレッシュレートの表示が可変のユーザーは、このオプションを無効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="218"/>
         <location filename="../displaysettingswidget.cpp" line="143"/>
         <source>Show OSD Messages</source>
-        <translation>OSDメッセージを表示</translation>
+        <translation>OSD メッセージを表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="144"/>
@@ -3356,7 +3356,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="149"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>ディスプレイの右上隅に、システムによって1秒あたりに表示されるフレーム（またはv-sync）の数を表示します。</translation>
+        <translation>ディスプレイの右上隅に、システムによって1秒あたりに表示されるフレーム（または v-sync）の数を表示します。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="153"/>
@@ -3579,7 +3579,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../emulationsettingswidget.cpp" line="115"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
         <translation>
-            <numerusform>%n フレーム巻き戻しが、%1 秒間続くと、最大 %2 MBのRAMと %3 MBのVRAMが必要になります。</numerusform>
+            <numerusform>%n フレーム巻き戻しが、%1 秒間続くと、最大 %2 MB の RAM と %3 MB の VRAM が必要になります。</numerusform>
         </translation>
     </message>
     <message>
@@ -3605,7 +3605,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="38"/>
         <source>Internal Resolution Scale:</source>
-        <translation>内部解像度スケール :</translation>
+        <translation>内部解像度スケール:</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="57"/>
@@ -3615,7 +3615,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="48"/>
         <source>Texture Filtering:</source>
-        <translation>テクスチャフィルタリング :</translation>
+        <translation>テクスチャフィルタリング:</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="85"/>
@@ -3642,12 +3642,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="72"/>
         <source>Widescreen Hack (render 3D in display aspect ratio)</source>
-        <translation>ワイドスクリーンハック (ディスプレイのアスペクト比で3Dをレンダリング)</translation>
+        <translation>ワイドスクリーンハック (ディスプレイのアスペクト比で 3D をレンダリング)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="79"/>
         <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation>ソフトウェアレンダラーのリードバック（VRAM-&gt; CPU転送の場合は並行して実行）</translation>
+        <translation>ソフトウェアレンダラーのリードバック（VRAM-&gt; CPU 転送の場合は並行して実行）</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="89"/>
@@ -3664,7 +3664,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="102"/>
         <location filename="../enhancementsettingswidget.cpp" line="72"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation>強制的に NTSCタイミング（60hz-PAL）</translation>
+        <translation>強制的に NTSC タイミング（60hz-PAL）</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="153"/>
@@ -3682,7 +3682,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../enhancementsettingswidget.ui" line="167"/>
         <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>CPU Mode (Very Slow)</source>
-        <translation>CPUモード（非常に遅い）</translation>
+        <translation>CPU モード（非常に遅い）</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="79"/>
@@ -3725,22 +3725,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="58"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>これを1xを超えて設定すると、レンダリングされた3Dポリゴンとラインの解像度が向上します。ハードウェアバックエンドにのみ適用されます。 &lt;br&gt;このオプションは通常安全であり、ほとんどのゲームはより高い解像度で問題なく表示されます。解像度が高いほど、より強力なGPUが必要です。</translation>
+        <translation>これを 1x を超えて設定すると、レンダリングされた 3D ポリゴンとラインの解像度が向上します。ハードウェアバックエンドにのみ適用されます。 &lt;br&gt;このオプションは通常安全であり、ほとんどのゲームはより高い解像度で問題なく表示されます。解像度が高いほど、より強力な GPU が必要です。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="70"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation>ディザパターンをエミュレートされたGPUの解像度スケールにスケーリングします。これにより、解像度が高くなるとディザパターンが目立たなくなります。 &lt;br&gt;通常は安全に有効にでき、ハードウェアレンダラーでのみサポートされます。</translation>
+        <translation>ディザパターンをエミュレートされた GPU の解像度スケールにスケーリングします。これにより、解像度が高くなるとディザパターンが目立たなくなります。 &lt;br&gt;通常は安全に有効にでき、ハードウェアレンダラーでのみサポートされます。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="52"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>フレームのレンダリングと表示を強制的にプログレッシブモードにします。 &lt;br&gt;これにより、480iゲームで見られる「コーミング」効果が480pでレンダリングされるようになります。通常は安全に有効にできます。&lt;br&gt; &lt;b&gt;&lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>フレームのレンダリングと表示を強制的にプログレッシブモードにします。 &lt;br&gt;これにより、480i ゲームで見られる「コーミング」効果が 480p でレンダリングされるようになります。通常は安全に有効にできます。&lt;br&gt; &lt;b&gt;&lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="73"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation>コンソールがPALモードの場合、NTSCフレームタイミングを使用して、PALゲームを60Hzで実行します。 &lt;br&gt;速度がフレームレートに関連付けられているほとんどのゲームでは、これによりゲームの実行速度が約17％速くなります。 &lt;br&gt;可変フレームレートゲームの場合、速度に影響しない場合があります。</translation>
+        <translation>コンソールが PAL モードの場合、NTSC フレームタイミングを使用して、PAL ゲームを 60Hz で実行します。 &lt;br&gt;速度がフレームレートに関連付けられているほとんどのゲームでは、これによりゲームの実行速度が約17％速くなります。 &lt;br&gt;可変フレームレートゲームの場合、速度に影響しない場合があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="80"/>
@@ -3760,7 +3760,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>フィルタリングを使用して、3Dオブジェクトの拡大されたテクスチャのブロックを滑らかにします。 &lt;br&gt;より高い解像度のスケールに大きな影響を与えます。ハードウェアレンダラーにのみ適用されます。</translation>
+        <translation>フィルタリングを使用して、3D オブジェクトの拡大されたテクスチャのブロックを滑らかにします。 &lt;br&gt;より高い解像度のスケールに大きな影響を与えます。ハードウェアレンダラーにのみ適用されます。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="90"/>
@@ -3775,22 +3775,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="97"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>VRAMリードバックのためにソフトウェアレンダラーを並行して実行します。一部のシステムでは、ハードウェアレンダラーでグラフィカルな拡張機能を使用すると、&lt;br&gt;パフォーマンスが向上する場合があります。</translation>
+        <translation>VRAM リードバックのためにソフトウェアレンダラーを並行して実行します。一部のシステムでは、ハードウェアレンダラーでグラフィカルな拡張機能を使用すると、&lt;br&gt;パフォーマンスが向上する場合があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="111"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation>PGXPからの深度値に対してピクセルをテストすることにより、ポリゴンのZファイティングを削減しようとします。&lt;br&gt;互換性は低いですが、一部のゲームではうまく機能します。他のゲームでは、しきい値の調整が必要になる場合があります。</translation>
+        <translation>PGXP からの深度値に対してピクセルをテストすることにより、ポリゴンの Z ファイティングを削減しようとします。&lt;br&gt;互換性は低いですが、一部のゲームではうまく機能します。他のゲームでは、しきい値の調整が必要になる場合があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="115"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>投影後のPGXPデータに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
+        <translation>投影後の PGXP データに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="117"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
-        <translation>メモリ操作だけでなく、すべての命令にPGXPを使用します。一部のゲームでPGXPがぐらつきを修正するために必要ですが、&lt;br&gt;パフォーマンスコスト(要求性能)が非常に高くなります。</translation>
+        <translation>メモリ操作だけでなく、すべての命令に PGXP を使用します。一部のゲームで PGXP がぐらつきを修正するために必要ですが、&lt;br&gt;パフォーマンスコスト(要求性能)が非常に高くなります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="63"/>
@@ -3800,12 +3800,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="91"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>画面空間の頂点位置をワイドスクリーンのアスペクト比にスケーリングし、3Dゲームで視野を4：3から選択した表示アスペクト比に本質的に拡大します。 &lt;br&gt; 2Dゲーム、または事前にレンダリングされた背景を使用するゲームの場合、この拡張機能は期待どおりに機能しません。 &lt;br&gt; &lt;b&gt; &lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>画面空間の頂点位置をワイドスクリーンのアスペクト比にスケーリングし、3D ゲームで視野を4：3から選択した表示アスペクト比に本質的に拡大します。 &lt;br&gt; 2D ゲーム、または事前にレンダリングされた背景を使用するゲームの場合、この拡張機能は期待どおりに機能しません。 &lt;br&gt; &lt;b&gt; &lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="101"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>PS1ゲームで一般的な「ぐらついた」ポリゴンと「ゆがんだ」テクスチャを減らします。 &lt;br&gt;ハードウェアレンダラーでのみ機能します。 &lt;b&gt;&lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>PS1 ゲームで一般的な「ぐらついた」ポリゴンと「ゆがんだ」テクスチャを減らします。 &lt;br&gt;ハードウェアレンダラーでのみ機能します。 &lt;b&gt;&lt;u&gt;すべてのゲームと互換性があるとは限りません。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="104"/>
@@ -3841,11 +3841,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">メモリを介した頂点の追跡が失敗した場合のフォールバックとして画面座標を使用します。 PGXPの互換性が向上する可能性があります。</translation>
+        <translation type="vanished">メモリを介した頂点の追跡が失敗した場合のフォールバックとして画面座標を使用します。 PGXP の互換性が向上する可能性があります。</translation>
     </message>
     <message>
         <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">CPUを介して頂点操作を追跡しようとします。一部のゲームでは、PGXPを有効にするためにこのオプションが必要です。非常に遅く、リコンパイラと互換性がありません。</translation>
+        <translation type="vanished">CPU を介して頂点操作を追跡しようとします。一部のゲームでは、PGXP を有効にするためにこのオプションが必要です。非常に遅く、リコンパイラと互換性がありません。</translation>
     </message>
     <message>
         <source>%1x%2</source>
@@ -3862,12 +3862,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="730"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation>ボックス（ダウンサンプル3D /すべてスムーズ）</translation>
+        <translation>ボックス（ダウンサンプル 3D /すべてスムーズ）</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="731"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation>アダプティブ（3Dを保持/スムーズ2D）</translation>
+        <translation>アダプティブ（3D を保持/スムーズ 2D）</translation>
     </message>
 </context>
 <context>
@@ -3913,7 +3913,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="684"/>
         <source>3x (for 720p)</source>
-        <translation>3x (720p用)</translation>
+        <translation>3x (720p 用)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="685"/>
@@ -3923,12 +3923,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="686"/>
         <source>5x (for 1080p)</source>
-        <translation>5x (1080p用)</translation>
+        <translation>5x (1080p 用)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="687"/>
         <source>6x (for 1440p)</source>
-        <translation>6x (1440p用)</translation>
+        <translation>6x (1440p 用)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="688"/>
@@ -3943,7 +3943,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qtutils.cpp" line="690"/>
         <source>9x (for 4K)</source>
-        <translation>9x (4K用)</translation>
+        <translation>9x (4K 用)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="723"/>
@@ -4241,22 +4241,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="34"/>
         <source>Image Path:</source>
-        <translation>イメージファイルパス :</translation>
+        <translation>イメージファイルパス:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="48"/>
         <source>Game Code:</source>
-        <translation>ゲームコード :</translation>
+        <translation>ゲームコード:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="62"/>
         <source>Title:</source>
-        <translation>ゲーム名 :</translation>
+        <translation>ゲーム名:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="76"/>
         <source>Region:</source>
-        <translation>リージョン :</translation>
+        <translation>リージョン:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="90"/>
@@ -4266,7 +4266,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="100"/>
         <source>Upscaling Issues:</source>
-        <translation>アップスケーリングの問題 :</translation>
+        <translation>アップスケーリングの問題:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="110"/>
@@ -4276,12 +4276,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="120"/>
         <source>Version Tested:</source>
-        <translation>テストバージョン :</translation>
+        <translation>テストバージョン:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="132"/>
         <source>Set to Current</source>
-        <translation>現ver.に設定</translation>
+        <translation>現 ver.に設定</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="141"/>
@@ -4331,12 +4331,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="280"/>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RAMを有効(開発コンソール)</translation>
+        <translation>8MB RAM を有効(開発コンソール)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="365"/>
         <source>CD-ROM Seek Speedup:</source>
-        <translation>CD-ROMシークの高速化 :</translation>
+        <translation>CD-ROM シークの高速化:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="381"/>
@@ -4356,7 +4356,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="396"/>
         <source>3x</source>
-        <translation>3x (720p用)</translation>
+        <translation>3x (720p 用)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="401"/>
@@ -4366,12 +4366,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="406"/>
         <source>5x</source>
-        <translation>5x (1080p用)</translation>
+        <translation>5x (1080p 用)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="411"/>
         <source>6x</source>
-        <translation>6x (1440p用)</translation>
+        <translation>6x (1440p 用)</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="416"/>
@@ -4421,12 +4421,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="735"/>
         <source>PGXP Preserve Projection Precision</source>
-        <translation>PGXPで投影精度を維持する</translation>
+        <translation>PGXP で投影精度を維持する</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="745"/>
         <source>PGXP Depth Buffer</source>
-        <translation>PGXP深度バッファ</translation>
+        <translation>PGXP 深度バッファ</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="293"/>
@@ -4436,7 +4436,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="299"/>
         <source>CD-ROM Read Speedup:</source>
-        <translation>CD-ROM読み取りの高速化 :</translation>
+        <translation>CD-ROM 読み取りの高速化:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="312"/>
@@ -4556,7 +4556,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="215"/>
         <source>CPU Clock Speed Control</source>
-        <translation>CPUクロック速度制御</translation>
+        <translation>CPU クロック速度制御</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="223"/>
@@ -4576,7 +4576,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="580"/>
         <source>Crop Mode:</source>
-        <translation>トリミングモード :</translation>
+        <translation>トリミングモード:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="602"/>
@@ -4591,12 +4591,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="637"/>
         <source>GPU Enhancements</source>
-        <translation>GPU機能強化</translation>
+        <translation>GPU 機能強化</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="643"/>
         <source>Resolution Scale:</source>
-        <translation>解像度スケール :</translation>
+        <translation>解像度スケール:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="663"/>
@@ -4616,7 +4616,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="695"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation>強制的に NTSCタイミング（60hz-PAL）</translation>
+        <translation>強制的に NTSC タイミング（60hz-PAL）</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="685"/>
@@ -4631,7 +4631,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="715"/>
         <source>PGXP Geometry Correction</source>
-        <translation>PGXPジオメトリ補正を有効にする</translation>
+        <translation>PGXP ジオメトリ補正を有効にする</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="780"/>
@@ -4666,17 +4666,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="845"/>
         <source>Memory Card 1 Shared Path:</source>
-        <translation>メモリカード1共有パス :</translation>
+        <translation>メモリカード1共有パス:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="866"/>
         <source>Memory Card 2 Type:</source>
-        <translation>メモリーカード2タイプ :</translation>
+        <translation>メモリーカード2タイプ:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="876"/>
         <source>Memory Card 2 Shared Path:</source>
-        <translation>メモリカード2共有パス :</translation>
+        <translation>メモリカード2共有パス:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="857"/>
@@ -4717,32 +4717,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1007"/>
         <source>DMA Max Slice Ticks:</source>
-        <translation>DMA最大スライスティック：</translation>
+        <translation>DMA 最大スライスティック：</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1024"/>
         <source>DMA Halt Ticks:</source>
-        <translation>DMA停止ティック：</translation>
+        <translation>DMA 停止ティック：</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1041"/>
         <source>GPU FIFO Size:</source>
-        <translation>GPU FIFOサイズ：</translation>
+        <translation>GPU FIFO サイズ：</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1055"/>
         <source>GPU Max Run Ahead:</source>
-        <translation>GPU最大ランアヘッド:</translation>
+        <translation>GPU 最大ランアヘッド:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1072"/>
         <source>PGXP Geometry Tolerance:</source>
-        <translation>PGXPジオメトリトレランス(形状公差):</translation>
+        <translation>PGXP ジオメトリトレランス(形状公差):</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.ui" line="1095"/>
         <source>PGXP Depth Threshold:</source>
-        <translation>PGXPクリア深度 しきい値:</translation>
+        <translation>PGXP クリア深度 しきい値:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="130"/>
@@ -4756,7 +4756,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="943"/>
         <source>Search on Redump.org</source>
-        <translation>Redump.orgで検索</translation>
+        <translation>Redump.org で検索</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="131"/>
@@ -4825,7 +4825,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamepropertiesdialog.ui" line="201"/>
         <source>Revision:</source>
-        <translation>リビジョン :</translation>
+        <translation>リビジョン:</translation>
     </message>
     <message>
         <location filename="../gamepropertiesdialog.cpp" line="80"/>
@@ -4873,7 +4873,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="29"/>
         <source>Disallow Forcing NTSC Timings</source>
-        <translation>NTSCタイミングの強制を禁止</translation>
+        <translation>NTSC タイミングの強制を禁止</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="30"/>
@@ -4883,37 +4883,37 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="31"/>
         <source>Disable PGXP</source>
-        <translation>PGXPを無効</translation>
+        <translation>PGXP を無効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="32"/>
         <source>Disable PGXP Culling</source>
-        <translation>PGXPカリングを無効</translation>
+        <translation>PGXP カリングを無効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="33"/>
         <source>Disable PGXP Texture Correction</source>
-        <translation>PGXPテクスチャ補正を無効</translation>
+        <translation>PGXP テクスチャ補正を無効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="34"/>
         <source>Disable PGXP Depth Buffer</source>
-        <translation>PGXP深度バッファを無効</translation>
+        <translation>PGXP 深度バッファを無効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="35"/>
         <source>Force PGXP Vertex Cache</source>
-        <translation>強制的に PGXP頂点キャッシュを有効</translation>
+        <translation>強制的に PGXP 頂点キャッシュを有効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="36"/>
         <source>Force PGXP CPU Mode</source>
-        <translation>強制的に PGXP CPUモードを有効</translation>
+        <translation>強制的に PGXP CPU モードを有効</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="39"/>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation>強制的に リコンパイラLUT Fastmem 使用</translation>
+        <translation>強制的に リコンパイラ LUT Fastmem 使用</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="37"/>
@@ -4923,7 +4923,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="38"/>
         <source>Force Recompiler ICache</source>
-        <translation>強制的に リコンパイラICache 使用</translation>
+        <translation>強制的に リコンパイラ ICache 使用</translation>
     </message>
 </context>
 <context>
@@ -5008,7 +5008,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../generalsettingswidget.ui" line="115"/>
         <location filename="../generalsettingswidget.cpp" line="85"/>
         <source>Enable Fullscreen UI</source>
-        <translation>フルスクリーンUIを有効にする</translation>
+        <translation>フルスクリーン UI を有効にする</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="148"/>
@@ -5023,7 +5023,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.ui" line="164"/>
         <source>Current Version:</source>
-        <translation>使用バージョン :</translation>
+        <translation>使用バージョン:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="200"/>
@@ -5120,7 +5120,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
-        <translation>NoGUIフロントエンドで使用されるコントローラー操作に適したフルスクリーンUIモードを有効にします。</translation>
+        <translation>NoGUI フロントエンドで使用されるコントローラー操作に適したフルスクリーン UI モードを有効にします。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="116"/>
@@ -5135,18 +5135,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.cpp" line="82"/>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation>コントローラ入力に使用されるバックエンドを決定します。 Windowsユーザーは、互換性のためにSDL2よりもXInputを使用することが良い場合があります。</translation>
+        <translation>コントローラ入力に使用されるバックエンドを決定します。 Windows ユーザーは、互換性のために SDL2 よりも XInput を使用することが良い場合があります。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="93"/>
         <location filename="../generalsettingswidget.cpp" line="97"/>
         <source>Enable Discord Presence</source>
-        <translation>Discord Presenceを有効にする</translation>
+        <translation>Discord Presence を有効にする</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="98"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation>Discordのプロフィールの一部として現在プレイしているゲームを表示します。</translation>
+        <translation>Discord のプロフィールの一部として現在プレイしているゲームを表示します。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="178"/>
@@ -5175,12 +5175,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/host_interface.cpp" line="293"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
-        <translation>構成済みのBIOSファイル &apos;%s&apos; のロードに失敗しました</translation>
+        <translation>構成済みの BIOS ファイル &apos;%s&apos; のロードに失敗しました</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="357"/>
         <source>No BIOS image found for %s region</source>
-        <translation>リージョン %s のBIOSイメージが見つかりません</translation>
+        <translation>リージョン %s の BIOS イメージが見つかりません</translation>
     </message>
 </context>
 <context>
@@ -5302,12 +5302,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2505"/>
         <source>Toggle PGXP</source>
-        <translation>PGXPの切り替え</translation>
+        <translation>PGXP の切り替え</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2573"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>PGXP深度バッファの切り替え</translation>
+        <translation>PGXP 深度バッファの切り替え</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2531"/>
@@ -5387,7 +5387,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2593"/>
         <source>Toggle PGXP CPU Mode</source>
-        <translation>PGXP CPUモードの切り替え</translation>
+        <translation>PGXP CPU モードの切り替え</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2622"/>
@@ -5643,7 +5643,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2761"/>
         <source>Toggle CD Audio Mute</source>
-        <translation>CD音声有り無しの切り替え</translation>
+        <translation>CD 音声有り無しの切り替え</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2773"/>
@@ -5833,12 +5833,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="156"/>
         <source>Switch GPU Renderer</source>
-        <translation>GPUレンダラーの切り替え</translation>
+        <translation>GPU レンダラーの切り替え</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="161"/>
         <source>Switch CPU Emulation Mode</source>
-        <translation>CPUエミュレーションモードの切り替え</translation>
+        <translation>CPU エミュレーションモードの切り替え</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="196"/>
@@ -5858,7 +5858,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="680"/>
         <source>Show CD-ROM State</source>
-        <translation>CDROMの状態を表示</translation>
+        <translation>CDROM の状態を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="801"/>
@@ -5888,7 +5888,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="293"/>
         <source>Start &amp;BIOS</source>
-        <translation>BIOS実行(&amp;B)</translation>
+        <translation>BIOS 実行(&amp;B)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="301"/>
@@ -5973,7 +5973,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="446"/>
         <source>&amp;GitHub Repository...</source>
-        <translation>GitHubリポジトリ...(&amp;G)</translation>
+        <translation>GitHub リポジトリ...(&amp;G)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="455"/>
@@ -6018,7 +6018,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="368"/>
         <source>B&amp;IOS Settings...</source>
-        <translation>BIOS設定...(&amp;I)</translation>
+        <translation>BIOS 設定...(&amp;I)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="41"/>
@@ -6048,12 +6048,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="482"/>
         <source>About &amp;Qt...</source>
-        <translation>Qtについて...(&amp;Q)</translation>
+        <translation>Qt について...(&amp;Q)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="491"/>
         <source>&amp;About DuckStation...</source>
-        <translation>DuckStationについて...(&amp;A)</translation>
+        <translation>DuckStation について...(&amp;A)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="523"/>
@@ -6108,17 +6108,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="601"/>
         <source>Show VRAM</source>
-        <translation>VRAMを表示</translation>
+        <translation>VRAM を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="609"/>
         <source>Dump CPU to VRAM Copies</source>
-        <translation>CPUダンプ(VRAMからコピー)</translation>
+        <translation>CPU ダンプ(VRAM からコピー)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="617"/>
         <source>Dump VRAM to CPU Copies</source>
-        <translation>VRAMダンプ(CPUからコピー)</translation>
+        <translation>VRAM ダンプ(CPU からコピー)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="625"/>
@@ -6133,7 +6133,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="641"/>
         <source>Force NTSC Timings</source>
-        <translation>強制的に NTSCタイミング扱い</translation>
+        <translation>強制的に NTSC タイミング扱い</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="649"/>
@@ -6143,27 +6143,27 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="654"/>
         <source>Dump RAM...</source>
-        <translation>RAMダンプ...</translation>
+        <translation>RAM ダンプ...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="659"/>
         <source>Dump VRAM...</source>
-        <translation>VRAMダンプ...</translation>
+        <translation>VRAM ダンプ...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="664"/>
         <source>Dump SPU RAM...</source>
-        <translation>SPU RAMダンプ...</translation>
+        <translation>SPU RAM ダンプ...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="672"/>
         <source>Show GPU State</source>
-        <translation>GPU状態を表示</translation>
+        <translation>GPU 状態を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="688"/>
         <source>Show SPU State</source>
-        <translation>SPU状態を表示</translation>
+        <translation>SPU 状態を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="696"/>
@@ -6173,12 +6173,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="704"/>
         <source>Show MDEC State</source>
-        <translation>MDEC状態を表示</translation>
+        <translation>MDEC 状態を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="712"/>
         <source>Show DMA State</source>
-        <translation>DMA状態を表示</translation>
+        <translation>DMA 状態を表示</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="720"/>
@@ -6283,7 +6283,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="47"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cueファイル (*.cue);;MAME CHDイメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecarイメージ (*.mds);;PlayStation EBOOT形式 (*.pbp);;PlayStation実行ファイル (*.exe *.psexe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
+        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cue ファイル (*.cue);;MAME CHD イメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecar イメージ (*.mds);;PlayStation EBOOT 形式 (*.pbp);;PlayStation 実行ファイル (*.exe *.psexe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="148"/>
@@ -6304,7 +6304,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="542"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation>CD-ROMデバイスが見つかりませんでした。 CD-ROMドライブが接続されており、&lt;br&gt;それにアクセスするための十分な権限があることを確認してください。</translation>
+        <translation>CD-ROM デバイスが見つかりませんでした。 CD-ROM ドライブが接続されており、&lt;br&gt;それにアクセスするための十分な権限があることを確認してください。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="556"/>
@@ -6350,7 +6350,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="799"/>
         <source>Fast Boot</source>
-        <translation>高速ブート(BIOSスキップ)</translation>
+        <translation>高速ブート(BIOS スキップ)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="805"/>
@@ -6429,7 +6429,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="1324"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
-        <translation>バイナリファイル (*.bin);;PNG画像 (*.png)</translation>
+        <translation>バイナリファイル (*.bin);;PNG 画像 (*.png)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1349"/>
@@ -6454,7 +6454,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="1353"/>
         <source>QDarkStyle</source>
-        <translation>Qダークスタイル</translation>
+        <translation>Q ダークスタイル</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1760"/>
@@ -6507,7 +6507,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1906"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;申し訳ありませんが、GitHubの公式リリースではないDuckStationバージョンを更新しようとしています。非互換性を防ぐために、自動更新は公式ビルドでのみ有効になっています。&lt;/p&gt; &lt;p&gt;公式ビルドを取得するには、以下のリンクの「ダウンロードと実行」の手順に従ってください。&lt;/p&gt; &lt;p&gt; &lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt; https://github.com/stenzek/duckstation/ &lt;/a&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;申し訳ありませんが、GitHub の公式リリースではない DuckStation バージョンを更新しようとしています。非互換性を防ぐために、自動更新は公式ビルドでのみ有効になっています。&lt;/p&gt; &lt;p&gt;公式ビルドを取得するには、以下のリンクの「ダウンロードと実行」の手順に従ってください。&lt;/p&gt; &lt;p&gt; &lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt; https://github.com/stenzek/duckstation/ &lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1912"/>
@@ -6548,7 +6548,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditordialog.ui" line="64"/>
         <location filename="../memorycardeditordialog.ui" line="140"/>
         <source>Memory Card:</source>
-        <translation>メモリーカード :</translation>
+        <translation>メモリーカード:</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="11"/>
@@ -6785,7 +6785,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="134"/>
         <source>Memory Card Type:</source>
-        <translation>メモリーカード 保存方法 :</translation>
+        <translation>メモリーカード 保存方法:</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="57"/>
@@ -6838,7 +6838,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="157"/>
         <source>Shared Memory Card Path:</source>
-        <translation>(共有)メモリーカードパス :</translation>
+        <translation>(共有)メモリーカードパス:</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="165"/>
@@ -6957,7 +6957,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/namco_guncon.cpp" line="271"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation>画面の中心を基準にしてX座標をスケーリングします。</translation>
+        <translation>画面の中心を基準にして X 座標をスケーリングします。</translation>
     </message>
 </context>
 <context>
@@ -7063,22 +7063,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="671"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation>PGXPはソフトウェアレンダラーと互換性がない為、PGXPを無効にします。</translation>
+        <translation>PGXP はソフトウェアレンダラーと互換性がない為、PGXP を無効にします。</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="688"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
-        <translation>巻き戻しは、Android用の32ビットARMではサポートされていません。</translation>
+        <translation>巻き戻しは、Android 用の32ビット ARM ではサポートされていません。</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="756"/>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation>CPUメモリ例外が有効になり、すべてのブロックがフラッシュされます。</translation>
+        <translation>CPU メモリ例外が有効になり、すべてのブロックがフラッシュされます。</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="705"/>
         <source>Switching to %s%s GPU renderer.</source>
-        <translation>GPUレンダラー %s%s に切り替え</translation>
+        <translation>GPU レンダラー %s%s に切り替え</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="728"/>
@@ -7088,22 +7088,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/host_interface.cpp" line="744"/>
         <source>Switching to %s CPU execution mode.</source>
-        <translation>CPU実行モード %s に切り替え</translation>
+        <translation>CPU 実行モード %s に切り替え</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="811"/>
         <source>PGXP enabled, recompiling all blocks.</source>
-        <translation>PGXPが有効になり、すべてのブロックが再コンパイルされます。</translation>
+        <translation>PGXP が有効になり、すべてのブロックが再コンパイルされます。</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="812"/>
         <source>PGXP disabled, recompiling all blocks.</source>
-        <translation>PGXPが無効になり、すべてのブロックが再コンパイルされます。</translation>
+        <translation>PGXP が無効になり、すべてのブロックが再コンパイルされます。</translation>
     </message>
     <message>
         <location filename="../../core/host_interface.cpp" line="1077"/>
         <source>Switching to %s renderer...</source>
-        <translation>GPUレンダラー%s に切り替え</translation>
+        <translation>GPU レンダラー%s に切り替え</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="1088"/>
@@ -7115,32 +7115,32 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2448"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
-        <translation>CPUクロック速度制御が有効になっています (%u%% / %.3f MHz).</translation>
+        <translation>CPU クロック速度制御が有効になっています (%u%% / %.3f MHz).</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2453"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
-        <translation>CPUクロック速度制御が無効になっています (%.3f MHz)</translation>
+        <translation>CPU クロック速度制御が無効になっています (%.3f MHz)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2515"/>
         <source>PGXP is now enabled.</source>
-        <translation>PGXPが有効になりました。</translation>
+        <translation>PGXP が有効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2516"/>
         <source>PGXP is now disabled.</source>
-        <translation>PGXPが無効になりました。</translation>
+        <translation>PGXP が無効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2586"/>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation>PGXP深度バッファが有効になりました。</translation>
+        <translation>PGXP 深度バッファが有効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2587"/>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation>PGXP深度バッファが無効になりました。</translation>
+        <translation>PGXP 深度バッファが無効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2559"/>
@@ -7177,24 +7177,24 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2606"/>
         <source>PGXP CPU mode is now enabled.</source>
-        <translation>PGXPが有効になりました。</translation>
+        <translation>PGXP が有効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2607"/>
         <source>PGXP CPU mode is now disabled.</source>
-        <translation>PGXPが無効になりました。</translation>
+        <translation>PGXP が無効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2750"/>
         <source>Volume: Muted</source>
-        <translation>音量 : ミュート</translation>
+        <translation>音量: ミュート</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2756"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2783"/>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2797"/>
         <source>Volume: %d%%</source>
-        <translation>音量 : %d%%</translation>
+        <translation>音量: %d%%</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host_interface.cpp" line="2767"/>
@@ -7246,7 +7246,7 @@ Are you sure you want to continue?</source>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
-        <translation>ポート %u (%s) のコントローラーは %sではサポートされていません。
+        <translation>ポート %u (%s) のコントローラーは %s ではサポートされていません。
 サポートされているコントローラー： %s
 上記のリストからサポートされているコントローラーを構成してください。</translation>
     </message>
@@ -7382,7 +7382,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1270"/>
         <source>CPU interpreter forced by game settings.</source>
-        <translation>ゲーム設定によって強制的にCPU インタープリタが有効。</translation>
+        <translation>ゲーム設定によって強制的に CPU インタープリタが有効。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1281"/>
@@ -7417,37 +7417,37 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1350"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
-        <translation>ゲーム設定で許可されていないNTSCタイミングの強制。</translation>
+        <translation>ゲーム設定で許可されていない NTSC タイミングの強制。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1362"/>
         <source>PGXP geometry correction disabled by game settings.</source>
-        <translation>PGXPジオメトリ補正は、ゲーム設定によって無効になっています。</translation>
+        <translation>PGXP ジオメトリ補正は、ゲーム設定によって無効になっています。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1374"/>
         <source>PGXP culling disabled by game settings.</source>
-        <translation>PGXPカリングはゲーム設定によって無効になっています。</translation>
+        <translation>PGXP カリングはゲーム設定によって無効になっています。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1385"/>
         <source>PGXP texture correction disabled by game settings.</source>
-        <translation>PGXPテクスチャ補正はゲーム設定によって無効になっています。</translation>
+        <translation>PGXP テクスチャ補正はゲーム設定によって無効になっています。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1397"/>
         <source>PGXP vertex cache forced by game settings.</source>
-        <translation>ゲーム設定により強制的にPGXP頂点キャッシュが有効。</translation>
+        <translation>ゲーム設定により強制的に PGXP 頂点キャッシュが有効。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1408"/>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation>ゲーム設定により強制的にPGXP CPUモードが有効。</translation>
+        <translation>ゲーム設定により強制的に PGXP CPU モードが有効。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_settings.cpp" line="1419"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation>PGXP深度バッファはゲーム設定によって無効になっています。</translation>
+        <translation>PGXP 深度バッファはゲーム設定によって無効になっています。</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="175"/>
@@ -7487,7 +7487,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="680"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
-        <translation>マルチディスクイメージ &apos;%s&apos;ではCDイメージのプリロードは使用できません</translation>
+        <translation>マルチディスクイメージ &apos;%s&apos;では CD イメージのプリロードは使用できません</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="699"/>
@@ -7497,12 +7497,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="716"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation>パッチが適用されていないイメージを使用して、 &apos;%s&apos;からppfパッチを適用できませんでした。</translation>
+        <translation>パッチが適用されていないイメージを使用して、 &apos;%s&apos;から ppf パッチを適用できませんでした。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="961"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
-        <translation>CPUクロック速度は %u%% (%u / %u)に設定されます。これにより、不安定になる可能性があります。</translation>
+        <translation>CPU クロック速度は %u%% (%u / %u)に設定されます。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="969"/>
@@ -7527,12 +7527,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="1152"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
-        <translation>警告：CPUオーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
+        <translation>警告：CPU オーバークロック (%u%%)は保存状態 (%u%%)で異なりました。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1287"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation>ステートセーブからCDイメージを開くことができませんでした: &apos;%s&apos;: %s既存のCDイメージ &apos;%s&apos;を使用すると、不安定になる可能性があります。</translation>
+        <translation>ステートセーブから CD イメージを開くことができませんでした: &apos;%s&apos;: %s 既存の CD イメージ &apos;%s&apos;を使用すると、不安定になる可能性があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2111"/>
@@ -7557,12 +7557,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="65"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
-        <translation>%ux MSAAはサポートされていない為、代わりに %ux を使用しています。</translation>
+        <translation>%ux MSAA はサポートされていない為、代わりに %ux を使用しています。</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="71"/>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation>SSAAはサポートされておらず、代わりにMSAAを使用しています。</translation>
+        <translation>SSAA はサポートされておらず、代わりに MSAA を使用しています。</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="77"/>
@@ -7587,7 +7587,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="172"/>
         <source>Multisample anti-aliasing set to %ux.</source>
-        <translation>マルチサンプルアンチエイリアシングを %uxに設定</translation>
+        <translation>マルチサンプルアンチエイリアシングを %ux に設定</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="234"/>
@@ -7627,7 +7627,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="59"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation>OpenGLレンダラーが利用できません。ドライバーまたはハードウェアが対応していません。 OpenGL3.1またはOpenGLES3.0が必要です。</translation>
+        <translation>OpenGL レンダラーが利用できません。ドライバーまたはハードウェアが対応していません。 OpenGL3.1または OpenGLES3.0が必要です。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="44"/>
@@ -7641,7 +7641,7 @@ Please configure a supported controller from the list above.</source>
     </message>
     <message>
         <source>mmap fastmem is not available on this platform, using LUT instead.</source>
-        <translation type="vanished">mmap fastmemは、このプラットフォームでは使用できません。代わりにLUTを使用します。</translation>
+        <translation type="vanished">mmap fastmem は、このプラットフォームでは使用できません。代わりに LUT を使用します。</translation>
     </message>
     <message>
         <source>Speed limiter enabled.</source>
@@ -7704,7 +7704,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="232"/>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation>FPSゲームで使用するウィンドウにマウスカーソルを固定します。</translation>
+        <translation>FPS ゲームで使用するウィンドウにマウスカーソルを固定します。</translation>
     </message>
 </context>
 <context>
@@ -7870,16 +7870,16 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../qtutils.cpp" line="669"/>
         <source>Failed to open URL</source>
-        <translation>URLを開けませんでした</translation>
+        <translation>URL を開けませんでした</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="670"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
-        <translation>URLを開けませんでした
+        <translation>URL を開けませんでした
 
-URLは次のとおりです : %1</translation>
+URL は次のとおりです: %1</translation>
     </message>
 </context>
 <context>
@@ -7948,7 +7948,7 @@ Game Publisher: %4
 Achievements: %5 (%6)
 
 </source>
-        <translation>ゲームID:%1
+        <translation>ゲーム ID:%1
 ゲーム名:%2
 開発元:%3
 販売元:%4
@@ -7971,7 +7971,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../qthostinterface.cpp" line="1557"/>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation>ゲームが読み込まれていないか、RetroAchievementsが利用できません。</translation>
+        <translation>ゲームが読み込まれていないか、RetroAchievements が利用できません。</translation>
     </message>
     <message>
         <location filename="../qthostinterface.cpp" line="430"/>
@@ -8101,7 +8101,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="23"/>
         <source>DuckStation Settings</source>
-        <translation>DuckStation設定</translation>
+        <translation>DuckStation 設定</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="73"/>
@@ -8111,7 +8111,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="82"/>
         <source>BIOS Settings</source>
-        <translation>BIOS設定</translation>
+        <translation>BIOS 設定</translation>
     </message>
     <message>
         <location filename="../settingsdialog.ui" line="91"/>
@@ -8161,7 +8161,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.ui" line="181"/>
         <source>Achievement Settings</source>
-        <translation>Achievement設定</translation>
+        <translation>Achievement 設定</translation>
     </message>
     <message>
         <source>Restore Defaults</source>
@@ -8184,7 +8184,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="81"/>
         <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation>このDuckStationビルドは、RetroAchievementsを使用できるようにコンパイルされていません。</translation>
+        <translation>この DuckStation ビルドは、RetroAchievements を使用できるようにコンパイルされていません。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="108"/>
@@ -8199,17 +8199,17 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStationがゲームリストに入力するために検索したディレクトリを示しています。&lt;br&gt;ディレクトリは、追加、削除、および再読込/再読込無しに切り替えることができます。</translation>
+        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStation がゲームリストに入力するために検索したディレクトリを示しています。&lt;br&gt;ディレクトリは、追加、削除、および再読込/再読込無しに切り替えることができます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="118"/>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;ホットキー設定&lt;/strong&gt;&lt;hr&gt;ホットキーを割り当てすると、キー/コントローラーボタンを押すだけでリセットやスクリーンショットの撮影などのイベントを実行できます。&lt;br&gt;ホットキーの項目は一目瞭然です。項目の右の枠をクリックするとカウントダウンが開始され、割り当てるキーまたはコントローラーボタン/軸を押してください。&lt;br&gt;ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。割り当てをクリアするには、ボタンを右クリックします。&lt;br&gt;複数のボタンを割り当てるには、Shiftキーを押しながら枠をクリックします。</translation>
+        <translation>&lt;strong&gt;ホットキー設定&lt;/strong&gt;&lt;hr&gt;ホットキーを割り当てすると、キー/コントローラーボタンを押すだけでリセットやスクリーンショットの撮影などのイベントを実行できます。&lt;br&gt;ホットキーの項目は一目瞭然です。項目の右の枠をクリックするとカウントダウンが開始され、割り当てるキーまたはコントローラーボタン/軸を押してください。&lt;br&gt;ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。割り当てをクリアするには、ボタンを右クリックします。&lt;br&gt;複数のボタンを割り当てるには、Shift キーを押しながら枠をクリックします。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="124"/>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。&lt;br&gt;割当をクリックするとカウントダウンが開始され、割当てるキーまたはコントローラーボタン/軸を押してください。 &lt;br&gt;（振動の場合は、振動するコントローラーの任意のボタン/軸を押します。）ボタンが押されずにタイマーが経過した場合、割当ては変更されません。&lt;br&gt;割当てをクリアするには、ボタンを右クリックします。複数のボタンを割当てるには、Shiftキーを押しながらボタンをクリックします。</translation>
+        <translation>&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、コンソール用にシミュレートするコントローラーのタイプを選択し、キーまたはホストゲームコントローラーボタンを選択に再割り当てできます。&lt;br&gt;割当をクリックするとカウントダウンが開始され、割当てるキーまたはコントローラーボタン/軸を押してください。 &lt;br&gt;（振動の場合は、振動するコントローラーの任意のボタン/軸を押します。）ボタンが押されずにタイマーが経過した場合、割当ては変更されません。&lt;br&gt;割当てをクリアするには、ボタンを右クリックします。複数のボタンを割当てるには、Shift キーを押しながらボタンをクリックします。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="132"/>
@@ -8277,12 +8277,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/system.cpp" line="1295"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>ステートセーブで使用していたCDイメージ &apos;%s&apos;を開くことができませんでした: %s.</translation>
+        <translation>ステートセーブで使用していた CD イメージ &apos;%s&apos;を開くことができませんでした: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1313"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>ステートセーブで使用していたサブイメージ %u (CDイメージ &apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
+        <translation>ステートセーブで使用していたサブイメージ %u (CD イメージ &apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1921"/>
@@ -8308,13 +8308,13 @@ The saves will not be recoverable.</source>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
+        <translation>SBI ファイルなしで libcrypt で保護されたゲームを実行しようとしています。
 
 %s: %s
 
-ダンプが不完全です。このゲームを実行するには、SBIファイルを追加する必要があります。
+ダンプが不完全です。このゲームを実行するには、SBI ファイルを追加する必要があります。
 
-SBIファイルの名前は、ディスクイメージの名前と一致する必要があります。</translation>
+SBI ファイルの名前は、ディスクイメージの名前と一致する必要があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2127"/>
@@ -8332,13 +8332,13 @@ The game will likely not run properly.
 Please check the README for instructions on how to add an SBI file.
 
 Do you wish to continue?</source>
-        <translation>SBIファイルなしでlibcryptで保護されたゲームを実行しようとしています。
+        <translation>SBI ファイルなしで libcrypt で保護されたゲームを実行しようとしています。
 
 %s: %s
 
 ゲームは正しく実行されない可能性があります。
 
-SBIファイルを追加する方法については、READMEを確認してください。
+SBI ファイルを追加する方法については、README を確認してください。
 
 続行しますか？</translation>
     </message>
