@@ -30,6 +30,8 @@ add_library(common
   gl/texture.h
   hash_combine.h
   heap_array.h
+  layered_settings_interface.cpp
+  layered_settings_interface.h
   log.cpp
   log.h
   make_array.h
@@ -43,6 +45,7 @@ add_library(common
   progress_callback.h
   rectangle.h
   scope_guard.h
+  settings_interface.h
   string.cpp
   string.h
   string_util.cpp

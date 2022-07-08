@@ -2866,10 +2866,9 @@ void CommonHostInterface::ClearAllControllerBindings()
 
 bool CommonHostInterface::ApplyInputProfile(const char* profile_path)
 {
-  if (!FileSystem::FileExists(profile_path))
-    return false;
-
   INISettingsInterface profile(profile_path);
+  if (!profile.Load())
+    return false;
 
   std::lock_guard<std::recursive_mutex> guard(m_settings_mutex);
 
@@ -2966,7 +2965,6 @@ bool CommonHostInterface::SaveInputProfile(const char* profile_path)
     Log_WarningPrintf("Input profile at '%s' does not exist, new input profile will be created", profile_path);
 
   INISettingsInterface profile(profile_path);
-  profile.Clear();
 
   for (u32 controller_index = 1; controller_index <= NUM_CONTROLLER_AND_CARD_PORTS; controller_index++)
   {
@@ -3309,6 +3307,10 @@ void CommonHostInterface::LoadSettings()
 #ifndef __ANDROID__
   // we don't check the settings version on android, because it's not using the ini yet..
   // we can re-enable this once we move it over.. eventually.
+  const bool loaded = static_cast<INISettingsInterface*>(m_settings_interface.get())->Load();
+  if (!loaded)
+    SetDefaultSettings(*m_settings_interface);
+
   const int settings_version = m_settings_interface->GetIntValue("Main", "SettingsVersion", -1);
   if (settings_version != SETTINGS_VERSION)
   {
@@ -3876,6 +3878,13 @@ bool CommonHostInterface::UpdateControllerInputMapFromGameSettings()
   }
 
   INISettingsInterface si(std::move(path));
+  if (!si.Load())
+  {
+    AddFormattedOSDMessage(10.0f, TranslateString("OSDMessage", "Input profile '%s' cannot be loaded."),
+                           gs->input_profile_name.c_str());
+    return false;
+  }
+
   UpdateControllerInputMap(si);
   return true;
 }

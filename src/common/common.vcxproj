@@ -45,6 +45,7 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="image.h" />
+    <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="make_array.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="scope_guard.h" />
+    <ClInclude Include="settings_interface.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="thirdparty\StackWalker.h">
@@ -116,6 +118,7 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />

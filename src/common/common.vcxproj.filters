@@ -133,6 +133,8 @@
     <ClInclude Include="gl\loader.h">
       <Filter>gl</Filter>
     </ClInclude>
+    <ClInclude Include="settings_interface.h" />
+    <ClInclude Include="layered_settings_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gl\program.cpp">
@@ -244,6 +246,7 @@
     <ClCompile Include="vulkan\loader.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="layered_settings_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

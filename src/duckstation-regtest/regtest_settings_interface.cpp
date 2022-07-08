@@ -23,90 +23,129 @@ static std::string GetFullKey(const char* section, const char* key)
   return StringUtil::StdStringFromFormat("%s/%s", section, key);
 }
 
-int RegTestSettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
+bool RegTestSettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
 {
-  int retval = default_value;
-
   const std::string fullkey(GetFullKey(section, key));
   auto iter = m_keys.find(fullkey);
-  if (iter != m_keys.end())
-    retval = StringUtil::FromChars<int>(iter->second, 10).value_or(default_value);
+  if (iter == m_keys.end())
+    return false;
 
-  Log_DevPrintf("GetIntValue(%s) -> %d", fullkey.c_str(), retval);
-  return retval;
+  std::optional<s32> parsed = StringUtil::FromChars<s32>(iter->second, 10);
+  if (!parsed.has_value())
+    return false;
+
+  *value = parsed.value();
+  return true;
 }
 
-float RegTestSettingsInterface::GetFloatValue(const char* section, const char* key, float default_value /*= 0.0f*/)
+bool RegTestSettingsInterface::GetUIntValue(const char* section, const char* key, u32* value) const
 {
-  float retval = default_value;
-
   const std::string fullkey(GetFullKey(section, key));
   auto iter = m_keys.find(fullkey);
-  if (iter != m_keys.end())
-    retval = StringUtil::FromChars<float>(iter->second).value_or(default_value);
+  if (iter == m_keys.end())
+    return false;
 
-  Log_DevPrintf("GetFloatValue(%s) -> %f", fullkey.c_str(), retval);
-  return retval;
+  std::optional<u32> parsed = StringUtil::FromChars<u32>(iter->second, 10);
+  if (!parsed.has_value())
+    return false;
+
+  *value = parsed.value();
+  return true;
 }
 
-bool RegTestSettingsInterface::GetBoolValue(const char* section, const char* key, bool default_value /*= false*/)
+bool RegTestSettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const
 {
-  bool retval = default_value;
-
   const std::string fullkey(GetFullKey(section, key));
   auto iter = m_keys.find(fullkey);
-  if (iter != m_keys.end())
-    retval = StringUtil::FromChars<bool>(iter->second).value_or(default_value);
+  if (iter == m_keys.end())
+    return false;
 
-  Log_DevPrintf("GetBoolValue(%s) -> %s", fullkey.c_str(), retval ? "true" : "false");
-  return retval;
+  std::optional<float> parsed = StringUtil::FromChars<float>(iter->second);
+  if (!parsed.has_value())
+    return false;
+
+  *value = parsed.value();
+  return true;
 }
 
-std::string RegTestSettingsInterface::GetStringValue(const char* section, const char* key,
-                                                     const char* default_value /*= ""*/)
+bool RegTestSettingsInterface::GetDoubleValue(const char* section, const char* key, double* value) const
 {
-  std::string retval;
-
   const std::string fullkey(GetFullKey(section, key));
   auto iter = m_keys.find(fullkey);
-  if (iter != m_keys.end())
-    retval = iter->second;
-  else
-    retval = default_value;
+  if (iter == m_keys.end())
+    return false;
 
-  Log_DevPrintf("GetStringValue(%s) -> %s", fullkey.c_str(), retval.c_str());
-  return retval;
+  std::optional<double> parsed = StringUtil::FromChars<double>(iter->second);
+  if (!parsed.has_value())
+    return false;
+
+  *value = parsed.value();
+  return true;
 }
 
-void RegTestSettingsInterface::SetIntValue(const char* section, const char* key, int value)
+bool RegTestSettingsInterface::GetBoolValue(const char* section, const char* key, bool* value) const
 {
   const std::string fullkey(GetFullKey(section, key));
-  Log_DevPrintf("SetIntValue(%s, %d)", fullkey.c_str(), value);
+  auto iter = m_keys.find(fullkey);
+  if (iter == m_keys.end())
+    return false;
+
+  std::optional<bool> parsed = StringUtil::FromChars<bool>(iter->second);
+  if (!parsed.has_value())
+    return false;
+
+  *value = parsed.value();
+  return true;
+}
+
+bool RegTestSettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
+{
+  const std::string fullkey(GetFullKey(section, key));
+  auto iter = m_keys.find(fullkey);
+  if (iter == m_keys.end())
+    return false;
+
+  *value = iter->second;
+  return true;
+}
+
+void RegTestSettingsInterface::SetIntValue(const char* section, const char* key, s32 value)
+{
+  const std::string fullkey(GetFullKey(section, key));
+  m_keys[std::move(fullkey)] = std::to_string(value);
+}
+
+void RegTestSettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
+{
+  const std::string fullkey(GetFullKey(section, key));
   m_keys[std::move(fullkey)] = std::to_string(value);
 }
 
 void RegTestSettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
   const std::string fullkey(GetFullKey(section, key));
-  Log_DevPrintf("SetFloatValue(%s, %f)", fullkey.c_str(), value);
+  m_keys[std::move(fullkey)] = std::to_string(value);
+}
+
+void RegTestSettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
+{
+  const std::string fullkey(GetFullKey(section, key));
   m_keys[std::move(fullkey)] = std::to_string(value);
 }
 
 void RegTestSettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
   const std::string fullkey(GetFullKey(section, key));
-  Log_DevPrintf("SetBoolValue(%s, %s)", fullkey.c_str(), value ? "true" : "false");
   m_keys[std::move(fullkey)] = std::string(value ? "true" : "false");
 }
 
 void RegTestSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
   const std::string fullkey(GetFullKey(section, key));
-  Log_DevPrintf("SetStringValue(%s, %s)", fullkey.c_str(), value);
   m_keys[std::move(fullkey)] = value;
 }
 
-std::vector<std::string> RegTestSettingsInterface::GetStringList(const char* section, const char* key)
+std::vector<std::string> RegTestSettingsInterface::GetStringList(const char* section, const char* key) const
 {
   std::vector<std::string> ret;
   Panic("Not implemented");
@@ -131,10 +170,15 @@ bool RegTestSettingsInterface::AddToStringList(const char* section, const char* 
   return false;
 }
 
+bool RegTestSettingsInterface::ContainsValue(const char* section, const char* key) const
+{
+  const std::string fullkey(GetFullKey(section, key));
+  return (m_keys.find(fullkey) != m_keys.end());
+}
+
 void RegTestSettingsInterface::DeleteValue(const char* section, const char* key)
 {
   const std::string fullkey(GetFullKey(section, key));
-  Log_DevPrintf("DeleteValue(%s)", fullkey.c_str());
 
   auto iter = m_keys.find(fullkey);
   if (iter != m_keys.end())
@@ -143,8 +187,6 @@ void RegTestSettingsInterface::DeleteValue(const char* section, const char* key)
 
 void RegTestSettingsInterface::ClearSection(const char* section)
 {
-  Log_DevPrintf("ClearSection(%s)", section);
-
   const std::string start(StringUtil::StdStringFromFormat("%s/", section));
   for (auto iter = m_keys.begin(); iter != m_keys.end();)
   {

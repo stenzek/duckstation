@@ -1,24 +1,28 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ini_settings_interface.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/string_util.h"
 #include <algorithm>
 #include <iterator>
 
 Log_SetChannel(INISettingsInterface);
 
-INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
-{
-  SI_Error err = SI_FAIL;
-  std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "rb");
-  if (fp)
-  {
-    err = m_ini.LoadFile(fp);
-    std::fclose(fp);
-  }
-
-  if (err != SI_OK)
-    Log_WarningPrintf("Settings could not be loaded from '%s', defaults will be used.", m_filename.c_str());
-}
+INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true) {}
 
 INISettingsInterface::~INISettingsInterface()
 {
@@ -26,8 +30,24 @@ INISettingsInterface::~INISettingsInterface()
     Save();
 }
 
+bool INISettingsInterface::Load()
+{
+  if (m_filename.empty())
+    return false;
+
+  SI_Error err = SI_FAIL;
+  auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
+  if (fp)
+    err = m_ini.LoadFile(fp.get());
+
+  return (err == SI_OK);
+}
+
 bool INISettingsInterface::Save()
 {
+  if (m_filename.empty())
+    return false;
+
   SI_Error err = SI_FAIL;
   std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
   if (fp)
@@ -51,28 +71,93 @@ void INISettingsInterface::Clear()
   m_ini.Reset();
 }
 
-int INISettingsInterface::GetIntValue(const char* section, const char* key, int default_value /*= 0*/)
+bool INISettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
 {
-  return static_cast<int>(m_ini.GetLongValue(section, key, default_value));
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  std::optional<s32> parsed_value = StringUtil::FromChars<s32>(str_value, 10);
+  if (!parsed_value.has_value())
+    return false;
+
+  *value = parsed_value.value();
+  return true;
 }
 
-float INISettingsInterface::GetFloatValue(const char* section, const char* key, float default_value /*= 0.0f*/)
+bool INISettingsInterface::GetUIntValue(const char* section, const char* key, u32* value) const
 {
-  return static_cast<float>(m_ini.GetDoubleValue(section, key, default_value));
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  std::optional<u32> parsed_value = StringUtil::FromChars<u32>(str_value, 10);
+  if (!parsed_value.has_value())
+    return false;
+
+  *value = parsed_value.value();
+  return true;
 }
 
-bool INISettingsInterface::GetBoolValue(const char* section, const char* key, bool default_value /*= false*/)
+bool INISettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const
 {
-  return m_ini.GetBoolValue(section, key, default_value);
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  std::optional<float> parsed_value = StringUtil::FromChars<float>(str_value);
+  if (!parsed_value.has_value())
+    return false;
+
+  *value = parsed_value.value();
+  return true;
 }
 
-std::string INISettingsInterface::GetStringValue(const char* section, const char* key,
-                                                 const char* default_value /*= ""*/)
+bool INISettingsInterface::GetDoubleValue(const char* section, const char* key, double* value) const
 {
-  return m_ini.GetValue(section, key, default_value);
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  std::optional<double> parsed_value = StringUtil::FromChars<double>(str_value);
+  if (!parsed_value.has_value())
+    return false;
+
+  *value = parsed_value.value();
+  return true;
+}
+
+bool INISettingsInterface::GetBoolValue(const char* section, const char* key, bool* value) const
+{
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  std::optional<bool> parsed_value = StringUtil::FromChars<bool>(str_value);
+  if (!parsed_value.has_value())
+    return false;
+
+  *value = parsed_value.value();
+  return true;
+}
+
+bool INISettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
+{
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  value->assign(str_value);
+  return true;
 }
 
 void INISettingsInterface::SetIntValue(const char* section, const char* key, int value)
+{
+  m_dirty = true;
+  m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
+}
+
+void INISettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
 {
   m_dirty = true;
   m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
@@ -82,6 +167,12 @@ void INISettingsInterface::SetFloatValue(const char* section, const char* key, f
 {
   m_dirty = true;
   m_ini.SetDoubleValue(section, key, static_cast<double>(value), nullptr, true);
+}
+
+void INISettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
+{
+  m_dirty = true;
+  m_ini.SetDoubleValue(section, key, value, nullptr, true);
 }
 
 void INISettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
@@ -94,6 +185,11 @@ void INISettingsInterface::SetStringValue(const char* section, const char* key, 
 {
   m_dirty = true;
   m_ini.SetValue(section, key, value, nullptr, true);
+}
+
+bool INISettingsInterface::ContainsValue(const char* section, const char* key) const
+{
+  return (m_ini.GetValue(section, key, nullptr) != nullptr);
 }
 
 void INISettingsInterface::DeleteValue(const char* section, const char* key)
@@ -109,7 +205,7 @@ void INISettingsInterface::ClearSection(const char* section)
   m_ini.SetValue(section, nullptr, nullptr);
 }
 
-std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key)
+std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const
 {
   std::list<CSimpleIniA::Entry> entries;
   if (!m_ini.GetAllValues(section, key, entries))
@@ -117,8 +213,8 @@ std::vector<std::string> INISettingsInterface::GetStringList(const char* section
 
   std::vector<std::string> ret;
   ret.reserve(entries.size());
-  std::transform(entries.begin(), entries.end(), std::back_inserter(ret),
-                 [](const CSimpleIniA::Entry& it) { return std::string(it.pItem); });
+  for (const CSimpleIniA::Entry& entry : entries)
+    ret.emplace_back(entry.pItem);
   return ret;
 }
 

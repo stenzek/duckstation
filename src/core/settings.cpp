@@ -12,8 +12,6 @@
 
 Settings g_settings;
 
-SettingsInterface::~SettingsInterface() = default;
-
 const char* SettingInfo::StringDefaultValue() const
 {
   return default_value ? default_value : "";
