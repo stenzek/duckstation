@@ -1,9 +1,7 @@
 #include "game_list.h"
 #include "common/assert.h"
 #include "common/byte_stream.h"
-#include "common/cd_image.h"
 #include "common/file_system.h"
-#include "common/iso_reader.h"
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/path.h"
@@ -14,6 +12,7 @@
 #include "core/psf_loader.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "util/cd_image.h"
 #include <algorithm>
 #include <array>
 #include <cctype>

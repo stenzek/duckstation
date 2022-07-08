@@ -2,7 +2,6 @@
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "dma.h"
 #include "host_display.h"
@@ -13,6 +12,7 @@
 #include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(GPU);
 

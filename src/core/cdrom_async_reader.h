@@ -1,5 +1,5 @@
 #pragma once
-#include "common/cd_image.h"
+#include "util/cd_image.h"
 #include "types.h"
 #include <array>
 #include <atomic>

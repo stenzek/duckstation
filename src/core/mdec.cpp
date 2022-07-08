@@ -1,11 +1,11 @@
 #include "mdec.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(MDEC);
 
 MDEC g_mdec;

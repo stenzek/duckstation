@@ -1,12 +1,12 @@
 #include "namco_guncon.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "gpu.h"
 #include "host_display.h"
 #include "host_interface.h"
 #include "resources.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <array>
 Log_SetChannel(NamcoGunCon);
 

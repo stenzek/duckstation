@@ -1,6 +1,6 @@
 #pragma once
 #include "common/bitfield.h"
-#include "common/memory_arena.h"
+#include "util/memory_arena.h"
 #include "types.h"
 #include <array>
 #include <bitset>

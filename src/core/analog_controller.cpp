@@ -1,10 +1,10 @@
 #include "analog_controller.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "settings.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(AnalogController);
 

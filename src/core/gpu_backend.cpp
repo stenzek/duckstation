@@ -1,9 +1,9 @@
 #include "gpu_backend.h"
 #include "common/align.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "settings.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPUBackend);
 
 std::unique_ptr<GPUBackend> g_gpu_backend;

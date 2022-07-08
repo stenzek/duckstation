@@ -2,7 +2,6 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scope_guard.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
@@ -12,6 +11,7 @@
 #include "host_display.h"
 #include "host_interface.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_Vulkan);
 
 GPU_HW_Vulkan::GPU_HW_Vulkan() = default;

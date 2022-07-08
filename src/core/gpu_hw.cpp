@@ -2,13 +2,13 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "gpu_sw_backend.h"
 #include "imgui.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 #include <sstream>
 #include <tuple>

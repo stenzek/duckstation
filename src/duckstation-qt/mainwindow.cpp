@@ -3,7 +3,6 @@
 #include "autoupdaterdialog.h"
 #include "cheatmanagerdialog.h"
 #include "common/assert.h"
-#include "common/cd_image.h"
 #include "core/host_display.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -20,6 +19,7 @@
 #include "scmversion/scmversion.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include "util/cd_image.h"
 
 #ifdef WITH_CHEEVOS
 #include "core/cheevos.h"

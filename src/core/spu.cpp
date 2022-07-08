@@ -1,15 +1,15 @@
 #include "spu.h"
 #include "cdrom.h"
-#include "common/audio_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
-#include "common/wav_writer.h"
 #include "dma.h"
 #include "host_interface.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "util/audio_stream.h"
+#include "util/state_wrapper.h"
+#include "util/wav_writer.h"
 Log_SetChannel(SPU);
 
 SPU g_spu;

@@ -1,11 +1,11 @@
 #include "controller.h"
 #include "analog_controller.h"
 #include "analog_joystick.h"
-#include "common/state_wrapper.h"
 #include "digital_controller.h"
 #include "namco_guncon.h"
 #include "negcon.h"
 #include "playstation_mouse.h"
+#include "util/state_wrapper.h"
 
 Controller::Controller() = default;
 

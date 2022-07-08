@@ -1,6 +1,6 @@
 #pragma once
-#include "common/cd_image_hasher.h"
 #include "core/types.h"
+#include "util/cd_image_hasher.h"
 #include <map>
 #include <string>
 #include <string_view>

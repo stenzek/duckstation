@@ -2,7 +2,6 @@
 #include "bus.h"
 #include "cdrom.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -13,6 +12,7 @@
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(DMA);
 
 static u32 GetAddressMask()

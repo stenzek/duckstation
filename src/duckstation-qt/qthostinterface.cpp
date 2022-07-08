@@ -1,6 +1,5 @@
 ﻿#include "qthostinterface.h"
 #include "common/assert.h"
-#include "common/audio_stream.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -25,6 +24,7 @@
 #include "qtdisplaywidget.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "util/audio_stream.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>

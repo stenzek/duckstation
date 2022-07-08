@@ -3,7 +3,6 @@
 #include "common/align.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
@@ -13,6 +12,7 @@
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 
 Log_SetChannel(CPU::Core);

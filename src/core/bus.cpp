@@ -4,7 +4,6 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/make_array.h"
-#include "common/state_wrapper.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
@@ -18,6 +17,7 @@
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 #include <tuple>
 #include <utility>

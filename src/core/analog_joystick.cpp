@@ -1,9 +1,9 @@
 #include "analog_joystick.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(AnalogJoystick);
 

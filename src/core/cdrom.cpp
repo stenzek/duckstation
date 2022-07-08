@@ -1,15 +1,15 @@
 #include "cdrom.h"
 #include "common/align.h"
-#include "common/cd_image.h"
 #include "common/log.h"
 #include "common/platform.h"
-#include "common/state_wrapper.h"
 #include "dma.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "util/cd_image.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(CDROM);
 

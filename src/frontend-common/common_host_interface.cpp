@@ -1,7 +1,6 @@
 #include "common_host_interface.h"
 #include "IconsFontAwesome5.h"
 #include "common/assert.h"
-#include "common/audio_stream.h"
 #include "common/byte_stream.h"
 #include "common/crash_handler.h"
 #include "common/file_system.h"
@@ -35,6 +34,7 @@
 #include "input_overlay_ui.h"
 #include "save_state_selector_ui.h"
 #include "scmversion/scmversion.h"
+#include "util/audio_stream.h"
 #include <cmath>
 #include <cstdio>
 #include <cstring>

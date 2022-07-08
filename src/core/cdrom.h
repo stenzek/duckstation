@@ -1,11 +1,11 @@
 #pragma once
 #include "cdrom_async_reader.h"
 #include "common/bitfield.h"
-#include "common/cd_image.h"
-#include "common/cd_xa.h"
 #include "common/fifo_queue.h"
 #include "common/heap_array.h"
 #include "types.h"
+#include "util/cd_image.h"
+#include "util/cd_xa.h"
 #include <array>
 #include <string>
 #include <string_view>

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\common\common.props" />
+  <Import Project="..\util\util.props" />
 
   <ItemDefinitionGroup>
     <ClCompile>
@@ -19,7 +19,7 @@
 
   <ItemDefinitionGroup>
     <Lib>
-      <AdditionalDependencies>$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)util\util.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">$(RootBuildDir)rainterface\rainterface.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='ARM64'">$(RootBuildDir)vixl\vixl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>

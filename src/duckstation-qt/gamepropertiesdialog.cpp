@@ -1,6 +1,4 @@
 #include "gamepropertiesdialog.h"
-#include "common/cd_image.h"
-#include "common/cd_image_hasher.h"
 #include "common/string_util.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -11,6 +9,8 @@
 #include "qtutils.h"
 #include "rapidjson/document.h"
 #include "scmversion/scmversion.h"
+#include "util/cd_image.h"
+#include "util/cd_image_hasher.h"
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
 #include <QtWidgets/QFileDialog>

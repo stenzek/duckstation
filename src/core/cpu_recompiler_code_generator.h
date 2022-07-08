@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include "common/jit_code_buffer.h"
+#include "util/jit_code_buffer.h"
 
 #include "cpu_code_cache.h"
 #include "cpu_recompiler_register_cache.h"

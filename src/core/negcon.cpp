@@ -1,8 +1,8 @@
 #include "negcon.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "host_interface.h"
+#include "util/state_wrapper.h"
 #include <array>
 #include <cmath>
 

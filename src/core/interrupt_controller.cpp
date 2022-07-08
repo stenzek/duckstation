@@ -1,7 +1,7 @@
 #include "interrupt_controller.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(InterruptController);
 
 InterruptController g_interrupt_controller;

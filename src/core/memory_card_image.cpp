@@ -3,11 +3,11 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/shiftjis.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
+#include "util/shiftjis.h"
+#include "util/state_wrapper.h"
 #include <algorithm>
 #include <cstdio>
 #include <optional>

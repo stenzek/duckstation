@@ -1,13 +1,13 @@
 #include "gpu_hw_opengl.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
 #include "shader_cache_version.h"
 #include "system.h"
 #include "texture_replacements.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_OpenGL);
 
 GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}

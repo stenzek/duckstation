@@ -1,5 +1,5 @@
 #pragma once
-#include "common/audio_stream.h"
+#include "util/audio_stream.h"
 #include <cstdint>
 
 class SDLAudioStream final : public AudioStream

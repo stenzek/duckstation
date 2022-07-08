@@ -1,7 +1,7 @@
 #include "audiosettingswidget.h"
-#include "common/audio_stream.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include "util/audio_stream.h"
 #include <cmath>
 
 AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)

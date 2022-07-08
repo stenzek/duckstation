@@ -1,7 +1,6 @@
 #include "host_interface.h"
 #include "bios.h"
 #include "cdrom.h"
-#include "common/audio_stream.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/image.h"
@@ -21,6 +20,7 @@
 #include "spu.h"
 #include "system.h"
 #include "texture_replacements.h"
+#include "util/audio_stream.h"
 #include <cmath>
 #include <cstring>
 #include <cwchar>

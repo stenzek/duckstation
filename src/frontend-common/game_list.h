@@ -1,8 +1,8 @@
 #pragma once
-#include "common/cd_image.h"
 #include "core/types.h"
 #include "game_database.h"
 #include "game_settings.h"
+#include "util/cd_image.h"
 #include <ctime>
 #include <memory>
 #include <optional>

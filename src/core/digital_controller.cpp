@@ -1,8 +1,8 @@
 #include "digital_controller.h"
 #include "common/assert.h"
-#include "common/state_wrapper.h"
 #include "host_interface.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 
 DigitalController::DigitalController() = default;
 

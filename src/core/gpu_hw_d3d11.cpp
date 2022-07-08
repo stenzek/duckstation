@@ -2,7 +2,6 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_backend.h"
@@ -10,6 +9,7 @@
 #include "host_interface.h"
 #include "shader_cache_version.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_D3D11);
 
 GPU_HW_D3D11::GPU_HW_D3D11() = default;

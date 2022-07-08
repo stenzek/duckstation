@@ -1,13 +1,11 @@
 #include "cheevos.h"
 #include "common/assert.h"
-#include "common/cd_image.h"
 #include "common/file_system.h"
 #include "common/http_downloader.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/path.h"
 #include "common/platform.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "core/bios.h"
 #include "core/bus.h"
@@ -20,6 +18,8 @@
 #include "rc_url.h"
 #include "rcheevos.h"
 #include "scmversion/scmversion.h"
+#include "util/cd_image.h"
+#include "util/state_wrapper.h"
 #include <algorithm>
 #include <cstdarg>
 #include <cstdlib>

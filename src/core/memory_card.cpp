@@ -2,10 +2,10 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
 #include "host_interface.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 Log_SetChannel(MemoryCard);
 
