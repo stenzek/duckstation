@@ -532,18 +532,7 @@ void VulkanHostDisplay::DestroyResources()
 
 bool VulkanHostDisplay::CreateImGuiContext()
 {
-  ImGui_ImplVulkan_InitInfo vii = {};
-  vii.Instance = g_vulkan_context->GetVulkanInstance();
-  vii.PhysicalDevice = g_vulkan_context->GetPhysicalDevice();
-  vii.Device = g_vulkan_context->GetDevice();
-  vii.QueueFamily = g_vulkan_context->GetGraphicsQueueFamilyIndex();
-  vii.Queue = g_vulkan_context->GetGraphicsQueue();
-  vii.PipelineCache = g_vulkan_shader_cache->GetPipelineCache();
-  vii.MinImageCount = m_swap_chain->GetImageCount();
-  vii.ImageCount = m_swap_chain->GetImageCount();
-  vii.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
-  return ImGui_ImplVulkan_Init(&vii, m_swap_chain->GetClearRenderPass());
+  return ImGui_ImplVulkan_Init(m_swap_chain->GetClearRenderPass());
 }
 
 void VulkanHostDisplay::DestroyImGuiContext()
@@ -556,8 +545,7 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
 {
   // Just in case we were drawing something.
   g_vulkan_context->ExecuteCommandBuffer(true);
-  ImGui_ImplVulkan_DestroyFontUploadObjects();
-  return ImGui_ImplVulkan_CreateFontsTexture(g_vulkan_context->GetCurrentCommandBuffer());
+  return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
 void VulkanHostDisplay::DestroyRenderDevice()
@@ -846,7 +834,7 @@ void VulkanHostDisplay::RenderImGui()
 {
   const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(), "Imgui");
   ImGui::Render();
-  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), g_vulkan_context->GetCurrentCommandBuffer());
+  ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
 }
 
 void VulkanHostDisplay::RenderSoftwareCursor()

@@ -1277,13 +1277,13 @@ void DrawSettingsWindow()
 
     BeginNavBar();
 
-    if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiInputReadMode_Pressed))
+    if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
     {
       s_settings_page = static_cast<SettingsPage>((s_settings_page == static_cast<SettingsPage>(0)) ?
                                                     (static_cast<u32>(SettingsPage::Count) - 1) :
                                                     (static_cast<u32>(s_settings_page) - 1));
     }
-    else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiInputReadMode_Pressed))
+    else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
     {
       s_settings_page =
         static_cast<SettingsPage>((static_cast<u32>(s_settings_page) + 1) % static_cast<u32>(SettingsPage::Count));
@@ -1315,7 +1315,7 @@ void DrawSettingsWindow()
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - ImGuiFullscreen::g_menu_bar_size),
         "settings_parent"))
   {
-    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiInputReadMode_Pressed))
+    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Pressed))
     {
       if (ImGui::IsWindowFocused())
         ReturnToMainWindow();
