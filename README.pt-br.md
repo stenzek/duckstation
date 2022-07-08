@@ -1,8 +1,6 @@
 # DuckStation - Mais conhecido como emulador de PlayStation 1
 [Últimas noticias](#Últimas-Notícias) | [Caracteristicas](#Características) | [Capturas de tela](#screenshots) | [Como baixar e configurar](#Como-baixar-e-configurar) | [Núcleo libretro](#Núcleo-libretro) | [Construindo](#Baixando) | [Avisos](#avisos)
 
-**Servidor no Discord:** https://discord.gg/Buktv3t
-
 **Versão mais recente para Windows e Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Disponível na Google Play:** https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
@@ -150,11 +148,9 @@ Se alguém estiver disposto a se voluntariar para oferecer suporte à plataforma
 
 ### Android
 
-APK construído disponível para Android. Será necessário um dispositivo com armv7 (32-bit ARM), AArch64 (64-bit ARM), ou x86_64 (64-bit x86). preferivelmente 64-bits, os requisitos são maiores para 32 bits, necessário no minímo um disposiivo com 1.5GHz.
+Será necessário um dispositivo com armv7 (32-bit ARM), AArch64 (64-bit ARM), ou x86_64 (64-bit x86). preferivelmente 64-bits, os requisitos são maiores para 32 bits, necessário no minímo um disposiivo com 1.5GHz.
 
 Link para baixar: https://www.duckstation.org/android/duckstation-android.apk
-
-Versão preview/beta: https://www.duckstation.org/android/duckstation-android-beta.apk
 
 Registro de mudanças: https://www.duckstation.org/android/changelog.txt
 
@@ -164,15 +160,6 @@ Usando:
 3. Clique em um jogo para iniciar. Quando você iniciar um jogo pela primeira vez lhe será solicitado que um arquivo de BIOS seja importado.
 
 Se você tiver um controle externo, será necessário mapear os botões e eixos nas configurações.
-
-### Núcleo libretro
-
-DuckStation está disponível como núcleo libretro, ao qual pode ser carregado em um front-end tal qual o Retroarch. Ele suporta a maioria dos recursos do front-end QT, dentro das restrições e limitações de ser um núcleo libretro.
-
-O núcleo libretro não está coberto pela licença de código aberto GPL, ainda assim é totalmente grátuito.
-A única restrição é o USO E DISTRIBUIÇÃO COMERCIAL QUE É PROIBIDA. Baixanxo o núcleo libretro, você concorda que não irá distribuir ou vender junto com nenhuma aplicação paga, como applicações, serviços, ou produtos como os video-games embarcardos, raspberry pies e afins.
-
-O núcleo é mantido por terceiros e não é fornecido como parte da versão do GitHub. Você pode baixar o núcleo por meio do atualizador ou dentro do próprio Retroarch ou ainda nos links abaixo. O registro de mudanças pode ser lido em: https://www.duckstation.org/libretro/changelog.txt
 
 - Windows x64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_windows_x64.zip
 - Android AArch64 (64-bit): https://www.duckstation.org/libretro/duckstation_libretro_android_aarch64.zip
@@ -232,7 +219,7 @@ Requisitos (Debian/Ubuntu):
 5. Execute o executável, localizado no diretório de compilação em `bin/duckstation-qt`.
 
 ### macOS
-**NOTE:** macOS é altamente experimental e não foi testado pelo desenvolvedor. Use por sua própria conta e risco, pode ser que quase nada funcione corretamente.
+**NOTA:** macOS é altamente experimental e não foi testado pelo desenvolvedor. Use por sua própria conta e risco, pode ser que quase nada funcione corretamente.
 
 Requisitos:
  - CMake (instalado por padrão? caso contrário, `brew install cmake`)
@@ -284,9 +271,6 @@ Atalhos:
  - **ALT+ENTER:** Alterna modo tela-cheia
  - **Tab:** Desativar temporariamente o limitador de velocidade
  - **Barra de espaço:** Pausa/resume a emulação
- 
-## Tests
- - Passes amidog's CPU and GTE tests in both interpreter and recompiler modes, partial passing of CPX tests
 
 ## Capturas de tela
 <p align="center">
