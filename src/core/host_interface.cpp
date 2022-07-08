@@ -11,6 +11,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
+#include "fmt/chrono.h"
 #include "gpu.h"
 #include "gte.h"
 #include "host_display.h"
@@ -949,11 +950,7 @@ std::string HostInterface::GetProgramDirectoryRelativePath(const char* format, .
 
 TinyString HostInterface::GetTimestampStringForFileName()
 {
-  const Timestamp ts(Timestamp::Now());
-
-  TinyString str;
-  ts.ToString(str, "%Y-%m-%d_%H-%M-%S");
-  return str;
+  return TinyString::FromFmt("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
 std::string HostInterface::GetMemoryCardDirectory() const

@@ -3094,7 +3094,8 @@ std::vector<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetAvailabl
     if (!FileSystem::StatFile(path.c_str(), &sd))
       return;
 
-    si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime.AsUnixTimestamp(), static_cast<s32>(slot), global});
+    si.push_back(SaveStateInfo{std::move(path), static_cast<std::time_t>(sd.ModificationTime.AsUnixTimestamp()),
+                               static_cast<s32>(slot), global});
   };
 
   if (game_code && std::strlen(game_code) > 0)
@@ -3119,7 +3120,7 @@ std::optional<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetSaveSt
   if (!FileSystem::StatFile(path.c_str(), &sd))
     return std::nullopt;
 
-  return SaveStateInfo{std::move(path), sd.ModificationTime.AsUnixTimestamp(), slot, global};
+  return SaveStateInfo{std::move(path), static_cast<std::time_t>(sd.ModificationTime.AsUnixTimestamp()), slot, global};
 }
 
 std::optional<CommonHostInterface::ExtendedSaveStateInfo>

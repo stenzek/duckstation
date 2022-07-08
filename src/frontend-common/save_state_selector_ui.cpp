@@ -4,6 +4,8 @@
 #include "common/timestamp.h"
 #include "core/host_display.h"
 #include "core/system.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 #include "icon.h"
 #include "imgui.h"
 Log_SetChannel(SaveStateSelectorUI);
@@ -146,7 +148,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, CommonHostInterface
   li->title = std::move(ssi->title);
   li->game_code = std::move(ssi->game_code);
   li->path = std::move(ssi->path);
-  li->formatted_timestamp = Timestamp::FromUnixTimestamp(ssi->timestamp).ToString("%c");
+  li->formatted_timestamp = fmt::format("{:%c}", fmt::localtime(ssi->timestamp));
   li->slot = ssi->slot;
   li->global = ssi->global;
 

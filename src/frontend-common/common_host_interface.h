@@ -4,6 +4,7 @@
 #include "core/controller.h"
 #include "core/host_interface.h"
 #include <atomic>
+#include <ctime>
 #include <functional>
 #include <map>
 #include <memory>
@@ -78,7 +79,7 @@ public:
   struct SaveStateInfo
   {
     std::string path;
-    u64 timestamp;
+    std::time_t timestamp;
     s32 slot;
     bool global;
   };
@@ -89,7 +90,7 @@ public:
     std::string title;
     std::string game_code;
     std::string media_path;
-    u64 timestamp;
+    std::time_t timestamp;
     s32 slot;
     bool global;
 

@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cstdarg>
 #include <cstdlib>
+#include <ctime>
 #include <functional>
 #include <string>
 #include <vector>
@@ -539,7 +540,7 @@ void Cheevos::LoginCallback(s32 status_code, const FrontendCommon::HTTPDownloade
     g_host_interface->GetSettingsInterface()->SetStringValue("Cheevos", "Username", username.c_str());
     g_host_interface->GetSettingsInterface()->SetStringValue("Cheevos", "Token", login_token.c_str());
     g_host_interface->GetSettingsInterface()->SetStringValue(
-      "Cheevos", "LoginTimestamp", TinyString::FromFormat("%" PRIu64, Timestamp::Now().AsUnixTimestamp()));
+      "Cheevos", "LoginTimestamp", TinyString::FromFormat("%" PRIu64, static_cast<u64>(std::time(nullptr))));
     g_host_interface->GetSettingsInterface()->Save();
   }
 

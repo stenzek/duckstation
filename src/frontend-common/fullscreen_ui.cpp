@@ -20,6 +20,8 @@
 #include "core/resources.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 #include "fullscreen_ui_progress_callback.h"
 #include "game_list.h"
 #include "icon.h"
@@ -2391,12 +2393,12 @@ void DrawSettingsWindow()
           ActiveButton(SmallString::FromFormat(ICON_FA_USER "  Username: %s", Cheevos::GetUsername().c_str()), false,
                        false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-          Timestamp ts;
           TinyString ts_string;
-          ts.SetUnixTimestamp(StringUtil::FromChars<u64>(s_host_interface->GetSettingsInterface()->GetStringValue(
-                                                           "Cheevos", "LoginTimestamp", "0"))
-                                .value_or(0));
-          ts.ToString(ts_string, "%Y-%m-%d %H:%M:%S");
+          ts_string.AppendFmtString(
+            "{:%Y-%m-%d %H:%M:%S}",
+            fmt::localtime(StringUtil::FromChars<u64>(
+                             s_host_interface->GetSettingsInterface()->GetStringValue("Cheevos", "LoginTimestamp", "0"))
+                             .value_or(0)));
           ActiveButton(SmallString::FromFormat(ICON_FA_CLOCK "  Login token generated on %s", ts_string.GetCharArray()),
                        false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
           ImGui::PopStyleColor();
@@ -2767,9 +2769,7 @@ void InitializeSaveStateListEntry(SaveStateListEntry* li, CommonHostInterface::E
     li->title = StringUtil::StdStringFromFormat("%s Slot %d##game_slot_%d", ssi->title.c_str(), ssi->slot, ssi->slot);
   }
 
-  li->summary =
-    StringUtil::StdStringFromFormat("%s - Saved %s", ssi->game_code.c_str(),
-                                    Timestamp::FromUnixTimestamp(ssi->timestamp).ToString("%c").GetCharArray());
+  li->summary = fmt::format("{} - Saved {:%c}", ssi->game_code.c_str(), fmt::localtime(ssi->timestamp));
 
   li->slot = ssi->slot;
   li->global = ssi->global;
