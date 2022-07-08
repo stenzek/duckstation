@@ -844,18 +844,6 @@ std::string BuildRelativePath(const std::string_view& filename, const std::strin
   return new_string;
 }
 
-std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags)
-{
-  // has a path
-  if (FileName[0] == '\0')
-    return nullptr;
-
-  // TODO: Handle Android content URIs here.
-
-  // forward to local file wrapper
-  return ByteStream_OpenFileStream(FileName, Flags);
-}
-
 FileSystem::ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode)
 {
   return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
@@ -1114,72 +1102,6 @@ bool WriteFileToString(const char* filename, const std::string_view& sv)
     return false;
 
   return true;
-}
-
-std::string ReadStreamToString(ByteStream* stream, bool seek_to_start /* = true */)
-{
-  u64 pos = stream->GetPosition();
-  u64 size = stream->GetSize();
-  if (pos > 0 && seek_to_start)
-  {
-    if (!stream->SeekAbsolute(0))
-      return {};
-
-    pos = 0;
-  }
-
-  Assert(size >= pos);
-  size -= pos;
-  if (size == 0 || size > std::numeric_limits<u32>::max())
-    return {};
-
-  std::string ret;
-  ret.resize(static_cast<size_t>(size));
-  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
-    return {};
-
-  return ret;
-}
-
-bool WriteStreamToString(const std::string_view& sv, ByteStream* stream)
-{
-  if (sv.size() > std::numeric_limits<u32>::max())
-    return false;
-
-  return stream->Write2(sv.data(), static_cast<u32>(sv.size()));
-}
-
-std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start /*= true*/)
-{
-  u64 pos = stream->GetPosition();
-  u64 size = stream->GetSize();
-  if (pos > 0 && seek_to_start)
-  {
-    if (!stream->SeekAbsolute(0))
-      return {};
-
-    pos = 0;
-  }
-
-  Assert(size >= pos);
-  size -= pos;
-  if (size == 0 || size > std::numeric_limits<u32>::max())
-    return {};
-
-  std::vector<u8> ret;
-  ret.resize(static_cast<size_t>(size));
-  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
-    return {};
-
-  return ret;
-}
-
-bool WriteBinaryToSTream(ByteStream* stream, const void* data, size_t data_length)
-{
-  if (data_length > std::numeric_limits<u32>::max())
-    return false;
-
-  return stream->Write2(data, static_cast<u32>(data_length));
 }
 
 void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)

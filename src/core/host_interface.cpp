@@ -409,7 +409,7 @@ bool HostInterface::HasAnyBIOSImages()
 
 bool HostInterface::LoadState(const char* filename)
 {
-  std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return false;
 
@@ -441,7 +441,7 @@ bool HostInterface::LoadState(const char* filename)
 bool HostInterface::SaveState(const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
+    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return false;
@@ -1140,7 +1140,7 @@ void HostInterface::RecreateSystem()
 {
   Assert(!System::IsShutdown());
 
-  std::unique_ptr<ByteStream> stream = ByteStream_CreateGrowableMemoryStream(nullptr, 8 * 1024);
+  std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
   if (!System::SaveState(stream.get(), 0) || !stream->SeekAbsolute(0))
   {
     ReportError("Failed to save state before system recreation. Shutting down.");

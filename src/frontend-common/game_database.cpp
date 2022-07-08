@@ -31,7 +31,7 @@ bool GameDatabase::Load()
     return false;
   }
 
-  std::string gamedb_data(FileSystem::ReadStreamToString(stream.get(), false));
+  std::string gamedb_data(ByteStream::ReadStreamToString(stream.get(), false));
   if (gamedb_data.empty())
   {
     Log_ErrorPrintf("Failed to read game database");

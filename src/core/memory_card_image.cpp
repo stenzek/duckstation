@@ -97,7 +97,7 @@ bool LoadFromFile(DataArray* data, const char* filename)
   if (!FileSystem::StatFile(filename, &sd) || sd.Size != DATA_SIZE)
     return false;
 
-  std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream || stream->GetSize() != DATA_SIZE)
     return false;
 
@@ -115,7 +115,7 @@ bool LoadFromFile(DataArray* data, const char* filename)
 bool SaveToFile(const DataArray& data, const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
+    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
   {
@@ -560,7 +560,7 @@ bool ImportCard(DataArray* data, const char* filename)
 bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
+    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
   {
@@ -599,7 +599,7 @@ static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, 
     return false;
   }
 
-  std::unique_ptr<ByteStream> stream = FileSystem::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
   {
     Log_ErrorPrintf("Failed to open '%s' for reading", filename);

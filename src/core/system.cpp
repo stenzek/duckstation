@@ -634,7 +634,7 @@ bool RecreateGPU(GPURenderer renderer, bool update_display /* = true*/)
   g_gpu->RestoreGraphicsAPIState();
 
   // save current state
-  std::unique_ptr<ByteStream> state_stream = ByteStream_CreateGrowableMemoryStream();
+  std::unique_ptr<ByteStream> state_stream = ByteStream::CreateGrowableMemoryStream();
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   const bool state_valid = g_gpu->DoState(sw, nullptr, false) && TimingEvents::DoState(sw);
   if (!state_valid)

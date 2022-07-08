@@ -249,7 +249,7 @@ void GameList::LoadCache()
     return;
 
   std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+    ByteStream::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return;
 
@@ -373,7 +373,7 @@ bool GameList::OpenCacheForWriting()
 
   Assert(!m_cache_write_stream);
   m_cache_write_stream =
-    FileSystem::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
+    ByteStream::OpenFile(m_cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
                                                      BYTESTREAM_OPEN_APPEND | BYTESTREAM_OPEN_STREAMED);
   if (!m_cache_write_stream || !m_cache_write_stream->SeekToEnd())
   {
@@ -793,7 +793,7 @@ void GameList::LoadCompatibilityList()
       g_host_interface->OpenPackageFile("database/compatibility.xml", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     if (file)
     {
-      LoadCompatibilityListFromXML(FileSystem::ReadStreamToString(file.get()));
+      LoadCompatibilityListFromXML(ByteStream::ReadStreamToString(file.get()));
     }
     else
     {
@@ -805,9 +805,9 @@ void GameList::LoadCompatibilityList()
   if (!m_user_compatibility_list_filename.empty() && FileSystem::FileExists(m_user_compatibility_list_filename.c_str()))
   {
     std::unique_ptr<ByteStream> file =
-      FileSystem::OpenFile(m_user_compatibility_list_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+      ByteStream::OpenFile(m_user_compatibility_list_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     if (file)
-      LoadCompatibilityListFromXML(FileSystem::ReadStreamToString(file.get()));
+      LoadCompatibilityListFromXML(ByteStream::ReadStreamToString(file.get()));
   }
 }
 
@@ -1011,7 +1011,7 @@ void GameList::LoadGameSettings()
       g_host_interface->OpenPackageFile("database/gamesettings.ini", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     if (file)
     {
-      m_game_settings.Load(FileSystem::ReadStreamToString(file.get()));
+      m_game_settings.Load(ByteStream::ReadStreamToString(file.get()));
     }
     else
     {
@@ -1023,9 +1023,9 @@ void GameList::LoadGameSettings()
   if (!m_user_game_settings_filename.empty() && FileSystem::FileExists(m_user_game_settings_filename.c_str()))
   {
     std::unique_ptr<ByteStream> file =
-      FileSystem::OpenFile(m_user_game_settings_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+      ByteStream::OpenFile(m_user_game_settings_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     if (file)
-      m_game_settings.Load(FileSystem::ReadStreamToString(file.get()));
+      m_game_settings.Load(ByteStream::ReadStreamToString(file.get()));
   }
 }
 

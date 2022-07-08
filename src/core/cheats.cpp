@@ -691,7 +691,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
   if (!stream)
     return false;
 
-  std::string db_string = FileSystem::ReadStreamToString(stream.get());
+  std::string db_string = ByteStream::ReadStreamToString(stream.get());
   stream.reset();
   if (db_string.empty())
     return false;

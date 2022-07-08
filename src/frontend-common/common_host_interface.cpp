@@ -483,7 +483,7 @@ bool CommonHostInterface::ParseCommandLineParameters(int argc, char* argv[],
     if (!state_filename.empty())
     {
       std::unique_ptr<ByteStream> state_stream =
-        FileSystem::OpenFile(state_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+        ByteStream::OpenFile(state_filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
       if (!state_stream)
       {
         Log_ErrorPrintf("Failed to open save state file '%s'", state_filename.c_str());
@@ -565,7 +565,7 @@ bool CommonHostInterface::CreateHostDisplayResources()
     std::unique_ptr<ByteStream> stream = OpenPackageFile("resources" FS_OSPATH_SEPARATOR_STR "roboto-regular.ttf",
                                                          BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     std::vector<u8> font_data;
-    if (!stream || (font_data = FileSystem::ReadBinaryStream(stream.get()), font_data.empty()))
+    if (!stream || (font_data = ByteStream::ReadBinaryStream(stream.get()), font_data.empty()))
     {
       ReportError("Failed to load text font");
       m_display->DestroyImGuiContext();
@@ -580,7 +580,7 @@ bool CommonHostInterface::CreateHostDisplayResources()
     std::unique_ptr<ByteStream> stream = OpenPackageFile("resources" FS_OSPATH_SEPARATOR_STR "fa-solid-900.ttf",
                                                          BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
     std::vector<u8> font_data;
-    if (!stream || (font_data = FileSystem::ReadBinaryStream(stream.get()), font_data.empty()))
+    if (!stream || (font_data = ByteStream::ReadBinaryStream(stream.get()), font_data.empty()))
     {
       ReportError("Failed to load icon font");
       m_display->DestroyImGuiContext();
@@ -779,7 +779,7 @@ bool CommonHostInterface::SaveUndoLoadState()
   if (m_undo_load_state)
     m_undo_load_state.reset();
 
-  m_undo_load_state = ByteStream_CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
+  m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
   if (!System::SaveState(m_undo_load_state.get()))
   {
     AddOSDMessage(TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
@@ -3183,7 +3183,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
     return std::nullopt;
 
   std::unique_ptr<ByteStream> stream =
-    FileSystem::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
+    ByteStream::OpenFile(path.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
   if (!stream)
     return std::nullopt;
 
@@ -4249,7 +4249,7 @@ std::unique_ptr<ByteStream> CommonHostInterface::OpenPackageFile(const char* pat
     StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_program_directory.c_str(), path));
   const u32 real_flags = (flags & allowed_flags) | BYTESTREAM_OPEN_READ;
   Log_DevPrintf("Requesting package file '%s'", path);
-  return FileSystem::OpenFile(full_path.c_str(), real_flags);
+  return ByteStream::OpenFile(full_path.c_str(), real_flags);
 }
 
 bool CommonHostInterface::IsControllerNavigationActive() const

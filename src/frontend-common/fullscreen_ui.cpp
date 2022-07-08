@@ -482,7 +482,7 @@ static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool fr
   if (from_package)
     stream = g_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
   else
-    stream = FileSystem::OpenFile(path, BYTESTREAM_OPEN_READ);
+    stream = ByteStream::OpenFile(path, BYTESTREAM_OPEN_READ);
   if (!stream)
   {
     Log_ErrorPrintf("Failed to open texture resource '%s'", path);

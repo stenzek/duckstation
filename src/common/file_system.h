@@ -2,12 +2,12 @@
 #include "timestamp.h"
 #include "types.h"
 #include <cstdio>
+#include <ctime>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-class ByteStream;
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #define FS_OSPATH_SEPARATOR_CHARACTER '\\'
@@ -185,9 +185,6 @@ bool DeleteFile(const char* Path);
 // rename file
 bool RenamePath(const char* OldPath, const char* NewPath);
 
-// open files
-std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
-
 using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
@@ -200,12 +197,6 @@ std::optional<std::string> ReadFileToString(const char* filename);
 std::optional<std::string> ReadFileToString(std::FILE* fp);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
 bool WriteFileToString(const char* filename, const std::string_view& sv);
-
-std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
-bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
-
-std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start = true);
-bool WriteBinaryToSTream(ByteStream* stream, const void* data, size_t data_length);
 
 // creates a directory in the local filesystem
 // if the directory already exists, the return value will be true.
