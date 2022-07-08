@@ -15,6 +15,7 @@ add_library(frontend-common
   game_list.h
   game_settings.cpp
   game_settings.h
+  host_settings.cpp
   icon.cpp
   icon.h
   inhibit_screensaver.cpp

@@ -117,9 +117,11 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gte_types.h" />
+    <ClInclude Include="host.h" />
     <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
+    <ClInclude Include="host_settings.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="interrupt_controller.h" />

@@ -31,6 +31,7 @@
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
+    <ClCompile Include="host_settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />

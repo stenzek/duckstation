@@ -126,5 +126,7 @@
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_styles.h" />
     <ClInclude Include="cheevos.h" />
+    <ClInclude Include="host.h" />
+    <ClInclude Include="host_settings.h" />
   </ItemGroup>
 </Project>

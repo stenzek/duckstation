@@ -17,6 +17,7 @@
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="game_settings.cpp" />
+    <ClCompile Include="host_settings.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />

@@ -51,12 +51,14 @@ add_library(core
     gte.cpp
     gte.h
     gte_types.h
+    host.h
     host_display.cpp
     host_display.h
     host_interface.cpp
     host_interface.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
+    host_settings.h
     imgui_styles.cpp
     imgui_styles.h  
     imgui_fullscreen.cpp
