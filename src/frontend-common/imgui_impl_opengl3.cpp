@@ -76,7 +76,7 @@
 #endif
 
 // GL includes
-#include <glad.h>
+#include "common/gl/loader.h"
 
 // OpenGL Data
 static char         g_GlslVersionString[32] = "";

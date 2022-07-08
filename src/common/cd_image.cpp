@@ -2,6 +2,7 @@
 #include "assert.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include "string_util.h"
 #include <array>
 Log_SetChannel(CDImage);
@@ -293,7 +294,7 @@ std::string CDImage::GetMetadata(const std::string_view& type) const
   if (type == "title")
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(m_filename));
-    result = FileSystem::StripExtension(display_name);
+    result = Path::StripExtension(display_name);
   }
 
   return result;

@@ -6,6 +6,7 @@
 #include "common/crash_handler.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "controller_interface.h"
 #include "core/cdrom.h"
@@ -3074,7 +3075,7 @@ void CommonHostInterface::RenameCurrentSaveStateToBackup(const char* filename)
   if (!FileSystem::FileExists(filename))
     return;
 
-  const std::string backup_filename(FileSystem::ReplaceExtension(filename, "bak"));
+  const std::string backup_filename(Path::ReplaceExtension(filename, "bak"));
   if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
   {
     Log_ErrorPrintf("Failed to rename save state backup '%s'", backup_filename.c_str());
@@ -3094,8 +3095,7 @@ std::vector<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetAvailabl
     if (!FileSystem::StatFile(path.c_str(), &sd))
       return;
 
-    si.push_back(SaveStateInfo{std::move(path), static_cast<std::time_t>(sd.ModificationTime.AsUnixTimestamp()),
-                               static_cast<s32>(slot), global});
+    si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime, static_cast<s32>(slot), global});
   };
 
   if (game_code && std::strlen(game_code) > 0)
@@ -3120,7 +3120,7 @@ std::optional<CommonHostInterface::SaveStateInfo> CommonHostInterface::GetSaveSt
   if (!FileSystem::StatFile(path.c_str(), &sd))
     return std::nullopt;
 
-  return SaveStateInfo{std::move(path), static_cast<std::time_t>(sd.ModificationTime.AsUnixTimestamp()), slot, global};
+  return SaveStateInfo{std::move(path), sd.ModificationTime, slot, global};
 }
 
 std::optional<CommonHostInterface::ExtendedSaveStateInfo>
@@ -3193,7 +3193,7 @@ CommonHostInterface::GetExtendedSaveStateInfo(const char* game_code, s32 slot)
     return std::nullopt;
 
   ssi->path = std::move(path);
-  ssi->timestamp = sd.ModificationTime.AsUnixTimestamp();
+  ssi->timestamp = sd.ModificationTime;
   ssi->slot = slot;
   ssi->global = global;
 
@@ -3650,7 +3650,8 @@ void CommonHostInterface::GetGameInfo(const char* path, CDImage* image, std::str
     *code = System::GetGameCodeForImage(image, true);
   }
 
-  *title = FileSystem::GetFileTitleFromPath(path);
+  const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+  *title = Path::GetFileTitle(display_name);
 }
 
 bool CommonHostInterface::SaveResumeSaveState()

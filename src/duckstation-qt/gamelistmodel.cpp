@@ -1,5 +1,6 @@
 #include "gamelistmodel.h"
 #include "common/file_system.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "core/system.h"
 #include <QtCore/QDate>
@@ -182,7 +183,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge.path));
+          const std::string_view file_title(Path::GetFileTitle(ge.path));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -248,7 +249,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_FileTitle:
         {
-          const std::string_view file_title(FileSystem::GetFileTitleFromPath(ge.path));
+          const std::string_view file_title(Path::GetFileTitle(ge.path));
           return QString::fromUtf8(file_title.data(), static_cast<int>(file_title.length()));
         }
 
@@ -427,8 +428,8 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 
     case Column_FileTitle:
     {
-      const std::string_view file_title_left(FileSystem::GetFileTitleFromPath(left.path));
-      const std::string_view file_title_right(FileSystem::GetFileTitleFromPath(right.path));
+      const std::string_view file_title_left(Path::GetFileTitle(left.path));
+      const std::string_view file_title_right(Path::GetFileTitle(right.path));
       if (file_title_left == file_title_right)
         return titlesLessThan(left_row, right_row);
 

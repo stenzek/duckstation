@@ -1,9 +1,9 @@
 #pragma once
+#include "common/gl/loader.h"
 #include "common/gl/program.h"
 #include "common/gl/shader_cache.h"
 #include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
-#include "glad.h"
 #include "gpu_hw.h"
 #include "texture_replacements.h"
 #include <array>

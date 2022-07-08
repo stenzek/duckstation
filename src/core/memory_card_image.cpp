@@ -2,6 +2,7 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/shiftjis.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
@@ -655,7 +656,8 @@ static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, 
 
 static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
 {
-  std::string save_name(FileSystem::GetFileTitleFromPath(filename));
+  const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+  std::string save_name(Path::GetFileTitle(filename));
   if (save_name.length() == 0)
   {
     Log_ErrorPrintf("Invalid filename: '%s'", filename);

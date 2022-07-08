@@ -5,6 +5,7 @@
 #include "error.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include <algorithm>
 #include <cerrno>
 #include <cinttypes>
@@ -88,15 +89,14 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Common::Error* error)
     }
     if (track_file_index == m_files.size())
     {
-      const std::string track_full_filename(!FileSystem::IsAbsolutePath(track_filename) ?
-                                              FileSystem::BuildRelativePath(m_filename, track_filename) :
-                                              track_filename);
+      const std::string track_full_filename(
+        !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_filename, track_filename) : track_filename);
       std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb");
       if (!track_fp && track_file_index == 0)
       {
         // many users have bad cuesheets, or they're renamed the files without updating the cuesheet.
         // so, try searching for a bin with the same name as the cue, but only for the first referenced file.
-        const std::string alternative_filename(FileSystem::ReplaceExtension(filename, "bin"));
+        const std::string alternative_filename(Path::ReplaceExtension(filename, "bin"));
         track_fp = FileSystem::OpenCFile(alternative_filename.c_str(), "rb");
         if (track_fp)
         {

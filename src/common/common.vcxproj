@@ -34,6 +34,7 @@
     <ClInclude Include="gl\context_wgl.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="gl\loader.h" />
     <ClInclude Include="gl\program.h" />
     <ClInclude Include="gl\shader_cache.h" />
     <ClInclude Include="gl\stream_buffer.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="make_array.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="path.h" />
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="progress_callback.h" />
@@ -71,7 +73,6 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="timer.h" />
-    <ClInclude Include="timestamp.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="cd_xa.h" />
     <ClInclude Include="minizip_helpers.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="win32_progress_callback.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="windows_headers.h" />
     <ClInclude Include="window_info.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,7 +163,6 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="timer.cpp" />
-    <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="vulkan\builders.cpp" />
     <ClCompile Include="vulkan\context.cpp" />
     <ClCompile Include="vulkan\loader.cpp" />

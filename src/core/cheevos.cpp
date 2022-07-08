@@ -5,10 +5,10 @@
 #include "common/http_downloader.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/path.h"
 #include "common/platform.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
-#include "common/timestamp.h"
 #include "core/bios.h"
 #include "core/bus.h"
 #include "core/cpu_core.h"
@@ -30,6 +30,10 @@
 Log_SetChannel(Cheevos);
 
 #ifdef WITH_RAINTEGRATION
+// RA_Interface ends up including windows.h, with its silly macros.
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#endif
 #include "RA_Interface.h"
 #endif
 
@@ -711,16 +715,16 @@ std::string Cheevos::GetBadgeImageFilename(const char* badge_name, bool locked, 
 {
   if (!cache_path)
   {
-    return StringUtil::StdStringFromFormat("%s%s.png", badge_name, locked ? "_lock" : "");
+    return fmt::format("%s%s.png", badge_name, locked ? "_lock" : "");
   }
   else
   {
     // well, this comes from the internet.... :)
-    SmallString clean_name(badge_name);
-    FileSystem::SanitizeFileName(clean_name);
+    std::string clean_name(badge_name);
+    Path::SanitizeFileName(clean_name);
     return g_host_interface->GetUserDirectoryRelativePath("cache" FS_OSPATH_SEPARATOR_STR
                                                           "achievement_badge" FS_OSPATH_SEPARATOR_STR "%s%s.png",
-                                                          clean_name.GetCharArray(), locked ? "_lock" : "");
+                                                          clean_name.c_str(), locked ? "_lock" : "");
   }
 }
 

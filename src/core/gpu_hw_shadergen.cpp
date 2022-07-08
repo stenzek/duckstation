@@ -1,7 +1,6 @@
 #include "gpu_hw_shadergen.h"
 #include "common/assert.h"
 #include <cstdio>
-#include <glad.h>
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, u32 multisamples,
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,

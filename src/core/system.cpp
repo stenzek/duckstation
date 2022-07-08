@@ -9,9 +9,9 @@
 #include "common/iso_reader.h"
 #include "common/log.h"
 #include "common/make_array.h"
+#include "common/path.h"
 #include "common/state_wrapper.h"
 #include "common/string_util.h"
-#include "common/timestamp.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -705,8 +705,8 @@ std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, boo
 
   if (check_for_patches)
   {
-    const std::string ppf_filename(FileSystem::BuildRelativePath(
-      path, FileSystem::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf")));
+    const std::string ppf_filename(
+      Path::BuildRelativePath(path, Path::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf")));
     if (FileSystem::FileExists(ppf_filename.c_str()))
     {
       media = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(media));
@@ -1754,7 +1754,7 @@ static bool LoadEXEToRAM(const char* filename, bool patch_bios)
 
 bool LoadEXE(const char* filename)
 {
-  const std::string libps_path(FileSystem::BuildRelativePath(filename, "libps.exe"));
+  const std::string libps_path(Path::BuildRelativePath(filename, "libps.exe"));
   if (!libps_path.empty() && FileSystem::FileExists(libps_path.c_str()) && !LoadEXEToRAM(libps_path.c_str(), false))
   {
     Log_ErrorPrintf("Failed to load libps.exe from '%s'", libps_path.c_str());
@@ -1951,7 +1951,7 @@ static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType
     case MemoryCardType::PerGameFileTitle:
     {
       const std::string display_name(FileSystem::GetDisplayNameFromPath(s_running_game_path));
-      const std::string_view file_title(FileSystem::GetFileTitleFromPath(display_name));
+      const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
         g_host_interface->AddFormattedOSDMessage(

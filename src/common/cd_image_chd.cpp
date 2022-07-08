@@ -303,7 +303,7 @@ bool CDImageCHD::HasNonStandardSubchannel() const
 
 CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
 {
-  const std::string_view title(FileSystem::GetFileNameFromPath(m_filename));
+  const std::string_view title(FileSystem::GetDisplayNameFromPath(m_filename));
   progress->SetFormattedStatusText("Precaching %.*s...", static_cast<int>(title.size()), title.data());
   progress->SetProgressRange(100);
 

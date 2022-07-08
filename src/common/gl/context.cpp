@@ -1,6 +1,6 @@
 #include "context.h"
 #include "../log.h"
-#include "glad.h"
+#include "loader.h"
 #include <cstdlib>
 #ifdef __APPLE__
 #include <stdlib.h>

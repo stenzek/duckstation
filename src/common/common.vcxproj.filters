@@ -39,7 +39,6 @@
     <ClInclude Include="string.h" />
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="timer.h" />
-    <ClInclude Include="timestamp.h" />
     <ClInclude Include="assert.h" />
     <ClInclude Include="align.h" />
     <ClInclude Include="file_system.h" />
@@ -143,6 +142,11 @@
     <ClInclude Include="vulkan\loader.h">
       <Filter>vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="path.h" />
+    <ClInclude Include="windows_headers.h" />
+    <ClInclude Include="gl\loader.h">
+      <Filter>gl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -179,7 +183,6 @@
     <ClCompile Include="string.cpp" />
     <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="log.cpp" />
-    <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="assert.cpp" />
     <ClCompile Include="file_system.cpp" />

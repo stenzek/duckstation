@@ -4,6 +4,7 @@
 #include "error.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include "pbp_types.h"
 #include "string.h"
 #include "string_util.h"
@@ -674,12 +675,12 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
 
   if (m_disc_offsets.size() > 1)
   {
-    std::string sbi_path(FileSystem::StripExtension(m_filename));
+    std::string sbi_path(Path::StripExtension(m_filename));
     sbi_path += TinyString::FromFormat("_%u.sbi", index + 1);
     m_sbi.LoadSBI(sbi_path.c_str());
   }
   else
-    m_sbi.LoadSBI(FileSystem::ReplaceExtension(m_filename, "sbi").c_str());
+    m_sbi.LoadSBI(Path::ReplaceExtension(m_filename, "sbi").c_str());
 
   m_current_disc = index;
   return Seek(1, Position{0, 0, 0});

@@ -6,6 +6,7 @@
 #include "common/file_system.h"
 #include "common/image.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
@@ -34,7 +35,7 @@ HostInterface::HostInterface()
   g_host_interface = this;
 
   // we can get the program directory at construction time
-  m_program_directory = FileSystem::GetPathDirectory(FileSystem::GetProgramPath());
+  m_program_directory = Path::GetDirectory(FileSystem::GetProgramPath());
 }
 
 HostInterface::~HostInterface()
@@ -896,7 +897,7 @@ void HostInterface::SetUserDirectoryToProgramDirectory()
   if (program_path.empty())
     Panic("Failed to get program path.");
 
-  std::string program_directory(FileSystem::GetPathDirectory(program_path));
+  std::string program_directory(Path::GetDirectory(program_path));
   if (program_directory.empty())
     Panic("Program path is not valid");
 

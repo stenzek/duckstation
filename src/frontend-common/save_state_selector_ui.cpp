@@ -1,7 +1,6 @@
 #include "save_state_selector_ui.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "common/timestamp.h"
 #include "core/host_display.h"
 #include "core/system.h"
 #include "fmt/chrono.h"

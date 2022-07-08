@@ -3,6 +3,7 @@
 #include "core/types.h"
 #include "game_database.h"
 #include "game_settings.h"
+#include <ctime>
 #include <memory>
 #include <optional>
 #include <string>
@@ -152,8 +153,8 @@ private:
   bool GetGameListEntry(const std::string& path, GameListEntry* entry);
   bool GetGameListEntryFromCache(const std::string& path, GameListEntry* entry);
   void ScanDirectory(const char* path, bool recursive, ProgressCallback* progress);
-  bool AddFileFromCache(const std::string& path, u64 timestamp);
-  bool ScanFile(std::string path, u64 timestamp);
+  bool AddFileFromCache(const std::string& path, std::time_t timestamp);
+  bool ScanFile(std::string path, std::time_t timestamp);
 
   void LoadCache();
   bool LoadEntriesFromCache(ByteStream* stream);

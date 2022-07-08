@@ -6,6 +6,7 @@
 #include "common/iso_reader.h"
 #include "common/log.h"
 #include "common/make_array.h"
+#include "common/path.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
 #include "core/bios.h"
@@ -91,7 +92,7 @@ bool GameList::GetExeListEntry(const std::string& path, GameListEntry* entry)
 
   const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
   entry->code.clear();
-  entry->title = FileSystem::StripExtension(display_name);
+  entry->title = Path::StripExtension(display_name);
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
   entry->type = GameListEntryType::PSExe;
@@ -133,7 +134,7 @@ bool GameList::GetPsfListEntry(const std::string& path, GameListEntry* entry)
   else
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-    entry->title += FileSystem::StripExtension(display_name);
+    entry->title += Path::StripExtension(display_name);
   }
 
   return true;
@@ -160,9 +161,11 @@ bool GameList::GetGameListEntry(const std::string& path, GameListEntry* entry)
   GameDatabaseEntry dbentry;
   if (!m_database.GetEntryForDisc(cdi.get(), &dbentry))
   {
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+
     // no game code, so use the filename title
     entry->code = System::GetGameCodeForImage(cdi.get(), true);
-    entry->title = FileSystem::GetFileTitleFromPath(path);
+    entry->title = Path::GetFileTitle(display_name);
     entry->compatibility_rating = GameListCompatibilityRating::Unknown;
     entry->release_date = 0;
     entry->min_players = 0;
@@ -492,20 +495,19 @@ void GameList::ScanDirectory(const char* path, bool recursive, ProgressCallback*
     if (!IsScannableFilename(ffd.FileName) || IsPathExcluded(ffd.FileName) || GetEntryForPath(ffd.FileName.c_str()))
       continue;
 
-    const u64 modified_time = ffd.ModificationTime.AsUnixTimestamp();
-    if (AddFileFromCache(ffd.FileName, modified_time))
+    if (AddFileFromCache(ffd.FileName, ffd.ModificationTime))
       continue;
 
     // ownership of fp is transferred
     progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
-    ScanFile(std::move(ffd.FileName), modified_time);
+    ScanFile(std::move(ffd.FileName), ffd.ModificationTime);
   }
 
   progress->SetProgressValue(static_cast<u32>(files.size()));
   progress->PopState();
 }
 
-bool GameList::AddFileFromCache(const std::string& path, u64 timestamp)
+bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp)
 {
   if (std::any_of(m_entries.begin(), m_entries.end(),
                   [&path](const GameListEntry& other) { return other.path == path; }))
@@ -515,14 +517,14 @@ bool GameList::AddFileFromCache(const std::string& path, u64 timestamp)
   }
 
   GameListEntry entry;
-  if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
+  if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != static_cast<u64>(timestamp))
     return false;
 
   m_entries.push_back(std::move(entry));
   return true;
 }
 
-bool GameList::ScanFile(std::string path, u64 timestamp)
+bool GameList::ScanFile(std::string path, std::time_t timestamp)
 {
   Log_DevPrintf("Scanning '%s'...", path.c_str());
 
@@ -531,7 +533,7 @@ bool GameList::ScanFile(std::string path, u64 timestamp)
     return false;
 
   entry.path = std::move(path);
-  entry.last_modified_time = timestamp;
+  entry.last_modified_time = static_cast<u64>(timestamp);
 
   if (m_cache_write_stream || OpenCacheForWriting())
   {
@@ -1078,7 +1080,8 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
   for (const char* extension : extensions)
   {
     // use the file title if it differs (e.g. modded games)
-    const std::string_view file_title(FileSystem::GetFileTitleFromPath(path));
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+    const std::string_view file_title(Path::GetFileTitle(display_name));
     if (!file_title.empty() && title != file_title)
     {
       cover_path.Clear();

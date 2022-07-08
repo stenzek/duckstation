@@ -1,6 +1,6 @@
 #pragma once
 #include "context.h"
-#include <glad.h>
+#include "loader.h"
 
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <AppKit/AppKit.h>

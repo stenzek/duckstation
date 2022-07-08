@@ -4,6 +4,7 @@
 #include "error.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include <algorithm>
 #include <cerrno>
 #include <map>
@@ -80,7 +81,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Common::Error* error)
     return false;
   }
 
-  std::string mdf_filename(FileSystem::ReplaceExtension(filename, "mdf"));
+  std::string mdf_filename(Path::ReplaceExtension(filename, "mdf"));
   m_mdf_file = FileSystem::OpenCFile(mdf_filename.c_str(), "rb");
   if (!m_mdf_file)
   {

@@ -1,11 +1,11 @@
 #include "context_wgl.h"
 #include "../assert.h"
 #include "../log.h"
-#include "glad.h"
-#include "glad_wgl.h"
+#include "loader.h"
 Log_SetChannel(GL::ContextWGL);
 
 // TODO: get rid of this
+#include "glad_wgl.h"
 #pragma comment(lib, "opengl32.lib")
 
 static void* GetProcAddressCallback(const char* name)

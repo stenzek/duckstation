@@ -4,6 +4,7 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "core/cheats.h"
 #include "core/controller.h"
@@ -1153,7 +1154,7 @@ void QtHostInterface::populateGameListContextMenu(const GameListEntry* entry, QW
         {
           const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
           paths[i] = QString::fromStdString(GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(FileSystem::GetFileTitleFromPath(display_name)).c_str(), i));
+            MemoryCard::SanitizeGameTitleForFileName(Path::GetFileTitle(display_name)).c_str(), i));
         }
         break;
         default:

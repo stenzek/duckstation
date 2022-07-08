@@ -69,6 +69,7 @@ add_library(common
   memory_arena.h
   page_fault_handler.cpp
   page_fault_handler.h
+  path.h
   platform.h
   pbp_types.h
   progress_callback.cpp
@@ -87,8 +88,6 @@ add_library(common
   thirdparty/thread_pool.h
   timer.cpp
   timer.h
-  timestamp.cpp
-  timestamp.h
   types.h
   vulkan/builders.cpp
   vulkan/builders.h

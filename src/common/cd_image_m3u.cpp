@@ -4,10 +4,11 @@
 #include "error.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include <algorithm>
 #include <cerrno>
-#include <sstream>
 #include <map>
+#include <sstream>
 Log_SetChannel(CDImageMemory);
 
 class CDImageM3u : public CDImage
@@ -88,9 +89,9 @@ bool CDImageM3u::Open(const char* path, Common::Error* error)
 
     Entry entry;
     std::string entry_filename(line.begin() + start_offset, line.begin() + end_offset + 1);
-    entry.title = FileSystem::GetFileTitleFromPath(entry_filename);
-    if (!FileSystem::IsAbsolutePath(entry_filename))
-      entry.filename = FileSystem::BuildRelativePath(path, entry_filename);
+    entry.title = Path::GetFileTitle(entry_filename);
+    if (!Path::IsAbsolute(entry_filename))
+      entry.filename = Path::BuildRelativePath(path, entry_filename);
     else
       entry.filename = std::move(entry_filename);
 
@@ -154,7 +155,7 @@ std::string CDImageM3u::GetSubImageMetadata(u32 index, const std::string_view& t
   if (type == "title")
     return m_entries[index].title;
   else if (type == "file_title")
-    return std::string(FileSystem::GetFileTitleFromPath(m_entries[index].filename));
+    return std::string(Path::GetFileTitle(m_entries[index].filename));
 
   return CDImage::GetSubImageMetadata(index, type);
 }

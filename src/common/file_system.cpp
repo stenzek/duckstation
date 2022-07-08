@@ -1,18 +1,32 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "file_system.h"
 #include "assert.h"
-#include "byte_stream.h"
 #include "log.h"
+#include "path.h"
 #include "string_util.h"
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #include <stdlib.h>
 #include <sys/param.h>
-#else
-#include <malloc.h>
 #endif
 
 #ifdef __FreeBSD__
@@ -20,12 +34,14 @@
 #endif
 
 #if defined(_WIN32)
+#include "windows_headers.h"
+#include <share.h>
 #include <shlobj.h>
+#include <winioctl.h>
 
 #if defined(_UWP)
 #include <fcntl.h>
 #include <io.h>
-
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Devices.Enumeration.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -38,527 +54,31 @@
 #else
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-#ifdef __ANDROID__
-#include <jni.h>
-#endif
-
 Log_SetChannel(FileSystem);
 
-namespace FileSystem {
-
-#ifdef __ANDROID__
-
-static JavaVM* s_android_jvm;
-static jobject s_android_FileHelper_object;
-static jclass s_android_FileHelper_class;
-static jmethodID s_android_FileHelper_openURIAsFileDescriptor;
-static jmethodID s_android_FileHelper_FindFiles;
-static jmethodID s_android_FileHelper_StatFile;
-static jclass s_android_FileHelper_FindResult_class;
-static jfieldID s_android_FileHelper_FindResult_name;
-static jfieldID s_android_FileHelper_FindResult_relativeName;
-static jfieldID s_android_FileHelper_FindResult_size;
-static jfieldID s_android_FileHelper_FindResult_modifiedTime;
-static jfieldID s_android_FileHelper_FindResult_flags;
-static jclass s_android_FileHelper_StatResult_class;
-static jfieldID s_android_FileHelper_StatResult_size;
-static jfieldID s_android_FileHelper_StatResult_modifiedTime;
-static jfieldID s_android_FileHelper_StatResult_flags;
-static jmethodID s_android_FileHelper_getDisplayName;
-static jmethodID s_android_FileHelper_getRelativePathForURIPath;
-
-// helper for retrieving the current per-thread jni environment
-static JNIEnv* GetJNIEnv()
+#ifdef _WIN32
+static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 {
-  JNIEnv* env;
-  if (s_android_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
-    return nullptr;
-  else
-    return env;
+  // based off https://stackoverflow.com/a/6161842
+  static constexpr s64 WINDOWS_TICK = 10000000;
+  static constexpr s64 SEC_TO_UNIX_EPOCH = 11644473600LL;
+
+  const s64 full = static_cast<s64>((static_cast<u64>(ft.dwHighDateTime) << 32) | static_cast<u64>(ft.dwLowDateTime));
+  return static_cast<std::time_t>(full / WINDOWS_TICK - SEC_TO_UNIX_EPOCH);
 }
-
-static bool IsUriPath(const std::string_view& path)
-{
-  return StringUtil::StartsWith(path, "content:/") || StringUtil::StartsWith(path, "file:/");
-}
-
-static bool UriHelpersAreAvailable()
-{
-  return (s_android_FileHelper_object != nullptr);
-}
-
-void SetAndroidFileHelper(void* jvm, void* env, void* object)
-{
-  Assert(!jvm || !s_android_jvm || s_android_jvm == jvm);
-
-  if (s_android_FileHelper_object)
-  {
-    JNIEnv* jenv = GetJNIEnv();
-    jenv->DeleteGlobalRef(s_android_FileHelper_FindResult_class);
-    s_android_FileHelper_FindResult_name = {};
-    s_android_FileHelper_FindResult_relativeName = {};
-    s_android_FileHelper_FindResult_size = {};
-    s_android_FileHelper_FindResult_modifiedTime = {};
-    s_android_FileHelper_FindResult_flags = {};
-    s_android_FileHelper_FindResult_class = {};
-    jenv->DeleteGlobalRef(s_android_FileHelper_StatResult_class);
-    s_android_FileHelper_StatResult_size = {};
-    s_android_FileHelper_StatResult_modifiedTime = {};
-    s_android_FileHelper_StatResult_flags = {};
-    s_android_FileHelper_StatResult_class = {};
-
-    jenv->DeleteGlobalRef(s_android_FileHelper_object);
-    jenv->DeleteGlobalRef(s_android_FileHelper_class);
-    s_android_FileHelper_getRelativePathForURIPath = {};
-    s_android_FileHelper_getDisplayName = {};
-    s_android_FileHelper_openURIAsFileDescriptor = {};
-    s_android_FileHelper_StatFile = {};
-    s_android_FileHelper_FindFiles = {};
-    s_android_FileHelper_object = {};
-    s_android_FileHelper_class = {};
-    s_android_jvm = {};
-  }
-
-  if (!object)
-    return;
-
-  JNIEnv* jenv = static_cast<JNIEnv*>(env);
-  s_android_jvm = static_cast<JavaVM*>(jvm);
-  s_android_FileHelper_object = jenv->NewGlobalRef(static_cast<jobject>(object));
-  Assert(s_android_FileHelper_object);
-
-  jclass fh_class = jenv->GetObjectClass(static_cast<jobject>(object));
-  s_android_FileHelper_class = static_cast<jclass>(jenv->NewGlobalRef(fh_class));
-  Assert(s_android_FileHelper_class);
-  jenv->DeleteLocalRef(fh_class);
-
-  s_android_FileHelper_openURIAsFileDescriptor =
-    jenv->GetMethodID(s_android_FileHelper_class, "openURIAsFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-  s_android_FileHelper_StatFile =
-    jenv->GetMethodID(s_android_FileHelper_class, "statFile",
-                      "(Ljava/lang/String;)Lcom/github/stenzek/duckstation/FileHelper$StatResult;");
-  s_android_FileHelper_FindFiles =
-    jenv->GetMethodID(s_android_FileHelper_class, "findFiles",
-                      "(Ljava/lang/String;I)[Lcom/github/stenzek/duckstation/FileHelper$FindResult;");
-  s_android_FileHelper_getDisplayName =
-    jenv->GetMethodID(s_android_FileHelper_class, "getDisplayNameForURIPath", "(Ljava/lang/String;)Ljava/lang/String;");
-  s_android_FileHelper_getRelativePathForURIPath =
-    jenv->GetMethodID(s_android_FileHelper_class, "getRelativePathForURIPath",
-                      "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
-  Assert(s_android_FileHelper_openURIAsFileDescriptor && s_android_FileHelper_FindFiles &&
-         s_android_FileHelper_getDisplayName && s_android_FileHelper_getRelativePathForURIPath);
-
-  jclass fr_class = jenv->FindClass("com/github/stenzek/duckstation/FileHelper$FindResult");
-  Assert(fr_class);
-  s_android_FileHelper_FindResult_class = static_cast<jclass>(jenv->NewGlobalRef(fr_class));
-  Assert(s_android_FileHelper_FindResult_class);
-  jenv->DeleteLocalRef(fr_class);
-
-  s_android_FileHelper_FindResult_relativeName =
-    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "relativeName", "Ljava/lang/String;");
-  s_android_FileHelper_FindResult_name =
-    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "name", "Ljava/lang/String;");
-  s_android_FileHelper_FindResult_size = jenv->GetFieldID(s_android_FileHelper_FindResult_class, "size", "J");
-  s_android_FileHelper_FindResult_modifiedTime =
-    jenv->GetFieldID(s_android_FileHelper_FindResult_class, "modifiedTime", "J");
-  s_android_FileHelper_FindResult_flags = jenv->GetFieldID(s_android_FileHelper_FindResult_class, "flags", "I");
-  Assert(s_android_FileHelper_FindResult_relativeName && s_android_FileHelper_FindResult_name &&
-         s_android_FileHelper_FindResult_size && s_android_FileHelper_FindResult_modifiedTime &&
-         s_android_FileHelper_FindResult_flags);
-
-  jclass st_class = jenv->FindClass("com/github/stenzek/duckstation/FileHelper$StatResult");
-  Assert(st_class);
-  s_android_FileHelper_StatResult_class = static_cast<jclass>(jenv->NewGlobalRef(st_class));
-  Assert(s_android_FileHelper_StatResult_class);
-  jenv->DeleteLocalRef(st_class);
-
-  s_android_FileHelper_StatResult_size = jenv->GetFieldID(s_android_FileHelper_StatResult_class, "size", "J");
-  s_android_FileHelper_StatResult_modifiedTime =
-    jenv->GetFieldID(s_android_FileHelper_StatResult_class, "modifiedTime", "J");
-  s_android_FileHelper_StatResult_flags = jenv->GetFieldID(s_android_FileHelper_StatResult_class, "flags", "I");
-  Assert(s_android_FileHelper_StatResult_size && s_android_FileHelper_StatResult_modifiedTime &&
-         s_android_FileHelper_StatResult_flags);
-}
-
-static std::FILE* OpenUriFile(const char* path, const char* mode)
-{
-  // translate C modes to Java modes
-  TinyString mode_trimmed;
-  std::size_t mode_len = std::strlen(mode);
-  for (size_t i = 0; i < mode_len; i++)
-  {
-    if (mode[i] == 'r' || mode[i] == 'w' || mode[i] == '+')
-      mode_trimmed.AppendCharacter(mode[i]);
-  }
-
-  // TODO: Handle append mode by seeking to end.
-  const char* java_mode = nullptr;
-  if (mode_trimmed == "r")
-    java_mode = "r";
-  else if (mode_trimmed == "r+")
-    java_mode = "rw";
-  else if (mode_trimmed == "w")
-    java_mode = "w";
-  else if (mode_trimmed == "w+")
-    java_mode = "rwt";
-
-  if (!java_mode)
-  {
-    Log_ErrorPrintf("Could not translate file mode '%s' ('%s')", mode, mode_trimmed.GetCharArray());
-    return nullptr;
-  }
-
-  // Hand off to Java...
-  JNIEnv* env = GetJNIEnv();
-  jstring path_jstr = env->NewStringUTF(path);
-  jstring mode_jstr = env->NewStringUTF(java_mode);
-  int fd =
-    env->CallIntMethod(s_android_FileHelper_object, s_android_FileHelper_openURIAsFileDescriptor, path_jstr, mode_jstr);
-  env->DeleteLocalRef(mode_jstr);
-  env->DeleteLocalRef(path_jstr);
-
-  // Just in case...
-  if (env->ExceptionCheck())
-  {
-    env->ExceptionClear();
-    return nullptr;
-  }
-
-  if (fd < 0)
-    return nullptr;
-
-  // Convert to a C file object.
-  std::FILE* fp = fdopen(fd, mode);
-  if (!fp)
-  {
-    Log_ErrorPrintf("Failed to convert FD %d to C FILE for '%s'.", fd, path);
-    close(fd);
-    return nullptr;
-  }
-
-  return fp;
-}
-
-static bool FindUriFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* pVector)
-{
-  if (!s_android_FileHelper_object)
-    return false;
-
-  JNIEnv* env = GetJNIEnv();
-
-  jstring path_jstr = env->NewStringUTF(path);
-  jobjectArray arr = static_cast<jobjectArray>(env->CallObjectMethod(
-    s_android_FileHelper_object, s_android_FileHelper_FindFiles, path_jstr, static_cast<int>(flags)));
-  env->DeleteLocalRef(path_jstr);
-  if (!arr)
-    return false;
-
-  // small speed optimization for '*' case
-  bool hasWildCards = false;
-  bool wildCardMatchAll = false;
-  if (std::strpbrk(pattern, "*?") != nullptr)
-  {
-    hasWildCards = true;
-    wildCardMatchAll = !(std::strcmp(pattern, "*"));
-  }
-
-  jsize count = env->GetArrayLength(arr);
-  for (jsize i = 0; i < count; i++)
-  {
-    jobject result = env->GetObjectArrayElement(arr, i);
-    if (!result)
-      continue;
-
-    jstring result_name_obj = static_cast<jstring>(env->GetObjectField(result, s_android_FileHelper_FindResult_name));
-    jstring result_relative_name_obj =
-      static_cast<jstring>(env->GetObjectField(result, s_android_FileHelper_FindResult_relativeName));
-    const u64 result_size = static_cast<u64>(env->GetLongField(result, s_android_FileHelper_FindResult_size));
-    const u64 result_modified_time =
-      static_cast<u64>(env->GetLongField(result, s_android_FileHelper_FindResult_modifiedTime));
-    const u32 result_flags = static_cast<u32>(env->GetIntField(result, s_android_FileHelper_FindResult_flags));
-
-    if (result_name_obj && result_relative_name_obj)
-    {
-      const char* result_name = env->GetStringUTFChars(result_name_obj, nullptr);
-      const char* result_relative_name = env->GetStringUTFChars(result_relative_name_obj, nullptr);
-      if (result_relative_name)
-      {
-        // match the filename
-        bool matched;
-        if (hasWildCards)
-        {
-          matched = wildCardMatchAll || StringUtil::WildcardMatch(result_relative_name, pattern);
-        }
-        else
-        {
-          matched = std::strcmp(result_relative_name, pattern) == 0;
-        }
-
-        if (matched)
-        {
-          FILESYSTEM_FIND_DATA ffd;
-          ffd.FileName = ((flags & FILESYSTEM_FIND_RELATIVE_PATHS) != 0) ? result_relative_name : result_name;
-          ffd.Attributes = result_flags;
-          ffd.ModificationTime.SetUnixTimestamp(result_modified_time);
-          ffd.Size = result_size;
-          pVector->push_back(std::move(ffd));
-        }
-      }
-
-      if (result_name)
-        env->ReleaseStringUTFChars(result_name_obj, result_name);
-      if (result_relative_name)
-        env->ReleaseStringUTFChars(result_relative_name_obj, result_relative_name);
-    }
-
-    if (result_name_obj)
-      env->DeleteLocalRef(result_name_obj);
-    if (result_relative_name_obj)
-      env->DeleteLocalRef(result_relative_name_obj);
-
-    env->DeleteLocalRef(result);
-  }
-
-  env->DeleteLocalRef(arr);
-  return true;
-}
-
-static bool StatUriFile(const char* path, FILESYSTEM_STAT_DATA* sd)
-{
-  if (!s_android_FileHelper_object)
-    return false;
-
-  JNIEnv* env = GetJNIEnv();
-
-  jstring path_jstr = env->NewStringUTF(path);
-  jobject result = static_cast<jobjectArray>(
-    env->CallObjectMethod(s_android_FileHelper_object, s_android_FileHelper_StatFile, path_jstr));
-  env->DeleteLocalRef(path_jstr);
-  if (!result)
-    return false;
-
-  const u64 result_size = static_cast<u64>(env->GetLongField(result, s_android_FileHelper_StatResult_size));
-  const u64 result_modified_time =
-    static_cast<u64>(env->GetLongField(result, s_android_FileHelper_StatResult_modifiedTime));
-  const u32 result_flags = static_cast<u32>(env->GetIntField(result, s_android_FileHelper_StatResult_flags));
-  sd->Attributes = result_flags;
-  sd->ModificationTime.SetUnixTimestamp(result_modified_time);
-  sd->Size = result_size;
-
-  env->DeleteLocalRef(result);
-  return true;
-}
-
-static bool GetDisplayNameForUriPath(const char* path, std::string* result)
-{
-  if (!s_android_FileHelper_object)
-    return false;
-
-  JNIEnv* env = GetJNIEnv();
-
-  jstring path_jstr = env->NewStringUTF(path);
-  jstring result_jstr = static_cast<jstring>(
-    env->CallObjectMethod(s_android_FileHelper_object, s_android_FileHelper_getDisplayName, path_jstr));
-  env->DeleteLocalRef(path_jstr);
-  if (!result_jstr)
-    return false;
-
-  const char* result_name = env->GetStringUTFChars(result_jstr, nullptr);
-  if (result_name)
-  {
-    Log_DevPrintf("GetDisplayNameForUriPath(\"%s\") -> \"%s\"", path, result_name);
-    result->assign(result_name);
-  }
-  else
-  {
-    result->clear();
-  }
-
-  env->ReleaseStringUTFChars(result_jstr, result_name);
-  env->DeleteLocalRef(result_jstr);
-  return true;
-}
-
-static bool GetRelativePathForUriPath(const char* path, const char* filename, std::string* result)
-{
-  if (!s_android_FileHelper_object)
-    return false;
-
-  JNIEnv* env = GetJNIEnv();
-
-  jstring path_jstr = env->NewStringUTF(path);
-  jstring filename_jstr = env->NewStringUTF(filename);
-  jstring result_jstr = static_cast<jstring>(env->CallObjectMethod(
-    s_android_FileHelper_object, s_android_FileHelper_getRelativePathForURIPath, path_jstr, filename_jstr));
-  env->DeleteLocalRef(filename_jstr);
-  env->DeleteLocalRef(path_jstr);
-  if (!result_jstr)
-    return false;
-
-  const char* result_name = env->GetStringUTFChars(result_jstr, nullptr);
-  if (result_name)
-  {
-    Log_DevPrintf("GetRelativePathForUriPath(\"%s\", \"%s\") -> \"%s\"", path, filename, result_name);
-    result->assign(result_name);
-  }
-  else
-  {
-    result->clear();
-  }
-
-  env->ReleaseStringUTFChars(result_jstr, result_name);
-  env->DeleteLocalRef(result_jstr);
-  return true;
-}
-
-#endif // __ANDROID__
-
-ChangeNotifier::ChangeNotifier(const String& directoryPath, bool recursiveWatch)
-  : m_directoryPath(directoryPath), m_recursiveWatch(recursiveWatch)
-{
-}
-
-ChangeNotifier::~ChangeNotifier() {}
-
-void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bool OSPath /*= true*/)
-{
-  u32 i, j;
-  DebugAssert(Destination && cbDestination > 0 && Path);
-
-  // get length
-  u32 pathLength = static_cast<u32>(std::strlen(Path));
-
-  // clone to a local buffer if the same pointer
-  if (Destination == Path)
-  {
-    char* pathClone = (char*)alloca(pathLength + 1);
-    StringUtil::Strlcpy(pathClone, Path, pathLength + 1);
-    Path = pathClone;
-  }
-
-  // zero destination
-  std::memset(Destination, 0, cbDestination);
-
-  // iterate path
-  u32 destinationLength = 0;
-  for (i = 0; i < pathLength;)
-  {
-    char prevCh = (i > 0) ? Path[i - 1] : '\0';
-    char currentCh = Path[i];
-    char nextCh = (i < (pathLength - 1)) ? Path[i + 1] : '\0';
-
-    if (currentCh == '.')
-    {
-      if (prevCh == '\\' || prevCh == '/' || prevCh == '\0')
-      {
-        // handle '.'
-        if (nextCh == '\\' || nextCh == '/' || nextCh == '\0')
-        {
-          // skip '.\'
-          i++;
-
-          // remove the previous \, if we have one trailing the dot it'll append it anyway
-          if (destinationLength > 0)
-            Destination[--destinationLength] = '\0';
-          // if there was no previous \, skip past the next one
-          else if (nextCh != '\0')
-            i++;
-
-          continue;
-        }
-        // handle '..'
-        else if (nextCh == '.')
-        {
-          char afterNext = ((i + 1) < pathLength) ? Path[i + 2] : '\0';
-          if (afterNext == '\\' || afterNext == '/' || afterNext == '\0')
-          {
-            // remove one directory of the path, including the /.
-            if (destinationLength > 1)
-            {
-              for (j = destinationLength - 2; j > 0; j--)
-              {
-                if (Destination[j] == '\\' || Destination[j] == '/')
-                  break;
-              }
-
-              destinationLength = j;
-#ifdef _DEBUG
-              Destination[destinationLength] = '\0';
 #endif
-            }
-
-            // skip the dot segment
-            i += 2;
-            continue;
-          }
-        }
-      }
-    }
-
-    // fix ospath
-    if (OSPath && (currentCh == '\\' || currentCh == '/'))
-      currentCh = FS_OSPATH_SEPARATOR_CHARACTER;
-
-    // copy character
-    if (destinationLength < cbDestination)
-    {
-      Destination[destinationLength++] = currentCh;
-#ifdef _DEBUG
-      Destination[destinationLength] = '\0';
-#endif
-    }
-    else
-      break;
-
-    // increment position by one
-    i++;
-  }
-
-  // if we end up with the empty string, return '.'
-  if (destinationLength == 0)
-    Destination[destinationLength++] = '.';
-
-  // ensure nullptr termination
-  if (destinationLength < cbDestination)
-    Destination[destinationLength] = '\0';
-  else
-    Destination[destinationLength - 1] = '\0';
-}
-
-void CanonicalizePath(String& Destination, const char* Path, bool OSPath /* = true */)
-{
-  // the function won't actually write any more characters than are present to the buffer,
-  // so we can get away with simply passing both pointers if they are the same.
-  if (Destination.GetWriteableCharArray() != Path)
-  {
-    // otherwise, resize the destination to at least the source's size, and then pass as-is
-    Destination.Reserve(static_cast<u32>(std::strlen(Path)) + 1);
-  }
-
-  CanonicalizePath(Destination.GetWriteableCharArray(), Destination.GetBufferSize(), Path, OSPath);
-  Destination.UpdateSize();
-}
-
-void CanonicalizePath(String& Destination, bool OSPath /* = true */)
-{
-  CanonicalizePath(Destination, Destination);
-}
-
-void CanonicalizePath(std::string& path, bool OSPath /*= true*/)
-{
-  CanonicalizePath(path.data(), static_cast<u32>(path.size() + 1), path.c_str(), OSPath);
-}
 
 static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
 {
-  if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != '_' &&
-      c != '-' && c != '.')
+  if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != ' ' &&
+      c != '_' && c != '-' && c != '.')
   {
     if (!StripSlashes && (c == '/' || c == '\\'))
       return true;
@@ -569,7 +89,50 @@ static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
   return true;
 }
 
-void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */)
+template<typename T>
+static inline void PathAppendString(std::string& dst, const T& src)
+{
+  if (dst.capacity() < (dst.length() + src.length()))
+    dst.reserve(dst.length() + src.length());
+
+  bool last_separator = (!dst.empty() && dst.back() == FS_OSPATH_SEPARATOR_CHARACTER);
+
+  size_t index = 0;
+
+#ifdef _WIN32
+  // special case for UNC paths here
+  if (dst.empty() && src.length() >= 3 && src[0] == '\\' && src[1] == '\\' && src[2] != '\\')
+  {
+    dst.append("\\\\");
+    index = 2;
+  }
+#endif
+
+  for (; index < src.length(); index++)
+  {
+    const char ch = src[index];
+
+#ifdef _WIN32
+    // convert forward slashes to backslashes
+    if (ch == '\\' || ch == '/')
+#else
+    if (ch == '/')
+#endif
+    {
+      if (last_separator)
+        continue;
+      last_separator = true;
+      dst.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+    }
+    else
+    {
+      last_separator = false;
+      dst.push_back(ch);
+    }
+  }
+}
+
+void Path::SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */)
 {
   u32 i;
   u32 fileNameLength = static_cast<u32>(std::strlen(FileName));
@@ -594,41 +157,7 @@ void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName
   }
 }
 
-void SanitizeFileName(String& Destination, const char* FileName, bool StripSlashes /* = true */)
-{
-  u32 i;
-  u32 fileNameLength;
-
-  // if same buffer, use fastpath
-  if (Destination.GetWriteableCharArray() == FileName)
-  {
-    fileNameLength = Destination.GetLength();
-    for (i = 0; i < fileNameLength; i++)
-    {
-      if (!FileSystemCharacterIsSane(FileName[i], StripSlashes))
-        Destination[i] = '_';
-    }
-  }
-  else
-  {
-    fileNameLength = static_cast<u32>(std::strlen(FileName));
-    Destination.Resize(fileNameLength);
-    for (i = 0; i < fileNameLength; i++)
-    {
-      if (FileSystemCharacterIsSane(FileName[i], StripSlashes))
-        Destination[i] = FileName[i];
-      else
-        Destination[i] = '_';
-    }
-  }
-}
-
-void SanitizeFileName(String& Destination, bool StripSlashes /* = true */)
-{
-  return SanitizeFileName(Destination, Destination, StripSlashes);
-}
-
-void SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
+void Path::SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
 {
   const std::size_t len = Destination.length();
   for (std::size_t i = 0; i < len; i++)
@@ -638,45 +167,142 @@ void SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
   }
 }
 
-bool IsAbsolutePath(const std::string_view& path)
+bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32
   return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
-          path[1] == ':' && (path[2] == '/' || path[2] == '\\'));
+          path[1] == ':' && (path[2] == '/' || path[2] == '\\')) ||
+         (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
 #else
   return (path.length() >= 1 && path[0] == '/');
 #endif
 }
 
-std::string_view StripExtension(const std::string_view& path)
+std::string Path::ToNativePath(const std::string_view& path)
 {
-  std::string_view::size_type pos = path.rfind('.');
-  if (pos == std::string::npos)
+  std::string ret;
+  PathAppendString(ret, path);
+
+  // remove trailing slashes
+  if (ret.length() > 1)
+  {
+    while (ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+      ret.pop_back();
+  }
+
+  return ret;
+}
+
+void Path::ToNativePath(std::string* path)
+{
+  *path = Path::ToNativePath(*path);
+}
+
+std::string Path::Canonicalize(const std::string_view& path)
+{
+  std::vector<std::string_view> components = Path::SplitNativePath(path);
+  std::vector<std::string_view> new_components;
+  new_components.reserve(components.size());
+  for (const std::string_view& component : components)
+  {
+    if (component == ".")
+    {
+      // current directory, so it can be skipped, unless it's the only component
+      if (components.size() == 1)
+        new_components.push_back(std::move(component));
+    }
+    else if (component == "..")
+    {
+      // parent directory, pop one off if we're not at the beginning, otherwise preserve.
+      if (!new_components.empty())
+        new_components.pop_back();
+      else
+        new_components.push_back(std::move(component));
+    }
+    else
+    {
+      // anything else, preserve
+      new_components.push_back(std::move(component));
+    }
+  }
+
+  return Path::JoinNativePath(new_components);
+}
+
+void Path::Canonicalize(std::string* path)
+{
+  *path = Canonicalize(*path);
+}
+
+std::string Path::MakeRelative(const std::string_view& path, const std::string_view& relative_to)
+{
+  // simple algorithm, we just work on the components. could probably be better, but it'll do for now.
+  std::vector<std::string_view> path_components(SplitNativePath(path));
+  std::vector<std::string_view> relative_components(SplitNativePath(relative_to));
+  std::vector<std::string_view> new_components;
+
+  // both must be absolute paths
+  if (Path::IsAbsolute(path) && Path::IsAbsolute(relative_to))
+  {
+    // find the number of same components
+    size_t num_same = 0;
+    for (size_t i = 0; i < path_components.size() && i < relative_components.size(); i++)
+    {
+      if (path_components[i] == relative_components[i])
+        num_same++;
+      else
+        break;
+    }
+
+    // we need at least one same component
+    if (num_same > 0)
+    {
+      // from the relative_to directory, back up to the start of the common components
+      const size_t num_ups = relative_components.size() - num_same;
+      for (size_t i = 0; i < num_ups; i++)
+        new_components.emplace_back("..");
+
+      // and add the remainder of the path components
+      for (size_t i = num_same; i < path_components.size(); i++)
+        new_components.push_back(std::move(path_components[i]));
+    }
+    else
+    {
+      // no similarity
+      new_components = std::move(path_components);
+    }
+  }
+  else
+  {
+    // not absolute
+    new_components = std::move(path_components);
+  }
+
+  return JoinNativePath(new_components);
+}
+
+std::string_view Path::GetExtension(const std::string_view& path)
+{
+  const std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string_view::npos)
+    return std::string_view();
+  else
+    return path.substr(pos + 1);
+}
+
+std::string_view Path::StripExtension(const std::string_view& path)
+{
+  const std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string_view::npos)
     return path;
 
   return path.substr(0, pos);
 }
 
-std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
+std::string Path::ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
 {
-#ifdef __ANDROID__
-  // This is more complex on android because the path may not contain the actual filename.
-  if (IsUriPath(path))
-  {
-    std::string display_name(GetDisplayNameFromPath(path));
-    std::string_view::size_type pos = display_name.rfind('.');
-    if (pos == std::string::npos)
-      return std::string(path);
-
-    display_name.erase(pos + 1);
-    display_name.append(new_extension);
-
-    return BuildRelativePath(path, display_name);
-  }
-#endif
-
-  std::string_view::size_type pos = path.rfind('.');
-  if (pos == std::string::npos)
+  const std::string_view::size_type pos = path.rfind('.');
+  if (pos == std::string_view::npos)
     return std::string(path);
 
   std::string ret(path, 0, pos + 1);
@@ -699,90 +325,208 @@ static std::string_view::size_type GetLastSeperatorPosition(const std::string_vi
     if (last_separator == std::string_view::npos || other_last_separator > last_separator)
       last_separator = other_last_separator;
   }
-
-#elif defined(__ANDROID__)
-  if (IsUriPath(filename))
-  {
-    // scoped storage rubbish
-    std::string_view::size_type other_last_separator = filename.rfind("%2F");
-    if (other_last_separator != std::string_view::npos)
-    {
-      if (include_separator)
-        other_last_separator += 3;
-      if (last_separator == std::string_view::npos || other_last_separator > last_separator)
-        last_separator = other_last_separator;
-    }
-    std::string_view::size_type lower_other_last_separator = filename.rfind("%2f");
-    if (lower_other_last_separator != std::string_view::npos)
-    {
-      if (include_separator)
-        lower_other_last_separator += 3;
-      if (last_separator == std::string_view::npos || lower_other_last_separator > last_separator)
-        last_separator = lower_other_last_separator;
-    }
-  }
 #endif
 
   return last_separator;
 }
 
-std::string GetDisplayNameFromPath(const std::string_view& path)
+std::string FileSystem::GetDisplayNameFromPath(const std::string_view& path)
 {
-#if defined(__ANDROID__)
-  std::string result;
-
-  if (IsUriPath(path))
-  {
-    std::string temp(path);
-    if (!GetDisplayNameForUriPath(temp.c_str(), &result))
-      result = std::move(temp);
-  }
-  else
-  {
-    result = path;
-  }
-
-  return result;
-#else
-  return std::string(GetFileNameFromPath(path));
-#endif
+  return std::string(Path::GetFileName(path));
 }
 
-std::string_view GetPathDirectory(const std::string_view& path)
+std::string_view Path::GetDirectory(const std::string_view& path)
 {
-  std::string::size_type pos = GetLastSeperatorPosition(path, false);
+  const std::string::size_type pos = GetLastSeperatorPosition(path, false);
   if (pos == std::string_view::npos)
     return {};
 
   return path.substr(0, pos);
 }
 
-std::string_view GetFileNameFromPath(const std::string_view& path)
+std::string_view Path::GetFileName(const std::string_view& path)
 {
-  std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
+  const std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
   if (pos == std::string_view::npos)
     return path;
 
   return path.substr(pos);
 }
 
-std::string_view GetFileTitleFromPath(const std::string_view& path)
+std::string_view Path::GetFileTitle(const std::string_view& path)
 {
-  std::string_view filename(GetFileNameFromPath(path));
-  std::string::size_type pos = filename.rfind('.');
+  const std::string_view filename(GetFileName(path));
+  const std::string::size_type pos = filename.rfind('.');
   if (pos == std::string_view::npos)
     return filename;
 
   return filename.substr(0, pos);
 }
 
-std::vector<std::string> GetRootDirectoryList()
+std::string Path::ChangeFileName(const std::string_view& path, const std::string_view& new_filename)
+{
+  std::string ret;
+  PathAppendString(ret, path);
+
+  const std::string_view::size_type pos = GetLastSeperatorPosition(ret, true);
+  if (pos == std::string_view::npos)
+  {
+    ret.clear();
+    PathAppendString(ret, new_filename);
+  }
+  else
+  {
+    if (!new_filename.empty())
+    {
+      ret.erase(pos);
+      PathAppendString(ret, new_filename);
+    }
+    else
+    {
+      ret.erase(pos - 1);
+    }
+  }
+
+  return ret;
+}
+
+void Path::ChangeFileName(std::string* path, const std::string_view& new_filename)
+{
+  *path = ChangeFileName(*path, new_filename);
+}
+
+std::string Path::AppendDirectory(const std::string_view& path, const std::string_view& new_dir)
+{
+  std::string ret;
+  if (!new_dir.empty())
+  {
+    const std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
+
+    ret.reserve(path.length() + new_dir.length() + 1);
+    if (pos != std::string_view::npos)
+      PathAppendString(ret, path.substr(0, pos));
+
+    while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+      ret.pop_back();
+
+    if (!ret.empty())
+      ret += FS_OSPATH_SEPARATOR_CHARACTER;
+
+    PathAppendString(ret, new_dir);
+
+    if (pos != std::string_view::npos)
+    {
+      const std::string_view filepart(path.substr(pos));
+      if (!filepart.empty())
+      {
+        ret += FS_OSPATH_SEPARATOR_CHARACTER;
+        PathAppendString(ret, filepart);
+      }
+    }
+    else if (!path.empty())
+    {
+      ret += FS_OSPATH_SEPARATOR_CHARACTER;
+      PathAppendString(ret, path);
+    }
+  }
+  else
+  {
+    PathAppendString(ret, path);
+  }
+
+  return ret;
+}
+
+void Path::AppendDirectory(std::string* path, const std::string_view& new_dir)
+{
+  *path = AppendDirectory(*path, new_dir);
+}
+
+std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view& path)
+{
+  std::vector<std::string_view> parts;
+
+  std::string::size_type start = 0;
+  std::string::size_type pos = 0;
+
+  // preserve unc paths
+  if (path.size() > 2 && path[0] == '\\' && path[1] == '\\')
+    pos = 2;
+
+  while (pos < path.size())
+  {
+    if (path[pos] != '/' && path[pos] != '\\')
+    {
+      pos++;
+      continue;
+    }
+
+    // skip consecutive separators
+    if (pos != start)
+      parts.push_back(path.substr(start, pos - start));
+
+    pos++;
+    start = pos;
+  }
+
+  if (start != pos)
+    parts.push_back(path.substr(start));
+
+  return parts;
+}
+
+std::string Path::JoinWindowsPath(const std::vector<std::string_view>& components)
+{
+  return StringUtil::JoinString(components.begin(), components.end(), '\\');
+}
+
+std::vector<std::string_view> Path::SplitNativePath(const std::string_view& path)
+{
+#ifdef _WIN32
+  return SplitWindowsPath(path);
+#else
+  std::vector<std::string_view> parts;
+
+  std::string::size_type start = 0;
+  std::string::size_type pos = 0;
+  while (pos < path.size())
+  {
+    if (path[pos] != '/')
+    {
+      pos++;
+      continue;
+    }
+
+    // skip consecutive separators
+    // for unix, we create an empty element at the beginning when it's an absolute path
+    // that way, when it's re-joined later, we preserve the starting slash.
+    if (pos != start || pos == 0)
+      parts.push_back(path.substr(start, pos - start));
+
+    pos++;
+    start = pos;
+  }
+
+  if (start != pos)
+    parts.push_back(path.substr(start));
+
+  return parts;
+#endif
+}
+
+std::string Path::JoinNativePath(const std::vector<std::string_view>& components)
+{
+  return StringUtil::JoinString(components.begin(), components.end(), FS_OSPATH_SEPARATOR_CHARACTER);
+}
+
+std::vector<std::string> FileSystem::GetRootDirectoryList()
 {
   std::vector<std::string> results;
 
 #if defined(_WIN32) && !defined(_UWP)
   char buf[256];
-  if (GetLogicalDriveStringsA(sizeof(buf), buf) != 0)
+  const DWORD size = GetLogicalDriveStringsA(sizeof(buf), buf);
+  if (size != 0 && size < (sizeof(buf) - 1))
   {
     const char* ptr = buf;
     while (*ptr != '\0')
@@ -825,17 +569,9 @@ std::vector<std::string> GetRootDirectoryList()
   return results;
 }
 
-std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
+std::string Path::BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
 {
   std::string new_string;
-
-#ifdef __ANDROID__
-  if (IsUriPath(filename) &&
-      GetRelativePathForUriPath(std::string(filename).c_str(), std::string(new_filename).c_str(), &new_string))
-  {
-    return new_string;
-  }
-#endif
 
   std::string_view::size_type pos = GetLastSeperatorPosition(filename, true);
   if (pos != std::string_view::npos)
@@ -844,17 +580,46 @@ std::string BuildRelativePath(const std::string_view& filename, const std::strin
   return new_string;
 }
 
-FileSystem::ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode)
+std::string Path::Combine(const std::string_view& base, const std::string_view& next)
 {
-  return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
+  std::string ret;
+  ret.reserve(base.length() + next.length() + 1);
+
+  PathAppendString(ret, base);
+  while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+    ret.pop_back();
+
+  ret += FS_OSPATH_SEPARATOR_CHARACTER;
+  PathAppendString(ret, next);
+  while (!ret.empty() && ret.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+    ret.pop_back();
+
+  return ret;
 }
 
 #ifdef _UWP
-std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
+static std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode, FileSystem::FileShareMode share_mode)
 {
   DWORD access = 0;
   DWORD share = 0;
   DWORD disposition = 0;
+
+  switch (share_mode)
+  {
+    case FileSystem::FileShareMode::DenyNone:
+      share = FILE_SHARE_READ | FILE_SHARE_WRITE;
+      break;
+    case FileSystem::FileShareMode::DenyRead:
+      share = FILE_SHARE_WRITE;
+      break;
+    case FileSystem::FileShareMode::DenyWrite:
+      share = FILE_SHARE_READ;
+      break;
+    case FileSystem::FileShareMode::DenyReadWrite:
+    default:
+      share = 0;
+      break;
+  }
 
   int flags = 0;
   const wchar_t* tmode = mode;
@@ -863,7 +628,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     if (*tmode == L'r' && *(tmode + 1) == L'+')
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      share = 0;
       disposition = OPEN_EXISTING;
       flags |= _O_RDWR;
       tmode += 2;
@@ -871,7 +635,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     else if (*tmode == L'w' && *(tmode + 1) == L'+')
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      share = 0;
       disposition = CREATE_ALWAYS;
       flags |= _O_RDWR | _O_CREAT | _O_TRUNC;
       tmode += 2;
@@ -879,7 +642,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     else if (*tmode == L'a' && *(tmode + 1) == L'+')
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      share = 0;
       disposition = CREATE_ALWAYS;
       flags |= _O_RDWR | _O_APPEND | _O_CREAT | _O_TRUNC;
       tmode += 2;
@@ -887,7 +649,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     else if (*tmode == L'r')
     {
       access = GENERIC_READ;
-      share = 0;
       disposition = OPEN_EXISTING;
       flags |= _O_RDONLY;
       tmode++;
@@ -895,7 +656,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     else if (*tmode == L'w')
     {
       access = GENERIC_WRITE;
-      share = 0;
       disposition = CREATE_ALWAYS;
       flags |= _O_WRONLY | _O_CREAT | _O_TRUNC;
       tmode++;
@@ -903,7 +663,6 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
     else if (*tmode == L'a')
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      share = 0;
       disposition = CREATE_ALWAYS;
       flags |= _O_WRONLY | _O_APPEND | _O_CREAT | _O_TRUNC;
       tmode++;
@@ -959,36 +718,24 @@ std::FILE* OpenCFileUWP(const wchar_t* wfilename, const wchar_t* mode)
 }
 #endif // _UWP
 
-std::FILE* OpenCFile(const char* filename, const char* mode)
+std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
 {
 #ifdef _WIN32
-  int filename_len = static_cast<int>(std::strlen(filename));
-  int mode_len = static_cast<int>(std::strlen(mode));
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, filename, filename_len, nullptr, 0);
-  int wmodelen = MultiByteToWideChar(CP_UTF8, 0, mode, mode_len, nullptr, 0);
-  if (wlen > 0 && wmodelen > 0)
+  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
+  const std::wstring wmode(StringUtil::UTF8StringToWideString(mode));
+  if (!wfilename.empty() && !wmode.empty())
   {
-    wchar_t* wfilename = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
-    wchar_t* wmode = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wmodelen + 1)));
-    wlen = MultiByteToWideChar(CP_UTF8, 0, filename, filename_len, wfilename, wlen);
-    wmodelen = MultiByteToWideChar(CP_UTF8, 0, mode, mode_len, wmode, wmodelen);
-    if (wlen > 0 && wmodelen > 0)
+    std::FILE* fp;
+    if (_wfopen_s(&fp, wfilename.c_str(), wmode.c_str()) != 0)
     {
-      wfilename[wlen] = 0;
-      wmode[wmodelen] = 0;
-
-      std::FILE* fp;
-      if (_wfopen_s(&fp, wfilename, wmode) != 0)
-      {
 #ifdef _UWP
-        return OpenCFileUWP(wfilename, wmode);
+      return OpenCFileUWP(wfilename.c_str(), wmode.c_str(), FileShareMode::DenyReadWrite);
 #else
-        return nullptr;
+      return nullptr;
 #endif
-      }
-
-      return fp;
     }
+
+    return fp;
   }
 
   std::FILE* fp;
@@ -997,21 +744,83 @@ std::FILE* OpenCFile(const char* filename, const char* mode)
 
   return fp;
 #else
-#ifdef __ANDROID__
-  if (IsUriPath(filename) && UriHelpersAreAvailable())
-    return OpenUriFile(filename, mode);
-#endif
-
   return std::fopen(filename, mode);
 #endif
 }
 
-int FSeek64(std::FILE* fp, s64 offset, int whence)
+int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
+{
+#ifdef _WIN32
+  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
+  if (!wfilename.empty())
+  {
+    // TODO: UWP
+    return _wopen(wfilename.c_str(), flags, mode);
+  }
+
+  return -1;
+#else
+  return open(filename, flags, mode);
+#endif
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode)
+{
+  return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
+}
+
+std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+{
+#ifdef _WIN32
+  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
+  const std::wstring wmode(StringUtil::UTF8StringToWideString(mode));
+  if (wfilename.empty() || wmode.empty())
+    return nullptr;
+
+  int share_flags = 0;
+  switch (share_mode)
+  {
+    case FileShareMode::DenyNone:
+      share_flags = _SH_DENYNO;
+      break;
+    case FileShareMode::DenyRead:
+      share_flags = _SH_DENYRD;
+      break;
+    case FileShareMode::DenyWrite:
+      share_flags = _SH_DENYWR;
+      break;
+    case FileShareMode::DenyReadWrite:
+    default:
+      share_flags = _SH_DENYRW;
+      break;
+  }
+
+  std::FILE* fp = _wfsopen(wfilename.c_str(), wmode.c_str(), share_flags);
+  if (fp)
+    return fp;
+
+#ifdef _UWP
+  return OpenCFileUWP(wfilename.c_str(), wmode.c_str(), share_mode);
+#else
+  return nullptr;
+#endif
+#else
+  return std::fopen(filename, mode);
+#endif
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode,
+                                                               FileShareMode share_mode)
+{
+  return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode), [](std::FILE* fp) { std::fclose(fp); });
+}
+
+int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
 {
 #ifdef _WIN32
   return _fseeki64(fp, offset, whence);
 #else
-  // Prevent truncation on platforms which don't have a 64-bit off_t (Android 32-bit).
+  // Prevent truncation on platforms which don't have a 64-bit off_t.
   if constexpr (sizeof(off_t) != sizeof(s64))
   {
     if (offset < std::numeric_limits<off_t>::min() || offset > std::numeric_limits<off_t>::max())
@@ -1022,7 +831,7 @@ int FSeek64(std::FILE* fp, s64 offset, int whence)
 #endif
 }
 
-s64 FTell64(std::FILE* fp)
+s64 FileSystem::FTell64(std::FILE* fp)
 {
 #ifdef _WIN32
   return static_cast<s64>(_ftelli64(fp));
@@ -1031,7 +840,32 @@ s64 FTell64(std::FILE* fp)
 #endif
 }
 
-std::optional<std::vector<u8>> ReadBinaryFile(const char* filename)
+s64 FileSystem::FSize64(std::FILE* fp)
+{
+  const s64 pos = FTell64(fp);
+  if (pos >= 0)
+  {
+    if (FSeek64(fp, 0, SEEK_END) == 0)
+    {
+      const s64 size = FTell64(fp);
+      if (FSeek64(fp, pos, SEEK_SET) == 0)
+        return size;
+    }
+  }
+
+  return -1;
+}
+
+s64 FileSystem::GetPathFileSize(const char* Path)
+{
+  FILESYSTEM_STAT_DATA sd;
+  if (!StatFile(Path, &sd))
+    return -1;
+
+  return sd.Size;
+}
+
+std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 {
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
   if (!fp)
@@ -1040,10 +874,10 @@ std::optional<std::vector<u8>> ReadBinaryFile(const char* filename)
   return ReadBinaryFile(fp.get());
 }
 
-std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp)
+std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
 {
   std::fseek(fp, 0, SEEK_END);
-  long size = std::ftell(fp);
+  const long size = std::ftell(fp);
   std::fseek(fp, 0, SEEK_SET);
   if (size < 0)
     return std::nullopt;
@@ -1055,7 +889,7 @@ std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp)
   return res;
 }
 
-std::optional<std::string> ReadFileToString(const char* filename)
+std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
 {
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
   if (!fp)
@@ -1064,23 +898,24 @@ std::optional<std::string> ReadFileToString(const char* filename)
   return ReadFileToString(fp.get());
 }
 
-std::optional<std::string> ReadFileToString(std::FILE* fp)
+std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
 {
   std::fseek(fp, 0, SEEK_END);
-  long size = std::ftell(fp);
+  const long size = std::ftell(fp);
   std::fseek(fp, 0, SEEK_SET);
   if (size < 0)
     return std::nullopt;
 
   std::string res;
   res.resize(static_cast<size_t>(size));
+  // NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
   if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
     return std::nullopt;
 
   return res;
 }
 
-bool WriteBinaryFile(const char* filename, const void* data, size_t data_length)
+bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t data_length)
 {
   ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
   if (!fp)
@@ -1092,7 +927,7 @@ bool WriteBinaryFile(const char* filename, const void* data, size_t data_length)
   return true;
 }
 
-bool WriteFileToString(const char* filename, const std::string_view& sv)
+bool FileSystem::WriteStringToFile(const char* filename, const std::string_view& sv)
 {
   ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
   if (!fp)
@@ -1104,64 +939,79 @@ bool WriteFileToString(const char* filename, const std::string_view& sv)
   return true;
 }
 
-void BuildOSPath(char* Destination, u32 cbDestination, const char* Path)
+bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive)
 {
-  u32 i;
-  u32 pathLength = static_cast<u32>(std::strlen(Path));
+  if (FileSystem::DirectoryExists(path))
+    return true;
 
-  if (Destination == Path)
-  {
-    // fast path
-    for (i = 0; i < pathLength; i++)
-    {
-      if (Destination[i] == '/')
-        Destination[i] = FS_OSPATH_SEPARATOR_CHARACTER;
-    }
-  }
-  else
-  {
-    // slow path
-    pathLength = std::max(pathLength, cbDestination - 1);
-    for (i = 0; i < pathLength; i++)
-    {
-      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPARATOR_CHARACTER : Path[i];
-    }
-
-    Destination[pathLength] = '\0';
-  }
+  // if it fails to create, we're not going to be able to use it anyway
+  return FileSystem::CreateDirectory(path, recursive);
 }
 
-void BuildOSPath(String& Destination, const char* Path)
+bool FileSystem::RecursiveDeleteDirectory(const char* path)
 {
-  u32 i;
-  u32 pathLength;
+  FindResultsArray results;
+  if (FindFiles(path, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES, &results))
+  {
+    for (const FILESYSTEM_FIND_DATA& fd : results)
+    {
+      if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+      {
+        if (!RecursiveDeleteDirectory(fd.FileName.c_str()))
+          return false;
+      }
+      else
+      {
+        if (!DeleteFile(fd.FileName.c_str()))
+          return false;
+      }
+    }
+  }
 
-  if (Destination.GetWriteableCharArray() == Path)
-  {
-    // fast path
-    pathLength = Destination.GetLength();
-    ;
-    for (i = 0; i < pathLength; i++)
-    {
-      if (Destination[i] == '/')
-        Destination[i] = FS_OSPATH_SEPARATOR_CHARACTER;
-    }
-  }
-  else
-  {
-    // slow path
-    pathLength = static_cast<u32>(std::strlen(Path));
-    Destination.Resize(pathLength);
-    for (i = 0; i < pathLength; i++)
-    {
-      Destination[i] = (Path[i] == '/') ? FS_OSPATH_SEPARATOR_CHARACTER : Path[i];
-    }
-  }
+  return DeleteDirectory(path);
 }
 
-void BuildOSPath(String& Destination)
+bool FileSystem::CopyFilePath(const char* source, const char* destination, bool replace)
 {
-  BuildOSPath(Destination, Destination);
+#ifndef _WIN32
+  // TODO: There's technically a race here between checking and opening the file..
+  // But fopen doesn't specify any way to say "don't create if it exists"...
+  if (!replace && FileExists(destination))
+    return false;
+
+  auto in_fp = OpenManagedCFile(source, "rb");
+  if (!in_fp)
+    return false;
+
+  auto out_fp = OpenManagedCFile(destination, "wb");
+  if (!out_fp)
+    return false;
+
+  u8 buf[4096];
+  while (!std::feof(in_fp.get()))
+  {
+    size_t bytes_in = std::fread(buf, 1, sizeof(buf), in_fp.get());
+    if ((bytes_in == 0 && !std::feof(in_fp.get())) ||
+        (bytes_in > 0 && std::fwrite(buf, 1, bytes_in, out_fp.get()) != bytes_in))
+    {
+      out_fp.reset();
+      DeleteFile(destination);
+      return false;
+    }
+  }
+
+  if (std::fflush(out_fp.get()) != 0)
+  {
+    out_fp.reset();
+    DeleteFile(destination);
+    return false;
+  }
+
+  return true;
+#else
+  return CopyFileW(StringUtil::UTF8StringToWideString(source).c_str(),
+                   StringUtil::UTF8StringToWideString(destination).c_str(), !replace);
+#endif
 }
 
 #ifdef _WIN32
@@ -1193,181 +1043,26 @@ static DWORD WrapGetFileAttributes(const wchar_t* path)
 #endif
 }
 
-static const u32 READ_DIRECTORY_CHANGES_NOTIFY_FILTER = FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
-                                                        FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
-                                                        FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION;
-
-class ChangeNotifierWin32 : public FileSystem::ChangeNotifier
-{
-public:
-  ChangeNotifierWin32(HANDLE hDirectory, const String& directoryPath, bool recursiveWatch)
-    : FileSystem::ChangeNotifier(directoryPath, recursiveWatch), m_hDirectory(hDirectory),
-      m_directoryChangeQueued(false)
-  {
-    m_bufferSize = 16384;
-    m_pBuffer = new u8[m_bufferSize];
-  }
-
-  virtual ~ChangeNotifierWin32()
-  {
-    // if there is outstanding io, cancel it
-    if (m_directoryChangeQueued)
-    {
-      CancelIo(m_hDirectory);
-
-      DWORD bytesTransferred;
-      GetOverlappedResult(m_hDirectory, &m_overlapped, &bytesTransferred, TRUE);
-    }
-
-    CloseHandle(m_hDirectory);
-    delete[] m_pBuffer;
-  }
-
-  virtual void EnumerateChanges(EnumerateChangesCallback callback, void* pUserData) override
-  {
-    DWORD bytesRead;
-    if (!GetOverlappedResult(m_hDirectory, &m_overlapped, &bytesRead, FALSE))
-    {
-      if (GetLastError() == ERROR_IO_INCOMPLETE)
-        return;
-
-      CancelIo(m_hDirectory);
-      m_directoryChangeQueued = false;
-
-      QueueReadDirectoryChanges();
-      return;
-    }
-
-    // not queued any more
-    m_directoryChangeQueued = false;
-
-    // has any bytes?
-    if (bytesRead > 0)
-    {
-      const u8* pCurrentPointer = m_pBuffer;
-      PathString fileName;
-      for (;;)
-      {
-        const FILE_NOTIFY_INFORMATION* pFileNotifyInformation =
-          reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pCurrentPointer);
-
-        // translate the event
-        u32 changeEvent = 0;
-        if (pFileNotifyInformation->Action == FILE_ACTION_ADDED)
-          changeEvent = ChangeEvent_FileAdded;
-        else if (pFileNotifyInformation->Action == FILE_ACTION_REMOVED)
-          changeEvent = ChangeEvent_FileRemoved;
-        else if (pFileNotifyInformation->Action == FILE_ACTION_MODIFIED)
-          changeEvent = ChangeEvent_FileModified;
-        else if (pFileNotifyInformation->Action == FILE_ACTION_RENAMED_OLD_NAME)
-          changeEvent = ChangeEvent_RenamedOldName;
-        else if (pFileNotifyInformation->Action == FILE_ACTION_RENAMED_NEW_NAME)
-          changeEvent = ChangeEvent_RenamedNewName;
-
-        // translate the filename
-        int fileNameLength =
-          WideCharToMultiByte(CP_UTF8, 0, pFileNotifyInformation->FileName,
-                              pFileNotifyInformation->FileNameLength / sizeof(WCHAR), nullptr, 0, nullptr, nullptr);
-        DebugAssert(fileNameLength >= 0);
-        fileName.Resize(fileNameLength);
-        fileNameLength = WideCharToMultiByte(CP_UTF8, 0, pFileNotifyInformation->FileName,
-                                             pFileNotifyInformation->FileNameLength / sizeof(WCHAR),
-                                             fileName.GetWriteableCharArray(), fileName.GetLength(), nullptr, nullptr);
-        if (fileNameLength != (int)fileName.GetLength())
-          fileName.Resize(fileNameLength);
-
-        // prepend the base path
-        fileName.PrependFormattedString("%s\\", m_directoryPath.GetCharArray());
-
-        // construct change info
-        ChangeInfo changeInfo;
-        changeInfo.Path = fileName;
-        changeInfo.Event = changeEvent;
-
-        // invoke callback
-        callback(&changeInfo, pUserData);
-
-        // has a next entry?
-        if (pFileNotifyInformation->NextEntryOffset == 0)
-          break;
-
-        pCurrentPointer += pFileNotifyInformation->NextEntryOffset;
-        DebugAssert(pCurrentPointer < (m_pBuffer + m_bufferSize));
-      }
-    }
-
-    // re-queue the operation
-    QueueReadDirectoryChanges();
-  }
-
-  bool QueueReadDirectoryChanges()
-  {
-    DebugAssert(!m_directoryChangeQueued);
-
-    std::memset(&m_overlapped, 0, sizeof(m_overlapped));
-    if (ReadDirectoryChangesW(m_hDirectory, m_pBuffer, m_bufferSize, m_recursiveWatch,
-                              READ_DIRECTORY_CHANGES_NOTIFY_FILTER, nullptr, &m_overlapped, nullptr) == FALSE)
-      return false;
-
-    m_directoryChangeQueued = true;
-    return true;
-  }
-
-private:
-  HANDLE m_hDirectory;
-  OVERLAPPED m_overlapped;
-  bool m_directoryChangeQueued;
-  u8* m_pBuffer;
-  u32 m_bufferSize;
-};
-
-std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch)
-{
-  // open the directory up
-  std::wstring path_wstr(StringUtil::UTF8StringToWideString(path));
-#ifndef _UWP
-  HANDLE hDirectory =
-    CreateFileW(path_wstr.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
-#else
-  CREATEFILE2_EXTENDED_PARAMETERS ep = {};
-  ep.dwSize = sizeof(ep);
-  ep.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-  ep.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED;
-  HANDLE hDirectory = CreateFile2FromAppW(path_wstr.c_str(), FILE_LIST_DIRECTORY,
-                                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING, &ep);
-#endif
-  if (hDirectory == nullptr)
-    return nullptr;
-
-  // queue up the overlapped io
-  auto pChangeNotifier = std::make_unique<ChangeNotifierWin32>(hDirectory, path, recursiveWatch);
-  if (!pChangeNotifier->QueueReadDirectoryChanges())
-    return nullptr;
-
-  return pChangeNotifier;
-}
-
-static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
-                              u32 Flags, FileSystem::FindResultsArray* pResults)
+static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, const char* path, const char* pattern,
+                              u32 flags, FileSystem::FindResultsArray* results)
 {
   std::string tempStr;
-  if (Path)
+  if (path)
   {
-    if (ParentPath)
-      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\%s\\*", OriginPath, ParentPath, Path);
+    if (parent_path)
+      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\%s\\*", origin_path, parent_path, path);
     else
-      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\*", OriginPath, Path);
+      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\*", origin_path, path);
   }
   else
   {
-    tempStr = StringUtil::StdStringFromFormat("%s\\*", OriginPath);
+    tempStr = StringUtil::StdStringFromFormat("%s\\*", origin_path);
   }
 
   // holder for utf-8 conversion
   WIN32_FIND_DATAW wfd;
   std::string utf8_filename;
-  utf8_filename.reserve(countof(wfd.cFileName) * 2);
+  utf8_filename.reserve((sizeof(wfd.cFileName) / sizeof(wfd.cFileName[0])) * 2);
 
 #ifndef _UWP
   HANDLE hFind = FindFirstFileW(StringUtil::UTF8StringToWideString(tempStr).c_str(), &wfd);
@@ -1383,16 +1078,16 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   bool hasWildCards = false;
   bool wildCardMatchAll = false;
   u32 nFiles = 0;
-  if (std::strpbrk(Pattern, "*?") != nullptr)
+  if (std::strpbrk(pattern, "*?") != nullptr)
   {
     hasWildCards = true;
-    wildCardMatchAll = !(std::strcmp(Pattern, "*"));
+    wildCardMatchAll = !(std::strcmp(pattern, "*"));
   }
 
   // iterate results
   do
   {
-    if (wfd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN && !(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
+    if (wfd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN && !(flags & FILESYSTEM_FIND_HIDDEN_FILES))
       continue;
 
     if (wfd.cFileName[0] == L'.')
@@ -1409,28 +1104,28 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
     if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     {
-      if (Flags & FILESYSTEM_FIND_RECURSIVE)
+      if (flags & FILESYSTEM_FIND_RECURSIVE)
       {
         // recurse into this directory
-        if (ParentPath != nullptr)
+        if (parent_path != nullptr)
         {
-          const std::string recurseDir = StringUtil::StdStringFromFormat("%s\\%s", ParentPath, Path);
-          nFiles += RecursiveFindFiles(OriginPath, recurseDir.c_str(), utf8_filename.c_str(), Pattern, Flags, pResults);
+          const std::string recurseDir = StringUtil::StdStringFromFormat("%s\\%s", parent_path, path);
+          nFiles += RecursiveFindFiles(origin_path, recurseDir.c_str(), utf8_filename.c_str(), pattern, flags, results);
         }
         else
         {
-          nFiles += RecursiveFindFiles(OriginPath, Path, utf8_filename.c_str(), Pattern, Flags, pResults);
+          nFiles += RecursiveFindFiles(origin_path, path, utf8_filename.c_str(), pattern, flags, results);
         }
       }
 
-      if (!(Flags & FILESYSTEM_FIND_FOLDERS))
+      if (!(flags & FILESYSTEM_FIND_FOLDERS))
         continue;
 
       outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
     }
     else
     {
-      if (!(Flags & FILESYSTEM_FIND_FILES))
+      if (!(flags & FILESYSTEM_FIND_FILES))
         continue;
     }
 
@@ -1440,84 +1135,125 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // match the filename
     if (hasWildCards)
     {
-      if (!wildCardMatchAll && !StringUtil::WildcardMatch(utf8_filename.c_str(), Pattern))
+      if (!wildCardMatchAll && !StringUtil::WildcardMatch(utf8_filename.c_str(), pattern))
         continue;
     }
     else
     {
-      if (std::strcmp(utf8_filename.c_str(), Pattern) != 0)
+      if (std::strcmp(utf8_filename.c_str(), pattern) != 0)
         continue;
     }
 
     // add file to list
     // TODO string formatter, clean this mess..
-    if (!(Flags & FILESYSTEM_FIND_RELATIVE_PATHS))
+    if (!(flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
-      if (ParentPath != nullptr)
+      if (parent_path != nullptr)
         outData.FileName =
-          StringUtil::StdStringFromFormat("%s\\%s\\%s\\%s", OriginPath, ParentPath, Path, utf8_filename.c_str());
-      else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", OriginPath, Path, utf8_filename.c_str());
+          StringUtil::StdStringFromFormat("%s\\%s\\%s\\%s", origin_path, parent_path, path, utf8_filename.c_str());
+      else if (path != nullptr)
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", origin_path, path, utf8_filename.c_str());
       else
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", OriginPath, utf8_filename.c_str());
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", origin_path, utf8_filename.c_str());
     }
     else
     {
-      if (ParentPath != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", ParentPath, Path, utf8_filename.c_str());
-      else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", Path, utf8_filename.c_str());
+      if (parent_path != nullptr)
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", parent_path, path, utf8_filename.c_str());
+      else if (path != nullptr)
+        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", path, utf8_filename.c_str());
       else
         outData.FileName = utf8_filename;
     }
 
-    outData.ModificationTime.SetWindowsFileTime(&wfd.ftLastWriteTime);
-    outData.Size = (u64)wfd.nFileSizeHigh << 32 | (u64)wfd.nFileSizeLow;
+    outData.CreationTime = ConvertFileTimeToUnixTime(wfd.ftCreationTime);
+    outData.ModificationTime = ConvertFileTimeToUnixTime(wfd.ftLastWriteTime);
+    outData.Size = (static_cast<u64>(wfd.nFileSizeHigh) << 32) | static_cast<u64>(wfd.nFileSizeLow);
 
     nFiles++;
-    pResults->push_back(std::move(outData));
+    results->push_back(std::move(outData));
   } while (FindNextFileW(hFind, &wfd) == TRUE);
   FindClose(hFind);
 
   return nFiles;
 }
 
-bool FileSystem::FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults)
+bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
   // clear result array
-  if (!(Flags & FILESYSTEM_FIND_KEEP_ARRAY))
-    pResults->clear();
+  if (!(flags & FILESYSTEM_FIND_KEEP_ARRAY))
+    results->clear();
 
   // enter the recursive function
-  return (RecursiveFindFiles(Path, nullptr, nullptr, Pattern, Flags, pResults) > 0);
+  return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results) > 0);
 }
 
-bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
+static void TranslateStat64(struct stat* st, const struct _stat64& st64)
+{
+  static constexpr __int64 MAX_SIZE = static_cast<__int64>(std::numeric_limits<decltype(st->st_size)>::max());
+  st->st_dev = st64.st_dev;
+  st->st_ino = st64.st_ino;
+  st->st_mode = st64.st_mode;
+  st->st_nlink = st64.st_nlink;
+  st->st_uid = st64.st_uid;
+  st->st_rdev = st64.st_rdev;
+  st->st_size = static_cast<decltype(st->st_size)>((st64.st_size > MAX_SIZE) ? MAX_SIZE : st64.st_size);
+  st->st_atime = static_cast<time_t>(st64.st_atime);
+  st->st_mtime = static_cast<time_t>(st64.st_mtime);
+  st->st_ctime = static_cast<time_t>(st64.st_ctime);
+}
+
+bool FileSystem::StatFile(const char* path, struct stat* st)
 {
   // has a path
   if (path[0] == '\0')
     return false;
 
   // convert to wide string
-  int len = static_cast<int>(std::strlen(path));
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
-  if (wlen <= 0)
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  if (wpath.empty())
     return false;
 
-  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
-  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
-  if (wlen <= 0)
+  struct _stat64 st64;
+  if (_wstati64(wpath.c_str(), &st64) != 0)
     return false;
 
-  wpath[wlen] = 0;
+  TranslateStat64(st, st64);
+  return true;
+}
+
+bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
+{
+  const int fd = _fileno(fp);
+  if (fd < 0)
+    return false;
+
+  struct _stat64 st64;
+  if (_fstati64(fd, &st64) != 0)
+    return false;
+
+  TranslateStat64(st, st64);
+  return true;
+}
+
+bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
+{
+  // has a path
+  if (path[0] == '\0')
+    return false;
+
+  // convert to wide string
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  if (wpath.empty())
+    return false;
 
 #ifndef _UWP
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesW(wpath);
+  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1525,12 +1261,12 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   HANDLE hFile;
   if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
   {
-    hFile = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+    hFile = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   }
   else
   {
-    hFile = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+    hFile = CreateFileW(wpath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                         OPEN_EXISTING, 0, nullptr);
   }
 
@@ -1550,23 +1286,25 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData)
   CloseHandle(hFile);
 
   // fill in the stat data
-  pStatData->Attributes = TranslateWin32Attributes(bhfi.dwFileAttributes);
-  pStatData->ModificationTime.SetWindowsFileTime(&bhfi.ftLastWriteTime);
-  pStatData->Size = ((u64)bhfi.nFileSizeHigh) << 32 | (u64)bhfi.nFileSizeLow;
+  sd->Attributes = TranslateWin32Attributes(bhfi.dwFileAttributes);
+  sd->CreationTime = ConvertFileTimeToUnixTime(bhfi.ftCreationTime);
+  sd->ModificationTime = ConvertFileTimeToUnixTime(bhfi.ftLastWriteTime);
+  sd->Size = static_cast<s64>(((u64)bhfi.nFileSizeHigh) << 32 | (u64)bhfi.nFileSizeLow);
   return true;
 #else
   WIN32_FILE_ATTRIBUTE_DATA fad;
-  if (!GetFileAttributesExFromAppW(wpath, GetFileExInfoStandard, &fad))
+  if (!GetFileAttributesExFromAppW(wpath.c_str(), GetFileExInfoStandard, &fad))
     return false;
 
-  pStatData->Attributes = TranslateWin32Attributes(fad.dwFileAttributes);
-  pStatData->ModificationTime.SetWindowsFileTime(&fad.ftLastWriteTime);
-  pStatData->Size = ((u64)fad.nFileSizeHigh) << 32 | (u64)fad.nFileSizeLow;
+  sd->Attributes = TranslateWin32Attributes(fad.dwFileAttributes);
+  sd->CreationTime = ConvertFileTimeToUnixTime(fad.ftCreationTime);
+  sd->ModificationTime = ConvertFileTimeToUnixTime(fad.ftLastWriteTime);
+  sd->Size = static_cast<s64>(((u64)fad.nFileSizeHigh) << 32 | (u64)fad.nFileSizeLow);
   return true;
 #endif
 }
 
-bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
+bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 {
   const int fd = _fileno(fp);
   if (fd < 0)
@@ -1577,18 +1315,17 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
   // parse attributes
-  pStatData->Attributes = 0;
+  sd->CreationTime = st.st_ctime;
+  sd->ModificationTime = st.st_mtime;
+  sd->Attributes = 0;
   if ((st.st_mode & _S_IFMT) == _S_IFDIR)
-    pStatData->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
-
-  // parse times
-  pStatData->ModificationTime.SetUnixTimestamp((Timestamp::UnixTimestampValue)st.st_mtime);
+    sd->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
 
   // parse size
   if ((st.st_mode & _S_IFMT) == _S_IFREG)
-    pStatData->Size = static_cast<u64>(st.st_size);
+    sd->Size = st.st_size;
   else
-    pStatData->Size = 0;
+    sd->Size = 0;
 
   return true;
 }
@@ -1600,20 +1337,12 @@ bool FileSystem::FileExists(const char* path)
     return false;
 
   // convert to wide string
-  int len = static_cast<int>(std::strlen(path));
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
-  if (wlen <= 0)
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  if (wpath.empty())
     return false;
-
-  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
-  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
-  if (wlen <= 0)
-    return false;
-
-  wpath[wlen] = 0;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = WrapGetFileAttributes(wpath);
+  DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1630,20 +1359,12 @@ bool FileSystem::DirectoryExists(const char* path)
     return false;
 
   // convert to wide string
-  int len = static_cast<int>(std::strlen(path));
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, nullptr, 0);
-  if (wlen <= 0)
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  if (wpath.empty())
     return false;
-
-  wchar_t* wpath = static_cast<wchar_t*>(alloca(sizeof(wchar_t) * (wlen + 1)));
-  wlen = MultiByteToWideChar(CP_UTF8, 0, path, len, wpath, wlen);
-  if (wlen <= 0)
-    return false;
-
-  wpath[wlen] = 0;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = WrapGetFileAttributes(wpath);
+  DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
@@ -1653,12 +1374,43 @@ bool FileSystem::DirectoryExists(const char* path)
     return false;
 }
 
+bool FileSystem::DirectoryIsEmpty(const char* path)
+{
+  std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  wpath += L"\\*";
+
+  WIN32_FIND_DATAW wfd;
+#ifndef _UWP
+  HANDLE hFind = FindFirstFileW(wpath.c_str(), &wfd);
+#else
+  HANDLE hFind = FindFirstFileExFromAppW(wpath.c_str(), FindExInfoBasic, &wfd, FindExSearchNameMatch, nullptr, 0);
+#endif
+
+  if (hFind == INVALID_HANDLE_VALUE)
+    return true;
+
+  do
+  {
+    if (wfd.cFileName[0] == L'.')
+    {
+      if (wfd.cFileName[1] == L'\0' || (wfd.cFileName[1] == L'.' && wfd.cFileName[2] == L'\0'))
+        continue;
+    }
+
+    FindClose(hFind);
+    return false;
+  } while (FindNextFileW(hFind, &wfd));
+
+  FindClose(hFind);
+  return true;
+}
+
 bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
 {
-  std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
 
   // has a path
-  if (wpath[0] == L'\0')
+  if (wpath.empty())
     return false;
 
     // try just flat-out, might work if there's no other segments that have to be made
@@ -1669,6 +1421,9 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   if (CreateDirectoryFromAppW(wpath.c_str(), nullptr))
     return true;
 #endif
+
+  if (!Recursive)
+    return false;
 
   // check error
   DWORD lastError = GetLastError();
@@ -1684,21 +1439,20 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   else if (lastError == ERROR_PATH_NOT_FOUND)
   {
     // part of the path does not exist, so we'll create the parent folders, then
-    // the full path again. allocate another buffer with the same length
-    u32 pathLength = static_cast<u32>(wpath.size());
-    wchar_t* tempStr = (wchar_t*)alloca(sizeof(wchar_t) * (pathLength + 1));
+    // the full path again.
+    const size_t pathLength = wpath.size();
+    std::wstring tempPath;
+    tempPath.reserve(pathLength);
 
     // create directories along the path
-    for (u32 i = 0; i < pathLength; i++)
+    for (size_t i = 0; i < pathLength; i++)
     {
       if (wpath[i] == L'\\' || wpath[i] == L'/')
       {
-        tempStr[i] = L'\0';
-
 #ifndef _UWP
-        const BOOL result = CreateDirectoryW(tempStr, nullptr);
+        const BOOL result = CreateDirectoryW(tempPath.c_str(), nullptr);
 #else
-        const BOOL result = CreateDirectoryFromAppW(tempStr, nullptr);
+        const BOOL result = CreateDirectoryFromAppW(tempPath.c_str(), nullptr);
 #endif
         if (!result)
         {
@@ -1706,9 +1460,14 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
           if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
             return false;
         }
-      }
 
-      tempStr[i] = wpath[i];
+        // replace / with \.
+        tempPath.push_back('\\');
+      }
+      else
+      {
+        tempPath.push_back(wpath[i]);
+      }
     }
 
     // re-create the end if it's not a separator, check / as well because windows can interpret them
@@ -1737,12 +1496,12 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   }
 }
 
-bool FileSystem::DeleteFile(const char* Path)
+bool FileSystem::DeleteFile(const char* path)
 {
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
   const DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     return false;
@@ -1754,15 +1513,15 @@ bool FileSystem::DeleteFile(const char* Path)
 #endif
 }
 
-bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
+bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 {
-  const std::wstring old_wpath(StringUtil::UTF8StringToWideString(OldPath));
-  const std::wstring new_wpath(StringUtil::UTF8StringToWideString(NewPath));
+  const std::wstring old_wpath(StringUtil::UTF8StringToWideString(old_path));
+  const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_path));
 
 #ifndef _UWP
   if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
   {
-    Log_ErrorPrintf("MoveFileEx('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
+    Log_ErrorPrintf("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
     return false;
   }
 #else
@@ -1778,7 +1537,7 @@ bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
 
   if (!MoveFileFromAppW(old_wpath.c_str(), new_wpath.c_str()))
   {
-    Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", OldPath, NewPath, GetLastError());
+    Log_ErrorPrintf("MoveFileFromAppW('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
     return false;
   }
 #endif
@@ -1786,100 +1545,13 @@ bool FileSystem::RenamePath(const char* OldPath, const char* NewPath)
   return true;
 }
 
-static bool RecursiveDeleteDirectory(const std::wstring& wpath, bool Recursive)
+bool FileSystem::DeleteDirectory(const char* path)
 {
-  // ensure it exists
-  const DWORD fileAttributes = WrapGetFileAttributes(wpath.c_str());
-  if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    return false;
-
-  // non-recursive case just try removing the directory
-  if (!Recursive)
-  {
-#ifndef _UWP
-    return (RemoveDirectoryW(wpath.c_str()) == TRUE);
-#else
-    return (RemoveDirectoryFromAppW(wpath.c_str()) == TRUE);
-#endif
-  }
-
-  // doing a recursive delete
-  std::wstring fileName = wpath;
-  fileName += L"\\*";
-
-  // is there any files?
-  WIN32_FIND_DATAW findData;
-#ifndef _UWP
-  HANDLE hFind = FindFirstFileW(fileName.c_str(), &findData);
-#else
-  HANDLE hFind =
-    FindFirstFileExFromAppW(fileName.c_str(), FindExInfoBasic, &findData, FindExSearchNameMatch, nullptr, 0);
-#endif
-  if (hFind == INVALID_HANDLE_VALUE)
-    return false;
-
-  // search through files
-  do
-  {
-    // skip . and ..
-    if (findData.cFileName[0] == L'.')
-    {
-      if ((findData.cFileName[1] == L'\0') || (findData.cFileName[1] == L'.' && findData.cFileName[2] == L'\0'))
-      {
-        continue;
-      }
-    }
-
-    // found a directory?
-    fileName = wpath;
-    fileName += L"\\";
-    fileName += findData.cFileName;
-    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    {
-      // recurse into that
-      if (!RecursiveDeleteDirectory(fileName, true))
-      {
-        FindClose(hFind);
-        return false;
-      }
-    }
-    else
-    {
-      // found a file, so delete it
-#ifndef _UWP
-      const BOOL result = DeleteFileW(fileName.c_str());
-#else
-      const BOOL result = DeleteFileFromAppW(fileName.c_str());
-#endif
-      if (!result)
-      {
-        FindClose(hFind);
-        return false;
-      }
-    }
-  } while (FindNextFileW(hFind, &findData));
-  FindClose(hFind);
-
-  // nuke the directory itself
-#ifndef _UWP
-  const BOOL result = RemoveDirectoryW(wpath.c_str());
-#else
-  const BOOL result = RemoveDirectoryFromAppW(wpath.c_str());
-#endif
-  if (!result)
-    return false;
-
-  // done
-  return true;
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  return RemoveDirectoryW(wpath.c_str());
 }
 
-bool FileSystem::DeleteDirectory(const char* Path, bool Recursive)
-{
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-  return RecursiveDeleteDirectory(wpath, Recursive);
-}
-
-std::string GetProgramPath()
+std::string FileSystem::GetProgramPath()
 {
   std::wstring buffer;
   buffer.resize(MAX_PATH);
@@ -1904,12 +1576,10 @@ std::string GetProgramPath()
     break;
   }
 
-  std::string utf8_path(StringUtil::WideStringToUTF8String(buffer));
-  CanonicalizePath(utf8_path);
-  return utf8_path;
+  return StringUtil::WideStringToUTF8String(buffer);
 }
 
-std::string GetWorkingDirectory()
+std::string FileSystem::GetWorkingDirectory()
 {
   DWORD required_size = GetCurrentDirectoryW(0, nullptr);
   if (!required_size)
@@ -1924,22 +1594,52 @@ std::string GetWorkingDirectory()
   return StringUtil::WideStringToUTF8String(buffer);
 }
 
-bool SetWorkingDirectory(const char* path)
+bool FileSystem::SetWorkingDirectory(const char* path)
 {
   const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
   return (SetCurrentDirectoryW(wpath.c_str()) == TRUE);
 }
 
-#else
-
-std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch)
+bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
-  Log_ErrorPrintf("FileSystem::CreateChangeNotifier(%s) not implemented", path);
-  return nullptr;
+  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const DWORD attrs = GetFileAttributesW(wpath.c_str());
+  if (attrs == INVALID_FILE_ATTRIBUTES)
+    return false;
+
+  const bool isCompressed = (attrs & FILE_ATTRIBUTE_COMPRESSED) != 0;
+  if (enable == isCompressed)
+  {
+    // already compressed/not compressed
+    return true;
+  }
+
+  const bool isFile = !(attrs & FILE_ATTRIBUTE_DIRECTORY);
+  const DWORD flags = isFile ? FILE_ATTRIBUTE_NORMAL : (FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_DIRECTORY);
+
+#ifndef _UWP
+  const HANDLE handle = CreateFileW(wpath.c_str(), FILE_GENERIC_WRITE | FILE_GENERIC_READ,
+                                    FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, flags, nullptr);
+#else
+  const HANDLE handle = CreateFileFromAppW(wpath.c_str(), FILE_GENERIC_WRITE | FILE_GENERIC_READ,
+                                           FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, flags, nullptr);
+#endif
+  if (handle == INVALID_HANDLE_VALUE)
+    return false;
+
+  DWORD bytesReturned = 0;
+  DWORD compressMode = enable ? COMPRESSION_FORMAT_DEFAULT : COMPRESSION_FORMAT_NONE;
+
+  bool result = DeviceIoControl(handle, FSCTL_SET_COMPRESSION, &compressMode, 2, nullptr, 0, &bytesReturned, nullptr);
+
+  CloseHandle(handle);
+  return result;
 }
 
+#else
+
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
-                              u32 Flags, FindResultsArray* pResults)
+                              u32 Flags, FileSystem::FindResultsArray* pResults)
 {
   std::string tempStr;
   if (Path)
@@ -1969,13 +1669,9 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   }
 
   // iterate results
-  PathString full_path;
   struct dirent* pDirEnt;
   while ((pDirEnt = readdir(pDir)) != nullptr)
   {
-    //        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN && !(Flags & FILESYSTEM_FIND_HIDDEN_FILES))
-    //            continue;
-    //
     if (pDirEnt->d_name[0] == '.')
     {
       if (pDirEnt->d_name[1] == '\0' || (pDirEnt->d_name[1] == '.' && pDirEnt->d_name[2] == '\0'))
@@ -1985,24 +1681,25 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         continue;
     }
 
+    std::string full_path;
     if (ParentPath != nullptr)
-      full_path.Format("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
+      full_path = StringUtil::StdStringFromFormat("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
     else if (Path != nullptr)
-      full_path.Format("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
+      full_path = StringUtil::StdStringFromFormat("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
     else
-      full_path.Format("%s/%s", OriginPath, pDirEnt->d_name);
+      full_path = StringUtil::StdStringFromFormat("%s/%s", OriginPath, pDirEnt->d_name);
 
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
 
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
     struct stat sDir;
-    if (stat(full_path, &sDir) < 0)
+    if (stat(full_path.c_str(), &sDir) < 0)
       continue;
 
 #else
     struct stat64 sDir;
-    if (stat64(full_path, &sDir) < 0)
+    if (stat64(full_path.c_str(), &sDir) < 0)
       continue;
 #endif
 
@@ -2034,7 +1731,8 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     }
 
     outData.Size = static_cast<u64>(sDir.st_size);
-    outData.ModificationTime.SetUnixTimestamp(static_cast<Timestamp::UnixTimestampValue>(sDir.st_mtime));
+    outData.CreationTime = sDir.st_ctime;
+    outData.ModificationTime = sDir.st_mtime;
 
     // match the filename
     if (hasWildCards)
@@ -2052,14 +1750,14 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     // TODO string formatter, clean this mess..
     if (!(Flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
-      outData.FileName = std::string(full_path.GetCharArray());
+      outData.FileName = std::move(full_path);
     }
     else
     {
       if (ParentPath != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", ParentPath, Path, pDirEnt->d_name);
+        outData.FileName = StringUtil::StdStringFromFormat("%s/%s/%s", ParentPath, Path, pDirEnt->d_name);
       else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", Path, pDirEnt->d_name);
+        outData.FileName = StringUtil::StdStringFromFormat("%s/%s", Path, pDirEnt->d_name);
       else
         outData.FileName = pDirEnt->d_name;
     }
@@ -2072,7 +1770,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   return nFiles;
 }
 
-bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults)
+bool FileSystem::FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults)
 {
   // has a path
   if (Path[0] == '\0')
@@ -2082,57 +1780,60 @@ bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArra
   if (!(Flags & FILESYSTEM_FIND_KEEP_ARRAY))
     pResults->clear();
 
-#ifdef __ANDROID__
-  if (IsUriPath(Path) && UriHelpersAreAvailable())
-    return FindUriFiles(Path, Pattern, Flags, pResults);
-#endif
-
   // enter the recursive function
   return (RecursiveFindFiles(Path, nullptr, nullptr, Pattern, Flags, pResults) > 0);
 }
 
-bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData)
+bool FileSystem::StatFile(const char* path, struct stat* st)
 {
-  // has a path
-  if (Path[0] == '\0')
+  return stat(path, st) == 0;
+}
+
+bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
+{
+  const int fd = fileno(fp);
+  if (fd < 0)
     return false;
 
-#ifdef __ANDROID__
-  if (IsUriPath(Path) && UriHelpersAreAvailable())
-    return StatUriFile(Path, pStatData);
-#endif
+  return fstat(fd, st) == 0;
+}
+
+bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
+{
+  // has a path
+  if (path[0] == '\0')
+    return false;
 
     // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
-  if (stat(Path, &sysStatData) < 0)
+  if (stat(path, &sysStatData) < 0)
 #else
   struct stat64 sysStatData;
-  if (stat64(Path, &sysStatData) < 0)
+  if (stat64(path, &sysStatData) < 0)
 #endif
     return false;
 
   // parse attributes
-  pStatData->Attributes = 0;
+  sd->CreationTime = sysStatData.st_ctime;
+  sd->ModificationTime = sysStatData.st_mtime;
+  sd->Attributes = 0;
   if (S_ISDIR(sysStatData.st_mode))
-    pStatData->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
-
-  // parse times
-  pStatData->ModificationTime.SetUnixTimestamp((Timestamp::UnixTimestampValue)sysStatData.st_mtime);
+    sd->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
 
   // parse size
   if (S_ISREG(sysStatData.st_mode))
-    pStatData->Size = static_cast<u64>(sysStatData.st_size);
+    sd->Size = sysStatData.st_size;
   else
-    pStatData->Size = 0;
+    sd->Size = 0;
 
   // ok
   return true;
 }
 
-bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
+bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 {
-  int fd = fileno(fp);
+  const int fd = fileno(fp);
   if (fd < 0)
     return false;
 
@@ -2147,44 +1848,35 @@ bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData)
     return false;
 
   // parse attributes
-  pStatData->Attributes = 0;
+  sd->CreationTime = sysStatData.st_ctime;
+  sd->ModificationTime = sysStatData.st_mtime;
+  sd->Attributes = 0;
   if (S_ISDIR(sysStatData.st_mode))
-    pStatData->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
-
-  // parse times
-  pStatData->ModificationTime.SetUnixTimestamp((Timestamp::UnixTimestampValue)sysStatData.st_mtime);
+    sd->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
 
   // parse size
   if (S_ISREG(sysStatData.st_mode))
-    pStatData->Size = static_cast<u64>(sysStatData.st_size);
+    sd->Size = sysStatData.st_size;
   else
-    pStatData->Size = 0;
+    sd->Size = 0;
 
   // ok
   return true;
 }
 
-bool FileExists(const char* Path)
+bool FileSystem::FileExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
-#ifdef __ANDROID__
-  if (IsUriPath(Path) && UriHelpersAreAvailable())
-  {
-    FILESYSTEM_STAT_DATA sd;
-    return (StatUriFile(Path, &sd) && (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) == 0);
-  }
-#endif
-
-  // stat file
+    // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
-  if (stat(Path, &sysStatData) < 0)
+  if (stat(path, &sysStatData) < 0)
 #else
   struct stat64 sysStatData;
-  if (stat64(Path, &sysStatData) < 0)
+  if (stat64(path, &sysStatData) < 0)
 #endif
     return false;
 
@@ -2194,27 +1886,19 @@ bool FileExists(const char* Path)
     return true;
 }
 
-bool DirectoryExists(const char* Path)
+bool FileSystem::DirectoryExists(const char* path)
 {
   // has a path
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
-#ifdef __ANDROID__
-  if (IsUriPath(Path) && UriHelpersAreAvailable())
-  {
-    FILESYSTEM_STAT_DATA sd;
-    return (StatUriFile(Path, &sd) && (sd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
-  }
-#endif
-
-  // stat file
+    // stat file
 #if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
-  if (stat(Path, &sysStatData) < 0)
+  if (stat(path, &sysStatData) < 0)
 #else
   struct stat64 sysStatData;
-  if (stat64(Path, &sysStatData) < 0)
+  if (stat64(path, &sysStatData) < 0)
 #endif
     return false;
 
@@ -2224,26 +1908,51 @@ bool DirectoryExists(const char* Path)
     return false;
 }
 
-bool CreateDirectory(const char* Path, bool Recursive)
+bool FileSystem::DirectoryIsEmpty(const char* path)
 {
-  u32 i;
-  int lastError;
+  DIR* pDir = opendir(path);
+  if (pDir == nullptr)
+    return true;
 
+  // iterate results
+  struct dirent* pDirEnt;
+  while ((pDirEnt = readdir(pDir)) != nullptr)
+  {
+    if (pDirEnt->d_name[0] == '.')
+    {
+      if (pDirEnt->d_name[1] == '\0' || (pDirEnt->d_name[1] == '.' && pDirEnt->d_name[2] == '\0'))
+        continue;
+    }
+
+    closedir(pDir);
+    return false;
+  }
+
+  closedir(pDir);
+  return true;
+}
+
+bool FileSystem::CreateDirectory(const char* path, bool recursive)
+{
   // has a path
-  if (Path[0] == '\0')
+  const size_t pathLength = std::strlen(path);
+  if (pathLength == 0)
     return false;
 
   // try just flat-out, might work if there's no other segments that have to be made
-  if (mkdir(Path, 0777) == 0)
+  if (mkdir(path, 0777) == 0)
     return true;
 
+  if (!recursive)
+    return false;
+
   // check error
-  lastError = errno;
+  int lastError = errno;
   if (lastError == EEXIST)
   {
     // check the attributes
     struct stat sysStatData;
-    if (stat(Path, &sysStatData) == 0 && S_ISDIR(sysStatData.st_mode))
+    if (stat(path, &sysStatData) == 0 && S_ISDIR(sysStatData.st_mode))
       return true;
     else
       return false;
@@ -2251,17 +1960,16 @@ bool CreateDirectory(const char* Path, bool Recursive)
   else if (lastError == ENOENT)
   {
     // part of the path does not exist, so we'll create the parent folders, then
-    // the full path again. allocate another buffer with the same length
-    u32 pathLength = static_cast<u32>(std::strlen(Path));
-    char* tempStr = (char*)alloca(pathLength + 1);
+    // the full path again.
+    std::string tempPath;
+    tempPath.reserve(pathLength);
 
     // create directories along the path
-    for (i = 0; i < pathLength; i++)
+    for (size_t i = 0; i < pathLength; i++)
     {
-      if (Path[i] == '/')
+      if (i > 0 && path[i] == '/')
       {
-        tempStr[i] = '\0';
-        if (mkdir(tempStr, 0777) < 0)
+        if (mkdir(tempPath.c_str(), 0777) < 0)
         {
           lastError = errno;
           if (lastError != EEXIST) // fine, continue to next path segment
@@ -2269,13 +1977,13 @@ bool CreateDirectory(const char* Path, bool Recursive)
         }
       }
 
-      tempStr[i] = Path[i];
+      tempPath.push_back(path[i]);
     }
 
     // re-create the end if it's not a separator, check / as well because windows can interpret them
-    if (Path[pathLength - 1] != '/')
+    if (path[pathLength - 1] != '/')
     {
-      if (mkdir(Path, 0777) < 0)
+      if (mkdir(path, 0777) < 0)
       {
         lastError = errno;
         if (lastError != EEXIST)
@@ -2293,39 +2001,45 @@ bool CreateDirectory(const char* Path, bool Recursive)
   }
 }
 
-bool DeleteFile(const char* Path)
+bool FileSystem::DeleteFile(const char* path)
 {
-  if (Path[0] == '\0')
+  if (path[0] == '\0')
     return false;
 
   struct stat sysStatData;
-  if (stat(Path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
+  if (stat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
     return false;
 
-  return (unlink(Path) == 0);
+  return (unlink(path) == 0);
 }
 
-bool RenamePath(const char* OldPath, const char* NewPath)
+bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 {
-  if (OldPath[0] == '\0' || NewPath[0] == '\0')
+  if (old_path[0] == '\0' || new_path[0] == '\0')
     return false;
 
-  if (rename(OldPath, NewPath) != 0)
+  if (rename(old_path, new_path) != 0)
   {
-    Log_ErrorPrintf("rename('%s', '%s') failed: %d", OldPath, NewPath, errno);
+    Log_ErrorPrintf("rename('%s', '%s') failed: %d", old_path, new_path, errno);
     return false;
   }
 
   return true;
 }
 
-bool DeleteDirectory(const char* Path, bool Recursive)
+bool FileSystem::DeleteDirectory(const char* path)
 {
-  Log_ErrorPrintf("FileSystem::DeleteDirectory(%s) not implemented", Path);
-  return false;
+  if (path[0] == '\0')
+    return false;
+
+  struct stat sysStatData;
+  if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
+    return false;
+
+  return (unlink(path) == 0);
 }
 
-std::string GetProgramPath()
+std::string FileSystem::GetProgramPath()
 {
 #if defined(__linux__)
   static const char* exeFileName = "/proc/self/exe";
@@ -2384,7 +2098,7 @@ std::string GetProgramPath()
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
   char buffer[PATH_MAX];
   size_t cb = sizeof(buffer) - 1;
-  int res = sysctl(mib, countof(mib), buffer, &cb, nullptr, 0);
+  int res = sysctl(mib, std::size(mib), buffer, &cb, nullptr, 0);
   if (res != 0)
     return {};
 
@@ -2395,32 +2109,30 @@ std::string GetProgramPath()
 #endif
 }
 
-std::string GetWorkingDirectory()
+std::string FileSystem::GetWorkingDirectory()
 {
   std::string buffer;
   buffer.resize(PATH_MAX);
   while (!getcwd(buffer.data(), buffer.size()))
   {
     if (errno != ERANGE)
-    {
-      buffer.clear();
-      break;
-    }
+      return {};
 
     buffer.resize(buffer.size() * 2);
   }
 
-  if (!buffer.empty())
-    buffer.resize(std::strlen(buffer.c_str()));
-
+  buffer.resize(std::strlen(buffer.c_str())); // Remove excess nulls
   return buffer;
 }
 
-bool SetWorkingDirectory(const char* path)
+bool FileSystem::SetWorkingDirectory(const char* path)
 {
   return (chdir(path) == 0);
 }
 
-#endif
+bool FileSystem::SetPathCompression(const char* path, bool enable)
+{
+  return false;
+}
 
-} // namespace FileSystem
+#endif

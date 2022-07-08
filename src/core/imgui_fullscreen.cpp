@@ -4,8 +4,9 @@
 #include "IconsFontAwesome5.h"
 #include "common/assert.h"
 #include "common/easing.h"
-#include "common/lru_cache.h"
 #include "common/file_system.h"
+#include "common/lru_cache.h"
+#include "common/path.h"
 #include "common/string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -999,7 +1000,6 @@ static ImGuiID s_enum_choice_button_id = 0;
 static s32 s_enum_choice_button_value = 0;
 static bool s_enum_choice_button_set = false;
 
-
 bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled, float height, ImFont* font, ImFont* summary_font)
@@ -1221,7 +1221,7 @@ static void PopulateFileSelectorItems()
     if (sep_pos != std::string::npos)
     {
       parent_path = s_file_selector_current_directory.substr(0, sep_pos);
-      FileSystem::CanonicalizePath(parent_path, true);
+      Path::Canonicalize(&parent_path);
     }
 
     s_file_selector_items.emplace_back(ICON_FA_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);

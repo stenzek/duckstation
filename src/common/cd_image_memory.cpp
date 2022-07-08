@@ -3,6 +3,7 @@
 #include "cd_subchannel_replacement.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include <algorithm>
 #include <cerrno>
 Log_SetChannel(CDImageMemory);
@@ -109,7 +110,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   m_filename = image->GetFileName();
   m_lba_count = image->GetLBACount();
 
-  m_sbi.LoadSBI(FileSystem::ReplaceExtension(m_filename, "sbi").c_str());
+  m_sbi.LoadSBI(Path::ReplaceExtension(m_filename, "sbi").c_str());
 
   return Seek(1, Position{0, 0, 0});
 }

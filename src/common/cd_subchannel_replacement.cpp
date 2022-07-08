@@ -1,6 +1,7 @@
 #include "cd_subchannel_replacement.h"
 #include "file_system.h"
 #include "log.h"
+#include "path.h"
 #include <algorithm>
 #include <memory>
 Log_SetChannel(CDSubChannelReplacement);
@@ -85,7 +86,7 @@ bool CDSubChannelReplacement::LoadSBI(const char* path)
 
 bool CDSubChannelReplacement::LoadSBIFromImagePath(const char* image_path)
 {
-  return LoadSBI(FileSystem::ReplaceExtension(image_path, "sbi").c_str());
+  return LoadSBI(Path::ReplaceExtension(image_path, "sbi").c_str());
 }
 
 void CDSubChannelReplacement::AddReplacementSubChannelQ(u32 lba, const CDImage::SubChannelQ& subq)
