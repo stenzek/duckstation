@@ -41,7 +41,7 @@ add_library(frontend-common
   vulkan_host_display.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common glad vulkan-loader cubeb imgui simpleini tinyxml2 rapidjson scmversion)
+target_link_libraries(frontend-common PUBLIC core common glad cubeb imgui simpleini tinyxml2 rapidjson scmversion)
 
 if(WIN32)
   target_sources(frontend-common PRIVATE

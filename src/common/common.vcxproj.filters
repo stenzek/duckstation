@@ -137,6 +137,12 @@
     <ClInclude Include="http_downloader_uwp.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="vulkan\entry_points.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\loader.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -270,6 +276,9 @@
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="http_downloader_uwp.cpp" />
+    <ClCompile Include="vulkan\loader.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -290,5 +299,10 @@
     <Filter Include="d3d12">
       <UniqueIdentifier>{358e11c4-34af-4169-9a66-ec66342a6a2f}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vulkan\entry_points.inl">
+      <Filter>vulkan</Filter>
+    </None>
   </ItemGroup>
 </Project>

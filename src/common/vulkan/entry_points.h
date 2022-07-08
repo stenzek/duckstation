@@ -6,7 +6,7 @@
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) extern PFN_##name ds_##name;
 #define VULKAN_DEVICE_ENTRY_POINT(name, required) extern PFN_##name ds_##name;
 #define VULKAN_DEFINE_NAME_PREFIX ds_
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_DEFINE_NAME_PREFIX
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT

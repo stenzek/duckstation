@@ -1,11 +1,11 @@
 #pragma once
+#include "common/vulkan/loader.h"
 #include "common/vulkan/staging_texture.h"
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
 #include "postprocessing_chain.h"
-#include "vulkan_loader.h"
 #include <memory>
 #include <string_view>
 
@@ -30,9 +30,9 @@ public:
   bool HasRenderSurface() const override;
 
   bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                  bool threaded_presentation) override;
+                          bool threaded_presentation) override;
   bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                      bool threaded_presentation) override;
+                              bool threaded_presentation) override;
   void DestroyRenderDevice() override;
 
   bool MakeRenderContextCurrent() override;
@@ -65,7 +65,7 @@ public:
 
   bool Render() override;
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                HostDisplayPixelFormat* out_format) override;
+                        HostDisplayPixelFormat* out_format) override;
 
   static AdapterAndModeList StaticGetAdapterAndModeList(const WindowInfo* wi);
 

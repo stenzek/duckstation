@@ -12,30 +12,15 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 
 // vulkan.h pulls in windows.h on Windows, so we need to include our replacement header first
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX 1
-#endif
-
-// require vista+
-#ifndef WINAPI_FAMILY
-#ifdef _WIN32_WINNT
-#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
-#endif
-
-#include <windows.h>
+#include "../windows_headers.h"
 
 #endif
 
-#if defined(VULKAN_USE_X11)
+#if defined(USE_X11)
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
-#if defined(VULKAN_USE_WAYLAND)
+#if defined(USE_WAYLAND)
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #endif
 
@@ -55,7 +40,7 @@
 #define SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN 1
 #endif
 
-#if defined(VULKAN_USE_X11)
+#if defined(USE_X11)
 
 // This breaks a bunch of our code. They shouldn't be #defines in the first place.
 #ifdef None
@@ -94,7 +79,7 @@
 
 #endif
 
-#include "vulkan_entry_points.h"
+#include "entry_points.h"
 
 namespace Vulkan {
 

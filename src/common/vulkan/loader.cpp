@@ -10,7 +10,7 @@
 #include <cstring>
 #include <string>
 
-#include "vulkan_loader.h"
+#include "loader.h"
 
 #ifndef _WIN32
 #include <dlfcn.h>
@@ -23,7 +23,7 @@
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name ds_##name;
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name ds_##name;
 #define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name ds_##name;
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
@@ -35,7 +35,7 @@ void ResetVulkanLibraryFunctionPointers()
 #define VULKAN_MODULE_ENTRY_POINT(name, required) ds_##name = nullptr;
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) ds_##name = nullptr;
 #define VULKAN_DEVICE_ENTRY_POINT(name, required) ds_##name = nullptr;
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
@@ -77,7 +77,7 @@ bool LoadVulkanLibrary()
   };
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required) LoadFunction(reinterpret_cast<FARPROC*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_MODULE_ENTRY_POINT
 
   if (required_functions_missing)
@@ -170,7 +170,7 @@ bool LoadVulkanLibrary()
   };
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required) LoadFunction(reinterpret_cast<void**>(&name), #name, required);
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_MODULE_ENTRY_POINT
 
   if (required_functions_missing)
@@ -211,7 +211,7 @@ bool LoadVulkanInstanceFunctions(VkInstance instance)
 
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required)                                                                    \
   LoadFunction(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_INSTANCE_ENTRY_POINT
 
   return !required_functions_missing;
@@ -231,7 +231,7 @@ bool LoadVulkanDeviceFunctions(VkDevice device)
 
 #define VULKAN_DEVICE_ENTRY_POINT(name, required)                                                                      \
   LoadFunction(reinterpret_cast<PFN_vkVoidFunction*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
+#include "entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 
   return !required_functions_missing;

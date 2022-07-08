@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../types.h"
-#include "vulkan_loader.h"
+#include "loader.h"
 #include <array>
 #include <atomic>
 #include <condition_variable>

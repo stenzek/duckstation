@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 

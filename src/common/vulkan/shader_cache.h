@@ -1,8 +1,8 @@
 #pragma once
 #include "../hash_combine.h"
 #include "../types.h"
+#include "loader.h"
 #include "shader_compiler.h"
-#include "vulkan_loader.h"
 #include <cstdio>
 #include <memory>
 #include <optional>

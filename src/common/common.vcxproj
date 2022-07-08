@@ -77,6 +77,8 @@
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="vulkan\builders.h" />
     <ClInclude Include="vulkan\context.h" />
+    <ClInclude Include="vulkan\entry_points.h" />
+    <ClInclude Include="vulkan\loader.h" />
     <ClInclude Include="vulkan\shader_cache.h" />
     <ClInclude Include="vulkan\shader_compiler.h" />
     <ClInclude Include="vulkan\staging_buffer.h" />
@@ -162,6 +164,7 @@
     <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="vulkan\builders.cpp" />
     <ClCompile Include="vulkan\context.cpp" />
+    <ClCompile Include="vulkan\loader.cpp" />
     <ClCompile Include="vulkan\shader_cache.cpp" />
     <ClCompile Include="vulkan\shader_compiler.cpp" />
     <ClCompile Include="vulkan\staging_buffer.cpp" />
@@ -178,6 +181,9 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vulkan\entry_points.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE054E08-3799-4A59-A422-18259C105FFD}</ProjectGuid>

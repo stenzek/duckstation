@@ -94,6 +94,8 @@ add_library(common
   vulkan/builders.h
   vulkan/context.cpp
   vulkan/context.h
+  vulkan/loader.h
+  vulkan/loader.cpp
   vulkan/shader_cache.cpp
   vulkan/shader_cache.h
   vulkan/shader_compiler.cpp
@@ -119,7 +121,7 @@ add_library(common
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common PUBLIC fmt Threads::Threads)
-target_link_libraries(common PRIVATE glad stb libchdr glslang vulkan-loader zlib minizip samplerate)
+target_link_libraries(common PRIVATE glad stb libchdr glslang zlib minizip samplerate "${CMAKE_DL_LIBS}")
 
 if(WIN32)
   target_sources(common PRIVATE
