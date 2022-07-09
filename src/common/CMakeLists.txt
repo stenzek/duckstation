@@ -30,6 +30,7 @@ add_library(common
   gl/texture.h
   hash_combine.h
   heap_array.h
+  heterogeneous_containers.h
   layered_settings_interface.cpp
   layered_settings_interface.h
   log.cpp
@@ -37,6 +38,8 @@ add_library(common
   make_array.h
   md5_digest.cpp
   md5_digest.h
+  memory_settings_interface.cpp
+  memory_settings_interface.h
   minizip_helpers.cpp
   minizip_helpers.h
   path.h

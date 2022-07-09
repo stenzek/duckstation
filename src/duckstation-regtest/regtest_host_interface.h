@@ -1,6 +1,6 @@
 #pragma once
 #include "core/host_interface.h"
-#include "regtest_settings_interface.h"
+#include "common/memory_settings_interface.h"
 
 class RegTestHostInterface final : public HostInterface
 {
@@ -60,6 +60,6 @@ private:
   void InitializeSettings();
   void UpdateSettings();
 
-  RegTestSettingsInterface m_settings_interface;
+  MemorySettingsInterface m_settings_interface;
   std::recursive_mutex m_settings_mutex;
 };

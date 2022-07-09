@@ -1,13 +1,13 @@
 #pragma once
-#include "core/settings.h"
+#include "heterogeneous_containers.h"
+#include "settings_interface.h"
 #include <string>
-#include <unordered_map>
 
-class RegTestSettingsInterface final : public SettingsInterface
+class MemorySettingsInterface final : public SettingsInterface
 {
 public:
-  RegTestSettingsInterface();
-  ~RegTestSettingsInterface();
+  MemorySettingsInterface();
+  ~MemorySettingsInterface();
 
   bool Save() override;
 
@@ -44,6 +44,10 @@ public:
   using SettingsInterface::GetUIntValue;
 
 private:
-  using KeyMap = std::unordered_map<std::string, std::string>;
-  KeyMap m_keys;
+  using KeyMap = UnorderedStringMultimap<std::string>;
+  using SectionMap = UnorderedStringMap<KeyMap>;
+
+  void SetValue(const char* section, const char* key, std::string value);
+
+  SectionMap m_sections;
 };
