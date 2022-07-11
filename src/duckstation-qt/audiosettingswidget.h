@@ -4,7 +4,6 @@
 
 #include "ui_audiosettingswidget.h"
 
-class QtHostInterface;
 class SettingsDialog;
 
 class AudioSettingsWidget : public QWidget
@@ -12,7 +11,7 @@ class AudioSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
+  explicit AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent);
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
@@ -25,5 +24,5 @@ private Q_SLOTS:
 private:
   Ui::AudioSettingsWidget m_ui;
 
-  QtHostInterface* m_host_interface;
+  SettingsDialog* m_dialog;
 };

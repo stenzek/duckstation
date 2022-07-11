@@ -69,6 +69,7 @@ private:
                                        ReplacmentType* replacement_type);
 
   std::string GetSourceDirectory() const;
+  std::string GetDumpDirectory() const;
 
   TextureReplacementHash GetVRAMWriteHash(u32 width, u32 height, const void* pixels) const;
   std::string GetVRAMWriteDumpFilename(u32 width, u32 height, const void* pixels) const;

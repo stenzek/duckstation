@@ -4,8 +4,8 @@
 #include "common/d3d11/shader_compiler.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "common_host_interface.h"
-#include "core/host_interface.h"
+#include "common_host.h"
+#include "core/host_settings.h"
 #include "core/settings.h"
 #include "core/shader_cache_version.h"
 #include "display_ps.hlsl.h"
@@ -395,8 +395,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
   if (m_window_info.type != WindowInfo::Type::Win32)
     return false;
 
-  m_using_flip_model_swap_chain =
-    fullscreen_mode || !g_host_interface->GetBoolSettingValue("Display", "UseBlitSwapChain", false);
+  m_using_flip_model_swap_chain = fullscreen_mode || !Host::GetBoolSettingValue("Display", "UseBlitSwapChain", false);
 
   const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
   RECT client_rc{};
@@ -966,7 +965,7 @@ HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFac
           {
             for (const DXGI_MODE_DESC& mode : modes)
             {
-              adapter_info.fullscreen_modes.push_back(CommonHostInterface::GetFullscreenModeString(
+              adapter_info.fullscreen_modes.push_back(GetFullscreenModeString(
                 mode.Width, mode.Height,
                 static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
             }
@@ -1017,7 +1016,7 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
   m_post_processing_stages.clear();
 
   D3D11::ShaderCache shader_cache;
-  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), m_device->GetFeatureLevel(), SHADER_CACHE_VERSION,
+  shader_cache.Open(EmuFolders::Cache, m_device->GetFeatureLevel(), SHADER_CACHE_VERSION,
                     g_settings.gpu_use_debug_device);
 
   FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::D3D11, true);

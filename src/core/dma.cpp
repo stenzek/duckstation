@@ -6,6 +6,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
+#include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
@@ -626,7 +627,7 @@ void DMA::DrawDebugStateWindow()
     {"MDECin", "MDECout", "GPU", "CDROM", "SPU", "PIO", "OTC"}};
   static constexpr std::array<const char*, 4> sync_mode_names = {{"Manual", "Request", "LinkedList", "Reserved"}};
 
-  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float framebuffer_scale = Host::GetOSDScale();
 
   ImGui::SetNextWindowSize(ImVec2(850.0f * framebuffer_scale, 250.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("DMA State", nullptr))

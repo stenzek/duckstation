@@ -62,6 +62,15 @@ public:
 
   virtual ~HostDisplay();
 
+  /// Returns the default/preferred API for the system.
+  static RenderAPI GetPreferredAPI();
+
+  /// Parses a fullscreen mode into its components (width * height @ refresh hz)
+  static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
+
+  /// Converts a fullscreen mode to a string.
+  static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
   ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
   ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
   ALWAYS_INLINE s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
@@ -290,3 +299,25 @@ protected:
   bool m_display_integer_scaling = false;
   bool m_display_stretch = false;
 };
+
+/// Returns a pointer to the current host display abstraction. Assumes AcquireHostDisplay() has been caled.
+extern std::unique_ptr<HostDisplay> g_host_display;
+
+namespace Host {
+/// Creates the host display. This may create a new window. The API used depends on the current configuration.
+bool AcquireHostDisplay(HostDisplay::RenderAPI api);
+
+/// Destroys the host display. This may close the display window.
+void ReleaseHostDisplay();
+
+/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
+/// displayed, but the GPU command queue will still be flushed.
+//bool BeginPresentFrame(bool frame_skip);
+
+/// Presents the frame to the display, and renders OSD elements.
+//void EndPresentFrame();
+
+/// Provided by the host; renders the display.
+void RenderDisplay();
+void InvalidateDisplay();
+} // namespace Host

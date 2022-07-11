@@ -1,14 +1,19 @@
 #include "settings.h"
+#include "achievements.h"
 #include "common/assert.h"
 #include "common/file_system.h"
+#include "common/log.h"
 #include "common/make_array.h"
+#include "common/path.h"
 #include "common/string_util.h"
+#include "controller.h"
+#include "host.h"
 #include "host_display.h"
-#include "host_interface.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <numeric>
+Log_SetChannel(Settings);
 
 Settings g_settings;
 
@@ -68,7 +73,16 @@ float SettingInfo::FloatStepValue() const
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
 
-Settings::Settings() = default;
+Settings::Settings()
+{
+  controller_types[0] = DEFAULT_CONTROLLER_1_TYPE;
+  memory_card_types[0] = DEFAULT_MEMORY_CARD_1_TYPE;
+  for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    controller_types[i] = DEFAULT_CONTROLLER_2_TYPE;
+    memory_card_types[i] = DEFAULT_MEMORY_CARD_2_TYPE;
+  }
+}
 
 bool Settings::HasAnyPerGameMemoryCards() const
 {
@@ -151,6 +165,7 @@ void Settings::Load(SettingsInterface& si)
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
   pause_on_menu = si.GetBoolValue("Main", "PauseOnMenu", true);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
+  create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
@@ -186,8 +201,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", true);
-  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", false);
-  gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", false);
+  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
+  gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
@@ -233,17 +248,21 @@ void Settings::Load(SettingsInterface& si)
   display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
-  display_show_vps = si.GetBoolValue("Display", "ShowVPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
+  display_show_cpu = si.GetBoolValue("Display", "ShowCPU", false);
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
+  display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
+  display_internal_resolution_screenshots = si.GetBoolValue("Display", "InternalResolutionScreenshots", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
+  display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
-  cdrom_readahead_sectors = static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
+  cdrom_readahead_sectors =
+    static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
@@ -255,7 +274,7 @@ void Settings::Load(SettingsInterface& si)
       .value_or(DEFAULT_AUDIO_BACKEND);
   audio_output_volume = si.GetIntValue("Audio", "OutputVolume", 100);
   audio_fast_forward_volume = si.GetIntValue("Audio", "FastForwardVolume", 100);
-  audio_buffer_size = si.GetIntValue("Audio", "BufferSize", HostInterface::DEFAULT_AUDIO_BUFFER_SIZE);
+  audio_buffer_size = si.GetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
   audio_resampling = si.GetBoolValue("Audio", "Resampling", true);
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
@@ -269,18 +288,31 @@ void Settings::Load(SettingsInterface& si)
   bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
 
-  controller_types[0] =
-    ParseControllerTypeName(
-      si.GetStringValue("Controller1", "Type", GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE)).c_str())
-      .value_or(DEFAULT_CONTROLLER_1_TYPE);
+  multitap_mode =
+    ParseMultitapModeName(
+      si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
+      .value_or(DEFAULT_MULTITAP_MODE);
 
+  controller_types[0] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(0).c_str(), "Type",
+                                                                  GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
+                                                  .c_str())
+                          .value_or(DEFAULT_CONTROLLER_1_TYPE);
+
+  const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
   for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    controller_types[i] =
-      ParseControllerTypeName(si.GetStringValue(TinyString::FromFormat("Controller%u", i + 1u), "Type",
-                                                GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
-                                .c_str())
-        .value_or(DEFAULT_CONTROLLER_2_TYPE);
+    // Ignore types when multitap not enabled
+    const auto [port, slot] = Controller::ConvertPadToPortAndSlot(i);
+    if (Controller::PadIsMultitapSlot(slot) && !mtap_enabled[port])
+    {
+      controller_types[i] = ControllerType::None;
+      continue;
+    }
+
+    controller_types[i] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                                                                    GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
+                                                    .c_str())
+                            .value_or(DEFAULT_CONTROLLER_2_TYPE);
   }
 
   memory_card_types[0] =
@@ -293,13 +325,14 @@ void Settings::Load(SettingsInterface& si)
       .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
-  memory_card_directory = si.GetStringValue("MemoryCards", "Directory", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
-  multitap_mode =
-    ParseMultitapModeName(
-      si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
-      .value_or(DEFAULT_MULTITAP_MODE);
+  achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
+  achievements_test_mode = si.GetBoolValue("Cheevos", "TestMode", false);
+  achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
+  achievements_use_first_disc_from_playlist = si.GetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
+  achievements_rich_presence = si.GetBoolValue("Cheevos", "RichPresence", true);
+  achievements_challenge_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -349,6 +382,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
   si.SetBoolValue("Main", "PauseOnMenu", pause_on_menu);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
+  si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
@@ -410,18 +444,21 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "PostProcessing", display_post_processing);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
-  si.SetBoolValue("Display", "ShowVPS", display_show_vps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
   si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
+  si.SetBoolValue("Display", "ShowCPU", display_show_cpu);
   si.SetBoolValue("Display", "ShowStatusIndicators", display_show_status_indicators);
+  si.SetBoolValue("Display", "ShowInputs", display_show_inputs);
   si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
   si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
+  si.SetBoolValue("Display", "InternalResolutionScreenshots", display_internal_resolution_screenshots);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
   if (display_post_process_chain.empty())
     si.DeleteValue("Display", "PostProcessChain");
   else
     si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
+  si.SetFloatValue("Display", "OSDScale", display_osd_scale);
 
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
@@ -465,13 +502,16 @@ void Settings::Save(SettingsInterface& si) const
   else
     si.DeleteValue("MemoryCards", "Card2Path");
 
-  if (!memory_card_directory.empty())
-    si.SetStringValue("MemoryCards", "Directory", memory_card_directory.c_str());
-  else
-    si.DeleteValue("MemoryCards", "Directory");
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
 
   si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
+
+  si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
+  si.SetBoolValue("Cheevos", "TestMode", achievements_test_mode);
+  si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
+  si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", achievements_use_first_disc_from_playlist);
+  si.SetBoolValue("Cheevos", "RichPresence", achievements_rich_presence);
+  si.SetBoolValue("Cheevos", "ChallengeMode", achievements_challenge_mode);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
@@ -500,6 +540,104 @@ void Settings::Save(SettingsInterface& si) const
                  texture_replacements.dump_vram_write_width_threshold);
   si.SetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
                  texture_replacements.dump_vram_write_height_threshold);
+}
+
+void Settings::FixIncompatibleSettings(bool display_osd_messages)
+{
+  if (g_settings.disable_all_enhancements)
+  {
+    Log_WarningPrintf("All enhancements disabled by config setting.");
+    g_settings.cpu_overclock_enable = false;
+    g_settings.cpu_overclock_active = false;
+    g_settings.enable_8mb_ram = false;
+    g_settings.gpu_resolution_scale = 1;
+    g_settings.gpu_multisamples = 1;
+    g_settings.gpu_per_sample_shading = false;
+    g_settings.gpu_true_color = false;
+    g_settings.gpu_scaled_dithering = false;
+    g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    g_settings.gpu_disable_interlacing = false;
+    g_settings.gpu_force_ntsc_timings = false;
+    g_settings.gpu_widescreen_hack = false;
+    g_settings.gpu_pgxp_enable = false;
+    g_settings.gpu_24bit_chroma_smoothing = false;
+    g_settings.cdrom_read_speedup = 1;
+    g_settings.cdrom_seek_speedup = 1;
+    g_settings.cdrom_mute_cd_audio = false;
+    g_settings.texture_replacements.enable_vram_write_replacements = false;
+    g_settings.bios_patch_fast_boot = false;
+    g_settings.bios_patch_tty_enable = false;
+  }
+
+  if (g_settings.display_integer_scaling && g_settings.display_linear_filtering)
+  {
+    Log_WarningPrintf("Disabling linear filter due to integer upscaling.");
+    g_settings.display_linear_filtering = false;
+  }
+
+  if (g_settings.display_integer_scaling && g_settings.display_stretch)
+  {
+    Log_WarningPrintf("Disabling stretch due to integer upscaling.");
+    g_settings.display_stretch = false;
+  }
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    if (g_settings.gpu_renderer == GPURenderer::Software)
+    {
+      if (display_osd_messages)
+      {
+        Host::AddOSDMessage(
+          Host::TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."),
+          10.0f);
+      }
+      g_settings.gpu_pgxp_enable = false;
+    }
+  }
+
+#ifndef WITH_MMAP_FASTMEM
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  {
+    Log_WarningPrintf("mmap fastmem is not available on this platform, using LUT instead.");
+    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
+#endif
+
+#if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
+  if (g_settings.rewind_enable)
+  {
+    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."),
+                        30.0f);
+    g_settings.rewind_enable = false;
+  }
+#endif
+
+  // if challenge mode is enabled, disable things like rewind since they use save states
+  if (Achievements::ChallengeModeActive())
+  {
+    g_settings.emulation_speed =
+      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
+    g_settings.fast_forward_speed =
+      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
+    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
+    g_settings.rewind_enable = false;
+    g_settings.auto_load_cheats = false;
+    if (g_settings.cpu_overclock_enable && g_settings.GetCPUOverclockPercent() < 100)
+    {
+      g_settings.cpu_overclock_enable = false;
+      g_settings.UpdateOverclockActive();
+    }
+    g_settings.debugging.enable_gdb_server = false;
+    g_settings.debugging.show_vram = false;
+    g_settings.debugging.show_gpu_state = false;
+    g_settings.debugging.show_cdrom_state = false;
+    g_settings.debugging.show_spu_state = false;
+    g_settings.debugging.show_timers_state = false;
+    g_settings.debugging.show_mdec_state = false;
+    g_settings.debugging.show_dma_state = false;
+    g_settings.debugging.dump_cpu_to_vram_copies = false;
+    g_settings.debugging.dump_vram_to_cpu_copies = false;
+  }
 }
 
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
@@ -655,14 +793,12 @@ const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
 
 static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef _WIN32
-  "D3D11",
-  "D3D12",
+  "D3D11", "D3D12",
 #endif
   "Vulkan", "OpenGL", "Software");
 static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef _WIN32
-  TRANSLATABLE("GPURenderer", "Hardware (D3D11)"),
-  TRANSLATABLE("GPURenderer", "Hardware (D3D12)"),
+  TRANSLATABLE("GPURenderer", "Hardware (D3D11)"), TRANSLATABLE("GPURenderer", "Hardware (D3D12)"),
 #endif
   TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
   TRANSLATABLE("GPURenderer", "Software"));
@@ -812,12 +948,11 @@ float Settings::GetDisplayAspectRatioValue() const
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      const HostDisplay* display = g_host_interface->GetDisplay();
-      if (!display)
+      if (!g_host_display)
         return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
 
-      const u32 width = display->GetWindowWidth();
-      const u32 height = display->GetWindowHeight() - display->GetDisplayTopMargin();
+      const u32 width = g_host_display->GetWindowWidth();
+      const u32 height = g_host_display->GetWindowHeight() - g_host_display->GetDisplayTopMargin();
       return static_cast<float>(width) / static_cast<float>(height);
     }
 
@@ -887,11 +1022,11 @@ const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
 }
 
 static std::array<const char*, 7> s_controller_type_names = {
-  {"None", "DigitalController", "AnalogController", "AnalogJoystick", "NamcoGunCon", "PlayStationMouse", "NeGcon"}};
+  {"None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon"}};
 static std::array<const char*, 7> s_controller_display_names = {
   {TRANSLATABLE("ControllerType", "None"), TRANSLATABLE("ControllerType", "Digital Controller"),
    TRANSLATABLE("ControllerType", "Analog Controller (DualShock)"), TRANSLATABLE("ControllerType", "Analog Joystick"),
-   TRANSLATABLE("ControllerType", "Namco GunCon"), TRANSLATABLE("ControllerType", "PlayStation Mouse"),
+   TRANSLATABLE("ControllerType", "GunCon"), TRANSLATABLE("ControllerType", "PlayStation Mouse"),
    TRANSLATABLE("ControllerType", "NeGcon")}};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
@@ -951,6 +1086,30 @@ const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
   return s_memory_card_type_display_names[static_cast<int>(type)];
 }
 
+std::string Settings::GetDefaultSharedMemoryCardName(u32 slot)
+{
+  return fmt::format("shared_card_{}.mcd", slot + 1);
+}
+
+std::string Settings::GetSharedMemoryCardPath(u32 slot) const
+{
+  std::string ret;
+
+  if (memory_card_paths[slot].empty())
+    ret = Path::Combine(EmuFolders::MemoryCards, GetDefaultSharedMemoryCardName(slot));
+  else if (!Path::IsAbsolute(memory_card_paths[slot]))
+    ret = Path::Combine(EmuFolders::MemoryCards, memory_card_paths[slot]);
+  else
+    ret = memory_card_paths[slot];
+
+  return ret;
+}
+
+std::string Settings::GetGameMemoryCardPath(const char* game_code, u32 slot)
+{
+  return Path::Combine(EmuFolders::MemoryCards, fmt::format("{}_{}.mcd", game_code, slot + 1));
+}
+
 static std::array<const char*, 4> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "Port2Only", "BothPorts"}};
 static std::array<const char*, 4> s_multitap_enable_mode_display_names = {
   {TRANSLATABLE("MultitapMode", "Disabled"), TRANSLATABLE("MultitapMode", "Enable on Port 1 Only"),
@@ -978,4 +1137,114 @@ const char* Settings::GetMultitapModeName(MultitapMode mode)
 const char* Settings::GetMultitapModeDisplayName(MultitapMode mode)
 {
   return s_multitap_enable_mode_display_names[static_cast<size_t>(mode)];
+}
+
+std::string EmuFolders::AppRoot;
+std::string EmuFolders::DataRoot;
+std::string EmuFolders::Bios;
+std::string EmuFolders::Cache;
+std::string EmuFolders::Cheats;
+std::string EmuFolders::Covers;
+std::string EmuFolders::Dumps;
+std::string EmuFolders::GameSettings;
+std::string EmuFolders::InputProfiles;
+std::string EmuFolders::MemoryCards;
+std::string EmuFolders::Resources;
+std::string EmuFolders::SaveStates;
+std::string EmuFolders::Screenshots;
+std::string EmuFolders::Shaders;
+std::string EmuFolders::Textures;
+
+void EmuFolders::SetDefaults()
+{
+  Bios = Path::Combine(DataRoot, "bios");
+  Cache = Path::Combine(DataRoot, "cache");
+  Cheats = Path::Combine(DataRoot, "cheats");
+  Covers = Path::Combine(DataRoot, "covers");
+  Dumps = Path::Combine(DataRoot, "dump");
+  GameSettings = Path::Combine(DataRoot, "gamesettings");
+  InputProfiles = Path::Combine(DataRoot, "inputprofiles");
+  MemoryCards = Path::Combine(DataRoot, "memcards");
+  SaveStates = Path::Combine(DataRoot, "savestates");
+  Screenshots = Path::Combine(DataRoot, "screenshots");
+  Shaders = Path::Combine(DataRoot, "shaders");
+  Textures = Path::Combine(DataRoot, "textures");
+}
+
+static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
+                                        const char* name, const char* def)
+{
+  std::string value = si.GetStringValue(section, name, def);
+  if (value.empty())
+    value = def;
+  if (!Path::IsAbsolute(value))
+    value = Path::Combine(root, value);
+  return value;
+}
+
+void EmuFolders::LoadConfig(SettingsInterface& si)
+{
+  Bios = LoadPathFromSettings(si, DataRoot, "BIOS", "SearchDirectory", "bios");
+  Cache = LoadPathFromSettings(si, DataRoot, "Folders", "Cache", "cache");
+  Cheats = LoadPathFromSettings(si, DataRoot, "Folders", "Cheats", "cheats");
+  Covers = LoadPathFromSettings(si, DataRoot, "Folders", "Covers", "covers");
+  Dumps = LoadPathFromSettings(si, DataRoot, "Folders", "Dumps", "dump");
+  GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
+  InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
+  MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
+  SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "Savestates", "savestates");
+  Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Snapshots", "screenshots");
+  Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Snapshots", "shaders");
+  Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
+
+  Log_DevPrintf("BIOS Directory: %s", Bios.c_str());
+  Log_DevPrintf("Cache Directory: %s", Cache.c_str());
+  Log_DevPrintf("Cheats Directory: %s", Cheats.c_str());
+  Log_DevPrintf("Covers Directory: %s", Covers.c_str());
+  Log_DevPrintf("Dumps Directory: %s", Dumps.c_str());
+  Log_DevPrintf("Game Settings Directory: %s", GameSettings.c_str());
+  Log_DevPrintf("Input Profile Directory: %s", InputProfiles.c_str());
+  Log_DevPrintf("MemoryCards Directory: %s", MemoryCards.c_str());
+  Log_DevPrintf("SaveStates Directory: %s", SaveStates.c_str());
+  Log_DevPrintf("Screenshots Directory: %s", Screenshots.c_str());
+  Log_DevPrintf("Shaders Directory: %s", Shaders.c_str());
+  Log_DevPrintf("Textures Directory: %s", Textures.c_str());
+}
+
+void EmuFolders::Save(SettingsInterface& si)
+{
+  // convert back to relative
+  si.SetStringValue("BIOS", "SearchDirectory", Path::MakeRelative(Bios, DataRoot).c_str());
+  si.SetStringValue("Folders", "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
+  si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
+  si.SetStringValue("Folders", "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
+  si.SetStringValue("Folders", "Dumps", Path::MakeRelative(Dumps, DataRoot).c_str());
+  si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(Dumps, GameSettings).c_str());
+  si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
+  si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
+  si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
+  si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
+  si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
+  si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+}
+
+bool EmuFolders::EnsureFoldersExist()
+{
+  bool result = FileSystem::EnsureDirectoryExists(Bios.c_str(), false);
+  result = FileSystem::EnsureDirectoryExists(Cache.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_badge").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_gameicon").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "audio").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "textures").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(MemoryCards.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(SaveStates.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
+  return result;
 }

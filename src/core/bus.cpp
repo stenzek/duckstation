@@ -10,7 +10,7 @@
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
-#include "host_interface.h"
+#include "host.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
@@ -130,7 +130,7 @@ bool Initialize()
 {
   if (!AllocateMemory(g_settings.enable_8mb_ram))
   {
-    g_host_interface->ReportError("Failed to allocate memory");
+    Host::ReportErrorAsync("Error", "Failed to allocate memory");
     return false;
   }
 

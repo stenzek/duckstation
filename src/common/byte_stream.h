@@ -2,6 +2,7 @@
 #include "types.h"
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // base byte stream creation functions
@@ -75,6 +76,26 @@ public:
   inline bool InErrorState() const { return m_errorState; }
   inline void SetErrorState() { m_errorState = true; }
   inline void ClearErrorState() { m_errorState = false; }
+
+  bool ReadU8(u8* dest);
+  bool ReadU16(u16* dest);
+  bool ReadU32(u32* dest);
+  bool ReadU64(u64* dest);
+  bool ReadS8(s8* dest);
+  bool ReadS16(s16* dest);
+  bool ReadS32(s32* dest);
+  bool ReadS64(s64* dest);
+  bool ReadSizePrefixedString(std::string* dest);
+
+  bool WriteU8(u8 dest);
+  bool WriteU16(u16 dest);
+  bool WriteU32(u32 dest);
+  bool WriteU64(u64 dest);
+  bool WriteS8(s8 dest);
+  bool WriteS16(s16 dest);
+  bool WriteS32(s32 dest);
+  bool WriteS64(s64 dest);
+  bool WriteSizePrefixedString(const std::string_view& str);
 
   // base byte stream creation functions
   // opens a local file-based stream. fills in error if passed, and returns false if the file cannot be opened.

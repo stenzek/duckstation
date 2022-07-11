@@ -4,7 +4,8 @@
 #include "common/string_util.h"
 #include "frontend-common/game_list.h"
 #include "gamelistsearchdirectoriesmodel.h"
-#include "qthostinterface.h"
+#include "mainwindow.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include <QtCore/QAbstractTableModel>
 #include <QtCore/QDebug>
@@ -16,12 +17,11 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
-GameListSettingsWidget::GameListSettingsWidget(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
-  : QWidget(parent), m_host_interface(host_interface)
+GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);
 
-  m_search_directories_model = new GameListSearchDirectoriesModel(host_interface);
+  m_search_directories_model = new GameListSearchDirectoriesModel(g_emu_thread);
   m_ui.searchDirectoryList->setModel(m_search_directories_model);
   m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
   m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -52,11 +52,11 @@ GameListSettingsWidget::~GameListSettingsWidget() = default;
 
 bool GameListSettingsWidget::addExcludedPath(const std::string& path)
 {
-  if (!m_host_interface->AddValueToStringList("GameList", "ExcludedPaths", path.c_str()))
+  if (!Host::AddValueToBaseStringListSetting("GameList", "ExcludedPaths", path.c_str()))
     return false;
 
   m_ui.excludedPaths->addItem(QString::fromStdString(path));
-  m_host_interface->refreshGameList();
+  g_main_window->refreshGameList(false);
   return true;
 }
 
@@ -64,7 +64,7 @@ void GameListSettingsWidget::refreshExclusionList()
 {
   m_ui.excludedPaths->clear();
 
-  const std::vector<std::string> paths(m_host_interface->GetSettingStringList("GameList", "ExcludedPaths"));
+  const std::vector<std::string> paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
   for (const std::string& path : paths)
     m_ui.excludedPaths->addItem(QString::fromStdString(path));
 }
@@ -158,18 +158,18 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
   if (!item)
     return;
 
-  m_host_interface->RemoveValueFromStringList("GameList", "ExcludedPaths", item->text().toUtf8().constData());
+  Host::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData());
   delete item;
 
-  m_host_interface->refreshGameList();
+  g_main_window->refreshGameList(false);
 }
 
 void GameListSettingsWidget::onRescanAllGamesClicked()
 {
-  m_host_interface->refreshGameList(true, false);
+  g_main_window->refreshGameList(true);
 }
 
 void GameListSettingsWidget::onScanForNewGamesClicked()
 {
-  m_host_interface->refreshGameList(false, false);
+  g_main_window->refreshGameList(false);
 }

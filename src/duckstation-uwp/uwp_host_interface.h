@@ -4,7 +4,7 @@
 #include "common/windows_headers.h"
 #include "core/host_display.h"
 #include "core/host_interface.h"
-#include "frontend-common/common_host_interface.h"
+#include "frontend-common/common_host.h"
 #include <Unknwn.h>
 #include <array>
 #include <deque>

@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="gamelistwidget.cpp" />
     <ClCompile Include="settingsdialog.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
-    <ClCompile Include="qthostinterface.cpp" />
+    <ClCompile Include="qthost.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_qthostinterface.cpp" />
+    <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
@@ -21,25 +20,21 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_qtdisplaywidget.cpp" />
-    <ClCompile Include="qtdisplaywidget.cpp" />
+    <ClCompile Include="displaywidget.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="generalsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
-    <ClCompile Include="gamepropertiesdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
     <ClCompile Include="gdbconnection.cpp" />
     <ClCompile Include="$(IntDir)moc_gdbconnection.cpp" />
     <ClCompile Include="gdbserver.cpp" />
     <ClCompile Include="$(IntDir)moc_gdbserver.cpp" />
-    <ClCompile Include="controllersettingswidget.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_aboutdialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_controllersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
@@ -64,7 +59,6 @@
     <ClCompile Include="$(IntDir)moc_postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
-    <ClCompile Include="inputbindingmonitor.cpp" />
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
@@ -83,12 +77,26 @@
     <ClCompile Include="$(IntDir)moc_achievementlogindialog.cpp" />
     <ClCompile Include="collapsiblewidget.cpp" />
     <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
+    <ClCompile Include="qtkeycodes.cpp" />
+    <ClCompile Include="controllerglobalsettingswidget.cpp" />
+    <ClCompile Include="controllersettingsdialog.cpp" />
+    <ClCompile Include="controllerbindingwidgets.cpp" />
+    <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />
+    <ClCompile Include="$(IntDir)moc_controllerglobalsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_controllersettingsdialog.cpp" />
+    <ClCompile Include="gamelistrefreshthread.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamelistrefreshthread.cpp" />
+    <ClCompile Include="foldersettingswidget.cpp" />
+    <ClCompile Include="gamesummarywidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_displaywidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="inputbindingmonitor.h" />
+    <ClInclude Include="controllersettingwidgetbinder.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -103,19 +111,17 @@
     <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />
     <QtMoc Include="mainwindow.h" />
-    <QtMoc Include="qthostinterface.h" />
+    <QtMoc Include="qthost.h" />
     <QtMoc Include="settingsdialog.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="audiosettingswidget.h" />
-    <QtMoc Include="qtdisplaywidget.h" />
+    <QtMoc Include="displaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
-    <QtMoc Include="gamepropertiesdialog.h" />
     <QtMoc Include="gdbconnection.h" />
     <QtMoc Include="gdbserver.h" />
-    <QtMoc Include="controllersettingswidget.h" />
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="inputbindingdialog.h" />
@@ -138,6 +144,12 @@
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
     <QtMoc Include="collapsiblewidget.h" />
+    <QtMoc Include="controllerbindingwidgets.h" />
+    <QtMoc Include="controllerglobalsettingswidget.h" />
+    <QtMoc Include="controllersettingsdialog.h" />
+    <QtMoc Include="gamelistrefreshthread.h" />
+    <QtMoc Include="gamesummarywidget.h" />
+    <QtMoc Include="foldersettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -147,7 +159,6 @@
     <QtUi Include="audiosettingswidget.ui" />
     <QtUi Include="generalsettingswidget.ui" />
     <QtUi Include="advancedsettingswidget.ui" />
-    <QtUi Include="gamepropertiesdialog.ui" />
     <QtUi Include="aboutdialog.ui" />
     <QtUi Include="inputbindingdialog.ui" />
     <QtUi Include="autoupdaterdialog.ui" />
@@ -162,6 +173,19 @@
     <QtUi Include="emulationsettingswidget.ui" />
     <QtUi Include="achievementsettingswidget.ui" />
     <QtUi Include="achievementlogindialog.ui" />
+    <QtUi Include="debuggerwindow.ui" />
+    <QtUi Include="controllerbindingwidget.ui" />
+    <QtUi Include="controllerbindingwidget_analog_controller.ui" />
+    <QtUi Include="controllerglobalsettingswidget.ui" />
+    <QtUi Include="controllersettingsdialog.ui" />
+    <QtUi Include="controllerbindingwidget_digital_controller.ui" />
+    <QtUi Include="emptygamelistwidget.ui" />
+    <QtUi Include="gamelistwidget.ui" />
+    <QtUi Include="gamesummarywidget.ui" />
+    <QtUi Include="foldersettingswidget.ui" />
+    <QtUi Include="controllerbindingwidget_analog_joystick.ui" />
+    <QtUi Include="controllerbindingwidget_negcon.ui" />
+    <QtUi Include="controllerbindingwidget_guncon.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
@@ -178,7 +202,6 @@
     </QtResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="debuggerwindow.ui" />
     <None Include="translations\duckstation-qt_tr.ts">
       <Filter>translations</Filter>
     </None>

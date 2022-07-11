@@ -1,6 +1,7 @@
 #pragma once
 #include "common/event.h"
 #include "common/heap_array.h"
+#include "common/threading.h"
 #include "gpu_types.h"
 #include <atomic>
 #include <condition_variable>
@@ -20,6 +21,7 @@ public:
   virtual ~GPUBackend();
 
   ALWAYS_INLINE u16* GetVRAM() const { return m_vram_ptr; }
+  ALWAYS_INLINE const Threading::Thread* GetThread() const { return m_use_gpu_thread ? &m_gpu_thread : nullptr; }
 
   virtual bool Initialize(bool force_thread);
   virtual void UpdateSettings();
@@ -67,7 +69,7 @@ protected:
   Common::Event m_sync_event;
   std::atomic_bool m_gpu_thread_sleeping{false};
   std::atomic_bool m_gpu_loop_done{false};
-  std::thread m_gpu_thread;
+  Threading::Thread m_gpu_thread;
   bool m_use_gpu_thread = false;
 
   std::mutex m_sync_mutex;

@@ -6,7 +6,7 @@
 
 #include <winrt/windows.Web.Http.h>
 
-namespace FrontendCommon {
+namespace Common {
 
 class HTTPDownloaderUWP final : public HTTPDownloader
 {

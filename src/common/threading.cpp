@@ -24,15 +24,18 @@
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
-#else
+#elif defined(__APPLE__)
+#include <mach/mach.h>
+#include <mach/mach_error.h>
+#include <mach/mach_time.h>
+#include <mach/semaphore.h>
+#include <mach/task.h>
 #include <pthread_np.h>
 #endif
 #endif
 
 #ifdef _WIN32
-// This hacky union would probably fail on some cpu platforms if the contents of FILETIME aren't
-// packed (but for any x86 CPU and microsoft compiler, they will be).
-union FileTimeSucks
+union FileTimeU64Union
 {
   FILETIME filetime;
   u64 u64time;
@@ -208,18 +211,16 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& 
 
 u64 Threading::ThreadHandle::GetCPUTime() const
 {
-#if defined(_WIN32)
-#if 0
+#if defined(_WIN32) && !defined(_UWP) && !defined(_M_ARM64)
   u64 ret = 0;
   if (m_native_handle)
     QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
   return ret;
-#else
-  FileTimeSucks user = {}, kernel = {};
+#elif defined(_WIN32)
+  FileTimeU64Union user = {}, kernel = {};
   FILETIME dummy;
   GetThreadTimes((HANDLE)m_native_handle, &dummy, &dummy, &kernel.filetime, &user.filetime);
   return user.u64time + kernel.u64time;
-#endif
 #elif defined(__APPLE__)
   return getthreadtime(pthread_mach_thread_np((pthread_t)m_native_handle));
 #elif defined(__linux__)
@@ -457,17 +458,15 @@ Threading::ThreadHandle& Threading::Thread::operator=(Thread&& thread)
 
 u64 Threading::GetThreadCpuTime()
 {
-#if defined(_WIN32)
-#if 0
+#if defined(_WIN32) && !defined(_UWP) && !defined(_M_ARM64)
   u64 ret = 0;
   QueryThreadCycleTime(GetCurrentThread(), &ret);
   return ret;
-#else
-  FileTimeSucks user = {}, kernel = {};
+#elif defined(_WIN32)
+  FileTimeU64Union user = {}, kernel = {};
   FILETIME dummy;
   GetThreadTimes(GetCurrentThread(), &dummy, &dummy, &kernel.filetime, &user.filetime);
   return user.u64time + kernel.u64time;
-#endif
 #elif defined(__APPLE__)
   return getthreadtime(pthread_mach_thread_np(pthread_self()));
 #else
@@ -477,17 +476,33 @@ u64 Threading::GetThreadCpuTime()
 
 u64 Threading::GetThreadTicksPerSecond()
 {
-#if defined(_WIN32)
-#if 0
+#if defined(_WIN32) && !defined(_UWP) && !defined(_M_ARM64)
   // On x86, despite what the MS documentation says, this basically appears to be rdtsc.
   // So, the frequency is our base clock speed (and stable regardless of power management).
   static u64 frequency = 0;
-  if (unlikely(frequency == 0))
-    frequency = x86caps.CachedMHz() * u64(1000000);
+  if (UNLIKELY(frequency == 0))
+  {
+    frequency = 1000000;
+
+    HKEY hKey;
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &hKey) ==
+        ERROR_SUCCESS)
+    {
+      DWORD value;
+      DWORD value_size = sizeof(value);
+      if (RegQueryValueExW(hKey, L"~MHz", 0, nullptr, reinterpret_cast<LPBYTE>(&value), &value_size) == ERROR_SUCCESS)
+      {
+        // value is in mhz, convert to hz
+        frequency *= value;
+      }
+
+      RegCloseKey(hKey);
+    }
+  }
+
   return frequency;
-#else
+#elif defined(_WIN32)
   return 10000000;
-#endif
 #elif defined(__APPLE__)
   return 1000000;
 
@@ -537,5 +552,62 @@ void Threading::SetNameOfCurrentThread(const char* name)
   prctl(PR_SET_NAME, name, 0, 0, 0);
 #else
   pthread_set_name_np(pthread_self(), name);
+#endif
+}
+
+Threading::KernelSemaphore::KernelSemaphore()
+{
+#ifdef _WIN32
+  m_sema = CreateSemaphore(nullptr, 0, LONG_MAX, nullptr);
+#elif defined(__APPLE__)
+  semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, 0);
+#else
+  sem_init(&m_sema, false, 0);
+#endif
+}
+
+Threading::KernelSemaphore::~KernelSemaphore()
+{
+#ifdef _WIN32
+  CloseHandle(m_sema);
+#elif defined(__APPLE__)
+  semaphore_destroy(mach_task_self(), m_sema);
+#else
+  sem_destroy(&m_sema);
+#endif
+}
+
+void Threading::KernelSemaphore::Post()
+{
+#ifdef _WIN32
+  ReleaseSemaphore(m_sema, 1, nullptr);
+#elif defined(__APPLE__)
+  semaphore_signal(m_sema);
+#else
+  sem_post(&m_sema);
+#endif
+}
+
+void Threading::KernelSemaphore::Wait()
+{
+#ifdef _WIN32
+  WaitForSingleObject(m_sema, INFINITE);
+#elif defined(__APPLE__)
+  semaphore_wait(m_sema);
+#else
+  sem_wait(&m_sema);
+#endif
+}
+
+bool Threading::KernelSemaphore::TryWait()
+{
+#ifdef _WIN32
+  return WaitForSingleObject(m_sema, 0) == WAIT_OBJECT_0;
+#elif defined(__APPLE__)
+  mach_timespec_t time = {};
+  kern_return_t res = semaphore_timedwait(m_sema, time);
+  return (res != KERN_OPERATION_TIMED_OUT);
+#else
+  return sem_trywait(&m_sema) == 0;
 #endif
 }

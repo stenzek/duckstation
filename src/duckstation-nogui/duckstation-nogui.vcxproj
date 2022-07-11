@@ -5,7 +5,6 @@
     <ClCompile Include="vty_host_interface.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="imgui_impl_sdl.cpp" />
     <ClCompile Include="nogui_host_interface.cpp" />
     <ClCompile Include="sdl_host_interface.cpp" />
     <ClCompile Include="main.cpp" />
@@ -18,7 +17,6 @@
     <ClInclude Include="evdev_key_names.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="nogui_host_interface.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sdl_host_interface.h" />
@@ -37,15 +35,12 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0A172B2E-DC67-49FC-A4C1-975F93C586C4}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
-
   <Import Project="..\frontend-common\frontend-common.props" />
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>$(RootBuildDir)frontend-common\frontend-common.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

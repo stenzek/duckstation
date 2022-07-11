@@ -77,6 +77,7 @@ public:
   void SetConfigString(const std::string_view& str);
 
   bool LoadFromFile(std::string name, const char* filename);
+  bool LoadFromString(std::string name, std::string code);
 
   bool UsePushConstants() const;
   u32 GetUniformsSize() const;

@@ -302,7 +302,7 @@ void SDLHostInterface::HandleSDLEvent(const SDL_Event* event)
           s32 window_width, window_height;
           SDL_GetWindowSize(m_window, &window_width, &window_height);
           m_display->ResizeRenderWindow(window_width, window_height);
-          OnHostDisplayResized();
+          HostDisplayResized();
         }
         break;
 

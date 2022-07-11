@@ -21,6 +21,8 @@ add_library(util
   cd_xa.h
   cue_parser.cpp
   cue_parser.h
+  ini_settings_interface.cpp
+  ini_settings_interface.h
   iso_reader.cpp
   iso_reader.h
   jit_code_buffer.cpp
@@ -41,5 +43,5 @@ add_library(util
 
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(util PUBLIC common)
+target_link_libraries(util PUBLIC common simpleini)
 target_link_libraries(util PRIVATE libchdr samplerate zlib)

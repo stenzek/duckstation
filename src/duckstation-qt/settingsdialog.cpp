@@ -2,163 +2,209 @@
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "biossettingswidget.h"
+#include "common/assert.h"
+#include "common/file_system.h"
 #include "consolesettingswidget.h"
-#include "controllersettingswidget.h"
+#include "core/host.h"
+#include "core/host_settings.h"
 #include "displaysettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "enhancementsettingswidget.h"
+#include "foldersettingswidget.h"
 #include "gamelistsettingswidget.h"
+#include "gamesummarywidget.h"
 #include "generalsettingswidget.h"
-#include "hotkeysettingswidget.h"
+#include "mainwindow.h"
 #include "memorycardsettingswidget.h"
 #include "postprocessingsettingswidget.h"
-#include "qthostinterface.h"
+#include "qthost.h"
+#include "util/ini_settings_interface.h"
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
 #ifdef WITH_CHEEVOS
 #include "achievementsettingswidget.h"
-#include "core/cheevos.h"
+#include "frontend-common/achievements.h"
 #endif
 
-static constexpr char DEFAULT_SETTING_HELP_TEXT[] = "";
+static QList<SettingsDialog*> s_open_game_properties_dialogs;
 
-SettingsDialog::SettingsDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
-  : QDialog(parent), m_host_interface(host_interface)
+SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
-  setCategoryHelpTexts();
+  setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+  addPages();
+}
 
+SettingsDialog::SettingsDialog(const std::string& path, const std::string& serial, DiscRegion region,
+                               const GameDatabase::Entry* entry, std::unique_ptr<SettingsInterface> sif,
+                               QWidget* parent)
+  : QDialog(parent), m_sif(std::move(sif))
+{
+  m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  m_general_settings = new GeneralSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_bios_settings = new BIOSSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_console_settings = new ConsoleSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_emulation_settings = new EmulationSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_game_list_settings = new GameListSettingsWidget(host_interface, m_ui.settingsContainer);
-  m_hotkey_settings = new HotkeySettingsWidget(host_interface, m_ui.settingsContainer);
-  m_controller_settings = new ControllerSettingsWidget(host_interface, m_ui.settingsContainer);
-  m_memory_card_settings = new MemoryCardSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_display_settings = new DisplaySettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_enhancement_settings = new EnhancementSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_post_processing_settings = new PostProcessingSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_audio_settings = new AudioSettingsWidget(host_interface, m_ui.settingsContainer, this);
-  m_advanced_settings = new AdvancedSettingsWidget(host_interface, m_ui.settingsContainer, this);
+  addWidget(new GameSummaryWidget(path, serial, region, entry, this, m_ui.settingsContainer), tr("Summary"),
+            QStringLiteral("file-list-line"),
+            tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
+               "validate your disc was dumped correctly."));
+  addPages();
 
-#ifdef WITH_CHEEVOS
-  if (!Cheevos::IsUsingRAIntegration())
-    m_achievement_settings = new AchievementSettingsWidget(host_interface, m_ui.settingsContainer, this);
-#endif
+  s_open_game_properties_dialogs.push_back(this);
+}
 
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GeneralSettings), m_general_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::BIOSSettings), m_bios_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ConsoleSettings), m_console_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::EmulationSettings), m_emulation_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::GameListSettings), m_game_list_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::HotkeySettings), m_hotkey_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::ControllerSettings), m_controller_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::MemoryCardSettings), m_memory_card_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::DisplaySettings), m_display_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::EnhancementSettings), m_enhancement_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::PostProcessingSettings), m_post_processing_settings);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AudioSettings), m_audio_settings);
+SettingsDialog::~SettingsDialog()
+{
+  if (isPerGameSettings())
+    s_open_game_properties_dialogs.removeOne(this);
+}
 
-#ifdef WITH_CHEEVOS
-  if (Cheevos::IsUsingRAIntegration())
+void SettingsDialog::addPages()
+{
+  if (!isPerGameSettings())
   {
-    QLabel* placeholder_label =
-      new QLabel(QStringLiteral("RAIntegration is being used, built-in RetroAchievements support is disabled."),
-                 m_ui.settingsContainer);
-    placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AchievementSettings), placeholder_label);
+    addWidget(m_general_settings = new GeneralSettingsWidget(this, m_ui.settingsContainer), tr("General"),
+              QStringLiteral("settings-3-line"),
+              tr("<strong>General Settings</strong><hr>These options control how the emulator looks and "
+                 "behaves.<br><br>Mouse over an option for additional information."));
+    addWidget(
+      m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
+      QStringLiteral("folder-settings-line"),
+      tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
+         "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
+         "recursive/non-recursive."));
   }
   else
   {
-    m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AchievementSettings), m_achievement_settings);
+    m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setVisible(false);
   }
+
+  addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
+            QStringLiteral("hard-drive-2-line"),
+            tr("<strong>BIOS Settings</strong><hr>These options control which BIOS is used and how it will be "
+               "patched.<br><br>Mouse over an option for additional information."));
+  addWidget(m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
+            QStringLiteral("artboard-2-line"),
+            tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
+               "console.<br><br>Mouse over an option for additional information."));
+  addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
+            QStringLiteral("dashboard-line"),
+            tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
+               "system.<br><br>Mouse over an option for additional information."));
+  addWidget(
+    m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
+    QStringLiteral("sd-card-line"),
+    tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
+       "function in, and where the images for these cards will be stored on disk."));
+  addWidget(
+    m_display_settings = new DisplaySettingsWidget(this, m_ui.settingsContainer), tr("Display"),
+    QStringLiteral("brush-line"),
+    tr("<strong>Display Settings</strong><hr>These options control the how the frames generated by the console are "
+       "displayed on the screen."));
+  addWidget(
+    m_enhancement_settings = new EnhancementSettingsWidget(this, m_ui.settingsContainer), tr("Enhancements"),
+    QStringLiteral("paint-fill"),
+    tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
+       "to the original console. Mouse over each option for additional information."));
+  if (!isPerGameSettings())
+  {
+    addWidget(
+      m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer),
+      tr("Post-Processing"), QStringLiteral("pantone-line"),
+      tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
+         "displayed on the screen with various filters. Shaders will be executed in sequence."));
+  }
+  addWidget(
+    m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"),
+    QStringLiteral("volume-up-line"),
+    tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
+       "for additional information."));
+  {
+    QString title(tr("Achievements"));
+    QString icon_text(QStringLiteral("trophy-line"));
+    QString help_text(tr("<strong>Achievement Settings</strong><hr>These options control RetroAchievements. Mouse over "
+                         "an option for additional information."));
+
+#ifdef WITH_CHEEVOS
+    if (!Achievements::IsUsingRAIntegration())
+    {
+      addWidget(m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), std::move(title),
+                std::move(icon_text), std::move(help_text));
+    }
+    else
+    {
+      QLabel* placeholder_label =
+        new QLabel(QStringLiteral("RAIntegration is being used, built-in RetroAchievements support is disabled."),
+                   m_ui.settingsContainer);
+      placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+      addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
+    }
 #else
-  QLabel* placeholder_label =
-    new QLabel(tr("This DuckStation build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
-  placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AchievementSettings), placeholder_label);
+    QLabel* placeholder_label =
+      new QLabel(tr("This DuckStation build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
+    placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+    addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
 #endif
+  }
 
-  m_ui.settingsContainer->insertWidget(static_cast<int>(Category::AdvancedSettings), m_advanced_settings);
+  if (!isPerGameSettings())
+  {
+    addWidget(
+      m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
+      QStringLiteral("folder-settings-line"),
+      tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
+  }
 
+  addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
+            QStringLiteral("tools-line"),
+            tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
+               "emulator. Mouse over an option for additional information."));
+
+  m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
   connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &SettingsDialog::accept);
-  connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton* button) {
-    if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ResetRole)
+  connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, this,
+          &SettingsDialog::onRestoreDefaultsClicked);
+}
+
+void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
+{
+  const int index = m_ui.settingsCategory->count();
+
+  QListWidgetItem* item = new QListWidgetItem(m_ui.settingsCategory);
+  item->setText(title);
+  if (!icon.isEmpty())
+    item->setIcon(QIcon::fromTheme(icon));
+
+  m_ui.settingsContainer->addWidget(widget);
+
+  m_category_help_text[index] = std::move(help_text);
+}
+
+void SettingsDialog::setCategory(const char* category)
+{
+  // the titles in the category list will be translated.
+  const QString translated_category(tr(category));
+
+  for (int i = 0; i < m_ui.settingsCategory->count(); i++)
+  {
+    if (translated_category == m_ui.settingsCategory->item(i)->text())
     {
-      onRestoreDefaultsClicked();
+      // will also update the visible widget
+      m_ui.settingsCategory->setCurrentRow(i);
+      break;
     }
-  });
-
-  connect(m_console_settings, &ConsoleSettingsWidget::multitapModeChanged, m_controller_settings,
-          &ControllerSettingsWidget::updateMultitapControllerTitles);
-}
-
-SettingsDialog::~SettingsDialog() = default;
-
-void SettingsDialog::setCategoryHelpTexts()
-{
-  m_category_help_text[static_cast<int>(Category::GeneralSettings)] = tr(
-    "<strong>General Settings</strong><hr>These options control how the emulator looks and behaves.<br><br>Mouse over "
-    "an option for additional information.");
-  m_category_help_text[static_cast<int>(Category::ConsoleSettings)] =
-    tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
-       "console.<br><br>Mouse over an option for additional information.");
-  m_category_help_text[static_cast<int>(Category::GameListSettings)] =
-    tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
-       "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
-       "recursive/non-recursive.");
-  m_category_help_text[static_cast<int>(Category::HotkeySettings)] = tr(
-    "<strong>Hotkey Settings</strong><hr>Binding a hotkey allows you to trigger events such as a resetting or taking "
-    "screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will "
-    "start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no "
-    "button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the "
-    "button. To  bind multiple buttons, hold Shift and click the button.");
-  m_category_help_text[static_cast<int>(Category::ControllerSettings)] = tr(
-    "<strong>Controller Settings</strong><hr>This page lets you choose the type of controller you wish to simulate for "
-    "the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start "
-    "a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, "
-    "press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer "
-    "lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold "
-    "Shift and click the button.");
-  m_category_help_text[static_cast<int>(Category::MemoryCardSettings)] =
-    tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
-       "function in, and where the images for these cards will be stored on disk.");
-  m_category_help_text[static_cast<int>(Category::DisplaySettings)] =
-    tr("<strong>Display Settings</strong><hr>These options control the how the frames generated by the console are "
-       "displayed on the screen.");
-  m_category_help_text[static_cast<int>(Category::EnhancementSettings)] =
-    tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
-       "to the original console. Mouse over each option for additional information.");
-  m_category_help_text[static_cast<int>(Category::PostProcessingSettings)] =
-    tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
-       "displayed on the screen with various filters. Shaders will be executed in sequence.");
-  m_category_help_text[static_cast<int>(Category::AudioSettings)] =
-    tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
-       "for additional information.");
-  m_category_help_text[static_cast<int>(Category::AdvancedSettings)] = tr(
-    "<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the emulator. Mouse "
-    "over an option for additional information.");
-}
-
-void SettingsDialog::setCategory(Category category)
-{
-  if (category >= Category::Count)
-    return;
-
-  m_ui.settingsCategory->setCurrentRow(static_cast<int>(category));
+  }
 }
 
 void SettingsDialog::onCategoryCurrentRowChanged(int row)
 {
-  Q_ASSERT(row < static_cast<int>(Category::Count));
+  DebugAssert(row < MAX_SETTINGS_WIDGETS);
   m_ui.settingsContainer->setCurrentIndex(row);
   m_ui.helpText->setText(m_category_help_text[row]);
 }
@@ -172,7 +218,7 @@ void SettingsDialog::onRestoreDefaultsClicked()
     return;
   }
 
-  m_host_interface->setDefaultSettings();
+  g_emu_thread->setDefaultSettings(true, false);
 }
 
 void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
@@ -213,4 +259,245 @@ bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
   }
 
   return QDialog::eventFilter(object, event);
+}
+
+bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
+{
+  bool value;
+  if (m_sif && m_sif->GetBoolValue(section, key, &value))
+    return value;
+  else
+    return Host::GetBaseBoolSettingValue(section, key, default_value);
+}
+
+int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, int default_value) const
+{
+  int value;
+  if (m_sif && m_sif->GetIntValue(section, key, &value))
+    return value;
+  else
+    return Host::GetBaseIntSettingValue(section, key, default_value);
+}
+
+float SettingsDialog::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
+{
+  float value;
+  if (m_sif && m_sif->GetFloatValue(section, key, &value))
+    return value;
+  else
+    return Host::GetBaseFloatSettingValue(section, key, default_value);
+}
+
+std::string SettingsDialog::getEffectiveStringValue(const char* section, const char* key,
+                                                    const char* default_value) const
+{
+  std::string value;
+  if (!m_sif || !m_sif->GetStringValue(section, key, &value))
+    value = Host::GetBaseStringSettingValue(section, key, default_value);
+  return value;
+}
+
+Qt::CheckState SettingsDialog::getCheckState(const char* section, const char* key, bool default_value)
+{
+  bool value;
+  if (m_sif)
+  {
+    if (!m_sif->GetBoolValue(section, key, &value))
+      return Qt::PartiallyChecked;
+  }
+  else
+  {
+    value = Host::GetBaseBoolSettingValue(section, key, default_value);
+  }
+
+  return value ? Qt::Checked : Qt::Unchecked;
+}
+
+std::optional<bool> SettingsDialog::getBoolValue(const char* section, const char* key,
+                                                 std::optional<bool> default_value) const
+{
+  std::optional<bool> value;
+  if (m_sif)
+  {
+    bool bvalue;
+    if (m_sif->GetBoolValue(section, key, &bvalue))
+      value = bvalue;
+    else
+      value = default_value;
+  }
+  else
+  {
+    value = Host::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
+  }
+
+  return value;
+}
+
+std::optional<int> SettingsDialog::getIntValue(const char* section, const char* key,
+                                               std::optional<int> default_value) const
+{
+  std::optional<int> value;
+  if (m_sif)
+  {
+    int ivalue;
+    if (m_sif->GetIntValue(section, key, &ivalue))
+      value = ivalue;
+    else
+      value = default_value;
+  }
+  else
+  {
+    value = Host::GetBaseIntSettingValue(section, key, default_value.value_or(0));
+  }
+
+  return value;
+}
+
+std::optional<float> SettingsDialog::getFloatValue(const char* section, const char* key,
+                                                   std::optional<float> default_value) const
+{
+  std::optional<float> value;
+  if (m_sif)
+  {
+    float fvalue;
+    if (m_sif->GetFloatValue(section, key, &fvalue))
+      value = fvalue;
+    else
+      value = default_value;
+  }
+  else
+  {
+    value = Host::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
+  }
+
+  return value;
+}
+
+std::optional<std::string> SettingsDialog::getStringValue(const char* section, const char* key,
+                                                          std::optional<const char*> default_value) const
+{
+  std::optional<std::string> value;
+  if (m_sif)
+  {
+    std::string svalue;
+    if (m_sif->GetStringValue(section, key, &svalue))
+      value = std::move(svalue);
+    else if (default_value.has_value())
+      value = default_value.value();
+  }
+  else
+  {
+    value = Host::GetBaseStringSettingValue(section, key, default_value.value_or(""));
+  }
+
+  return value;
+}
+
+void SettingsDialog::setBoolSettingValue(const char* section, const char* key, std::optional<bool> value)
+{
+  if (m_sif)
+  {
+    value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+    m_sif->Save();
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    value.has_value() ? Host::SetBaseBoolSettingValue(section, key, value.value()) :
+                        Host::DeleteBaseSettingValue(section, key);
+    g_emu_thread->applySettings();
+  }
+}
+
+void SettingsDialog::setIntSettingValue(const char* section, const char* key, std::optional<int> value)
+{
+  if (m_sif)
+  {
+    value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+    m_sif->Save();
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    value.has_value() ? Host::SetBaseIntSettingValue(section, key, value.value()) :
+                        Host::DeleteBaseSettingValue(section, key);
+    g_emu_thread->applySettings();
+  }
+}
+
+void SettingsDialog::setFloatSettingValue(const char* section, const char* key, std::optional<float> value)
+{
+  if (m_sif)
+  {
+    value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+    m_sif->Save();
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    value.has_value() ? Host::SetBaseFloatSettingValue(section, key, value.value()) :
+                        Host::DeleteBaseSettingValue(section, key);
+    g_emu_thread->applySettings();
+  }
+}
+
+void SettingsDialog::setStringSettingValue(const char* section, const char* key, std::optional<const char*> value)
+{
+  if (m_sif)
+  {
+    value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
+    m_sif->Save();
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    value.has_value() ? Host::SetBaseStringSettingValue(section, key, value.value()) :
+                        Host::DeleteBaseSettingValue(section, key);
+    g_emu_thread->applySettings();
+  }
+}
+
+void SettingsDialog::removeSettingValue(const char* section, const char* key)
+{
+  if (m_sif)
+  {
+    m_sif->DeleteValue(section, key);
+    m_sif->Save();
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    Host::DeleteBaseSettingValue(section, key);
+    g_emu_thread->applySettings();
+  }
+}
+
+void SettingsDialog::openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region)
+{
+  // check for an existing dialog with this crc
+  for (SettingsDialog* dialog : s_open_game_properties_dialogs)
+  {
+    if (dialog->m_game_serial == serial)
+    {
+      dialog->show();
+      dialog->setFocus();
+      return;
+    }
+  }
+
+  std::string filename(System::GetGameSettingsPath(serial));
+  std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
+  if (FileSystem::FileExists(sif->GetFileName().c_str()))
+    sif->Load();
+
+  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForSerial(serial);
+
+  const QString window_title(tr("%1 [%2]")
+                               .arg(dentry ? QtUtils::StringViewToQString(dentry->title) : QStringLiteral("<UNKNOWN>"))
+                               .arg(QtUtils::StringViewToQString(serial)));
+
+  SettingsDialog* dialog = new SettingsDialog(path, serial, region, dentry, std::move(sif), g_main_window);
+  dialog->setWindowTitle(window_title);
+  dialog->setModal(false);
+  dialog->show();
 }

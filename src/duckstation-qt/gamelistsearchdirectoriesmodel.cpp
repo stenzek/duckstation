@@ -1,9 +1,10 @@
 #include "gamelistsearchdirectoriesmodel.h"
-#include "qthostinterface.h"
+#include "mainwindow.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include <QtCore/QUrl>
 
-GameListSearchDirectoriesModel::GameListSearchDirectoriesModel(QtHostInterface* host_interface)
+GameListSearchDirectoriesModel::GameListSearchDirectoriesModel(EmuThread* host_interface)
   : m_host_interface(host_interface)
 {
   loadFromSettings();
@@ -80,7 +81,7 @@ bool GameListSearchDirectoriesModel::setData(const QModelIndex& index, const QVa
   Entry& entry = m_entries[row];
   entry.recursive = value == Qt::Checked;
   saveToSettings();
-  m_host_interface->refreshGameList(false);
+  g_main_window->refreshGameList(false);
   return true;
 }
 
@@ -101,7 +102,7 @@ void GameListSearchDirectoriesModel::addEntry(const QString& path, bool recursiv
   }
 
   saveToSettings();
-  m_host_interface->refreshGameList(false);
+  g_main_window->refreshGameList(false);
 }
 
 void GameListSearchDirectoriesModel::removeEntry(int row)
@@ -114,7 +115,7 @@ void GameListSearchDirectoriesModel::removeEntry(int row)
   endRemoveRows();
 
   saveToSettings();
-  m_host_interface->refreshGameList(false);
+  g_main_window->refreshGameList(false);
 }
 
 bool GameListSearchDirectoriesModel::isEntryRecursive(int row) const
@@ -131,7 +132,7 @@ void GameListSearchDirectoriesModel::setEntryRecursive(int row, bool recursive)
   emit dataChanged(index(row, 1), index(row, 1), {Qt::CheckStateRole});
 
   saveToSettings();
-  m_host_interface->refreshGameList(false);
+  g_main_window->refreshGameList(false);
 }
 
 void GameListSearchDirectoriesModel::openEntryInExplorer(QWidget* parent, int row) const
@@ -144,11 +145,11 @@ void GameListSearchDirectoriesModel::openEntryInExplorer(QWidget* parent, int ro
 
 void GameListSearchDirectoriesModel::loadFromSettings()
 {
-  std::vector<std::string> path_list = m_host_interface->GetSettingStringList("GameList", "Paths");
+  std::vector<std::string> path_list = Host::GetBaseStringListSetting("GameList", "Paths");
   for (std::string& entry : path_list)
     m_entries.push_back({QString::fromStdString(entry), false});
 
-  path_list = m_host_interface->GetSettingStringList("GameList", "RecursivePaths");
+  path_list = Host::GetBaseStringListSetting("GameList", "RecursivePaths");
   for (std::string& entry : path_list)
     m_entries.push_back({QString::fromStdString(entry), true});
 }
@@ -167,12 +168,12 @@ void GameListSearchDirectoriesModel::saveToSettings()
   }
 
   if (paths.empty())
-    m_host_interface->RemoveSettingValue("GameList", "Paths");
+    Host::DeleteBaseSettingValue("GameList", "Paths");
   else
-    m_host_interface->SetStringListSettingValue("GameList", "Paths", paths);
+    Host::SetBaseStringListSettingValue("GameList", "Paths", paths);
 
   if (recursive_paths.empty())
-    m_host_interface->RemoveSettingValue("GameList", "RecursivePaths");
+    Host::DeleteBaseSettingValue("GameList", "RecursivePaths");
   else
-    m_host_interface->SetStringListSettingValue("GameList", "RecursivePaths", recursive_paths);
+    Host::SetBaseStringListSettingValue("GameList", "RecursivePaths", recursive_paths);
 }

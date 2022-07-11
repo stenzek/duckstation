@@ -1,4 +1,5 @@
 #pragma once
+#include "heterogeneous_containers.h"
 #include <cstdint>
 #include <map>
 
@@ -13,7 +14,7 @@ class LRUCache
     CounterType last_access;
   };
 
-  using MapType = std::map<K, Item>;
+  using MapType = std::conditional_t<std::is_same_v<K, std::string>, StringMap<Item>, std::map<K, Item>>;
 
 public:
   LRUCache(std::size_t max_capacity = 16, bool manual_evict = false)

@@ -1,22 +1,22 @@
 #include "postprocessingsettingswidget.h"
-#include "qthostinterface.h"
+#include "qthost.h"
 #include "settingwidgetbinder.h"
 #include <QtWidgets/QMessageBox>
 
-PostProcessingSettingsWidget::PostProcessingSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
-                                                           SettingsDialog* settings_dialog)
-  : QWidget(parent), m_host_interface(host_interface)
+PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+  : QWidget(parent), m_dialog(dialog)
 {
+  SettingsInterface* sif = dialog->getSettingsInterface();
+
   m_ui.setupUi(this);
   m_ui.widget->setOptionsButtonVisible(false);
   m_ui.reload->setEnabled(false);
   updateShaderConfigPanel(-1);
   connectUi();
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(host_interface, m_ui.enablePostProcessing, "Display", "PostProcessing",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enablePostProcessing, "Display", "PostProcessing", false);
 
-  std::string post_chain = m_host_interface->GetStringSettingValue("Display", "PostProcessChain");
+  std::string post_chain = m_dialog->getStringValue("Display", "PostProcessChain", "").value_or(std::string());
   if (!post_chain.empty())
   {
     if (!m_ui.widget->setConfigString(post_chain))
@@ -83,19 +83,17 @@ void PostProcessingSettingsWidget::onConfigChanged(const std::string& new_config
 {
   if (new_config.empty())
   {
-    m_host_interface->RemoveSettingValue("Display", "PostProcessChain");
+    m_dialog->removeSettingValue("Display", "PostProcessChain");
     m_ui.reload->setEnabled(false);
   }
   else
   {
-    m_host_interface->SetStringSettingValue("Display", "PostProcessChain", new_config.c_str());
+    m_dialog->setStringSettingValue("Display", "PostProcessChain", new_config.c_str());
     m_ui.reload->setEnabled(true);
   }
-
-  m_host_interface->applySettings();
 }
 
 void PostProcessingSettingsWidget::onReloadClicked()
 {
-  m_host_interface->reloadPostProcessingShaders();
+  g_emu_thread->reloadPostProcessingShaders();
 }

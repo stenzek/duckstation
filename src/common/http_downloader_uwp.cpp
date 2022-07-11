@@ -13,7 +13,7 @@ Log_SetChannel(HTTPDownloaderWinHttp);
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Web::Http;
 
-namespace FrontendCommon {
+namespace Common {
 
 HTTPDownloaderUWP::HTTPDownloaderUWP(std::string user_agent) : HTTPDownloader(), m_user_agent(std::move(user_agent)) {}
 

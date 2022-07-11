@@ -9,7 +9,7 @@
 #include <signal.h>
 Log_SetChannel(HTTPDownloaderCurl);
 
-namespace FrontendCommon {
+namespace Common {
 
 HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader() {}
 

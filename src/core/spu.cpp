@@ -3,7 +3,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "dma.h"
-#include "host_interface.h"
+#include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -30,9 +30,37 @@ void SPU::Initialize()
     "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
     [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<SPU*>(param)->ExecuteTransfer(ticks); }, this,
     false);
-  m_audio_stream = g_host_interface->GetAudioStream();
+  m_null_audio_stream = AudioStream::CreateNullAudioStream();
+  m_null_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, Settings::DEFAULT_AUDIO_BUFFER_SIZE);
 
+  CreateOutputStream();
   Reset();
+}
+
+void SPU::CreateOutputStream()
+{
+  Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u",
+                 Settings::GetAudioBackendName(g_settings.audio_backend), SAMPLE_RATE, NUM_CHANNELS,
+                 g_settings.audio_buffer_size);
+
+  m_audio_stream = Host::CreateAudioStream(g_settings.audio_backend);
+
+  if (!m_audio_stream ||
+      !m_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_size))
+  {
+    Host::ReportErrorAsync("Error", "Failed to create or configure audio stream, falling back to null output.");
+    m_audio_stream.reset();
+    m_audio_stream = AudioStream::CreateNullAudioStream();
+    m_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_size);
+  }
+
+  m_audio_stream->SetOutputVolume(System::GetAudioOutputVolume());
+}
+
+void SPU::RecreateOutputStream()
+{
+  m_audio_stream.reset();
+  CreateOutputStream();
 }
 
 void SPU::CPUClockChanged()
@@ -1781,11 +1809,13 @@ void SPU::Execute(TickCount ticks)
     m_ticks_carry = (ticks + m_ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
   }
 
+  AudioStream* output_stream = m_audio_output_muted ? m_null_audio_stream.get() : m_audio_stream.get();
+
   while (remaining_frames > 0)
   {
     s16* output_frame_start;
     u32 output_frame_space = remaining_frames;
-    m_audio_stream->BeginWrite(&output_frame_start, &output_frame_space);
+    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
 
     s16* output_frame = output_frame_start;
     const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
@@ -1888,7 +1918,7 @@ void SPU::Execute(TickCount ticks)
     if (m_dump_writer)
       m_dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
 
-    m_audio_stream->EndWrite(frames_in_this_batch);
+    output_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
 }
@@ -1898,7 +1928,7 @@ void SPU::UpdateEventInterval()
   // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
   // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
   // the SPU state.
-  const u32 max_slice_frames = g_host_interface->GetAudioStream()->GetBufferSize();
+  const u32 max_slice_frames = m_audio_stream->GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (m_SPUCNT.enable && m_SPUCNT.irq9_enable) ? 1 : max_slice_frames;

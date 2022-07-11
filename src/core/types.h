@@ -126,7 +126,7 @@ enum class ControllerType
   DigitalController,
   AnalogController,
   AnalogJoystick,
-  NamcoGunCon,
+  GunCon,
   PlayStationMouse,
   NeGcon,
   Count

@@ -1,34 +1,32 @@
 #pragma once
-#include "core/types.h"
-#include <QtWidgets/QTabWidget>
+
 #include <QtCore/QMap>
+#include <QtWidgets/QWidget>
 #include <array>
 #include <vector>
 
-class QtHostInterface;
+class QScrollArea;
 class QGridLayout;
+class QVBoxLayout;
+
+class ControllerSettingsDialog;
 
 class HotkeySettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  HotkeySettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  HotkeySettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog);
   ~HotkeySettingsWidget();
 
 private:
   void createUi();
   void createButtons();
 
-  QtHostInterface* m_host_interface;
+  ControllerSettingsDialog* m_dialog;
+  QScrollArea* m_scroll_area = nullptr;
+  QWidget* m_container = nullptr;
+  QVBoxLayout* m_layout = nullptr;
 
-  QTabWidget* m_tab_widget;
-
-  struct Category
-  {
-    QWidget* container;
-    QGridLayout* layout;
-  };
-  QMap<QString, Category> m_categories;
+  QMap<QString, QGridLayout*> m_categories;
 };
-

@@ -75,7 +75,7 @@ public:
 
   virtual GPURenderer GetRendererType() const = 0;
 
-  virtual bool Initialize(HostDisplay* host_display);
+  virtual bool Initialize();
   virtual void Reset(bool clear_vram);
   virtual bool DoState(StateWrapper& sw, HostDisplayTexture** save_to_texture, bool update_display);
 
@@ -318,8 +318,6 @@ protected:
 
     AddCommandTicks(std::max(width, height));
   }
-
-  HostDisplay* m_host_display = nullptr;
 
   std::unique_ptr<TimingEvent> m_crtc_tick_event;
   std::unique_ptr<TimingEvent> m_command_tick_event;

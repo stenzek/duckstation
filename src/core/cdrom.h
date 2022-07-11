@@ -29,6 +29,7 @@ public:
   bool HasMedia() const { return m_reader.HasMedia(); }
   const std::string& GetMediaFileName() const { return m_reader.GetMediaFileName(); }
   const CDImage* GetMedia() const { return m_reader.GetMedia(); }
+  DiscRegion GetDiscRegion() const { return m_disc_region; }
   bool IsMediaPS1Disc() const;
   bool DoesMediaRegionMatchConsole() const;
 

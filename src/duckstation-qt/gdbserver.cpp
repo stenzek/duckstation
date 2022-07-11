@@ -1,7 +1,7 @@
 #include "gdbserver.h"
 #include "gdbconnection.h"
 #include "common/log.h"
-#include "qthostinterface.h"
+#include "qthost.h"
 Log_SetChannel(GDBServer);
 
 GDBServer::GDBServer(QObject *parent, u16 port)
@@ -29,7 +29,8 @@ void GDBServer::incomingConnection(qintptr descriptor)
 {
   Log_InfoPrint("Accepted connection on GDB server");
   GDBConnection *thread = new GDBConnection(this, descriptor);
-  connect(QtHostInterface::GetInstance(), &QtHostInterface::emulationPaused, thread, &GDBConnection::onEmulationPaused);
+  connect(g_emu_thread, &EmuThread::systemPaused, thread, &GDBConnection::onEmulationPaused);
+  connect(g_emu_thread, &EmuThread::systemResumed, thread, &GDBConnection::onEmulationResumed);
   thread->start();
   m_connections.push_back(thread);
 }

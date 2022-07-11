@@ -16,6 +16,7 @@
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="cue_parser.h" />
+    <ClInclude Include="ini_settings_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -42,5 +43,6 @@
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />
     <ClCompile Include="cd_image_device.cpp" />
+    <ClCompile Include="ini_settings_interface.cpp" />
   </ItemGroup>
 </Project>

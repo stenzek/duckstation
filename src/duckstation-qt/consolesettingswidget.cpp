@@ -6,9 +6,11 @@
 #include "util/cd_image.h"
 #include <QtWidgets/QMessageBox>
 
-ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
-  : QWidget(parent), m_host_interface(host_interface)
+ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+  : QWidget(parent), m_dialog(dialog)
 {
+  SettingsInterface* sif = dialog->getSettingsInterface();
+
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
@@ -23,12 +25,6 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
       qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
   }
 
-  for (u32 i = 0; i < static_cast<u32>(MultitapMode::Count); i++)
-  {
-    m_ui.multitapMode->addItem(
-      qApp->translate("MultitapMode", Settings::GetMultitapModeDisplayName(static_cast<MultitapMode>(i))));
-  }
-
   static constexpr float TIME_PER_SECTOR_DOUBLE_SPEED = 1000.0f / 150.0f;
   m_ui.cdromReadaheadSectors->addItem(tr("Disabled (Synchronous)"));
   for (u32 i = 1; i <= 32; i++)
@@ -40,26 +36,20 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
                                           .arg(static_cast<float>(i * CDImage::DATA_SECTOR_SIZE) / 1024.0f));
   }
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.region, "Console", "Region",
-                                               &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
-                                               Settings::DEFAULT_CONSOLE_REGION);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
+                                               &Settings::GetConsoleRegionName, Settings::DEFAULT_CONSOLE_REGION);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.enableCPUClockSpeedControl, "CPU",
-                                               "OverclockEnable", false);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromReadaheadSectors, "CDROM", "ReadaheadSectors",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, "CPU", "OverclockEnable", false);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadaheadSectors, "CDROM", "ReadaheadSectors",
                                               Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.cdromLoadImagePatches, "CDROM",
-                                               "LoadImagePatches", false);
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1);
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
-                                               &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
-                                               Settings::DEFAULT_MULTITAP_MODE);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImagePatches, "CDROM", "LoadImagePatches", false);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadSpeedup, "CDROM", "ReadSpeedup", 1, 1);
 
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
@@ -101,21 +91,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(QtHostInterface* host_interface, QW
   dialog->registerWidgetHelp(m_ui.cdromLoadImagePatches, tr("Apply Image Patches"), tr("Unchecked"),
                              tr("Automatically applies patches to disc images when they are present in the same "
                                 "directory. Currently only PPF patches are supported with this option."));
-  dialog->registerWidgetHelp(
-    m_ui.multitapMode, tr("Multitap"), tr("Disabled"),
-    tr("Enables multitap support on specified controller ports. Leave disabled for games that do "
-       "not support multitap input."));
 
   m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
-  m_ui.cdromReadSpeedup->setCurrentIndex(m_host_interface->GetIntSettingValue("CDROM", "ReadSpeedup", 1) - 1);
 
   connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
-  connect(m_ui.cdromReadSpeedup, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged);
-  connect(m_ui.multitapMode, QOverload<int>::of(&QComboBox::currentIndexChanged),
-          [this](int index) { emit multitapModeChanged(); });
 
   calculateCPUClockValue();
 }
@@ -124,7 +105,7 @@ ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
 
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 {
-  if (state == Qt::Checked && !m_host_interface->GetBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
+  if (state == Qt::Checked && !Host::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
   {
     const QString message =
       tr("Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase "
@@ -133,16 +114,16 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
     const QString yes_button = tr("Yes, I will confirm bugs without overclocking before reporting.");
     const QString no_button = tr("No, take me back to safety.");
 
-    if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("CPU Overclocking Warning"), message, yes_button,
-                              no_button) != 0)
+    if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("CPU Overclocking Warning"), message,
+                              QMessageBox::Yes | QMessageBox::No) != 0)
     {
       QSignalBlocker sb(m_ui.enableCPUClockSpeedControl);
       m_ui.enableCPUClockSpeedControl->setChecked(Qt::Unchecked);
-      m_host_interface->SetBoolSettingValue("CPU", "OverclockEnable", false);
+      m_dialog->setBoolSettingValue("CPU", "OverclockEnable", false);
       return;
     }
 
-    m_host_interface->SetBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
+    Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
   }
 
   m_ui.cpuClockSpeed->setEnabled(state == Qt::Checked);
@@ -154,10 +135,9 @@ void ConsoleSettingsWidget::onCPUClockSpeedValueChanged(int value)
   const u32 percent = static_cast<u32>(m_ui.cpuClockSpeed->value());
   u32 numerator, denominator;
   Settings::CPUOverclockPercentToFraction(percent, &numerator, &denominator);
-  m_host_interface->SetIntSettingValue("CPU", "OverclockNumerator", static_cast<int>(numerator));
-  m_host_interface->SetIntSettingValue("CPU", "OverclockDenominator", static_cast<int>(denominator));
+  m_dialog->setIntSettingValue("CPU", "OverclockNumerator", static_cast<int>(numerator));
+  m_dialog->setIntSettingValue("CPU", "OverclockDenominator", static_cast<int>(denominator));
   updateCPUClockSpeedLabel();
-  m_host_interface->applySettings();
 }
 
 void ConsoleSettingsWidget::updateCPUClockSpeedLabel()
@@ -167,16 +147,10 @@ void ConsoleSettingsWidget::updateCPUClockSpeedLabel()
   m_ui.cpuClockSpeedLabel->setText(tr("%1% (%2MHz)").arg(percent).arg(frequency / 1000000.0, 0, 'f', 2));
 }
 
-void ConsoleSettingsWidget::onCDROMReadSpeedupValueChanged(int value)
-{
-  m_host_interface->SetIntSettingValue("CDROM", "ReadSpeedup", value + 1);
-  m_host_interface->applySettings();
-}
-
 void ConsoleSettingsWidget::calculateCPUClockValue()
 {
-  const u32 numerator = static_cast<u32>(m_host_interface->GetIntSettingValue("CPU", "OverclockNumerator", 1));
-  const u32 denominator = static_cast<u32>(m_host_interface->GetIntSettingValue("CPU", "OverclockDenominator", 1));
+  const u32 numerator = static_cast<u32>(m_dialog->getEffectiveIntValue("CPU", "OverclockNumerator", 1));
+  const u32 denominator = static_cast<u32>(m_dialog->getEffectiveIntValue("CPU", "OverclockDenominator", 1));
   const u32 percent = Settings::CPUOverclockFractionToPercent(numerator, denominator);
   QSignalBlocker sb(m_ui.cpuClockSpeed);
   m_ui.cpuClockSpeed->setValue(static_cast<int>(percent));

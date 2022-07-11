@@ -9,7 +9,7 @@ Log_SetChannel(HTTPDownloaderWinHttp);
 
 #pragma comment(lib, "winhttp.lib")
 
-namespace FrontendCommon {
+namespace Common {
 
 HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader() {}
 

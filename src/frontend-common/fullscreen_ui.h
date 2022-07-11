@@ -1,85 +1,61 @@
 #pragma once
+#include "common/progress_callback.h"
 #include "common/types.h"
-#include <string>
 #include <memory>
+#include <string>
 
 class HostDisplayTexture;
-class CommonHostInterface;
-class SettingsInterface;
-struct Settings;
-
-namespace FrontendCommon {
-enum class ControllerNavigationButton : u32;
-}
 
 namespace FullscreenUI {
-enum class MainWindowType
-{
-  None,
-  Landing,
-  GameList,
-  Settings,
-  QuickMenu,
-  Achievements,
-  Leaderboards,
-};
-
-enum class SettingsPage
-{
-  InterfaceSettings,
-  GameListSettings,
-  ConsoleSettings,
-  EmulationSettings,
-  BIOSSettings,
-  ControllerSettings,
-  HotkeySettings,
-  MemoryCardSettings,
-  DisplaySettings,
-  EnhancementSettings,
-  AudioSettings,
-  AchievementsSetings,
-  AdvancedSettings,
-  Count
-};
-
-bool Initialize(CommonHostInterface* host_interface);
+bool Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
-void UpdateSettings();
-void SystemCreated();
-void SystemDestroyed();
-void OpenQuickMenu();
-void CloseQuickMenu();
-
-#ifdef WITH_CHEEVOS
+void OnSystemStarted();
+void OnSystemPaused();
+void OnSystemResumed();
+void OnSystemDestroyed();
+void OnRunningGameChanged();
+void OpenPauseMenu();
 bool OpenAchievementsWindow();
 bool OpenLeaderboardsWindow();
-#endif
 
 void Shutdown();
 void Render();
-
-bool IsBindingInput();
-bool HandleKeyboardBinding(const char* keyName, bool pressed);
-
-std::unique_ptr<HostDisplayTexture> LoadTextureResource(const char* name, bool allow_fallback = true);
 
 // Returns true if the message has been dismissed.
 bool DrawErrorWindow(const char* message);
 bool DrawConfirmWindow(const char* message, bool* result);
 
-void QueueGameListRefresh();
-void EnsureGameListLoaded();
+class ProgressCallback final : public BaseProgressCallback
+{
+public:
+  ProgressCallback(std::string name);
+  ~ProgressCallback() override;
 
-Settings& GetSettingsCopy();
-void SaveAndApplySettings();
-void SetDebugMenuAllowed(bool allowed);
+  void PushState() override;
+  void PopState() override;
 
-/// Only ImGuiNavInput_Activate, ImGuiNavInput_Cancel, and DPad should be forwarded.
-/// Returns true if the UI consumed the event, and it should not execute the normal handler.
-bool SetControllerNavInput(FrontendCommon::ControllerNavigationButton button, bool value);
+  void SetCancellable(bool cancellable) override;
+  void SetTitle(const char* title) override;
+  void SetStatusText(const char* text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
 
-/// Forwards the controller navigation to ImGui for fullscreen navigation. Call before NewFrame().
-void SetImGuiNavInputs();
+  void DisplayError(const char* message) override;
+  void DisplayWarning(const char* message) override;
+  void DisplayInformation(const char* message) override;
+  void DisplayDebugMessage(const char* message) override;
 
+  void ModalError(const char* message) override;
+  bool ModalConfirmation(const char* message) override;
+  void ModalInformation(const char* message) override;
+
+  void SetCancelled();
+
+private:
+  void Redraw(bool force);
+
+  std::string m_name;
+  int m_last_progress_percent = -1;
+};
 } // namespace FullscreenUI

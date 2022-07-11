@@ -12,7 +12,8 @@ public:
 public Q_SLOTS:
   void gotDisconnected();
   void receivedData();
-  void onEmulationPaused(bool paused);
+  void onEmulationPaused();
+  void onEmulationResumed();
 
 private:
   void writePacket(std::string_view data);

@@ -39,43 +39,42 @@ public:
     Count
   };
 
+  enum class HalfAxis : u8
+  {
+    LLeft,
+    LRight,
+    LDown,
+    LUp,
+    RLeft,
+    RRight,
+    RDown,
+    RUp,
+    Count
+  };
+
   static constexpr u8 NUM_MOTORS = 2;
+
+  static const Controller::ControllerInfo INFO;
 
   AnalogController(u32 index);
   ~AnalogController() override;
 
   static std::unique_ptr<AnalogController> Create(u32 index);
-  static std::optional<s32> StaticGetAxisCodeByName(std::string_view axis_name);
-  static std::optional<s32> StaticGetButtonCodeByName(std::string_view button_name);
-  static AxisList StaticGetAxisNames();
-  static ButtonList StaticGetButtonNames();
-  static u32 StaticGetVibrationMotorCount();
-  static SettingList StaticGetSettings();
 
   ControllerType GetType() const override;
-  std::optional<s32> GetAxisCodeByName(std::string_view axis_name) const override;
-  std::optional<s32> GetButtonCodeByName(std::string_view button_name) const override;
 
   void Reset() override;
   bool DoState(StateWrapper& sw, bool ignore_input_state) override;
 
-  float GetAxisState(s32 axis_code) const override;
-  void SetAxisState(s32 axis_code, float value) override;
-  bool GetButtonState(s32 button_code) const override;
-  void SetButtonState(s32 button_code, bool pressed) override;
+  float GetBindState(u32 index) const override;
+  void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;
 
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
-  void SetAxisState(Axis axis, u8 value);
-  void SetButtonState(Button button, bool pressed);
-
-  u32 GetVibrationMotorCount() const override;
-  float GetVibrationMotorStrength(u32 motor) override;
-
-  void LoadSettings(const char* section) override;
+  void LoadSettings(SettingsInterface& si, const char* section) override;
 
 private:
   using MotorState = std::array<u8, NUM_MOTORS>;
@@ -111,16 +110,16 @@ private:
 
   void SetAnalogMode(bool enabled);
   void ProcessAnalogModeToggle();
-  void SetMotorState(u8 motor, u8 value);
+  void SetMotorState(u32 motor, u8 value);
+  void UpdateHostVibration();
   u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
   void SetMotorStateForConfigIndex(int index, u8 value);
 
-  u32 m_index;
-
   bool m_force_analog_on_reset = false;
   bool m_analog_dpad_in_digital_mode = false;
-  float m_axis_scale = 1.00f;
+  float m_analog_deadzone = 0.0f;
+  float m_analog_sensitivity = 1.33f;
   u8 m_rumble_bias = 8;
 
   bool m_analog_mode = false;
@@ -150,6 +149,9 @@ private:
   u16 m_button_state = UINT16_C(0xFFFF);
 
   MotorState m_motor_state{};
+
+  // both directions of axis state, merged to m_axis_state
+  std::array<u8, static_cast<u32>(HalfAxis::Count)> m_half_axis_state{};
 
   // Member variables that are no longer used, but kept and serialized for compatibility with older save states
   u8 m_command_param = 0;

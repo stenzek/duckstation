@@ -3,14 +3,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sdl_host_interface.cpp" />
-    <ClCompile Include="imgui_impl_sdl.cpp" />
     <ClCompile Include="nogui_host_interface.cpp" />
     <ClCompile Include="win32_host_interface.cpp" />
     <ClCompile Include="vty_host_interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdl_host_interface.h" />
-    <ClInclude Include="imgui_impl_sdl.h" />
     <ClInclude Include="sdl_key_names.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="nogui_host_interface.h" />
