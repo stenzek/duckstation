@@ -3,7 +3,10 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string.h"
-#include "core/host_interface.h"
+#include "common/path.h"
+#include "core/host.h"
+#include "core/settings.h"
+#include "fmt/format.h"
 #include <sstream>
 Log_SetChannel(PostProcessingChain);
 
@@ -11,38 +14,19 @@ namespace FrontendCommon {
 
 static bool TryLoadingShader(PostProcessingShader* shader, const std::string_view& shader_name)
 {
-  std::string shader_name_str(shader_name);
-
-  std::string filename = g_host_interface->GetUserDirectoryRelativePath("shaders" FS_OSPATH_SEPARATOR_STR "%s.glsl",
-                                                                        shader_name_str.c_str());
+  std::string filename(Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name)));
   if (FileSystem::FileExists(filename.c_str()))
   {
-    if (!shader->LoadFromFile(std::move(shader_name_str), filename.c_str()))
-    {
-      Log_ErrorPrintf("Failed to load shader from '%s'", filename.c_str());
-      return false;
-    }
-  }
-  else
-  {
-    filename = g_host_interface->GetProgramDirectoryRelativePath("shaders" FS_OSPATH_SEPARATOR_STR "%s.glsl",
-                                                                 shader_name_str.c_str());
-    if (FileSystem::FileExists(filename.c_str()))
-    {
-      if (!shader->LoadFromFile(std::move(shader_name_str), filename.c_str()))
-      {
-        Log_ErrorPrintf("Failed to load shader from '%s'", filename.c_str());
-        return false;
-      }
-    }
-    else
-    {
-      Log_ErrorPrintf("Could not find shader '%s'", std::string(shader_name).c_str());
-      return false;
-    }
+    if (shader->LoadFromFile(std::string(shader_name), filename.c_str()))
+      return true;
   }
 
-  return true;
+  std::optional<std::string> resource_str(Host::ReadResourceFileToString(fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name).c_str()));
+  if (resource_str.has_value() && shader->LoadFromString(std::string(shader_name), std::move(resource_str.value())))
+    return true;
+
+  Log_ErrorPrintf("Failed to load shader from '%s'", filename.c_str());
+  return false;
 }
 
 PostProcessingChain::PostProcessingChain() = default;
@@ -132,18 +116,13 @@ std::vector<std::string> PostProcessingChain::GetAvailableShaderNames()
 {
   std::vector<std::string> names;
 
-  std::string program_dir = g_host_interface->GetProgramDirectoryRelativePath("shaders");
-  std::string user_dir = g_host_interface->GetUserDirectoryRelativePath("shaders");
   FileSystem::FindResultsArray results;
-  FileSystem::FindFiles(user_dir.c_str(), "*.glsl",
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "shaders").c_str(), "*.glsl",
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
-  if (program_dir != user_dir)
-  {
-    FileSystem::FindFiles(program_dir.c_str(), "*.glsl",
-                          FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS |
-                            FILESYSTEM_FIND_KEEP_ARRAY,
-                          &results);
-  }
+  FileSystem::FindFiles(EmuFolders::Shaders.c_str(), "*.glsl",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS |
+                          FILESYSTEM_FIND_KEEP_ARRAY,
+                        &results);
 
   for (FILESYSTEM_FIND_DATA& fd : results)
   {

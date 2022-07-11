@@ -4,6 +4,7 @@
 #include "common/log.h"
 #include "cpu_core.h"
 #include "gpu_sw_backend.h"
+#include "host.h"
 #include "imgui.h"
 #include "pgxp.h"
 #include "settings.h"
@@ -43,14 +44,14 @@ GPU_HW::~GPU_HW()
   }
 }
 
-bool GPU_HW::Initialize(HostDisplay* host_display)
+bool GPU_HW::Initialize()
 {
-  if (!GPU::Initialize(host_display))
+  if (!GPU::Initialize())
     return false;
 
   m_resolution_scale = CalculateResolutionScale();
   m_multisamples = std::min(g_settings.gpu_multisamples, m_max_multisamples);
-  m_render_api = host_display->GetRenderAPI();
+  m_render_api = g_host_display->GetRenderAPI();
   m_per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
@@ -61,29 +62,26 @@ bool GPU_HW::Initialize(HostDisplay* host_display)
 
   if (m_multisamples != g_settings.gpu_multisamples)
   {
-    g_host_interface->AddFormattedOSDMessage(
-      20.0f, g_host_interface->TranslateString("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
-      g_settings.gpu_multisamples, m_multisamples);
+    Host::AddFormattedOSDMessage(20.0f,
+                                 Host::TranslateString("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
+                                 g_settings.gpu_multisamples, m_multisamples);
   }
   if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
   {
-    g_host_interface->AddOSDMessage(
-      g_host_interface->TranslateStdString("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
+    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
   }
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
   {
-    g_host_interface->AddFormattedOSDMessage(
-      20.0f,
-      g_host_interface->TranslateString("OSDMessage",
-                                        "Texture filter '%s' is not supported with the current renderer."),
+    Host::AddFormattedOSDMessage(
+      20.0f, Host::TranslateString("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
       Settings::GetTextureFilterDisplayName(m_texture_filtering));
     m_texture_filtering = GPUTextureFilter::Nearest;
   }
   if (!m_supports_adaptive_downsampling && g_settings.gpu_resolution_scale > 1 &&
       g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive)
   {
-    g_host_interface->AddOSDMessage(
-      g_host_interface->TranslateStdString(
+    Host::AddOSDMessage(
+      Host::TranslateStdString(
         "OSDMessage", "Adaptive downsampling is not supported with the current renderer, using box filter instead."),
       20.0f);
   }
@@ -149,27 +147,26 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
 
   if (m_resolution_scale != resolution_scale)
   {
-    g_host_interface->AddKeyedFormattedOSDMessage(
+    Host::AddKeyedFormattedOSDMessage(
       "ResolutionScale", 10.0f,
-      g_host_interface->TranslateString("OSDMessage", "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)"),
-      resolution_scale, m_crtc_state.display_vram_width * resolution_scale,
-      resolution_scale * m_crtc_state.display_vram_height, VRAM_WIDTH * resolution_scale,
-      VRAM_HEIGHT * resolution_scale);
+      Host::TranslateString("OSDMessage", "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)"), resolution_scale,
+      m_crtc_state.display_vram_width * resolution_scale, resolution_scale * m_crtc_state.display_vram_height,
+      VRAM_WIDTH * resolution_scale, VRAM_HEIGHT * resolution_scale);
   }
 
   if (m_multisamples != multisamples || m_per_sample_shading != per_sample_shading)
   {
     if (per_sample_shading)
     {
-      g_host_interface->AddKeyedFormattedOSDMessage(
-        "Multisampling", 10.0f,
-        g_host_interface->TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."), multisamples);
+      Host::AddKeyedFormattedOSDMessage(
+        "Multisampling", 10.0f, Host::TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."),
+        multisamples);
     }
     else
     {
-      g_host_interface->AddKeyedFormattedOSDMessage(
-        "Multisampling", 10.0f,
-        g_host_interface->TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux."), multisamples);
+      Host::AddKeyedFormattedOSDMessage("Multisampling", 10.0f,
+                                        Host::TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux."),
+                                        multisamples);
     }
   }
 
@@ -215,7 +212,7 @@ u32 GPU_HW::CalculateResolutionScale() const
                          (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
                                              (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
     const s32 preferred_scale =
-      static_cast<s32>(std::ceil(static_cast<float>(m_host_display->GetWindowHeight()) / height));
+      static_cast<s32>(std::ceil(static_cast<float>(g_host_display->GetWindowHeight()) / height));
     Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
 
     scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, m_max_resolution_scale));
@@ -229,10 +226,9 @@ u32 GPU_HW::CalculateResolutionScale() const
 
     if (g_settings.gpu_resolution_scale != 0)
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         10.0f,
-        g_host_interface->TranslateString("OSDMessage",
-                                          "Resolution scale %ux not supported for adaptive smoothing, using %ux."),
+        Host::TranslateString("OSDMessage", "Resolution scale %ux not supported for adaptive smoothing, using %ux."),
         scale, new_scale);
     }
 
@@ -1410,7 +1406,7 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
     const auto& stats = m_last_renderer_stats;
 
     ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f * ImGui::GetIO().DisplayFramebufferScale.x);
+    ImGui::SetColumnWidth(0, 200.0f * Host::GetOSDScale());
 
     ImGui::TextUnformatted("Resolution Scale:");
     ImGui::NextColumn();
@@ -1487,7 +1483,7 @@ void GPU_HW::ShaderCompileProgressTracker::Increment()
   const u64 tv = Common::Timer::GetCurrentValue();
   if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
   {
-    g_host_interface->DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));
+    Host::DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));
     m_last_update_time = tv;
   }
 }

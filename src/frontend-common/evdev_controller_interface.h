@@ -1,11 +1,13 @@
 #pragma once
-#include "controller_interface.h"
+#include "input_source.h"
 #include "core/types.h"
 #include <array>
 #include <functional>
 #include <libevdev/libevdev.h>
 #include <mutex>
 #include <vector>
+
+#if 0
 
 class EvdevControllerInterface final : public ControllerInterface
 {
@@ -97,3 +99,5 @@ private:
   std::mutex m_event_intercept_mutex;
   Hook::Callback m_event_intercept_callback;
 };
+
+#endif

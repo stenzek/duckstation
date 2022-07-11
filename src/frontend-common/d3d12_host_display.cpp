@@ -5,7 +5,6 @@
 #include "common/d3d12/util.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "core/host_interface.h"
 #include "core/settings.h"
 #include "display_ps.hlsl.h"
 #include "display_vs.hlsl.h"

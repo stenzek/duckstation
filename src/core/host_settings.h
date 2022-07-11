@@ -18,13 +18,16 @@ double GetBaseDoubleSettingValue(const char* section, const char* key, double de
 std::vector<std::string> GetBaseStringListSetting(const char* section, const char* key);
 
 // Allows the emucore to write settings back to the frontend. Use with care.
-// You should call CommitBaseSettingChanges() after finishing writing, or it may not be written to disk.
+// You should call CommitBaseSettingChanges() if you directly write to the layer (i.e. not these functions), or it may
+// not be written to disk.
 void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
 void SetBaseIntSettingValue(const char* section, const char* key, s32 value);
 void SetBaseUIntSettingValue(const char* section, const char* key, u32 value);
 void SetBaseFloatSettingValue(const char* section, const char* key, float value);
 void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
 void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+bool AddValueToBaseStringListSetting(const char* section, const char* key, const char* value);
+bool RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value);
 void DeleteBaseSettingValue(const char* section, const char* key);
 void CommitBaseSettingChanges();
 

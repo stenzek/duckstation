@@ -25,7 +25,8 @@ Q_SIGNALS:
   void closed();
 
 public Q_SLOTS:
-  void onEmulationPaused(bool paused);
+  void onEmulationPaused();
+  void onEmulationResumed();
 
 protected:
   void closeEvent(QCloseEvent* event);

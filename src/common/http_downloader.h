@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace FrontendCommon {
+namespace Common {
 
 class HTTPDownloader
 {

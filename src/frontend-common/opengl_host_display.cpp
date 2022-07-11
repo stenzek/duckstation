@@ -3,7 +3,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "common_host_interface.h"
+#include "common_host.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "postprocessing_shadergen.h"
@@ -521,7 +521,7 @@ HostDisplay::AdapterAndModeList OpenGLHostDisplay::GetAdapterAndModeList()
     for (const GL::Context::FullscreenModeInfo& fmi : m_gl_context->EnumerateFullscreenModes())
     {
       aml.fullscreen_modes.push_back(
-        CommonHostInterface::GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
+        GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
     }
   }
 

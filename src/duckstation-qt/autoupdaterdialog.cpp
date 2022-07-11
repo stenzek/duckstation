@@ -3,7 +3,8 @@
 #include "common/log.h"
 #include "common/minizip_helpers.h"
 #include "common/string_util.h"
-#include "qthostinterface.h"
+#include "mainwindow.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
 #include "unzip.h"
@@ -45,7 +46,7 @@ static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #endif
 
-AutoUpdaterDialog::AutoUpdaterDialog(QtHostInterface* host_interface, QWidget* parent /* = nullptr */)
+AutoUpdaterDialog::AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent /* = nullptr */)
   : QDialog(parent), m_host_interface(host_interface)
 {
   m_network_access_mgr = new QNetworkAccessManager(this);
@@ -375,7 +376,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
     progress.setValue(static_cast<int>(received));
   });
 
-  connect(m_network_access_mgr, &QNetworkAccessManager::finished, [this, &progress](QNetworkReply* reply) {
+  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, [this, &progress](QNetworkReply* reply) {
     m_network_access_mgr->disconnect();
 
     if (reply->error() != QNetworkReply::NoError)
@@ -408,7 +409,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
   else if (result == 1)
   {
     // updater started
-    m_host_interface->requestExit();
+    g_main_window->requestExit();
     done(0);
   }
 
@@ -417,8 +418,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
 bool AutoUpdaterDialog::updateNeeded() const
 {
-  QString last_checked_sha =
-    QString::fromStdString(m_host_interface->GetStringSettingValue("AutoUpdater", "LastVersion"));
+  QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
   Log_InfoPrintf("Current SHA: %s", g_scm_hash_str);
   Log_InfoPrintf("Latest SHA: %s", m_latest_sha.toUtf8().constData());
@@ -435,7 +435,7 @@ bool AutoUpdaterDialog::updateNeeded() const
 
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
-  m_host_interface->SetStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
+  Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
   done(0);
 }
 

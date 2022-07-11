@@ -11,7 +11,6 @@
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"
-#include "host_interface.h"
 #include "system.h"
 Log_SetChannel(GPU_HW_D3D12);
 
@@ -19,9 +18,9 @@ GPU_HW_D3D12::GPU_HW_D3D12() = default;
 
 GPU_HW_D3D12::~GPU_HW_D3D12()
 {
-  if (m_host_display)
+  if (g_host_display)
   {
-    m_host_display->ClearDisplayTexture();
+    g_host_display->ClearDisplayTexture();
     ResetGraphicsAPIState();
   }
 
@@ -33,9 +32,9 @@ GPURenderer GPU_HW_D3D12::GetRendererType() const
   return GPURenderer::HardwareD3D12;
 }
 
-bool GPU_HW_D3D12::Initialize(HostDisplay* host_display)
+bool GPU_HW_D3D12::Initialize()
 {
-  if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::D3D12)
+  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::D3D12))
   {
     Log_ErrorPrintf("Host render API is incompatible");
     return false;
@@ -43,7 +42,7 @@ bool GPU_HW_D3D12::Initialize(HostDisplay* host_display)
 
   SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display))
+  if (!GPU_HW::Initialize())
     return false;
 
   if (!CreateRootSignatures())
@@ -144,7 +143,7 @@ void GPU_HW_D3D12::UpdateSettings()
   }
 
   // Everything should be finished executing before recreating resources.
-  m_host_display->ClearDisplayTexture();
+  g_host_display->ClearDisplayTexture();
   g_d3d12_context->ExecuteCommandList(true);
 
   if (framebuffer_changed)
@@ -413,10 +412,9 @@ bool GPU_HW_D3D12::CreateTextureBuffer()
 bool GPU_HW_D3D12::CompilePipelines()
 {
   D3D12::ShaderCache shader_cache;
-  shader_cache.Open(g_host_interface->GetShaderCacheBasePath(), g_d3d12_context->GetFeatureLevel(),
-                    g_settings.gpu_use_debug_device);
+  shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), g_settings.gpu_use_debug_device);
 
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
+  GPU_HW_ShaderGen shadergen(g_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
@@ -852,7 +850,7 @@ void GPU_HW_D3D12::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
 
-  m_host_display->ClearDisplayTexture();
+  g_host_display->ClearDisplayTexture();
 
   static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
   m_display_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -869,23 +867,23 @@ void GPU_HW_D3D12::UpdateDisplay()
     if (IsUsingMultisampling())
     {
       UpdateVRAMReadTexture();
-      m_host_display->SetDisplayTexture(&m_vram_read_texture, HostDisplayPixelFormat::RGBA8,
+      g_host_display->SetDisplayTexture(&m_vram_read_texture, HostDisplayPixelFormat::RGBA8,
                                         m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight(), 0, 0,
                                         m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
     }
     else
     {
       m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-      m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+      g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight());
     }
-    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+    g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+    g_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
                                          GetDisplayAspectRatio());
@@ -903,14 +901,14 @@ void GPU_HW_D3D12::UpdateDisplay()
 
     if (IsDisplayDisabled())
     {
-      m_host_display->ClearDisplayTexture();
+      g_host_display->ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == InterlacedRenderMode::None &&
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
              (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture.GetHeight())
     {
       m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-      m_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+      g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
                                         scaled_display_width, scaled_display_height);
     }
@@ -938,7 +936,7 @@ void GPU_HW_D3D12::UpdateDisplay()
       m_display_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
       m_vram_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-      m_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
+      g_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
                                         m_display_texture.GetHeight(), 0, 0, scaled_display_width,
                                         scaled_display_height);
 

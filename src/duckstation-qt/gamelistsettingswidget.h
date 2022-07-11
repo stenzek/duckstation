@@ -4,8 +4,7 @@
 
 #include "ui_gamelistsettingswidget.h"
 
-class QtHostInterface;
-
+class SettingsDialog;
 class GameListSearchDirectoriesModel;
 
 class GameListSettingsWidget : public QWidget
@@ -13,7 +12,7 @@ class GameListSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  GameListSettingsWidget(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent);
   ~GameListSettingsWidget();
 
   bool addExcludedPath(const std::string& path);
@@ -36,8 +35,6 @@ protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  QtHostInterface* m_host_interface;
-
   Ui::GameListSettingsWidget m_ui;
 
   GameListSearchDirectoriesModel* m_search_directories_model = nullptr;

@@ -7,14 +7,14 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
-class QtHostInterface;
+class EmuThread;
 
 class AutoUpdaterDialog final : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit AutoUpdaterDialog(QtHostInterface* host_interface, QWidget* parent = nullptr);
+  explicit AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent = nullptr);
   ~AutoUpdaterDialog();
 
   static bool isSupported();
@@ -54,7 +54,7 @@ private:
 
   Ui::AutoUpdaterDialog m_ui;
 
-  QtHostInterface* m_host_interface;
+  EmuThread* m_host_interface;
   QNetworkAccessManager* m_network_access_mgr = nullptr;
   QString m_latest_sha;
   QString m_download_url;

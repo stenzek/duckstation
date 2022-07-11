@@ -36,8 +36,8 @@ GPU_SW::GPU_SW()
 GPU_SW::~GPU_SW()
 {
   m_backend.Shutdown();
-  if (m_host_display)
-    m_host_display->ClearDisplayTexture();
+  if (g_host_display)
+    g_host_display->ClearDisplayTexture();
 }
 
 GPURenderer GPU_SW::GetRendererType() const
@@ -45,9 +45,13 @@ GPURenderer GPU_SW::GetRendererType() const
   return GPURenderer::Software;
 }
 
-bool GPU_SW::Initialize(HostDisplay* host_display)
+bool GPU_SW::Initialize()
 {
-  if (!GPU::Initialize(host_display) || !m_backend.Initialize(false))
+  // we need something to draw in.. but keep the current api if we have one
+  if (!g_host_display && !Host::AcquireHostDisplay(HostDisplay::GetPreferredAPI()))
+    return false;
+
+  if (!GPU::Initialize() || !m_backend.Initialize(false))
     return false;
 
   static constexpr auto formats_for_16bit = make_array(HostDisplayPixelFormat::RGB565, HostDisplayPixelFormat::RGBA5551,
@@ -57,7 +61,7 @@ bool GPU_SW::Initialize(HostDisplay* host_display)
                HostDisplayPixelFormat::RGBA5551);
   for (const HostDisplayPixelFormat format : formats_for_16bit)
   {
-    if (m_host_display->SupportsDisplayPixelFormat(format))
+    if (g_host_display->SupportsDisplayPixelFormat(format))
     {
       m_16bit_display_format = format;
       break;
@@ -65,7 +69,7 @@ bool GPU_SW::Initialize(HostDisplay* host_display)
   }
   for (const HostDisplayPixelFormat format : formats_for_24bit)
   {
-    if (m_host_display->SupportsDisplayPixelFormat(format))
+    if (g_host_display->SupportsDisplayPixelFormat(format))
     {
       m_24bit_display_format = format;
       break;
@@ -233,7 +237,7 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
 
   if (!interlaced)
   {
-    if (!m_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
+    if (!g_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
                                                &dst_stride))
     {
       return;
@@ -285,11 +289,11 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
 
   if (!interlaced)
   {
-    m_host_display->EndSetDisplayPixels();
+    g_host_display->EndSetDisplayPixels();
   }
   else
   {
-    m_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
+    g_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
   }
 }
 
@@ -327,7 +331,7 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
 
   if (!interlaced)
   {
-    if (!m_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
+    if (!g_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
                                                &dst_stride))
     {
       return;
@@ -443,11 +447,11 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
 
   if (!interlaced)
   {
-    m_host_display->EndSetDisplayPixels();
+    g_host_display->EndSetDisplayPixels();
   }
   else
   {
-    m_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
+    g_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
   }
 }
 
@@ -486,14 +490,14 @@ void GPU_SW::UpdateDisplay()
 
   if (!g_settings.debugging.show_vram)
   {
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+    g_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
                                          GetDisplayAspectRatio());
 
     if (IsDisplayDisabled())
     {
-      m_host_display->ClearDisplayTexture();
+      g_host_display->ClearDisplayTexture();
       return;
     }
 
@@ -534,7 +538,7 @@ void GPU_SW::UpdateDisplay()
   else
   {
     CopyOut15Bit(m_16bit_display_format, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false, false);
-    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+    g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
 }

@@ -3,7 +3,6 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "core/controller.h"
-#include "core/host_interface.h"
 #include "core/system.h"
 #include <cmath>
 #include <cstdlib>
@@ -14,6 +13,8 @@
 #ifdef __linux__
 #include <alloca.h>
 #endif
+
+#if 0
 
 Log_SetChannel(EvdevControllerInterface);
 
@@ -442,3 +443,5 @@ bool EvdevControllerInterface::SetControllerDeadzone(int controller_index, float
   Log_InfoPrintf("Controller %d deadzone size set to %f", controller_index, cd->deadzone);
   return true;
 }
+
+#endif

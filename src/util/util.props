@@ -4,13 +4,13 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\libchdr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\libchdr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)simpleini\simpleini.lib;$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

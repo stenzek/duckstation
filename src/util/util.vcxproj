@@ -6,6 +6,7 @@
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="cue_parser.h" />
+    <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="null_audio_stream.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />
+    <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />

@@ -2,7 +2,7 @@
 #include "common/window_info.h"
 #include "core/host_display.h"
 #include "core/host_interface.h"
-#include "frontend-common/common_host_interface.h"
+#include "frontend-common/common_host.h"
 #include <array>
 #include <deque>
 #include <functional>

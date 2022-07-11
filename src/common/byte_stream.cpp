@@ -896,6 +896,105 @@ void GrowableMemoryByteStream::Grow(u32 MinimumGrowth)
   ResizeMemory(NewSize);
 }
 
+bool ByteStream::ReadU8(u8* dest)
+{
+  return Read2(dest, sizeof(u8));
+}
+
+bool ByteStream::ReadU16(u16* dest)
+{
+  return Read2(dest, sizeof(u16));
+}
+
+bool ByteStream::ReadU32(u32* dest)
+{
+  return Read2(dest, sizeof(u32));
+}
+
+bool ByteStream::ReadU64(u64* dest)
+{
+  return Read2(dest, sizeof(u64));
+}
+
+bool ByteStream::ReadS8(s8* dest)
+{
+  return Read2(dest, sizeof(s8));
+}
+
+bool ByteStream::ReadS16(s16* dest)
+{
+  return Read2(dest, sizeof(s16));
+}
+
+bool ByteStream::ReadS32(s32* dest)
+{
+  return Read2(dest, sizeof(s32));
+}
+
+bool ByteStream::ReadS64(s64* dest)
+{
+  return Read2(dest, sizeof(s64));
+}
+
+bool ByteStream::ReadSizePrefixedString(std::string* dest)
+{
+  u32 size;
+  if (!Read2(&size, sizeof(size)))
+    return false;
+
+  dest->resize(size);
+  if (!Read2(dest->data(), size))
+    return false;
+
+  return true;
+}
+
+bool ByteStream::WriteU8(u8 dest)
+{
+  return Write2(&dest, sizeof(u8));
+}
+
+bool ByteStream::WriteU16(u16 dest)
+{
+  return Write2(&dest, sizeof(u16));
+}
+
+bool ByteStream::WriteU32(u32 dest)
+{
+  return Write2(&dest, sizeof(u32));
+}
+
+bool ByteStream::WriteU64(u64 dest)
+{
+  return Write2(&dest, sizeof(u64));
+}
+
+bool ByteStream::WriteS8(s8 dest)
+{
+  return Write2(&dest, sizeof(s8));
+}
+
+bool ByteStream::WriteS16(s16 dest)
+{
+  return Write2(&dest, sizeof(s16));
+}
+
+bool ByteStream::WriteS32(s32 dest)
+{
+  return Write2(&dest, sizeof(s32));
+}
+
+bool ByteStream::WriteS64(s64 dest)
+{
+  return Write2(&dest, sizeof(s64));
+}
+
+bool ByteStream::WriteSizePrefixedString(const std::string_view& str)
+{
+  const u32 size = static_cast<u32>(str.size());
+  return (Write2(&size, sizeof(size)) && (size == 0 || Write2(str.data(), size)));
+}
+
 std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openMode)
 {
   if ((openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE)) == BYTESTREAM_OPEN_WRITE)

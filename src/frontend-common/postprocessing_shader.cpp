@@ -110,8 +110,13 @@ bool PostProcessingShader::LoadFromFile(std::string name, const char* filename)
   if (!code.has_value() || code->empty())
     return false;
 
+  return LoadFromString(std::move(name), code.value());
+}
+
+bool PostProcessingShader::LoadFromString(std::string name, std::string code)
+{
   m_name = std::move(name);
-  m_code = std::move(code.value());
+  m_code = std::move(code);
   m_options.clear();
   LoadOptions();
   return true;

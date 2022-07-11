@@ -4,24 +4,30 @@
 
 #include "ui_biossettingswidget.h"
 
-class QtHostInterface;
 class SettingsDialog;
+
+enum class ConsoleRegion;
+namespace BIOS {
+struct ImageInfo;
+}
 
 class BIOSSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit BIOSSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
+  explicit BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent);
   ~BIOSSettingsWidget();
 
 private Q_SLOTS:
   void refreshList();
-  void browseSearchDirectory();
-  void openSearchDirectory();
 
 private:
+  void populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,
+                                 std::vector<std::pair<std::string, const BIOS::ImageInfo*>>& images);
+  void setDropDownValue(QComboBox* cb, const std::optional<std::string>& name);
+
   Ui::BIOSSettingsWidget m_ui;
 
-  QtHostInterface* m_host_interface;
+  SettingsDialog* m_dialog;
 };

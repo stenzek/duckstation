@@ -4,7 +4,6 @@
 
 #include "ui_generalsettingswidget.h"
 
-class QtHostInterface;
 class SettingsDialog;
 
 class GeneralSettingsWidget : public QWidget
@@ -12,11 +11,14 @@ class GeneralSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit GeneralSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
+  explicit GeneralSettingsWidget(SettingsDialog* dialog, QWidget* parent);
   ~GeneralSettingsWidget();
+
+private Q_SLOTS:
+  void onRenderToSeparateWindowChanged();
 
 private:
   Ui::GeneralSettingsWidget m_ui;
 
-  QtHostInterface* m_host_interface;
+  SettingsDialog* m_dialog;
 };

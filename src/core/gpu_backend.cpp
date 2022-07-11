@@ -173,7 +173,7 @@ void GPUBackend::StartGPUThread()
 {
   m_gpu_loop_done.store(false);
   m_use_gpu_thread = true;
-  m_gpu_thread = std::thread(&GPUBackend::RunGPULoop, this);
+  m_gpu_thread.Start([this]() { RunGPULoop(); });
   Log_InfoPrint("GPU thread started.");
 }
 
@@ -184,7 +184,7 @@ void GPUBackend::StopGPUThread()
 
   m_gpu_loop_done.store(true);
   WakeGPUThread();
-  m_gpu_thread.join();
+  m_gpu_thread.Join();
   m_use_gpu_thread = false;
   Log_InfoPrint("GPU thread stopped.");
 }

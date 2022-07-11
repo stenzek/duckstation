@@ -2,6 +2,7 @@
 #include "../file_system.h"
 #include "../log.h"
 #include "../md5_digest.h"
+#include "../path.h"
 #include "../string_util.h"
 Log_SetChannel(GL::ShaderCache);
 
@@ -251,12 +252,12 @@ ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vert
 
 std::string ShaderCache::GetIndexFileName() const
 {
-  return StringUtil::StdStringFromFormat("%sgl_programs.idx", m_base_path.c_str());
+  return Path::Combine(m_base_path, "gl_programs.idx");
 }
 
 std::string ShaderCache::GetBlobFileName() const
 {
-  return StringUtil::StdStringFromFormat("%sgl_programs.bin", m_base_path.c_str());
+  return Path::Combine(m_base_path, "gl_programs.bin");
 }
 
 std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_shader,

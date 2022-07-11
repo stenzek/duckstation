@@ -70,4 +70,17 @@ bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u3
 
 bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
+
+/// Loads the BIOS image for the specified region.
+std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
+
+/// Searches for a BIOS image for the specified region in the specified directory. If no match is found, the first
+/// BIOS image within 512KB and 4MB will be used.
+std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory);
+
+/// Returns a list of filenames and descriptions for BIOS images in a directory.
+std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
+
+/// Returns true if any BIOS images are found in the configured BIOS directory.
+bool HasAnyBIOSImages();
 } // namespace BIOS

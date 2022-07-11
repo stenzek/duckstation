@@ -1,6 +1,6 @@
 #include "achievementlogindialog.h"
-#include "core/cheevos.h"
-#include "qthostinterface.h"
+#include "frontend-common/achievements.h"
+#include "qthost.h"
 #include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent) : QDialog(parent)
@@ -24,8 +24,8 @@ void AchievementLoginDialog::loginClicked()
   m_ui.status->setText(tr("Logging in..."));
   enableUI(false);
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread([this, username, password]() {
-    const bool result = Cheevos::Login(username.toStdString().c_str(), password.toStdString().c_str());
+  Host::RunOnCPUThread([this, username, password]() {
+    const bool result = Achievements::Login(username.toStdString().c_str(), password.toStdString().c_str());
     QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result));
   });
 }

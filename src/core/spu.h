@@ -11,6 +11,8 @@
 
 class StateWrapper;
 
+class AudioStream;
+
 namespace Common {
 class WAVWriter;
 }
@@ -24,6 +26,7 @@ public:
   {
     RAM_SIZE = 512 * 1024,
     RAM_MASK = RAM_SIZE - 1,
+    SAMPLE_RATE = 44100,
   };
 
   SPU();
@@ -61,16 +64,21 @@ public:
   std::array<u8, RAM_SIZE>& GetRAM() { return m_ram; }
 
   /// Change output stream - used for runahead.
-  ALWAYS_INLINE void SetAudioStream(AudioStream* stream) { m_audio_stream = stream; }
+  // TODO: Make it use system "running ahead" flag
+  ALWAYS_INLINE bool IsAudioOutputMuted() const { return m_audio_output_muted; }
+  void SetAudioOutputMuted(bool muted) { m_audio_output_muted = muted; }
+
+  ALWAYS_INLINE AudioStream* GetOutputStream() const { return m_audio_stream.get(); }
+  void RecreateOutputStream();
 
 private:
   static constexpr u32 SPU_BASE = 0x1F801C00;
+  static constexpr u32 NUM_CHANNELS = 2;
   static constexpr u32 NUM_VOICES = 24;
   static constexpr u32 NUM_VOICE_REGISTERS = 8;
   static constexpr u32 VOICE_ADDRESS_SHIFT = 3;
   static constexpr u32 NUM_SAMPLES_PER_ADPCM_BLOCK = 28;
   static constexpr u32 NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK = 3;
-  static constexpr u32 SAMPLE_RATE = 44100;
   static constexpr u32 SYSCLK_TICKS_PER_SPU_TICK = System::MASTER_CLOCK / SAMPLE_RATE; // 0x300
   static constexpr s16 ENVELOPE_MIN_VOLUME = 0;
   static constexpr s16 ENVELOPE_MAX_VOLUME = 0x7FFF;
@@ -376,10 +384,15 @@ private:
   void UpdateTransferEvent();
   void UpdateDMARequest();
 
+  void CreateOutputStream();
+
   std::unique_ptr<TimingEvent> m_tick_event;
   std::unique_ptr<TimingEvent> m_transfer_event;
   std::unique_ptr<Common::WAVWriter> m_dump_writer;
-  AudioStream* m_audio_stream = nullptr;
+  std::unique_ptr<AudioStream> m_audio_stream;
+  std::unique_ptr<AudioStream> m_null_audio_stream;
+  bool m_audio_output_muted = false;
+
   TickCount m_ticks_carry = 0;
   TickCount m_cpu_ticks_per_spu_tick = 0;
   TickCount m_cpu_tick_divider = 0;

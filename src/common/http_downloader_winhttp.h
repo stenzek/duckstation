@@ -5,7 +5,7 @@
 
 #include <winhttp.h>
 
-namespace FrontendCommon {
+namespace Common {
 
 class HTTPDownloaderWinHttp final : public HTTPDownloader
 {
