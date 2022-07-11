@@ -105,7 +105,7 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
   }
 
   Log_InfoPrintf("Dumping %ux%u VRAM write to '%s'", width, height, filename.c_str());
-  if (!Common::WriteImageToFile(image, filename.c_str()))
+  if (!image.SaveToFile(filename.c_str()))
     Log_ErrorPrintf("Failed to dump %ux%u VRAM write to '%s'", width, height, filename.c_str());
 }
 
@@ -266,7 +266,7 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
     return &it->second;
 
   Common::RGBA8Image image;
-  if (!Common::LoadImageFromFile(&image, filename.c_str()))
+  if (!image.LoadFromFile(filename.c_str()))
   {
     Log_ErrorPrintf("Failed to load '%s'", filename.c_str());
     return nullptr;

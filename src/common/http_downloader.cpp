@@ -37,7 +37,7 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback)
   req->type = Request::Type::Get;
   req->url = std::move(url);
   req->callback = std::move(callback);
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -57,7 +57,7 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   req->url = std::move(url);
   req->post_data = std::move(post_data);
   req->callback = std::move(callback);
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -76,7 +76,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
   InternalPollRequests();
 
-  const Common::Timer::Value current_time = Common::Timer::GetValue();
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   u32 active_requests = 0;
   u32 unstarted_requests = 0;
 

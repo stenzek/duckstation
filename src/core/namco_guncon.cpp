@@ -283,7 +283,7 @@ void NamcoGunCon::LoadSettings(const char* section)
   {
     m_crosshair_image_path = std::move(path);
     if (m_crosshair_image_path.empty() ||
-        !Common::LoadImageFromFile(&m_crosshair_image, m_crosshair_image_path.c_str()))
+        !m_crosshair_image.LoadFromFile(m_crosshair_image_path.c_str()))
     {
       m_crosshair_image.Invalidate();
     }

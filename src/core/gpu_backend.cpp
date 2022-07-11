@@ -215,7 +215,7 @@ void GPUBackend::RunGPULoop()
     u32 read_ptr = m_command_fifo_read_ptr.load();
     if (read_ptr == write_ptr)
     {
-      const Common::Timer::Value current_time = Common::Timer::GetValue();
+      const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
       if (Common::Timer::ConvertValueToNanoseconds(current_time - last_command_time) < SPIN_TIME_NS)
         continue;
 
@@ -263,7 +263,7 @@ void GPUBackend::RunGPULoop()
       }
     }
 
-    last_command_time = allow_sleep ? 0 : Common::Timer::GetValue();
+    last_command_time = allow_sleep ? 0 : Common::Timer::GetCurrentValue();
     m_command_fifo_read_ptr.store(read_ptr);
   }
 }

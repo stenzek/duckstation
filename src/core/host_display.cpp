@@ -36,7 +36,7 @@ bool HostDisplay::ShouldSkipDisplayingFrame()
   if (m_display_frame_interval == 0.0f)
     return false;
 
-  const u64 now = Common::Timer::GetValue();
+  const u64 now = Common::Timer::GetCurrentValue();
   const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
   if (diff < m_display_frame_interval)
     return true;

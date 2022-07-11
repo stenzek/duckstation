@@ -1678,7 +1678,7 @@ void AddNotification(float duration, std::string title, std::string text, std::s
   notif.title = std::move(title);
   notif.text = std::move(text);
   notif.badge_path = std::move(image_path);
-  notif.start_time = Common::Timer::GetValue();
+  notif.start_time = Common::Timer::GetCurrentValue();
   s_notifications.push_back(std::move(notif));
 }
 
@@ -1694,7 +1694,7 @@ void DrawNotifications(ImVec2& position, float spacing)
 
   static constexpr float EASE_IN_TIME = 0.6f;
   static constexpr float EASE_OUT_TIME = 0.6f;
-  const Common::Timer::Value current_time = Common::Timer::GetValue();
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 
   const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
   const float vertical_padding = ImGuiFullscreen::LayoutScale(10.0f);

@@ -1652,7 +1652,7 @@ void CommonHostInterface::AddControllerRumble(u32 controller_index, u32 num_moto
   rumble.num_motors = std::min<u32>(num_motors, ControllerRumbleState::MAX_MOTORS);
   rumble.last_strength.fill(0.0f);
   rumble.update_callback = std::move(callback);
-  rumble.last_update_time = Common::Timer::GetValue();
+  rumble.last_update_time = Common::Timer::GetCurrentValue();
   m_controller_vibration_motors.push_back(std::move(rumble));
 }
 
@@ -1666,7 +1666,7 @@ void CommonHostInterface::UpdateControllerRumble()
   // This is because the rumble update is synchronous, and with bluetooth latency can severely impact fast forward
   // performance.
   static constexpr float UPDATE_FREQUENCY = 1000.0f;
-  const u64 time = Common::Timer::GetValue();
+  const u64 time = Common::Timer::GetCurrentValue();
 
   for (ControllerRumbleState& rumble : m_controller_vibration_motors)
   {

@@ -64,6 +64,7 @@
     <ClInclude Include="thirdparty\StackWalker.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="threading.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="minizip_helpers.h" />
@@ -131,6 +132,7 @@
     <ClCompile Include="thirdparty\StackWalker.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="threading.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="vulkan\builders.cpp" />
     <ClCompile Include="vulkan\context.cpp" />

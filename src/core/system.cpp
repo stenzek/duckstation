@@ -1585,7 +1585,7 @@ void UpdateThrottlePeriod()
 
 void ResetThrottler()
 {
-  s_next_frame_time = Common::Timer::GetValue();
+  s_next_frame_time = Common::Timer::GetCurrentValue();
 }
 
 void Throttle()
@@ -1606,7 +1606,7 @@ void Throttle()
 #endif
 
   // Use unsigned for defined overflow/wrap-around.
-  const Common::Timer::Value time = Common::Timer::GetValue();
+  const Common::Timer::Value time = Common::Timer::GetCurrentValue();
   const double sleep_time = (s_next_frame_time >= time) ?
                               Common::Timer::ConvertValueToNanoseconds(s_next_frame_time - time) :
                               -Common::Timer::ConvertValueToNanoseconds(time - s_next_frame_time);
@@ -1630,7 +1630,7 @@ void RunFrames()
   const u32 max_frames_to_run = 2;
   u32 frames_run = 0;
 
-  Common::Timer::Value value = Common::Timer::GetValue();
+  Common::Timer::Value value = Common::Timer::GetCurrentValue();
   while (frames_run < max_frames_to_run)
   {
     if (value < s_next_frame_time)
@@ -1639,7 +1639,7 @@ void RunFrames()
     RunFrame();
     frames_run++;
 
-    value = Common::Timer::GetValue();
+    value = Common::Timer::GetCurrentValue();
   }
 
   if (frames_run != 1)

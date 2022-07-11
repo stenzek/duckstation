@@ -74,7 +74,7 @@ bool HTTPDownloaderUWP::StartRequest(HTTPDownloader::Request* request)
           try
           {
             req->state.store(Request::State::Receiving);
-            req->start_time = Common::Timer::GetValue();
+            req->start_time = Common::Timer::GetCurrentValue();
 
             const HttpResponseMessage response(req->request_async.get());
             req->status_code = static_cast<s32>(response.StatusCode());
@@ -146,7 +146,7 @@ bool HTTPDownloaderUWP::StartRequest(HTTPDownloader::Request* request)
 
   Log_DevPrintf("Started HTTP request for '%s'", req->url.c_str());
   req->state = Request::State::Started;
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
   return true;
 }
 

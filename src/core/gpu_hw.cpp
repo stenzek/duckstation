@@ -1475,7 +1475,7 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
 
 GPU_HW::ShaderCompileProgressTracker::ShaderCompileProgressTracker(std::string title, u32 total)
   : m_title(std::move(title)), m_min_time(Common::Timer::ConvertSecondsToValue(1.0)),
-    m_update_interval(Common::Timer::ConvertSecondsToValue(0.1)), m_start_time(Common::Timer::GetValue()),
+    m_update_interval(Common::Timer::ConvertSecondsToValue(0.1)), m_start_time(Common::Timer::GetCurrentValue()),
     m_last_update_time(0), m_progress(0), m_total(total)
 {
 }
@@ -1484,7 +1484,7 @@ void GPU_HW::ShaderCompileProgressTracker::Increment()
 {
   m_progress++;
 
-  const u64 tv = Common::Timer::GetValue();
+  const u64 tv = Common::Timer::GetCurrentValue();
   if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
   {
     g_host_interface->DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));

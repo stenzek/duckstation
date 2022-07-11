@@ -137,6 +137,7 @@
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="memory_settings_interface.h" />
+    <ClInclude Include="threading.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gl\program.cpp">
@@ -250,6 +251,7 @@
     </ClCompile>
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="memory_settings_interface.cpp" />
+    <ClCompile Include="threading.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

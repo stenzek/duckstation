@@ -481,19 +481,27 @@ void DestroyResources()
 
 static std::unique_ptr<HostDisplayTexture> LoadTexture(const char* path, bool from_package)
 {
-  std::unique_ptr<ByteStream> stream;
+  std::vector<u8> data;
   if (from_package)
-    stream = g_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
+  {
+    std::unique_ptr<ByteStream> stream = g_host_interface->OpenPackageFile(path, BYTESTREAM_OPEN_READ);
+    if (stream)
+      data = ByteStream::ReadBinaryStream(stream.get(), false);
+  }
   else
-    stream = ByteStream::OpenFile(path, BYTESTREAM_OPEN_READ);
-  if (!stream)
+  {
+    std::optional<std::vector<u8>> odata(FileSystem::ReadBinaryFile(path));
+    if (!odata.has_value())
+      data = std::move(odata.value());
+  }
+  if (data.empty())
   {
     Log_ErrorPrintf("Failed to open texture resource '%s'", path);
     return {};
   }
 
   Common::RGBA8Image image;
-  if (!Common::LoadImageFromStream(&image, stream.get()) && image.IsValid())
+  if (!image.LoadFromBuffer(path, data.data(), data.size()) && image.IsValid())
   {
     Log_ErrorPrintf("Failed to read texture resource '%s'", path);
     return {};

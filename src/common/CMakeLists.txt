@@ -55,6 +55,8 @@ add_library(common
   string_util.h
   thirdparty/thread_pool.cpp
   thirdparty/thread_pool.h
+  threading.cpp
+  threading.h
   timer.cpp
   timer.h
   types.h
