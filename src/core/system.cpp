@@ -285,7 +285,8 @@ bool IsExeFileName(const char* path)
 {
   const char* extension = std::strrchr(path, '.');
   return (extension &&
-          (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0));
+          (StringUtil::Strcasecmp(extension, ".exe") == 0 || StringUtil::Strcasecmp(extension, ".psexe") == 0 ||
+           StringUtil::Strcasecmp(extension, ".ps-exe") == 0));
 }
 
 bool IsPsfFileName(const char* path)
@@ -298,7 +299,7 @@ bool IsPsfFileName(const char* path)
 bool IsLoadableFilename(const char* path)
 {
   static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", ".ecm", ".mds", // discs
-                                                ".exe", ".psexe",                                       // exes
+                                                ".exe", ".psexe", ".ps-exe",                            // exes
                                                 ".psf", ".minipsf",                                     // psf
                                                 ".m3u",                                                 // playlists
                                                 ".pbp");
