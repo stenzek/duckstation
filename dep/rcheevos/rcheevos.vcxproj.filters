@@ -13,6 +13,9 @@
     <Filter Include="include">
       <UniqueIdentifier>{01fc10b0-c122-461b-b75a-f97c8b89d627}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rapi">
+      <UniqueIdentifier>{92c73497-6936-4a1c-9534-4f2ffb64cba2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rurl\url.c">
@@ -69,6 +72,21 @@
     <ClCompile Include="src\rhash\hash.c">
       <Filter>rhash</Filter>
     </ClCompile>
+    <ClCompile Include="src\rapi\rc_api_editor.c">
+      <Filter>rapi</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rapi\rc_api_info.c">
+      <Filter>rapi</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rapi\rc_api_runtime.c">
+      <Filter>rapi</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rapi\rc_api_user.c">
+      <Filter>rapi</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rapi\rc_api_common.c">
+      <Filter>rapi</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rc_consoles.h">
@@ -100,6 +118,24 @@
     </ClInclude>
     <ClInclude Include="src\rhash\md5.h">
       <Filter>rhash</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_api_info.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_api_request.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_api_runtime.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_api_user.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\rc_api_editor.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rapi\rc_api_common.h">
+      <Filter>rapi</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
