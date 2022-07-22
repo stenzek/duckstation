@@ -880,10 +880,7 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
       Host::DeleteBaseSettingValue(section.c_str(), key.c_str());
     }
 
-    Panic("Fixme");
-#if 0
     g_emu_thread->updateEmuFolders();
-#endif
   });
 
   if (browse_button)
@@ -910,7 +907,7 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
   {
     QObject::connect(
       reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value)]() {
-        Accessor::setStringValue(widget, QString::fromStdString(Path::Combine(EmuFolders::AppRoot, default_value)));
+        Accessor::setStringValue(widget, QString::fromStdString(default_value));
       });
   }
 }

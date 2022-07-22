@@ -66,8 +66,5 @@ void SetGameSettingsLayer(SettingsInterface* sif);
 
 /// Sets the input profile settings layer. Called by VMManager when the game changes.
 void SetInputSettingsLayer(SettingsInterface* sif);
-
-/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed. Must call with the lock held.
-void UpdateEmuFolders();
 } // namespace Internal
 } // namespace Host

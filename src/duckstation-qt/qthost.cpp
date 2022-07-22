@@ -529,6 +529,17 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   System::ReloadGameSettings(display_osd_messages);
 }
 
+void EmuThread::updateEmuFolders()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateEmuFolders, Qt::QueuedConnection);
+    return;
+  }
+
+  EmuFolders::Update();
+}
+
 void EmuThread::startFullscreenUI()
 {
   if (!isOnThread())

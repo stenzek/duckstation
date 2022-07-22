@@ -138,7 +138,3 @@ void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
 	std::unique_lock lock(s_settings_mutex);
 	s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }
-
-void Host::Internal::UpdateEmuFolders()
-{
-}

@@ -1644,7 +1644,7 @@ void FullscreenUI::DrawFolderSetting(const char* title, const char* section, con
       GetEditingSettingsInterface()->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
       SetSettingsChanged();
 
-      Host::RunOnCPUThread(&Host::Internal::UpdateEmuFolders);
+      Host::RunOnCPUThread(EmuFolders::Update);
 
       CloseFileSelector();
     });

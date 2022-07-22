@@ -9,6 +9,8 @@
 #include "controller.h"
 #include "host.h"
 #include "host_display.h"
+#include "host_settings.h"
+#include "system.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -1228,6 +1230,26 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+}
+
+void EmuFolders::Update()
+{
+  const std::string old_gamesettings(EmuFolders::GameSettings);
+  const std::string old_inputprofiles(EmuFolders::InputProfiles);
+  const std::string old_memorycards(EmuFolders::MemoryCards);
+
+  // have to manually grab the lock here, because of the ReloadGameSettings() below.
+  {
+    auto lock = Host::GetSettingsLock();
+    LoadConfig(*Host::Internal::GetBaseSettingsLayer());
+    EnsureFoldersExist();
+  }
+
+  if (old_gamesettings != EmuFolders::GameSettings || old_inputprofiles != EmuFolders::InputProfiles)
+    System::ReloadGameSettings(false);
+
+  if (System::IsValid() && old_memorycards != EmuFolders::MemoryCards)
+    System::UpdateMemoryCardTypes();
 }
 
 bool EmuFolders::EnsureFoldersExist()

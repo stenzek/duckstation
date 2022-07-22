@@ -445,4 +445,7 @@ void SetDefaults();
 bool EnsureFoldersExist();
 void LoadConfig(SettingsInterface& si);
 void Save(SettingsInterface& si);
+
+/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
+void Update();
 } // namespace EmuFolders
