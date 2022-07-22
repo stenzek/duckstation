@@ -208,6 +208,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_NONE);
   }
 
+  InstallTranslator();
   return true;
 }
 
@@ -2160,8 +2161,9 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
   if (autoboot && !autoboot->filename.empty() && !FileSystem::FileExists(autoboot->filename.c_str()))
   {
-    QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          QStringLiteral("File '%1' does not exist.").arg(QString::fromStdString(autoboot->filename)));
+    QMessageBox::critical(
+      nullptr, qApp->translate("QtHost", "Error"),
+      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->filename)));
     return false;
   }
 
@@ -2186,8 +2188,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
     if (autoboot->save_state.empty() || !FileSystem::FileExists(autoboot->save_state.c_str()))
     {
-      QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                            QStringLiteral("The specified save state does not exist."));
+      QMessageBox::critical(nullptr, qApp->translate("QtHost", "Error"),
+                            qApp->translate("QtHost", "The specified save state does not exist."));
       return false;
     }
   }
@@ -2201,10 +2203,10 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   // scanning the game list).
   if (s_batch_mode && !autoboot && !s_start_fullscreen_ui)
   {
-    QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          s_nogui_mode ?
-                            QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
-                            QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+    QMessageBox::critical(
+      nullptr, qApp->translate("QtHost", "Error"),
+      s_nogui_mode ? qApp->translate("QtHost", "Cannot use no-gui mode, because no boot filename was specified.") :
+                     qApp->translate("QtHost", "Cannot use batch mode, because no boot filename was specified."));
     return false;
   }
 

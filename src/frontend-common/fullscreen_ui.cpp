@@ -1656,7 +1656,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
   std::vector<std::pair<std::string, std::string>> devices(InputManager::EnumerateDevices());
   if (devices.empty())
   {
-    ShowToast({}, "Automatic binding failed, no devices are available.");
+    ShowToast({}, "Automatic mapping failed, no devices are available.");
     return;
   }
 

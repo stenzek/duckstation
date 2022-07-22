@@ -77,7 +77,7 @@
         <item>
          <widget class="QPushButton" name="automaticBinding">
           <property name="text">
-           <string>Automatic binding</string>
+           <string>Automatic Mapping</string>
           </property>
           <property name="icon">
            <iconset theme="gamepad-line">
@@ -88,7 +88,7 @@
         <item>
          <widget class="QPushButton" name="clearBindings">
           <property name="text">
-           <string>Clear Bindings</string>
+           <string>Clear Mapping</string>
           </property>
           <property name="icon">
            <iconset theme="file-reduce-line">
