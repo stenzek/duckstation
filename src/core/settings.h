@@ -70,6 +70,7 @@ struct Settings
   bool create_save_state_backups = false;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
+  bool apply_compatibility_settings = true;
   bool apply_game_settings = true;
   bool auto_load_cheats = true;
   bool disable_all_enhancements = false;
@@ -444,4 +445,7 @@ void SetDefaults();
 bool EnsureFoldersExist();
 void LoadConfig(SettingsInterface& si);
 void Save(SettingsInterface& si);
+
+/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
+void Update();
 } // namespace EmuFolders

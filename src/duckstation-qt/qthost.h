@@ -145,6 +145,7 @@ public Q_SLOTS:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);
   void reloadGameSettings(bool display_osd_messages = false);
+  void updateEmuFolders();
   void reloadInputSources();
   void reloadInputBindings();
   void enumerateInputDevices();

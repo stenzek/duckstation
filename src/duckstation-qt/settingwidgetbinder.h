@@ -181,7 +181,7 @@ struct SettingAccessor<QComboBox>
   }
   static void setNullableStringValue(QComboBox* widget, std::optional<QString> value)
   {
-    isNullValue(widget) ? widget->setCurrentIndex(0) : setStringValue(widget, value.value());
+    value.has_value() ? setStringValue(widget, value.value()) : widget->setCurrentIndex(0);
   }
 
   template<typename F>
@@ -880,10 +880,7 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
       Host::DeleteBaseSettingValue(section.c_str(), key.c_str());
     }
 
-    Panic("Fixme");
-#if 0
     g_emu_thread->updateEmuFolders();
-#endif
   });
 
   if (browse_button)
@@ -910,7 +907,7 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
   {
     QObject::connect(
       reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value)]() {
-        Accessor::setStringValue(widget, QString::fromStdString(Path::Combine(EmuFolders::AppRoot, default_value)));
+        Accessor::setStringValue(widget, QString::fromStdString(default_value));
       });
   }
 }

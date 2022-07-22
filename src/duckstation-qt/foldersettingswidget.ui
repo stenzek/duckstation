@@ -201,8 +201,5 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../p2-qt-rebase/pcsx2-qt/resources/resources.qrc"/>
- </resources>
  <connections/>
 </ui>

@@ -825,7 +825,7 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
 
   // apply compatibility settings
-  if (g_settings.apply_game_settings && !s_running_game_code.empty())
+  if (g_settings.apply_compatibility_settings && !s_running_game_code.empty())
   {
     const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_code);
     if (entry)
@@ -848,6 +848,14 @@ void System::ApplySettings(bool display_osd_messages)
   const Settings old_config(std::move(g_settings));
   g_settings = Settings();
   LoadSettings(display_osd_messages);
+
+  // If we've disabled/enabled game settings, we need to reload without it.
+  if (g_settings.apply_game_settings != old_config.apply_game_settings)
+  {
+    UpdateGameSettingsLayer();
+    LoadSettings(display_osd_messages);
+  }
+
   CheckForSettingsChanges(old_config);
   Host::CheckForSettingsChanges(old_config);
 
@@ -867,7 +875,7 @@ bool System::ReloadGameSettings(bool display_osd_messages)
 bool System::UpdateGameSettingsLayer()
 {
   std::unique_ptr<INISettingsInterface> new_interface;
-  if (!s_running_game_code.empty())
+  if (g_settings.apply_game_settings && !s_running_game_code.empty())
   {
     std::string filename(GetGameSettingsPath(s_running_game_code));
     if (FileSystem::FileExists(filename.c_str()))
@@ -3910,7 +3918,8 @@ bool System::LoadCheatList(const char* filename)
 
 bool System::LoadCheatListFromGameTitle()
 {
-  if (!IsValid() || Achievements::ChallengeModeActive())
+  // Called when booting, needs to test for shutdown.
+  if (IsShutdown() || Achievements::ChallengeModeActive())
     return false;
 
   const std::string filename(GetCheatFileName());
@@ -3922,15 +3931,15 @@ bool System::LoadCheatListFromGameTitle()
 
 bool System::LoadCheatListFromDatabase()
 {
-  if (System::GetRunningCode().empty() || Achievements::ChallengeModeActive())
+  if (IsShutdown() || s_running_game_code.empty() || Achievements::ChallengeModeActive())
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromPackage(System::GetRunningCode()))
+  if (!cl->LoadFromPackage(s_running_game_code))
     return false;
 
   Log_InfoPrintf("Loaded %u cheats from database.", cl->GetCodeCount());
-  System::SetCheatList(std::move(cl));
+  SetCheatList(std::move(cl));
   return true;
 }
 

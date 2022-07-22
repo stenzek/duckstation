@@ -208,6 +208,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_NONE);
   }
 
+  InstallTranslator();
   return true;
 }
 
@@ -274,7 +275,7 @@ void QtHost::SetDataDirectory()
   }
 
 #if defined(_WIN32)
-  // On Windows, use My Documents\PCSX2 to match old installs.
+  // On Windows, use My Documents\DuckStation.
   PWSTR documents_directory;
   if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
   {
@@ -283,16 +284,15 @@ void QtHost::SetDataDirectory()
     CoTaskMemFree(documents_directory);
   }
 #elif defined(__linux__)
-  // Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+  // Use $XDG_CONFIG_HOME/duckstation if it exists.
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
   {
-    EmuFolders::DataRoot = Path::Combine(xdg_config_home, "PCSX2");
+    EmuFolders::DataRoot = Path::Combine(xdg_config_home, "duckstation");
   }
   else
   {
-    // Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
-    // Maybe we should drop the former when Qt goes live.
+    // Use ~/.local/share/duckstation otherwise.
     const char* home_dir = getenv("HOME");
     if (home_dir)
     {
@@ -529,6 +529,17 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   System::ReloadGameSettings(display_osd_messages);
 }
 
+void EmuThread::updateEmuFolders()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateEmuFolders, Qt::QueuedConnection);
+    return;
+  }
+
+  EmuFolders::Update();
+}
+
 void EmuThread::startFullscreenUI()
 {
   if (!isOnThread())
@@ -700,7 +711,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
   System::HostDisplayResized();
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
-  if (!System::IsShutdown())
+  if (System::IsValid())
   {
     if (m_is_exclusive_fullscreen && !g_host_display->IsFullscreen())
     {
@@ -712,7 +723,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
     }
 
     // force redraw if we're paused
-    if (!FullscreenUI::IsInitialized())
+    if (!System::IsRunning() && !FullscreenUI::HasActiveWindow())
       renderDisplay();
   }
 }
@@ -950,6 +961,10 @@ void Host::OnSystemPaused()
 void Host::OnSystemResumed()
 {
   CommonHost::OnSystemResumed();
+
+  // if we were surfaceless (view->game list, system->unpause), get our display widget back
+  if (g_emu_thread->isSurfaceless())
+    g_emu_thread->setSurfaceless(false);
 
   emit g_emu_thread->systemResumed();
 
@@ -1498,7 +1513,7 @@ void EmuThread::run()
       CommonHost::PumpMessagesOnCPUThread();
 
       // we want to keep rendering the UI when paused and fullscreen UI is enabled
-      if (!FullscreenUI::IsInitialized() && !System::IsValid())
+      if (!FullscreenUI::HasActiveWindow() && !System::IsRunning())
       {
         // wait until we have a system before running
         m_event_loop->exec();
@@ -2160,8 +2175,9 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
   if (autoboot && !autoboot->filename.empty() && !FileSystem::FileExists(autoboot->filename.c_str()))
   {
-    QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          QStringLiteral("File '%1' does not exist.").arg(QString::fromStdString(autoboot->filename)));
+    QMessageBox::critical(
+      nullptr, qApp->translate("QtHost", "Error"),
+      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->filename)));
     return false;
   }
 
@@ -2186,8 +2202,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
     if (autoboot->save_state.empty() || !FileSystem::FileExists(autoboot->save_state.c_str()))
     {
-      QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                            QStringLiteral("The specified save state does not exist."));
+      QMessageBox::critical(nullptr, qApp->translate("QtHost", "Error"),
+                            qApp->translate("QtHost", "The specified save state does not exist."));
       return false;
     }
   }
@@ -2201,10 +2217,10 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   // scanning the game list).
   if (s_batch_mode && !autoboot && !s_start_fullscreen_ui)
   {
-    QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          s_nogui_mode ?
-                            QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
-                            QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+    QMessageBox::critical(
+      nullptr, qApp->translate("QtHost", "Error"),
+      s_nogui_mode ? qApp->translate("QtHost", "Cannot use no-gui mode, because no boot filename was specified.") :
+                     qApp->translate("QtHost", "Cannot use batch mode, because no boot filename was specified."));
     return false;
   }
 

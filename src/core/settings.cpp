@@ -9,6 +9,8 @@
 #include "controller.h"
 #include "host.h"
 #include "host_display.h"
+#include "host_settings.h"
+#include "system.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -168,6 +170,7 @@ void Settings::Load(SettingsInterface& si)
   create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
   auto_load_cheats = si.GetBoolValue("Main", "AutoLoadCheats", true);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
@@ -385,6 +388,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+  si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
@@ -1226,6 +1230,26 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+}
+
+void EmuFolders::Update()
+{
+  const std::string old_gamesettings(EmuFolders::GameSettings);
+  const std::string old_inputprofiles(EmuFolders::InputProfiles);
+  const std::string old_memorycards(EmuFolders::MemoryCards);
+
+  // have to manually grab the lock here, because of the ReloadGameSettings() below.
+  {
+    auto lock = Host::GetSettingsLock();
+    LoadConfig(*Host::Internal::GetBaseSettingsLayer());
+    EnsureFoldersExist();
+  }
+
+  if (old_gamesettings != EmuFolders::GameSettings || old_inputprofiles != EmuFolders::InputProfiles)
+    System::ReloadGameSettings(false);
+
+  if (System::IsValid() && old_memorycards != EmuFolders::MemoryCards)
+    System::UpdateMemoryCardTypes();
 }
 
 bool EmuFolders::EnsureFoldersExist()

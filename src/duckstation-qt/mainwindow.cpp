@@ -109,7 +109,7 @@ void MainWindow::initialize()
   setupAdditionalUi();
   connectSignals();
 
-  restoreStateFromConfig();
+  restoreGeometryFromConfig();
   switchToGameListView();
   updateWindowTitle();
 
@@ -269,7 +269,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
   m_display_widget->setFocus();
   m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-  m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
+  m_display_widget->updateRelativeMode(m_relative_mouse_mode && s_system_valid && !s_system_paused);
   m_display_widget->updateCursor(s_system_valid && !s_system_paused);
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
@@ -420,6 +420,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
       {
         m_game_list_widget->setVisible(true);
         setCentralWidget(m_game_list_widget);
+        m_game_list_widget->resizeTableViewColumnsToFit();
       }
     }
     else
@@ -427,7 +428,10 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
       AssertMsg(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
       m_ui.mainContainer->removeWidget(m_display_widget);
       if (show_game_list)
+      {
         m_ui.mainContainer->setCurrentIndex(0);
+        m_game_list_widget->resizeTableViewColumnsToFit();
+      }
     }
   }
 
@@ -531,6 +535,12 @@ void MainWindow::onSystemResumed()
 
 void MainWindow::onSystemDestroyed()
 {
+  // update UI
+  {
+    QSignalBlocker sb(m_ui.actionPause);
+    m_ui.actionPause->setChecked(true);
+  }
+
   s_system_valid = false;
   s_system_paused = false;
   updateEmulationActions(false, false, Achievements::ChallengeModeActive());
@@ -645,7 +655,6 @@ void MainWindow::recreate()
 
   MainWindow* new_main_window = new MainWindow();
   new_main_window->initialize();
-  new_main_window->refreshGameList(false);
   new_main_window->show();
   deleteLater();
 }
@@ -1112,8 +1121,8 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
+  Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
   m_ui.toolBar->setVisible(checked);
-  saveStateToConfig();
 }
 
 void MainWindow::onViewLockToolbarActionToggled(bool checked)
@@ -1188,6 +1197,7 @@ void MainWindow::onGameListRefreshProgress(const QString& status, int current, i
 
 void MainWindow::onGameListRefreshComplete()
 {
+  m_ui.statusBar->clearMessage();
   clearProgressBar();
 }
 
@@ -1360,6 +1370,10 @@ void MainWindow::setupAdditionalUi()
   const bool status_bar_visible = Host::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
   m_ui.statusBar->setVisible(status_bar_visible);
+
+  const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", true);
+  m_ui.actionViewToolbar->setChecked(toolbar_visible);
+  m_ui.toolBar->setVisible(toolbar_visible);
 
   const bool toolbars_locked = Host::GetBaseBoolSettingValue("UI", "LockToolbar", false);
   m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
@@ -1651,7 +1665,7 @@ void MainWindow::updateWindowState(bool force_visible)
 
 void MainWindow::setProgressBar(int current, int total)
 {
-  const int value = (current * 100) / total;
+  const int value = (total != 0) ? ((current * 100) / total) : 0;
   if (m_status_progress_widget->value() != value)
     m_status_progress_widget->setValue(value);
 
@@ -2073,49 +2087,21 @@ void MainWindow::onSettingsResetToDefault()
   updateMenuSelectedTheme();
 }
 
-void MainWindow::saveStateToConfig()
+void MainWindow::saveGeometryToConfig()
 {
-  {
-    const QByteArray geometry = saveGeometry();
-    const QByteArray geometry_b64 = geometry.toBase64();
-    const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
-    if (old_geometry_b64 != geometry_b64.constData())
-      Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
-  }
-
-  {
-    const QByteArray state = saveState();
-    const QByteArray state_b64 = state.toBase64();
-    const std::string old_state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
-    if (old_state_b64 != state_b64.constData())
-      Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
-  }
+  const QByteArray geometry = saveGeometry();
+  const QByteArray geometry_b64 = geometry.toBase64();
+  const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+  if (old_geometry_b64 != geometry_b64.constData())
+    Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
 }
 
-void MainWindow::restoreStateFromConfig()
+void MainWindow::restoreGeometryFromConfig()
 {
-  {
-    const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
-    const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
-    if (!geometry.isEmpty())
-      restoreGeometry(geometry);
-  }
-
-  {
-    const std::string state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
-    const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
-    if (!state.isEmpty())
-      restoreState(state);
-
-    {
-      QSignalBlocker sb(m_ui.actionViewToolbar);
-      m_ui.actionViewToolbar->setChecked(!m_ui.toolBar->isHidden());
-    }
-    {
-      QSignalBlocker sb(m_ui.actionViewStatusBar);
-      m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
-    }
-  }
+  const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+  if (!geometry.isEmpty())
+    restoreGeometry(geometry);
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
@@ -2274,7 +2260,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   if (g_emu_thread->isRunningFullscreenUI())
     g_emu_thread->stopFullscreenUI();
 
-  saveStateToConfig();
+  saveGeometryToConfig();
   m_is_closing = true;
 
   QMainWindow::closeEvent(event);

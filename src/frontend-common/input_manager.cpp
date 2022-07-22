@@ -1144,7 +1144,7 @@ void InputManager::LoadMacroButtonConfig(SettingsInterface& si, const std::strin
       {
         if (button == cinfo->bindings[j].name)
         {
-          binding = &cinfo->bindings[i];
+          binding = &cinfo->bindings[j];
           break;
         }
       }

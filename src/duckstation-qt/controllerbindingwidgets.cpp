@@ -162,8 +162,8 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 void ControllerBindingWidget::onClearBindingsClicked()
 {
   if (QMessageBox::question(
-        QtUtils::GetRootWidget(this), tr("Clear Bindings"),
-        tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) !=
+        QtUtils::GetRootWidget(this), tr("Clear Mapping"),
+        tr("Are you sure you want to clear all mappings for this controller? This action cannot be undone.")) !=
       QMessageBox::Yes)
   {
     return;
@@ -200,7 +200,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
     InputManager::GetGenericBindingMapping(device.toStdString());
   if (mapping.empty())
   {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Binding"),
+    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Mapping"),
                           tr("No generic bindings were generated for device '%1'").arg(device));
     return;
   }
@@ -361,7 +361,8 @@ void ControllerMacroEditWidget::modFrequency(s32 delta)
 void ControllerMacroEditWidget::updateFrequency()
 {
   m_bwidget->getDialog()->setIntValue(m_bwidget->getConfigSection().c_str(),
-                                      fmt::format("Macro{}Frequency", m_index).c_str(), static_cast<s32>(m_frequency));
+                                      fmt::format("Macro{}Frequency", m_index + 1u).c_str(),
+                                      static_cast<s32>(m_frequency));
   updateFrequencyText();
 }
 

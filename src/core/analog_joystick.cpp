@@ -327,7 +327,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogController", "Analog Deadzone"),
    TRANSLATABLE("AnalogController",
-                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.s"),
+                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "1.00f", "0.00f", "1.00f", "0.01f"},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogController", "Analog Sensitivity"),
    TRANSLATABLE(
