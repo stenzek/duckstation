@@ -3517,7 +3517,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="371"/>
         <source>Macro will not repeat.</source>
-        <translation>A macro não se repetirá.</translation>
+        <translation>O macro não se repetirá.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="373"/>
