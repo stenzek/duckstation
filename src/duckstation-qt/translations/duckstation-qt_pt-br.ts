@@ -10968,7 +10968,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="47"/>
         <source>Summary</source>
-        <translation>Sumário</translation>
+        <translation>Índice</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="49"/>
