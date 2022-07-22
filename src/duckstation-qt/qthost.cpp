@@ -275,7 +275,7 @@ void QtHost::SetDataDirectory()
   }
 
 #if defined(_WIN32)
-  // On Windows, use My Documents\PCSX2 to match old installs.
+  // On Windows, use My Documents\DuckStation.
   PWSTR documents_directory;
   if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
   {
@@ -284,16 +284,15 @@ void QtHost::SetDataDirectory()
     CoTaskMemFree(documents_directory);
   }
 #elif defined(__linux__)
-  // Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+  // Use $XDG_CONFIG_HOME/duckstation if it exists.
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
   {
-    EmuFolders::DataRoot = Path::Combine(xdg_config_home, "PCSX2");
+    EmuFolders::DataRoot = Path::Combine(xdg_config_home, "duckstation");
   }
   else
   {
-    // Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
-    // Maybe we should drop the former when Qt goes live.
+    // Use ~/.local/share/duckstation otherwise.
     const char* home_dir = getenv("HOME");
     if (home_dir)
     {
