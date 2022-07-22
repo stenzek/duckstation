@@ -218,7 +218,7 @@ public:
   {
     if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
     {
-      FormattedError("%s failed: empty response and/or status code %d (%s)", RAPIStructName<T>(), status_code);
+      FormattedError("%s failed: empty response and/or status code %d", RAPIStructName<T>(), status_code);
       LogFailedResponseJSON(data);
       return;
     }
