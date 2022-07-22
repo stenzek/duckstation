@@ -3032,7 +3032,7 @@ This warning will only be shown once.</source>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>Вы уверены, что хотите загрузить профиль вврла с именем &apos;%1&apos;?
+        <translation>Вы уверены, что хотите загрузить профиль ввода с именем &apos;%1&apos;?
 
 Все текущие глобальные привязки будут удалены, а привязки профиля загружены.
 
@@ -6885,7 +6885,7 @@ The saves will not be recoverable.</source>
 %1.
 
 Do you want to load this state, or start from a fresh boot?</source>
-        <translation type="unfinished">Для этой игры найдено состояние сохранение возобновления, сохраненное по адресу:
+        <translation type="unfinished">Для этой игры найдено состояние сохранение возобновления, сохраненное в:
 
 %1.
 
