@@ -154,7 +154,7 @@ void SettingsDialog::addPages()
     addWidget(
       m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
       QStringLiteral("folder-settings-line"),
-      tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
+      tr("<strong>Folder Settings</strong><hr>These options control where DuckStation will save runtime data files."));
   }
 
   addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
