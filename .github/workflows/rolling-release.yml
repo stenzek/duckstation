@@ -401,7 +401,7 @@ jobs:
             windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-qt/DuckStation-x64
+            linux-x64-appimage-qt/DuckStation-x64.AppImage
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            windows-uwp/duckstation-uwp.appx
@@ -422,7 +422,7 @@ jobs:
             windows/duckstation-windows-x64-release-symbols.zip
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-qt/DuckStation-x64
+            linux-x64-appimage-qt/DuckStation-x64.AppImage
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            windows-uwp/duckstation-uwp.appx
