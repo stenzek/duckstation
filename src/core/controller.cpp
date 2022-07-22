@@ -1,13 +1,28 @@
 #include "controller.h"
 #include "analog_controller.h"
 #include "analog_joystick.h"
-#include "common/state_wrapper.h"
 #include "digital_controller.h"
-#include "namco_guncon.h"
+#include "fmt/format.h"
+#include "guncon.h"
 #include "negcon.h"
 #include "playstation_mouse.h"
+#include "util/state_wrapper.h"
 
-Controller::Controller() = default;
+static const Controller::ControllerInfo s_none_info = {ControllerType::None,
+                                                       "None",
+                                                       "Not Connected",
+                                                       nullptr,
+                                                       0,
+                                                       nullptr,
+                                                       0,
+                                                       Controller::VibrationCapabilities::NoVibration};
+
+static const Controller::ControllerInfo* s_controller_info[] = {
+  &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO, &NeGcon::INFO,
+  &GunCon::INFO, &PlayStationMouse::INFO,
+};
+
+Controller::Controller(u32 index) : m_index(index) {}
 
 Controller::~Controller() = default;
 
@@ -26,19 +41,12 @@ bool Controller::Transfer(const u8 data_in, u8* data_out)
   return false;
 }
 
-float Controller::GetAxisState(s32 axis_code) const
+float Controller::GetBindState(u32 index) const
 {
   return 0.0f;
 }
 
-void Controller::SetAxisState(s32 axis_code, float value) {}
-
-bool Controller::GetButtonState(s32 button_code) const
-{
-  return false;
-}
-
-void Controller::SetButtonState(s32 button_code, bool pressed) {}
+void Controller::SetBindState(u32 index, float value) {}
 
 u32 Controller::GetButtonStateBits() const
 {
@@ -50,17 +58,7 @@ std::optional<u32> Controller::GetAnalogInputBytes() const
   return std::nullopt;
 }
 
-u32 Controller::GetVibrationMotorCount() const
-{
-  return 0;
-}
-
-float Controller::GetVibrationMotorStrength(u32 motor)
-{
-  return 0.0f;
-}
-
-void Controller::LoadSettings(const char* section) {}
+void Controller::LoadSettings(SettingsInterface& si, const char* section) {}
 
 bool Controller::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
 {
@@ -72,7 +70,7 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
   switch (type)
   {
     case ControllerType::DigitalController:
-      return DigitalController::Create();
+      return DigitalController::Create(index);
 
     case ControllerType::AnalogController:
       return AnalogController::Create(index);
@@ -80,14 +78,14 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
     case ControllerType::AnalogJoystick:
       return AnalogJoystick::Create(index);
 
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::Create();
+    case ControllerType::GunCon:
+      return GunCon::Create(index);
 
     case ControllerType::PlayStationMouse:
-      return PlayStationMouse::Create();
+      return PlayStationMouse::Create(index);
 
     case ControllerType::NeGcon:
-      return NeGcon::Create();
+      return NeGcon::Create(index);
 
     case ControllerType::None:
     default:
@@ -95,179 +93,134 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
   }
 }
 
-std::optional<s32> Controller::GetAxisCodeByName(std::string_view button_name) const
+const char* Controller::GetDefaultPadType(u32 pad)
 {
+  return (pad == 0) ? "DigitalController" : "None";
+}
+
+const Controller::ControllerInfo* Controller::GetControllerInfo(ControllerType type)
+{
+  for (const ControllerInfo* info : s_controller_info)
+  {
+    if (type == info->type)
+      return info;
+  }
+
+  return nullptr;
+}
+
+const Controller::ControllerInfo* Controller::GetControllerInfo(const std::string_view& name)
+{
+  for (const ControllerInfo* info : s_controller_info)
+  {
+    if (name == info->name)
+      return info;
+  }
+
+  return nullptr;
+}
+
+std::vector<std::pair<std::string, std::string>> Controller::GetControllerTypeNames()
+{
+  std::vector<std::pair<std::string, std::string>> ret;
+  for (const ControllerInfo* info : s_controller_info)
+    ret.emplace_back(info->name, info->display_name);
+
+  return ret;
+}
+
+std::vector<std::string> Controller::GetControllerBinds(const std::string_view& type)
+{
+  std::vector<std::string> ret;
+
+  const ControllerInfo* info = GetControllerInfo(type);
+  if (info)
+  {
+    for (u32 i = 0; i < info->num_bindings; i++)
+    {
+      const ControllerBindingInfo& bi = info->bindings[i];
+      if (bi.type == ControllerBindingType::Unknown || bi.type == ControllerBindingType::Motor)
+        continue;
+
+      ret.emplace_back(info->bindings[i].name);
+    }
+  }
+
+  return ret;
+}
+
+std::vector<std::string> Controller::GetControllerBinds(ControllerType type)
+{
+  std::vector<std::string> ret;
+
+  const ControllerInfo* info = GetControllerInfo(type);
+  if (info)
+  {
+    for (u32 i = 0; i < info->num_bindings; i++)
+    {
+      const ControllerBindingInfo& bi = info->bindings[i];
+      if (bi.type == ControllerBindingType::Unknown || bi.type == ControllerBindingType::Motor)
+        continue;
+
+      ret.emplace_back(info->bindings[i].name);
+    }
+  }
+
+  return ret;
+}
+
+std::optional<u32> Controller::GetBindIndex(ControllerType type, const std::string_view& bind_name)
+{
+  const ControllerInfo* info = GetControllerInfo(type);
+  if (!info)
+    return std::nullopt;
+
+  for (u32 i = 0; i < info->num_bindings; i++)
+  {
+    if (bind_name == info->bindings[i].name)
+      return i;
+  }
+
   return std::nullopt;
 }
 
-std::optional<s32> Controller::GetButtonCodeByName(std::string_view button_name) const
+Controller::VibrationCapabilities Controller::GetControllerVibrationCapabilities(const std::string_view& type)
 {
-  return std::nullopt;
+  const ControllerInfo* info = GetControllerInfo(type);
+  return info ? info->vibration_caps : VibrationCapabilities::NoVibration;
 }
 
-Controller::AxisList Controller::GetAxisNames(ControllerType type)
+std::tuple<u32, u32> Controller::ConvertPadToPortAndSlot(u32 index)
 {
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetAxisNames();
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetAxisNames();
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetAxisNames();
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetAxisNames();
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetAxisNames();
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetAxisNames();
-
-    case ControllerType::None:
-    default:
-      return {};
-  }
+  if (index > 4)                          // [5,6,7]
+    return std::make_tuple(1, index - 4); // 2B,2C,2D
+  else if (index > 1)                     // [2,3,4]
+    return std::make_tuple(0, index - 1); // 1B,1C,1D
+  else                                    // [0,1]
+    return std::make_tuple(index, 0);     // 1A,2A
 }
 
-Controller::ButtonList Controller::GetButtonNames(ControllerType type)
+u32 Controller::ConvertPortAndSlotToPad(u32 port, u32 slot)
 {
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetButtonNames();
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetButtonNames();
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetButtonNames();
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetButtonNames();
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetButtonNames();
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetButtonNames();
-
-    case ControllerType::None:
-    default:
-      return {};
-  }
+  if (slot == 0)
+    return port;
+  else if (port == 0) // slot=[0,1]
+    return slot + 1;  // 2,3,4
+  else
+    return slot + 4; // 5,6,7
 }
 
-u32 Controller::GetVibrationMotorCount(ControllerType type)
+bool Controller::PadIsMultitapSlot(u32 index)
 {
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetVibrationMotorCount();
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetVibrationMotorCount();
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetVibrationMotorCount();
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetVibrationMotorCount();
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetVibrationMotorCount();
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetVibrationMotorCount();
-
-    case ControllerType::None:
-    default:
-      return 0;
-  }
+  return (index >= 2);
 }
 
-std::optional<s32> Controller::GetAxisCodeByName(ControllerType type, std::string_view axis_name)
+bool Controller::PortAndSlotIsMultitap(u32 port, u32 slot)
 {
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetAxisCodeByName(axis_name);
-
-    case ControllerType::None:
-    default:
-      return std::nullopt;
-  }
+  return (slot != 0);
 }
 
-std::optional<s32> Controller::GetButtonCodeByName(ControllerType type, std::string_view button_name)
+std::string Controller::GetSettingsSection(u32 pad)
 {
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetButtonCodeByName(button_name);
-
-    case ControllerType::None:
-    default:
-      return std::nullopt;
-  }
-}
-
-Controller::SettingList Controller::GetSettings(ControllerType type)
-{
-  switch (type)
-  {
-    case ControllerType::DigitalController:
-      return DigitalController::StaticGetSettings();
-
-    case ControllerType::AnalogController:
-      return AnalogController::StaticGetSettings();
-
-    case ControllerType::AnalogJoystick:
-      return AnalogJoystick::StaticGetSettings();
-
-    case ControllerType::NamcoGunCon:
-      return NamcoGunCon::StaticGetSettings();
-
-    case ControllerType::NeGcon:
-      return NeGcon::StaticGetSettings();
-
-    case ControllerType::PlayStationMouse:
-      return PlayStationMouse::StaticGetSettings();
-
-    default:
-      return {};
-  }
+  return fmt::format("Pad{}", pad + 1u);
 }

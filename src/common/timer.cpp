@@ -34,7 +34,7 @@ static HANDLE GetSleepTimer()
   return s_sleep_timer;
 }
 
-Timer::Value Timer::GetValue()
+double Timer::GetFrequency()
 {
   // even if this races, it should still result in the same value..
   if (!s_counter_initialized)
@@ -45,6 +45,11 @@ Timer::Value Timer::GetValue()
     s_counter_initialized = true;
   }
 
+  return s_counter_frequency;
+}
+
+Timer::Value Timer::GetCurrentValue()
+{
   Timer::Value ReturnValue;
   QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&ReturnValue));
   return ReturnValue;
@@ -52,44 +57,44 @@ Timer::Value Timer::GetValue()
 
 double Timer::ConvertValueToNanoseconds(Timer::Value value)
 {
-  return (static_cast<double>(value) / s_counter_frequency);
+  return (static_cast<double>(value) / GetFrequency());
 }
 
 double Timer::ConvertValueToMilliseconds(Timer::Value value)
 {
-  return ((static_cast<double>(value) / s_counter_frequency) / 1000000.0);
+  return ((static_cast<double>(value) / GetFrequency()) / 1000000.0);
 }
 
 double Timer::ConvertValueToSeconds(Timer::Value value)
 {
-  return ((static_cast<double>(value) / s_counter_frequency) / 1000000000.0);
+  return ((static_cast<double>(value) / GetFrequency()) / 1000000000.0);
 }
 
 Timer::Value Timer::ConvertSecondsToValue(double s)
 {
-  return static_cast<Value>((s * 1000000000.0) * s_counter_frequency);
+  return static_cast<Value>((s * 1000000000.0) * GetFrequency());
 }
 
 Timer::Value Timer::ConvertMillisecondsToValue(double ms)
 {
-  return static_cast<Value>((ms * 1000000.0) * s_counter_frequency);
+  return static_cast<Value>((ms * 1000000.0) * GetFrequency());
 }
 
 Timer::Value Timer::ConvertNanosecondsToValue(double ns)
 {
-  return static_cast<Value>(ns * s_counter_frequency);
+  return static_cast<Value>(ns * GetFrequency());
 }
 
 void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    while (GetValue() < value)
+    while (GetCurrentValue() < value)
       SleepUntil(value, false);
   }
   else
   {
-    const std::int64_t diff = static_cast<std::int64_t>(value - GetValue());
+    const std::int64_t diff = static_cast<std::int64_t>(value - GetCurrentValue());
     if (diff <= 0)
       return;
 
@@ -120,7 +125,12 @@ void Timer::SleepUntil(Value value, bool exact)
 
 #else
 
-Timer::Value Timer::GetValue()
+double Timer::GetFrequency()
+{
+  return 1.0;
+}
+
+Timer::Value Timer::GetCurrentValue()
 {
   struct timespec tv;
   clock_gettime(CLOCK_MONOTONIC, &tv);
@@ -161,14 +171,14 @@ void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    while (GetValue() < value)
+    while (GetCurrentValue() < value)
       SleepUntil(value, false);
   }
   else
   {
     // Apple doesn't have TIMER_ABSTIME, so fall back to nanosleep in such a case.
 #ifdef __APPLE__
-    const Value current_time = GetValue();
+    const Value current_time = GetCurrentValue();
     if (value <= current_time)
       return;
 
@@ -195,58 +205,82 @@ Timer::Timer()
 
 void Timer::Reset()
 {
-  m_tvStartValue = GetValue();
+  m_tvStartValue = GetCurrentValue();
 }
 
 double Timer::GetTimeSeconds() const
 {
-  return ConvertValueToSeconds(GetValue() - m_tvStartValue);
+  return ConvertValueToSeconds(GetCurrentValue() - m_tvStartValue);
 }
 
 double Timer::GetTimeMilliseconds() const
 {
-  return ConvertValueToMilliseconds(GetValue() - m_tvStartValue);
+  return ConvertValueToMilliseconds(GetCurrentValue() - m_tvStartValue);
 }
 
 double Timer::GetTimeNanoseconds() const
 {
-  return ConvertValueToNanoseconds(GetValue() - m_tvStartValue);
+  return ConvertValueToNanoseconds(GetCurrentValue() - m_tvStartValue);
+}
+
+double Timer::GetTimeSecondsAndReset()
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToSeconds(value - m_tvStartValue);
+  m_tvStartValue = value;
+  return ret;
+}
+
+double Timer::GetTimeMillisecondsAndReset()
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToMilliseconds(value - m_tvStartValue);
+  m_tvStartValue = value;
+  return ret;
+}
+
+double Timer::GetTimeNanosecondsAndReset()
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToNanoseconds(value - m_tvStartValue);
+  m_tvStartValue = value;
+  return ret;
 }
 
 void Timer::BusyWait(std::uint64_t ns)
 {
-  const Value start = GetValue();
+  const Value start = GetCurrentValue();
   const Value end = start + ConvertNanosecondsToValue(static_cast<double>(ns));
   if (end < start)
   {
     // overflow, unlikely
-    while (GetValue() > end)
+    while (GetCurrentValue() > end)
       ;
   }
 
-  while (GetValue() < end)
+  while (GetCurrentValue() < end)
     ;
 }
 
 void Timer::HybridSleep(std::uint64_t ns, std::uint64_t min_sleep_time)
 {
-  const std::uint64_t start = GetValue();
+  const std::uint64_t start = GetCurrentValue();
   const std::uint64_t end = start + ConvertNanosecondsToValue(static_cast<double>(ns));
   if (end < start)
   {
     // overflow, unlikely
-    while (GetValue() > end)
+    while (GetCurrentValue() > end)
       ;
   }
 
-  std::uint64_t current = GetValue();
+  std::uint64_t current = GetCurrentValue();
   while (current < end)
   {
     const std::uint64_t remaining = end - current;
     if (remaining >= min_sleep_time)
       NanoSleep(min_sleep_time);
 
-    current = GetValue();
+    current = GetCurrentValue();
   }
 }
 

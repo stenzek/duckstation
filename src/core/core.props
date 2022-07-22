@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\common\common.props" />
+  <Import Project="..\util\util.props" />
 
   <ItemDefinitionGroup>
     <ClCompile>
@@ -9,7 +9,7 @@
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64')">WITH_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64') And ('$(BuildingForUWP)'!='true')">WITH_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\rapidjson\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">$(SolutionDir)dep\rainterface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\xbyak\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -19,7 +19,7 @@
 
   <ItemDefinitionGroup>
     <Lib>
-      <AdditionalDependencies>$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)vulkan-loader\vulkan-loader.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)tinyxml2\tinyxml2.lib;$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)util\util.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">$(RootBuildDir)rainterface\rainterface.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='ARM64'">$(RootBuildDir)vixl\vixl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>

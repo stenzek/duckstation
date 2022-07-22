@@ -20,7 +20,7 @@ public:
 
   GPURenderer GetRendererType() const override;
 
-  bool Initialize(HostDisplay* host_display) override;
+  bool Initialize() override;
   void Reset(bool clear_vram) override;
 
   void ResetGraphicsAPIState() override;

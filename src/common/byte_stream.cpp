@@ -896,9 +896,106 @@ void GrowableMemoryByteStream::Grow(u32 MinimumGrowth)
   ResizeMemory(NewSize);
 }
 
-#if defined(_MSC_VER)
+bool ByteStream::ReadU8(u8* dest)
+{
+  return Read2(dest, sizeof(u8));
+}
 
-std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 openMode)
+bool ByteStream::ReadU16(u16* dest)
+{
+  return Read2(dest, sizeof(u16));
+}
+
+bool ByteStream::ReadU32(u32* dest)
+{
+  return Read2(dest, sizeof(u32));
+}
+
+bool ByteStream::ReadU64(u64* dest)
+{
+  return Read2(dest, sizeof(u64));
+}
+
+bool ByteStream::ReadS8(s8* dest)
+{
+  return Read2(dest, sizeof(s8));
+}
+
+bool ByteStream::ReadS16(s16* dest)
+{
+  return Read2(dest, sizeof(s16));
+}
+
+bool ByteStream::ReadS32(s32* dest)
+{
+  return Read2(dest, sizeof(s32));
+}
+
+bool ByteStream::ReadS64(s64* dest)
+{
+  return Read2(dest, sizeof(s64));
+}
+
+bool ByteStream::ReadSizePrefixedString(std::string* dest)
+{
+  u32 size;
+  if (!Read2(&size, sizeof(size)))
+    return false;
+
+  dest->resize(size);
+  if (!Read2(dest->data(), size))
+    return false;
+
+  return true;
+}
+
+bool ByteStream::WriteU8(u8 dest)
+{
+  return Write2(&dest, sizeof(u8));
+}
+
+bool ByteStream::WriteU16(u16 dest)
+{
+  return Write2(&dest, sizeof(u16));
+}
+
+bool ByteStream::WriteU32(u32 dest)
+{
+  return Write2(&dest, sizeof(u32));
+}
+
+bool ByteStream::WriteU64(u64 dest)
+{
+  return Write2(&dest, sizeof(u64));
+}
+
+bool ByteStream::WriteS8(s8 dest)
+{
+  return Write2(&dest, sizeof(s8));
+}
+
+bool ByteStream::WriteS16(s16 dest)
+{
+  return Write2(&dest, sizeof(s16));
+}
+
+bool ByteStream::WriteS32(s32 dest)
+{
+  return Write2(&dest, sizeof(s32));
+}
+
+bool ByteStream::WriteS64(s64 dest)
+{
+  return Write2(&dest, sizeof(s64));
+}
+
+bool ByteStream::WriteSizePrefixedString(const std::string_view& str)
+{
+  const u32 size = static_cast<u32>(str.size());
+  return (Write2(&size, sizeof(size)) && (size == 0 || Write2(str.data(), size)));
+}
+
+std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openMode)
 {
   if ((openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE)) == BYTESTREAM_OPEN_WRITE)
   {
@@ -945,80 +1042,10 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
 
   modeString[modeStringLength] = 0;
 
-  if (openMode & BYTESTREAM_OPEN_CREATE_PATH)
-  {
-    u32 i;
-    u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
-    char* tempStr = (char*)alloca(fileNameLength + 1);
-
-    // check if it starts with a drive letter. if so, skip ahead
-    if (fileNameLength >= 2 && fileName[1] == ':')
-    {
-      if (fileNameLength <= 3)
-      {
-        // create a file called driveletter: or driveletter:\ ? you must be crazy
-        i = fileNameLength;
-      }
-      else
-      {
-        std::memcpy(tempStr, fileName, 3);
-        i = 3;
-      }
-    }
-    else
-    {
-      // start at beginning
-      i = 0;
-    }
-
-    // step through each path component, create folders as necessary
-    for (; i < fileNameLength; i++)
-    {
-      if (i > 0 && (fileName[i] == '\\' || fileName[i] == '/'))
-      {
-        // terminate the string
-        tempStr[i] = '\0';
-
-        // check if it exists
-        struct stat s;
-        if (stat(tempStr, &s) < 0)
-        {
-          if (errno == ENOENT)
-          {
-            // try creating it
-            if (_mkdir(tempStr) < 0)
-            {
-              // no point trying any further down the chain
-              break;
-            }
-          }
-          else // if (errno == ENOTDIR)
-          {
-            // well.. someone's trying to open a fucking weird path that is comprised of both directories and files...
-            // I aint sticking around here to find out what disaster awaits... let fopen deal with it
-            break;
-          }
-        }
-
-// append platform path seperator
-#if defined(_WIN32)
-        tempStr[i] = '\\';
-#else
-        tempStr[i] = '/';
-#endif
-      }
-      else
-      {
-        // append character to temp string
-        tempStr[i] = fileName[i];
-      }
-    }
-  }
-
   if (openMode & BYTESTREAM_OPEN_ATOMIC_UPDATE)
   {
     DebugAssert(openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE));
-
+#ifdef _WIN32
 #ifndef _UWP
     // generate the temporary file name
     u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
@@ -1116,131 +1143,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
 
     // return pointer
     return pStream;
-  }
-  else
-  {
-    // forward through
-    FILE* pFile = FileSystem::OpenCFile(fileName, modeString);
-    if (!pFile)
-      return nullptr;
-
-    return std::make_unique<FileByteStream>(pFile);
-  }
-}
-
 #else
-
-std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 openMode)
-{
-  if ((openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE)) == BYTESTREAM_OPEN_WRITE)
-  {
-    // if opening with write but not create, the path must exist.
-    struct stat s;
-    if (stat(fileName, &s) < 0)
-      return nullptr;
-  }
-
-  char modeString[16];
-  u32 modeStringLength = 0;
-
-  if (openMode & BYTESTREAM_OPEN_WRITE)
-  {
-    if (openMode & BYTESTREAM_OPEN_TRUNCATE)
-      modeString[modeStringLength++] = 'w';
-    else
-      modeString[modeStringLength++] = 'a';
-
-    modeString[modeStringLength++] = 'b';
-
-    if (openMode & BYTESTREAM_OPEN_READ)
-      modeString[modeStringLength++] = '+';
-  }
-  else if (openMode & BYTESTREAM_OPEN_READ)
-  {
-    modeString[modeStringLength++] = 'r';
-    modeString[modeStringLength++] = 'b';
-  }
-
-  modeString[modeStringLength] = 0;
-
-  if (openMode & BYTESTREAM_OPEN_CREATE_PATH)
-  {
-    u32 i;
-    const u32 fileNameLength = static_cast<u32>(std::strlen(fileName));
-    char* tempStr = (char*)alloca(fileNameLength + 1);
-
-#if defined(_WIN32)
-    // check if it starts with a drive letter. if so, skip ahead
-    if (fileNameLength >= 2 && fileName[1] == ':')
-    {
-      if (fileNameLength <= 3)
-      {
-        // create a file called driveletter: or driveletter:\ ? you must be crazy
-        i = fileNameLength;
-      }
-      else
-      {
-        std::memcpy(tempStr, fileName, 3);
-        i = 3;
-      }
-    }
-    else
-    {
-      // start at beginning
-      i = 0;
-    }
-#endif
-
-    // step through each path component, create folders as necessary
-    for (i = 0; i < fileNameLength; i++)
-    {
-      if (i > 0 && (fileName[i] == '\\' || fileName[i] == '/') && fileName[i] != ':')
-      {
-        // terminate the string
-        tempStr[i] = '\0';
-
-        // check if it exists
-        struct stat s;
-        if (stat(tempStr, &s) < 0)
-        {
-          if (errno == ENOENT)
-          {
-            // try creating it
-#if defined(_WIN32)
-            if (mkdir(tempStr) < 0)
-#else
-            if (mkdir(tempStr, 0777) < 0)
-#endif
-            {
-              // no point trying any further down the chain
-              break;
-            }
-          }
-          else // if (errno == ENOTDIR)
-          {
-            // well.. someone's trying to open a fucking weird path that is comprised of both directories and
-            // files... I aint sticking around here to find out what disaster awaits... let fopen deal with it
-            break;
-          }
-        }
-
-// append platform path seperator
-#if defined(_WIN32)
-        tempStr[i] = '\\';
-#else
-        tempStr[i] = '/';
-#endif
-      }
-      else
-      {
-        // append character to temp string
-        tempStr[i] = fileName[i];
-      }
-    }
-  }
-
-  if (openMode & BYTESTREAM_OPEN_ATOMIC_UPDATE)
-  {
     DebugAssert(openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE));
 
     // generate the temporary file name
@@ -1256,7 +1159,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
 #endif
 
     // open the file
-    std::FILE* pTemporaryFile = std::fopen(temporaryFileName, modeString);
+    std::FILE* pTemporaryFile = FileSystem::OpenCFile(temporaryFileName, modeString);
     if (pTemporaryFile == nullptr)
       return nullptr;
 
@@ -1267,7 +1170,7 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
     // do we need to copy the existing file into this one?
     if (!(openMode & BYTESTREAM_OPEN_TRUNCATE))
     {
-      std::FILE* pOriginalFile = std::fopen(fileName, "rb");
+      std::FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb");
       if (!pOriginalFile)
       {
         // this will delete the temporary file
@@ -1297,10 +1200,12 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
 
     // return pointer
     return pStream;
+#endif
   }
   else
   {
-    std::FILE* pFile = std::fopen(fileName, modeString);
+    // forward through
+    std::FILE* pFile = FileSystem::OpenCFile(fileName, modeString);
     if (!pFile)
       return nullptr;
 
@@ -1308,36 +1213,34 @@ std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* fileName, u32 
   }
 }
 
-#endif
-
-std::unique_ptr<MemoryByteStream> ByteStream_CreateMemoryStream(void* pMemory, u32 Size)
+std::unique_ptr<MemoryByteStream> ByteStream::CreateMemoryStream(void* pMemory, u32 Size)
 {
   DebugAssert(pMemory != nullptr && Size > 0);
   return std::make_unique<MemoryByteStream>(pMemory, Size);
 }
 
-std::unique_ptr<ReadOnlyMemoryByteStream> ByteStream_CreateReadOnlyMemoryStream(const void* pMemory, u32 Size)
+std::unique_ptr<ReadOnlyMemoryByteStream> ByteStream::CreateReadOnlyMemoryStream(const void* pMemory, u32 Size)
 {
   DebugAssert(pMemory != nullptr && Size > 0);
   return std::make_unique<ReadOnlyMemoryByteStream>(pMemory, Size);
 }
 
-std::unique_ptr<NullByteStream> ByteStream_CreateNullStream()
+std::unique_ptr<NullByteStream> ByteStream::CreateNullStream()
 {
   return std::make_unique<NullByteStream>();
 }
 
-std::unique_ptr<GrowableMemoryByteStream> ByteStream_CreateGrowableMemoryStream(void* pInitialMemory, u32 InitialSize)
+std::unique_ptr<GrowableMemoryByteStream> ByteStream::CreateGrowableMemoryStream(void* pInitialMemory, u32 InitialSize)
 {
   return std::make_unique<GrowableMemoryByteStream>(pInitialMemory, InitialSize);
 }
 
-std::unique_ptr<GrowableMemoryByteStream> ByteStream_CreateGrowableMemoryStream()
+std::unique_ptr<GrowableMemoryByteStream> ByteStream::CreateGrowableMemoryStream()
 {
   return std::make_unique<GrowableMemoryByteStream>(nullptr, 0);
 }
 
-bool ByteStream_CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceStream)
+bool ByteStream::CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceStream)
 {
   const u32 chunkSize = 4096;
   u8 chunkData[chunkSize];
@@ -1363,7 +1266,7 @@ bool ByteStream_CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceSt
   return (pSourceStream->SeekAbsolute(oldSourcePosition) && success);
 }
 
-bool ByteStream_AppendStream(ByteStream* pSourceStream, ByteStream* pDestinationStream)
+bool ByteStream::AppendStream(ByteStream* pSourceStream, ByteStream* pDestinationStream)
 {
   const u32 chunkSize = 4096;
   u8 chunkData[chunkSize];
@@ -1389,7 +1292,7 @@ bool ByteStream_AppendStream(ByteStream* pSourceStream, ByteStream* pDestination
   return (pSourceStream->SeekAbsolute(oldSourcePosition) && success);
 }
 
-u32 ByteStream_CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* pDestinationStream)
+u32 ByteStream::CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* pDestinationStream)
 {
   const u32 chunkSize = 4096;
   u8 chunkData[chunkSize];
@@ -1410,4 +1313,70 @@ u32 ByteStream_CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* p
   }
 
   return byteCount - remaining;
+}
+
+std::string ByteStream::ReadStreamToString(ByteStream* stream, bool seek_to_start /* = true */)
+{
+  u64 pos = stream->GetPosition();
+  u64 size = stream->GetSize();
+  if (pos > 0 && seek_to_start)
+  {
+    if (!stream->SeekAbsolute(0))
+      return {};
+
+    pos = 0;
+  }
+
+  Assert(size >= pos);
+  size -= pos;
+  if (size == 0 || size > std::numeric_limits<u32>::max())
+    return {};
+
+  std::string ret;
+  ret.resize(static_cast<size_t>(size));
+  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
+    return {};
+
+  return ret;
+}
+
+bool ByteStream::WriteStreamToString(const std::string_view& sv, ByteStream* stream)
+{
+  if (sv.size() > std::numeric_limits<u32>::max())
+    return false;
+
+  return stream->Write2(sv.data(), static_cast<u32>(sv.size()));
+}
+
+std::vector<u8> ByteStream::ReadBinaryStream(ByteStream* stream, bool seek_to_start /*= true*/)
+{
+  u64 pos = stream->GetPosition();
+  u64 size = stream->GetSize();
+  if (pos > 0 && seek_to_start)
+  {
+    if (!stream->SeekAbsolute(0))
+      return {};
+
+    pos = 0;
+  }
+
+  Assert(size >= pos);
+  size -= pos;
+  if (size == 0 || size > std::numeric_limits<u32>::max())
+    return {};
+
+  std::vector<u8> ret;
+  ret.resize(static_cast<size_t>(size));
+  if (!stream->Read2(ret.data(), static_cast<u32>(size)))
+    return {};
+
+  return ret;
+}
+
+bool ByteStream::WriteBinaryToStream(ByteStream* stream, const void* data, size_t data_length)
+{
+  if (data_length > std::numeric_limits<u32>::max())
+    return false;
+
+  return stream->Write2(data, static_cast<u32>(data_length));
 }

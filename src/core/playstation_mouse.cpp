@@ -1,18 +1,20 @@
 #include "playstation_mouse.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "gpu.h"
+#include "host.h"
 #include "host_display.h"
-#include "host_interface.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <array>
 Log_SetChannel(PlayStationMouse);
 
-PlayStationMouse::PlayStationMouse()
+static constexpr std::array<u8, static_cast<size_t>(PlayStationMouse::Button::Count)> s_button_indices = {{11, 10}};
+
+PlayStationMouse::PlayStationMouse(u32 index) : Controller(index)
 {
-  m_last_host_position_x = g_host_interface->GetDisplay()->GetMousePositionX();
-  m_last_host_position_y = g_host_interface->GetDisplay()->GetMousePositionY();
+  m_last_host_position_x = g_host_display->GetMousePositionX();
+  m_last_host_position_y = g_host_display->GetMousePositionY();
 }
 
 PlayStationMouse::~PlayStationMouse() = default;
@@ -20,16 +22,6 @@ PlayStationMouse::~PlayStationMouse() = default;
 ControllerType PlayStationMouse::GetType() const
 {
   return ControllerType::PlayStationMouse;
-}
-
-std::optional<s32> PlayStationMouse::GetAxisCodeByName(std::string_view axis_name) const
-{
-  return StaticGetAxisCodeByName(axis_name);
-}
-
-std::optional<s32> PlayStationMouse::GetButtonCodeByName(std::string_view button_name) const
-{
-  return StaticGetButtonCodeByName(button_name);
 }
 
 void PlayStationMouse::Reset()
@@ -59,30 +51,24 @@ bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-bool PlayStationMouse::GetButtonState(s32 button_code) const
+float PlayStationMouse::GetBindState(u32 index) const
 {
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return false;
+  if (index >= s_button_indices.size())
+    return 0.0f;
 
-  const u16 bit = u16(1) << static_cast<u8>(button_code);
-  return ((m_button_state & bit) == 0);
+  const u32 bit = s_button_indices[index];
+  return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
 }
 
-void PlayStationMouse::SetButtonState(Button button, bool pressed)
+void PlayStationMouse::SetBindState(u32 index, float value)
 {
-  static constexpr std::array<u8, static_cast<size_t>(Button::Count)> indices = {{11, 10}};
-  if (pressed)
-    m_button_state &= ~(u16(1) << indices[static_cast<u8>(button)]);
-  else
-    m_button_state |= u16(1) << indices[static_cast<u8>(button)];
-}
-
-void PlayStationMouse::SetButtonState(s32 button_code, bool pressed)
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
+  if (index > s_button_indices.size())
     return;
 
-  SetButtonState(static_cast<Button>(button_code), pressed);
+  if (value >= 0.5f)
+    m_button_state &= ~(u16(1) << s_button_indices[index]);
+  else
+    m_button_state |= u16(1) << s_button_indices[index];
 }
 
 void PlayStationMouse::ResetTransferState()
@@ -168,9 +154,8 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 void PlayStationMouse::UpdatePosition()
 {
   // get screen coordinates
-  const HostDisplay* display = g_host_interface->GetDisplay();
-  const s32 mouse_x = display->GetMousePositionX();
-  const s32 mouse_y = display->GetMousePositionY();
+  const s32 mouse_x = g_host_display->GetMousePositionX();
+  const s32 mouse_y = g_host_display->GetMousePositionY();
   const s32 delta_x = mouse_x - m_last_host_position_x;
   const s32 delta_y = mouse_y - m_last_host_position_y;
   m_last_host_position_x = mouse_x;
@@ -183,63 +168,42 @@ void PlayStationMouse::UpdatePosition()
   m_delta_y = static_cast<s8>(std::clamp<s32>(delta_y, std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
 }
 
-std::unique_ptr<PlayStationMouse> PlayStationMouse::Create()
+std::unique_ptr<PlayStationMouse> PlayStationMouse::Create(u32 index)
 {
-  return std::make_unique<PlayStationMouse>();
+  return std::make_unique<PlayStationMouse>(index);
 }
 
-std::optional<s32> PlayStationMouse::StaticGetAxisCodeByName(std::string_view button_name)
-{
-  return std::nullopt;
-}
-
-std::optional<s32> PlayStationMouse::StaticGetButtonCodeByName(std::string_view button_name)
-{
-#define BUTTON(name)                                                                                                   \
-  if (button_name == #name)                                                                                            \
+static const Controller::ControllerBindingInfo s_binding_info[] = {
+#define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Button::name)));                                              \
+    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
   }
 
-  BUTTON(Left);
-  BUTTON(Right);
-
-  return std::nullopt;
+  BUTTON("Left", "Left Button", PlayStationMouse::Button::Left, GenericInputBinding::Cross),
+  BUTTON("Right", "Right Button", PlayStationMouse::Button::Right, GenericInputBinding::Circle),
 
 #undef BUTTON
-}
+};
 
-Controller::AxisList PlayStationMouse::StaticGetAxisNames()
+static const SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATABLE("PlayStationMouse", "Relative Mouse Mode"),
+   TRANSLATABLE("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false"},
+};
+
+const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,
+                                                           "PlayStationMouse",
+                                                           TRANSLATABLE("ControllerType", "PlayStation Mouse"),
+                                                           s_binding_info,
+                                                           countof(s_binding_info),
+                                                           s_settings,
+                                                           countof(s_settings),
+                                                           Controller::VibrationCapabilities::NoVibration};
+
+void PlayStationMouse::LoadSettings(SettingsInterface& si, const char* section)
 {
-  return {};
-}
+  Controller::LoadSettings(si, section);
 
-Controller::ButtonList PlayStationMouse::StaticGetButtonNames()
-{
-  return {{TRANSLATABLE("PlayStationMouse", "Left"), static_cast<s32>(Button::Left)},
-          {TRANSLATABLE("PlayStationMouse", "Right"), static_cast<s32>(Button::Right)}};
-}
-
-u32 PlayStationMouse::StaticGetVibrationMotorCount()
-{
-  return 0;
-}
-
-Controller::SettingList PlayStationMouse::StaticGetSettings()
-{
-  static constexpr std::array<SettingInfo, 1> settings = {{
-    {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATABLE("PlayStationMouse", "Relative Mouse Mode"),
-     TRANSLATABLE("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false"},
-  }};
-
-  return SettingList(settings.begin(), settings.end());
-}
-
-void PlayStationMouse::LoadSettings(const char* section)
-{
-  Controller::LoadSettings(section);
-
-  m_use_relative_mode = g_host_interface->GetBoolSettingValue(section, "RelativeMouseMode");
+  m_use_relative_mode = si.GetBoolValue(section, "RelativeMouseMode", false);
 }
 
 bool PlayStationMouse::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)

@@ -1,3 +1,4 @@
+add_subdirectory(fmt)
 add_subdirectory(glad)
 add_subdirectory(stb)
 add_subdirectory(zlib)
@@ -7,7 +8,6 @@ add_subdirectory(libchdr)
 add_subdirectory(xxhash)
 add_subdirectory(rapidjson)
 add_subdirectory(glslang)
-add_subdirectory(vulkan-loader)
 add_subdirectory(imgui)
 add_subdirectory(simpleini)
 

@@ -9,7 +9,7 @@
 #include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
-#include "host_interface.h"
+#include "host.h"
 #include "system.h"
 #include <cctype>
 #include <iomanip>
@@ -686,17 +686,11 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
 
 bool CheatList::LoadFromPackage(const std::string& game_code)
 {
-  std::unique_ptr<ByteStream> stream =
-    g_host_interface->OpenPackageFile("database/chtdb.txt", BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
+  const std::optional<std::string> db_string(Host::ReadResourceFileToString("chtdb.txt"));
+  if (!db_string.has_value())
     return false;
 
-  std::string db_string = FileSystem::ReadStreamToString(stream.get());
-  stream.reset();
-  if (db_string.empty())
-    return false;
-
-  std::istringstream iss(db_string);
+  std::istringstream iss(db_string.value());
   std::string line;
   while (std::getline(iss, line))
   {

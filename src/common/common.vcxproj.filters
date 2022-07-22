@@ -3,11 +3,7 @@
   <ItemGroup>
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="types.h" />
-    <ClInclude Include="jit_code_buffer.h" />
-    <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="fifo_queue.h" />
-    <ClInclude Include="audio_stream.h" />
-    <ClInclude Include="cd_xa.h" />
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="gl\program.h">
       <Filter>gl</Filter>
@@ -31,15 +27,10 @@
       <Filter>d3d11</Filter>
     </ClInclude>
     <ClInclude Include="rectangle.h" />
-    <ClInclude Include="iso_reader.h" />
-    <ClInclude Include="cd_image.h" />
-    <ClInclude Include="cd_subchannel_replacement.h" />
-    <ClInclude Include="null_audio_stream.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="timer.h" />
-    <ClInclude Include="timestamp.h" />
     <ClInclude Include="assert.h" />
     <ClInclude Include="align.h" />
     <ClInclude Include="file_system.h" />
@@ -50,7 +41,6 @@
     </ClInclude>
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="progress_callback.h" />
-    <ClInclude Include="wav_writer.h" />
     <ClInclude Include="gl\shader_cache.h">
       <Filter>gl</Filter>
     </ClInclude>
@@ -63,7 +53,6 @@
       <Filter>gl</Filter>
     </ClInclude>
     <ClInclude Include="window_info.h" />
-    <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="vulkan\texture.h">
       <Filter>vulkan</Filter>
     </ClInclude>
@@ -100,9 +89,6 @@
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="make_array.h" />
-    <ClInclude Include="shiftjis.h" />
-    <ClInclude Include="memory_arena.h" />
-    <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="thirdparty\StackWalker.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
@@ -112,7 +98,6 @@
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="platform.h" />
-    <ClInclude Include="cue_parser.h" />
     <ClInclude Include="d3d12\staging_texture.h">
       <Filter>d3d12</Filter>
     </ClInclude>
@@ -137,15 +122,24 @@
     <ClInclude Include="http_downloader_uwp.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="vulkan\entry_points.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkan\loader.h">
+      <Filter>vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="path.h" />
+    <ClInclude Include="windows_headers.h" />
+    <ClInclude Include="gl\loader.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="settings_interface.h" />
+    <ClInclude Include="layered_settings_interface.h" />
+    <ClInclude Include="heterogeneous_containers.h" />
+    <ClInclude Include="memory_settings_interface.h" />
+    <ClInclude Include="threading.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="jit_code_buffer.cpp" />
-    <ClCompile Include="state_wrapper.cpp" />
-    <ClCompile Include="cd_image.cpp" />
-    <ClCompile Include="audio_stream.cpp" />
-    <ClCompile Include="cd_xa.cpp" />
-    <ClCompile Include="cd_image_cue.cpp" />
-    <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="gl\program.cpp">
       <Filter>gl</Filter>
     </ClCompile>
@@ -167,13 +161,9 @@
     <ClCompile Include="d3d11\shader_compiler.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
-    <ClCompile Include="iso_reader.cpp" />
-    <ClCompile Include="cd_subchannel_replacement.cpp" />
-    <ClCompile Include="null_audio_stream.cpp" />
     <ClCompile Include="string.cpp" />
     <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="log.cpp" />
-    <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="assert.cpp" />
     <ClCompile Include="file_system.cpp" />
@@ -182,9 +172,7 @@
     <ClCompile Include="d3d11\shader_cache.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
-    <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="progress_callback.cpp" />
-    <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="gl\shader_cache.cpp">
       <Filter>gl</Filter>
     </ClCompile>
@@ -195,7 +183,6 @@
     <ClCompile Include="gl\context.cpp">
       <Filter>gl</Filter>
     </ClCompile>
-    <ClCompile Include="cd_image_hasher.cpp" />
     <ClCompile Include="vulkan\texture.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
@@ -227,24 +214,14 @@
       <Filter>vulkan</Filter>
     </ClCompile>
     <ClCompile Include="image.cpp" />
-    <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
-    <ClCompile Include="shiftjis.cpp" />
-    <ClCompile Include="memory_arena.cpp" />
-    <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
     <ClCompile Include="crash_handler.cpp" />
-    <ClCompile Include="cd_image_ecm.cpp" />
-    <ClCompile Include="cd_image_mds.cpp" />
-    <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="cd_image_m3u.cpp" />
     <ClCompile Include="window_info.cpp" />
-    <ClCompile Include="cue_parser.cpp" />
-    <ClCompile Include="cd_image_ppf.cpp" />
     <ClCompile Include="d3d12\staging_texture.cpp">
       <Filter>d3d12</Filter>
     </ClCompile>
@@ -266,10 +243,15 @@
     <ClCompile Include="d3d12\shader_cache.cpp">
       <Filter>d3d12</Filter>
     </ClCompile>
-    <ClCompile Include="cd_image_device.cpp" />
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="http_downloader_uwp.cpp" />
+    <ClCompile Include="vulkan\loader.cpp">
+      <Filter>vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="layered_settings_interface.cpp" />
+    <ClCompile Include="memory_settings_interface.cpp" />
+    <ClCompile Include="threading.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -290,5 +272,10 @@
     <Filter Include="d3d12">
       <UniqueIdentifier>{358e11c4-34af-4169-9a66-ec66342a6a2f}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vulkan\entry_points.inl">
+      <Filter>vulkan</Filter>
+    </None>
   </ItemGroup>
 </Project>

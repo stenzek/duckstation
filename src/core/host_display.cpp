@@ -5,7 +5,6 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "host_interface.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -16,9 +15,71 @@
 #include <vector>
 Log_SetChannel(HostDisplay);
 
+std::unique_ptr<HostDisplay> g_host_display;
+
 HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
+
+HostDisplay::RenderAPI HostDisplay::GetPreferredAPI()
+{
+#ifdef _WIN32
+  return RenderAPI::D3D11;
+#else
+  return RenderAPI::OpenGL;
+#endif
+}
+
+bool HostDisplay::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
+{
+  if (!mode.empty())
+  {
+    std::string_view::size_type sep1 = mode.find('x');
+    if (sep1 != std::string_view::npos)
+    {
+      std::optional<u32> owidth = StringUtil::FromChars<u32>(mode.substr(0, sep1));
+      sep1++;
+
+      while (sep1 < mode.length() && std::isspace(mode[sep1]))
+        sep1++;
+
+      if (owidth.has_value() && sep1 < mode.length())
+      {
+        std::string_view::size_type sep2 = mode.find('@', sep1);
+        if (sep2 != std::string_view::npos)
+        {
+          std::optional<u32> oheight = StringUtil::FromChars<u32>(mode.substr(sep1, sep2 - sep1));
+          sep2++;
+
+          while (sep2 < mode.length() && std::isspace(mode[sep2]))
+            sep2++;
+
+          if (oheight.has_value() && sep2 < mode.length())
+          {
+            std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode.substr(sep2));
+            if (orefresh_rate.has_value())
+            {
+              *width = owidth.value();
+              *height = oheight.value();
+              *refresh_rate = orefresh_rate.value();
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  *width = 0;
+  *height = 0;
+  *refresh_rate = 0;
+  return false;
+}
+
+std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
+{
+  return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+}
 
 bool HostDisplay::UsesLowerLeftOrigin() const
 {
@@ -36,7 +97,7 @@ bool HostDisplay::ShouldSkipDisplayingFrame()
   if (m_display_frame_interval == 0.0f)
     return false;
 
-  const u64 now = Common::Timer::GetValue();
+  const u64 now = Common::Timer::GetCurrentValue();
   const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
   if (diff < m_display_frame_interval)
     return true;

@@ -22,7 +22,7 @@ public:
 
   GPURenderer GetRendererType() const override;
 
-  bool Initialize(HostDisplay* host_display) override;
+  bool Initialize() override;
   void Reset(bool clear_vram) override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
 

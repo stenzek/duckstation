@@ -1,8 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
+    <ClCompile Include="src\rapi\rc_api_common.c" />
+    <ClCompile Include="src\rapi\rc_api_editor.c" />
+    <ClCompile Include="src\rapi\rc_api_info.c" />
+    <ClCompile Include="src\rapi\rc_api_runtime.c" />
+    <ClCompile Include="src\rapi\rc_api_user.c" />
     <ClCompile Include="src\rcheevos\alloc.c" />
     <ClCompile Include="src\rcheevos\compat.c" />
     <ClCompile Include="src\rcheevos\condition.c" />
@@ -24,23 +28,26 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rcheevos.h" />
+    <ClInclude Include="include\rc_api_editor.h" />
+    <ClInclude Include="include\rc_api_info.h" />
+    <ClInclude Include="include\rc_api_request.h" />
+    <ClInclude Include="include\rc_api_runtime.h" />
+    <ClInclude Include="include\rc_api_user.h" />
     <ClInclude Include="include\rc_consoles.h" />
     <ClInclude Include="include\rc_error.h" />
     <ClInclude Include="include\rc_hash.h" />
     <ClInclude Include="include\rc_runtime.h" />
     <ClInclude Include="include\rc_runtime_types.h" />
     <ClInclude Include="include\rc_url.h" />
+    <ClInclude Include="src\rapi\rc_api_common.h" />
     <ClInclude Include="src\rcheevos\rc_compat.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />
     <ClInclude Include="src\rhash\md5.h" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BA0A6D4-3AE1-42B2-9347-096FD023FF64}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\msvc\vsprops\StaticLibrary.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
@@ -48,6 +55,5 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <Import Project="..\msvc\vsprops\Targets.props" />
 </Project>

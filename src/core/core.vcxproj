@@ -9,7 +9,6 @@
     <ClCompile Include="cdrom.cpp" />
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cheats.cpp" />
-    <ClCompile Include="cheevos.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -33,6 +32,7 @@
     </ClCompile>
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="game_database.cpp" />
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
@@ -47,18 +47,16 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
+    <ClCompile Include="host.cpp" />
     <ClCompile Include="host_display.cpp" />
-    <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
-    <ClCompile Include="imgui_styles.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="libcrypt_game_codes.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="multitap.cpp" />
-    <ClCompile Include="namco_guncon.cpp" />
+    <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
@@ -83,7 +81,7 @@
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cheats.h" />
-    <ClInclude Include="cheevos.h" />
+    <ClInclude Include="achievements.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cpu_disasm.h" />
@@ -101,6 +99,7 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="game_database.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_d3d12.h" />
@@ -117,18 +116,17 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gte_types.h" />
+    <ClInclude Include="host.h" />
     <ClInclude Include="host_display.h" />
-    <ClInclude Include="host_interface.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
-    <ClInclude Include="imgui_styles.h" />
+    <ClInclude Include="host_settings.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="libcrypt_game_codes.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="multitap.h" />
-    <ClInclude Include="namco_guncon.h" />
+    <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />

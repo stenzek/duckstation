@@ -6,7 +6,7 @@
 #include <mutex>
 #include <curl/curl.h>
 
-namespace FrontendCommon {
+namespace Common {
 
 class HTTPDownloaderCurl final : public HTTPDownloader
 {

@@ -2,13 +2,13 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\libcue\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)fmt\fmt.lib;$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

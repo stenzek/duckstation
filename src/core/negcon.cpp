@@ -1,12 +1,16 @@
 #include "negcon.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
-#include "host_interface.h"
+#include "host.h"
+#include "system.h"
+#include "util/state_wrapper.h"
 #include <array>
 #include <cmath>
 
-NeGcon::NeGcon()
+// Mapping of Button to index of corresponding bit in m_button_state
+static constexpr std::array<u8, static_cast<size_t>(NeGcon::Button::Count)> s_button_indices = {3, 4,  5,  6,
+                                                                                                7, 11, 12, 13};
+NeGcon::NeGcon(u32 index) : Controller(index)
 {
   m_axis_state.fill(0x00);
   m_axis_state[static_cast<u8>(Axis::Steering)] = 0x80;
@@ -17,16 +21,6 @@ NeGcon::~NeGcon() = default;
 ControllerType NeGcon::GetType() const
 {
   return ControllerType::NeGcon;
-}
-
-std::optional<s32> NeGcon::GetAxisCodeByName(std::string_view axis_name) const
-{
-  return StaticGetAxisCodeByName(axis_name);
-}
-
-std::optional<s32> NeGcon::GetButtonCodeByName(std::string_view button_name) const
-{
-  return StaticGetButtonCodeByName(button_name);
 }
 
 void NeGcon::Reset()
@@ -48,73 +42,73 @@ bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-float NeGcon::GetAxisState(s32 axis_code) const
+float NeGcon::GetBindState(u32 index) const
 {
-  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
-    return 0.0f;
-
-  if (axis_code == static_cast<s32>(Axis::Steering))
-    return (((static_cast<float>(m_axis_state[static_cast<s32>(Axis::Steering)]) / 255.0f) * 2.0f) - 1.0f);
-  else
-    return (static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f);
-}
-
-void NeGcon::SetAxisState(s32 axis_code, float value)
-{
-  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
-    return;
-
-  // Steering Axis: -1..1 -> 0..255
-  if (axis_code == static_cast<s32>(Axis::Steering))
+  if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
+      index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
   {
-    const float float_value =
-      (std::abs(value) < m_steering_deadzone) ?
-        0.0f :
-        std::copysign((std::abs(value) - m_steering_deadzone) / (1.0f - m_steering_deadzone), value);
-    const u8 u8_value = static_cast<u8>(std::clamp(std::round(((float_value + 1.0f) / 2.0f) * 255.0f), 0.0f, 255.0f));
-
-    SetAxisState(static_cast<Axis>(axis_code), u8_value);
-
-    return;
+    return static_cast<float>(m_half_axis_state[index - static_cast<u32>(Button::Count)]) * (1.0f / 255.0f);
   }
+  else if (index >= static_cast<u32>(Button::Count))
+  {
+    // less one because of the two steering axes
+    const u32 sub_index = index - (static_cast<u32>(Button::Count) + 1);
+    if (sub_index >= m_axis_state.size())
+      return 0.0f;
 
-  // I, II, L: -1..1 -> 0..255
-  const u8 u8_value = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
-
-  SetAxisState(static_cast<Axis>(axis_code), u8_value);
-}
-
-void NeGcon::SetAxisState(Axis axis, u8 value)
-{
-  m_axis_state[static_cast<u8>(axis)] = value;
-}
-
-bool NeGcon::GetButtonState(s32 button_code) const
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return false;
-
-  const u16 bit = u16(1) << static_cast<u8>(button_code);
-  return ((m_button_state & bit) == 0);
-}
-
-void NeGcon::SetButtonState(s32 button_code, bool pressed)
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return;
-
-  SetButtonState(static_cast<Button>(button_code), pressed);
-}
-
-void NeGcon::SetButtonState(Button button, bool pressed)
-{
-  // Mapping of Button to index of corresponding bit in m_button_state
-  static constexpr std::array<u8, static_cast<size_t>(Button::Count)> indices = {3, 4, 5, 6, 7, 11, 12, 13};
-
-  if (pressed)
-    m_button_state &= ~(u16(1) << indices[static_cast<u8>(button)]);
+    return static_cast<float>(m_axis_state[sub_index]) * (1.0f / 255.0f);
+  }
   else
-    m_button_state |= u16(1) << indices[static_cast<u8>(button)];
+  {
+    const u32 bit = s_button_indices[index];
+    return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
+  }
+}
+
+void NeGcon::SetBindState(u32 index, float value)
+{
+  // Steering Axis: -1..1 -> 0..255
+  if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
+      index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
+  {
+    value = ApplyAnalogDeadzoneSensitivity(m_steering_deadzone, 1.0f, value);
+
+    m_half_axis_state[index - static_cast<u32>(Button::Count)] =
+      static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+
+    // Merge left/right. Seems to be inverted.
+    m_axis_state[static_cast<u32>(Axis::Steering)] =
+      ((m_half_axis_state[1] != 0) ? (127u + ((m_half_axis_state[1] + 1u) / 2u)) :
+                                     (127u - (m_half_axis_state[0] / 2u)));
+  }
+  else if (index >= static_cast<u32>(Button::Count))
+  {
+    // less one because of the two steering axes
+    const u32 sub_index = index - (static_cast<u32>(Button::Count) + 1);
+    if (sub_index >= m_axis_state.size())
+      return;
+
+    m_axis_state[sub_index] = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+  }
+  else if (index < static_cast<u32>(Button::Count))
+  {
+    const u16 bit = u16(1) << s_button_indices[static_cast<u8>(index)];
+
+    if (value >= 0.5f)
+    {
+      if (m_button_state & bit)
+        System::SetRunaheadReplayFlag();
+
+      m_button_state &= ~bit;
+    }
+    else
+    {
+      if (!(m_button_state & bit))
+        System::SetRunaheadReplayFlag();
+
+      m_button_state |= bit;
+    }
+  }
 }
 
 u32 NeGcon::GetButtonStateBits() const
@@ -221,87 +215,55 @@ bool NeGcon::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-std::unique_ptr<NeGcon> NeGcon::Create()
+std::unique_ptr<NeGcon> NeGcon::Create(u32 index)
 {
-  return std::make_unique<NeGcon>();
+  return std::make_unique<NeGcon>(index);
 }
 
-std::optional<s32> NeGcon::StaticGetAxisCodeByName(std::string_view axis_name)
-{
-#define AXIS(name)                                                                                                     \
-  if (axis_name == #name)                                                                                              \
+static const Controller::ControllerBindingInfo s_binding_info[] = {
+#define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Axis::name)));                                                \
+    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+  }
+#define AXIS(name, display_name, halfaxis, genb)                                                                       \
+  {                                                                                                                    \
+    name, display_name, static_cast<u32>(NeGcon::Button::Count) + static_cast<u32>(halfaxis),                          \
+      Controller::ControllerBindingType::HalfAxis, genb                                                                \
   }
 
-  AXIS(Steering);
-  AXIS(I);
-  AXIS(II);
-  AXIS(L);
-
-  return std::nullopt;
+  BUTTON("Up", "D-Pad Up", NeGcon::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", "D-Pad Right", NeGcon::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", "D-Pad Down", NeGcon::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", "D-Pad Left", NeGcon::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", "Start", NeGcon::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", "A Button", NeGcon::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", "B Button", NeGcon::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", "I Button", NeGcon::HalfAxis::I, GenericInputBinding::L2),
+  AXIS("II", "II Button", NeGcon::HalfAxis::II, GenericInputBinding::R2),
+  AXIS("L", "Left Trigger", NeGcon::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", "Right Trigger", NeGcon::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", "Steering (Twist) Left", NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", "Steering (Twist) Right", NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
 
 #undef AXIS
-}
-
-std::optional<s32> NeGcon::StaticGetButtonCodeByName(std::string_view button_name)
-{
-#define BUTTON(name)                                                                                                   \
-  if (button_name == #name)                                                                                            \
-  {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Button::name)));                                              \
-  }
-
-  BUTTON(Up);
-  BUTTON(Down);
-  BUTTON(Left);
-  BUTTON(Right);
-  BUTTON(A);
-  BUTTON(B);
-  BUTTON(R);
-  BUTTON(Start);
-
-  return std::nullopt;
-
 #undef BUTTON
-}
+};
 
-Controller::AxisList NeGcon::StaticGetAxisNames()
+static const SettingInfo s_settings[] = {
+  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
+   TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f"}};
+
+const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
+                                                 "NeGcon",
+                                                 TRANSLATABLE("ControllerType", "NeGcon"),
+                                                 s_binding_info,
+                                                 countof(s_binding_info),
+                                                 s_settings,
+                                                 countof(s_settings),
+                                                 Controller::VibrationCapabilities::NoVibration};
+
+void NeGcon::LoadSettings(SettingsInterface& si, const char* section)
 {
-  return {{TRANSLATABLE("NeGcon", "Steering"), static_cast<s32>(Axis::Steering), AxisType::Full},
-          {TRANSLATABLE("NeGcon", "I"), static_cast<s32>(Axis::I), AxisType::Half},
-          {TRANSLATABLE("NeGcon", "II"), static_cast<s32>(Axis::II), AxisType::Half},
-          {TRANSLATABLE("NeGcon", "L"), static_cast<s32>(Axis::L), AxisType::Half}};
-}
-
-Controller::ButtonList NeGcon::StaticGetButtonNames()
-{
-  return {{TRANSLATABLE("NeGcon", "Up"), static_cast<s32>(Button::Up)},
-          {TRANSLATABLE("NeGcon", "Down"), static_cast<s32>(Button::Down)},
-          {TRANSLATABLE("NeGcon", "Left"), static_cast<s32>(Button::Left)},
-          {TRANSLATABLE("NeGcon", "Right"), static_cast<s32>(Button::Right)},
-          {TRANSLATABLE("NeGcon", "A"), static_cast<s32>(Button::A)},
-          {TRANSLATABLE("NeGcon", "B"), static_cast<s32>(Button::B)},
-          {TRANSLATABLE("NeGcon", "R"), static_cast<s32>(Button::R)},
-          {TRANSLATABLE("NeGcon", "Start"), static_cast<s32>(Button::Start)}};
-}
-
-u32 NeGcon::StaticGetVibrationMotorCount()
-{
-  return 0;
-}
-
-Controller::SettingList NeGcon::StaticGetSettings()
-{
-  static constexpr std::array<SettingInfo, 1> settings = {
-    {{SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
-      TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f"}}};
-
-  return SettingList(settings.begin(), settings.end());
-}
-
-void NeGcon::LoadSettings(const char* section)
-{
-  Controller::LoadSettings(section);
-  m_steering_deadzone = g_host_interface->GetFloatSettingValue(section, "SteeringDeadzone", 0.10f);
+  Controller::LoadSettings(si, section);
+  m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);
 }

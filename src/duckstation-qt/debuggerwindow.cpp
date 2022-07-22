@@ -1,7 +1,8 @@
 #include "debuggerwindow.h"
+#include "common/assert.h"
 #include "core/cpu_core_private.h"
 #include "debuggermodels.h"
-#include "qthostinterface.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QFontDatabase>
@@ -21,22 +22,25 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
-void DebuggerWindow::onEmulationPaused(bool paused)
+void DebuggerWindow::onEmulationPaused()
 {
-  if (paused)
-  {
-    setUIEnabled(true);
-    refreshAll();
-    refreshBreakpointList();
-  }
-  else
-  {
-    setUIEnabled(false);
-  }
+  setUIEnabled(true);
+  refreshAll();
+  refreshBreakpointList();
 
   {
     QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(paused);
+    m_ui.actionPause->setChecked(true);
+  }
+}
+
+void DebuggerWindow::onEmulationResumed()
+{
+  setUIEnabled(false);
+
+  {
+    QSignalBlocker sb(m_ui.actionPause);
+    m_ui.actionPause->setChecked(false);
   }
 }
 
@@ -80,7 +84,7 @@ void DebuggerWindow::onPauseActionToggled(bool paused)
     setUIEnabled(false);
   }
 
-  QtHostInterface::GetInstance()->pauseSystem(paused);
+  g_emu_thread->setSystemPaused(paused);
 }
 
 void DebuggerWindow::onRunToCursorTriggered()
@@ -93,7 +97,7 @@ void DebuggerWindow::onRunToCursorTriggered()
   }
 
   CPU::AddBreakpoint(addr.value(), true, true);
-  QtHostInterface::GetInstance()->pauseSystem(false);
+  g_emu_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onGoToPCTriggered()
@@ -176,7 +180,7 @@ void DebuggerWindow::onStepIntoActionTriggered()
 {
   Assert(System::IsPaused());
   m_registers_model->saveCurrentValues();
-  QtHostInterface::GetInstance()->singleStepCPU();
+  g_emu_thread->singleStepCPU();
   refreshAll();
 }
 
@@ -191,7 +195,7 @@ void DebuggerWindow::onStepOverActionTriggered()
 
   // unpause to let it run to the breakpoint
   m_registers_model->saveCurrentValues();
-  QtHostInterface::GetInstance()->pauseSystem(false);
+  g_emu_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onStepOutActionTriggered()
@@ -205,7 +209,7 @@ void DebuggerWindow::onStepOutActionTriggered()
 
   // unpause to let it run to the breakpoint
   m_registers_model->saveCurrentValues();
-  QtHostInterface::GetInstance()->pauseSystem(false);
+  g_emu_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
@@ -351,9 +355,9 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
   QMainWindow::closeEvent(event);
-  QtHostInterface::GetInstance()->pauseSystem(true, true);
+  g_emu_thread->setSystemPaused(true, true);
   CPU::ClearBreakpoints();
-  QtHostInterface::GetInstance()->pauseSystem(false);
+  g_emu_thread->setSystemPaused(false);
   emit closed();
 }
 
@@ -379,9 +383,10 @@ void DebuggerWindow::setupAdditionalUi()
 
 void DebuggerWindow::connectSignals()
 {
-  QtHostInterface* hi = QtHostInterface::GetInstance();
-  connect(hi, &QtHostInterface::emulationPaused, this, &DebuggerWindow::onEmulationPaused);
-  connect(hi, &QtHostInterface::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
+  EmuThread* hi = g_emu_thread;
+  connect(hi, &EmuThread::systemPaused, this, &DebuggerWindow::onEmulationPaused);
+  connect(hi, &EmuThread::systemResumed, this, &DebuggerWindow::onEmulationResumed);
+  connect(hi, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
   connect(m_ui.actionPause, &QAction::toggled, this, &DebuggerWindow::onPauseActionToggled);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
@@ -410,7 +415,7 @@ void DebuggerWindow::connectSignals()
 
 void DebuggerWindow::disconnectSignals()
 {
-  QtHostInterface* hi = QtHostInterface::GetInstance();
+  EmuThread* hi = g_emu_thread;
   hi->disconnect(this);
 }
 

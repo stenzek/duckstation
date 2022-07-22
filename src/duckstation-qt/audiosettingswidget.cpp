@@ -1,12 +1,14 @@
 #include "audiosettingswidget.h"
-#include "common/audio_stream.h"
+#include "core/spu.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+#include "util/audio_stream.h"
 #include <cmath>
 
-AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog)
-  : QWidget(parent), m_host_interface(host_interface)
+AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
 {
+  SettingsInterface* sif = dialog->getSettingsInterface();
+
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
@@ -15,26 +17,35 @@ AudioSettingsWidget::AudioSettingsWidget(QtHostInterface* host_interface, QWidge
       qApp->translate("AudioBackend", Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
   }
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.audioBackend, "Audio", "Backend",
-                                               &Settings::ParseAudioBackend, &Settings::GetAudioBackendName,
-                                               Settings::DEFAULT_AUDIO_BACKEND);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.syncToOutput, "Audio", "Sync");
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.bufferSize, "Audio", "BufferSize");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.muteCDAudio, "CDROM", "MuteCDAudio");
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.resampling, "Audio", "Resampling", true);
-
-  m_ui.volume->setValue(m_host_interface->GetIntSettingValue("Audio", "OutputVolume", 100));
-  m_ui.fastForwardVolume->setValue(m_host_interface->GetIntSettingValue("Audio", "FastForwardVolume", 100));
-  m_ui.muted->setChecked(m_host_interface->GetBoolSettingValue("Audio", "OutputMuted", false));
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend", &Settings::ParseAudioBackend,
+                                               &Settings::GetAudioBackendName, Settings::DEFAULT_AUDIO_BACKEND);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToOutput, "Audio", "Sync", true);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferSize, "Audio", "BufferSize",
+                                              Settings::DEFAULT_AUDIO_BUFFER_SIZE);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.resampling, "Audio", "Resampling", true);
 
   connect(m_ui.bufferSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateBufferingLabel);
-  connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
-  connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
-  connect(m_ui.muted, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
-
   updateBufferingLabel();
-  updateVolumeLabel();
+
+  // for per-game, just use the normal path, since it needs to re-read/apply
+  if (!dialog->isPerGameSettings())
+  {
+    m_ui.volume->setValue(m_dialog->getEffectiveIntValue("Audio", "OutputVolume", 100));
+    m_ui.fastForwardVolume->setValue(m_dialog->getEffectiveIntValue("Audio", "FastForwardVolume", 100));
+    m_ui.muted->setChecked(m_dialog->getEffectiveBoolValue("Audio", "OutputMuted", false));
+    connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
+    connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
+    connect(m_ui.muted, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
+    updateVolumeLabel();
+  }
+  else
+  {
+    SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.volume, "Audio", "OutputVolume", 100);
+    SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.fastForwardVolume, "Audio", "FastForwardVolume", 100);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "Audio", "OutputMuted", false);
+  }
 
   dialog->registerWidgetHelp(
     m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
@@ -82,7 +93,7 @@ void AudioSettingsWidget::updateBufferingLabel()
     return;
   }
 
-  const float max_latency = AudioStream::GetMaxLatency(HostInterface::AUDIO_SAMPLE_RATE, actual_buffer_size);
+  const float max_latency = AudioStream::GetMaxLatency(SPU::SAMPLE_RATE, actual_buffer_size);
   m_ui.bufferingLabel->setText(tr("Maximum Latency: %n frames (%1ms)", "", actual_buffer_size)
                                  .arg(static_cast<double>(max_latency) * 1000.0, 0, 'f', 2));
 }
@@ -95,16 +106,16 @@ void AudioSettingsWidget::updateVolumeLabel()
 
 void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
-  m_host_interface->SetIntSettingValue("Audio", "OutputVolume", new_value);
-  m_host_interface->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
+  m_dialog->setIntSettingValue("Audio", "OutputVolume", new_value);
+  g_emu_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
 
   updateVolumeLabel();
 }
 
 void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 {
-  m_host_interface->SetIntSettingValue("Audio", "FastForwardVolume", new_value);
-  m_host_interface->setAudioOutputVolume(m_ui.volume->value(), new_value);
+  m_dialog->setIntSettingValue("Audio", "FastForwardVolume", new_value);
+  g_emu_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
 
   updateVolumeLabel();
 }
@@ -112,6 +123,6 @@ void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 void AudioSettingsWidget::onOutputMutedChanged(int new_state)
 {
   const bool muted = (new_state != 0);
-  m_host_interface->SetBoolSettingValue("Audio", "OutputMuted", muted);
-  m_host_interface->setAudioOutputMuted(muted);
+  m_dialog->setBoolSettingValue("Audio", "OutputMuted", muted);
+  g_emu_thread->setAudioOutputMuted(muted);
 }

@@ -4,7 +4,6 @@
 
 #include "ui_advancedsettingswidget.h"
 
-class QtHostInterface;
 class SettingsDialog;
 
 class AdvancedSettingsWidget : public QWidget
@@ -12,7 +11,7 @@ class AdvancedSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit AdvancedSettingsWidget(QtHostInterface* host_interface, QWidget* parent, SettingsDialog* dialog);
+  explicit AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent);
   ~AdvancedSettingsWidget();
 
 private:
@@ -45,11 +44,11 @@ private:
     };
   };
 
+  SettingsDialog* m_dialog;
+
   Ui::AdvancedSettingsWidget m_ui;
 
   void onResetToDefaultClicked();
-
-  QtHostInterface* m_host_interface;
 
   QVector<TweakOption> m_tweak_options;
 };

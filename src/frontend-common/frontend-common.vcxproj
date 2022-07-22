@@ -2,88 +2,81 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
-    <ClCompile Include="common_host_interface.cpp" />
-    <ClCompile Include="controller_interface.cpp" />
+    <ClCompile Include="achievements.cpp" />
+    <ClCompile Include="common_host.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="d3d11_host_display.cpp" />
-    <ClCompile Include="dinput_controller_interface.cpp">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="dinput_source.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
-    <ClCompile Include="fullscreen_ui_progress_callback.cpp" />
-    <ClCompile Include="game_database.cpp" />
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="game_list.cpp" />
-    <ClCompile Include="game_settings.cpp" />
+    <ClCompile Include="host_settings.cpp" />
     <ClCompile Include="icon.cpp" />
+    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_vulkan.cpp" />
+    <ClCompile Include="imgui_manager.cpp" />
+    <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="inhibit_screensaver.cpp" />
-    <ClCompile Include="ini_settings_interface.cpp" />
-    <ClCompile Include="input_overlay_ui.cpp" />
+    <ClCompile Include="input_manager.cpp" />
+    <ClCompile Include="input_source.cpp" />
     <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shadergen.cpp" />
-    <ClCompile Include="save_state_selector_ui.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="sdl_controller_interface.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="sdl_initializer.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="vulkan_host_display.cpp" />
+    <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
-    <ClCompile Include="xinput_controller_interface.cpp" />
+    <ClCompile Include="xinput_source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common_host_interface.h" />
-    <ClInclude Include="controller_interface.h" />
+    <ClInclude Include="achievements.h" />
+    <ClInclude Include="common_host.h" />
     <ClInclude Include="cubeb_audio_stream.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="d3d11_host_display.h" />
-    <ClInclude Include="dinput_controller_interface.h">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="dinput_source.h" />
     <ClInclude Include="fullscreen_ui.h" />
-    <ClInclude Include="fullscreen_ui_progress_callback.h" />
-    <ClInclude Include="game_database.h" />
     <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="game_list.h" />
-    <ClInclude Include="game_settings.h" />
     <ClInclude Include="icon.h" />
+    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="imgui_impl_dx12.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="imgui_impl_vulkan.h" />
+    <ClInclude Include="imgui_manager.h" />
+    <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="inhibit_screensaver.h" />
-    <ClInclude Include="ini_settings_interface.h" />
-    <ClInclude Include="input_overlay_ui.h" />
+    <ClInclude Include="input_manager.h" />
+    <ClInclude Include="input_source.h" />
     <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shadergen.h" />
-    <ClInclude Include="save_state_selector_ui.h" />
     <ClInclude Include="sdl_audio_stream.h">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="sdl_controller_interface.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="sdl_initializer.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="vulkan_host_display.h" />
+    <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="xaudio2_audio_stream.h" />
-    <ClInclude Include="xinput_controller_interface.h" />
+    <ClInclude Include="xinput_source.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="font_roboto_regular.inl" />

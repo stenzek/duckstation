@@ -55,6 +55,16 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define printflike(n,m)
 #endif
 
+#ifdef _MSC_VER
+// TODO: Use C++20 [[likely]] when available.
+#define LIKELY(x)  (!!(x))
+#define UNLIKELY(x)  (!!(x))
+#else
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#endif
+
+
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER

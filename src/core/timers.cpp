@@ -1,10 +1,10 @@
 #include "timers.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "gpu.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(Timers);
 
 Timers g_timers;

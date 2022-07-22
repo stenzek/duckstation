@@ -9,7 +9,7 @@ Log_SetChannel(HTTPDownloaderWinHttp);
 
 #pragma comment(lib, "winhttp.lib")
 
-namespace FrontendCommon {
+namespace Common {
 
 HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader() {}
 
@@ -177,7 +177,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
       const u32 new_size = req->io_position + dwStatusInformationLength;
       Assert(new_size <= req->data.size());
       req->data.resize(new_size);
-      req->start_time = Common::Timer::GetValue();
+      req->start_time = Common::Timer::GetCurrentValue();
 
       if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
       {
@@ -275,7 +275,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 
   Log_DevPrintf("Started HTTP request for '%s'", req->url.c_str());
   req->state = Request::State::Started;
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
   return true;
 }
 

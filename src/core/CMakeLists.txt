@@ -1,4 +1,5 @@
 add_library(core
+    achievements.h
     analog_controller.cpp
     analog_controller.h
     analog_joystick.cpp
@@ -28,6 +29,8 @@ add_library(core
     digital_controller.h
     dma.cpp
     dma.h
+    game_database.cpp
+    game_database.h
     gdb_protocol.cpp
     gdb_protocol.h
     gpu.cpp
@@ -48,19 +51,18 @@ add_library(core
     gpu_sw_backend.cpp
     gpu_sw_backend.h
     gpu_types.h
+    guncon.cpp
+    guncon.h
     gte.cpp
     gte.h
     gte_types.h
+    host.cpp
+    host.h
     host_display.cpp
     host_display.h
-    host_interface.cpp
-    host_interface.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
-    imgui_styles.cpp
-    imgui_styles.h  
-    imgui_fullscreen.cpp
-    imgui_fullscreen.h
+    host_settings.h
     interrupt_controller.cpp
     interrupt_controller.h
     libcrypt_game_codes.cpp
@@ -73,8 +75,6 @@ add_library(core
     memory_card_image.h
     multitap.cpp
     multitap.h
-    namco_guncon.cpp
-    namco_guncon.h
     negcon.cpp
     negcon.h
     pad.cpp
@@ -120,8 +120,8 @@ set(RECOMPILER_SRCS
 
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common zlib vulkan-loader)
-target_link_libraries(core PRIVATE glad stb xxhash imgui)
+target_link_libraries(core PUBLIC Threads::Threads common util zlib)
+target_link_libraries(core PRIVATE glad stb xxhash imgui rapidjson tinyxml2)
 
 if(WIN32)
   target_sources(core PRIVATE
@@ -159,10 +159,5 @@ else()
 endif()
 
 if(ENABLE_CHEEVOS)
-  target_sources(core PRIVATE
-    cheevos.cpp
-    cheevos.h
-  )
-  target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
-  target_link_libraries(core PRIVATE rcheevos rapidjson)
+  target_compile_definitions(core PRIVATE -DWITH_CHEEVOS=1)
 endif()

@@ -1,9 +1,9 @@
 #pragma once
+#include "common/gl/loader.h"
 #include "common/gl/program.h"
 #include "common/gl/shader_cache.h"
 #include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
-#include "glad.h"
 #include "gpu_hw.h"
 #include "texture_replacements.h"
 #include <array>
@@ -18,7 +18,7 @@ public:
 
   GPURenderer GetRendererType() const override;
 
-  bool Initialize(HostDisplay* host_display) override;
+  bool Initialize() override;
   void Reset(bool clear_vram) override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
 
@@ -57,7 +57,7 @@ private:
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
-  void SetCapabilities(HostDisplay* host_display);
+  void SetCapabilities();
   bool CreateFramebuffer();
   void ClearFramebuffer();
   void CopyFramebufferForState(GLenum target, GLuint src_texture, u32 src_fbo, u32 src_x, u32 src_y, GLuint dst_texture,

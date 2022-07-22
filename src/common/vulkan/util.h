@@ -7,7 +7,7 @@
 
 #include "../string.h"
 #include "../types.h"
-#include "vulkan_loader.h"
+#include "loader.h"
 #include <algorithm>
 #include <array>
 #include <cstdarg>

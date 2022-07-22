@@ -1,7 +1,7 @@
 #pragma once
 #include "../windows_headers.h"
 #include "context.h"
-#include <glad.h>
+#include "loader.h"
 
 namespace GL {
 

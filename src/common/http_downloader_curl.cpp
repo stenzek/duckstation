@@ -9,7 +9,7 @@
 #include <signal.h>
 Log_SetChannel(HTTPDownloaderCurl);
 
-namespace FrontendCommon {
+namespace Common {
 
 HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader() {}
 
@@ -81,7 +81,7 @@ void HTTPDownloaderCurl::ProcessRequest(Request* req)
   if (pthread_sigmask(SIG_BLOCK, &new_block_mask, &old_block_mask) != 0)
     Log_WarningPrint("Failed to block SIGPIPE");
 
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
   int ret = curl_easy_perform(req->handle);
   if (ret == CURLE_OK)
   {
@@ -144,7 +144,7 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
 
   Log_DevPrintf("Started HTTP request for '%s'", req->url.c_str());
   req->state = Request::State::Started;
-  req->start_time = Common::Timer::GetValue();
+  req->start_time = Common::Timer::GetCurrentValue();
   m_thread_pool->Schedule(std::bind(&HTTPDownloaderCurl::ProcessRequest, this, req));
   return true;
 }

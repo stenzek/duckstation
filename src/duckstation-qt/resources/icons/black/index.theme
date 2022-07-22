@@ -13,3 +13,9 @@ Type=Fixed
 [64]
 Size=64
 Type=Fixed
+
+[svg]
+Size=64
+Type=Scalable
+MinSize=64
+MaxSize=1024

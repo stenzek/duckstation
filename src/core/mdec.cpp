@@ -1,11 +1,12 @@
 #include "mdec.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core.h"
 #include "dma.h"
+#include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(MDEC);
 
 MDEC g_mdec;
@@ -722,7 +723,7 @@ void MDEC::HandleSetScaleCommand()
 
 void MDEC::DrawDebugStateWindow()
 {
-  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float framebuffer_scale = Host::GetOSDScale();
 
   ImGui::SetNextWindowSize(ImVec2(300.0f * framebuffer_scale, 350.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("MDEC State", nullptr))

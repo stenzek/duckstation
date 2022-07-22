@@ -3,16 +3,16 @@
 #include "common/align.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
-#include "host_interface.h"
+#include "host.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 
 Log_SetChannel(CPU::Core);
@@ -1691,8 +1691,8 @@ bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
 
   if (!auto_clear)
   {
-    g_host_interface->ReportFormattedDebuggerMessage(
-      g_host_interface->TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."), address);
+    Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."),
+                                         address);
   }
 
   return true;
@@ -1718,8 +1718,8 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
   if (it == s_breakpoints.end())
     return false;
 
-  g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
+  Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."),
+                                       address);
 
   s_breakpoints.erase(it);
   UpdateDebugDispatcherFlag();
@@ -1750,8 +1750,8 @@ bool AddStepOverBreakpoint()
 
   if (!IsCallInstruction(inst))
   {
-    g_host_interface->ReportFormattedDebuggerMessage(
-      g_host_interface->TranslateString("DebuggerMessage", "0x%08X is not a call instruction."), g_state.regs.pc);
+    Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "0x%08X is not a call instruction."),
+                                         g_state.regs.pc);
     return false;
   }
 
@@ -1760,16 +1760,15 @@ bool AddStepOverBreakpoint()
 
   if (IsBranchInstruction(inst))
   {
-    g_host_interface->ReportFormattedDebuggerMessage(
-      g_host_interface->TranslateString("DebuggerMessage", "Can't step over double branch at 0x%08X"), g_state.regs.pc);
+    Host::ReportFormattedDebuggerMessage(
+      Host::TranslateString("DebuggerMessage", "Can't step over double branch at 0x%08X"), g_state.regs.pc);
     return false;
   }
 
   // skip the delay slot
   bp_pc += sizeof(Instruction);
 
-  g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+  Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
 
   return AddBreakpoint(bp_pc, true);
 }
@@ -1785,25 +1784,22 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
     Instruction inst;
     if (!SafeReadInstruction(ret_pc, &inst.bits))
     {
-      g_host_interface->ReportFormattedDebuggerMessage(
-        g_host_interface->TranslateString("DebuggerMessage",
-                                          "Instruction read failed at %08X while searching for function end."),
+      Host::ReportFormattedDebuggerMessage(
+        Host::TranslateString("DebuggerMessage", "Instruction read failed at %08X while searching for function end."),
         ret_pc);
       return false;
     }
 
     if (IsReturnInstruction(inst))
     {
-      g_host_interface->ReportFormattedDebuggerMessage(
-        g_host_interface->TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+      Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
 
       return AddBreakpoint(ret_pc, true);
     }
   }
 
-  g_host_interface->ReportFormattedDebuggerMessage(
-    g_host_interface->TranslateString("DebuggerMessage",
-                                      "No return instruction found after %u instructions for step-out at %08X."),
+  Host::ReportFormattedDebuggerMessage(
+    Host::TranslateString("DebuggerMessage", "No return instruction found after %u instructions for step-out at %08X."),
     max_instructions_to_search, g_state.regs.pc);
 
   return false;
@@ -1857,18 +1853,18 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
     }
     else
     {
-      g_host_interface->PauseSystem(true);
+      System::PauseSystem(true);
 
       if (bp.auto_clear)
       {
-        g_host_interface->ReportFormattedDebuggerMessage("Stopped execution at 0x%08X.", pc);
+        Host::ReportFormattedDebuggerMessage("Stopped execution at 0x%08X.", pc);
         s_breakpoints.erase(s_breakpoints.begin() + i);
         count--;
         UpdateDebugDispatcherFlag();
       }
       else
       {
-        g_host_interface->ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
+        Host::ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
         i++;
       }
     }
@@ -1979,7 +1975,7 @@ void SingleStep()
 {
   s_single_step = true;
   ExecuteDebug();
-  g_host_interface->ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.regs.pc);
+  Host::ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.regs.pc);
 }
 
 namespace CodeCache {

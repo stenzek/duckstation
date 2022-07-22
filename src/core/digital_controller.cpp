@@ -1,26 +1,16 @@
 #include "digital_controller.h"
 #include "common/assert.h"
-#include "common/state_wrapper.h"
-#include "host_interface.h"
+#include "host.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 
-DigitalController::DigitalController() = default;
+DigitalController::DigitalController(u32 index) : Controller(index) {}
 
 DigitalController::~DigitalController() = default;
 
 ControllerType DigitalController::GetType() const
 {
   return ControllerType::DigitalController;
-}
-
-std::optional<s32> DigitalController::GetAxisCodeByName(std::string_view axis_name) const
-{
-  return StaticGetAxisCodeByName(axis_name);
-}
-
-std::optional<s32> DigitalController::GetButtonCodeByName(std::string_view button_name) const
-{
-  return StaticGetButtonCodeByName(button_name);
 }
 
 void DigitalController::Reset()
@@ -42,18 +32,25 @@ bool DigitalController::DoState(StateWrapper& sw, bool apply_input_state)
   return true;
 }
 
-bool DigitalController::GetButtonState(s32 button_code) const
+float DigitalController::GetBindState(u32 index) const
 {
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return false;
-
-  const u16 bit = u16(1) << static_cast<u8>(button_code);
-  return ((m_button_state & bit) == 0);
+  if (index < static_cast<u32>(Button::Count))
+  {
+    return static_cast<float>(((m_button_state >> index) & 1u) ^ 1u);
+  }
+  else
+  {
+    return 0.0f;
+  }
 }
 
-void DigitalController::SetButtonState(Button button, bool pressed)
+void DigitalController::SetBindState(u32 index, float value)
 {
-  const u16 bit = u16(1) << static_cast<u8>(button);
+  if (index >= static_cast<u32>(Button::Count))
+    return;
+
+  const bool pressed = (value >= 0.5f);
+  const u16 bit = u16(1) << static_cast<u8>(index);
   if (pressed)
   {
     if (m_button_state & bit)
@@ -68,14 +65,6 @@ void DigitalController::SetButtonState(Button button, bool pressed)
 
     m_button_state |= bit;
   }
-}
-
-void DigitalController::SetButtonState(s32 button_code, bool pressed)
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return;
-
-  SetButtonState(static_cast<Button>(button_code), pressed);
 }
 
 u32 DigitalController::GetButtonStateBits() const
@@ -146,87 +135,53 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-std::unique_ptr<DigitalController> DigitalController::Create()
+std::unique_ptr<DigitalController> DigitalController::Create(u32 index)
 {
-  return std::make_unique<DigitalController>();
+  return std::make_unique<DigitalController>(index);
 }
 
-std::optional<s32> DigitalController::StaticGetAxisCodeByName(std::string_view button_name)
-{
-  return std::nullopt;
-}
-
-std::optional<s32> DigitalController::StaticGetButtonCodeByName(std::string_view button_name)
-{
-#define BUTTON(name)                                                                                                   \
-  if (button_name == #name)                                                                                            \
+static const Controller::ControllerBindingInfo s_binding_info[] = {
+#define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Button::name)));                                              \
+    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
   }
 
-  BUTTON(Select);
-  BUTTON(L3);
-  BUTTON(R3);
-  BUTTON(Start);
-  BUTTON(Up);
-  BUTTON(Right);
-  BUTTON(Down);
-  BUTTON(Left);
-  BUTTON(L2);
-  BUTTON(R2);
-  BUTTON(L1);
-  BUTTON(R1);
-  BUTTON(Triangle);
-  BUTTON(Circle);
-  BUTTON(Cross);
-  BUTTON(Square);
-
-  return std::nullopt;
+  BUTTON("Up", "D-Pad Up", DigitalController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", "D-Pad Right", DigitalController::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", "D-Pad Down", DigitalController::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", "D-Pad Left", DigitalController::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", "Triangle", DigitalController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", "Circle", DigitalController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", "Cross", DigitalController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", "Square", DigitalController::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", "Select", DigitalController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", "Start", DigitalController::Button::Start, GenericInputBinding::Start),
+  BUTTON("L1", "L1", DigitalController::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", "R1", DigitalController::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", "L2", DigitalController::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", "R2", DigitalController::Button::R2, GenericInputBinding::R2),
 
 #undef BUTTON
-}
+};
 
-Controller::AxisList DigitalController::StaticGetAxisNames()
-{
-  return {};
-}
+static const SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "ForcePopnControllerMode",
+   TRANSLATABLE("DigitalController", "Force Pop'n Controller Mode"),
+   TRANSLATABLE("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}};
 
-Controller::ButtonList DigitalController::StaticGetButtonNames()
-{
-  return {{TRANSLATABLE("DigitalController", "Up"), static_cast<s32>(Button::Up)},
-          {TRANSLATABLE("DigitalController", "Down"), static_cast<s32>(Button::Down)},
-          {TRANSLATABLE("DigitalController", "Left"), static_cast<s32>(Button::Left)},
-          {TRANSLATABLE("DigitalController", "Right"), static_cast<s32>(Button::Right)},
-          {TRANSLATABLE("DigitalController", "Select"), static_cast<s32>(Button::Select)},
-          {TRANSLATABLE("DigitalController", "Start"), static_cast<s32>(Button::Start)},
-          {TRANSLATABLE("DigitalController", "Triangle"), static_cast<s32>(Button::Triangle)},
-          {TRANSLATABLE("DigitalController", "Cross"), static_cast<s32>(Button::Cross)},
-          {TRANSLATABLE("DigitalController", "Circle"), static_cast<s32>(Button::Circle)},
-          {TRANSLATABLE("DigitalController", "Square"), static_cast<s32>(Button::Square)},
-          {TRANSLATABLE("DigitalController", "L1"), static_cast<s32>(Button::L1)},
-          {TRANSLATABLE("DigitalController", "L2"), static_cast<s32>(Button::L2)},
-          {TRANSLATABLE("DigitalController", "R1"), static_cast<s32>(Button::R1)},
-          {TRANSLATABLE("DigitalController", "R2"), static_cast<s32>(Button::R2)}};
-}
+const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
+                                                            "DigitalController",
+                                                            TRANSLATABLE("ControllerType", "Digital Controller"),
+                                                            s_binding_info,
+                                                            countof(s_binding_info),
+                                                            s_settings,
+                                                            countof(s_settings),
+                                                            Controller::VibrationCapabilities::NoVibration};
 
-u32 DigitalController::StaticGetVibrationMotorCount()
+void DigitalController::LoadSettings(SettingsInterface& si, const char* section)
 {
-  return 0;
-}
-
-Controller::SettingList DigitalController::StaticGetSettings()
-{
-  static constexpr std::array<SettingInfo, 1> settings = {
-    {{SettingInfo::Type::Boolean, "ForcePopnControllerMode",
-      TRANSLATABLE("DigitalController", "Force Pop'n Controller Mode"),
-      TRANSLATABLE("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}}};
-  return SettingList(settings.begin(), settings.end());
-}
-
-void DigitalController::LoadSettings(const char* section)
-{
-  Controller::LoadSettings(section);
-  m_popn_controller_mode = g_host_interface->GetBoolSettingValue(section, "ForcePopnControllerMode", false);
+  Controller::LoadSettings(si, section);
+  m_popn_controller_mode = si.GetBoolValue(section, "ForcePopnControllerMode", false);
 }
 
 u8 DigitalController::GetButtonsLSBMask() const

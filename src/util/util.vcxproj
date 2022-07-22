@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
+  <ItemGroup>
+    <ClInclude Include="audio_stream.h" />
+    <ClInclude Include="cd_image.h" />
+    <ClInclude Include="cd_image_hasher.h" />
+    <ClInclude Include="cue_parser.h" />
+    <ClInclude Include="ini_settings_interface.h" />
+    <ClInclude Include="iso_reader.h" />
+    <ClInclude Include="jit_code_buffer.h" />
+    <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="pbp_types.h" />
+    <ClInclude Include="memory_arena.h" />
+    <ClInclude Include="page_fault_handler.h" />
+    <ClInclude Include="cd_subchannel_replacement.h" />
+    <ClInclude Include="shiftjis.h" />
+    <ClInclude Include="state_wrapper.h" />
+    <ClInclude Include="cd_xa.h" />
+    <ClInclude Include="wav_writer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="audio_stream.cpp" />
+    <ClCompile Include="cd_image.cpp" />
+    <ClCompile Include="cd_image_bin.cpp" />
+    <ClCompile Include="cd_image_chd.cpp" />
+    <ClCompile Include="cd_image_cue.cpp" />
+    <ClCompile Include="cd_image_device.cpp" />
+    <ClCompile Include="cd_image_ecm.cpp" />
+    <ClCompile Include="cd_image_hasher.cpp" />
+    <ClCompile Include="cd_image_m3u.cpp" />
+    <ClCompile Include="cd_image_mds.cpp" />
+    <ClCompile Include="cd_image_memory.cpp" />
+    <ClCompile Include="cd_image_pbp.cpp" />
+    <ClCompile Include="cue_parser.cpp" />
+    <ClCompile Include="cd_image_ppf.cpp" />
+    <ClCompile Include="ini_settings_interface.cpp" />
+    <ClCompile Include="iso_reader.cpp" />
+    <ClCompile Include="jit_code_buffer.cpp" />
+    <ClCompile Include="cd_subchannel_replacement.cpp" />
+    <ClCompile Include="null_audio_stream.cpp" />
+    <ClCompile Include="shiftjis.cpp" />
+    <ClCompile Include="memory_arena.cpp" />
+    <ClCompile Include="page_fault_handler.cpp" />
+    <ClCompile Include="state_wrapper.cpp" />
+    <ClCompile Include="cd_xa.cpp" />
+    <ClCompile Include="wav_writer.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{57F6206D-F264-4B07-BAF8-11B9BBE1F455}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="..\..\dep\msvc\vsprops\StaticLibrary.props" />
+  <Import Project="util.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
+</Project>

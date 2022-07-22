@@ -2,34 +2,12 @@ add_library(common
   align.h
   assert.cpp
   assert.h
-  audio_stream.cpp
-  audio_stream.h
   bitfield.h
   bitutils.h
   byte_stream.cpp
   byte_stream.h
-  cd_image.cpp
-  cd_image.h
-  cd_image_bin.cpp
-  cd_image_cue.cpp
-  cd_image_chd.cpp
-  cd_image_device.cpp
-  cd_image_ecm.cpp
-  cd_image_hasher.cpp
-  cd_image_hasher.h
-  cd_image_m3u.cpp
-  cd_image_memory.cpp
-  cd_image_mds.cpp
-  cd_image_pbp.cpp
-  cd_image_ppf.cpp
-  cd_subchannel_replacement.cpp
-  cd_subchannel_replacement.h
-  cd_xa.cpp
-  cd_xa.h
   crash_handler.cpp
   crash_handler.h
-  cue_parser.cpp
-  cue_parser.h
   dimensional_array.h
   error.cpp
   error.h
@@ -52,48 +30,42 @@ add_library(common
   gl/texture.h
   hash_combine.h
   heap_array.h
-  iso_reader.cpp
-  iso_reader.h
-  jit_code_buffer.cpp
-  jit_code_buffer.h
+  heterogeneous_containers.h
+  layered_settings_interface.cpp
+  layered_settings_interface.h
   log.cpp
   log.h
   make_array.h
   md5_digest.cpp
   md5_digest.h
+  memory_settings_interface.cpp
+  memory_settings_interface.h
   minizip_helpers.cpp
   minizip_helpers.h
-  null_audio_stream.cpp
-  null_audio_stream.h
-  memory_arena.cpp
-  memory_arena.h
-  page_fault_handler.cpp
-  page_fault_handler.h
+  path.h
   platform.h
-  pbp_types.h
   progress_callback.cpp
   progress_callback.h
   rectangle.h
   scope_guard.h
-  shiftjis.cpp
-  shiftjis.h
-  state_wrapper.cpp
-  state_wrapper.h
+  settings_interface.h
   string.cpp
   string.h
   string_util.cpp
   string_util.h
   thirdparty/thread_pool.cpp
   thirdparty/thread_pool.h
+  threading.cpp
+  threading.h
   timer.cpp
   timer.h
-  timestamp.cpp
-  timestamp.h
   types.h
   vulkan/builders.cpp
   vulkan/builders.h
   vulkan/context.cpp
   vulkan/context.h
+  vulkan/loader.h
+  vulkan/loader.cpp
   vulkan/shader_cache.cpp
   vulkan/shader_cache.h
   vulkan/shader_compiler.cpp
@@ -110,15 +82,14 @@ add_library(common
   vulkan/texture.h
   vulkan/util.cpp
   vulkan/util.h
-  wav_writer.cpp
-  wav_writer.h
   window_info.cpp
   window_info.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PRIVATE glad stb Threads::Threads libchdr glslang vulkan-loader zlib minizip samplerate)
+target_link_libraries(common PUBLIC fmt Threads::Threads)
+target_link_libraries(common PRIVATE glad stb libchdr glslang zlib minizip samplerate "${CMAKE_DL_LIBS}")
 
 if(WIN32)
   target_sources(common PRIVATE

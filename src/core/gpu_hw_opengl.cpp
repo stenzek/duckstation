@@ -1,13 +1,14 @@
 #include "gpu_hw_opengl.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
+#include "host.h"
 #include "host_display.h"
 #include "shader_cache_version.h"
 #include "system.h"
 #include "texture_replacements.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_OpenGL);
 
 GPU_HW_OpenGL::GPU_HW_OpenGL() : GPU_HW() {}
@@ -24,9 +25,9 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   if (m_texture_buffer_r16ui_texture != 0)
     glDeleteTextures(1, &m_texture_buffer_r16ui_texture);
 
-  if (m_host_display)
+  if (g_host_display)
   {
-    m_host_display->ClearDisplayTexture();
+    g_host_display->ClearDisplayTexture();
     ResetGraphicsAPIState();
   }
 
@@ -40,31 +41,30 @@ GPURenderer GPU_HW_OpenGL::GetRendererType() const
   return GPURenderer::HardwareOpenGL;
 }
 
-bool GPU_HW_OpenGL::Initialize(HostDisplay* host_display)
+bool GPU_HW_OpenGL::Initialize()
 {
-  if (host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGL &&
-      host_display->GetRenderAPI() != HostDisplay::RenderAPI::OpenGLES)
+  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::OpenGL))
   {
     Log_ErrorPrintf("Host render API type is incompatible");
     return false;
   }
 
   const bool opengl_is_available =
-    ((host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGL &&
+    ((g_host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGL &&
       (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
-     (host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
+     (g_host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
   if (!opengl_is_available)
   {
-    g_host_interface->AddOSDMessage(
-      g_host_interface->TranslateStdString("OSDMessage", "OpenGL renderer unavailable, your driver or hardware is not "
-                                                         "recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required."),
-      20.0f);
+    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",
+                                                 "OpenGL renderer unavailable, your driver or hardware is not "
+                                                 "recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required."),
+                        20.0f);
     return false;
   }
 
-  SetCapabilities(host_display);
+  SetCapabilities();
 
-  if (!GPU_HW::Initialize(host_display))
+  if (!GPU_HW::Initialize())
     return false;
 
   if (!CreateFramebuffer())
@@ -133,7 +133,7 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
       {
         delete tex;
 
-        tex = m_host_display
+        tex = g_host_display
                 ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
                                 m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
                 .release();
@@ -252,7 +252,7 @@ void GPU_HW_OpenGL::UpdateSettings()
     RestoreGraphicsAPIState();
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     ResetGraphicsAPIState();
-    m_host_display->ClearDisplayTexture();
+    g_host_display->ClearDisplayTexture();
     CreateFramebuffer();
   }
   if (shaders_changed)
@@ -297,7 +297,7 @@ std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y
   return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
 }
 
-void GPU_HW_OpenGL::SetCapabilities(HostDisplay* host_display)
+void GPU_HW_OpenGL::SetCapabilities()
 {
   GLint max_texture_size = VRAM_WIDTH;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
@@ -510,10 +510,10 @@ bool GPU_HW_OpenGL::CreateTextureBuffer()
 bool GPU_HW_OpenGL::CompilePrograms()
 {
   GL::ShaderCache shader_cache;
-  shader_cache.Open(IsGLES(), g_host_interface->GetShaderCacheBasePath(), SHADER_CACHE_VERSION);
+  shader_cache.Open(IsGLES(), EmuFolders::Cache, SHADER_CACHE_VERSION);
 
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
-  GPU_HW_ShaderGen shadergen(m_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
+  GPU_HW_ShaderGen shadergen(g_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
                              m_pgxp_depth_buffer, m_supports_dual_source_blend);
 
@@ -844,7 +844,7 @@ void GPU_HW_OpenGL::ClearDisplay()
 {
   GPU_HW::ClearDisplay();
 
-  m_host_display->ClearDisplayTexture();
+  g_host_display->ClearDisplayTexture();
 
   m_display_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   glDisable(GL_SCISSOR_TEST);
@@ -864,7 +864,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
     {
       UpdateVRAMReadTexture();
 
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_read_texture.GetGLId())),
+      g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_read_texture.GetGLId())),
                                         HostDisplayPixelFormat::RGBA8, m_vram_read_texture.GetWidth(),
                                         static_cast<s32>(m_vram_read_texture.GetHeight()), 0,
                                         m_vram_read_texture.GetHeight(), m_vram_read_texture.GetWidth(),
@@ -872,17 +872,17 @@ void GPU_HW_OpenGL::UpdateDisplay()
     }
     else
     {
-      m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+      g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                         HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                         static_cast<s32>(m_vram_texture.GetHeight()), 0, m_vram_texture.GetHeight(),
                                         m_vram_texture.GetWidth(), -static_cast<s32>(m_vram_texture.GetHeight()));
     }
-    m_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+    g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
-    m_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
+    g_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
                                          GetDisplayAspectRatio());
@@ -900,7 +900,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
 
     if (IsDisplayDisabled())
     {
-      m_host_display->ClearDisplayTexture();
+      g_host_display->ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == GPU_HW::InterlacedRenderMode::None &&
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture.GetWidth() &&
@@ -913,7 +913,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
+        g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
                                           HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                           m_vram_texture.GetHeight(), scaled_vram_offset_x,
                                           m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
@@ -960,7 +960,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
+        g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
                                           HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
                                           m_display_texture.GetHeight(), 0, scaled_display_height, scaled_display_width,
                                           -static_cast<s32>(scaled_display_height));
@@ -1353,7 +1353,7 @@ void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left
 
   RestoreGraphicsAPIState();
 
-  m_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_downsample_texture.GetGLId())),
+  g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_downsample_texture.GetGLId())),
                                     HostDisplayPixelFormat::RGBA8, m_downsample_texture.GetWidth(),
                                     m_downsample_texture.GetHeight(), ds_left,
                                     m_downsample_texture.GetHeight() - ds_top, ds_width, -static_cast<s32>(ds_height));

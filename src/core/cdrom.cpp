@@ -1,15 +1,16 @@
 #include "cdrom.h"
 #include "common/align.h"
-#include "common/cd_image.h"
 #include "common/log.h"
 #include "common/platform.h"
-#include "common/state_wrapper.h"
 #include "dma.h"
+#include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "util/cd_image.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(CDROM);
 
@@ -2722,7 +2723,7 @@ void CDROM::DrawDebugWindow()
 {
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
-  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float framebuffer_scale = Host::GetOSDScale();
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("CDROM State", nullptr))

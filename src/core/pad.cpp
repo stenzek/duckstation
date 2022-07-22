@@ -1,12 +1,12 @@
 #include "pad.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "controller.h"
-#include "host_interface.h"
+#include "host.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
 #include "multitap.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(Pad);
 
 Pad g_pad;
@@ -66,17 +66,17 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     // UI notification portion is separated from emulation portion (intentional condition check redundancy)
     if (g_settings.load_devices_from_save_states)
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         10.0f,
-        g_host_interface->TranslateString(
-          "OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
+        Host::TranslateString("OSDMessage",
+                              "Save state contains controller type %s in port %u, but %s is used. Switching."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u,
         Settings::GetControllerTypeName(controller_type));
     }
     else
     {
-      g_host_interface->AddFormattedOSDMessage(
-        10.0f, g_host_interface->TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+      Host::AddFormattedOSDMessage(
+        10.0f, Host::TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u);
     }
 
@@ -129,10 +129,10 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
 
   if (card_present_in_state && !m_memory_cards[i] && g_settings.load_devices_from_save_states)
   {
-    g_host_interface->AddFormattedOSDMessage(
+    Host::AddFormattedOSDMessage(
       20.0f,
-      g_host_interface->TranslateString(
-        "OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
+      Host::TranslateString("OSDMessage",
+                            "Memory card %u present in save state but not in system. Creating temporary card."),
       i + 1u);
     m_memory_cards[i] = MemoryCard::Create();
   }
@@ -170,10 +170,10 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
       }
       else
       {
-        g_host_interface->AddFormattedOSDMessage(
+        Host::AddFormattedOSDMessage(
           20.0f,
-          g_host_interface->TranslateString(
-            "OSDMessage", "Memory card %u from save state does match current card data. Simulating replugging."),
+          Host::TranslateString("OSDMessage",
+                                "Memory card %u from save state does match current card data. Simulating replugging."),
           i + 1u);
 
         // this is a potentially serious issue - some games cache info from memcards and jumping around
@@ -188,10 +188,9 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
     }
     else
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         20.0f,
-        g_host_interface->TranslateString("OSDMessage",
-                                          "Memory card %u present in save state but not in system. Ignoring card."),
+        Host::TranslateString("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
         i + 1u);
     }
 
@@ -202,19 +201,17 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
   {
     if (g_settings.load_devices_from_save_states)
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         20.0f,
-        g_host_interface->TranslateString("OSDMessage",
-                                          "Memory card %u present in system but not in save state. Removing card."),
+        Host::TranslateString("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
         i + 1u);
       m_memory_cards[i].reset();
     }
     else
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         20.0f,
-        g_host_interface->TranslateString("OSDMessage",
-                                          "Memory card %u present in system but not in save state. Replugging card."),
+        Host::TranslateString("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
         i + 1u);
       m_memory_cards[i]->Reset();
     }

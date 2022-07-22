@@ -8,7 +8,7 @@
 #include "../types.h"
 #include "../window_info.h"
 #include "texture.h"
-#include "vulkan_loader.h"
+#include "loader.h"
 #include <memory>
 #include <vector>
 

@@ -1,13 +1,12 @@
 #pragma once
-#include "timestamp.h"
 #include "types.h"
 #include <cstdio>
+#include <ctime>
 #include <memory>
 #include <optional>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
-
-class ByteStream;
 
 #ifdef _WIN32
 #define FS_OSPATH_SEPARATOR_CHARACTER '\\'
@@ -36,186 +35,104 @@ enum FILESYSTEM_FIND_FLAGS
 
 struct FILESYSTEM_STAT_DATA
 {
+  std::time_t CreationTime; // actually inode change time on linux
+  std::time_t ModificationTime;
+  s64 Size;
   u32 Attributes;
-  Timestamp ModificationTime;
-  u64 Size;
 };
 
 struct FILESYSTEM_FIND_DATA
 {
+  std::time_t CreationTime; // actually inode change time on linux
+  std::time_t ModificationTime;
   std::string FileName;
-  Timestamp ModificationTime;
+  s64 Size;
   u32 Attributes;
-  u64 Size;
-};
-
-struct FILESYSTEM_CHANGE_NOTIFY_DATA
-{
-  String DirectoryPath;
-  bool RecursiveWatch;
-
-  void* pSystemData;
 };
 
 namespace FileSystem {
-
 using FindResultsArray = std::vector<FILESYSTEM_FIND_DATA>;
 
-#ifdef __ANDROID__
-/// Sets the instance for the FileHelpers Java class, used for storage access framework
-/// file access on Android.
-void SetAndroidFileHelper(void* jvm, void* env, void* object);
-#endif
-
-class ChangeNotifier
-{
-public:
-  enum ChangeEvent
-  {
-    ChangeEvent_FileAdded = (1 << 0),
-    ChangeEvent_FileRemoved = (1 << 1),
-    ChangeEvent_FileModified = (1 << 2),
-    ChangeEvent_RenamedOldName = (1 << 3),
-    ChangeEvent_RenamedNewName = (1 << 4),
-  };
-
-  struct ChangeInfo
-  {
-    const char* Path;
-    u32 Event;
-  };
-
-public:
-  virtual ~ChangeNotifier();
-
-  const String& GetDirectoryPath() const { return m_directoryPath; }
-  const bool GetRecursiveWatch() const { return m_recursiveWatch; }
-
-  typedef void (*EnumerateChangesCallback)(const ChangeInfo* pChangeInfo, void* pUserData);
-  virtual void EnumerateChanges(EnumerateChangesCallback callback, void* pUserData) = 0;
-
-private:
-  template<typename CALLBACK_TYPE>
-  static void EnumerateChangesTrampoline(const ChangeInfo* pChangeInfo, void* pUserData)
-  {
-    CALLBACK_TYPE* pRealCallback = reinterpret_cast<CALLBACK_TYPE*>(pUserData);
-    (*pRealCallback)(pChangeInfo);
-  }
-
-public:
-  template<typename CALLBACK_TYPE>
-  void EnumerateChanges(CALLBACK_TYPE callback)
-  {
-    CALLBACK_TYPE* pCallback = &callback;
-    EnumerateChanges(&ChangeNotifier::EnumerateChangesTrampoline<CALLBACK_TYPE>, reinterpret_cast<void*>(pCallback));
-  }
-
-protected:
-  ChangeNotifier(const String& directoryPath, bool recursiveWatch);
-
-  String m_directoryPath;
-  bool m_recursiveWatch;
-};
-
-// create a change notifier
-std::unique_ptr<ChangeNotifier> CreateChangeNotifier(const char* path, bool recursiveWatch);
-
-// canonicalize a path string (i.e. replace .. with actual folder name, etc), if OS path is used, on windows, the
-// separators will be \, otherwise /
-void CanonicalizePath(char* Destination, u32 cbDestination, const char* Path, bool OSPath = true);
-void CanonicalizePath(String& Destination, const char* Path, bool OSPath = true);
-void CanonicalizePath(String& Destination, bool OSPath = true);
-void CanonicalizePath(std::string& path, bool OSPath = true);
-
-// translates the specified path into a string compatible with the hosting OS
-void BuildOSPath(char* Destination, u32 cbDestination, const char* Path);
-void BuildOSPath(String& Destination, const char* Path);
-void BuildOSPath(String& Destination);
-
-// builds a path relative to the specified file
-std::string BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename);
-
-// sanitizes a filename for use in a filesystem.
-void SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes = true);
-void SanitizeFileName(String& Destination, const char* FileName, bool StripSlashes = true);
-void SanitizeFileName(String& Destination, bool StripSlashes = true);
-void SanitizeFileName(std::string& Destination, bool StripSlashes = true);
-
-/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
-bool IsAbsolutePath(const std::string_view& path);
-
-/// Removes the extension of a filename.
-std::string_view StripExtension(const std::string_view& path);
-
-/// Replaces the extension of a filename with another.
-std::string ReplaceExtension(const std::string_view& path, const std::string_view& new_extension);
-
-/// Returns the display name of a filename. Usually this is the same as the path, except on Android
-/// where it resolves a content URI to its name.
+/// Returns the display name of a filename. Usually this is the same as the path.
 std::string GetDisplayNameFromPath(const std::string_view& path);
-
-/// Returns the directory component of a filename.
-std::string_view GetPathDirectory(const std::string_view& path);
-
-/// Returns the filename component of a filename.
-std::string_view GetFileNameFromPath(const std::string_view& path);
-
-/// Returns the file title (less the extension and path) from a filename.
-std::string_view GetFileTitleFromPath(const std::string_view& path);
 
 /// Returns a list of "root directories" (i.e. root/home directories on Linux, drive letters on Windows).
 std::vector<std::string> GetRootDirectoryList();
 
-// search for files
-bool FindFiles(const char* Path, const char* Pattern, u32 Flags, FindResultsArray* pResults);
+/// Search for files
+bool FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results);
 
-// stat file
-bool StatFile(const char* Path, FILESYSTEM_STAT_DATA* pStatData);
+/// Stat file
+bool StatFile(const char* path, struct stat* st);
+bool StatFile(std::FILE* fp, struct stat* st);
+bool StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData);
 bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData);
+s64 GetPathFileSize(const char* path);
 
-// file exists?
-bool FileExists(const char* Path);
+/// File exists?
+bool FileExists(const char* path);
 
-// directory exists?
-bool DirectoryExists(const char* Path);
+/// Directory exists?
+bool DirectoryExists(const char* path);
 
-// delete file
-bool DeleteFile(const char* Path);
+/// Directory does not contain any files?
+bool DirectoryIsEmpty(const char* path);
 
-// rename file
+/// Delete file
+bool DeleteFile(const char* path);
+
+/// Rename file
 bool RenamePath(const char* OldPath, const char* NewPath);
 
-// open files
-std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 Flags);
-
+/// open files
 using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
 std::FILE* OpenCFile(const char* filename, const char* mode);
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 s64 FTell64(std::FILE* fp);
+s64 FSize64(std::FILE* fp);
+
+int OpenFDFile(const char* filename, int flags, int mode);
+
+/// Sharing modes for OpenSharedCFile().
+enum class FileShareMode
+{
+  DenyReadWrite, /// Exclusive access.
+  DenyWrite,     /// Other processes can read from this file.
+  DenyRead,      /// Other processes can write to this file.
+  DenyNone,      /// Other processes can read and write to this file.
+};
+
+/// Opens a file in shareable mode (where other processes can access it concurrently).
+/// Only has an effect on Windows systems.
+ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
+std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 std::optional<std::string> ReadFileToString(const char* filename);
 std::optional<std::string> ReadFileToString(std::FILE* fp);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
-bool WriteFileToString(const char* filename, const std::string_view& sv);
+bool WriteStringToFile(const char* filename, const std::string_view& sv);
 
-std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
-bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
+/// creates a directory in the local filesystem
+/// if the directory already exists, the return value will be true.
+/// if Recursive is specified, all parent directories will be created
+/// if they do not exist.
+bool CreateDirectory(const char* path, bool recursive);
 
-std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start = true);
-bool WriteBinaryToSTream(ByteStream* stream, const void* data, size_t data_length);
+/// Creates a directory if it doesn't already exist.
+/// Returns false if it does not exist and creation failed.
+bool EnsureDirectoryExists(const char* path, bool recursive);
 
-// creates a directory in the local filesystem
-// if the directory already exists, the return value will be true.
-// if Recursive is specified, all parent directories will be created
-// if they do not exist.
-bool CreateDirectory(const char* Path, bool Recursive);
+/// Removes a directory.
+bool DeleteDirectory(const char* path);
 
-// deletes a directory in the local filesystem
-// if the directory has files, unless the recursive flag is set, it will fail
-bool DeleteDirectory(const char* Path, bool Recursive);
+/// Recursively removes a directory and all subdirectories/files.
+bool RecursiveDeleteDirectory(const char* path);
+
+/// Copies one file to another, optionally replacing it if it already exists.
+bool CopyFilePath(const char* source, const char* destination, bool replace);
 
 /// Returns the path to the current executable.
 std::string GetProgramPath();
@@ -225,5 +142,10 @@ std::string GetWorkingDirectory();
 
 /// Sets the current working directory. Returns true if successful.
 bool SetWorkingDirectory(const char* path);
+
+/// Enables/disables NTFS compression on a file or directory.
+/// Does not apply the compression flag recursively if called for a directory.
+/// Does nothing and returns false on non-Windows platforms.
+bool SetPathCompression(const char* path, bool enable);
 
 }; // namespace FileSystem

@@ -5,39 +5,40 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-EnhancementSettingsWidget::EnhancementSettingsWidget(QtHostInterface* host_interface, QWidget* parent,
-                                                     SettingsDialog* dialog)
-  : QWidget(parent), m_host_interface(host_interface)
+EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+  : QWidget(parent), m_dialog(dialog)
 {
+  SettingsInterface* sif = dialog->getSettingsInterface();
+
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToIntSetting(m_host_interface, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.trueColor, "GPU", "TrueColor", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.disableInterlacing, "GPU", "DisableInterlacing",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing",
                                                true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.force43For24Bit, "Display", "Force4_3For24Bit",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.chromaSmoothingFor24Bit, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chromaSmoothingFor24Bit, "GPU",
                                                "ChromaSmoothing24Bit", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_host_interface, m_ui.textureFiltering, "GPU", "TextureFilter",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.useSoftwareRendererForReadbacks, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpTextureCorrection, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTextureCorrection, "GPU",
                                                "PGXPTextureCorrection", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpPreserveProjPrecision, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpPreserveProjPrecision, "GPU",
                                                "PGXPPreserveProjFP", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_host_interface, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EnhancementSettingsWidget::updateScaledDitheringEnabled);

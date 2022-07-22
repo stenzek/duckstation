@@ -1,9 +1,9 @@
 #include "gpu_backend.h"
 #include "common/align.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/timer.h"
 #include "settings.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(GPUBackend);
 
 std::unique_ptr<GPUBackend> g_gpu_backend;
@@ -173,7 +173,7 @@ void GPUBackend::StartGPUThread()
 {
   m_gpu_loop_done.store(false);
   m_use_gpu_thread = true;
-  m_gpu_thread = std::thread(&GPUBackend::RunGPULoop, this);
+  m_gpu_thread.Start([this]() { RunGPULoop(); });
   Log_InfoPrint("GPU thread started.");
 }
 
@@ -184,7 +184,7 @@ void GPUBackend::StopGPUThread()
 
   m_gpu_loop_done.store(true);
   WakeGPUThread();
-  m_gpu_thread.join();
+  m_gpu_thread.Join();
   m_use_gpu_thread = false;
   Log_InfoPrint("GPU thread stopped.");
 }
@@ -215,7 +215,7 @@ void GPUBackend::RunGPULoop()
     u32 read_ptr = m_command_fifo_read_ptr.load();
     if (read_ptr == write_ptr)
     {
-      const Common::Timer::Value current_time = Common::Timer::GetValue();
+      const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
       if (Common::Timer::ConvertValueToNanoseconds(current_time - last_command_time) < SPIN_TIME_NS)
         continue;
 
@@ -263,7 +263,7 @@ void GPUBackend::RunGPULoop()
       }
     }
 
-    last_command_time = allow_sleep ? 0 : Common::Timer::GetValue();
+    last_command_time = allow_sleep ? 0 : Common::Timer::GetCurrentValue();
     m_command_fifo_read_ptr.store(read_ptr);
   }
 }

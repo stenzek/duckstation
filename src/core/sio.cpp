@@ -1,10 +1,9 @@
 #include "sio.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "controller.h"
-#include "host_interface.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(SIO);
 
 SIO g_sio;

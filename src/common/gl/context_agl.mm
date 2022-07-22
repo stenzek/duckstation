@@ -1,7 +1,7 @@
 #include "context_agl.h"
 #include "../assert.h"
 #include "../log.h"
-#include "glad.h"
+#include "loader.h"
 #include <dlfcn.h>
 Log_SetChannel(GL::ContextAGL);
 

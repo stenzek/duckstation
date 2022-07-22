@@ -1,10 +1,10 @@
 #include "multitap.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/types.h"
 #include "controller.h"
 #include "memory_card.h"
 #include "pad.h"
+#include "util/state_wrapper.h"
 Log_SetChannel(Multitap);
 
 Multitap::Multitap()

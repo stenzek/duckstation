@@ -1,6 +1,5 @@
 #pragma once
 #include "common/progress_callback.h"
-#include "host_interface.h"
 
 class HostInterfaceProgressCallback final : public BaseProgressCallback
 {

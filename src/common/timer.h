@@ -10,7 +10,9 @@ public:
 
   Timer();
 
-  static Value GetValue();
+  static double GetFrequency();
+  static Value GetCurrentValue();
+
   static double ConvertValueToSeconds(Value value);
   static double ConvertValueToMilliseconds(Value value);
   static double ConvertValueToNanoseconds(Value value);
@@ -23,10 +25,17 @@ public:
   static void SleepUntil(Value value, bool exact);
 
   void Reset();
+  void ResetTo(Value value) { m_tvStartValue = value; }
+
+  Value GetStartValue() const { return m_tvStartValue; }
 
   double GetTimeSeconds() const;
   double GetTimeMilliseconds() const;
   double GetTimeNanoseconds() const;
+
+  double GetTimeSecondsAndReset();
+  double GetTimeMillisecondsAndReset();
+  double GetTimeNanosecondsAndReset();
 
 private:
   Value m_tvStartValue;

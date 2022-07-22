@@ -6,6 +6,7 @@
     <ClCompile Include="bitutils_tests.cpp" />
     <ClCompile Include="event_tests.cpp" />
     <ClCompile Include="file_system_tests.cpp" />
+    <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -19,9 +20,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EA2B9C7A-B8CC-42F9-879B-191A98680C10}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\ConsoleApplication.props" />
-
   <Import Project="..\common\common.props" />
   <ItemDefinitionGroup>
     <ClCompile>

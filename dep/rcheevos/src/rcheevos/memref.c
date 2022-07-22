@@ -119,8 +119,9 @@ int rc_parse_memref(const char** memaddr, char* size, unsigned* address) {
 
 static float rc_build_float(unsigned mantissa_bits, int exponent, int sign) {
   /* 32-bit float has a 23-bit mantissa and 8-bit exponent */
-  const unsigned mantissa = mantissa_bits | 0x800000;
-  double dbl = ((double)mantissa) / ((double)0x800000);
+  const unsigned implied_bit = 1 << 23;
+  const unsigned mantissa = mantissa_bits | implied_bit;
+  double dbl = ((double)mantissa) / ((double)implied_bit);
 
   if (exponent > 127) {
     /* exponent above 127 is a special number */
@@ -151,7 +152,16 @@ static float rc_build_float(unsigned mantissa_bits, int exponent, int sign) {
   }
   else if (exponent < 0) {
     /* exponent from -1 to -127 is a number less than 1 */
-    exponent = -exponent;
+
+    if (exponent == -127) {
+      /* exponent -127 (all exponent bits were zero) is a denormalized value
+       * (no implied leading bit) with exponent -126 */
+      dbl = ((double)mantissa_bits) / ((double)implied_bit);
+      exponent = 126;
+    } else {
+      exponent = -exponent;
+    }
+
     while (exponent > 30) {
       dbl /= (double)(1 << 30);
       exponent -= 30;
@@ -170,12 +180,7 @@ static void rc_transform_memref_float(rc_typed_value_t* value) {
   const unsigned mantissa = (value->value.u32 & 0x7FFFFF);
   const int exponent = (int)((value->value.u32 >> 23) & 0xFF) - 127;
   const int sign = (value->value.u32 & 0x80000000);
-
-  if (mantissa == 0 && exponent == -127)
-    value->value.f32 = (sign) ? -0.0f : 0.0f;
-  else
-    value->value.f32 = rc_build_float(mantissa, exponent, sign);
-
+  value->value.f32 = rc_build_float(mantissa, exponent, sign);
   value->type = RC_VALUE_TYPE_FLOAT;
 }
 

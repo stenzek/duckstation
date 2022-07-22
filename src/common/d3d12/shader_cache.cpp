@@ -226,7 +226,7 @@ std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path,
                                               D3D_FEATURE_LEVEL feature_level, bool debug)
 {
   std::string base_filename(base_path);
-  base_filename += "d3d12_";
+  base_filename += FS_OSPATH_SEPARATOR_STR "d3d12_";
   base_filename += type;
   base_filename += "_";
 

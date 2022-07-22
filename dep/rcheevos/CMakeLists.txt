@@ -1,4 +1,9 @@
 add_library(rcheevos
+  include/rc_api_editor.h
+  include/rc_api_info.h
+  include/rc_api_request.h
+  include/rc_api_runtime.h
+  include/rc_api_user.h
   include/rcheevos.h
   include/rc_consoles.h
   include/rc_error.h
@@ -6,6 +11,12 @@ add_library(rcheevos
   include/rc_runtime.h
   include/rc_runtime_types.h
   include/rc_url.h
+  src/rapi/rc_api_common.c
+  src/rapi/rc_api_common.h
+  src/rapi/rc_api_editor.c
+  src/rapi/rc_api_info.c
+  src/rapi/rc_api_runtime.c
+  src/rapi/rc_api_user.c
   src/rcheevos/alloc.c
   src/rcheevos/compat.c
   src/rcheevos/condition.c

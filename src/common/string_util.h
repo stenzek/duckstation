@@ -100,13 +100,15 @@ template<>
 inline std::optional<bool> FromChars(const std::string_view& str, int base)
 {
   if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
-      Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
+      Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
+      Strncasecmp("enabled", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
   {
     return true;
   }
 
   if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
-      Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
+      Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
+      Strncasecmp("disabled", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
   {
     return false;
   }
@@ -119,20 +121,82 @@ std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
 std::string EncodeHex(const u8* data, int length);
 
 /// starts_with from C++20
-ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const char* prefix)
+ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const std::string_view& prefix)
 {
-  return (str.compare(0, std::strlen(prefix), prefix) == 0);
+  return (str.compare(0, prefix.length(), prefix) == 0);
 }
-ALWAYS_INLINE static bool EndsWith(const std::string_view& str, const char* suffix)
+ALWAYS_INLINE static bool EndsWith(const std::string_view& str, const std::string_view& suffix)
 {
-  const std::size_t suffix_length = std::strlen(suffix);
+  const std::size_t suffix_length = suffix.length();
   return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
 }
+
+/// StartsWith/EndsWith variants which aren't case sensitive.
+ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)
+{
+  return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
+}
+ALWAYS_INLINE static bool EndsWithNoCase(const std::string_view& str, const std::string_view& suffix)
+{
+  const std::size_t suffix_length = suffix.length();
+  return (str.length() >= suffix_length &&
+          Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
+}
+
+/// Strip whitespace from the start/end of the string.
+std::string_view StripWhitespace(const std::string_view& str);
+void StripWhitespace(std::string* str);
+
+/// Splits a string based on a single character delimiter.
+std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
+
+/// Joins a string together using the specified delimiter.
+template<typename T>
+static inline std::string JoinString(const T& start, const T& end, char delimiter)
+{
+  std::string ret;
+  for (auto it = start; it != end; ++it)
+  {
+    if (it != start)
+      ret += delimiter;
+    ret.append(*it);
+  }
+  return ret;
+}
+template<typename T>
+static inline std::string JoinString(const T& start, const T& end, const std::string_view& delimiter)
+{
+  std::string ret;
+  for (auto it = start; it != end; ++it)
+  {
+    if (it != start)
+      ret.append(delimiter);
+    ret.append(*it);
+  }
+  return ret;
+}
+
+/// Replaces all instances of search in subject with replacement.
+std::string ReplaceAll(const std::string_view& subject, const std::string_view& search,
+                       const std::string_view& replacement);
+void ReplaceAll(std::string* subject, const std::string_view& search, const std::string_view& replacement);
+
+/// Parses an assignment string (Key = Value) into its two components.
+bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
+
+/// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
+void AppendUTF16CharacterToUTF8(std::string& s, u16 ch);
 
 /// Strided memcpy/memcmp.
 ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
                                        std::size_t copy_size, std::size_t count)
 {
+  if (src_stride == dst_stride && src_stride == copy_size)
+  {
+    std::memcpy(dst, src, src_stride * count);
+    return;
+  }
+
   const u8* src_ptr = static_cast<const u8*>(src);
   u8* dst_ptr = static_cast<u8*>(dst);
   for (std::size_t i = 0; i < count; i++)
@@ -146,6 +210,9 @@ ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const 
 ALWAYS_INLINE static int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
                                       std::size_t copy_size, std::size_t count)
 {
+  if (p1_stride == p2_stride && p1_stride == copy_size)
+    return std::memcmp(p1, p2, p1_stride * count);
+
   const u8* p1_ptr = static_cast<const u8*>(p1);
   const u8* p2_ptr = static_cast<const u8*>(p2);
   for (std::size_t i = 0; i < count; i++)

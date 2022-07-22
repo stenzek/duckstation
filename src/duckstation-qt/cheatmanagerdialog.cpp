@@ -4,8 +4,9 @@
 #include "common/string_util.h"
 #include "core/bus.h"
 #include "core/cpu_core.h"
+#include "core/host.h"
 #include "core/system.h"
-#include "qthostinterface.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include <QtCore/QFileInfo>
 #include <QtGui/QColor>
@@ -45,26 +46,33 @@ static QString formatHexAndDecValue(u32 value, u8 size, bool is_signed)
     return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value), size, 16, QChar('0')).arg(static_cast<uint>(value));
 }
 
-
 static QString formatCheatCode(u32 address, u32 value, const MemoryAccessSize size)
 {
 
-      if (size == MemoryAccessSize::Byte && address <= 0x00200000)
-        return QStringLiteral("CHEAT CODE: %1 %2")
-          .arg(static_cast<u32>(address) + 0x30000000, 8, 16, QChar('0')).toUpper()
-            .arg(static_cast<u16>(value), 4, 16, QChar('0')).toUpper();
-      else if (size == MemoryAccessSize::HalfWord && address <= 0x001FFFFE)
-        return QStringLiteral("CHEAT CODE: %1 %2")
-          .arg(static_cast<u32>(address) + 0x80000000, 8, 16, QChar('0')).toUpper()
-            .arg(static_cast<u16>(value), 4, 16, QChar('0')).toUpper();
-      else if (size == MemoryAccessSize::Word && address <= 0x001FFFFC)
-        return QStringLiteral("CHEAT CODE: %1 %2")
-          .arg(static_cast<u32>(address) + 0x90000000, 8, 16, QChar('0')).toUpper()
-            .arg(static_cast<u32>(value), 8, 16, QChar('0')).toUpper();
-      else
-        return QStringLiteral("OUTSIDE RAM RANGE. POKE %1 with %2")
-            .arg(static_cast<u32>(address), 8, 16, QChar('0')).toUpper()
-            .arg(static_cast<u16>(value), 8, 16, QChar('0')).toUpper();
+  if (size == MemoryAccessSize::Byte && address <= 0x00200000)
+    return QStringLiteral("CHEAT CODE: %1 %2")
+      .arg(static_cast<u32>(address) + 0x30000000, 8, 16, QChar('0'))
+      .toUpper()
+      .arg(static_cast<u16>(value), 4, 16, QChar('0'))
+      .toUpper();
+  else if (size == MemoryAccessSize::HalfWord && address <= 0x001FFFFE)
+    return QStringLiteral("CHEAT CODE: %1 %2")
+      .arg(static_cast<u32>(address) + 0x80000000, 8, 16, QChar('0'))
+      .toUpper()
+      .arg(static_cast<u16>(value), 4, 16, QChar('0'))
+      .toUpper();
+  else if (size == MemoryAccessSize::Word && address <= 0x001FFFFC)
+    return QStringLiteral("CHEAT CODE: %1 %2")
+      .arg(static_cast<u32>(address) + 0x90000000, 8, 16, QChar('0'))
+      .toUpper()
+      .arg(static_cast<u32>(value), 8, 16, QChar('0'))
+      .toUpper();
+  else
+    return QStringLiteral("OUTSIDE RAM RANGE. POKE %1 with %2")
+      .arg(static_cast<u32>(address), 8, 16, QChar('0'))
+      .toUpper()
+      .arg(static_cast<u16>(value), 8, 16, QChar('0'))
+      .toUpper();
 }
 
 static QString formatValue(u32 value, bool is_signed)
@@ -180,7 +188,8 @@ void CheatManagerDialog::connectUi()
   connect(m_ui.scanTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::scanItemChanged);
   connect(m_ui.watchTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::watchItemChanged);
 
-  connect(QtHostInterface::GetInstance(), &QtHostInterface::cheatEnabled, this, &CheatManagerDialog::setCheatCheckState);
+  connect(g_emu_thread, &EmuThread::cheatEnabled, this,
+          &CheatManagerDialog::setCheatCheckState);
 }
 
 void CheatManagerDialog::showEvent(QShowEvent* event)
@@ -332,17 +341,17 @@ CheatList* CheatManagerDialog::getCheatList() const
   CheatList* list = System::GetCheatList();
   if (!list)
   {
-    QtHostInterface::GetInstance()->LoadCheatListFromGameTitle();
+    System::LoadCheatListFromGameTitle();
     list = System::GetCheatList();
   }
   if (!list)
   {
-    QtHostInterface::GetInstance()->LoadCheatListFromDatabase();
+    System::LoadCheatListFromDatabase();
     list = System::GetCheatList();
   }
   if (!list)
   {
-    QtHostInterface::GetInstance()->executeOnEmulationThread(
+    Host::RunOnCPUThread(
       []() { System::SetCheatList(std::make_unique<CheatList>()); }, true);
     list = System::GetCheatList();
   }
@@ -408,7 +417,7 @@ void CheatManagerDialog::fillItemForCheatCode(QTreeWidgetItem* item, u32 index, 
 
 void CheatManagerDialog::saveCheatList()
 {
-  QtHostInterface::GetInstance()->executeOnEmulationThread([]() { QtHostInterface::GetInstance()->SaveCheatList(); });
+  Host::RunOnCPUThread([]() { System::SaveCheatList(); });
 }
 
 void CheatManagerDialog::cheatListCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
@@ -470,9 +479,9 @@ void CheatManagerDialog::cheatListItemChanged(QTreeWidgetItem* item, int column)
   if (cc.enabled == new_enabled)
     return;
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread([index, new_enabled]() {
+  Host::RunOnCPUThread([index, new_enabled]() {
     System::GetCheatList()->SetCodeEnabled(static_cast<u32>(index), new_enabled);
-    QtHostInterface::GetInstance()->SaveCheatList();
+    System::SaveCheatList();
   });
 }
 
@@ -485,16 +494,16 @@ void CheatManagerDialog::activateCheat(u32 index)
   CheatCode& cc = list->GetCode(index);
   if (cc.IsManuallyActivated())
   {
-    QtHostInterface::GetInstance()->applyCheat(index);
+    g_emu_thread->applyCheat(index);
     return;
   }
 
   const bool new_enabled = !cc.enabled;
   setCheatCheckState(index, new_enabled);
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread([index, new_enabled]() {
+  Host::RunOnCPUThread([index, new_enabled]() {
     System::GetCheatList()->SetCodeEnabled(index, new_enabled);
-    QtHostInterface::GetInstance()->SaveCheatList();
+    System::SaveCheatList();
   });
 }
 
@@ -542,10 +551,10 @@ void CheatManagerDialog::addCodeClicked()
     fillItemForCheatCode(item, list->GetCodeCount(), new_code);
     group_item->setExpanded(true);
 
-    QtHostInterface::GetInstance()->executeOnEmulationThread(
+    Host::RunOnCPUThread(
       [this, &new_code]() {
         System::GetCheatList()->AddCode(std::move(new_code));
-        QtHostInterface::GetInstance()->SaveCheatList();
+        System::SaveCheatList();
       },
       true);
   }
@@ -588,10 +597,10 @@ void CheatManagerDialog::editCodeClicked()
       updateCheatList();
     }
 
-    QtHostInterface::GetInstance()->executeOnEmulationThread(
+    Host::RunOnCPUThread(
       [index, &new_code]() {
         System::GetCheatList()->SetCode(static_cast<u32>(index), std::move(new_code));
-        QtHostInterface::GetInstance()->SaveCheatList();
+        System::SaveCheatList();
       },
       true);
   }
@@ -614,10 +623,10 @@ void CheatManagerDialog::deleteCodeClicked()
     return;
   }
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread(
+  Host::RunOnCPUThread(
     [index]() {
       System::GetCheatList()->RemoveCode(static_cast<u32>(index));
-      QtHostInterface::GetInstance()->SaveCheatList();
+      System::SaveCheatList();
     },
     true);
   updateCheatList();
@@ -654,11 +663,11 @@ void CheatManagerDialog::importFromFileTriggered()
     return;
   }
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread(
+  Host::RunOnCPUThread(
     [&new_cheats]() {
       DebugAssert(System::HasCheatList());
       System::GetCheatList()->MergeList(new_cheats);
-      QtHostInterface::GetInstance()->SaveCheatList();
+      System::SaveCheatList();
     },
     true);
   updateCheatList();
@@ -677,11 +686,11 @@ void CheatManagerDialog::importFromTextTriggered()
     return;
   }
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread(
+  Host::RunOnCPUThread(
     [&new_cheats]() {
       DebugAssert(System::HasCheatList());
       System::GetCheatList()->MergeList(new_cheats);
-      QtHostInterface::GetInstance()->SaveCheatList();
+      System::SaveCheatList();
     },
     true);
   updateCheatList();
@@ -707,8 +716,7 @@ void CheatManagerDialog::clearClicked()
     return;
   }
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread([] { QtHostInterface::GetInstance()->ClearCheatList(true); },
-                                                           true);
+  Host::RunOnCPUThread([] { System::ClearCheatList(true); }, true);
   updateCheatList();
 }
 
@@ -723,8 +731,7 @@ void CheatManagerDialog::resetClicked()
     return;
   }
 
-  QtHostInterface::GetInstance()->executeOnEmulationThread([] { QtHostInterface::GetInstance()->DeleteCheatList(); },
-                                                           true);
+  Host::RunOnCPUThread([] { System::DeleteCheatList(); }, true);
   updateCheatList();
 }
 
@@ -737,11 +744,11 @@ void CheatManagerDialog::addToWatchClicked()
 
   for (int index = indexFirst; index <= indexLast; index++)
   {
-  const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
-    m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", res.address), res.address, m_scanner.GetSize(), m_scanner.GetValueSigned(), false);
-  updateWatch();
-}
-
+    const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
+    m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", res.address), res.address, m_scanner.GetSize(),
+                     m_scanner.GetValueSigned(), false);
+    updateWatch();
+  }
 }
 
 void CheatManagerDialog::addManualWatchAddressClicked()
@@ -779,9 +786,9 @@ void CheatManagerDialog::removeWatchClicked()
 
   for (int index = indexLast; index >= indexFirst; index--)
   {
-  m_watch.RemoveEntry(static_cast<u32>(index));
-  updateWatch();
-}
+    m_watch.RemoveEntry(static_cast<u32>(index));
+    updateWatch();
+  }
 }
 
 void CheatManagerDialog::scanCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous)
@@ -856,9 +863,9 @@ void CheatManagerDialog::watchItemChanged(QTableWidgetItem* item)
       {
         uint value;
         if (item->text()[1] == 'x' || item->text()[1] == 'X')
-            value = item->text().toUInt(&value_ok, 16);
+          value = item->text().toUInt(&value_ok, 16);
         else
-            value = item->text().toUInt(&value_ok);
+          value = item->text().toUInt(&value_ok);
         if (value_ok)
           m_watch.SetEntryValue(index, static_cast<u32>(value));
       }
@@ -930,7 +937,6 @@ void CheatManagerDialog::updateResults()
       row++;
     }
     m_ui.scanResultsCount->setText(QString::number(m_scanner.GetResultCount()));
-
   }
   else
     m_ui.scanResultsCount->setText("0");
@@ -1003,12 +1009,12 @@ void CheatManagerDialog::updateWatch()
         value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 8, res.is_signed));
 
       m_ui.watchTable->setItem(row, 3, value_item);
-      
+
       QTableWidgetItem* freeze_item = new QTableWidgetItem();
       freeze_item->setFlags(freeze_item->flags() | (Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
       freeze_item->setCheckState(res.freeze ? Qt::Checked : Qt::Unchecked);
       m_ui.watchTable->setItem(row, 4, freeze_item);
-      
+
       row++;
     }
   }

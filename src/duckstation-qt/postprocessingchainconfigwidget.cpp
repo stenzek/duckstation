@@ -1,7 +1,7 @@
 #include "postprocessingchainconfigwidget.h"
 #include "frontend-common/postprocessing_chain.h"
 #include "postprocessingshaderconfigwidget.h"
-#include "qthostinterface.h"
+#include "qthost.h"
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -203,7 +203,7 @@ void PostProcessingChainConfigWidget::onShaderConfigButtonClicked()
 
 void PostProcessingChainConfigWidget::onReloadButtonClicked()
 {
-  QtHostInterface::GetInstance()->reloadPostProcessingShaders();
+  g_emu_thread->reloadPostProcessingShaders();
 }
 
 void PostProcessingChainConfigWidget::onSelectedShaderChanged()

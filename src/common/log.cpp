@@ -30,7 +30,7 @@ static std::mutex s_callback_mutex;
 
 static LOGLEVEL s_filter_level = LOGLEVEL_TRACE;
 
-static Common::Timer::Value s_startTimeStamp = Common::Timer::GetValue();
+static Common::Timer::Value s_startTimeStamp = Common::Timer::GetCurrentValue();
 
 static bool s_console_output_enabled = false;
 static String s_console_output_channel_filter;
@@ -123,7 +123,7 @@ static int FormatLogMessageForDisplay(char* buffer, size_t buffer_size, const ch
   {
     // find time since start of process
     const float message_time =
-      static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetValue() - s_startTimeStamp));
+      static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_startTimeStamp));
 
     if (level <= LOGLEVEL_PERF)
     {

@@ -3,6 +3,7 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "system.h"
 #include "zlib.h"
 #include <cctype>
@@ -182,7 +183,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   std::optional<std::string> lib_name(file.GetTagString("_lib"));
   if (lib_name.has_value())
   {
-    const std::string lib_path(FileSystem::BuildRelativePath(path, lib_name.value()));
+    const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
     Log_InfoPrintf("Loading main parent PSF '%s'", lib_path.c_str());
 
     // We should use the initial SP/PC from the **first** parent lib.
@@ -214,7 +215,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
     if (!lib_name.has_value())
       break;
 
-    const std::string lib_path(FileSystem::BuildRelativePath(path, lib_name.value()));
+    const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
     Log_InfoPrintf("Loading parent PSF '%s'", lib_path.c_str());
     if (!LoadLibraryPSF(lib_path.c_str(), false, depth + 1))
     {

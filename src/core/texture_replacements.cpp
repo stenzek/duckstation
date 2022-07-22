@@ -1,10 +1,12 @@
 #include "texture_replacements.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/platform.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "host_interface.h"
+#include "fmt/format.h"
+#include "host.h"
 #include "settings.h"
 #include "xxhash.h"
 #if defined(CPU_X86) || defined(CPU_X64)
@@ -105,7 +107,7 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
   }
 
   Log_InfoPrintf("Dumping %ux%u VRAM write to '%s'", width, height, filename.c_str());
-  if (!Common::WriteImageToFile(image, filename.c_str()))
+  if (!image.SaveToFile(filename.c_str()))
     Log_ErrorPrintf("Failed to dump %ux%u VRAM write to '%s'", width, height, filename.c_str());
 }
 
@@ -118,7 +120,12 @@ void TextureReplacements::Shutdown()
 
 std::string TextureReplacements::GetSourceDirectory() const
 {
-  return g_host_interface->GetUserDirectoryRelativePath("textures/%s", m_game_id.c_str());
+  return Path::Combine(EmuFolders::Textures, m_game_id);
+}
+
+std::string TextureReplacements::GetDumpDirectory() const
+{
+  return Path::Combine(EmuFolders::Dumps, Path::Combine("textures", m_game_id));
 }
 
 TextureReplacementHash TextureReplacements::GetVRAMWriteHash(u32 width, u32 height, const void* pixels) const
@@ -133,19 +140,14 @@ std::string TextureReplacements::GetVRAMWriteDumpFilename(u32 width, u32 height,
     return {};
 
   const TextureReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
-  std::string filename = g_host_interface->GetUserDirectoryRelativePath("dump/textures/%s/vram-write-%s.png",
-                                                                        m_game_id.c_str(), hash.ToString().c_str());
+  const std::string dump_directory(GetDumpDirectory());
+  std::string filename(Path::Combine(dump_directory, fmt::format("vram-write-{}.png", hash.ToString())));
 
   if (FileSystem::FileExists(filename.c_str()))
     return {};
 
-  const std::string dump_directory =
-    g_host_interface->GetUserDirectoryRelativePath("dump/textures/%s", m_game_id.c_str());
-  if (!FileSystem::DirectoryExists(dump_directory.c_str()) &&
-      !FileSystem::CreateDirectory(dump_directory.c_str(), false))
-  {
+  if (!FileSystem::EnsureDirectoryExists(dump_directory.c_str(), false))
     return {};
-  }
 
   return filename;
 }
@@ -266,7 +268,7 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
     return &it->second;
 
   Common::RGBA8Image image;
-  if (!Common::LoadImageFromFile(&image, filename.c_str()))
+  if (!image.LoadFromFile(filename.c_str()))
   {
     Log_ErrorPrintf("Failed to load '%s'", filename.c_str());
     return nullptr;
@@ -288,8 +290,8 @@ void TextureReplacements::PreloadTextures()
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
   {                                                                                                                    \
-    g_host_interface->DisplayLoadingScreen("Preloading replacement textures...", 0, static_cast<int>(total_textures),  \
-                                           static_cast<int>(num_textures_loaded));                                     \
+    Host::DisplayLoadingScreen("Preloading replacement textures...", 0, static_cast<int>(total_textures),              \
+                               static_cast<int>(num_textures_loaded));                                                 \
     last_update_time.Reset();                                                                                          \
   }
 

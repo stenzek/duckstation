@@ -1,14 +1,14 @@
 #include "analog_controller.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
-#include "host_interface.h"
+#include "host.h"
 #include "settings.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(AnalogController);
 
-AnalogController::AnalogController(u32 index) : m_index(index)
+AnalogController::AnalogController(u32 index) : Controller(index)
 {
   m_axis_state.fill(0x80);
   Reset();
@@ -29,7 +29,12 @@ void AnalogController::Reset()
   m_tx_buffer.fill(0x00);
   m_analog_mode = false;
   m_configuration_mode = false;
-  m_motor_state.fill(0);
+
+  for (u32 i = 0; i < NUM_MOTORS; i++)
+  {
+    if (m_motor_state[i] != 0)
+      SetMotorState(i, 0);
+  }
 
   m_dualshock_enabled = false;
   ResetRumbleConfig();
@@ -40,8 +45,8 @@ void AnalogController::Reset()
   {
     if (g_settings.controller_disable_analog_mode_forcing)
     {
-      g_host_interface->AddOSDMessage(
-        g_host_interface->TranslateStdString(
+      Host::AddOSDMessage(
+        Host::TranslateStdString(
           "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
     }
@@ -88,72 +93,42 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      g_host_interface->AddFormattedOSDMessage(
+      Host::AddFormattedOSDMessage(
         5.0f,
-        m_analog_mode ?
-          g_host_interface->TranslateString("AnalogController", "Controller %u switched to analog mode.") :
-          g_host_interface->TranslateString("AnalogController", "Controller %u switched to digital mode."),
+        m_analog_mode ? Host::TranslateString("AnalogController", "Controller %u switched to analog mode.") :
+                        Host::TranslateString("AnalogController", "Controller %u switched to digital mode."),
         m_index + 1u);
     }
   }
   return true;
 }
 
-std::optional<s32> AnalogController::GetAxisCodeByName(std::string_view axis_name) const
+float AnalogController::GetBindState(u32 index) const
 {
-  return StaticGetAxisCodeByName(axis_name);
-}
+  if (index >= static_cast<u32>(Button::Count))
+  {
+    const u32 sub_index = index - static_cast<u32>(Button::Count);
+    if (sub_index >= static_cast<u32>(m_half_axis_state.size()))
+      return 0.0f;
 
-std::optional<s32> AnalogController::GetButtonCodeByName(std::string_view button_name) const
-{
-  return StaticGetButtonCodeByName(button_name);
-}
-
-float AnalogController::GetAxisState(s32 axis_code) const
-{
-  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
+    return static_cast<float>(m_half_axis_state[sub_index]) * (1.0f / 255.0f);
+  }
+  else if (index < static_cast<u32>(Button::Analog))
+  {
+    return static_cast<float>(((m_button_state >> index) & 1u) ^ 1u);
+  }
+  else
+  {
     return 0.0f;
-
-  // 0..255 -> -1..1
-  const float value = (((static_cast<float>(m_axis_state[static_cast<s32>(axis_code)]) / 255.0f) * 2.0f) - 1.0f);
-  return std::clamp(value / m_axis_scale, -1.0f, 1.0f);
+  }
 }
 
-void AnalogController::SetAxisState(s32 axis_code, float value)
+void AnalogController::SetBindState(u32 index, float value)
 {
-  if (axis_code < 0 || axis_code >= static_cast<s32>(Axis::Count))
-    return;
-
-  // -1..1 -> 0..255
-  const float scaled_value = std::clamp(value * m_axis_scale, -1.0f, 1.0f);
-  const u8 u8_value = static_cast<u8>(std::clamp(std::round(((scaled_value + 1.0f) / 2.0f) * 255.0f), 0.0f, 255.0f));
-
-  SetAxisState(static_cast<Axis>(axis_code), u8_value);
-}
-
-void AnalogController::SetAxisState(Axis axis, u8 value)
-{
-  if (value != m_axis_state[static_cast<u8>(axis)])
-    System::SetRunaheadReplayFlag();
-
-  m_axis_state[static_cast<u8>(axis)] = value;
-}
-
-bool AnalogController::GetButtonState(s32 button_code) const
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Analog))
-    return false;
-
-  const u16 bit = u16(1) << static_cast<u8>(button_code);
-  return ((m_button_state & bit) == 0);
-}
-
-void AnalogController::SetButtonState(Button button, bool pressed)
-{
-  if (button == Button::Analog)
+  if (index == static_cast<s32>(Button::Analog))
   {
     // analog toggle
-    if (pressed)
+    if (value >= 0.5f)
     {
       if (m_command == Command::Idle)
         ProcessAnalogModeToggle();
@@ -163,10 +138,58 @@ void AnalogController::SetButtonState(Button button, bool pressed)
 
     return;
   }
+  else if (index >= static_cast<u32>(Button::Count))
+  {
+    const u32 sub_index = index - static_cast<u32>(Button::Count);
+    if (sub_index >= static_cast<u32>(m_half_axis_state.size()))
+      return;
 
-  const u16 bit = u16(1) << static_cast<u8>(button);
+    value = ApplyAnalogDeadzoneSensitivity(m_analog_deadzone, m_analog_sensitivity, value);
+    const u8 u8_value = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+    if (u8_value == m_half_axis_state[sub_index])
+      return;
 
-  if (pressed)
+    m_half_axis_state[sub_index] = u8_value;
+    System::SetRunaheadReplayFlag();
+
+#define MERGE(pos, neg)                                                                                                \
+  ((m_half_axis_state[static_cast<u32>(pos)] != 0) ? (127u + ((m_half_axis_state[static_cast<u32>(pos)] + 1u) / 2u)) : \
+                                                     (127u - (m_half_axis_state[static_cast<u32>(neg)] / 2u)))
+
+    switch (static_cast<HalfAxis>(sub_index))
+    {
+      case HalfAxis::LLeft:
+      case HalfAxis::LRight:
+        m_axis_state[static_cast<u8>(Axis::LeftX)] = MERGE(HalfAxis::LRight, HalfAxis::LLeft);
+        break;
+
+      case HalfAxis::LDown:
+      case HalfAxis::LUp:
+        m_axis_state[static_cast<u8>(Axis::LeftY)] = MERGE(HalfAxis::LDown, HalfAxis::LUp);
+        break;
+
+      case HalfAxis::RLeft:
+      case HalfAxis::RRight:
+        m_axis_state[static_cast<u8>(Axis::RightX)] = MERGE(HalfAxis::RRight, HalfAxis::RLeft);
+        break;
+
+      case HalfAxis::RDown:
+      case HalfAxis::RUp:
+        m_axis_state[static_cast<u8>(Axis::RightY)] = MERGE(HalfAxis::RDown, HalfAxis::RUp);
+        break;
+
+      default:
+        break;
+    }
+
+#undef MERGE
+
+    return;
+  }
+
+  const u16 bit = u16(1) << static_cast<u8>(index);
+
+  if (value >= 0.5f)
   {
     if (m_button_state & bit)
       System::SetRunaheadReplayFlag();
@@ -182,14 +205,6 @@ void AnalogController::SetButtonState(Button button, bool pressed)
   }
 }
 
-void AnalogController::SetButtonState(s32 button_code, bool pressed)
-{
-  if (button_code < 0 || button_code >= static_cast<s32>(Button::Count))
-    return;
-
-  SetButtonState(static_cast<Button>(button_code), pressed);
-}
-
 u32 AnalogController::GetButtonStateBits() const
 {
   // flip bits, native data is active low
@@ -200,26 +215,6 @@ std::optional<u32> AnalogController::GetAnalogInputBytes() const
 {
   return m_axis_state[static_cast<size_t>(Axis::LeftY)] << 24 | m_axis_state[static_cast<size_t>(Axis::LeftX)] << 16 |
          m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
-}
-
-u32 AnalogController::GetVibrationMotorCount() const
-{
-  return NUM_MOTORS;
-}
-
-float AnalogController::GetVibrationMotorStrength(u32 motor)
-{
-  DebugAssert(motor < NUM_MOTORS);
-  if (m_motor_state[motor] == 0)
-    return 0.0f;
-
-  // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
-  const double x =
-    static_cast<double>(std::min<u32>(static_cast<u32>(m_motor_state[motor]) + static_cast<u32>(m_rumble_bias), 255));
-  const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
-                          156.82454281087692 * x + 3.637978807091713e-11;
-
-  return static_cast<float>(strength / 65535.0);
 }
 
 void AnalogController::ResetTransferState()
@@ -240,11 +235,11 @@ void AnalogController::SetAnalogMode(bool enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  g_host_interface->AddFormattedOSDMessage(
-    5.0f,
-    enabled ? g_host_interface->TranslateString("AnalogController", "Controller %u switched to analog mode.") :
-              g_host_interface->TranslateString("AnalogController", "Controller %u switched to digital mode."),
-    m_index + 1u);
+  Host::AddFormattedOSDMessage(5.0f,
+                               enabled ?
+                                 Host::TranslateString("AnalogController", "Controller %u switched to analog mode.") :
+                                 Host::TranslateString("AnalogController", "Controller %u switched to digital mode."),
+                               m_index + 1u);
   m_analog_mode = enabled;
 }
 
@@ -252,11 +247,10 @@ void AnalogController::ProcessAnalogModeToggle()
 {
   if (m_analog_locked)
   {
-    g_host_interface->AddFormattedOSDMessage(
+    Host::AddFormattedOSDMessage(
       5.0f,
-      m_analog_mode ?
-        g_host_interface->TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
-        g_host_interface->TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
+      m_analog_mode ? Host::TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
+                      Host::TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
       m_index + 1u);
   }
   else
@@ -269,10 +263,32 @@ void AnalogController::ProcessAnalogModeToggle()
   }
 }
 
-void AnalogController::SetMotorState(u8 motor, u8 value)
+void AnalogController::SetMotorState(u32 motor, u8 value)
 {
   DebugAssert(motor < NUM_MOTORS);
-  m_motor_state[motor] = value;
+  if (m_motor_state[motor] != value)
+  {
+    m_motor_state[motor] = value;
+    UpdateHostVibration();
+  }
+}
+
+void AnalogController::UpdateHostVibration()
+{
+  std::array<float, NUM_MOTORS> hvalues;
+  for (u32 motor = 0; motor < NUM_MOTORS; motor++)
+  {
+    // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
+    const u8 state = m_motor_state[motor];
+    const double x =
+      static_cast<double>(std::min<u32>(state + static_cast<u32>(m_rumble_bias), 255));
+    const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
+                            156.82454281087692 * x + 3.637978807091713e-11;
+
+    hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
+  }
+
+  Host::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
 }
 
 u8 AnalogController::GetExtraButtonMaskLSB() const
@@ -350,7 +366,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
       if (data_in == 0x01)
       {
-        Log_DevPrintf("ACK controller access");
+        Log_DebugPrintf("ACK controller access");
         m_command = Command::Ready;
         return true;
       }
@@ -689,10 +705,10 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   {
     m_command = Command::Idle;
 
-    Log_DevPrintf("Rx: %02x %02x %02x %02x %02x %02x %02x %02x", m_rx_buffer[0], m_rx_buffer[1], m_rx_buffer[2],
-                  m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
-    Log_DevPrintf("Tx: %02x %02x %02x %02x %02x %02x %02x %02x", m_tx_buffer[0], m_tx_buffer[1], m_tx_buffer[2],
-                  m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
+    Log_DebugPrintf("Rx: %02x %02x %02x %02x %02x %02x %02x %02x", m_rx_buffer[0], m_rx_buffer[1], m_rx_buffer[2],
+                    m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
+    Log_DebugPrintf("Tx: %02x %02x %02x %02x %02x %02x %02x %02x", m_tx_buffer[0], m_tx_buffer[1], m_tx_buffer[2],
+                    m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
 
     m_rx_buffer.fill(0x00);
     m_tx_buffer.fill(0x00);
@@ -706,122 +722,89 @@ std::unique_ptr<AnalogController> AnalogController::Create(u32 index)
   return std::make_unique<AnalogController>(index);
 }
 
-std::optional<s32> AnalogController::StaticGetAxisCodeByName(std::string_view axis_name)
-{
-#define AXIS(name)                                                                                                     \
-  if (axis_name == #name)                                                                                              \
+static const Controller::ControllerBindingInfo s_binding_info[] = {
+#define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Axis::name)));                                                \
+    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+  }
+#define AXIS(name, display_name, halfaxis, genb)                                                                       \
+  {                                                                                                                    \
+    name, display_name, static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(halfaxis),                \
+      Controller::ControllerBindingType::HalfAxis, genb                                                                \
   }
 
-  AXIS(LeftX);
-  AXIS(LeftY);
-  AXIS(RightX);
-  AXIS(RightY);
+  BUTTON("Up", "D-Pad Up", AnalogController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", "D-Pad Right", AnalogController::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", "D-Pad Down", AnalogController::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", "D-Pad Left", AnalogController::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", "Triangle", AnalogController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", "Circle", AnalogController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", "Cross", AnalogController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", "Square", AnalogController::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", "Select", AnalogController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", "Start", AnalogController::Button::Start, GenericInputBinding::Start),
+  BUTTON("Analog", "Analog Toggle", AnalogController::Button::Analog, GenericInputBinding::System),
+  BUTTON("L1", "L1", AnalogController::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", "R1", AnalogController::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", "L2", AnalogController::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", "R2", AnalogController::Button::R2, GenericInputBinding::R2),
+  BUTTON("L3", "L3", AnalogController::Button::L3, GenericInputBinding::L3),
+  BUTTON("R3", "R3", AnalogController::Button::R3, GenericInputBinding::R3),
 
-  return std::nullopt;
+  AXIS("LLeft", "Left Stick Left", AnalogController::HalfAxis::LLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("LRight", "Left Stick Right", AnalogController::HalfAxis::LRight, GenericInputBinding::LeftStickRight),
+  AXIS("LDown", "Left Stick Down", AnalogController::HalfAxis::LDown, GenericInputBinding::LeftStickDown),
+  AXIS("LUp", "Left Stick Up", AnalogController::HalfAxis::LUp, GenericInputBinding::LeftStickUp),
+  AXIS("RLeft", "Right Stick Left", AnalogController::HalfAxis::RLeft, GenericInputBinding::RightStickLeft),
+  AXIS("RRight", "Right Stick Right", AnalogController::HalfAxis::RRight, GenericInputBinding::RightStickRight),
+  AXIS("RDown", "Right Stick Down", AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
+  AXIS("RUp", "Right Stick Up", AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
 
 #undef AXIS
-}
-
-std::optional<s32> AnalogController::StaticGetButtonCodeByName(std::string_view button_name)
-{
-#define BUTTON(name)                                                                                                   \
-  if (button_name == #name)                                                                                            \
-  {                                                                                                                    \
-    return static_cast<s32>(ZeroExtend32(static_cast<u8>(Button::name)));                                              \
-  }
-
-  BUTTON(Select);
-  BUTTON(L3);
-  BUTTON(R3);
-  BUTTON(Start);
-  BUTTON(Up);
-  BUTTON(Right);
-  BUTTON(Down);
-  BUTTON(Left);
-  BUTTON(L2);
-  BUTTON(R2);
-  BUTTON(L1);
-  BUTTON(R1);
-  BUTTON(Triangle);
-  BUTTON(Circle);
-  BUTTON(Cross);
-  BUTTON(Square);
-  BUTTON(Analog);
-
-  return std::nullopt;
-
 #undef BUTTON
-}
+};
 
-Controller::AxisList AnalogController::StaticGetAxisNames()
+static const SettingInfo s_settings[] = {
+  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("AnalogController", "Force Analog Mode on Reset"),
+   TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on. May "
+                                    "cause issues with games, so it is recommended to leave this option off."),
+   "true"},
+  {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
+   TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
+   TRANSLATABLE("AnalogController",
+                "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
+   "true"},
+  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogController", "Analog Deadzone"),
+   TRANSLATABLE("AnalogController",
+                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
+   "0.00f", "0.00f", "1.00f", "0.01f"},
+  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogController", "Analog Sensitivity"),
+   TRANSLATABLE(
+     "AnalogController",
+     "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+     "controllers, e.g. DualShock 4, Xbox One Controller."),
+   "1.33f", "0.01f", "2.00f", "0.01f"},
+  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
+   TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
+                                    "functioning, try increasing this value."),
+   "8", "0", "255", "1"}};
+
+const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
+                                                           "AnalogController",
+                                                           TRANSLATABLE("ControllerType", "Analog Controller"),
+                                                           s_binding_info,
+                                                           countof(s_binding_info),
+                                                           s_settings,
+                                                           countof(s_settings),
+                                                           Controller::VibrationCapabilities::LargeSmallMotors};
+
+void AnalogController::LoadSettings(SettingsInterface& si, const char* section)
 {
-  return {{TRANSLATABLE("AnalogController", "LeftX"), static_cast<s32>(Axis::LeftX), AxisType::Full},
-          {TRANSLATABLE("AnalogController", "LeftY"), static_cast<s32>(Axis::LeftY), AxisType::Full},
-          {TRANSLATABLE("AnalogController", "RightX"), static_cast<s32>(Axis::RightX), AxisType::Full},
-          {TRANSLATABLE("AnalogController", "RightY"), static_cast<s32>(Axis::RightY), AxisType::Full}};
-}
-
-Controller::ButtonList AnalogController::StaticGetButtonNames()
-{
-  return {{TRANSLATABLE("AnalogController", "Up"), static_cast<s32>(Button::Up)},
-          {TRANSLATABLE("AnalogController", "Down"), static_cast<s32>(Button::Down)},
-          {TRANSLATABLE("AnalogController", "Left"), static_cast<s32>(Button::Left)},
-          {TRANSLATABLE("AnalogController", "Right"), static_cast<s32>(Button::Right)},
-          {TRANSLATABLE("AnalogController", "Select"), static_cast<s32>(Button::Select)},
-          {TRANSLATABLE("AnalogController", "Start"), static_cast<s32>(Button::Start)},
-          {TRANSLATABLE("AnalogController", "Triangle"), static_cast<s32>(Button::Triangle)},
-          {TRANSLATABLE("AnalogController", "Cross"), static_cast<s32>(Button::Cross)},
-          {TRANSLATABLE("AnalogController", "Circle"), static_cast<s32>(Button::Circle)},
-          {TRANSLATABLE("AnalogController", "Square"), static_cast<s32>(Button::Square)},
-          {TRANSLATABLE("AnalogController", "L1"), static_cast<s32>(Button::L1)},
-          {TRANSLATABLE("AnalogController", "L2"), static_cast<s32>(Button::L2)},
-          {TRANSLATABLE("AnalogController", "R1"), static_cast<s32>(Button::R1)},
-          {TRANSLATABLE("AnalogController", "R2"), static_cast<s32>(Button::R2)},
-          {TRANSLATABLE("AnalogController", "L3"), static_cast<s32>(Button::L3)},
-          {TRANSLATABLE("AnalogController", "R3"), static_cast<s32>(Button::R3)},
-          {TRANSLATABLE("AnalogController", "Analog"), static_cast<s32>(Button::Analog)}};
-}
-
-u32 AnalogController::StaticGetVibrationMotorCount()
-{
-  return NUM_MOTORS;
-}
-
-Controller::SettingList AnalogController::StaticGetSettings()
-{
-  static constexpr std::array<SettingInfo, 4> settings = {
-    {{SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("AnalogController", "Force Analog Mode on Reset"),
-      TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on. May "
-                                       "cause issues with games, so it is recommended to leave this option off."),
-      "false"},
-     {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
-      TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
-      TRANSLATABLE("AnalogController",
-                   "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
-      "false"},
-     {SettingInfo::Type::Float, "AxisScale", TRANSLATABLE("AnalogController", "Analog Axis Scale"),
-      TRANSLATABLE(
-        "AnalogController",
-        "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
-        "controllers, e.g. DualShock 4, Xbox One Controller."),
-      "1.00f", "0.01f", "1.50f", "0.01f"},
-     {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
-      TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
-                                       "functioning, try increasing this value."),
-      "8", "0", "255", "1"}}};
-
-  return SettingList(settings.begin(), settings.end());
-}
-
-void AnalogController::LoadSettings(const char* section)
-{
-  Controller::LoadSettings(section);
-  m_force_analog_on_reset = g_host_interface->GetBoolSettingValue(section, "ForceAnalogOnReset", false);
-  m_analog_dpad_in_digital_mode = g_host_interface->GetBoolSettingValue(section, "AnalogDPadInDigitalMode", false);
-  m_axis_scale =
-    std::clamp(std::abs(g_host_interface->GetFloatSettingValue(section, "AxisScale", 1.00f)), 0.01f, 1.50f);
-  m_rumble_bias =
-    static_cast<u8>(std::min<u32>(g_host_interface->GetIntSettingValue(section, "VibrationBias", 8), 255));
+  Controller::LoadSettings(si, section);
+  m_force_analog_on_reset = si.GetBoolValue(section, "ForceAnalogOnReset", true);
+  m_analog_dpad_in_digital_mode = si.GetBoolValue(section, "AnalogDPadInDigitalMode", true);
+  m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
+  m_analog_sensitivity =
+    std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
+  m_rumble_bias = static_cast<u8>(std::min<u32>(si.GetIntValue(section, "VibrationBias", 8), 255));
 }

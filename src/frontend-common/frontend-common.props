@@ -4,10 +4,10 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\tinyxml2\include;$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan-loader\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(RootBuildDir)simpleini\simpleini.lib;$(RootBuildDir)tinyxml2\tinyxml2.lib;$(RootBuildDir)core\core.lib;$(RootBuildDir)scmversion\scmversion.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)core\core.lib;$(RootBuildDir)scmversion\scmversion.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 

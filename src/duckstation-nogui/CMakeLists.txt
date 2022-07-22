@@ -4,12 +4,10 @@ add_executable(duckstation-nogui
   nogui_host_interface.h
 )
 
-target_link_libraries(duckstation-nogui PRIVATE core common imgui glad frontend-common scmversion vulkan-loader)
+target_link_libraries(duckstation-nogui PRIVATE core common imgui glad frontend-common scmversion)
 
 if(USE_SDL2)
   target_sources(duckstation-nogui PRIVATE 
-    imgui_impl_sdl.cpp
-    imgui_impl_sdl.h
     sdl_host_interface.cpp
     sdl_host_interface.h
     sdl_key_names.h

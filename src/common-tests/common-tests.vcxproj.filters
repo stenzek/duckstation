@@ -6,5 +6,6 @@
     <ClCompile Include="event_tests.cpp" />
     <ClCompile Include="bitutils_tests.cpp" />
     <ClCompile Include="file_system_tests.cpp" />
+    <ClCompile Include="path_tests.cpp" />
   </ItemGroup>
 </Project>

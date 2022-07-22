@@ -1,8 +1,8 @@
 #pragma once
-#include "common/state_wrapper.h"
 #include "common/types.h"
 #include "controller.h"
 #include "memory_card.h"
+#include "util/state_wrapper.h"
 #include <array>
 
 class Multitap final

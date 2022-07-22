@@ -4,14 +4,10 @@
   <ItemGroup>
     <ClInclude Include="align.h" />
     <ClInclude Include="assert.h" />
-    <ClInclude Include="audio_stream.h" />
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="bitutils.h" />
     <ClInclude Include="byte_stream.h" />
-    <ClInclude Include="cd_image.h" />
-    <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="crash_handler.h" />
-    <ClInclude Include="cue_parser.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
     <ClInclude Include="d3d11\staging_texture.h" />
@@ -34,6 +30,7 @@
     <ClInclude Include="gl\context_wgl.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="gl\loader.h" />
     <ClInclude Include="gl\program.h" />
     <ClInclude Include="gl\shader_cache.h" />
     <ClInclude Include="gl\stream_buffer.h" />
@@ -48,35 +45,33 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="image.h" />
-    <ClInclude Include="iso_reader.h" />
-    <ClInclude Include="jit_code_buffer.h" />
+    <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="make_array.h" />
+    <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="md5_digest.h" />
-    <ClInclude Include="null_audio_stream.h" />
+    <ClInclude Include="path.h" />
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="progress_callback.h" />
-    <ClInclude Include="memory_arena.h" />
-    <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="rectangle.h" />
-    <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="scope_guard.h" />
-    <ClInclude Include="shiftjis.h" />
-    <ClInclude Include="state_wrapper.h" />
+    <ClInclude Include="settings_interface.h" />
     <ClInclude Include="string.h" />
+    <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="thirdparty\StackWalker.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="threading.h" />
     <ClInclude Include="timer.h" />
-    <ClInclude Include="timestamp.h" />
     <ClInclude Include="types.h" />
-    <ClInclude Include="cd_xa.h" />
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="vulkan\builders.h" />
     <ClInclude Include="vulkan\context.h" />
+    <ClInclude Include="vulkan\entry_points.h" />
+    <ClInclude Include="vulkan\loader.h" />
     <ClInclude Include="vulkan\shader_cache.h" />
     <ClInclude Include="vulkan\shader_compiler.h" />
     <ClInclude Include="vulkan\staging_buffer.h" />
@@ -85,30 +80,16 @@
     <ClInclude Include="vulkan\swap_chain.h" />
     <ClInclude Include="vulkan\texture.h" />
     <ClInclude Include="vulkan\util.h" />
-    <ClInclude Include="wav_writer.h" />
     <ClInclude Include="win32_progress_callback.h">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="windows_headers.h" />
     <ClInclude Include="window_info.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assert.cpp" />
-    <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="byte_stream.cpp" />
-    <ClCompile Include="cd_image.cpp" />
-    <ClCompile Include="cd_image_bin.cpp" />
-    <ClCompile Include="cd_image_chd.cpp" />
-    <ClCompile Include="cd_image_cue.cpp" />
-    <ClCompile Include="cd_image_device.cpp" />
-    <ClCompile Include="cd_image_ecm.cpp" />
-    <ClCompile Include="cd_image_hasher.cpp" />
-    <ClCompile Include="cd_image_m3u.cpp" />
-    <ClCompile Include="cd_image_mds.cpp" />
-    <ClCompile Include="cd_image_memory.cpp" />
-    <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="crash_handler.cpp" />
-    <ClCompile Include="cue_parser.cpp" />
-    <ClCompile Include="cd_image_ppf.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
     <ClCompile Include="d3d11\staging_texture.cpp" />
@@ -140,28 +121,22 @@
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="image.cpp" />
-    <ClCompile Include="iso_reader.cpp" />
-    <ClCompile Include="jit_code_buffer.cpp" />
-    <ClCompile Include="cd_subchannel_replacement.cpp" />
+    <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
+    <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
-    <ClCompile Include="null_audio_stream.cpp" />
     <ClCompile Include="progress_callback.cpp" />
-    <ClCompile Include="shiftjis.cpp" />
-    <ClCompile Include="memory_arena.cpp" />
-    <ClCompile Include="page_fault_handler.cpp" />
-    <ClCompile Include="state_wrapper.cpp" />
-    <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="string.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="threading.cpp" />
     <ClCompile Include="timer.cpp" />
-    <ClCompile Include="timestamp.cpp" />
     <ClCompile Include="vulkan\builders.cpp" />
     <ClCompile Include="vulkan\context.cpp" />
+    <ClCompile Include="vulkan\loader.cpp" />
     <ClCompile Include="vulkan\shader_cache.cpp" />
     <ClCompile Include="vulkan\shader_compiler.cpp" />
     <ClCompile Include="vulkan\staging_buffer.cpp" />
@@ -170,7 +145,6 @@
     <ClCompile Include="vulkan\swap_chain.cpp" />
     <ClCompile Include="vulkan\texture.cpp" />
     <ClCompile Include="vulkan\util.cpp" />
-    <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="win32_progress_callback.cpp">
       <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
     </ClCompile>
@@ -178,6 +152,9 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vulkan\entry_points.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE054E08-3799-4A59-A422-18259C105FFD}</ProjectGuid>

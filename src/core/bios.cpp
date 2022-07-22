@@ -3,7 +3,11 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/path.h"
 #include "cpu_disasm.h"
+#include "host.h"
+#include "host_settings.h"
+#include "settings.h"
 #include <array>
 #include <cerrno>
 Log_SetChannel(BIOS);
@@ -272,3 +276,143 @@ DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header)
 }
 
 } // namespace BIOS
+
+std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region)
+{
+  std::string bios_name;
+  switch (region)
+  {
+    case ConsoleRegion::NTSC_J:
+      bios_name = Host::GetStringSettingValue("BIOS", "PathNTSCJ", "");
+      break;
+
+    case ConsoleRegion::PAL:
+      bios_name = Host::GetStringSettingValue("BIOS", "PathPAL", "");
+      break;
+
+    case ConsoleRegion::NTSC_U:
+    default:
+      bios_name = Host::GetStringSettingValue("BIOS", "PathNTSCU", "");
+      break;
+  }
+
+  if (bios_name.empty())
+  {
+    // auto-detect
+    return FindBIOSImageInDirectory(region, EmuFolders::Bios.c_str());
+  }
+
+  // try the configured path
+  std::optional<Image> image = LoadImageFromFile(Path::Combine(EmuFolders::Bios, bios_name).c_str());
+  if (!image.has_value())
+  {
+    Host::ReportFormattedErrorAsync(
+      "Error", Host::TranslateString("HostInterface", "Failed to load configured BIOS file '%s'"), bios_name.c_str());
+    return std::nullopt;
+  }
+
+  Hash found_hash = GetHash(*image);
+  Log_DevPrintf("Hash for BIOS '%s': %s", bios_name.c_str(), found_hash.ToString().c_str());
+
+  if (!IsValidHashForRegion(region, found_hash))
+    Log_WarningPrintf("Hash for BIOS '%s' does not match region. This may cause issues.", bios_name.c_str());
+
+  return image;
+}
+
+std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory)
+{
+  Log_InfoPrintf("Searching for a %s BIOS in '%s'...", Settings::GetConsoleRegionDisplayName(region), directory);
+
+  FileSystem::FindResultsArray results;
+  FileSystem::FindFiles(
+    directory, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+
+  std::string fallback_path;
+  std::optional<Image> fallback_image;
+  const ImageInfo* fallback_info = nullptr;
+
+  for (const FILESYSTEM_FIND_DATA& fd : results)
+  {
+    if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
+    {
+      Log_WarningPrintf("Skipping '%s': incorrect size", fd.FileName.c_str());
+      continue;
+    }
+
+    std::string full_path(Path::Combine(directory, fd.FileName));
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
+    if (!found_image)
+      continue;
+
+    Hash found_hash = GetHash(*found_image);
+    Log_DevPrintf("Hash for BIOS '%s': %s", fd.FileName.c_str(), found_hash.ToString().c_str());
+
+    const ImageInfo* ii = GetImageInfoForHash(found_hash);
+
+    if (IsValidHashForRegion(region, found_hash))
+    {
+      Log_InfoPrintf("Using BIOS '%s': %s", fd.FileName.c_str(), ii ? ii->description : "");
+      return found_image;
+    }
+
+    // don't let an unknown bios take precedence over a known one
+    if (!fallback_path.empty() && (fallback_info || !ii))
+      continue;
+
+    fallback_path = std::move(full_path);
+    fallback_image = std::move(found_image);
+    fallback_info = ii;
+  }
+
+  if (!fallback_image.has_value())
+  {
+    Host::ReportFormattedErrorAsync("Error",
+                                    Host::TranslateString("HostInterface", "No BIOS image found for %s region"),
+                                    Settings::GetConsoleRegionDisplayName(region));
+    return std::nullopt;
+  }
+
+  if (!fallback_info)
+  {
+    Log_WarningPrintf("Using unknown BIOS '%s'. This may crash.", fallback_path.c_str());
+  }
+  else
+  {
+    Log_WarningPrintf("Falling back to possibly-incompatible image '%s': %s", fallback_path.c_str(),
+                      fallback_info->description);
+  }
+
+  return fallback_image;
+}
+
+std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImagesInDirectory(const char* directory)
+{
+  std::vector<std::pair<std::string, const ImageInfo*>> results;
+
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(directory, "*",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
+
+  for (FILESYSTEM_FIND_DATA& fd : files)
+  {
+    if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
+      continue;
+
+    std::string full_path(Path::Combine(directory, fd.FileName));
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
+    if (!found_image)
+      continue;
+
+    Hash found_hash = GetHash(*found_image);
+    const ImageInfo* ii = GetImageInfoForHash(found_hash);
+    results.emplace_back(std::move(fd.FileName), ii);
+  }
+
+  return results;
+}
+
+bool BIOS::HasAnyBIOSImages()
+{
+  return FindBIOSImageInDirectory(ConsoleRegion::Auto, EmuFolders::Bios.c_str()).has_value();
+}

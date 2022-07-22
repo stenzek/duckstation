@@ -1,4 +1,5 @@
 #pragma once
+#include "fmt/core.h"
 #include "types.h"
 #include <algorithm>
 #include <cstdarg>
@@ -6,6 +7,7 @@
 #include <limits>
 #include <string>
 #include <string_view>
+#include <utility>
 
 //
 // String
@@ -38,6 +40,8 @@ public:
   };
 
 public:
+  using value_type = char;
+
   // Creates an empty string.
   String();
 
@@ -107,6 +111,9 @@ public:
   void AppendFormattedString(const char* FormatString, ...) printflike(2, 3);
   void AppendFormattedStringVA(const char* FormatString, va_list ArgPtr);
 
+  template<typename... T>
+  void AppendFmtString(fmt::format_string<T...> fmt, T&&... args);
+
   // append a single character to this string
   void PrependCharacter(char c);
 
@@ -125,6 +132,9 @@ public:
   void PrependFormattedString(const char* FormatString, ...) printflike(2, 3);
   void PrependFormattedStringVA(const char* FormatString, va_list ArgPtr);
 
+  template<typename... T>
+  void PrependFmtString(fmt::format_string<T...> fmt, T&&... args);
+
   // insert a string at the specified offset
   void InsertString(s32 offset, const String& appendStr);
   void InsertString(s32 offset, const char* appendStr);
@@ -135,6 +145,9 @@ public:
   // set to formatted string
   void Format(const char* FormatString, ...) printflike(2, 3);
   void FormatVA(const char* FormatString, va_list ArgPtr);
+
+  template<typename... T>
+  void Fmt(fmt::format_string<T...> fmt, T&&... args);
 
   // compare one string to another
   bool Compare(const String& otherString) const;
@@ -283,6 +296,9 @@ public:
   bool operator>(const String& compString) const { return (NumericCompare(compString) > 0); }
   bool operator>(const char* compString) const { return (NumericCompare(compString) > 0); }
 
+  // STL adapters
+  ALWAYS_INLINE void push_back(value_type&& val) { AppendCharacter(val); }
+
 protected:
   // Internal append function.
   void InternalPrepend(const char* pString, u32 Length);
@@ -358,6 +374,14 @@ public:
     return returnValue;
   }
 
+  template<typename... T>
+  static StackString FromFmt(fmt::format_string<T...> fmt, T&&... args)
+  {
+    StackString ret;
+    fmt::vformat_to(std::back_inserter(ret), fmt, fmt::make_format_args(args...));
+    return ret;
+  }
+
   // Will use the string data provided.
   StackString& operator=(const StackString& copyString)
   {
@@ -415,3 +439,24 @@ typedef StackString<512> PathString;
 
 // empty string global
 extern const String EmptyString;
+
+template<typename... T>
+void String::AppendFmtString(fmt::format_string<T...> fmt, T&&... args)
+{
+  fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
+}
+
+template<typename... T>
+void String::PrependFmtString(fmt::format_string<T...> fmt, T&&... args)
+{
+  TinyString str;
+  fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
+  PrependString(str);
+}
+
+template<typename... T>
+void String::Fmt(fmt::format_string<T...> fmt, T&&... args)
+{
+  Clear();
+  fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
+}

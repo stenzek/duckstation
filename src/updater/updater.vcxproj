@@ -30,6 +30,7 @@
   </PropertyGroup>
 
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
+  <Import Project="..\common\common.props" />
 
   <ItemDefinitionGroup>
     <ClCompile>

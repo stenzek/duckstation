@@ -10,7 +10,6 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
-    <ClCompile Include="host_interface.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="cdrom.cpp" />
     <ClCompile Include="gte.cpp" />
@@ -40,7 +39,7 @@
     <ClCompile Include="timing_event.cpp" />
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="psf_loader.cpp" />
-    <ClCompile Include="namco_guncon.cpp" />
+    <ClCompile Include="guncon.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp" />
@@ -58,9 +57,8 @@
     <ClCompile Include="texture_replacements.cpp" />
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="gpu_hw_d3d12.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
-    <ClCompile Include="imgui_styles.cpp" />
-    <ClCompile Include="cheevos.cpp" />
+    <ClCompile Include="host.cpp" />
+    <ClCompile Include="game_database.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -74,7 +72,6 @@
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gpu_hw.h" />
-    <ClInclude Include="host_interface.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="cdrom.h" />
     <ClInclude Include="gte.h" />
@@ -101,7 +98,7 @@
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="psf_loader.h" />
-    <ClInclude Include="namco_guncon.h" />
+    <ClInclude Include="guncon.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="gpu_hw_vulkan.h" />
@@ -123,8 +120,9 @@
     <ClInclude Include="multitap.h" />
     <ClInclude Include="gpu_hw_d3d12.h" />
     <ClInclude Include="gdb_protocol.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
-    <ClInclude Include="imgui_styles.h" />
-    <ClInclude Include="cheevos.h" />
+    <ClInclude Include="host.h" />
+    <ClInclude Include="host_settings.h" />
+    <ClInclude Include="achievements.h" />
+    <ClInclude Include="game_database.h" />
   </ItemGroup>
 </Project>

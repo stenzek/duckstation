@@ -6,6 +6,7 @@ set(SRCS
   resources/resources.qrc
   aboutdialog.cpp
   aboutdialog.h
+  aboutdialog.ui
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
@@ -18,19 +19,32 @@ set(SRCS
   biossettingswidget.cpp
   biossettingswidget.h
   biossettingswidget.ui
-  cheatmanagerdialog.cpp
-  cheatmanagerdialog.h
-  cheatmanagerdialog.ui
   cheatcodeeditordialog.cpp
   cheatcodeeditordialog.h
   cheatcodeeditordialog.ui
+  cheatmanagerdialog.cpp
+  cheatmanagerdialog.h
+  cheatmanagerdialog.ui
   collapsiblewidget.cpp
   collapsiblewidget.h
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
-  controllersettingswidget.cpp
-  controllersettingswidget.h
+  controllerbindingwidget_analog_controller.ui
+  controllerbindingwidget_analog_joystick.ui
+  controllerbindingwidget_digital_controller.ui
+  controllerbindingwidget_guncon.ui
+  controllerbindingwidget_negcon.ui
+  controllerbindingwidgets.cpp
+  controllerbindingwidgets.h
+  controllerbindingwidget.ui
+  controllerglobalsettingswidget.cpp
+  controllerglobalsettingswidget.h
+  controllerglobalsettingswidget.ui
+  controllersettingsdialog.cpp
+  controllersettingsdialog.h
+  controllersettingsdialog.ui
+  controllersettingwidgetbinder.h
   debuggermodels.cpp
   debuggermodels.h
   debuggerwindow.cpp
@@ -39,14 +53,22 @@ set(SRCS
   displaysettingswidget.cpp
   displaysettingswidget.h
   displaysettingswidget.ui
+  displaywidget.cpp
+  displaywidget.h
+  emptygamelistwidget.ui
   emulationsettingswidget.cpp
   emulationsettingswidget.h
   emulationsettingswidget.ui
   enhancementsettingswidget.cpp
   enhancementsettingswidget.h
   enhancementsettingswidget.ui
+  foldersettingswidget.cpp
+  foldersettingswidget.h
+  foldersettingswidget.ui
   gamelistmodel.cpp
   gamelistmodel.h
+  gamelistrefreshthread.cpp
+  gamelistrefreshthread.h
   gamelistsearchdirectoriesmodel.cpp
   gamelistsearchdirectoriesmodel.h
   gamelistsettingswidget.cpp
@@ -54,9 +76,10 @@ set(SRCS
   gamelistsettingswidget.ui
   gamelistwidget.cpp
   gamelistwidget.h
-  gamepropertiesdialog.cpp
-  gamepropertiesdialog.h
-  gamepropertiesdialog.ui
+  gamelistwidget.ui
+  gamesummarywidget.cpp
+  gamesummarywidget.h
+  gamesummarywidget.ui
   gdbconnection.cpp
   gdbconnection.h
   gdbserver.cpp
@@ -69,11 +92,8 @@ set(SRCS
   inputbindingdialog.cpp
   inputbindingdialog.h
   inputbindingdialog.ui
-  inputbindingmonitor.cpp
-  inputbindingmonitor.h
   inputbindingwidgets.cpp
   inputbindingwidgets.h
-  main.cpp
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
@@ -92,17 +112,18 @@ set(SRCS
   postprocessingsettingswidget.ui
   postprocessingshaderconfigwidget.cpp
   postprocessingshaderconfigwidget.h
-  qtdisplaywidget.cpp
-  qtdisplaywidget.h
-  qthostinterface.cpp
-  qthostinterface.h
+  qthost.cpp
+  qthost.h
+  qtkeycodes.cpp
   qtprogresscallback.cpp
   qtprogresscallback.h
   qtutils.cpp
   qtutils.h
+  resource.h
   settingsdialog.cpp
   settingsdialog.h
   settingsdialog.ui
+  settingwidgetbinder.h
 )
 
 if(ENABLE_CHEEVOS)
@@ -135,11 +156,11 @@ set(TS_FILES
 )
 
 set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
-qt5_add_translation(QM_FILES ${TS_FILES})
+qt6_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
-target_include_directories(duckstation-qt PRIVATE "${Qt5Gui_PRIVATE_INCLUDE_DIRS}")
-target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion vulkan-loader Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
+target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
 
 if(WIN32)
   # We want a Windows subsystem application not console.
@@ -148,7 +169,7 @@ if(WIN32)
     DEBUG_POSTFIX "-debug")
 
   # Copy in Qt DLLs. Borrowed from Dolphin.
-  get_target_property(MOC_EXECUTABLE_LOCATION Qt5::moc IMPORTED_LOCATION)
+  get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
   get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
   find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
   add_custom_command(TARGET duckstation-qt POST_BUILD
@@ -186,11 +207,11 @@ if(APPLE)
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
   # Copy Qt plugins into the bundle
-  get_target_property(qtcocoa_location Qt5::QCocoaIntegrationPlugin LOCATION)
+  get_target_property(qtcocoa_location Qt6::QCocoaIntegrationPlugin LOCATION)
   target_sources(duckstation-qt PRIVATE "${qtcocoa_location}")
   set_source_files_properties("${qtcocoa_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/platforms)
 
-  get_target_property(qtmacstyle_location Qt5::QMacStylePlugin LOCATION)
+  get_target_property(qtmacstyle_location Qt6::QMacStylePlugin LOCATION)
   target_sources(duckstation-qt PRIVATE "${qtmacstyle_location}")
   set_source_files_properties("${qtmacstyle_location}" PROPERTIES MACOSX_PACKAGE_LOCATION MacOS/styles)
 

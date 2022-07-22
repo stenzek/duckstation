@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>780</width>
-    <height>650</height>
+    <height>490</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,11 +35,6 @@
        <height>0</height>
       </size>
      </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="page"/>
-     <widget class="QWidget" name="page_2"/>
     </widget>
    </item>
    <item row="0" column="0">
@@ -52,13 +47,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>230</width>
+       <width>150</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>400</width>
+       <width>150</width>
        <height>16777215</height>
       </size>
      </property>
@@ -68,132 +63,6 @@
        <height>32</height>
       </size>
      </property>
-     <item>
-      <property name="text">
-       <string>General Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="GeneralSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>BIOS Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="BIOSSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Console Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="ConsoleSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Emulation Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="EmulationSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Game List Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="GamelistSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Hotkey Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="HotkeySettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Controller Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="ControllerSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Memory Card Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="MemorycardSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Display Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="DisplaySettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Enhancement Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="EnhancementSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Post-Processing Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="PostprocessingSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Audio Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="AudioSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Achievement Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="AchievementsSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Advanced Settings</string>
-      </property>
-      <property name="icon">
-       <iconset theme="AdvancedSettings">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
@@ -208,13 +77,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>120</height>
+       <height>100</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>120</height>
+       <height>100</height>
       </size>
      </property>
      <property name="readOnly">

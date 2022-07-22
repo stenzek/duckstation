@@ -2,10 +2,10 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/state_wrapper.h"
 #include "common/string_util.h"
-#include "host_interface.h"
+#include "host.h"
 #include "system.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 Log_SetChannel(MemoryCard);
 
@@ -273,8 +273,8 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   if (!mc->LoadFromFile())
   {
     Log_InfoPrintf("Memory card at '%s' could not be read, formatting.", mc->m_filename.c_str());
-    g_host_interface->AddFormattedOSDMessage(
-      5.0f, g_host_interface->TranslateString("OSDMessage", "Memory card at '%s' could not be read, formatting."),
+    Host::AddFormattedOSDMessage(
+      5.0f, Host::TranslateString("OSDMessage", "Memory card at '%s' could not be read, formatting."),
       mc->m_filename.c_str());
     mc->Format();
   }
@@ -309,8 +309,8 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     if (display_osd_message)
     {
-      g_host_interface->AddFormattedOSDMessage(
-        20.0f, g_host_interface->TranslateString("OSDMessage", "Failed to save memory card to '%s'"),
+      Host::AddFormattedOSDMessage(
+        20.0f, Host::TranslateString("OSDMessage", "Failed to save memory card to '%s'"),
         m_filename.c_str());
     }
 
@@ -318,8 +318,10 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   }
 
   if (display_osd_message)
-    g_host_interface->AddFormattedOSDMessage(
-      2.0f, g_host_interface->TranslateString("OSDMessage", "Saved memory card to '%s'"), m_filename.c_str());
+  {
+    Host::AddFormattedOSDMessage(
+      2.0f, Host::TranslateString("OSDMessage", "Saved memory card to '%s'"), m_filename.c_str());
+  }
 
   return true;
 }

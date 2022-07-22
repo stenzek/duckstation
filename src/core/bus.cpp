@@ -4,20 +4,20 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/make_array.h"
-#include "common/state_wrapper.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "dma.h"
 #include "gpu.h"
-#include "host_interface.h"
+#include "host.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
+#include "util/state_wrapper.h"
 #include <cstdio>
 #include <tuple>
 #include <utility>
@@ -130,7 +130,7 @@ bool Initialize()
 {
   if (!AllocateMemory(g_settings.enable_8mb_ram))
   {
-    g_host_interface->ReportError("Failed to allocate memory");
+    Host::ReportErrorAsync("Error", "Failed to allocate memory");
     return false;
   }
 

@@ -1,6 +1,9 @@
 #pragma once
 #include "types.h"
 #include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
 // base byte stream creation functions
 enum BYTESTREAM_OPEN_MODE
@@ -10,11 +13,17 @@ enum BYTESTREAM_OPEN_MODE
   BYTESTREAM_OPEN_APPEND = 4,         // seek to the end
   BYTESTREAM_OPEN_TRUNCATE = 8,       // truncate the file, seek to start
   BYTESTREAM_OPEN_CREATE = 16,        // if the file does not exist, create it
-  BYTESTREAM_OPEN_CREATE_PATH = 32,   // if the file parent directories don't exist, create them
   BYTESTREAM_OPEN_ATOMIC_UPDATE = 64, //
   BYTESTREAM_OPEN_SEEKABLE = 128,
   BYTESTREAM_OPEN_STREAMED = 256,
 };
+
+// forward declarations for implemented classes
+class ByteStream;
+class MemoryByteStream;
+class GrowableMemoryByteStream;
+class ReadOnlyMemoryByteStream;
+class NullByteStream;
 
 // interface class used by readers, writers, etc.
 class ByteStream
@@ -67,6 +76,62 @@ public:
   inline bool InErrorState() const { return m_errorState; }
   inline void SetErrorState() { m_errorState = true; }
   inline void ClearErrorState() { m_errorState = false; }
+
+  bool ReadU8(u8* dest);
+  bool ReadU16(u16* dest);
+  bool ReadU32(u32* dest);
+  bool ReadU64(u64* dest);
+  bool ReadS8(s8* dest);
+  bool ReadS16(s16* dest);
+  bool ReadS32(s32* dest);
+  bool ReadS64(s64* dest);
+  bool ReadSizePrefixedString(std::string* dest);
+
+  bool WriteU8(u8 dest);
+  bool WriteU16(u16 dest);
+  bool WriteU32(u32 dest);
+  bool WriteU64(u64 dest);
+  bool WriteS8(s8 dest);
+  bool WriteS16(s16 dest);
+  bool WriteS32(s32 dest);
+  bool WriteS64(s64 dest);
+  bool WriteSizePrefixedString(const std::string_view& str);
+
+  // base byte stream creation functions
+  // opens a local file-based stream. fills in error if passed, and returns false if the file cannot be opened.
+  static std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 OpenMode);
+
+  // memory byte stream, caller is responsible for management, therefore it can be located on either the stack or on the
+  // heap.
+  static std::unique_ptr<MemoryByteStream> CreateMemoryStream(void* pMemory, u32 Size);
+
+  // a growable memory byte stream will automatically allocate its own memory if the provided memory is overflowed.
+  // a "pure heap" buffer, i.e. a buffer completely managed by this implementation, can be created by supplying a NULL
+  // pointer and initialSize of zero.
+  static std::unique_ptr<GrowableMemoryByteStream> CreateGrowableMemoryStream(void* pInitialMemory, u32 InitialSize);
+  static std::unique_ptr<GrowableMemoryByteStream> CreateGrowableMemoryStream();
+
+  // readable memory stream
+  static std::unique_ptr<ReadOnlyMemoryByteStream> CreateReadOnlyMemoryStream(const void* pMemory, u32 Size);
+
+  // null memory stream
+  static std::unique_ptr<NullByteStream> CreateNullStream();
+
+  // copies one stream's contents to another. rewinds source streams automatically, and returns it back to its old
+  // position.
+  static bool CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceStream);
+
+  // appends one stream's contents to another.
+  static bool AppendStream(ByteStream* pSourceStream, ByteStream* pDestinationStream);
+
+  // copies a number of bytes from one to another
+  static u32 CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* pDestinationStream);
+
+  static std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
+  static bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
+
+  static std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start = true);
+  static bool WriteBinaryToStream(ByteStream* stream, const void* data, size_t data_length);
 
 protected:
   ByteStream() : m_errorState(false) {}
@@ -199,33 +264,3 @@ private:
   u32 m_iSize;
   u32 m_iMemorySize;
 };
-
-// base byte stream creation functions
-// opens a local file-based stream. fills in error if passed, and returns false if the file cannot be opened.
-std::unique_ptr<ByteStream> ByteStream_OpenFileStream(const char* FileName, u32 OpenMode);
-
-// memory byte stream, caller is responsible for management, therefore it can be located on either the stack or on the
-// heap.
-std::unique_ptr<MemoryByteStream> ByteStream_CreateMemoryStream(void* pMemory, u32 Size);
-
-// a growable memory byte stream will automatically allocate its own memory if the provided memory is overflowed.
-// a "pure heap" buffer, i.e. a buffer completely managed by this implementation, can be created by supplying a NULL
-// pointer and initialSize of zero.
-std::unique_ptr<GrowableMemoryByteStream> ByteStream_CreateGrowableMemoryStream(void* pInitialMemory, u32 InitialSize);
-std::unique_ptr<GrowableMemoryByteStream> ByteStream_CreateGrowableMemoryStream();
-
-// readable memory stream
-std::unique_ptr<ReadOnlyMemoryByteStream> ByteStream_CreateReadOnlyMemoryStream(const void* pMemory, u32 Size);
-
-// null memory stream
-std::unique_ptr<NullByteStream> ByteStream_CreateNullStream();
-
-// copies one stream's contents to another. rewinds source streams automatically, and returns it back to its old
-// position.
-bool ByteStream_CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceStream);
-
-// appends one stream's contents to another.
-bool ByteStream_AppendStream(ByteStream* pSourceStream, ByteStream* pDestinationStream);
-
-// copies a number of bytes from one to another
-u32 ByteStream_CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* pDestinationStream);

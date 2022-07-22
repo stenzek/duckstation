@@ -1,11 +1,10 @@
 #include "gte.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
-#include "common/state_wrapper.h"
+#include "util/state_wrapper.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "host_display.h"
-#include "host_interface.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "timing_event.h"
@@ -188,15 +187,14 @@ void UpdateAspectRatio()
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      const HostDisplay* display = g_host_interface->GetDisplay();
-      if (!display)
+      if (!g_host_display)
       {
         s_aspect_ratio = DisplayAspectRatio::R4_3;
         return;
       }
 
-      num = display->GetWindowWidth();
-      denom = display->GetWindowHeight();
+      num = g_host_display->GetWindowWidth();
+      denom = g_host_display->GetWindowHeight();
     }
     break;
 

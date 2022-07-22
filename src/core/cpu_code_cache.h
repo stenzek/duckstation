@@ -1,9 +1,9 @@
 #pragma once
 #include "bus.h"
 #include "common/bitfield.h"
-#include "common/jit_code_buffer.h"
-#include "common/page_fault_handler.h"
 #include "cpu_types.h"
+#include "util/jit_code_buffer.h"
+#include "util/page_fault_handler.h"
 #include <array>
 #include <map>
 #include <memory>
@@ -97,10 +97,7 @@ struct CodeBlock
   const u32 GetPC() const { return key.GetPC(); }
   const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
   const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / HOST_PAGE_SIZE); }
-  const u32 GetEndPageIndex() const
-  {
-    return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / HOST_PAGE_SIZE);
-  }
+  const u32 GetEndPageIndex() const { return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / HOST_PAGE_SIZE); }
   bool IsInRAM() const
   {
     // TODO: Constant
@@ -125,7 +122,7 @@ void Execute();
 
 #ifdef WITH_RECOMPILER
 using DispatcherFunction = void (*)();
-using SingleBlockDispatcherFunction = void(*)(const CodeBlock::HostCodePointer);
+using SingleBlockDispatcherFunction = void (*)(const CodeBlock::HostCodePointer);
 
 FastMapTable* GetFastMapPointer();
 void ExecuteRecompiler();

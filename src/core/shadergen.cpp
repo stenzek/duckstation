@@ -1,13 +1,14 @@
 #include "shadergen.h"
 #include "common/assert.h"
+#include "common/gl/loader.h"
 #include "common/log.h"
 #include <cstdio>
 #include <cstring>
-#include <glad.h>
 Log_SetChannel(ShaderGen);
 
 ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend)
-  : m_render_api(render_api), m_glsl(render_api != HostDisplay::RenderAPI::D3D11 && render_api != HostDisplay::RenderAPI::D3D12),
+  : m_render_api(render_api),
+    m_glsl(render_api != HostDisplay::RenderAPI::D3D11 && render_api != HostDisplay::RenderAPI::D3D12),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
   if (m_glsl)
