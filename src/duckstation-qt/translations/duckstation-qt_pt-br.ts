@@ -5069,7 +5069,7 @@ Conquistas: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Use Global Setting [%1%]</source>
-        <translation>Usar configuração global [%1%]</translation>
+        <translation>Usar configuração global [%1]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="113"/>
@@ -11150,7 +11150,7 @@ The saves will not be recoverable.</source>
         <location filename="../settingwidgetbinder.h" line="125"/>
         <location filename="../settingwidgetbinder.h" line="141"/>
         <source>Use Global Setting [%1]</source>
-        <translation>Usar configuração global [%1%]</translation>
+        <translation>Usar configuração global [%1]</translation>
     </message>
 </context>
 <context>
