@@ -415,18 +415,21 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
 
 void ImGuiManager::RenderDebugWindows()
 {
-  if (g_settings.debugging.show_gpu_state)
-    g_gpu->DrawDebugStateWindow();
-  if (g_settings.debugging.show_cdrom_state)
-    g_cdrom.DrawDebugWindow();
-  if (g_settings.debugging.show_timers_state)
-    g_timers.DrawDebugStateWindow();
-  if (g_settings.debugging.show_spu_state)
-    g_spu.DrawDebugStateWindow();
-  if (g_settings.debugging.show_mdec_state)
-    g_mdec.DrawDebugStateWindow();
-  if (g_settings.debugging.show_dma_state)
-    g_dma.DrawDebugStateWindow();
+  if (System::IsValid())
+  {
+    if (g_settings.debugging.show_gpu_state)
+      g_gpu->DrawDebugStateWindow();
+    if (g_settings.debugging.show_cdrom_state)
+      g_cdrom.DrawDebugWindow();
+    if (g_settings.debugging.show_timers_state)
+      g_timers.DrawDebugStateWindow();
+    if (g_settings.debugging.show_spu_state)
+      g_spu.DrawDebugStateWindow();
+    if (g_settings.debugging.show_mdec_state)
+      g_mdec.DrawDebugStateWindow();
+    if (g_settings.debugging.show_dma_state)
+      g_dma.DrawDebugStateWindow();
+  }
 }
 
 #ifdef WITH_DISCORD_PRESENCE

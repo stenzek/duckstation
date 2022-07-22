@@ -3910,7 +3910,8 @@ bool System::LoadCheatList(const char* filename)
 
 bool System::LoadCheatListFromGameTitle()
 {
-  if (!IsValid() || Achievements::ChallengeModeActive())
+  // Called when booting, needs to test for shutdown.
+  if (IsShutdown() || Achievements::ChallengeModeActive())
     return false;
 
   const std::string filename(GetCheatFileName());
@@ -3922,15 +3923,15 @@ bool System::LoadCheatListFromGameTitle()
 
 bool System::LoadCheatListFromDatabase()
 {
-  if (System::GetRunningCode().empty() || Achievements::ChallengeModeActive())
+  if (IsShutdown() || s_running_game_code.empty() || Achievements::ChallengeModeActive())
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromPackage(System::GetRunningCode()))
+  if (!cl->LoadFromPackage(s_running_game_code))
     return false;
 
   Log_InfoPrintf("Loaded %u cheats from database.", cl->GetCodeCount());
-  System::SetCheatList(std::move(cl));
+  SetCheatList(std::move(cl));
   return true;
 }
 

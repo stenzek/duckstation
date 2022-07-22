@@ -5,6 +5,7 @@
 #include "settingwidgetbinder.h"
 #include "util/cd_image.h"
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 
 ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
@@ -92,7 +93,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* pa
                              tr("Automatically applies patches to disc images when they are present in the same "
                                 "directory. Currently only PPF patches are supported with this option."));
 
-  m_ui.cpuClockSpeed->setEnabled(m_ui.enableCPUClockSpeedControl->checkState() == Qt::Checked);
+  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
 
   connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
@@ -105,28 +106,41 @@ ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
 
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 {
-  if (state == Qt::Checked && !Host::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
+  if (state == Qt::Checked &&
+      (!m_dialog->isPerGameSettings() || !Host::GetBaseBoolSettingValue("CPU", "OverclockEnable", false)) &&
+      !Host::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
   {
     const QString message =
       tr("Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase "
          "system requirements.\n\nBy enabling this option you are agreeing to not create any bug reports unless you "
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
-    const QString yes_button = tr("Yes, I will confirm bugs without overclocking before reporting.");
-    const QString no_button = tr("No, take me back to safety.");
 
-    if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("CPU Overclocking Warning"), message,
-                              QMessageBox::Yes | QMessageBox::No) != 0)
+    QMessageBox mb(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
+    const QAbstractButton* const yes_button = mb.addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
+    mb.addButton(tr("No, take me back to safety."), QMessageBox::NoRole);
+    mb.exec();
+
+    if (mb.clickedButton() != yes_button)
     {
       QSignalBlocker sb(m_ui.enableCPUClockSpeedControl);
-      m_ui.enableCPUClockSpeedControl->setChecked(Qt::Unchecked);
-      m_dialog->setBoolSettingValue("CPU", "OverclockEnable", false);
+      if (m_dialog->isPerGameSettings())
+      {
+        m_ui.enableCPUClockSpeedControl->setCheckState(Qt::PartiallyChecked);
+        m_dialog->removeSettingValue("CPU", "OverclockEnable");
+      }
+      else
+      {
+        m_ui.enableCPUClockSpeedControl->setCheckState(Qt::Unchecked);
+        m_dialog->setBoolSettingValue("CPU", "OverclockEnable", false);
+      }
+
       return;
     }
 
     Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
   }
 
-  m_ui.cpuClockSpeed->setEnabled(state == Qt::Checked);
+  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
   updateCPUClockSpeedLabel();
 }
 

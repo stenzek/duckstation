@@ -269,7 +269,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
   m_display_widget->setFocus();
   m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-  m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
+  m_display_widget->updateRelativeMode(m_relative_mouse_mode && s_system_valid && !s_system_paused);
   m_display_widget->updateCursor(s_system_valid && !s_system_paused);
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
