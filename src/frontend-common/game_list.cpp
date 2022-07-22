@@ -425,7 +425,6 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
 {
   Log_InfoPrintf("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
-  progress->PushState();
   progress->SetFormattedStatusText("Scanning directory '%s'%s...", path, recursive ? " (recursively)" : "");
 
   FileSystem::FindResultsArray files;
@@ -433,11 +432,14 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
                         recursive ? (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE) :
                                     (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
                         &files);
+  if (files.empty())
+    return;
 
-  u32 files_scanned = 0;
+  progress->PushState();
   progress->SetProgressRange(static_cast<u32>(files.size()));
   progress->SetProgressValue(0);
 
+  u32 files_scanned = 0;
   for (FILESYSTEM_FIND_DATA& ffd : files)
   {
     files_scanned++;

@@ -248,7 +248,7 @@ bool ControllerSettingsDialog::getBoolValue(const char* section, const char* key
     return Host::GetBaseBoolSettingValue(section, key, default_value);
 }
 
-bool ControllerSettingsDialog::getIntValue(const char* section, const char* key, s32 default_value) const
+s32 ControllerSettingsDialog::getIntValue(const char* section, const char* key, s32 default_value) const
 {
   if (m_profile_interface)
     return m_profile_interface->GetIntValue(section, key, default_value);

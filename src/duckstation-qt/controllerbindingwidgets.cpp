@@ -361,7 +361,8 @@ void ControllerMacroEditWidget::modFrequency(s32 delta)
 void ControllerMacroEditWidget::updateFrequency()
 {
   m_bwidget->getDialog()->setIntValue(m_bwidget->getConfigSection().c_str(),
-                                      fmt::format("Macro{}Frequency", m_index).c_str(), static_cast<s32>(m_frequency));
+                                      fmt::format("Macro{}Frequency", m_index + 1u).c_str(),
+                                      static_cast<s32>(m_frequency));
   updateFrequencyText();
 }
 

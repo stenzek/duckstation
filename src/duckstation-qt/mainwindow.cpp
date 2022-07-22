@@ -420,6 +420,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
       {
         m_game_list_widget->setVisible(true);
         setCentralWidget(m_game_list_widget);
+        m_game_list_widget->resizeTableViewColumnsToFit();
       }
     }
     else
@@ -427,7 +428,10 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
       AssertMsg(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
       m_ui.mainContainer->removeWidget(m_display_widget);
       if (show_game_list)
+      {
         m_ui.mainContainer->setCurrentIndex(0);
+        m_game_list_widget->resizeTableViewColumnsToFit();
+      }
     }
   }
 
@@ -1187,6 +1191,7 @@ void MainWindow::onGameListRefreshProgress(const QString& status, int current, i
 
 void MainWindow::onGameListRefreshComplete()
 {
+  m_ui.statusBar->clearMessage();
   clearProgressBar();
 }
 
@@ -1650,7 +1655,7 @@ void MainWindow::updateWindowState(bool force_visible)
 
 void MainWindow::setProgressBar(int current, int total)
 {
-  const int value = (current * 100) / total;
+  const int value = (total != 0) ? ((current * 100) / total) : 0;
   if (m_status_progress_widget->value() != value)
     m_status_progress_widget->setValue(value);
 
