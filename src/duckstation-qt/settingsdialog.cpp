@@ -61,22 +61,19 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::addPages()
 {
+  addWidget(m_general_settings = new GeneralSettingsWidget(this, m_ui.settingsContainer), tr("General"),
+            QStringLiteral("settings-3-line"),
+            tr("<strong>General Settings</strong><hr>These options control how the emulator looks and "
+               "behaves.<br><br>Mouse over an option for additional information."));
+
   if (!isPerGameSettings())
   {
-    addWidget(m_general_settings = new GeneralSettingsWidget(this, m_ui.settingsContainer), tr("General"),
-              QStringLiteral("settings-3-line"),
-              tr("<strong>General Settings</strong><hr>These options control how the emulator looks and "
-                 "behaves.<br><br>Mouse over an option for additional information."));
     addWidget(
       m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
       QStringLiteral("folder-settings-line"),
       tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
          "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
          "recursive/non-recursive."));
-  }
-  else
-  {
-    m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setVisible(false);
   }
 
   addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
@@ -161,6 +158,11 @@ void SettingsDialog::addPages()
             QStringLiteral("tools-line"),
             tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
                "emulator. Mouse over an option for additional information."));
+
+  if (isPerGameSettings())
+  {
+    m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setVisible(false);
+  }
 
   m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   m_ui.settingsCategory->setCurrentRow(0);

@@ -38,6 +38,11 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* pa
 
   onRenderToSeparateWindowChanged();
 
+  if (m_dialog->isPerGameSettings())
+  {
+    m_ui.applyGameSettings->setEnabled(false);
+  }
+
   dialog->registerWidgetHelp(
     m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
     tr("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
