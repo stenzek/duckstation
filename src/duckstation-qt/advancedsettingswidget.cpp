@@ -197,6 +197,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
           Qt::QueuedConnection);
 
   m_ui.tweakOptionTable->setColumnWidth(0, 380);
+  m_ui.tweakOptionTable->setColumnWidth(1, 170);
 
   addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main", "DisableAllEnhancements",
                         false);
@@ -204,8 +205,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
                         true);
   addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Enhancement Settings"), "Display", "ShowEnhancements",
                         false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Controller Enhanced Mode (PS4/PS5)"), "Main",
-                        "ControllerEnhancedMode", false);
   addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
 
   addMSAATweakOption(dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
@@ -284,7 +283,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show enhancement settings
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Controller enhanced mode (PS4/PS5)
   setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
   setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache

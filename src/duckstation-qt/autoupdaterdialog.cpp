@@ -92,7 +92,7 @@ std::string AutoUpdaterDialog::getDefaultTag()
 std::string AutoUpdaterDialog::getCurrentUpdateTag() const
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-  return m_host_interface->GetStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
+  return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
 #else
   return {};
 #endif

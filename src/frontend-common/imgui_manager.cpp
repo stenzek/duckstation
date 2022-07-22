@@ -30,7 +30,7 @@ static void SetStyle();
 static void SetKeyMap();
 static bool LoadFontData();
 static bool AddImGuiFonts(bool fullscreen_fonts);
-static ImFont* AddTextFont(float size);
+static ImFont* AddTextFont(float size, bool full_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size);
 static void AcquirePendingOSDMessages();
@@ -419,7 +419,7 @@ bool ImGuiManager::LoadFontData()
   return true;
 }
 
-ImFont* ImGuiManager::AddTextFont(float size)
+ImFont* ImGuiManager::AddTextFont(float size, bool full_range)
 {
   static const ImWchar default_ranges[] = {
     // Basic Latin + Latin Supplement + Central European diacritics
@@ -445,7 +445,7 @@ ImFont* ImGuiManager::AddTextFont(float size)
   cfg.FontDataOwnedByAtlas = false;
   return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_standard_font_data.data(),
                                                     static_cast<int>(s_standard_font_data.size()), size, &cfg,
-                                                    s_font_range ? s_font_range : default_ranges);
+                                                    (s_font_range && full_range) ? s_font_range : default_ranges);
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)
@@ -478,7 +478,7 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  s_standard_font = AddTextFont(standard_font_size);
+  s_standard_font = AddTextFont(standard_font_size, true);
   if (!s_standard_font || !AddIconFonts(standard_font_size))
     return false;
 
@@ -488,13 +488,14 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 
   if (fullscreen_fonts)
   {
+    // Don't add full range for FSUI, we probably don't have the texture space, and it's not translated yet anyway.
     const float medium_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
-    s_medium_font = AddTextFont(medium_font_size);
+    s_medium_font = AddTextFont(medium_font_size, false);
     if (!s_medium_font || !AddIconFonts(medium_font_size))
       return false;
 
     const float large_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE));
-    s_large_font = AddTextFont(large_font_size);
+    s_large_font = AddTextFont(large_font_size, false);
     if (!s_large_font || !AddIconFonts(large_font_size))
       return false;
   }

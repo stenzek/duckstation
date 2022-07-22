@@ -645,7 +645,6 @@ void MainWindow::recreate()
 
   MainWindow* new_main_window = new MainWindow();
   new_main_window->initialize();
-  new_main_window->refreshGameList(false);
   new_main_window->show();
   deleteLater();
 }
