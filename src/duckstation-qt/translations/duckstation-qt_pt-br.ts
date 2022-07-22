@@ -7152,7 +7152,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="131"/>
         <location filename="../generalsettingswidget.cpp" line="56"/>
         <source>Render To Separate Window</source>
-        <translation>Renderizar para janela separada</translation>
+        <translation>Renderizar para uma janela separada</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="138"/>
