@@ -962,6 +962,10 @@ void Host::OnSystemResumed()
 {
   CommonHost::OnSystemResumed();
 
+  // if we were surfaceless (view->game list, system->unpause), get our display widget back
+  if (g_emu_thread->isSurfaceless())
+    g_emu_thread->setSurfaceless(false);
+
   emit g_emu_thread->systemResumed();
 
   g_emu_thread->wakeThread();
