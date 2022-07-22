@@ -454,8 +454,8 @@ bool FullscreenUI::IsInitialized()
 
 bool FullscreenUI::HasActiveWindow()
 {
-  return s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
-         ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen();
+  return s_initialized && (s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
+                           ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen());
 }
 
 void FullscreenUI::UpdateForcedVsync(bool should_force)

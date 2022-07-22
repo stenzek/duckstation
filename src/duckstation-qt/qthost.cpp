@@ -700,7 +700,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
   System::HostDisplayResized();
 
   // re-render the display, since otherwise it will be out of date and stretched if paused
-  if (!System::IsShutdown())
+  if (System::IsValid())
   {
     if (m_is_exclusive_fullscreen && !g_host_display->IsFullscreen())
     {
@@ -712,7 +712,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
     }
 
     // force redraw if we're paused
-    if (!FullscreenUI::IsInitialized())
+    if (!System::IsRunning() && !FullscreenUI::HasActiveWindow())
       renderDisplay();
   }
 }
@@ -1498,7 +1498,7 @@ void EmuThread::run()
       CommonHost::PumpMessagesOnCPUThread();
 
       // we want to keep rendering the UI when paused and fullscreen UI is enabled
-      if (!FullscreenUI::IsInitialized() && !System::IsValid())
+      if (!FullscreenUI::HasActiveWindow() && !System::IsRunning())
       {
         // wait until we have a system before running
         m_event_loop->exec();
