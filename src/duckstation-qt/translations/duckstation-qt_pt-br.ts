@@ -3477,7 +3477,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="60"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Selecione a tecla para ativar esta macro. Pode ser um único botão ou uma combinação de botões. Mantenha a tecla shift pressionada para múltiplos botões.</translation>
+        <translation>Selecione a tecla para ativar este macro. Pode ser um único botão ou uma combinação de botões. Mantenha a tecla shift pressionada para múltiplos botões.</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="73"/>
