@@ -3522,7 +3522,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="373"/>
         <source>Macro will toggle buttons every %1 frames.</source>
-        <translation>A macro alternará os botões a cada %1 quadros.</translation>
+        <translation>O macro alternará os botões a cada %1 quadros.</translation>
     </message>
 </context>
 <context>
