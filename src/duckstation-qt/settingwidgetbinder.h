@@ -181,7 +181,7 @@ struct SettingAccessor<QComboBox>
   }
   static void setNullableStringValue(QComboBox* widget, std::optional<QString> value)
   {
-    isNullValue(widget) ? widget->setCurrentIndex(0) : setStringValue(widget, value.value());
+    value.has_value() ? setStringValue(widget, value.value()) : widget->setCurrentIndex(0);
   }
 
   template<typename F>

@@ -535,6 +535,12 @@ void MainWindow::onSystemResumed()
 
 void MainWindow::onSystemDestroyed()
 {
+  // update UI
+  {
+    QSignalBlocker sb(m_ui.actionPause);
+    m_ui.actionPause->setChecked(true);
+  }
+
   s_system_valid = false;
   s_system_paused = false;
   updateEmulationActions(false, false, Achievements::ChallengeModeActive());

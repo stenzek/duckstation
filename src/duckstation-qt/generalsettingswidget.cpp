@@ -90,7 +90,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* pa
     m_ui.enableDiscordPresence->setEnabled(false);
   }
 #endif
-  if (AutoUpdaterDialog::isSupported())
+  if (!m_dialog->isPerGameSettings() && AutoUpdaterDialog::isSupported())
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
     dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
