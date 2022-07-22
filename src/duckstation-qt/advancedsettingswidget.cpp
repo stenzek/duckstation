@@ -201,10 +201,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
   addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main", "DisableAllEnhancements",
                         false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display", "ShowStatusIndicators",
-                        true);
   addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Enhancement Settings"), "Display", "ShowEnhancements",
                         false);
+  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display", "ShowStatusIndicators",
+                        true);
+  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
+                        "ApplyCompatibilitySettings", true);
   addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
 
   addMSAATweakOption(dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
@@ -281,8 +283,9 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   int i = 0;
 
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show enhancement settings
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
+  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
   setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
   setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache

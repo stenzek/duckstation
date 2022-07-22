@@ -825,7 +825,7 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
 
   // apply compatibility settings
-  if (g_settings.apply_game_settings && !s_running_game_code.empty())
+  if (g_settings.apply_compatibility_settings && !s_running_game_code.empty())
   {
     const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_code);
     if (entry)
@@ -848,6 +848,14 @@ void System::ApplySettings(bool display_osd_messages)
   const Settings old_config(std::move(g_settings));
   g_settings = Settings();
   LoadSettings(display_osd_messages);
+
+  // If we've disabled/enabled game settings, we need to reload without it.
+  if (g_settings.apply_game_settings != old_config.apply_game_settings)
+  {
+    UpdateGameSettingsLayer();
+    LoadSettings(display_osd_messages);
+  }
+
   CheckForSettingsChanges(old_config);
   Host::CheckForSettingsChanges(old_config);
 
@@ -867,7 +875,7 @@ bool System::ReloadGameSettings(bool display_osd_messages)
 bool System::UpdateGameSettingsLayer()
 {
   std::unique_ptr<INISettingsInterface> new_interface;
-  if (!s_running_game_code.empty())
+  if (g_settings.apply_game_settings && !s_running_game_code.empty())
   {
     std::string filename(GetGameSettingsPath(s_running_game_code));
     if (FileSystem::FileExists(filename.c_str()))

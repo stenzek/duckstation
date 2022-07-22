@@ -168,6 +168,7 @@ void Settings::Load(SettingsInterface& si)
   create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", true);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
+  apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
   auto_load_cheats = si.GetBoolValue("Main", "AutoLoadCheats", true);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
@@ -385,6 +386,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+  si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
