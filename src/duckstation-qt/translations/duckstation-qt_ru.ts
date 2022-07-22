@@ -4282,7 +4282,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Use Global Setting [%1%]</source>
-        <translation>Использовать глобальную настройку [%1%]</translation>
+        <translation>Использовать глобальную настройку [%1]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="113"/>
