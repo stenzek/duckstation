@@ -1468,6 +1468,6 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource, false);
 #endif
 #ifdef WITH_SDL2
-  UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource, false);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource, true);
 #endif
 }
