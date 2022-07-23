@@ -538,7 +538,7 @@ void MainWindow::onSystemDestroyed()
   // update UI
   {
     QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(true);
+    m_ui.actionPause->setChecked(false);
   }
 
   s_system_valid = false;

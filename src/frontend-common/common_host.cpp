@@ -305,7 +305,7 @@ void CommonHost::SetDefaultHotkeyBindings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
 
-  si.SetStringValue("Hotkeys", "PowerOff", "Keyboard/Escape");
+  si.SetStringValue("Hotkeys", "OpenPauseMenu", "Keyboard/Escape");
   si.SetStringValue("Hotkeys", "LoadSelectedSaveState", "Keyboard/F1");
   si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
   si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
