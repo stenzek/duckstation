@@ -393,12 +393,13 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
   if (system)
   {
     System::SetDefaultSettings(si);
+    CommonHost::SetDefaultSettings(si);
+    EmuFolders::SetDefaults();
     EmuFolders::Save(si);
   }
 
   if (controller)
   {
-    CommonHost::SetDefaultSettings(si);
     CommonHost::SetDefaultControllerSettings(si);
     CommonHost::SetDefaultHotkeyBindings(si);
   }
