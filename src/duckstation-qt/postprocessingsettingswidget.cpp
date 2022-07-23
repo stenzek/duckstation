@@ -21,9 +21,8 @@ PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsDialog* dialo
   {
     if (!m_ui.widget->setConfigString(post_chain))
     {
-      QMessageBox::critical(this, tr("Error"),
-                            tr("The current post-processing chain is invalid, it has been reset. Any changes made will "
-                               "overwrite the existing config."));
+      QMessageBox::critical(this, tr("Error"), tr("The current post-processing chain is invalid, it has been reset."));
+      m_dialog->removeSettingValue("Display", "PostProcessChain");
     }
     else
     {
