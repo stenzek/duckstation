@@ -2833,6 +2833,12 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
         s_running_game_code = entry->serial;
         s_running_game_title = entry->title;
       }
+      else
+      {
+        const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+        s_running_game_code = GetGameCodeForImage(image, true);
+        s_running_game_title = Path::GetFileTitle(display_name);
+      }
 
       if (image->HasSubImages() && g_settings.memory_card_use_playlist_title)
       {

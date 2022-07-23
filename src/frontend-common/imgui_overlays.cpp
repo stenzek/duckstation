@@ -413,7 +413,7 @@ void SaveStateSelectorUI::RefreshList()
 
       ListEntry li;
       if (ssi)
-        InitializeListEntry(&li, &ssi.value(), std::move(path), i, true);
+        InitializeListEntry(&li, &ssi.value(), std::move(path), i, false);
       else
         InitializePlaceholderListEntry(&li, std::move(path), i, false);
 

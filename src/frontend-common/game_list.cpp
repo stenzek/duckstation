@@ -192,7 +192,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   }
   else
   {
-    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
+    const std::string display_name(Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path)));
 
     // no game code, so use the filename title
     entry->serial = System::GetGameCodeForImage(cdi.get(), true);
