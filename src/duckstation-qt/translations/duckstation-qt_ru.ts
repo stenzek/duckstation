@@ -6802,7 +6802,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="751"/>
         <source>Delete Save States...</source>
-        <translation type="unfinished">Удалить сохранённое состояние...</translation>
+        <translation type="unfinished">Удалить сохранённые состояния...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="757"/>
