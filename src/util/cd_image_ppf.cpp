@@ -29,6 +29,8 @@ public:
   std::string GetMetadata(const std::string_view& type) const override;
   std::string GetSubImageMetadata(u32 index, const std::string_view& type) const override;
 
+  PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback) override;
+
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
@@ -413,6 +415,11 @@ std::string CDImagePPF::GetSubImageMetadata(u32 index, const std::string_view& t
     ret = m_parent_image->GetSubImageMetadata(index, type);
 
   return ret;
+}
+
+CDImage::PrecacheResult CDImagePPF::Precache(ProgressCallback* progress /*= ProgressCallback::NullProgressCallback*/)
+{
+  return m_parent_image->Precache(progress);
 }
 
 bool CDImagePPF::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
