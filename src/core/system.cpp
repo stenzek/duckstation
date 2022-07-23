@@ -3179,7 +3179,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.display_post_processing != old_settings.display_post_processing ||
         g_settings.display_post_process_chain != old_settings.display_post_process_chain)
     {
-      if (g_settings.display_post_processing)
+      if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty())
       {
         if (!g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
           Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post processing shader chain."),

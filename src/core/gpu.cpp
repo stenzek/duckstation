@@ -44,7 +44,7 @@ bool GPU::Initialize()
   g_host_display->SetDisplayLinearFiltering(g_settings.display_linear_filtering);
   g_host_display->SetDisplayIntegerScaling(g_settings.display_integer_scaling);
   g_host_display->SetDisplayStretch(g_settings.display_stretch);
-  if (g_settings.display_post_processing &&
+  if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty() &&
       !g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
   {
     Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
