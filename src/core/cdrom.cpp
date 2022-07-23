@@ -1,9 +1,11 @@
 #include "cdrom.h"
 #include "common/align.h"
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/platform.h"
 #include "dma.h"
 #include "host.h"
+#include "host_interface_progress_callback.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
@@ -396,6 +398,30 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
   }
 
   return image;
+}
+
+bool CDROM::PrecacheMedia()
+{
+  if (!m_reader.HasMedia())
+    return false;
+
+  if (m_reader.GetMedia()->HasSubImages() && m_reader.GetMedia()->GetSubImageCount() > 1)
+  {
+    Host::AddFormattedOSDMessage(
+      15.0f, Host::TranslateString("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
+      FileSystem::GetDisplayNameFromPath(m_reader.GetMedia()->GetFileName()).c_str());
+    return false;
+  }
+
+  HostInterfaceProgressCallback callback;
+  if (!m_reader.Precache(&callback))
+  {
+    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Precaching CD image failed, it may be unreliable."),
+                        15.0f);
+    return false;
+  }
+
+  return true;
 }
 
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)

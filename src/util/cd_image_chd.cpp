@@ -10,6 +10,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/platform.h"
+#include "fmt/format.h"
 #include "libchdr/chd.h"
 #include <algorithm>
 #include <cerrno>
@@ -53,6 +54,7 @@ public:
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
   PrecacheResult Precache(ProgressCallback* progress) override;
+  bool IsPrecached() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -73,6 +75,7 @@ private:
 
   std::vector<u8> m_hunk_buffer;
   u32 m_current_hunk_index = static_cast<u32>(-1);
+  bool m_precached = false;
 
   CDSubChannelReplacement m_sbi;
 };
@@ -303,16 +306,27 @@ bool CDImageCHD::HasNonStandardSubchannel() const
 
 CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
 {
-  const std::string_view title(FileSystem::GetDisplayNameFromPath(m_filename));
-  progress->SetFormattedStatusText("Precaching %.*s...", static_cast<int>(title.size()), title.data());
+  if (m_precached)
+    return CDImage::PrecacheResult::Success;
+
+  progress->SetStatusText(fmt::format("Precaching {}...", FileSystem::GetDisplayNameFromPath(m_filename)).c_str());
   progress->SetProgressRange(100);
 
   auto callback = [](size_t pos, size_t total, void* param) {
     const u32 percent = static_cast<u32>((pos * 100) / total);
     static_cast<ProgressCallback*>(param)->SetProgressValue(std::min<u32>(percent, 100));
   };
-  return (chd_precache_progress(m_chd, callback, progress) == CHDERR_NONE) ? CDImage::PrecacheResult::Success :
-                                                                             CDImage::PrecacheResult::ReadError;
+
+  if (chd_precache_progress(m_chd, callback, progress) != CHDERR_NONE)
+    return CDImage::PrecacheResult::ReadError;
+
+  m_precached = true;
+  return CDImage::PrecacheResult::Success;
+}
+
+bool CDImageCHD::IsPrecached() const
+{
+  return m_precached;
 }
 
 // There's probably a more efficient way of doing this with vectorization...

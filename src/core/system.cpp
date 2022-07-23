@@ -89,8 +89,7 @@ static bool LoadEXE(const char* filename);
 static std::string GetExecutableNameForImage(ISOReader& iso, bool strip_subdirectories);
 
 /// Opens CD image, preloading if needed.
-static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool force_preload,
-                                            bool check_for_patches);
+static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool check_for_patches);
 static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
 static bool ShouldCheckForImagePatches();
@@ -756,41 +755,11 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_display, bool
   return true;
 }
 
-std::unique_ptr<CDImage> System::OpenCDImage(const char* path, Common::Error* error, bool force_preload,
-                                             bool check_for_patches)
+std::unique_ptr<CDImage> System::OpenCDImage(const char* path, Common::Error* error, bool check_for_patches)
 {
   std::unique_ptr<CDImage> media = CDImage::Open(path, error);
   if (!media)
     return {};
-
-  if (force_preload || g_settings.cdrom_load_image_to_ram)
-  {
-    if (media->HasSubImages() && media->GetSubImageCount() > 1)
-    {
-      Host::AddFormattedOSDMessage(
-        15.0f, Host::TranslateString("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
-        FileSystem::GetDisplayNameFromPath(media->GetFileName()).c_str());
-    }
-    else
-    {
-      HostInterfaceProgressCallback callback;
-      const CDImage::PrecacheResult res = media->Precache(&callback);
-      if (res == CDImage::PrecacheResult::Unsupported)
-      {
-        // fall back to copy precaching
-        std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(media.get(), &callback);
-        if (memory_image)
-          media = std::move(memory_image);
-        else
-          Log_WarningPrintf("Failed to preload image '%s' to RAM", path);
-      }
-      else if (res != CDImage::PrecacheResult::Success)
-      {
-        Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Precaching CD image failed, it may be unreliable."),
-                            15.0f);
-      }
-    }
-  }
 
   if (check_for_patches)
   {
@@ -804,7 +773,7 @@ std::unique_ptr<CDImage> System::OpenCDImage(const char* path, Common::Error* er
         Host::AddFormattedOSDMessage(
           30.0f, Host::TranslateString("OSDMessage", "Failed to apply ppf patch from '%s', using unpatched image."),
           ppf_filename.c_str());
-        return OpenCDImage(path, error, force_preload, false);
+        return OpenCDImage(path, error, false);
       }
     }
   }
@@ -1041,9 +1010,9 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
 
 bool System::BootSystem(SystemBootParameters parameters)
 {
-  if (parameters.filename.empty() && !parameters.save_state.empty())
+  if (!parameters.save_state.empty())
   {
-    // loading a state without media, so pull the media path from the save state to avoid a double change
+    // loading a state, so pull the media path from the save state to avoid a double change
     parameters.filename = GetMediaPathFromSaveState(parameters.save_state.c_str());
   }
 
@@ -1080,8 +1049,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", parameters.filename.c_str());
-      media =
-        OpenCDImage(parameters.filename.c_str(), &error, parameters.load_image_to_ram, ShouldCheckForImagePatches());
+      media = OpenCDImage(parameters.filename.c_str(), &error, ShouldCheckForImagePatches());
       if (!media)
       {
         Host::ReportErrorAsync("Error", fmt::format("Failed to load CD image '{}': {}",
@@ -1242,6 +1210,9 @@ bool System::BootSystem(SystemBootParameters parameters)
       return false;
     }
   }
+
+  if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
+    g_cdrom.PrecacheMedia();
 
   ResetPerformanceCounters();
   return true;
@@ -1703,6 +1674,8 @@ std::string System::GetMediaPathFromSaveState(const char* path)
 
 bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool update_display)
 {
+  Assert(IsValid());
+
   SAVE_STATE_HEADER header;
   if (!state->Read2(&header, sizeof(header)))
     return false;
@@ -1748,7 +1721,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
     }
     else
     {
-      media = OpenCDImage(media_filename.c_str(), &error, false, ShouldCheckForImagePatches());
+      media = OpenCDImage(media_filename.c_str(), &error, ShouldCheckForImagePatches());
       if (!media)
       {
         if (old_media)
@@ -1794,31 +1767,21 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
 
   ClearMemorySaveStates();
 
-  if (s_state == State::Starting)
+  g_cdrom.Reset();
+  if (media)
   {
-    if (!Initialize(force_software_renderer))
-      return false;
-
-    if (media)
-      g_cdrom.InsertMedia(std::move(media));
-
-    UpdateControllers();
-    UpdateMemoryCardTypes();
-    UpdateMultitaps();
-    InternalReset();
+    g_cdrom.InsertMedia(std::move(media));
+    if (g_settings.cdrom_load_image_to_ram)
+      g_cdrom.PrecacheMedia();
   }
   else
   {
-    g_cdrom.Reset();
-    if (media)
-      g_cdrom.InsertMedia(std::move(media));
-    else
-      g_cdrom.RemoveMedia();
-
-    // ensure the correct card is loaded
-    if (g_settings.HasAnyPerGameMemoryCards())
-      UpdatePerGameMemoryCards();
+    g_cdrom.RemoveMedia();
   }
+
+  // ensure the correct card is loaded
+  if (g_settings.HasAnyPerGameMemoryCards())
+    UpdatePerGameMemoryCards();
 
   if (header.data_compression_type != 0)
   {
@@ -2810,7 +2773,7 @@ std::string System::GetMediaFileName()
 bool System::InsertMedia(const char* path)
 {
   Common::Error error;
-  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, false, ShouldCheckForImagePatches());
+  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, ShouldCheckForImagePatches());
   if (!image)
   {
     Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to open disc image '%s': %s."),
@@ -2822,6 +2785,9 @@ bool System::InsertMedia(const char* path)
   g_cdrom.InsertMedia(std::move(image));
   Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_code.c_str(),
                  s_running_game_title.c_str());
+  if (g_settings.cdrom_load_image_to_ram)
+    g_cdrom.PrecacheMedia();
+
   Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Inserted disc '%s' (%s)."),
                                s_running_game_title.c_str(), s_running_game_code.c_str());
 

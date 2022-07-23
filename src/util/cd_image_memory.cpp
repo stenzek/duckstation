@@ -19,6 +19,8 @@ public:
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
+  bool IsPrecached() const override;
+
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
@@ -126,6 +128,11 @@ bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA l
 bool CDImageMemory::HasNonStandardSubchannel() const
 {
   return (m_sbi.GetReplacementSectorCount() > 0);
+}
+
+bool CDImageMemory::IsPrecached() const
+{
+  return true;
 }
 
 bool CDImageMemory::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

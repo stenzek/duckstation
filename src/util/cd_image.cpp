@@ -330,6 +330,11 @@ CDImage::PrecacheResult CDImage::Precache(ProgressCallback* progress /*= Progres
   return PrecacheResult::Unsupported;
 }
 
+bool CDImage::IsPrecached() const
+{
+  return false;
+}
+
 void CDImage::ClearTOC()
 {
   m_lba_count = 0;

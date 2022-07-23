@@ -303,6 +303,7 @@ public:
 
   // Returns true if the source supports precaching, which may be more optimal than an in-memory copy.
   virtual PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback);
+  virtual bool IsPrecached() const;
 
 protected:
   void ClearTOC();

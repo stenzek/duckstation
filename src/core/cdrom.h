@@ -12,6 +12,8 @@
 #include <tuple>
 #include <vector>
 
+class ProgressCallback;
+
 class StateWrapper;
 class TimingEvent;
 
@@ -35,6 +37,7 @@ public:
 
   void InsertMedia(std::unique_ptr<CDImage> media);
   std::unique_ptr<CDImage> RemoveMedia(bool force = false);
+  bool PrecacheMedia();
 
   void CPUClockChanged();
 
