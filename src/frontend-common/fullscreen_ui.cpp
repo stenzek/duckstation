@@ -914,11 +914,6 @@ void FullscreenUI::DrawLandingWindow()
     ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() * 0.5f) - (image_size * 0.5f),
                                (ImGui::GetWindowHeight() * 0.5f) - (image_size * 0.5f)));
     ImGui::Image(s_app_icon_texture->GetHandle(), ImVec2(image_size, image_size));
-
-    ImGui::SetCursorPos(ImGui::GetStyle().FramePadding);
-    ImGui::PushFont(g_large_font);
-    ImGui::Text("DuckStation %s (%s)", g_scm_tag_str, g_scm_branch_str);
-    ImGui::PopFont();
   }
   EndFullscreenColumnWindow();
 
@@ -983,6 +978,13 @@ void FullscreenUI::DrawLandingWindow()
     }
 
     EndMenuButtons();
+
+    const ImVec2 text_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, g_scm_tag_str));
+    ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - text_size.x - LayoutScale(15.0f),
+                               ImGui::GetWindowHeight() - text_size.y - LayoutScale(15.0f)));
+    ImGui::PushFont(g_medium_font);
+    ImGui::TextUnformatted(g_scm_tag_str);
+    ImGui::PopFont();
   }
 
   EndFullscreenColumnWindow();
