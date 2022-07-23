@@ -628,6 +628,8 @@ void FullscreenUI::Render()
     GetEditingSettingsInterface()->Save();
     Host::RunOnCPUThread([]() { System::ApplySettings(false); });
   }
+
+  ImGuiFullscreen::ResetCloseMenuIfNeeded();
 }
 
 void FullscreenUI::ReturnToMainWindow()
@@ -2066,7 +2068,7 @@ void FullscreenUI::DrawSettingsWindow()
   {
     ResetFocusHere();
 
-    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Pressed))
+    if (WantsToCloseMenu())
     {
       if (ImGui::IsWindowFocused())
         ReturnToMainWindow();

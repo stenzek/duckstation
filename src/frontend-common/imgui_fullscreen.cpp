@@ -474,18 +474,26 @@ bool ImGuiFullscreen::WantsToCloseMenu()
   // Wait for the Close button to be released, THEN pressed
   if (s_close_button_state == 0)
   {
-    if (!IsCancelButtonPressed())
+    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Pressed))
       s_close_button_state = 1;
   }
   else if (s_close_button_state == 1)
   {
-    if (IsCancelButtonPressed())
+    if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Released))
     {
-      s_close_button_state = 0;
-      return true;
+      s_close_button_state = 2;
     }
   }
-  return false;
+  return s_close_button_state > 1;
+}
+
+void ImGuiFullscreen::ResetCloseMenuIfNeeded()
+{
+  // If s_close_button_state reached the "Released" state, reset it after the tick
+  if (s_close_button_state > 1)
+  {
+    s_close_button_state = 0;
+  }
 }
 
 void ImGuiFullscreen::PushPrimaryColor()
@@ -514,11 +522,6 @@ void ImGuiFullscreen::PushSecondaryColor()
 void ImGuiFullscreen::PopSecondaryColor()
 {
   ImGui::PopStyleColor(5);
-}
-
-bool ImGuiFullscreen::IsCancelButtonPressed()
-{
-  return ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Pressed);
 }
 
 bool ImGuiFullscreen::BeginFullscreenColumns(const char* title)
@@ -1639,7 +1642,7 @@ void ImGuiFullscreen::DrawFileSelector()
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
 
-  bool is_open = !IsCancelButtonPressed();
+  bool is_open = !WantsToCloseMenu();
   bool directory_selected = false;
   if (ImGui::BeginPopupModal(s_file_selector_title.c_str(), &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
@@ -1759,7 +1762,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
 
-  bool is_open = !IsCancelButtonPressed();
+  bool is_open = !WantsToCloseMenu();
   s32 choice = -1;
 
   if (ImGui::BeginPopupModal(s_choice_dialog_title.c_str(), &is_open,
