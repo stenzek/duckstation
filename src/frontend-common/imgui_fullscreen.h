@@ -128,13 +128,12 @@ void EndLayout();
 void QueueResetFocus();
 bool ResetFocusHere();
 bool WantsToCloseMenu();
+void ResetCloseMenuIfNeeded();
 
 void PushPrimaryColor();
 void PopPrimaryColor();
 void PushSecondaryColor();
 void PopSecondaryColor();
-
-bool IsCancelButtonPressed();
 
 void DrawWindowTitle(const char* title);
 
