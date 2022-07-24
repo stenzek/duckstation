@@ -88,7 +88,7 @@ add_library(common
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PUBLIC fmt Threads::Threads)
+target_link_libraries(common PUBLIC fmt Threads::Threads vulkan-headers)
 target_link_libraries(common PRIVATE glad stb libchdr glslang zlib minizip samplerate "${CMAKE_DL_LIBS}")
 
 if(WIN32)

@@ -10,6 +10,7 @@ add_subdirectory(rapidjson)
 add_subdirectory(glslang)
 add_subdirectory(imgui)
 add_subdirectory(simpleini)
+add_subdirectory(vulkan)
 
 set(LIBSAMPLERATE_ENABLE_SINC_BEST_CONVERTER OFF)
 add_subdirectory(libsamplerate)
