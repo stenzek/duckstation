@@ -146,6 +146,12 @@ void GameListModel::updateCacheSize(int width, int height)
   m_cover_pixmap_cache.SetMaxCapacity(static_cast<int>(std::max(num_columns * num_rows, MIN_COVER_CACHE_SIZE)));
 }
 
+void GameListModel::reloadCommonImages()
+{
+  loadCommonImages();
+  refresh();
+}
+
 void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 {
   QFuture<QPixmap> future =

@@ -1957,9 +1957,8 @@ void MainWindow::setTheme(const QString& theme)
 {
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
   updateApplicationTheme();
-
-  // Sadly we need to recreate here, because otherwise the icon theme doesn't update.
-  recreate();
+  updateMenuSelectedTheme();
+  m_game_list_widget->reloadCommonImages();
 }
 
 void MainWindow::setStyleFromSettings()

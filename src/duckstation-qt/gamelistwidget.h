@@ -38,6 +38,7 @@ public:
 
   void initialize();
   void resizeTableViewColumnsToFit();
+  void reloadCommonImages();
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();

@@ -63,6 +63,7 @@ public:
   int getCoverArtSpacing() const;
   void refreshCovers();
   void updateCacheSize(int width, int height);
+  void reloadCommonImages();
 
 private:
   void loadCommonImages();

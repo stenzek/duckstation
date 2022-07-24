@@ -455,6 +455,11 @@ void GameListWidget::resizeTableViewColumnsToFit()
                                                    });
 }
 
+void GameListWidget::reloadCommonImages()
+{
+  m_model->reloadCommonImages();
+}
+
 static TinyString getColumnVisibilitySettingsKeyName(int column)
 {
   return TinyString::FromFormat("Show%s", GameListModel::getColumnName(static_cast<GameListModel::Column>(column)));
