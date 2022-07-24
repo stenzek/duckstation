@@ -196,7 +196,7 @@ echo "Copying binary and resources..."
 cp -a "$BUILDDIR/bin"/* "$OUTDIR/usr/bin"
 
 # We don't need tests
-rm -f "$OUTDIR/usr/bin/*-tests"
+rm -f "$OUTDIR"/usr/bin/*-tests
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in ${BINARY}..."
