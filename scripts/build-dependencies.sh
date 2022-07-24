@@ -5,7 +5,7 @@ set -e
 sudo apt-get install -y build-essential git cmake ccache ninja-build libclang-dev libclang-11-dev libclang-12-dev patchelf \
  libglib2.0-dev libfontconfig1-dev libharfbuzz-dev libjpeg-dev libpng-dev libfreetype-dev libinput-dev libxcb-*-dev \
  libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev libwayland-dev libgl1-mesa-dev libegl-dev libegl1-mesa-dev \
- libgl1-mesa-dev libssl-dev
+ libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev
 
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
