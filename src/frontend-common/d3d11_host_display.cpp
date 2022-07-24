@@ -354,15 +354,19 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   }
 
   m_window_info = wi;
+
+  if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
+  {
+    m_window_info = {};
+    return false;
+  }
+
   return true;
 }
 
 bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                               bool threaded_presentation)
 {
-  if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
-    return false;
-
   if (!CreateResources())
     return false;
 
