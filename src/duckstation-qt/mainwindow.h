@@ -65,6 +65,9 @@ public:
   explicit MainWindow();
   ~MainWindow();
 
+  /// Sets application theme according to settings.
+  static void updateApplicationTheme();
+
   /// Initializes the window. Call once at startup.
   void initialize();
 
@@ -166,9 +169,8 @@ protected:
   void dropEvent(QDropEvent* event) override;
 
 private:
-  void setTheme(const QString& theme);
-  void setStyleFromSettings();
-  void setIconThemeFromSettings();
+  static void setStyleFromSettings();
+  static void setIconThemeFromSettings();
   void setupAdditionalUi();
   void connectSignals();
   void addThemeToMenu(const QString& name, const QString& key);
@@ -212,6 +214,7 @@ private:
   void updateMenuSelectedTheme();
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
+  void setTheme(const QString& theme);
   void recreate();
 
   /// Fills menu with save state info and handlers.
@@ -232,8 +235,6 @@ private:
   void promptForDiscChange(const QString& path);
 
   Ui::MainWindow m_ui;
-
-  QString m_unthemed_style_name;
 
   GameListWidget* m_game_list_widget = nullptr;
 

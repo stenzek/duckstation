@@ -55,6 +55,8 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
 static const char* DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
+static QString s_unthemed_style_name;
+static bool s_unthemed_style_name_set;
 
 #if defined(_WIN32) || defined(__APPLE__)
 static const bool s_use_central_widget = false;
@@ -80,7 +82,7 @@ bool QtHost::IsSystemValid()
   return s_system_valid;
 }
 
-MainWindow::MainWindow() : QMainWindow(nullptr), m_unthemed_style_name(QApplication::style()->objectName())
+MainWindow::MainWindow() : QMainWindow(nullptr)
 {
   Assert(!g_main_window);
   g_main_window = this;
@@ -100,11 +102,20 @@ MainWindow::~MainWindow()
     g_main_window = nullptr;
 }
 
-void MainWindow::initialize()
+void MainWindow::updateApplicationTheme()
 {
+  if (!s_unthemed_style_name_set)
+  {
+    s_unthemed_style_name_set = true;
+    s_unthemed_style_name = QApplication::style()->objectName();
+  }
+
   setStyleFromSettings();
   setIconThemeFromSettings();
+}
 
+void MainWindow::initialize()
+{
   m_ui.setupUi(this);
   setupAdditionalUi();
   connectSignals();
@@ -1945,9 +1956,9 @@ void MainWindow::addThemeToMenu(const QString& name, const QString& key)
 void MainWindow::setTheme(const QString& theme)
 {
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
-  setStyleFromSettings();
-  setIconThemeFromSettings();
-  updateMenuSelectedTheme();
+  updateApplicationTheme();
+
+  // Sadly we need to recreate here, because otherwise the icon theme doesn't update.
   recreate();
 }
 
@@ -1957,7 +1968,7 @@ void MainWindow::setStyleFromSettings()
 
   if (theme == "qdarkstyle")
   {
-    qApp->setStyle(m_unthemed_style_name);
+    qApp->setStyle(s_unthemed_style_name);
     qApp->setPalette(QApplication::style()->standardPalette());
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
@@ -2047,7 +2058,7 @@ void MainWindow::setStyleFromSettings()
   {
     qApp->setPalette(QApplication::style()->standardPalette());
     qApp->setStyleSheet(QString());
-    qApp->setStyle(m_unthemed_style_name);
+    qApp->setStyle(s_unthemed_style_name);
   }
 }
 

@@ -2241,6 +2241,9 @@ int main(int argc, char* argv[])
   if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))
     return EXIT_FAILURE;
 
+  // Set theme before creating any windows.
+  MainWindow::updateApplicationTheme();
+
   // Start up the CPU thread.
   MainWindow* main_window = new MainWindow();
   QtHost::HookSignals();
