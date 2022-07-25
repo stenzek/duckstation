@@ -980,6 +980,10 @@ void Host::OnSystemDestroyed()
   g_emu_thread->resetPerformanceCounters();
   g_emu_thread->startBackgroundControllerPollTimer();
   emit g_emu_thread->systemDestroyed();
+
+  // re-wake thread when we're running fsui, otherwise it won't draw
+  if (g_emu_thread->isRunningFullscreenUI())
+    g_emu_thread->wakeThread();
 }
 
 void EmuThread::reloadInputSources()
