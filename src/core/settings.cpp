@@ -1196,9 +1196,9 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
-  SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "Savestates", "savestates");
-  Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Snapshots", "screenshots");
-  Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Snapshots", "shaders");
+  SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
+  Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
+  Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
   Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
 
   Log_DevPrintf("BIOS Directory: %s", Bios.c_str());
