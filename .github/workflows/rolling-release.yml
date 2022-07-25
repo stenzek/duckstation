@@ -281,7 +281,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=ON -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=OFF -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
         cmake --build . --parallel
         cd ..
         scripts/make-appimage.sh $(realpath ./build) $(realpath .) $HOME/deps DuckStation-x64
