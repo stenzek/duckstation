@@ -205,7 +205,6 @@ if(USE_WAYLAND)
     gl/context_egl_wayland.h
   )
   target_compile_definitions(common PRIVATE "-DUSE_WAYLAND=1")
-  target_link_libraries(common PRIVATE Wayland::Egl)
 endif()
 
 if(APPLE)
