@@ -45,7 +45,8 @@ void AnalogController::Reset()
   {
     if (g_settings.controller_disable_analog_mode_forcing)
     {
-      Host::AddOSDMessage(
+      Host::AddKeyedOSDMessage(
+        "analog_controller_mode_ignored",
         Host::TranslateStdString(
           "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
@@ -280,8 +281,7 @@ void AnalogController::UpdateHostVibration()
   {
     // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
     const u8 state = m_motor_state[motor];
-    const double x =
-      static_cast<double>(std::min<u32>(state + static_cast<u32>(m_rumble_bias), 255));
+    const double x = static_cast<double>(std::min<u32>(state + static_cast<u32>(m_rumble_bias), 255));
     const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
                             156.82454281087692 * x + 3.637978807091713e-11;
 
