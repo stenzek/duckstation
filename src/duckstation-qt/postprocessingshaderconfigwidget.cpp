@@ -19,7 +19,6 @@ PostProcessingShaderConfigWidget::~PostProcessingShaderConfigWidget() = default;
 void PostProcessingShaderConfigWidget::createUi()
 {
   m_layout = new QGridLayout(this);
-  m_layout->setContentsMargins(0, 0, 0, 0);
   u32 row = 0;
 
   for (PostProcessingShader::Option& option : m_shader->GetOptions())
