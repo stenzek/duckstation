@@ -367,7 +367,8 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
   if (!HasMedia() && !force)
     return nullptr;
 
-  const TickCount stop_ticks = GetTicksForStop(true);
+  // Add an additional two seconds to the disc swap, some games don't like it happening too quickly.
+  const TickCount stop_ticks = GetTicksForStop(true) + System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
 
   Log_InfoPrintf("Removing CD...");
   std::unique_ptr<CDImage> image = m_reader.RemoveMedia();
