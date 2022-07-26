@@ -1223,7 +1223,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
   si.SetStringValue("Folders", "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
   si.SetStringValue("Folders", "Dumps", Path::MakeRelative(Dumps, DataRoot).c_str());
-  si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(Dumps, GameSettings).c_str());
+  si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
   si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
