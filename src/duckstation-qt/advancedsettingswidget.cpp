@@ -225,8 +225,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
                        Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
                        Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
                        static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable Recompiler ICache"), "CPU", "RecompilerICache",
-                        false);
 
   addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
                         "TextureReplacements", "EnableVRAMWriteReplacements", false);
@@ -295,7 +293,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Recompiler memory exceptions
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                              // Recompiler block linking
   setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Recompiler Icache
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
   setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes

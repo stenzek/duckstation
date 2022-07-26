@@ -44,6 +44,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* pa
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, "CPU", "OverclockEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, "CPU", "RecompilerICache", false);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadaheadSectors, "CDROM", "ReadaheadSectors",
                                               Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromRegionCheck, "CDROM", "RegionCheck", false);
@@ -61,6 +62,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* pa
                              tr("When this option is chosen, the clock speed set below will be used."));
   dialog->registerWidgetHelp(m_ui.cpuClockSpeed, tr("Overclocking Percentage"), tr("100%"),
                              tr("Selects the percentage of the normal clock speed the emulated hardware will run at."));
+  dialog->registerWidgetHelp(m_ui.recompilerICache, tr("Enable Recompiler ICache"), tr("Unchecked"),
+                             tr("Simulates stalls in the recompilers when the emulated CPU would have to fetch "
+                                "instructions into its cache. Makes games run closer to their console framerate, at a "
+                                "small cost to performance. Interpreter mode always simulates the instruction cache."));
   dialog->registerWidgetHelp(
     m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
     tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
@@ -104,6 +109,18 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* pa
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
 
+void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
+{
+  const CPUExecutionMode mode =
+    Settings::ParseCPUExecutionMode(
+      m_dialog
+        ->getEffectiveStringValue("CPU", "ExecutionMode",
+                                  Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE))
+        .c_str())
+      .value_or(Settings::DEFAULT_CPU_EXECUTION_MODE);
+  m_ui.recompilerICache->setEnabled(mode != CPUExecutionMode::Interpreter);
+}
+
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 {
   if (state == Qt::Checked &&
@@ -116,7 +133,8 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
 
     QMessageBox mb(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
-    const QAbstractButton* const yes_button = mb.addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
+    const QAbstractButton* const yes_button =
+      mb.addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
     mb.addButton(tr("No, take me back to safety."), QMessageBox::NoRole);
     mb.exec();
 
