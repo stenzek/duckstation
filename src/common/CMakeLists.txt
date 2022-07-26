@@ -47,7 +47,7 @@ add_library(common
   progress_callback.cpp
   progress_callback.h
   rectangle.h
-  scope_guard.h
+  scoped_guard.h
   settings_interface.h
   string.cpp
   string.h

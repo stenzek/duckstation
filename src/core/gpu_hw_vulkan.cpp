@@ -1,7 +1,7 @@
 #include "gpu_hw_vulkan.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/scope_guard.h"
+#include "common/scoped_guard.h"
 #include "common/timer.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
@@ -933,7 +933,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
   // fragment shaders - [render_mode][texture_mode][dithering][interlacing]
   DimensionalArray<VkShaderModule, 2> batch_vertex_shaders{};
   DimensionalArray<VkShaderModule, 2, 2, 9, 4> batch_fragment_shaders{};
-  Common::ScopeGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
+  ScopedGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
     batch_vertex_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
     batch_fragment_shaders.enumerate(Vulkan::Util::SafeDestroyShaderModule);
   });
@@ -1066,7 +1066,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
-  batch_shader_guard.Exit();
+  batch_shader_guard.Invoke();
 
   VkShaderModule fullscreen_quad_vertex_shader =
     g_vulkan_shader_cache->GetVertexShader(shadergen.GenerateScreenQuadVertexShader());
@@ -1081,7 +1081,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
 
   progress.Increment();
 
-  Common::ScopeGuard fullscreen_quad_vertex_shader_guard([&fullscreen_quad_vertex_shader, &uv_quad_vertex_shader]() {
+  ScopedGuard fullscreen_quad_vertex_shader_guard([&fullscreen_quad_vertex_shader, &uv_quad_vertex_shader]() {
     vkDestroyShaderModule(g_vulkan_context->GetDevice(), fullscreen_quad_vertex_shader, nullptr);
     vkDestroyShaderModule(g_vulkan_context->GetDevice(), uv_quad_vertex_shader, nullptr);
   });

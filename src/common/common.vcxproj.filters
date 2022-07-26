@@ -75,7 +75,6 @@
       <Filter>vulkan</Filter>
     </ClInclude>
     <ClInclude Include="dimensional_array.h" />
-    <ClInclude Include="scope_guard.h" />
     <ClInclude Include="vulkan\context.h">
       <Filter>vulkan</Filter>
     </ClInclude>
@@ -138,6 +137,7 @@
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="threading.h" />
+    <ClInclude Include="scoped_guard.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gl\program.cpp">

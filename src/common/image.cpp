@@ -3,7 +3,7 @@
 #include "file_system.h"
 #include "log.h"
 #include "path.h"
-#include "scope_guard.h"
+#include "scoped_guard.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include "string_util.h"

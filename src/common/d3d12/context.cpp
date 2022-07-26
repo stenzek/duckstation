@@ -5,7 +5,7 @@
 #include "context.h"
 #include "../assert.h"
 #include "../log.h"
-#include "../scope_guard.h"
+#include "../scoped_guard.h"
 #include <algorithm>
 #include <array>
 #include <dxgi1_2.h>

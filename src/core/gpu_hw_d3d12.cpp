@@ -7,7 +7,7 @@
 #include "common/d3d12/shader_cache.h"
 #include "common/d3d12/util.h"
 #include "common/log.h"
-#include "common/scope_guard.h"
+#include "common/scoped_guard.h"
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "host_display.h"

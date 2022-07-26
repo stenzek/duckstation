@@ -1,7 +1,7 @@
 #include "context_wgl.h"
 #include "../assert.h"
 #include "../log.h"
-#include "../scope_guard.h"
+#include "../scoped_guard.h"
 #include "loader.h"
 Log_SetChannel(GL::ContextWGL);
 
@@ -295,13 +295,13 @@ bool ContextWGL::CreatePBuffer()
     return false;
   }
 
-  Common::ScopeGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
+  ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
 
   HDC hdc = GetDCAndSetPixelFormat(hwnd);
   if (!hdc)
     return false;
 
-  Common::ScopeGuard hdc_guard([hdc, hwnd]() { ::ReleaseDC(hwnd, hdc); });
+  ScopedGuard hdc_guard([hdc, hwnd]() { ::ReleaseDC(hwnd, hdc); });
 
   static constexpr const int pb_attribs[] = {0, 0};
 
@@ -313,7 +313,7 @@ bool ContextWGL::CreatePBuffer()
     return false;
   }
 
-  Common::ScopeGuard pbuffer_guard([pbuffer]() { wglDestroyPbufferARB(pbuffer); });
+  ScopedGuard pbuffer_guard([pbuffer]() { wglDestroyPbufferARB(pbuffer); });
 
   m_dc = wglGetPbufferDCARB(pbuffer);
   if (!m_dc)
@@ -326,9 +326,9 @@ bool ContextWGL::CreatePBuffer()
   m_dummy_dc = hdc;
   m_pbuffer = pbuffer;
 
-  pbuffer_guard.Dismiss();
-  hdc_guard.Dismiss();
-  hwnd_guard.Dismiss();
+  pbuffer_guard.Cancel();
+  hdc_guard.Cancel();
+  hwnd_guard.Cancel();
   return true;
 }
 

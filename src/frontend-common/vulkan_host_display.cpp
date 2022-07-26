@@ -1,7 +1,7 @@
 ﻿#include "vulkan_host_display.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/scope_guard.h"
+#include "common/scoped_guard.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
 #include "common/vulkan/shader_cache.h"
@@ -890,12 +890,12 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList(c
   }
   else if (Vulkan::LoadVulkanLibrary())
   {
-    Common::ScopeGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
+    ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
 
     VkInstance instance = Vulkan::Context::CreateVulkanInstance(nullptr, false, false);
     if (instance != VK_NULL_HANDLE)
     {
-      Common::ScopeGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });
+      ScopedGuard instance_guard([&instance]() { vkDestroyInstance(instance, nullptr); });
 
       if (Vulkan::LoadVulkanInstanceFunctions(instance))
         ret.adapter_names = Vulkan::Context::EnumerateGPUNames(instance);

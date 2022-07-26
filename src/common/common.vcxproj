@@ -56,7 +56,7 @@
     <ClInclude Include="platform.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="rectangle.h" />
-    <ClInclude Include="scope_guard.h" />
+    <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="heterogeneous_containers.h" />
