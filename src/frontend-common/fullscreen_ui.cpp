@@ -166,7 +166,6 @@ static std::string TimeToPrintableString(time_t t);
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
-static void UpdateForcedVsync(bool should_force);
 static void PauseForMenuOpen();
 static void ClosePauseMenu();
 static void OpenPauseSubMenu(PauseSubMenu submenu);
@@ -440,10 +439,6 @@ bool FullscreenUI::Initialize()
   if (!System::IsValid())
     SwitchToLanding();
 
-  // force vsync on so we don't run at thousands of fps
-  // Initialize is called on the GS thread, so we can access the display directly.
-  UpdateForcedVsync(System::GetState() != System::State::Running);
-
   return true;
 }
 
@@ -456,13 +451,6 @@ bool FullscreenUI::HasActiveWindow()
 {
   return s_initialized && (s_current_main_window != MainWindowType::None || s_save_state_selector_open ||
                            ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen());
-}
-
-void FullscreenUI::UpdateForcedVsync(bool should_force)
-{
-  // force vsync on so we don't run at thousands of fps
-  // toss it through regardless of the mode, because options can change it
-  g_host_display->SetVSync((should_force && !g_settings.video_sync_enabled) ? true : false);
 }
 
 void FullscreenUI::OnSystemStarted()
@@ -479,7 +467,7 @@ void FullscreenUI::OnSystemPaused()
   if (!IsInitialized())
     return;
 
-  UpdateForcedVsync(true);
+  g_host_display->SetVSync(true);
 }
 
 void FullscreenUI::OnSystemResumed()
@@ -487,7 +475,7 @@ void FullscreenUI::OnSystemResumed()
   if (!IsInitialized())
     return;
 
-  UpdateForcedVsync(false);
+  g_host_display->SetVSync(System::ShouldUseVSync());
 }
 
 void FullscreenUI::OnSystemDestroyed()
@@ -495,9 +483,9 @@ void FullscreenUI::OnSystemDestroyed()
   if (!IsInitialized())
     return;
 
+  g_host_display->SetVSync(true);
   s_pause_menu_was_open = false;
   SwitchToLanding();
-  UpdateForcedVsync(true);
 }
 
 void FullscreenUI::OnRunningGameChanged()

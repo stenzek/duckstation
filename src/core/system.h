@@ -400,6 +400,9 @@ void ToggleWidescreen();
 /// Returns true if fast forwarding or slow motion is currently active.
 bool IsRunningAtNonStandardSpeed();
 
+/// Returns true if vsync should be used.
+bool ShouldUseVSync();
+
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();
 

@@ -2192,11 +2192,10 @@ void System::UpdateSpeedLimiterState()
     }
   }
 
-  const bool is_non_standard_speed = (std::abs(target_speed - 1.0f) > 0.05f);
+  const bool is_non_standard_speed = IsRunningAtNonStandardSpeed();
   const bool audio_sync_enabled =
     !IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
-  const bool video_sync_enabled =
-    !IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !is_non_standard_speed);
+  const bool video_sync_enabled = ShouldUseVSync();
   const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
   Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
@@ -2239,6 +2238,11 @@ void System::UpdateSpeedLimiterState()
     Log_InfoPrintf("Using host vsync for throttling.");
     m_throttler_enabled = false;
   }
+}
+
+bool System::ShouldUseVSync()
+{
+  return (!IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed()));
 }
 
 bool System::IsFastForwardEnabled()

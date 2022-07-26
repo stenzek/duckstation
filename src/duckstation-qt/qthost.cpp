@@ -870,12 +870,18 @@ bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 
   m_is_exclusive_fullscreen = g_host_display->IsFullscreen();
 
-  if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
+  if (m_run_fullscreen_ui)
   {
-    Log_ErrorPrint("Failed to initialize fullscreen UI");
-    releaseHostDisplay();
-    m_run_fullscreen_ui = false;
-    return false;
+    if (!FullscreenUI::Initialize())
+    {
+      Log_ErrorPrint("Failed to initialize fullscreen UI");
+      releaseHostDisplay();
+      m_run_fullscreen_ui = false;
+      return false;
+    }
+
+    // start with vsync on
+    g_host_display->SetVSync(true);
   }
 
   return true;
