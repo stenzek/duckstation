@@ -347,7 +347,7 @@ bool CDROM::DoesMediaRegionMatchConsole() const
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
 {
   if (CanReadMedia())
-    RemoveMedia();
+    RemoveMedia(true);
 
   // set the region from the system area of the disc
   m_disc_region = System::GetRegionForImage(media.get());
@@ -362,13 +362,15 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   SetHoldPosition(0, true);
 }
 
-std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
+std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
 {
-  if (!HasMedia() && !force)
+  if (!HasMedia())
     return nullptr;
 
   // Add an additional two seconds to the disc swap, some games don't like it happening too quickly.
-  const TickCount stop_ticks = GetTicksForStop(true) + System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
+  TickCount stop_ticks = GetTicksForStop(true);
+  if (for_disc_swap)
+    stop_ticks += System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
 
   Log_InfoPrintf("Removing CD...");
   std::unique_ptr<CDImage> image = m_reader.RemoveMedia();
@@ -392,7 +394,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool force /* = false */)
   SendAsyncErrorResponse(STAT_ERROR, 0x08);
 
   // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
-  if (!force)
+  if (for_disc_swap)
   {
     m_drive_state = DriveState::ShellOpening;
     m_drive_event->SetIntervalAndSchedule(stop_ticks);

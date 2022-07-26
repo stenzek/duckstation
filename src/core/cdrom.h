@@ -36,7 +36,7 @@ public:
   bool DoesMediaRegionMatchConsole() const;
 
   void InsertMedia(std::unique_ptr<CDImage> media);
-  std::unique_ptr<CDImage> RemoveMedia(bool force = false);
+  std::unique_ptr<CDImage> RemoveMedia(bool for_disc_swap);
   bool PrecacheMedia();
 
   void CPUClockChanged();
