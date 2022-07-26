@@ -3428,7 +3428,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="54"/>
         <source>Trigger</source>
-        <translation>扳机</translation>
+        <translation>触发器</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="60"/>
@@ -3473,12 +3473,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="372"/>
         <source>Macro will not repeat.</source>
-        <translation>宏不会重复。</translation>
+        <translation>宏将不会重复。</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="374"/>
         <source>Macro will toggle buttons every %1 frames.</source>
-        <translation>宏将每%1帧切换按键。</translation>
+        <translation>宏将每%1帧触发一次按键。</translation>
     </message>
 </context>
 <context>
