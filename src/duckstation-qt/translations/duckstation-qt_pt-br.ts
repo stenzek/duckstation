@@ -3247,17 +3247,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="442"/>
         <source>%1 Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Configurações</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="509"/>
         <source>Browse...</source>
-        <translation type="unfinished">Procurar...</translation>
+        <translation>Procurar...</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="512"/>
         <source>Select File</source>
-        <translation type="unfinished">Escolha o arquivo</translation>
+        <translation>Escolha o arquivo</translation>
     </message>
 </context>
 <context>
@@ -3315,7 +3315,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="98"/>
         <source>Enable DInput Input Source</source>
-        <translation>Ativar fonte de entrada XInput</translation>
+        <translation>Ativar fonte de entrada DInput</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="108"/>
@@ -3443,13 +3443,14 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="238"/>
         <source>Controller Port %1 Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Porta do controle %1 Macro</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="247"/>
         <source>Macro %1
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Macro %1
+%2</translation>
     </message>
 </context>
 <context>
@@ -6933,7 +6934,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamesummarywidget.ui" line="163"/>
         <source>Release Info:</source>
-        <translation>Informação de lançamento:</translation>
+        <translation>Notas de lançamento:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="170"/>
@@ -7989,7 +7990,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <source>%n bindings</source>
         <translation>
             <numerusform></numerusform>
-            <numerusform>%n atribuições</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -8004,17 +8005,17 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../inputbindingwidgets.cpp" line="412"/>
         <source>Error</source>
-        <translation type="unfinished">Erro</translation>
+        <translation>Erro</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="413"/>
         <source>No devices with vibration motors were detected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nenhum dispositivo com motores de vibração foi detectado.</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="419"/>
         <source>Select vibration motor for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Escolha o motor de vibração para %1.</translation>
     </message>
 </context>
 <context>
@@ -9782,7 +9783,7 @@ Tem certeza de que deseja continuar?</translation>
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform></numerusform>
-            <numerusform>%n trapaças ligadas.</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -9790,7 +9791,7 @@ Tem certeza de que deseja continuar?</translation>
         <source>%n cheats are now inactive.</source>
         <translation>
             <numerusform></numerusform>
-            <numerusform>%n trapaças desligadas.</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
