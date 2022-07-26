@@ -30,7 +30,7 @@
 #include <mach/mach_time.h>
 #include <mach/semaphore.h>
 #include <mach/task.h>
-#include <pthread_np.h>
+#include <pthread.h>
 #endif
 #endif
 
@@ -550,6 +550,8 @@ void Threading::SetNameOfCurrentThread(const char* name)
   // Extract of manpage: "The name can be up to 16 bytes long, and should be
   //						null-terminated if it contains fewer bytes."
   prctl(PR_SET_NAME, name, 0, 0, 0);
+#elif defined(__APPLE__)
+  pthread_setname_np(name);
 #else
   pthread_set_name_np(pthread_self(), name);
 #endif
