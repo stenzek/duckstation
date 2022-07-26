@@ -1,11 +1,11 @@
 #include "context_wgl.h"
 #include "../assert.h"
 #include "../log.h"
+#include "../scope_guard.h"
 #include "loader.h"
 Log_SetChannel(GL::ContextWGL);
 
 // TODO: get rid of this
-#include "glad_wgl.h"
 #pragma comment(lib, "opengl32.lib")
 
 static void* GetProcAddressCallback(const char* name)
@@ -29,8 +29,7 @@ ContextWGL::~ContextWGL()
   if (m_rc)
     wglDeleteContext(m_rc);
 
-  if (m_dc)
-    ReleaseDC(GetHWND(), m_dc);
+  ReleaseDC();
 }
 
 std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, const Version* versions_to_try,
@@ -52,7 +51,8 @@ bool ContextWGL::Initialize(const Version* versions_to_try, size_t num_versions_
   }
   else
   {
-    Panic("Create pbuffer");
+    Log_ErrorPrint("ContextWGL must always start with a valid surface.");
+    return false;
   }
 
   // Everything including core/ES requires a dummy profile to load the WGL extensions.
@@ -87,11 +87,7 @@ bool ContextWGL::ChangeSurface(const WindowInfo& new_wi)
 {
   const bool was_current = (wglGetCurrentContext() == m_rc);
 
-  if (m_dc)
-  {
-    ReleaseDC(GetHWND(), m_dc);
-    m_dc = {};
-  }
+  ReleaseDC();
 
   m_wi = new_wi;
   if (!InitializeDC())
@@ -153,7 +149,8 @@ std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi)
   }
   else
   {
-    Panic("Create pbuffer");
+    Log_ErrorPrint("PBuffer not implemented");
+    return nullptr;
   }
 
   if (m_version.profile == Profile::NoProfile)
@@ -171,7 +168,7 @@ std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi)
   return context;
 }
 
-bool ContextWGL::InitializeDC()
+HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 {
   PIXELFORMATDESCRIPTOR pfd = {};
   pfd.nSize = sizeof(pfd);
@@ -179,59 +176,159 @@ bool ContextWGL::InitializeDC()
   pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
   pfd.iPixelType = PFD_TYPE_RGBA;
   pfd.dwLayerMask = PFD_MAIN_PLANE;
+  pfd.cRedBits = 8;
+  pfd.cGreenBits = 8;
+  pfd.cBlueBits = 8;
+  pfd.cColorBits = 24;
 
-  switch (m_wi.surface_format)
-  {
-    case WindowInfo::SurfaceFormat::RGB8:
-      pfd.cColorBits = 32;
-      pfd.cRedBits = 8;
-      pfd.cGreenBits = 8;
-      pfd.cBlueBits = 8;
-      break;
-
-    case WindowInfo::SurfaceFormat::RGBA8:
-      pfd.cColorBits = 32;
-      pfd.cRedBits = 8;
-      pfd.cGreenBits = 8;
-      pfd.cBlueBits = 8;
-      pfd.cAlphaBits = 8;
-      break;
-
-    case WindowInfo::SurfaceFormat::RGB565:
-      pfd.cColorBits = 16;
-      pfd.cRedBits = 5;
-      pfd.cGreenBits = 6;
-      pfd.cBlueBits = 5;
-      break;
-
-    case WindowInfo::SurfaceFormat::Auto:
-      break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
-
-  m_dc = GetDC(GetHWND());
-  if (!m_dc)
+  HDC hDC = ::GetDC(hwnd);
+  if (!hDC)
   {
     Log_ErrorPrintf("GetDC() failed: 0x%08X", GetLastError());
-    return false;
+    return {};
   }
 
-  const int pf = ChoosePixelFormat(m_dc, &pfd);
-  if (pf == 0)
+  if (!m_pixel_format.has_value())
   {
-    Log_ErrorPrintf("ChoosePixelFormat() failed: 0x%08X", GetLastError());
-    return false;
+    const int pf = ChoosePixelFormat(hDC, &pfd);
+    if (pf == 0)
+    {
+      Log_ErrorPrintf("ChoosePixelFormat() failed: 0x%08X", GetLastError());
+      ::ReleaseDC(hwnd, hDC);
+      return {};
+    }
+
+    m_pixel_format = pf;
   }
 
-  if (!SetPixelFormat(m_dc, pf, &pfd))
+  if (!SetPixelFormat(hDC, m_pixel_format.value(), &pfd))
   {
     Log_ErrorPrintf("SetPixelFormat() failed: 0x%08X", GetLastError());
+    ::ReleaseDC(hwnd, hDC);
+    return {};
+  }
+
+  return hDC;
+}
+
+bool ContextWGL::InitializeDC()
+{
+  if (m_wi.type == WindowInfo::Type::Win32)
+  {
+    m_dc = GetDCAndSetPixelFormat(GetHWND());
+    if (!m_dc)
+    {
+      Log_ErrorPrint("Failed to get DC for window");
+      return false;
+    }
+
+    return true;
+  }
+  else if (m_wi.type == WindowInfo::Type::Surfaceless)
+  {
+    return CreatePBuffer();
+  }
+  else
+  {
+    Log_ErrorPrintf("Unknown window info type %u", static_cast<unsigned>(m_wi.type));
+    return false;
+  }
+}
+
+void ContextWGL::ReleaseDC()
+{
+  if (m_pbuffer)
+  {
+    wglReleasePbufferDCARB(m_pbuffer, m_dc);
+    m_dc = {};
+
+    wglDestroyPbufferARB(m_pbuffer);
+    m_pbuffer = {};
+
+    ::ReleaseDC(m_dummy_window, m_dummy_dc);
+    m_dummy_dc = {};
+
+    DestroyWindow(m_dummy_window);
+    m_dummy_window = {};
+  }
+  else if (m_dc)
+  {
+    ::ReleaseDC(GetHWND(), m_dc);
+    m_dc = {};
+  }
+}
+
+bool ContextWGL::CreatePBuffer()
+{
+  static bool window_class_registered = false;
+  static const wchar_t* window_class_name = L"ContextWGLPBuffer";
+
+  if (!window_class_registered)
+  {
+    WNDCLASSEXW wc = {};
+    wc.cbSize = sizeof(WNDCLASSEXW);
+    wc.style = 0;
+    wc.lpfnWndProc = DefWindowProcW;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = GetModuleHandle(nullptr);
+    wc.hIcon = NULL;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = window_class_name;
+    wc.hIconSm = NULL;
+
+    if (!RegisterClassExW(&wc))
+    {
+      Log_ErrorPrint("(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
+      return false;
+    }
+
+    window_class_registered = true;
+  }
+
+  HWND hwnd = CreateWindowExW(0, window_class_name, window_class_name, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+  if (!hwnd)
+  {
+    Log_ErrorPrint("(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
     return false;
   }
 
+  Common::ScopeGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
+
+  HDC hdc = GetDCAndSetPixelFormat(hwnd);
+  if (!hdc)
+    return false;
+
+  Common::ScopeGuard hdc_guard([hdc, hwnd]() { ::ReleaseDC(hwnd, hdc); });
+
+  static constexpr const int pb_attribs[] = {0, 0};
+
+  AssertMsg(m_pixel_format.has_value(), "Has pixel format for pbuffer");
+  HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
+  if (!pbuffer)
+  {
+    Log_ErrorPrint("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
+    return false;
+  }
+
+  Common::ScopeGuard pbuffer_guard([pbuffer]() { wglDestroyPbufferARB(pbuffer); });
+
+  m_dc = wglGetPbufferDCARB(pbuffer);
+  if (!m_dc)
+  {
+    Log_ErrorPrint("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
+    return false;
+  }
+
+  m_dummy_window = hwnd;
+  m_dummy_dc = hdc;
+  m_pbuffer = pbuffer;
+
+  pbuffer_guard.Dismiss();
+  hdc_guard.Dismiss();
+  hwnd_guard.Dismiss();
   return true;
 }
 
@@ -255,7 +352,7 @@ bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current)
     // re-init glad-wgl
     if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
     {
-      Log_ErrorPrintf("Loading GLAD WGL functions failed");
+      Log_ErrorPrint("Loading GLAD WGL functions failed");
       return false;
     }
   }
@@ -322,7 +419,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
   }
   else
   {
-    Log_ErrorPrintf("Unknown profile");
+    Log_ErrorPrint("Unknown profile");
     return false;
   }
 
@@ -342,7 +439,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
     // re-init glad-wgl
     if (make_current && !gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
     {
-      Log_ErrorPrintf("Loading GLAD WGL functions failed");
+      Log_ErrorPrint("Loading GLAD WGL functions failed");
       return false;
     }
 
