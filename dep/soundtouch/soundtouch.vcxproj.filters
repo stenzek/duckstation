@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\FIFOSampleBuffer.h" />
+    <ClInclude Include="include\FIFOSamplePipe.h" />
+    <ClInclude Include="include\SoundTouch.h" />
+    <ClInclude Include="include\soundtouch_config.h" />
+    <ClInclude Include="include\STTypes.h" />
+    <ClInclude Include="include\BPMDetect.h" />
+    <ClInclude Include="source\SoundTouch\FIRFilter.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateCubic.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateLinear.h" />
+    <ClInclude Include="source\SoundTouch\InterpolateShannon.h" />
+    <ClInclude Include="source\SoundTouch\PeakFinder.h" />
+    <ClInclude Include="source\SoundTouch\RateTransposer.h" />
+    <ClInclude Include="source\SoundTouch\TDStretch.h" />
+    <ClInclude Include="source\SoundTouch\AAFilter.h" />
+    <ClInclude Include="source\SoundTouch\cpu_detect.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\SoundTouch\InterpolateCubic.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateLinear.cpp" />
+    <ClCompile Include="source\SoundTouch\InterpolateShannon.cpp" />
+    <ClCompile Include="source\SoundTouch\mmx_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\PeakFinder.cpp" />
+    <ClCompile Include="source\SoundTouch\RateTransposer.cpp" />
+    <ClCompile Include="source\SoundTouch\SoundTouch.cpp" />
+    <ClCompile Include="source\SoundTouch\sse_optimized.cpp" />
+    <ClCompile Include="source\SoundTouch\TDStretch.cpp" />
+    <ClCompile Include="source\SoundTouch\AAFilter.cpp" />
+    <ClCompile Include="source\SoundTouch\BPMDetect.cpp" />
+    <ClCompile Include="source\SoundTouch\cpu_detect_x86.cpp" />
+    <ClCompile Include="source\SoundTouch\FIFOSampleBuffer.cpp" />
+    <ClCompile Include="source\SoundTouch\FIRFilter.cpp" />
+  </ItemGroup>
+</Project>

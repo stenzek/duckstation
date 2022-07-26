@@ -1,7 +1,7 @@
 #include "drm_display.h"
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/scope_guard.h"
+#include "common/scoped_guard.h"
 #include "common/string.h"
 #include "file_system.h"
 #include <cmath>
@@ -312,7 +312,7 @@ bool DRMDisplay::GetCurrentMode(u32* width, u32* height, float* refresh_rate, in
     return false;
   }
 
-  Common::ScopeGuard card_guard([card_fd]() { close(card_fd); });
+  ScopedGuard card_guard([card_fd]() { close(card_fd); });
 
   drmModeRes* resources = drmModeGetResources(card_fd);
   if (!resources)
@@ -321,7 +321,7 @@ bool DRMDisplay::GetCurrentMode(u32* width, u32* height, float* refresh_rate, in
     return false;
   }
 
-  Common::ScopeGuard resources_guard([resources]() { drmModeFreeResources(resources); });
+  ScopedGuard resources_guard([resources]() { drmModeFreeResources(resources); });
   drmModeConnector* connector_ptr = nullptr;
   if (connector < 0)
   {
@@ -339,7 +339,7 @@ bool DRMDisplay::GetCurrentMode(u32* width, u32* height, float* refresh_rate, in
     connector_ptr = drmModeGetConnector(card_fd, resources->connectors[connector]);
   }
 
-  Common::ScopeGuard connector_guard([connector_ptr]() {
+  ScopedGuard connector_guard([connector_ptr]() {
     if (connector_ptr)
       drmModeFreeConnector(connector_ptr);
   });
@@ -356,7 +356,7 @@ bool DRMDisplay::GetCurrentMode(u32* width, u32* height, float* refresh_rate, in
     return false;
   }
 
-  Common::ScopeGuard encoder_guard([encoder]() { drmModeFreeEncoder(encoder); });
+  ScopedGuard encoder_guard([encoder]() { drmModeFreeEncoder(encoder); });
 
   drmModeCrtc* crtc = drmModeGetCrtc(card_fd, encoder->crtc_id);
   if (!crtc)

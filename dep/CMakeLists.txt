@@ -11,6 +11,7 @@ add_subdirectory(glslang)
 add_subdirectory(imgui)
 add_subdirectory(simpleini)
 add_subdirectory(vulkan)
+add_subdirectory(soundtouch)
 
 set(LIBSAMPLERATE_ENABLE_SINC_BEST_CONVERTER OFF)
 add_subdirectory(libsamplerate)
