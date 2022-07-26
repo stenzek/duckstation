@@ -158,9 +158,15 @@ void DisplayWidget::updateCursor(bool master_enable)
 
   m_cursor_hidden = hide;
   if (hide)
+  {
     setCursor(Qt::BlankCursor);
+    Log_WarningPrint("set blank cursor");
+  }
   else
+  {
     unsetCursor();
+    Log_WarningPrint("clear blank cursor");
+  }
 }
 
 void DisplayWidget::updateCenterPos()

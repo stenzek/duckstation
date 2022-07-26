@@ -200,7 +200,7 @@ private:
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
   void destroyDisplayWidget(bool show_game_list);
   void setDisplayFullscreen(const std::string& fullscreen_mode);
-  bool shouldHideCursorInFullscreen() const;
+  bool shouldHideCursor() const;
 
   SettingsDialog* getSettingsDialog();
   void doSettings(const char* category = nullptr);
