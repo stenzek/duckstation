@@ -27,8 +27,6 @@ add_library(util
   iso_reader.h
   jit_code_buffer.cpp
   jit_code_buffer.h
-  null_audio_stream.cpp
-  null_audio_stream.h
   memory_arena.cpp
   memory_arena.h
   page_fault_handler.cpp
@@ -44,4 +42,4 @@ add_library(util
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini)
-target_link_libraries(util PRIVATE libchdr samplerate zlib)
+target_link_libraries(util PRIVATE libchdr samplerate zlib soundtouch)

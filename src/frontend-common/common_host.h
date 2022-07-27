@@ -1,8 +1,12 @@
 #pragma once
 #include "core/system.h"
+#include <memory>
 #include <mutex>
 
 class SettingsInterface;
+
+class AudioStream;
+enum class AudioStretchMode : u8;
 
 namespace CommonHost {
 /// Initializes configuration.
@@ -25,6 +29,19 @@ void OnGameChanged(const std::string& disc_path, const std::string& game_serial,
 void PumpMessagesOnCPUThread();
 bool CreateHostDisplayResources();
 void ReleaseHostDisplayResources();
+
+#ifdef _WIN32
+std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
+                                                 AudioStretchMode stretch);
+#endif
+#ifdef WITH_SDL2
+std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
+                                                  AudioStretchMode stretch);
+#endif
+#ifndef _UWP
+std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
+                                                    AudioStretchMode stretch);
+#endif
 } // namespace CommonHost
 
 namespace ImGuiManager {

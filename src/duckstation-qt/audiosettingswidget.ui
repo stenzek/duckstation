@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>502</width>
-    <height>312</height>
+    <width>516</width>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,21 @@
      <property name="title">
       <string>Configuration</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Buffer Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="2">
+       <widget class="QCheckBox" name="startDumpingOnBoot">
+        <property name="text">
+         <string>Start Dumping On Boot</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -39,55 +53,87 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QSlider" name="outputLatencyMS">
+          <property name="maximum">
+           <number>500</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBothSides</enum>
+          </property>
+          <property name="tickInterval">
+           <number>20</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="outputLatencyMinimal">
+          <property name="text">
+           <string>Minimal</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="driver"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="stretchMode">
+        <item>
+         <property name="text">
+          <string>Off (Noisy)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Resampling (Pitch Shift)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Time Stretch (Tempo Change, Best Sound)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Output Latency:</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="audioBackend"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Buffer Size:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSlider" name="bufferSize">
-        <property name="minimum">
-         <number>1024</number>
-        </property>
-        <property name="maximum">
-         <number>8192</number>
-        </property>
-        <property name="singleStep">
-         <number>128</number>
-        </property>
-        <property name="pageStep">
-         <number>1024</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksBothSides</enum>
-        </property>
-        <property name="tickInterval">
-         <number>1024</number>
+         <string>Driver:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Stretch Mode:</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+       </widget>
       </item>
-      <item row="2" column="1">
+      <item row="6" column="0" colspan="2">
+       <widget class="QCheckBox" name="syncToOutput">
+        <property name="text">
+         <string>Sync To Output</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="bufferingLabel">
         <property name="text">
          <string>Maximum latency: 0 frames (0.00ms)</string>
@@ -97,24 +143,31 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="syncToOutput">
-        <property name="text">
-         <string>Sync To Output</string>
+      <item row="3" column="1">
+       <widget class="QSlider" name="bufferMS">
+        <property name="minimum">
+         <number>15</number>
         </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QCheckBox" name="resampling">
-        <property name="text">
-         <string>Resampling</string>
+        <property name="maximum">
+         <number>500</number>
         </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QCheckBox" name="startDumpingOnBoot">
-        <property name="text">
-         <string>Start Dumping On Boot</string>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="pageStep">
+         <number>5</number>
+        </property>
+        <property name="value">
+         <number>50</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksBothSides</enum>
+        </property>
+        <property name="tickInterval">
+         <number>20</number>
         </property>
        </widget>
       </item>

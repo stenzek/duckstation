@@ -66,14 +66,6 @@
 #include <mmsystem.h>
 #endif
 
-namespace FrontendCommon {
-
-#ifdef _WIN32
-std::unique_ptr<AudioStream> CreateXAudio2AudioStream();
-#endif
-
-} // namespace FrontendCommon
-
 Log_SetChannel(CommonHostInterface);
 
 namespace CommonHost {
@@ -148,26 +140,27 @@ void CommonHost::ReleaseHostDisplayResources()
   //
 }
 
-std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend)
+std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
+                                                     u32 latency_ms, AudioStretchMode stretch)
 {
   switch (backend)
   {
     case AudioBackend::Null:
-      return AudioStream::CreateNullAudioStream();
+      return AudioStream::CreateNullStream(sample_rate, channels, buffer_ms);
 
 #ifndef _UWP
     case AudioBackend::Cubeb:
-      return CubebAudioStream::Create();
+      return CommonHost::CreateCubebAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
 
 #ifdef _WIN32
     case AudioBackend::XAudio2:
-      return FrontendCommon::CreateXAudio2AudioStream();
+      return CommonHost::CreateXAudio2Stream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
 
 #ifdef WITH_SDL2
     case AudioBackend::SDL:
-      return SDLAudioStream::Create();
+      return CommonHost::CreateSDLAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
 
     default:
@@ -927,7 +920,7 @@ DEFINE_HOTKEY("AudioMute", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("Hotke
   {
     g_settings.audio_output_muted = !g_settings.audio_output_muted;
     const s32 volume = System::GetAudioOutputVolume();
-    g_spu.GetOutputStream()->SetOutputVolume(volume);
+    // g_spu.GetOutputStream()->SetOutputVolume(volume);
     if (g_settings.audio_output_muted)
     {
       Host::AddKeyedOSDMessage("AudioControlHotkey", Host::TranslateStdString("OSDMessage", "Volume: Muted"), 2.0f);
@@ -959,7 +952,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("H
     const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
     g_settings.audio_output_volume = volume;
     g_settings.audio_fast_forward_volume = volume;
-    g_spu.GetOutputStream()->SetOutputVolume(volume);
+    // g_spu.GetOutputStream()->SetOutputVolume(volume);
     Host::AddKeyedFormattedOSDMessage("AudioControlHotkey", 2.0f, Host::TranslateString("OSDMessage", "Volume: %d%%"),
                                       volume);
   }
@@ -973,7 +966,7 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE(
                   const s32 volume = std::max<s32>(System::GetAudioOutputVolume() - 10, 0);
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  g_spu.GetOutputStream()->SetOutputVolume(volume);
+                  // g_spu.GetOutputStream()->SetOutputVolume(volume);
                   Host::AddKeyedFormattedOSDMessage("AudioControlHotkey", 2.0f,
                                                     Host::TranslateString("OSDMessage", "Volume: %d%%"), volume);
                 }

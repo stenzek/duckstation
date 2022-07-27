@@ -13,6 +13,7 @@
 
 struct WindowInfo;
 enum class AudioBackend : u8;
+enum class AudioStretchMode : u8;
 class AudioStream;
 class CDImage;
 
@@ -77,7 +78,8 @@ std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
 TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
 std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
 
-std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend);
+std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
+                                               u32 latency_ms, AudioStretchMode stretch);
 
 /// Returns the scale of OSD elements.
 float GetOSDScale();

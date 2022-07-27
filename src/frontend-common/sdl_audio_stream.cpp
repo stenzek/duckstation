@@ -1,11 +1,15 @@
 #include "sdl_audio_stream.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common_host.h"
 #include "sdl_initializer.h"
 #include <SDL.h>
 Log_SetChannel(SDLAudioStream);
 
-SDLAudioStream::SDLAudioStream() = default;
+SDLAudioStream::SDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
+  : AudioStream(sample_rate, channels, buffer_ms, stretch)
+{
+}
 
 SDLAudioStream::~SDLAudioStream()
 {
@@ -13,12 +17,16 @@ SDLAudioStream::~SDLAudioStream()
     SDLAudioStream::CloseDevice();
 }
 
-std::unique_ptr<SDLAudioStream> SDLAudioStream::Create()
+std::unique_ptr<AudioStream> CommonHost::CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms,
+                                                              u32 latency_ms, AudioStretchMode stretch)
 {
-  return std::make_unique<SDLAudioStream>();
+  std::unique_ptr<SDLAudioStream> stream(std::make_unique<SDLAudioStream>(sample_rate, channels, buffer_ms, stretch));
+  if (!stream->OpenDevice(latency_ms))
+    stream.reset();
+  return stream;
 }
 
-bool SDLAudioStream::OpenDevice()
+bool SDLAudioStream::OpenDevice(u32 latency_ms)
 {
   DebugAssert(!IsOpen());
 
@@ -31,22 +39,15 @@ bool SDLAudioStream::OpenDevice()
   }
 
   SDL_AudioSpec spec = {};
-  spec.freq = m_output_sample_rate;
+  spec.freq = m_sample_rate;
   spec.channels = static_cast<Uint8>(m_channels);
   spec.format = AUDIO_S16;
-  spec.samples = static_cast<Uint16>(m_buffer_size);
+  spec.samples = static_cast<Uint16>(GetBufferSizeForMS(m_sample_rate, (latency_ms == 0) ? m_buffer_ms : latency_ms));
   spec.callback = AudioCallback;
   spec.userdata = static_cast<void*>(this);
 
   SDL_AudioSpec obtained_spec = {};
-
-#ifdef SDL_AUDIO_ALLOW_SAMPLES_CHANGE
-  const u32 allowed_change_flags = SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
-#else
-  const u32 allowed_change_flags = 0;
-#endif
-
-  m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, allowed_change_flags);
+  m_device_id = SDL_OpenAudioDevice(nullptr, 0, &spec, &obtained_spec, SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
   if (m_device_id == 0)
   {
     Log_ErrorPrintf("SDL_OpenAudioDevice() failed: %s", SDL_GetError());
@@ -54,25 +55,23 @@ bool SDLAudioStream::OpenDevice()
     return false;
   }
 
-  if (obtained_spec.samples > spec.samples)
-  {
-    Log_WarningPrintf("Requested buffer size %u, got buffer size %u. Adjusting to compensate.", spec.samples,
-                      obtained_spec.samples);
+  Log_DevPrintf("Requested %u frame buffer, got %u frame buffer", spec.samples, obtained_spec.samples);
 
-    if (!SetBufferSize(obtained_spec.samples))
-    {
-      Log_ErrorPrintf("Failed to set new buffer size of %u", obtained_spec.samples);
-      CloseDevice();
-      return false;
-    }
-  }
+  BaseInitialize();
+  m_volume = 100;
+  m_paused = false;
+  SDL_PauseAudioDevice(m_device_id, 0);
 
   return true;
 }
 
-void SDLAudioStream::PauseDevice(bool paused)
+void SDLAudioStream::SetPaused(bool paused)
 {
+  if (m_paused == paused)
+    return;
+
   SDL_PauseAudioDevice(m_device_id, paused ? 1 : 0);
+  m_paused = paused;
 }
 
 void SDLAudioStream::CloseDevice()
@@ -87,7 +86,13 @@ void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
   SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
   const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_channels;
 
-  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames, true);
+  this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames);
 }
 
-void SDLAudioStream::FramesAvailable() {}
+void SDLAudioStream::SetOutputVolume(u32 volume)
+{
+  if (m_volume == volume)
+    return;
+
+  Panic("Fixme");
+}

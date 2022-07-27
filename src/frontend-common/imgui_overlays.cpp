@@ -13,6 +13,7 @@
 #include "core/host_display.h"
 #include "core/host_settings.h"
 #include "core/settings.h"
+#include "core/spu.h"
 #include "core/system.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
@@ -23,6 +24,7 @@
 #include "imgui_internal.h"
 #include "imgui_manager.h"
 #include "input_manager.h"
+#include "util/audio_stream.h"
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -172,6 +174,16 @@ void ImGuiManager::DrawPerformanceOverlay()
         FormatProcessorStat(text, System::GetSWThreadUsage(), System::GetSWThreadAverageTime());
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
+
+#if 0
+      {
+        AudioStream* stream = g_spu.GetOutputStream();
+        const u32 frames = stream->GetBufferedFramesRelaxed();
+        text.Clear();
+        text.Fmt("Audio: {:<4u}f/{:<3u}ms", frames, AudioStream::GetMSForBufferSize(stream->GetSampleRate(), frames));
+        DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+      }
+#endif
     }
 
     if (g_settings.display_show_status_indicators)

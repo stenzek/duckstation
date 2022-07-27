@@ -15,8 +15,9 @@ public:
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
-  void updateBufferingLabel();
+  void updateLatencyLabel();
   void updateVolumeLabel();
+  void onMinimalOutputLatencyChecked(bool new_value);
   void onOutputVolumeChanged(int new_value);
   void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);

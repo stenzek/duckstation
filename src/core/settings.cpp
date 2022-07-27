@@ -275,10 +275,15 @@ void Settings::Load(SettingsInterface& si)
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
       .value_or(DEFAULT_AUDIO_BACKEND);
-  audio_output_volume = si.GetIntValue("Audio", "OutputVolume", 100);
-  audio_fast_forward_volume = si.GetIntValue("Audio", "FastForwardVolume", 100);
-  audio_buffer_size = si.GetIntValue("Audio", "BufferSize", DEFAULT_AUDIO_BUFFER_SIZE);
-  audio_resampling = si.GetBoolValue("Audio", "Resampling", true);
+  audio_stretch_mode =
+    AudioStream::ParseStretchMode(
+      si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
+      .value_or(DEFAULT_AUDIO_STRETCH_MODE);
+  audio_output_latency_ms = si.GetUIntValue("Audio", "OutputLatencyMS", DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
+  audio_buffer_ms = si.GetUIntValue("Audio", "BufferMS", DEFAULT_AUDIO_BUFFER_MS);
+  audio_output_volume = si.GetUIntValue("Audio", "OutputVolume", 100);
+  audio_fast_forward_volume = si.GetUIntValue("Audio", "FastForwardVolume", 100);
+
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
   audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
@@ -472,10 +477,11 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
-  si.SetIntValue("Audio", "OutputVolume", audio_output_volume);
-  si.SetIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
-  si.SetIntValue("Audio", "BufferSize", audio_buffer_size);
-  si.SetBoolValue("Audio", "Resampling", audio_resampling);
+  si.SetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(audio_stretch_mode));
+  si.SetUIntValue("Audio", "BufferMS", audio_buffer_ms);
+  si.SetUIntValue("Audio", "OutputLatencyMS", audio_output_latency_ms);
+  si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
+  si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
   si.SetBoolValue("Audio", "Sync", audio_sync_enabled);
   si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);

@@ -923,9 +923,7 @@ void System::PauseSystem(bool paused)
     return;
 
   SetState(paused ? State::Paused : State::Running);
-  if (!paused)
-    g_spu.GetOutputStream()->EmptyBuffers();
-  g_spu.GetOutputStream()->PauseOutput(paused);
+  g_spu.GetOutputStream()->SetPaused(paused);
 
   if (paused)
   {
@@ -1179,7 +1177,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Good to go.
   Host::OnSystemStarted();
   UpdateSoftwareCursor();
-  g_spu.GetOutputStream()->PauseOutput(false);
+  g_spu.GetOutputStream()->SetPaused(false);
 
   // Initial state must be set before loading state.
   s_state =
@@ -1813,7 +1811,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (s_state == State::Starting)
     s_state = State::Running;
 
-  g_spu.GetOutputStream()->EmptyBuffers();
+  g_spu.GetOutputStream()->EmptyBuffer();
   ResetPerformanceCounters();
   ResetThrottler();
   return true;
@@ -2035,14 +2033,6 @@ void System::ResetThrottler()
 
 void System::Throttle()
 {
-  // Reset the throttler on audio buffer overflow, so we don't end up out of phase.
-  if (g_spu.GetOutputStream()->DidUnderflow() && s_target_speed >= 1.0f)
-  {
-    Log_VerbosePrintf("Audio buffer underflowed, resetting throttler");
-    ResetThrottler();
-    return;
-  }
-
   // Allow variance of up to 40ms either way.
 #ifndef __ANDROID__
   static constexpr double MAX_VARIANCE_TIME_NS = 40 * 1000000;
@@ -2181,7 +2171,8 @@ void System::UpdateSpeedLimiterState()
   m_display_all_frames = !m_throttler_enabled || g_settings.display_all_frames;
 
   bool syncing_to_host = false;
-  if (g_settings.sync_to_host_refresh_rate && g_settings.audio_resampling && target_speed == 1.0f && IsRunning())
+  if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
+      target_speed == 1.0f && IsValid())
   {
     float host_refresh_rate;
     if (g_host_display->GetHostRefreshRate(&host_refresh_rate))
@@ -2212,21 +2203,18 @@ void System::UpdateSpeedLimiterState()
     UpdateThrottlePeriod();
     ResetThrottler();
 
-    const u32 input_sample_rate = (target_speed == 0.0f || !g_settings.audio_resampling) ?
-                                    SPU::SAMPLE_RATE :
-                                    static_cast<u32>(static_cast<float>(SPU::SAMPLE_RATE) * target_speed);
-    Log_InfoPrintf("Audio input sample rate: %u hz", input_sample_rate);
-
     AudioStream* stream = g_spu.GetOutputStream();
-    stream->SetInputSampleRate(input_sample_rate);
-    stream->SetWaitForBufferFill(true);
-
     if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
       stream->SetOutputVolume(GetAudioOutputVolume());
 
-    stream->SetSync(audio_sync_enabled);
-    if (audio_sync_enabled)
-      stream->EmptyBuffers();
+    // Adjust nominal rate when resampling, or syncing to host.
+    const bool rate_adjust =
+      (syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && target_speed > 0.0f;
+    stream->SetNominalRate(rate_adjust ? target_speed : 1.0f);
+
+    // stream->SetSync(audio_sync_enabled);
+    // if (audio_sync_enabled)
+    // stream->EmptyBuffer();
   }
 
   g_host_display->SetDisplayMaxFPS(max_display_fps);
@@ -3034,8 +3022,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateOverclock();
     }
 
-    if (g_settings.audio_backend != old_settings.audio_backend ||
-        g_settings.audio_buffer_size != old_settings.audio_buffer_size)
+    if (g_settings.audio_backend != old_settings.audio_backend)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
@@ -3044,7 +3031,15 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       }
 
       g_spu.RecreateOutputStream();
-      g_spu.GetOutputStream()->PauseOutput(IsPaused());
+    }
+    if (g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
+      g_spu.GetOutputStream()->SetStretchMode(g_settings.audio_stretch_mode);
+    if (g_settings.audio_buffer_ms != old_settings.audio_buffer_ms ||
+        g_settings.audio_output_latency_ms != old_settings.audio_output_latency_ms ||
+        g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
+    {
+      g_spu.RecreateOutputStream();
+      UpdateSpeedLimiterState();
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)
@@ -3169,7 +3164,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     g_dma.SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
-        g_settings.audio_buffer_size != old_settings.audio_buffer_size ||
         g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
         g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
@@ -3177,7 +3171,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
         g_settings.display_all_frames != old_settings.display_all_frames ||
-        g_settings.audio_resampling != old_settings.audio_resampling ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {
       UpdateSpeedLimiterState();

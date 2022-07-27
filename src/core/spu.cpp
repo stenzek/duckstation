@@ -30,8 +30,7 @@ void SPU::Initialize()
     "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
     [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<SPU*>(param)->ExecuteTransfer(ticks); }, this,
     false);
-  m_null_audio_stream = AudioStream::CreateNullAudioStream();
-  m_null_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, Settings::DEFAULT_AUDIO_BUFFER_SIZE);
+  m_null_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms);
 
   CreateOutputStream();
   Reset();
@@ -39,22 +38,23 @@ void SPU::Initialize()
 
 void SPU::CreateOutputStream()
 {
-  Log_InfoPrintf("Creating '%s' audio stream, sample rate = %u, channels = %u, buffer size = %u",
-                 Settings::GetAudioBackendName(g_settings.audio_backend), SAMPLE_RATE, NUM_CHANNELS,
-                 g_settings.audio_buffer_size);
+  Log_InfoPrintf(
+    "Creating '%s' audio stream, sample rate = %u, channels = %u, buffer = %u, latency = %u, stretching = %s",
+    Settings::GetAudioBackendName(g_settings.audio_backend), SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms,
+    g_settings.audio_output_latency_ms, AudioStream::GetStretchModeName(g_settings.audio_stretch_mode));
 
-  m_audio_stream = Host::CreateAudioStream(g_settings.audio_backend);
-
-  if (!m_audio_stream ||
-      !m_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_size))
+  m_audio_stream =
+    Host::CreateAudioStream(g_settings.audio_backend, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms,
+                            g_settings.audio_output_latency_ms, g_settings.audio_stretch_mode);
+  if (!m_audio_stream)
   {
     Host::ReportErrorAsync("Error", "Failed to create or configure audio stream, falling back to null output.");
     m_audio_stream.reset();
-    m_audio_stream = AudioStream::CreateNullAudioStream();
-    m_audio_stream->Reconfigure(SAMPLE_RATE, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_size);
+    m_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms);
   }
 
   m_audio_stream->SetOutputVolume(System::GetAudioOutputVolume());
+  m_audio_stream->SetPaused(System::IsPaused());
 }
 
 void SPU::RecreateOutputStream()
@@ -77,7 +77,7 @@ void SPU::Shutdown()
   m_tick_event.reset();
   m_transfer_event.reset();
   m_dump_writer.reset();
-  m_audio_stream = nullptr;
+  m_audio_stream.reset();
 }
 
 void SPU::Reset()

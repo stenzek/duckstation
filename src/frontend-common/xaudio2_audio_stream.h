@@ -14,45 +14,42 @@
 class XAudio2AudioStream final : public AudioStream, private IXAudio2VoiceCallback
 {
 public:
-  XAudio2AudioStream();
+  XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
   ~XAudio2AudioStream();
 
-  bool Initialize();
-
+  void SetPaused(bool paused) override;
   void SetOutputVolume(u32 volume) override;
 
-protected:
+  bool OpenDevice(u32 latency_ms);
+  void CloseDevice();
+  void EnqueueBuffer();
+
+private:
   enum : u32
   {
-    NUM_BUFFERS = 2
+    NUM_BUFFERS = 2,
+    INTERNAL_BUFFER_SIZE = 512,
   };
 
   ALWAYS_INLINE bool IsOpen() const { return static_cast<bool>(m_xaudio); }
 
-  bool OpenDevice() override;
-  void PauseDevice(bool paused) override;
-  void CloseDevice() override;
-  void FramesAvailable() override;
-
   // Inherited via IXAudio2VoiceCallback
-  virtual void __stdcall OnVoiceProcessingPassStart(UINT32 BytesRequired) override;
-  virtual void __stdcall OnVoiceProcessingPassEnd(void) override;
-  virtual void __stdcall OnStreamEnd(void) override;
-  virtual void __stdcall OnBufferStart(void* pBufferContext) override;
-  virtual void __stdcall OnBufferEnd(void* pBufferContext) override;
-  virtual void __stdcall OnLoopEnd(void* pBufferContext) override;
-  virtual void __stdcall OnVoiceError(void* pBufferContext, HRESULT Error) override;
-
-  void EnqueueBuffer();
+  void __stdcall OnVoiceProcessingPassStart(UINT32 BytesRequired) override;
+  void __stdcall OnVoiceProcessingPassEnd(void) override;
+  void __stdcall OnStreamEnd(void) override;
+  void __stdcall OnBufferStart(void* pBufferContext) override;
+  void __stdcall OnBufferEnd(void* pBufferContext) override;
+  void __stdcall OnLoopEnd(void* pBufferContext) override;
+  void __stdcall OnVoiceError(void* pBufferContext, HRESULT Error) override;
 
   Microsoft::WRL::ComPtr<IXAudio2> m_xaudio;
   IXAudio2MasteringVoice* m_mastering_voice = nullptr;
   IXAudio2SourceVoice* m_source_voice = nullptr;
 
-  std::array<std::unique_ptr<SampleType[]>, NUM_BUFFERS> m_buffers;
+  std::array<std::unique_ptr<SampleType[]>, NUM_BUFFERS> m_enqueue_buffers;
+  u32 m_enqueue_buffer_size = 0;
   u32 m_current_buffer = 0;
   bool m_buffer_enqueued = false;
-  bool m_paused = true;
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   HMODULE m_xaudio2_library = {};

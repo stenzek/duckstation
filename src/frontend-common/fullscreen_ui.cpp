@@ -3152,18 +3152,18 @@ void FullscreenUI::DrawAudioSettingsPage()
                   "The audio backend determines how frames produced by the emulator are submitted to the host.",
                   "Audio", "Backend", Settings::DEFAULT_AUDIO_BACKEND, &Settings::ParseAudioBackend,
                   &Settings::GetAudioBackendName, &Settings::GetAudioBackendDisplayName, AudioBackend::Count);
-  DrawIntRangeSetting("Buffer Size",
+  DrawIntRangeSetting("Latency",
                       "The buffer size determines the size of the chunks of audio which will be pulled by the host.",
-                      "Audio", "BufferSize", Settings::DEFAULT_AUDIO_BUFFER_SIZE, 1024, 8192, "%d Frames");
+                      "Audio", "Latency", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
 
   DrawToggleSetting("Sync To Output",
                     "Throttles the emulation speed based on the audio backend pulling audio "
                     "frames. Enable to reduce the chances of crackling.",
                     "Audio", "Sync", true);
   DrawToggleSetting(
-    "Resampling",
-    "When running outside of 100% speed, resamples audio from the target speed instead of dropping frames.", "Audio",
-    "Resampling", true);
+    "Time Stretching",
+    "When running outside of 100% speed, adjusts tempo on audio from the target speed instead of dropping frames.",
+    "Audio", "TimeStretching", true);
 
   EndMenuButtons();
 }

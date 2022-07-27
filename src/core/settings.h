@@ -3,6 +3,7 @@
 #include "common/settings_interface.h"
 #include "common/string.h"
 #include "types.h"
+#include "util/audio_stream.h"
 #include <array>
 #include <optional>
 #include <string>
@@ -142,10 +143,11 @@ struct Settings
   u32 cdrom_seek_speedup = 1;
 
   AudioBackend audio_backend = DEFAULT_AUDIO_BACKEND;
-  s32 audio_output_volume = 100;
-  s32 audio_fast_forward_volume = 100;
-  u32 audio_buffer_size = DEFAULT_AUDIO_BUFFER_SIZE;
-  bool audio_resampling = true;
+  AudioStretchMode audio_stretch_mode = DEFAULT_AUDIO_STRETCH_MODE;
+  u32 audio_output_latency_ms = DEFAULT_AUDIO_OUTPUT_LATENCY_MS;
+  u32 audio_buffer_ms = DEFAULT_AUDIO_BUFFER_MS;
+  u32 audio_output_volume = 100;
+  u32 audio_fast_forward_volume = 100;
   bool audio_output_muted = false;
   bool audio_sync_enabled = true;
   bool audio_dump_on_boot = false;
@@ -400,7 +402,9 @@ struct Settings
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
-  static constexpr u32 DEFAULT_AUDIO_BUFFER_SIZE = 2048;
+  static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 50;
+  static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
+  static constexpr AudioStretchMode DEFAULT_AUDIO_STRETCH_MODE = AudioStretchMode::TimeStretch;
 
   // Enable console logging by default on Linux platforms.
 #if defined(__linux__) && !defined(__ANDROID__)

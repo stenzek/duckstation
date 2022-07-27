@@ -1,6 +1,7 @@
 #include "xaudio2_audio_stream.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common_host.h"
 #include <VersionHelpers.h>
 #include <xaudio2.h>
 Log_SetChannel(XAudio2AudioStream);
@@ -9,12 +10,15 @@ Log_SetChannel(XAudio2AudioStream);
 #pragma comment(lib, "xaudio2.lib")
 #endif
 
-XAudio2AudioStream::XAudio2AudioStream() = default;
+XAudio2AudioStream::XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
+  : AudioStream(sample_rate, channels, buffer_ms, stretch)
+{
+}
 
 XAudio2AudioStream::~XAudio2AudioStream()
 {
   if (IsOpen())
-    XAudio2AudioStream::CloseDevice();
+    CloseDevice();
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   if (m_xaudio2_library)
@@ -25,8 +29,20 @@ XAudio2AudioStream::~XAudio2AudioStream()
 #endif
 }
 
-bool XAudio2AudioStream::Initialize()
+std::unique_ptr<AudioStream> CommonHost::CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms,
+                                                             u32 latency_ms, AudioStretchMode stretch)
 {
+  std::unique_ptr<XAudio2AudioStream> stream(
+    std::make_unique<XAudio2AudioStream>(sample_rate, channels, buffer_ms, stretch));
+  if (!stream->OpenDevice(latency_ms))
+    stream.reset();
+  return stream;
+}
+
+bool XAudio2AudioStream::OpenDevice(u32 latency_ms)
+{
+  DebugAssert(!IsOpen());
+
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   m_xaudio2_library = LoadLibraryW(XAUDIO2_DLL_W);
   if (!m_xaudio2_library)
@@ -35,13 +51,6 @@ bool XAudio2AudioStream::Initialize()
     return false;
   }
 #endif
-
-  return true;
-}
-
-bool XAudio2AudioStream::OpenDevice()
-{
-  DebugAssert(!IsOpen());
 
   HRESULT hr;
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -70,7 +79,7 @@ bool XAudio2AudioStream::OpenDevice()
     return false;
   }
 
-  hr = m_xaudio->CreateMasteringVoice(&m_mastering_voice, m_channels, m_output_sample_rate, 0, nullptr);
+  hr = m_xaudio->CreateMasteringVoice(&m_mastering_voice, m_channels, m_sample_rate, 0, nullptr);
   if (FAILED(hr))
   {
     Log_ErrorPrintf("CreateMasteringVoice() failed: %08X", hr);
@@ -79,10 +88,10 @@ bool XAudio2AudioStream::OpenDevice()
 
   WAVEFORMATEX wf = {};
   wf.cbSize = sizeof(wf);
-  wf.nAvgBytesPerSec = m_output_sample_rate * m_channels * sizeof(s16);
+  wf.nAvgBytesPerSec = m_sample_rate * m_channels * sizeof(s16);
   wf.nBlockAlign = static_cast<WORD>(sizeof(s16) * m_channels);
   wf.nChannels = static_cast<WORD>(m_channels);
-  wf.nSamplesPerSec = m_output_sample_rate;
+  wf.nSamplesPerSec = m_sample_rate;
   wf.wBitsPerSample = sizeof(s16) * 8;
   wf.wFormatTag = WAVE_FORMAT_PCM;
   hr = m_xaudio->CreateSourceVoice(&m_source_voice, &wf, 0, 1.0f, this);
@@ -99,13 +108,27 @@ bool XAudio2AudioStream::OpenDevice()
     return false;
   }
 
+  m_enqueue_buffer_size = std::max<u32>(INTERNAL_BUFFER_SIZE, GetBufferSizeForMS(m_sample_rate, latency_ms));
+  Log_DevPrintf("Allocating %u buffers of %u frames", NUM_BUFFERS, m_enqueue_buffer_size);
   for (u32 i = 0; i < NUM_BUFFERS; i++)
-    m_buffers[i] = std::make_unique<SampleType[]>(m_buffer_size * m_channels);
+    m_enqueue_buffers[i] = std::make_unique<SampleType[]>(m_enqueue_buffer_size * m_channels);
 
+  BaseInitialize();
+  m_volume = 100;
+  m_paused = false;
+
+  hr = m_source_voice->Start(0, 0);
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Start() failed: %08X", hr);
+    return false;
+  }
+
+  EnqueueBuffer();
   return true;
 }
 
-void XAudio2AudioStream::PauseDevice(bool paused)
+void XAudio2AudioStream::SetPaused(bool paused)
 {
   if (m_paused == paused)
     return;
@@ -124,6 +147,9 @@ void XAudio2AudioStream::PauseDevice(bool paused)
   }
 
   m_paused = paused;
+
+  if (!m_buffer_enqueued)
+    EnqueueBuffer();
 }
 
 void XAudio2AudioStream::CloseDevice()
@@ -139,29 +165,20 @@ void XAudio2AudioStream::CloseDevice()
   m_source_voice = nullptr;
   m_mastering_voice = nullptr;
   m_xaudio.Reset();
-  m_buffers = {};
+  m_enqueue_buffers = {};
   m_current_buffer = 0;
   m_paused = true;
 }
 
-void XAudio2AudioStream::FramesAvailable()
-{
-  if (!m_buffer_enqueued)
-  {
-    m_buffer_enqueued = true;
-    EnqueueBuffer();
-  }
-}
-
 void XAudio2AudioStream::EnqueueBuffer()
 {
-  SampleType* samples = m_buffers[m_current_buffer].get();
-  ReadFrames(samples, m_buffer_size, false);
+  SampleType* samples = m_enqueue_buffers[m_current_buffer].get();
+  ReadFrames(samples, m_enqueue_buffer_size);
 
   const XAUDIO2_BUFFER buf = {
-    static_cast<UINT32>(0),                                        // flags
-    static_cast<UINT32>(sizeof(s16) * m_channels * m_buffer_size), // bytes
-    reinterpret_cast<const BYTE*>(samples)                         // data
+    static_cast<UINT32>(0),                                                // flags
+    static_cast<UINT32>(sizeof(s16) * m_channels * m_enqueue_buffer_size), // bytes
+    reinterpret_cast<const BYTE*>(samples)                                 // data
   };
 
   HRESULT hr = m_source_voice->SubmitSourceBuffer(&buf, nullptr);
@@ -173,10 +190,14 @@ void XAudio2AudioStream::EnqueueBuffer()
 
 void XAudio2AudioStream::SetOutputVolume(u32 volume)
 {
-  AudioStream::SetOutputVolume(volume);
-  HRESULT hr = m_mastering_voice->SetVolume(static_cast<float>(m_output_volume) / 100.0f);
+  HRESULT hr = m_mastering_voice->SetVolume(static_cast<float>(m_volume) / 100.0f);
   if (FAILED(hr))
+  {
     Log_ErrorPrintf("SetVolume() failed: %08X", hr);
+    return;
+  }
+
+  m_volume = volume;
 }
 
 void __stdcall XAudio2AudioStream::OnVoiceProcessingPassStart(UINT32 BytesRequired) {}
@@ -195,16 +216,3 @@ void __stdcall XAudio2AudioStream::OnBufferEnd(void* pBufferContext)
 void __stdcall XAudio2AudioStream::OnLoopEnd(void* pBufferContext) {}
 
 void __stdcall XAudio2AudioStream::OnVoiceError(void* pBufferContext, HRESULT Error) {}
-
-namespace FrontendCommon {
-
-std::unique_ptr<AudioStream> CreateXAudio2AudioStream()
-{
-  std::unique_ptr<XAudio2AudioStream> stream = std::make_unique<XAudio2AudioStream>();
-  if (!stream->Initialize())
-    return {};
-
-  return stream;
-}
-
-} // namespace FrontendCommon

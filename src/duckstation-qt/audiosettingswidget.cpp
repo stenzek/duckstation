@@ -20,14 +20,24 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend", &Settings::ParseAudioBackend,
                                                &Settings::GetAudioBackendName, Settings::DEFAULT_AUDIO_BACKEND);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToOutput, "Audio", "Sync", true);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferSize, "Audio", "BufferSize",
-                                              Settings::DEFAULT_AUDIO_BUFFER_SIZE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.stretchMode, "Audio", "StretchMode",
+                                               &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
+                                               Settings::DEFAULT_AUDIO_STRETCH_MODE);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "Audio", "BufferMS",
+                                              Settings::DEFAULT_AUDIO_BUFFER_MS);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
+                                              Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.resampling, "Audio", "Resampling", true);
 
-  connect(m_ui.bufferSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateBufferingLabel);
-  updateBufferingLabel();
+  m_ui.outputLatencyMinimal->setChecked(m_ui.outputLatencyMS->value() == 0);
+  m_ui.outputLatencyMS->setEnabled(m_ui.outputLatencyMinimal->isChecked());
+  m_ui.driver->setEnabled(false);
+
+  connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
+  connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
+  connect(m_ui.outputLatencyMinimal, &QCheckBox::toggled, this, &AudioSettingsWidget::onMinimalOutputLatencyChecked);
+  updateLatencyLabel();
 
   // for per-game, just use the normal path, since it needs to re-read/apply
   if (!dialog->isPerGameSettings())
@@ -53,7 +63,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
        "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio "
        "output."));
   dialog->registerWidgetHelp(
-    m_ui.bufferSize, tr("Buffer Size"), QStringLiteral("2048"),
+    m_ui.outputLatencyMS, tr("Output Latency"), QStringLiteral("50 ms"),
     tr("The buffer size determines the size of the chunks of audio which will be pulled by the "
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
@@ -75,27 +85,31 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
                              tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
                                 "background music in some games."));
   dialog->registerWidgetHelp(
-    m_ui.resampling, tr("Resampling"), tr("Checked"),
-    tr("When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces "
+    m_ui.stretchMode, tr("Stretch Mode"), tr("Time Stretching"),
+    tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces "
        "much nicer fast forward/slowdown audio at a small cost to performance."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
 
-void AudioSettingsWidget::updateBufferingLabel()
+void AudioSettingsWidget::updateLatencyLabel()
 {
-  constexpr float step = 128;
-  const u32 actual_buffer_size =
-    static_cast<u32>(std::round(static_cast<float>(m_ui.bufferSize->value()) / step) * step);
-  if (static_cast<u32>(m_ui.bufferSize->value()) != actual_buffer_size)
+  const u32 output_latency_ms = static_cast<u32>(m_ui.outputLatencyMS->value());
+  const u32 output_latency_frames = AudioStream::GetBufferSizeForMS(SPU::SAMPLE_RATE, output_latency_ms);
+  const u32 buffer_ms = static_cast<u32>(m_ui.bufferMS->value());
+  const u32 buffer_frames = AudioStream::GetBufferSizeForMS(SPU::SAMPLE_RATE, buffer_ms);
+  if (output_latency_ms > 0)
   {
-    m_ui.bufferSize->setValue(static_cast<int>(actual_buffer_size));
-    return;
+    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 frames / %2 ms (%3ms buffer + %5ms output)")
+                                   .arg(buffer_frames + output_latency_frames)
+                                   .arg(buffer_ms + output_latency_ms)
+                                   .arg(buffer_ms)
+                                   .arg(output_latency_ms));
   }
-
-  const float max_latency = AudioStream::GetMaxLatency(SPU::SAMPLE_RATE, actual_buffer_size);
-  m_ui.bufferingLabel->setText(tr("Maximum Latency: %n frames (%1ms)", "", actual_buffer_size)
-                                 .arg(static_cast<double>(max_latency) * 1000.0, 0, 'f', 2));
+  else
+  {
+    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 frames / %2 ms").arg(buffer_frames).arg(buffer_ms));
+  }
 }
 
 void AudioSettingsWidget::updateVolumeLabel()
@@ -104,9 +118,21 @@ void AudioSettingsWidget::updateVolumeLabel()
   m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
 }
 
+void AudioSettingsWidget::onMinimalOutputLatencyChecked(bool new_value)
+{
+  const u32 value = new_value ? 0u : Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS;
+  m_dialog->setIntSettingValue("Audio", "OutputLatencyMS", value);
+  QSignalBlocker sb(m_ui.outputLatencyMS);
+  m_ui.outputLatencyMS->setValue(value);
+  m_ui.outputLatencyMS->setEnabled(!new_value);
+  updateLatencyLabel();
+}
+
 void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
-  m_dialog->setIntSettingValue("Audio", "OutputVolume", new_value);
+  // only called for base settings
+  DebugAssert(!m_dialog->isPerGameSettings());
+  Host::SetBaseIntSettingValue("Audio", "OutputVolume", new_value);
   g_emu_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
 
   updateVolumeLabel();
@@ -114,7 +140,9 @@ void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 
 void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 {
-  m_dialog->setIntSettingValue("Audio", "FastForwardVolume", new_value);
+  // only called for base settings
+  DebugAssert(!m_dialog->isPerGameSettings());
+  Host::SetBaseIntSettingValue("Audio", "FastForwardVolume", new_value);
   g_emu_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
 
   updateVolumeLabel();
@@ -122,7 +150,10 @@ void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 
 void AudioSettingsWidget::onOutputMutedChanged(int new_state)
 {
+  // only called for base settings
+  DebugAssert(!m_dialog->isPerGameSettings());
+
   const bool muted = (new_state != 0);
-  m_dialog->setBoolSettingValue("Audio", "OutputMuted", muted);
+  Host::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
   g_emu_thread->setAudioOutputMuted(muted);
 }

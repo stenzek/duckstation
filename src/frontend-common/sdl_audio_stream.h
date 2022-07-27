@@ -5,18 +5,17 @@
 class SDLAudioStream final : public AudioStream
 {
 public:
-  SDLAudioStream();
+  SDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
   ~SDLAudioStream();
 
-  static std::unique_ptr<SDLAudioStream> Create();
+  void SetPaused(bool paused) override;
+  void SetOutputVolume(u32 volume) override;
+
+  bool OpenDevice(u32 latency_ms);
+  void CloseDevice();
 
 protected:
   ALWAYS_INLINE bool IsOpen() const { return (m_device_id != 0); }
-
-  bool OpenDevice() override;
-  void PauseDevice(bool paused) override;
-  void CloseDevice() override;
-  void FramesAvailable() override;
 
   static void AudioCallback(void* userdata, uint8_t* stream, int len);
 

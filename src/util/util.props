@@ -4,13 +4,15 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libsamplerate\include;$(SolutionDir)dep\libchdr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SOUNDTOUCH_FLOAT_SAMPLES;SOUNDTOUCH_ALLOW_SSE</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>$(RootBuildDir)simpleini\simpleini.lib;$(RootBuildDir)libchdr\libchdr.lib;$(RootBuildDir)libsamplerate\libsamplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)soundtouch\soundtouch.lib;$(RootBuildDir)simpleini\simpleini.lib;$(RootBuildDir)libchdr\libchdr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>
