@@ -2153,7 +2153,7 @@ void System::ResetPerformanceCounters()
   s_last_global_tick_counter = TimingEvents::GetGlobalTickCounter();
   s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
   s_last_sw_time = 0;
-  if (g_gpu->IsHardwareRenderer())
+  if (!g_gpu->IsHardwareRenderer())
   {
     const Threading::Thread* sw_thread = static_cast<GPU_SW*>(g_gpu.get())->GetBackend().GetThread();
     if (sw_thread)
