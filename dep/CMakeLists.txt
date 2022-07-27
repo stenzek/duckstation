@@ -13,9 +13,6 @@ add_subdirectory(simpleini)
 add_subdirectory(vulkan)
 add_subdirectory(soundtouch)
 
-set(LIBSAMPLERATE_ENABLE_SINC_BEST_CONVERTER OFF)
-add_subdirectory(libsamplerate)
-
 add_subdirectory(tinyxml2)
 add_subdirectory(cubeb)
 add_subdirectory(googletest)
