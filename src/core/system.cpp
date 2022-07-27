@@ -1215,6 +1215,9 @@ bool System::BootSystem(SystemBootParameters parameters)
     g_cdrom.PrecacheMedia();
 
   ResetPerformanceCounters();
+  if (IsRunning())
+    UpdateSpeedLimiterState();
+
   return true;
 }
 
