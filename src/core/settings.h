@@ -129,7 +129,7 @@ struct Settings
   bool display_all_frames = false;
   bool display_internal_resolution_screenshots = false;
   bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
-  float display_osd_scale = 1.0f;
+  float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD;

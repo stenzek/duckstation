@@ -81,7 +81,7 @@ bool ImGuiManager::Initialize()
   }
 
   s_global_scale =
-    std::max(1.0f, g_host_display->GetWindowScale() * static_cast<float>(g_settings.display_osd_scale / 100.0f));
+    std::max(g_host_display->GetWindowScale() * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
 
   ImGui::CreateContext();
 
@@ -163,7 +163,7 @@ void ImGuiManager::WindowResized()
 void ImGuiManager::UpdateScale()
 {
   const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
-  const float scale = std::max(window_scale * static_cast<float>(/*EmuConfig.GS.OsdScale*/ 100.0 / 100.0), 1.0f);
+  const float scale = std::max(window_scale * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
 
   if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
     return;
