@@ -42,4 +42,4 @@ add_library(util
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini)
-target_link_libraries(util PRIVATE libchdr samplerate zlib soundtouch)
+target_link_libraries(util PRIVATE libchdr zlib soundtouch)
