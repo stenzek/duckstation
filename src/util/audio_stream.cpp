@@ -279,6 +279,9 @@ void AudioStream::UpdateTargetTempo(float tempo)
   std::fill_n(m_average_fullness.data(), AVERAGING_WINDOW, tempo);
   m_soundtouch->setTempo(tempo);
   m_stretch_reset = 0;
+  m_stretch_inactive = false;
+  m_stretch_ok_count = 0;
+  m_dynamic_target_usage = static_cast<float>(m_target_buffer_size) * m_nominal_rate;
 }
 
 void AudioStream::SetStretchMode(AudioStretchMode mode)
