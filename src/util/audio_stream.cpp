@@ -39,7 +39,9 @@ AudioStream::~AudioStream()
 
 std::unique_ptr<AudioStream> AudioStream::CreateNullStream(u32 sample_rate, u32 channels, u32 buffer_ms)
 {
-  return std::unique_ptr<AudioStream>(new AudioStream(sample_rate, channels, buffer_ms, AudioStretchMode::Off));
+  std::unique_ptr<AudioStream> stream(new AudioStream(sample_rate, channels, buffer_ms, AudioStretchMode::Off));
+  stream->BaseInitialize();
+  return stream;
 }
 
 u32 AudioStream::GetAlignedBufferSize(u32 size)
