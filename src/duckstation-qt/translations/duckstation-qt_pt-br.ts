@@ -1424,7 +1424,7 @@ Posição nos placares de ligeres: {} de {}</translation>
     <message>
         <location filename="../biossettingswidget.ui" line="144"/>
         <source>Browse...</source>
-        <translation>Procurar...</translation>
+        <translation>Buscar...</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="156"/>
@@ -3338,7 +3338,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="510"/>
         <source>Browse...</source>
-        <translation>Procurar...</translation>
+        <translation>Buscar...</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="513"/>
@@ -5494,7 +5494,7 @@ Conquistas: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="121"/>
         <location filename="../foldersettingswidget.ui" line="161"/>
         <source>Browse...</source>
-        <translation>Procurar...</translation>
+        <translation>Buscar...</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="48"/>
@@ -6339,7 +6339,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../gamelistwidget.ui" line="200"/>
         <source>Search...</source>
-        <translation>Procurar...</translation>
+        <translation>Buscar...</translation>
     </message>
 </context>
 <context>
@@ -9516,7 +9516,7 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../memorycardsettingswidget.cpp" line="40"/>
         <location filename="../memorycardsettingswidget.cpp" line="140"/>
         <source>Browse...</source>
-        <translation>Procurar...</translation>
+        <translation>Buscar...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="45"/>
