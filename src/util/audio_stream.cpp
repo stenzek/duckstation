@@ -8,7 +8,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-Log_SetChannel(AudioStream);
+
+#ifdef __APPLE__
+#include <stdlib.h> // alloca
+#else
+#include <malloc.h> // alloca
+#endif
 
 #if defined(_M_ARM64)
 #include <arm64_neon.h>
@@ -17,6 +22,8 @@ Log_SetChannel(AudioStream);
 #elif defined(_M_IX86) || defined(_M_AMD64)
 #include <emmintrin.h>
 #endif
+
+Log_SetChannel(AudioStream);
 
 static constexpr bool LOG_TIMESTRETCH_STATS = false;
 
@@ -136,9 +143,39 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
     m_rpos.store(rpos, std::memory_order_release);
   }
 
-  // TODO: Bring back the crappy resampler?
   if (silence_frames > 0)
-    std::memset(bData + frames_to_read, 0, sizeof(s32) * silence_frames);
+  {
+    if (frames_to_read > 0)
+    {
+      // super basic resampler - spread the input samples evenly across the output samples. will sound like ass and have
+      // aliasing, but better than popping by inserting silence.
+      const u32 increment =
+        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read / m_channels) / static_cast<float>(nFrames)));
+
+      s16* resample_ptr = static_cast<s16*>(alloca(sizeof(s16) * frames_to_read));
+      std::memcpy(resample_ptr, bData, sizeof(s16) * frames_to_read);
+
+      s16* out_ptr = bData;
+      const u32 copy_stride = sizeof(SampleType) * m_channels;
+      u32 resample_subpos = 0;
+      for (u32 i = 0; i < nFrames; i++)
+      {
+        std::memcpy(out_ptr, resample_ptr, copy_stride);
+        out_ptr += m_channels;
+
+        resample_subpos += increment;
+        resample_ptr += (resample_subpos >> 16) * m_channels;
+        resample_subpos %= 65536u;
+      }
+
+      Log_VerbosePrintf("Audio buffer underflow, resampled %u frames to %u", frames_to_read, nFrames);
+    }
+    else
+    {
+      // no data, fall back to silence
+      std::memset(bData + frames_to_read, 0, sizeof(s32) * silence_frames);
+    }
+  }
 }
 
 void AudioStream::InternalWriteFrames(s32* bData, u32 nSamples)
@@ -226,6 +263,22 @@ void AudioStream::SetNominalRate(float tempo)
   m_nominal_rate = tempo;
   if (m_stretch_mode == AudioStretchMode::Resample)
     m_soundtouch->setRate(tempo);
+}
+
+void AudioStream::UpdateTargetTempo(float tempo)
+{
+  if (m_stretch_mode != AudioStretchMode::TimeStretch)
+    return;
+
+  // undo sqrt()
+  if (tempo)
+    tempo *= tempo;
+
+  m_average_position = AVERAGING_WINDOW;
+  m_average_available = AVERAGING_WINDOW;
+  std::fill_n(m_average_fullness.data(), AVERAGING_WINDOW, tempo);
+  m_soundtouch->setTempo(tempo);
+  m_stretch_reset = 0;
 }
 
 void AudioStream::SetStretchMode(AudioStretchMode mode)

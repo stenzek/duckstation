@@ -2199,10 +2199,6 @@ void System::UpdateSpeedLimiterState()
 
   if (IsValid())
   {
-    s_target_speed = target_speed;
-    UpdateThrottlePeriod();
-    ResetThrottler();
-
     AudioStream* stream = g_spu.GetOutputStream();
     if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
       stream->SetOutputVolume(GetAudioOutputVolume());
@@ -2211,10 +2207,16 @@ void System::UpdateSpeedLimiterState()
     const bool rate_adjust =
       (syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && target_speed > 0.0f;
     stream->SetNominalRate(rate_adjust ? target_speed : 1.0f);
+    if (s_target_speed < target_speed)
+      stream->UpdateTargetTempo(target_speed);
 
     // stream->SetSync(audio_sync_enabled);
     // if (audio_sync_enabled)
     // stream->EmptyBuffer();
+
+    s_target_speed = target_speed;
+    UpdateThrottlePeriod();
+    ResetThrottler();
   }
 
   g_host_display->SetDisplayMaxFPS(max_display_fps);
