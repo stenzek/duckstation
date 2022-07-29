@@ -614,7 +614,12 @@ void FullscreenUI::Render()
   {
     auto lock = Host::GetSettingsLock();
     GetEditingSettingsInterface()->Save();
-    Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+    Host::RunOnCPUThread([gs = IsEditingGameSettings()]() {
+      if (gs)
+        System::ReloadGameSettings(false);
+      else
+        System::ApplySettings(false);
+    });
   }
 
   ImGuiFullscreen::ResetCloseMenuIfNeeded();
