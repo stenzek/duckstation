@@ -669,7 +669,7 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   else
     name = fmt::format("{}{}", entry->title, extension);
 
-  return Path::Combine(EmuFolders::Cache, name);
+  return Path::Combine(EmuFolders::Covers, name);
 }
 
 size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) const
