@@ -27,9 +27,13 @@ static HANDLE GetSleepTimer()
     return s_sleep_timer;
 
   s_sleep_timer_created = true;
-  s_sleep_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
+  s_sleep_timer = CreateWaitableTimerEx(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
   if (!s_sleep_timer)
-    std::fprintf(stderr, "CreateWaitableTimer() failed, falling back to Sleep()\n");
+  {
+    s_sleep_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
+    if (!s_sleep_timer)
+      std::fprintf(stderr, "CreateWaitableTimer() failed, falling back to Sleep()\n");
+  }
 
   return s_sleep_timer;
 }
@@ -89,8 +93,19 @@ void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    while (GetCurrentValue() < value)
-      SleepUntil(value, false);
+    for (;;)
+    {
+      Value current = GetCurrentValue();
+      if (current >= value)
+        break;
+
+      // spin for the last 1ms
+      if ((value - current) > ConvertMillisecondsToValue(1))
+      {
+        SleepUntil(value, false);
+        continue;
+      }
+    }
   }
   else
   {
