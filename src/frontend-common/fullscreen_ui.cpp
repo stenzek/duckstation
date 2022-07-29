@@ -3157,18 +3157,38 @@ void FullscreenUI::DrawAudioSettingsPage()
                   "The audio backend determines how frames produced by the emulator are submitted to the host.",
                   "Audio", "Backend", Settings::DEFAULT_AUDIO_BACKEND, &Settings::ParseAudioBackend,
                   &Settings::GetAudioBackendName, &Settings::GetAudioBackendDisplayName, AudioBackend::Count);
-  DrawIntRangeSetting("Latency",
-                      "The buffer size determines the size of the chunks of audio which will be pulled by the host.",
-                      "Audio", "Latency", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
+  DrawEnumSetting("Stretch Mode", "Determines quality of audio when not running at 100% speed.", "Audio", "StretchMode",
+                  Settings::DEFAULT_AUDIO_STRETCH_MODE, &AudioStream::ParseStretchMode,
+                  &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeName, AudioStretchMode::Count);
+  DrawIntRangeSetting("Buffer Size", "Determines the amount of audio buffered before being pulled by the host API.",
+                      "Audio", "BufferMS", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
+
+  const u32 output_latency = GetEditingSettingsInterface()->GetUIntValue(
+    "Audio", "OutputLatencyMS",
+    IsEditingGameSettings() ? Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS :
+                              Host::Internal::GetBaseSettingsLayer()->GetUIntValue(
+                                "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS));
+  bool output_latency_minimal = (output_latency == 0);
+  if (ToggleButton("Minimal Output Latency",
+                   "When enabled, the minimum supported output latency will be used for the host API.",
+                   &output_latency_minimal))
+  {
+    GetEditingSettingsInterface()->SetUIntValue("Audio", "OutputLatencyMS",
+                                                output_latency_minimal ? 0 : Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
+    SetSettingsChanged();
+  }
+  if (!output_latency_minimal)
+  {
+    DrawIntRangeSetting("Output Latency",
+                        "Determines how much latency there is between the audio being picked up by the host API, and "
+                        "played through speakers.",
+                        "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
+  }
 
   DrawToggleSetting("Sync To Output",
                     "Throttles the emulation speed based on the audio backend pulling audio "
                     "frames. Enable to reduce the chances of crackling.",
                     "Audio", "Sync", true);
-  DrawToggleSetting(
-    "Time Stretching",
-    "When running outside of 100% speed, adjusts tempo on audio from the target speed instead of dropping frames.",
-    "Audio", "TimeStretching", true);
 
   EndMenuButtons();
 }
