@@ -44,7 +44,6 @@
     <ClInclude Include="gl\shader_cache.h">
       <Filter>gl</Filter>
     </ClInclude>
-    <ClInclude Include="event.h" />
     <ClInclude Include="bitutils.h" />
     <ClInclude Include="gl\context.h">
       <Filter>gl</Filter>
@@ -176,7 +175,6 @@
     <ClCompile Include="gl\shader_cache.cpp">
       <Filter>gl</Filter>
     </ClCompile>
-    <ClCompile Include="event.cpp" />
     <ClCompile Include="gl\context_wgl.cpp">
       <Filter>gl</Filter>
     </ClCompile>

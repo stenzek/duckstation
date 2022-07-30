@@ -11,8 +11,6 @@ add_library(common
   dimensional_array.h
   error.cpp
   error.h
-  event.cpp
-  event.h
   fifo_queue.h
   file_system.cpp
   file_system.h

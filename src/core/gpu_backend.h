@@ -1,5 +1,4 @@
 #pragma once
-#include "common/event.h"
 #include "common/heap_array.h"
 #include "common/threading.h"
 #include "gpu_types.h"

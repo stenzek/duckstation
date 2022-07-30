@@ -23,7 +23,6 @@
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="easing.h" />
     <ClInclude Include="error.h" />
-    <ClInclude Include="event.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
     <ClInclude Include="gl\context.h" />
@@ -103,7 +102,6 @@
     <ClCompile Include="d3d12\stream_buffer.cpp" />
     <ClCompile Include="d3d12\texture.cpp" />
     <ClCompile Include="d3d12\util.cpp" />
-    <ClCompile Include="event.cpp" />
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="gl\context.cpp" />
     <ClCompile Include="gl\context_wgl.cpp">
