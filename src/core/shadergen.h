@@ -24,7 +24,10 @@ protected:
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;
 
+#ifdef WITH_OPENGL
   void SetGLSLVersionString();
+#endif
+
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
   void WriteHeader(std::stringstream& ss);
   void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan);

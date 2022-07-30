@@ -20,27 +20,19 @@ add_library(frontend-common
   input_source.h
   imgui_fullscreen.cpp
   imgui_fullscreen.h
-  imgui_impl_opengl3.cpp
-  imgui_impl_opengl3.h
-  imgui_impl_vulkan.cpp
-  imgui_impl_vulkan.h
   imgui_manager.cpp
   imgui_manager.h
   imgui_overlays.cpp
   imgui_overlays.h
-  opengl_host_display.cpp
-  opengl_host_display.h
   postprocessing_chain.cpp
   postprocessing_chain.h
   postprocessing_shader.cpp
   postprocessing_shader.h
   postprocessing_shadergen.cpp
   postprocessing_shadergen.h
-  vulkan_host_display.cpp
-  vulkan_host_display.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common glad cubeb imgui tinyxml2 rapidjson scmversion)
+target_link_libraries(frontend-common PUBLIC core common cubeb imgui tinyxml2 rapidjson scmversion)
 
 if(WIN32)
   target_sources(frontend-common PRIVATE
@@ -62,6 +54,25 @@ if(WIN32)
     xinput_source.h
   )
   target_link_libraries(frontend-common PRIVATE d3d11.lib dxgi.lib)
+endif()
+
+if(ENABLE_OPENGL)
+  target_sources(frontend-common PRIVATE
+    opengl_host_display.cpp
+    opengl_host_display.h
+    imgui_impl_opengl3.cpp
+    imgui_impl_opengl3.h
+  )
+  target_link_libraries(frontend-common PRIVATE glad)
+endif()
+
+if(ENABLE_VULKAN)
+  target_sources(frontend-common PRIVATE
+    imgui_impl_vulkan.cpp
+    imgui_impl_vulkan.h
+    vulkan_host_display.cpp
+    vulkan_host_display.h
+  )
 endif()
 
 if(APPLE)

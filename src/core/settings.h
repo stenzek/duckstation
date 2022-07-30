@@ -358,10 +358,16 @@ struct Settings
   static const char* GetMultitapModeDisplayName(MultitapMode mode);
 
   // Default to D3D11 on Windows as it's more performant and at this point, less buggy.
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_M_ARM64)
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D12;
+#elif defined(_WIN32)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
-#else
+#elif defined(WITH_OPENGL)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
+#elif defined(WITH_VULKAN)
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareVulkan;
+#else
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Software;
 #endif
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr GPUDownsampleMode DEFAULT_GPU_DOWNSAMPLE_MODE = GPUDownsampleMode::Disabled;

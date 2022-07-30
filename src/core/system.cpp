@@ -1457,13 +1457,17 @@ bool System::CreateGPU(GPURenderer renderer)
 {
   switch (renderer)
   {
+#ifdef WITH_OPENGL
     case GPURenderer::HardwareOpenGL:
       g_gpu = GPU::CreateHardwareOpenGLRenderer();
       break;
+#endif
 
+#ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
       g_gpu = GPU::CreateHardwareVulkanRenderer();
       break;
+#endif
 
 #ifdef _WIN32
     case GPURenderer::HardwareD3D11:

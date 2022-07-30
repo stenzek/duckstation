@@ -11,7 +11,7 @@ Log_SetChannel(GL::Context);
 
 #if defined(_WIN32) && !defined(_M_ARM64)
 #include "context_wgl.h"
-#elif defined(__APPLE__) && !defined(LIBERTRO)
+#elif defined(__APPLE__)
 #include "context_agl.h"
 #endif
 

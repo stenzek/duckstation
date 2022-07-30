@@ -21,9 +21,7 @@
 #include "frontend-common/imgui_manager.h"
 #include "frontend-common/imgui_overlays.h"
 #include "frontend-common/input_manager.h"
-#include "frontend-common/opengl_host_display.h"
 #include "frontend-common/sdl_audio_stream.h"
-#include "frontend-common/vulkan_host_display.h"
 #include "imgui.h"
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
@@ -56,6 +54,14 @@ Log_SetChannel(EmuThread);
 #include "frontend-common/d3d12_host_display.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
+#endif
+
+#ifdef WITH_OPENGL
+#include "frontend-common/opengl_host_display.h"
+#endif
+
+#ifdef WITH_VULKAN
+#include "frontend-common/vulkan_host_display.h"
 #endif
 
 #ifdef WITH_CHEEVOS
@@ -824,17 +830,18 @@ bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
 
   switch (api)
   {
+#ifdef WITH_VULKAN
     case HostDisplay::RenderAPI::Vulkan:
       g_host_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
       break;
+#endif
 
+#ifdef WITH_OPENGL
     case HostDisplay::RenderAPI::OpenGL:
     case HostDisplay::RenderAPI::OpenGLES:
-#ifndef _WIN32
-    default:
-#endif
       g_host_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
       break;
+#endif
 
 #ifdef _WIN32
     case HostDisplay::RenderAPI::D3D12:
@@ -842,10 +849,21 @@ bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
       break;
 
     case HostDisplay::RenderAPI::D3D11:
-    default:
       g_host_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
       break;
 #endif
+
+    default:
+#if defined(_WIN32) && defined(_M_ARM64)
+      g_host_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
+#elif defined(_WIN32)
+      g_host_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
+#elif defined(WITH_OPENGL)
+      g_host_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+#elif defined(WITH_VULKAN)
+      g_host_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
+#endif
+      break;
   }
 
   if (!createDisplayRequested(m_is_fullscreen, m_is_rendering_to_main))

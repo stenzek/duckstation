@@ -1,9 +1,13 @@
 #include "shadergen.h"
 #include "common/assert.h"
-#include "common/gl/loader.h"
 #include "common/log.h"
 #include <cstdio>
 #include <cstring>
+
+#ifdef WITH_OPENGL
+#include "common/gl/loader.h"
+#endif
+
 Log_SetChannel(ShaderGen);
 
 ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend)
@@ -11,14 +15,16 @@ ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_sourc
     m_glsl(render_api != HostDisplay::RenderAPI::D3D11 && render_api != HostDisplay::RenderAPI::D3D12),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
+#if defined(WITH_OPENGL) || defined(WITH_VULKAN)
   if (m_glsl)
   {
+#ifdef WITH_OPENGL
     if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
       SetGLSLVersionString();
 
     m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
     m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
-
+    
     if (m_render_api == HostDisplay::RenderAPI::OpenGL)
     {
       // SSAA with interface blocks is broken on AMD's OpenGL driver.
@@ -26,16 +32,25 @@ ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_sourc
       if (std::strcmp(gl_vendor, "ATI Technologies Inc.") == 0)
         m_use_glsl_interface_blocks = false;
     }
+#else
+    m_use_glsl_interface_blocks = true;
+    m_use_glsl_binding_layout = true;
+#endif
   }
+#endif
 }
 
 ShaderGen::~ShaderGen() = default;
 
 bool ShaderGen::UseGLSLBindingLayout()
 {
+#ifdef WITH_OPENGL
   return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_3 ||
           (GLAD_GL_ARB_explicit_attrib_location && GLAD_GL_ARB_explicit_uniform_location &&
            GLAD_GL_ARB_shading_language_420pack));
+#else
+  return true;
+#endif
 }
 
 void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, bool enabled)
@@ -43,6 +58,7 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, bool enable
   ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
+#ifdef WITH_OPENGL
 void ShaderGen::SetGLSLVersionString()
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -85,6 +101,7 @@ void ShaderGen::SetGLSLVersionString()
                 (glsl_es && major_version >= 3) ? " es" : "");
   m_glsl_version_string = buf;
 }
+#endif
 
 void ShaderGen::WriteHeader(std::stringstream& ss)
 {
@@ -93,6 +110,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   else if (m_render_api == HostDisplay::RenderAPI::Vulkan)
     ss << "#version 450 core\n\n";
 
+#ifdef WITH_OPENGL
   // Extension enabling for OpenGL.
   if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
   {
@@ -130,6 +148,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ES_VERSION_3_1 && GLAD_GL_ARB_shader_storage_buffer_object)
       ss << "#extension GL_ARB_shader_storage_buffer_object : require\n";
   }
+#endif
 
   DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
   DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
@@ -137,6 +156,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_D3D12", m_render_api == HostDisplay::RenderAPI::D3D12);
   DefineMacro(ss, "API_VULKAN", m_render_api == HostDisplay::RenderAPI::Vulkan);
 
+#ifdef WITH_OPENGL
   if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
   {
     ss << "precision highp float;\n";
@@ -151,6 +171,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
     ss << "\n";
   }
+#endif
 
   if (m_glsl)
   {
@@ -315,7 +336,12 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
 const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
                                                  bool sample_interpolation, bool is_out) const
 {
-  if (m_glsl && interface_block && (!IsVulkan() && !GLAD_GL_ARB_shading_language_420pack))
+#ifdef WITH_OPENGL
+  const bool shading_language_420pack = GLAD_GL_ARB_shading_language_420pack;
+#else
+  const bool shading_language_420pack = false;
+#endif
+  if (m_glsl && interface_block && (!IsVulkan() && !shading_language_420pack))
   {
     return (sample_interpolation ? (is_out ? "sample out " : "sample in ") :
                                    (centroid_interpolation ? (is_out ? "centroid out " : "centroid in ") : ""));

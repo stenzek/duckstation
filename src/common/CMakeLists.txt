@@ -16,16 +16,6 @@ add_library(common
   file_system.h
   image.cpp
   image.h
-  gl/context.cpp
-  gl/context.h
-  gl/program.cpp
-  gl/program.h
-  gl/shader_cache.cpp
-  gl/shader_cache.h
-  gl/stream_buffer.cpp
-  gl/stream_buffer.h
-  gl/texture.cpp
-  gl/texture.h
   hash_combine.h
   heap_array.h
   heterogeneous_containers.h
@@ -58,28 +48,6 @@ add_library(common
   timer.cpp
   timer.h
   types.h
-  vulkan/builders.cpp
-  vulkan/builders.h
-  vulkan/context.cpp
-  vulkan/context.h
-  vulkan/loader.h
-  vulkan/loader.cpp
-  vulkan/shader_cache.cpp
-  vulkan/shader_cache.h
-  vulkan/shader_compiler.cpp
-  vulkan/shader_compiler.h
-  vulkan/staging_buffer.cpp
-  vulkan/staging_buffer.h
-  vulkan/staging_texture.cpp
-  vulkan/staging_texture.h
-  vulkan/stream_buffer.cpp
-  vulkan/stream_buffer.h
-  vulkan/swap_chain.cpp
-  vulkan/swap_chain.h
-  vulkan/texture.cpp
-  vulkan/texture.h
-  vulkan/util.cpp
-  vulkan/util.h
   window_info.cpp
   window_info.h
 )
@@ -87,7 +55,7 @@ add_library(common
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common PUBLIC fmt Threads::Threads vulkan-headers)
-target_link_libraries(common PRIVATE glad stb libchdr glslang zlib minizip "${CMAKE_DL_LIBS}")
+target_link_libraries(common PRIVATE stb libchdr zlib minizip "${CMAKE_DL_LIBS}")
 
 if(WIN32)
   target_sources(common PRIVATE
@@ -115,8 +83,6 @@ if(WIN32)
     d3d11/stream_buffer.h
     d3d11/texture.cpp
     d3d11/texture.h
-    gl/context_wgl.cpp
-    gl/context_wgl.h
     thirdparty/StackWalker.cpp
     thirdparty/StackWalker.h
     win32_progress_callback.cpp
@@ -132,12 +98,16 @@ endif()
 
 if(USE_X11)
   target_sources(common PRIVATE
-    gl/x11_window.cpp
-    gl/x11_window.h
+      gl/x11_window.cpp
+      gl/x11_window.h
   )
   target_compile_definitions(common PRIVATE "-DUSE_X11=1")
   target_include_directories(common PRIVATE "${X11_INCLUDE_DIR}" "${X11_Xrandr_INCLUDE_PATH}")
   target_link_libraries(common PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
+endif()
+
+if(USE_WAYLAND)
+  target_compile_definitions(common PRIVATE "-DUSE_WAYLAND=1")
 endif()
 
 if(USE_DRMKMS)
@@ -148,71 +118,128 @@ if(USE_DRMKMS)
   target_link_libraries(common PUBLIC Libdrm::Libdrm)
 endif()
 
-if(USE_EGL)
+if(ENABLE_OPENGL)
   target_sources(common PRIVATE
-    gl/context_egl.cpp
-    gl/context_egl.h
+    gl/context.cpp
+    gl/context.h
+    gl/program.cpp
+    gl/program.h
+    gl/shader_cache.cpp
+    gl/shader_cache.h
+    gl/stream_buffer.cpp
+    gl/stream_buffer.h
+    gl/texture.cpp
+    gl/texture.h
   )
-  target_compile_definitions(common PRIVATE "-DUSE_EGL=1")
+  target_compile_definitions(common PUBLIC "WITH_OPENGL=1")
+  target_link_libraries(common PRIVATE glad)
+
+  if(WIN32)
+    target_sources(common PRIVATE
+      gl/context_wgl.cpp
+      gl/context_wgl.h
+    )
+  endif()
+
+  if(USE_EGL)
+    target_sources(common PRIVATE
+      gl/context_egl.cpp
+      gl/context_egl.h
+    )
+    target_compile_definitions(common PRIVATE "-DUSE_EGL=1")
+
+    if(USE_X11)
+      target_sources(common PRIVATE
+        gl/context_egl_x11.cpp
+        gl/context_egl_x11.h
+      )
+
+      # We set EGL_NO_X11 because otherwise X comes in with its macros and breaks
+      # a bunch of files from compiling, if we include the EGL headers. This just
+      # makes the data types opaque, we can still use it with X11 if needed.
+      target_compile_definitions(common PRIVATE "-DEGL_NO_X11=1")
+    endif()
+    if(ANDROID AND USE_EGL)
+      target_sources(common PRIVATE
+        gl/context_egl_android.cpp
+        gl/context_egl_android.h
+      )
+    endif()
+    if(USE_DRMKMS)
+      target_compile_definitions(common PRIVATE "-DUSE_GBM=1")
+      target_sources(common PRIVATE
+        gl/context_egl_gbm.cpp
+        gl/context_egl_gbm.h
+      )
+      target_link_libraries(common PUBLIC GBM::GBM)
+    endif()
+    if(USE_FBDEV)
+      target_compile_definitions(common PRIVATE "-DUSE_FBDEV=1")
+      target_sources(common PRIVATE
+        gl/context_egl_fbdev.cpp
+        gl/context_egl_fbdev.h
+      )
+    endif()
+  endif()
 
   if(USE_X11)
     target_sources(common PRIVATE
-      gl/context_egl_x11.cpp
-      gl/context_egl_x11.h
+      gl/context_glx.cpp
+      gl/context_glx.h
     )
-
-    # We set EGL_NO_X11 because otherwise X comes in with its macros and breaks
-    # a bunch of files from compiling, if we include the EGL headers. This just
-    # makes the data types opaque, we can still use it with X11 if needed.
-    target_compile_definitions(common PRIVATE "-DEGL_NO_X11=1")
+    target_compile_definitions(common PRIVATE "-DUSE_GLX=1")
   endif()
-  if(ANDROID AND USE_EGL)
+
+  if(USE_WAYLAND)
     target_sources(common PRIVATE
-      gl/context_egl_android.cpp
-      gl/context_egl_android.h
+      gl/context_egl_wayland.cpp
+      gl/context_egl_wayland.h
     )
   endif()
-  if(USE_DRMKMS)
-    target_compile_definitions(common PRIVATE "-DUSE_GBM=1")
+
+  if(APPLE)
     target_sources(common PRIVATE
-      gl/context_egl_gbm.cpp
-      gl/context_egl_gbm.h
-    )
-    target_link_libraries(common PUBLIC GBM::GBM)
-  endif()
-  if(USE_FBDEV)
-    target_compile_definitions(common PRIVATE "-DUSE_FBDEV=1")
-    target_sources(common PRIVATE
-      gl/context_egl_fbdev.cpp
-      gl/context_egl_fbdev.h
+      gl/context_agl.mm
+      gl/context_agl.h
     )
   endif()
 endif()
 
-if(USE_X11)
+if(ENABLE_VULKAN)
   target_sources(common PRIVATE
-    gl/context_glx.cpp
-    gl/context_glx.h
+    vulkan/builders.cpp
+    vulkan/builders.h
+    vulkan/context.cpp
+    vulkan/context.h
+    vulkan/loader.h
+    vulkan/loader.cpp
+    vulkan/shader_cache.cpp
+    vulkan/shader_cache.h
+    vulkan/shader_compiler.cpp
+    vulkan/shader_compiler.h
+    vulkan/staging_buffer.cpp
+    vulkan/staging_buffer.h
+    vulkan/staging_texture.cpp
+    vulkan/staging_texture.h
+    vulkan/stream_buffer.cpp
+    vulkan/stream_buffer.h
+    vulkan/swap_chain.cpp
+    vulkan/swap_chain.h
+    vulkan/texture.cpp
+    vulkan/texture.h
+    vulkan/util.cpp
+    vulkan/util.h
   )
-  target_compile_definitions(common PRIVATE "-DUSE_GLX=1")
+  target_compile_definitions(common PUBLIC "WITH_VULKAN=1")
+  target_link_libraries(common PRIVATE glslang)
+
+  if(APPLE)
+    # Needed for Vulkan Swap Chain.
+    target_link_libraries(common PRIVATE "objc")
+  endif()
 endif()
 
-if(USE_WAYLAND)
-  target_sources(common PRIVATE
-    gl/context_egl_wayland.cpp
-    gl/context_egl_wayland.h
-  )
-  target_compile_definitions(common PRIVATE "-DUSE_WAYLAND=1")
-endif()
 
-if(APPLE)
-  # Needed for Vulkan Swap Chain.
-  target_link_libraries(common PRIVATE "objc")
-  target_sources(common PRIVATE
-    gl/context_agl.mm
-    gl/context_agl.h
-  )
-endif()
 
 if(ENABLE_CHEEVOS)
   target_sources(common PRIVATE

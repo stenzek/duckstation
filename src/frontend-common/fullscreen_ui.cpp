@@ -2949,6 +2949,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
     break;
 #endif
 
+#ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
     {
       DrawToggleSetting("Threaded Presentation",
@@ -2956,6 +2957,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                         "ThreadedPresentation", true);
     }
     break;
+#endif
 
     case GPURenderer::Software:
     {

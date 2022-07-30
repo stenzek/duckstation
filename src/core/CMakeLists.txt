@@ -40,12 +40,8 @@ add_library(core
     gpu_commands.cpp
     gpu_hw.cpp
     gpu_hw.h
-    gpu_hw_opengl.cpp
-    gpu_hw_opengl.h
     gpu_hw_shadergen.cpp
     gpu_hw_shadergen.h
-    gpu_hw_vulkan.cpp
-    gpu_hw_vulkan.h
     gpu_sw.cpp
     gpu_sw.h
     gpu_sw_backend.cpp
@@ -121,7 +117,7 @@ set(RECOMPILER_SRCS
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
-target_link_libraries(core PRIVATE glad stb xxhash imgui rapidjson tinyxml2)
+target_link_libraries(core PRIVATE stb xxhash imgui rapidjson tinyxml2)
 
 if(WIN32)
   target_sources(core PRIVATE
@@ -131,6 +127,21 @@ if(WIN32)
     gpu_hw_d3d11.h
   )
   target_link_libraries(core PRIVATE winmm.lib)
+endif()
+
+if(ENABLE_OPENGL)
+  target_sources(core PRIVATE
+    gpu_hw_opengl.cpp
+    gpu_hw_opengl.h
+  )
+  target_link_libraries(core PRIVATE glad)
+endif()
+
+if(ENABLE_VULKAN)
+  target_sources(core PRIVATE
+    gpu_hw_vulkan.cpp
+    gpu_hw_vulkan.h
+  )
 endif()
 
 if(${CPU_ARCH} STREQUAL "x64")

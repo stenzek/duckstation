@@ -805,12 +805,23 @@ static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef _WIN32
   "D3D11", "D3D12",
 #endif
-  "Vulkan", "OpenGL", "Software");
+#ifdef WITH_VULKAN
+  "Vulkan",
+#endif
+#ifdef WITH_OPENGL
+  "OpenGL",
+#endif
+  "Software");
 static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef _WIN32
   TRANSLATABLE("GPURenderer", "Hardware (D3D11)"), TRANSLATABLE("GPURenderer", "Hardware (D3D12)"),
 #endif
-  TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"), TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
+#ifdef WITH_VULKAN
+  TRANSLATABLE("GPURenderer", "Hardware (Vulkan)"),
+#endif
+#ifdef WITH_OPENGL
+  TRANSLATABLE("GPURenderer", "Hardware (OpenGL)"),
+#endif
   TRANSLATABLE("GPURenderer", "Software"));
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)

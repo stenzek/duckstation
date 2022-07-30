@@ -58,8 +58,12 @@ enum class GPURenderer : u8
   HardwareD3D11,
   HardwareD3D12,
 #endif
+#ifdef WITH_VULKAN
   HardwareVulkan,
+#endif
+#ifdef WITH_OPENGL
   HardwareOpenGL,
+#endif
   Software,
   Count
 };

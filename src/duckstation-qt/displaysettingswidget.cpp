@@ -8,10 +8,12 @@
 #include <QtWidgets/QMessageBox>
 
 // For enumerating adapters.
-#include "frontend-common/vulkan_host_display.h"
 #ifdef _WIN32
 #include "frontend-common/d3d11_host_display.h"
 #include "frontend-common/d3d12_host_display.h"
+#endif
+#ifdef WITH_VULKAN
+#include "frontend-common/vulkan_host_display.h"
 #endif
 
 DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* parent)
@@ -206,11 +208,12 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
       aml = FrontendCommon::D3D12HostDisplay::StaticGetAdapterAndModeList();
       break;
 #endif
-
+#ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
       aml = FrontendCommon::VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
       threaded_presentation_supported = true;
       break;
+#endif
 
     case GPURenderer::Software:
       thread_supported = true;
