@@ -185,7 +185,13 @@ void ReplaceAll(std::string* subject, const std::string_view& search, const std:
 bool ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value);
 
 /// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
-void AppendUTF16CharacterToUTF8(std::string& s, u16 ch);
+void EncodeAndAppendUTF8(std::string& s, char32_t ch);
+
+/// Decodes UTF-8 to a single codepoint, updating the position parameter.
+/// Returns the number of bytes the codepoint took in the original string.
+size_t DecodeUTF8(const void* bytes, size_t length, char32_t* ch);
+size_t DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch);
+size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
 
 /// Strided memcpy/memcmp.
 ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,

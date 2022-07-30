@@ -98,7 +98,7 @@ bool Event::TryWait(u32 timeout_in_ms)
 
   EnterCriticalSection(&m_cs);
   while (!m_signaled.load() && (GetTickCount() - start) < timeout_in_ms)
-    SleepConditionVariableCS(&m_cv, &m_cs, INFINITE);
+    SleepConditionVariableCS(&m_cv, &m_cs, timeout_in_ms);
 
   const bool result = m_signaled.load();
 

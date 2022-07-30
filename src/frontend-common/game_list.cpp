@@ -660,8 +660,7 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   }
 
   // Check for illegal characters, use serial instead.
-  std::string sanitized_name(entry->title);
-  Path::SanitizeFileName(sanitized_name);
+  const std::string sanitized_name(Path::SanitizeFileName(entry->title));
 
   std::string name;
   if (sanitized_name != entry->title)

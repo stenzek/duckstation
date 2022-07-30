@@ -1747,8 +1747,7 @@ const std::string& Achievements::GetAchievementBadgePath(const Achievement& achi
     return badge_path;
 
   // well, this comes from the internet.... :)
-  std::string clean_name(achievement.badge_name);
-  Path::SanitizeFileName(clean_name);
+  const std::string clean_name(Path::SanitizeFileName(achievement.badge_name));
   badge_path = Path::Combine(s_achievement_icon_cache_directory,
                              fmt::format("{}{}.png", clean_name, achievement.locked ? "_lock" : ""));
   if (FileSystem::FileExists(badge_path.c_str()))

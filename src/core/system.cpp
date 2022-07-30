@@ -703,9 +703,7 @@ std::optional<DiscRegion> System::GetRegionForPath(const char* image_path)
 
 std::string System::GetGameSettingsPath(const std::string_view& game_serial)
 {
-  std::string sanitized_serial(game_serial);
-  Path::SanitizeFileName(sanitized_serial);
-
+  const std::string sanitized_serial(Path::SanitizeFileName(game_serial));
   return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", sanitized_serial));
 }
 

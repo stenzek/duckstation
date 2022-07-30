@@ -223,3 +223,19 @@ TEST(FileSystem, ChangeFileName)
   ASSERT_EQ(Path::ChangeFileName("/foo/bar", "baz"), "/foo/baz");
 #endif
 }
+
+TEST(FileSystem, SanitizeFileName)
+{
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo"), u8"foo");
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo/bar"), u8"foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName(u8"f🙃o"), u8"f🙃o");
+  ASSERT_EQ(Path::SanitizeFileName(u8"ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱"), u8"ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱");
+#ifdef _WIN32
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo:"), u8"foo_");
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo:bar."), u8"foo_bar_");
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo\\bar"), u8"foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo>bar"), u8"foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo\\bar", false), u8"foo\\bar");
+#endif
+  ASSERT_EQ(Path::SanitizeFileName(u8"foo/bar", false), u8"foo/bar");
+}

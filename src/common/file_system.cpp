@@ -60,16 +60,28 @@ static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 }
 #endif
 
-static inline bool FileSystemCharacterIsSane(char c, bool StripSlashes)
+static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
-  if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != ' ' && c != ' ' &&
-      c != '_' && c != '-' && c != '.')
-  {
-    if (!StripSlashes && (c == '/' || c == '\\'))
-      return true;
+#ifdef _WIN32
+  // https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN#naming-conventions
+  if ((c == U'/' || c == U'\\') && strip_slashes)
+    return false;
 
+  if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*' || c == U'0' ||
+      c <= static_cast<char32_t>(31))
+  {
     return false;
   }
+#else
+  if (c == '/' && strip_slashes)
+    return false;
+
+    // macos doesn't allow colons, apparently
+#ifdef __APPLE__
+  if (c == U':')
+    return false;
+#endif
+#endif
 
   return true;
 }
@@ -117,39 +129,27 @@ static inline void PathAppendString(std::string& dst, const T& src)
   }
 }
 
-void Path::SanitizeFileName(char* Destination, u32 cbDestination, const char* FileName, bool StripSlashes /* = true */)
+std::string Path::SanitizeFileName(const std::string_view& str, bool strip_slashes /* = true */)
 {
-  u32 i;
-  u32 fileNameLength = static_cast<u32>(std::strlen(FileName));
+  std::string ret;
+  ret.reserve(str.length());
 
-  if (FileName == Destination)
+  size_t pos = 0;
+  while (pos < str.length())
   {
-    for (i = 0; i < fileNameLength; i++)
-    {
-      if (!FileSystemCharacterIsSane(FileName[i], StripSlashes))
-        Destination[i] = '_';
-    }
+    char32_t ch;
+    pos += StringUtil::DecodeUTF8(str, pos, &ch);
+    ch = FileSystemCharacterIsSane(ch, strip_slashes) ? ch : U'_';
+    StringUtil::EncodeAndAppendUTF8(ret, ch);
   }
-  else
-  {
-    for (i = 0; i < fileNameLength && i < cbDestination; i++)
-    {
-      if (FileSystemCharacterIsSane(FileName[i], StripSlashes))
-        Destination[i] = FileName[i];
-      else
-        Destination[i] = '_';
-    }
-  }
-}
 
-void Path::SanitizeFileName(std::string& Destination, bool StripSlashes /* = true*/)
-{
-  const std::size_t len = Destination.length();
-  for (std::size_t i = 0; i < len; i++)
-  {
-    if (!FileSystemCharacterIsSane(Destination[i], StripSlashes))
-      Destination[i] = '_';
-  }
+#ifdef _WIN32
+  // Windows: Can't end filename with a period.
+  if (ret.length() > 0 && ret.back() == '.')
+    ret.back() = '_';
+#endif
+
+  return ret;
 }
 
 bool Path::IsAbsolute(const std::string_view& path)
