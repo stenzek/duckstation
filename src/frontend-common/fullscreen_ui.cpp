@@ -217,6 +217,8 @@ static void DoChangeDiscFromFile();
 static void DoChangeDisc();
 static void DoRequestExit();
 static void DoToggleFullscreen();
+static void DoCheatsMenu();
+static void DoToggleAnalogMode();
 
 //////////////////////////////////////////////////////////////////////////
 // Settings
@@ -810,15 +812,14 @@ void FullscreenUI::DoChangeDisc()
   OpenChoiceDialog(ICON_FA_COMPACT_DISC "  Select Disc Image", true, std::move(options), std::move(callback));
 }
 
-static void DoCheatsMenu()
+void FullscreenUI::DoCheatsMenu()
 {
-#if 0
   CheatList* cl = System::GetCheatList();
   if (!cl)
   {
-    if (!s_host_interface->LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
+    if (!System::LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
     {
-      s_host_interface->AddFormattedOSDMessage(10.0f, "No cheats found for %s.", System::GetRunningTitle().c_str());
+      Host::AddKeyedOSDMessage("load_cheat_list", fmt::format("No cheats found for {}.", System::GetRunningTitle()), 10.0f);
       ReturnToMainWindow();
       return;
     }
@@ -847,13 +848,12 @@ static void DoCheatsMenu()
     if (cc.activation == CheatCode::Activation::Manual)
       cl->ApplyCode(static_cast<u32>(index));
     else
-      s_host_interface->SetCheatCodeState(static_cast<u32>(index), checked, true);
+      System::SetCheatCodeState(static_cast<u32>(index), checked, true);
   };
   OpenChoiceDialog(ICON_FA_FROWN "  Cheat List", true, std::move(options), std::move(callback));
-#endif
 }
 
-static void DoToggleAnalogMode()
+void FullscreenUI::DoToggleAnalogMode()
 {
   // hacky way to toggle analog mode
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -3532,7 +3532,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
                             ImGuiWindowFlags_NoBackground))
   {
     static constexpr u32 submenu_item_count[] = {
-      11, // None
+      12, // None
       4,  // Exit
 #ifdef WITH_CHEEVOS
       3, // Achievements
@@ -3572,8 +3572,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
             s_current_main_window = MainWindowType::None;
         }
 
-#if 0
-        if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false, !IsCheevosHardcoreModeActive()))
+        if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false, !Achievements::ChallengeModeActive()))
         {
           s_current_main_window = MainWindowType::None;
           DoCheatsMenu();
@@ -3581,10 +3580,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
         if (ActiveButton(ICON_FA_GAMEPAD "  Toggle Analog", false))
         {
-          CloseQuickMenu();
+          ClosePauseMenu();
           DoToggleAnalogMode();
         }
-#endif
 
         if (ActiveButton(ICON_FA_WRENCH "  Game Properties", false, !System::GetRunningCode().empty()))
         {
@@ -3611,14 +3609,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         {
           System::SaveScreenshot();
           ClosePauseMenu();
-        }
-
-        if (ActiveButton(g_gpu->IsHardwareRenderer() ? (ICON_FA_PAINT_BRUSH "  Switch To Software Renderer") :
-                                                       (ICON_FA_PAINT_BRUSH "  Switch To Hardware Renderer"),
-                         false))
-        {
-          ClosePauseMenu();
-          DoToggleSoftwareRenderer();
         }
 
         if (ActiveButton(ICON_FA_COMPACT_DISC "  Change Disc", false))
