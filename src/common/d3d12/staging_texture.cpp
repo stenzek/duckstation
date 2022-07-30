@@ -45,6 +45,8 @@ bool StagingTexture::Create(u32 width, u32 height, DXGI_FORMAT format, bool for_
     return false;
   }
 
+  Destroy(true);
+
   m_resource = std::move(resource);
   m_width = width;
   m_height = height;
