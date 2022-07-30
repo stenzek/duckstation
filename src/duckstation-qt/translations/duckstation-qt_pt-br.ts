@@ -1194,12 +1194,12 @@ Posição nos placares de ligeres: {} de {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="103"/>
         <source>Maximum Latency: %1 frames / %2 ms (%3ms buffer + %5ms output)</source>
-        <translation>Latência máxima: %1 quadro / %2 ms (armaenado %3ms + saída %5ms)</translation>
+        <translation>Latência máxima: %1 quadros / %2 ms (armazenado %3ms + saída %5ms)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="111"/>
         <source>Maximum Latency: %1 frames / %2 ms</source>
-        <translation>Latência máxima: %1 quadro / %2 ms</translation>
+        <translation>Latência máxima: %1 quadros / %2 ms</translation>
     </message>
     <message numerus="yes">
         <source>Maximum Latency: %n frames (%1ms)</source>
