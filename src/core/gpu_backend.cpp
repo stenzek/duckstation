@@ -200,8 +200,7 @@ void GPUBackend::Sync(bool allow_sleep)
   PushCommand(cmd);
   WakeGPUThread();
 
-  m_sync_event.Wait();
-  m_sync_event.Reset();
+  m_sync_semaphore.Wait();
 }
 
 void GPUBackend::RunGPULoop()
@@ -252,7 +251,7 @@ void GPUBackend::RunGPULoop()
         case GPUBackendCommandType::Sync:
         {
           DebugAssert(read_ptr == write_ptr);
-          m_sync_event.Signal();
+          m_sync_semaphore.Post();
           allow_sleep = static_cast<const GPUBackendSyncCommand*>(cmd)->allow_sleep;
         }
         break;

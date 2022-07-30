@@ -66,7 +66,7 @@ protected:
 
   Common::Rectangle<u32> m_drawing_area{};
 
-  Common::Event m_sync_event;
+  Threading::KernelSemaphore m_sync_semaphore;
   std::atomic_bool m_gpu_thread_sleeping{false};
   std::atomic_bool m_gpu_loop_done{false};
   Threading::Thread m_gpu_thread;
