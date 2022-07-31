@@ -29,20 +29,64 @@ d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations
 EOF
 
 curl -L \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
-        -O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
-        -O "https://curl.se/download/curl-$CURL.tar.gz" \
-	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz"
+  -O "https://libsdl.org/release/$SDL.tar.gz" \
+  -O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
+  -O "https://curl.se/download/curl-$CURL.tar.gz" \
+  -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+  -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
+  -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
+  -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz"
 
 shasum -a 256 --check SHASUMS
 
 echo "Installing SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-./configure --prefix "$INSTALLDIR" --without-x
+
+# Patch clang wrappers to require 10.14 for x64.
+patch -u build-scripts/clang-fat.sh <<EOF
+--- clang-fat.bak	2022-07-30 22:32:22.000000000 -0700
++++ clang-fat.sh	2022-07-30 22:34:57.000000000 -0700
+@@ -6,12 +6,12 @@
+ 
+ DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
+ 
+-# Intel 64-bit compiler flags (10.6 runtime compatibility)
+-CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.6 \\
+--DMAC_OS_X_VERSION_MIN_REQUIRED=1060 \\
++# Intel 64-bit compiler flags (10.14 runtime compatibility)
++CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.14 \\
++-DMAC_OS_X_VERSION_MIN_REQUIRED=101400 \\
+ -I/usr/local/include"
+ 
+-CLANG_LINK_X64="-mmacosx-version-min=10.6"
++CLANG_LINK_X64="-mmacosx-version-min=10.14"
+ 
+ # ARM 64-bit compiler flags (11.0 runtime compatibility)
+ CLANG_COMPILE_ARM64="clang -arch arm64 -mmacosx-version-min=11.0 \\
+EOF
+
+patch -u build-scripts/clang++-fat.sh << EOF
+--- clang++-fat.bak	2022-07-30 22:55:02.000000000 -0700
++++ clang++-fat.sh	2022-07-30 22:55:19.000000000 -0700
+@@ -6,11 +6,11 @@
+ 
+ DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
+ 
+-# Intel 64-bit compiler flags (10.6 runtime compatibility)
+-CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.6 \\
++# Intel 64-bit compiler flags (10.14 runtime compatibility)
++CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.14 \\
+ -I/usr/local/include"
+ 
+-CLANG_LINK_X64="-mmacosx-version-min=10.6"
++CLANG_LINK_X64="-mmacosx-version-min=10.14"
+ 
+ # ARM 64-bit compiler flags (11.0 runtime compatibility)
+ CLANG_COMPILE_ARM64="clang++ -arch arm64 -mmacosx-version-min=11.0 \\
+EOF
+
+CC="${PWD}/build-scripts/clang-fat.sh" CXX="${PWD}/build-scripts/clang++-fat.sh" ./configure --prefix "$INSTALLDIR" --without-x
 make "-j$NPROCS"
 make install
 cd ..
@@ -50,11 +94,22 @@ cd ..
 echo "Installing curl..."
 tar xf "curl-$CURL.tar.gz"
 cd "curl-$CURL"
-./configure --prefix "$INSTALLDIR" --with-secure-transport
+mkdir build-x64
+cd build-x64
+../configure --prefix "$INSTALLDIR" --with-secure-transport
 make "-j$NPROCS"
 make install
 cd ..
 
+# Build arm64, but don't install it, instead just add the arm64 binary into the existing x64 dylib.
+mkdir build-arm64
+cd build-arm64
+CFLAGS="-arch arm64" ../configure --host x86_64-apple-darwin --prefix "$INSTALLDIR" --with-secure-transport
+make "-j$NPROCS"
+lipo -create "$INSTALLDIR/lib/libcurl.4.dylib" "lib/.libs/libcurl.4.dylib" -o "$INSTALLDIR/lib/libcurl.4.dylib"
+cd ../..
+
+# MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."
 tar xf "v$MOLTENVK.tar.gz"
 cd "MoltenVK-${MOLTENVK}"
@@ -68,7 +123,7 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF ..
+cmake -G Ninja -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF ..
 cmake --build . --parallel
 cmake --install .
 cd ../../
@@ -78,7 +133,7 @@ tar xf "qtsvg-everywhere-src-$QT.tar.xz"
 cd "qtsvg-everywhere-src-$QT"
 mkdir build
 cd build
-cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel ..
+cmake -G Ninja -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel ..
 cmake --build . --parallel
 cmake --install .
 cd ../../
@@ -102,7 +157,7 @@ patch -u src/linguist/CMakeLists.txt <<EOF
 EOF
 mkdir build
 cd build
-cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF ..
+cmake -G Ninja -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF ..
 cmake --build . --parallel
 cmake --install .
 cd ../../
@@ -112,7 +167,7 @@ tar xf "qttranslations-everywhere-src-$QT.tar.xz"
 cd "qttranslations-everywhere-src-$QT"
 mkdir build
 cd build
-cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release ..
+cmake -G Ninja -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . --parallel
 cmake --install .
 cd ../../

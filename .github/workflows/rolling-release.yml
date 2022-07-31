@@ -339,18 +339,14 @@ jobs:
       run: |
         mkdir build
         cd build
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja ..
-        cmake --build . --parallel
-        cd bin
-        codesign -s - --deep -f -v DuckStation.app
+        ../scripts/make-universal-macos-binary.sh ..
         zip -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload macOS .app
       uses: actions/upload-artifact@v1
       with:
         name: "macos"
-        path: "build/bin/duckstation-mac-release.zip"
+        path: "build/duckstation-mac-release.zip"
 
 
   create-release:
