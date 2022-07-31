@@ -215,7 +215,6 @@ if(APPLE)
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/data/resources")
   file(GLOB_RECURSE resources RELATIVE "${CMAKE_SOURCE_DIR}/data/resources" "${CMAKE_SOURCE_DIR}/data/resources/*")
   foreach(res ${resources})
-    message(STATUS "Resource: ${res}")
     target_sources(duckstation-qt PRIVATE "${CMAKE_SOURCE_DIR}/data/resources/${res}")
     get_filename_component(resdir "${res}" DIRECTORY)
     set_source_files_properties("${CMAKE_SOURCE_DIR}/data/resources/${res}" PROPERTIES

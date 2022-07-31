@@ -26,7 +26,7 @@ target_compile_definitions(soundtouch PRIVATE ${COMPILE_DEFINITIONS})
 target_compile_options(soundtouch PRIVATE ${COMPILE_OPTIONS})
 target_compile_definitions(soundtouch PRIVATE SOUNDTOUCH_FLOAT_SAMPLES)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(armv7.*|armv8.*|aarch64.*)$")
+if("${CPU_ARCH}" STREQUAL "aarch32" OR "${CPU_ARCH}" STREQUAL "aarch64")
   target_compile_definitions(soundtouch PRIVATE SOUNDTOUCH_USE_NEON)
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(armv7.*)$")
     target_compile_options(soundtouch PRIVATE -mfpu=neon)
