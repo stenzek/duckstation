@@ -60,14 +60,14 @@ static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 }
 #endif
 
-static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
+__declspec(noinline) static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
 #ifdef _WIN32
   // https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN#naming-conventions
   if ((c == U'/' || c == U'\\') && strip_slashes)
     return false;
 
-  if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*' || c == U'0' ||
+  if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*' || c == 0 ||
       c <= static_cast<char32_t>(31))
   {
     return false;
@@ -76,7 +76,11 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
   if (c == '/' && strip_slashes)
     return false;
 
-    // macos doesn't allow colons, apparently
+  // drop asterisks too, they make globbing annoying
+  if (c == '*')
+    return false;
+
+  // macos doesn't allow colons, apparently
 #ifdef __APPLE__
   if (c == U':')
     return false;
