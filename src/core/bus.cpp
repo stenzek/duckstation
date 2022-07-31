@@ -78,6 +78,21 @@ u32 g_ram_size = 0;
 u32 g_ram_mask = 0;
 u8 g_bios[BIOS_SIZE]{}; // 512K BIOS ROM
 
+// Exports for external debugger access
+namespace Exports {
+
+extern "C" {
+#ifdef _WIN32
+_declspec(dllexport) uintptr_t RAM;
+_declspec(dllexport) u32 RAM_SIZE, RAM_MASK;
+#else
+__attribute__((visibility("default"), used)) uintptr_t RAM;
+__attribute__((visibility("default"), used)) u32 RAM_SIZE, RAM_MASK;
+#endif
+}
+
+} // namespace Exports
+
 static std::array<TickCount, 3> m_exp1_access_time = {};
 static std::array<TickCount, 3> m_exp2_access_time = {};
 static std::array<TickCount, 3> m_bios_access_time = {};
@@ -293,6 +308,10 @@ bool AllocateMemory(bool enable_8mb_ram)
   g_ram_size = ram_size;
   m_ram_code_page_count = enable_8mb_ram ? RAM_8MB_CODE_PAGE_COUNT : RAM_2MB_CODE_PAGE_COUNT;
 
+  Exports::RAM = reinterpret_cast<uintptr_t>(g_ram);
+  Exports::RAM_SIZE = g_ram_size;
+  Exports::RAM_MASK = g_ram_mask;
+
   Log_InfoPrintf("RAM is %u bytes at %p", g_ram_size, g_ram);
   return true;
 }
@@ -305,6 +324,10 @@ void ReleaseMemory()
     g_ram = nullptr;
     g_ram_mask = 0;
     g_ram_size = 0;
+
+    Exports::RAM = 0;
+    Exports::RAM_SIZE = 0;
+    Exports::RAM_MASK = 0;
   }
 
   m_memory_arena.Destroy();
