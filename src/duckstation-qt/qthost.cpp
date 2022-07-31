@@ -1841,6 +1841,8 @@ void Host::OnPerformanceCountersUpdated()
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
 {
+  CommonHost::OnGameChanged(disc_path, game_serial, game_name);
+
   emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
                                         QString::fromStdString(game_name));
 }

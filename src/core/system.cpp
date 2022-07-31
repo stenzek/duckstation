@@ -952,6 +952,7 @@ bool System::LoadState(const char* filename)
   if (!stream)
     return false;
 
+  Log_InfoPrintf("Loading state from '%s'...", filename);
   Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
 
   SaveUndoLoadState();
@@ -987,6 +988,8 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return false;
+
+  Log_InfoPrintf("Saving state to '%s'...", filename);
 
   const bool result = InternalSaveState(stream.get());
   if (!result)

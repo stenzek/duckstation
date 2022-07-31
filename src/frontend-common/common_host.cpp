@@ -137,7 +137,7 @@ bool CommonHost::CreateHostDisplayResources()
 
 void CommonHost::ReleaseHostDisplayResources()
 {
-  //
+  SaveStateSelectorUI::DestroyTextures();
 }
 
 std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
@@ -225,6 +225,7 @@ void CommonHost::OnSystemDestroyed()
 {
   Host::ClearOSDMessages();
 
+  SaveStateSelectorUI::Close(true);
   FullscreenUI::OnSystemDestroyed();
 
   InputManager::PauseVibration();
@@ -240,10 +241,7 @@ void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& 
   UpdateDiscordPresence(false);
 #endif
 
-#ifdef WITH_CHEEVOS
-  // if (Cheevos::IsLoggedIn())
-  // Cheevos::GameChanged(path, image);
-#endif
+  SaveStateSelectorUI::RefreshList();
 }
 
 void CommonHost::SetDefaultSettings(SettingsInterface& si)
