@@ -310,46 +310,51 @@ jobs:
 #        name: "linux-x64-appimage-qt-zsync"
 #        path: "build/duckstation-qt-x64.AppImage.zsync"
 
-# Disabled until we switch to macdeployqt
-#  macos-build:
-#    runs-on: macos-11
-#    steps:
-#    - uses: actions/checkout@v2.3.1
-#      with:
-#        fetch-depth: 0
-#
-#    - name: Install packages
-#      shell: bash
-#      run: |
-#        brew install qt6 sdl2 curl ninja
-#
-#    - name: Clone mac externals
-#      shell: bash
-#      run: |
-#        git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac
-#
-#    - name: Compile and zip .app
-#      shell: bash
-#      run: |
-#        mkdir build
-#        cd build
-#        ls -lh /usr/local/opt
-#        export MACOSX_DEPLOYMENT_TARGET=10.14
-#        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt6_DIR=/usr/local/opt/qt@6/lib/cmake/Qt6 -G Ninja ..
-#        cmake --build . --parallel
-#        cd bin
-#        zip -r duckstation-mac-release.zip DuckStation.app/
-#
-#    - name: Upload macOS .app
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "macos-x64"
-#        path: "build/bin/duckstation-mac-release.zip"
+
+  macos-build:
+    runs-on: macos-11
+    steps:
+    - uses: actions/checkout@v2.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Install packages
+      shell: bash
+      run: |
+        brew install curl ninja
+
+    - name: Cache Dependencies
+      id: cache-deps-mac
+      uses: actions/cache@v3
+      with:
+        path: ~/deps
+        key: deps-mac ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
+
+    - name: Build Dependencies
+      if: steps.cache-deps-mac.outputs.cache-hit != 'true'
+      run: scripts/build-dependencies-mac.sh
+
+    - name: Compile and zip .app
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja ..
+        cmake --build . --parallel
+        cd bin
+        zip -r duckstation-mac-release.zip DuckStation.app/
+
+    - name: Upload macOS .app
+      uses: actions/upload-artifact@v1
+      with:
+        name: "macos"
+        path: "build/bin/duckstation-mac-release.zip"
 
 
   create-release:
     #needs: [windows-build, windows-arm64-build, linux-build, windows-uwp-build]
-    needs: [windows-build, windows-arm64-build, linux-build]
+    needs: [windows-build, windows-arm64-build, linux-build, macos-build]
     runs-on: "ubuntu-20.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -388,6 +393,11 @@ jobs:
 #        with:
 #          name: "linux-x64-appimage-qt-zsync"
 
+      - name: Download MacOS Artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: "macos"
+
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -402,6 +412,7 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
+            macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            windows-uwp/duckstation-uwp.appx
@@ -423,6 +434,7 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
+            macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            windows-uwp/duckstation-uwp.appx

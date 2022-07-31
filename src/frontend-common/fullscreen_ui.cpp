@@ -34,6 +34,7 @@
 #include "util/ini_settings_interface.h"
 #include <atomic>
 #include <bitset>
+#include <unordered_map>
 #include <thread>
 Log_SetChannel(FullscreenUI);
 
