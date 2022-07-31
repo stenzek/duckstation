@@ -18,6 +18,7 @@
 #include <array>
 #include <cctype>
 #include <ctime>
+#include <unordered_map>
 #include <string_view>
 #include <tinyxml2.h>
 #include <utility>
