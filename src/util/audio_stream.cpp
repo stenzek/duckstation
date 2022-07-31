@@ -390,8 +390,8 @@ static void FloatChunkToS16(s32* dst, const float* src, uint size)
 
   for (u32 i = 0; i < iterations; i++)
   {
-    float32x4_t fv1 = vld1q_s32(src + 0);
-    float32x4_t fv2 = vld1q_s32(src + 4);
+    float32x4_t fv1 = vld1q_f32(src + 0);
+    float32x4_t fv2 = vld1q_f32(src + 4);
     src += 8;
 
     fv1 = vmulq_f32(fv1, FLOAT_TO_S16_V);
