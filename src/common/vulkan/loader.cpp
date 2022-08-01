@@ -118,9 +118,14 @@ bool LoadVulkanLibrary()
 
 #if defined(__APPLE__)
   // Check if a path to a specific Vulkan library has been specified.
+  // Otherwise, try for a system-wide libvulkan.
   char* libvulkan_env = getenv("LIBVULKAN_PATH");
   if (libvulkan_env)
     vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
+  else
+    vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
+
+  // Fall back to the packaged MoltenVK.
   if (!vulkan_module)
   {
     unsigned path_size = 0;
@@ -135,13 +140,11 @@ bool LoadVulkanLibrary()
       if (pos != std::string::npos)
       {
         path.erase(pos);
-        path += "/../Frameworks/libvulkan.dylib";
+        path += "/../Frameworks/libMoltenVK.dylib";
         vulkan_module = dlopen(path.c_str(), RTLD_NOW);
       }
     }
   }
-  if (!vulkan_module)
-    vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
 #else
   // Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.
   static const char* search_lib_names[] = {"libvulkan.so.1", "libvulkan.so"};
