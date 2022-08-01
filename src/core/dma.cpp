@@ -530,7 +530,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
     break;
 
     case Channel::SPU:
-      g_spu.DMAWrite(src_pointer, word_count);
+      SPU::DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::MDECin:
@@ -591,7 +591,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::SPU:
-      g_spu.DMARead(dest_pointer, word_count);
+      SPU::DMARead(dest_pointer, word_count);
       break;
 
     case Channel::MDECout:

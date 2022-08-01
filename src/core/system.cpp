@@ -270,7 +270,7 @@ void System::UpdateOverclock()
 {
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
-  g_spu.CPUClockChanged();
+  SPU::CPUClockChanged();
   g_cdrom.CPUClockChanged();
   g_gpu->CPUClockChanged();
   g_timers.CPUClocksChanged();
@@ -934,7 +934,7 @@ void System::PauseSystem(bool paused)
     return;
 
   SetState(paused ? State::Paused : State::Running);
-  g_spu.GetOutputStream()->SetPaused(paused);
+  SPU::GetOutputStream()->SetPaused(paused);
 
   if (paused)
   {
@@ -1216,7 +1216,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   s_state =
     (g_settings.start_paused || parameters.override_start_paused.value_or(false)) ? State::Paused : State::Running;
   UpdateSoftwareCursor();
-  g_spu.GetOutputStream()->SetPaused(false);
+  SPU::GetOutputStream()->SetPaused(false);
   Host::OnSystemStarted();
 
   if (s_state == State::Paused)
@@ -1332,7 +1332,7 @@ bool System::Initialize(bool force_software_renderer)
   g_cdrom.Initialize();
   g_pad.Initialize();
   g_timers.Initialize();
-  g_spu.Initialize();
+  SPU::Initialize();
   g_mdec.Initialize();
   g_sio.Initialize();
 
@@ -1392,7 +1392,7 @@ void System::DestroySystem()
 
   g_sio.Shutdown();
   g_mdec.Shutdown();
-  g_spu.Shutdown();
+  SPU::Shutdown();
   g_timers.Shutdown();
   g_pad.Shutdown();
   g_cdrom.Shutdown();
@@ -1594,7 +1594,7 @@ bool System::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool u
   if (!sw.DoMarker("Timers") || !g_timers.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("SPU") || !g_spu.DoState(sw))
+  if (!sw.DoMarker("SPU") || !SPU::DoState(sw))
     return false;
 
   if (!sw.DoMarker("MDEC") || !g_mdec.DoState(sw))
@@ -1678,7 +1678,7 @@ void System::InternalReset()
   g_cdrom.Reset();
   g_pad.Reset();
   g_timers.Reset();
-  g_spu.Reset();
+  SPU::Reset();
   g_mdec.Reset();
   g_sio.Reset();
   s_frame_number = 1;
@@ -1858,7 +1858,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (s_state == State::Starting)
     s_state = State::Running;
 
-  g_spu.GetOutputStream()->EmptyBuffer();
+  SPU::GetOutputStream()->EmptyBuffer();
   ResetPerformanceCounters();
   ResetThrottler();
   return true;
@@ -1977,7 +1977,7 @@ void System::SingleStepCPU()
 
   CPU::SingleStep();
 
-  g_spu.GeneratePendingSamples();
+  SPU::GeneratePendingSamples();
 
   if (s_frame_number != old_frame_number && s_cheat_list)
     s_cheat_list->Apply();
@@ -2017,7 +2017,7 @@ void System::DoRunFrame()
   }
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
-  g_spu.GeneratePendingSamples();
+  SPU::GeneratePendingSamples();
 
   if (s_cheat_list)
     s_cheat_list->Apply();
@@ -2218,7 +2218,7 @@ void System::UpdateSpeedLimiterState()
 
   if (IsValid())
   {
-    AudioStream* stream = g_spu.GetOutputStream();
+    AudioStream* stream = SPU::GetOutputStream();
     if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
       stream->SetOutputVolume(GetAudioOutputVolume());
 
@@ -2779,7 +2779,7 @@ bool System::DumpSPURAM(const char* filename)
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, g_spu.GetRAM().data(), SPU::RAM_SIZE);
+  return FileSystem::WriteBinaryFile(filename, SPU::GetRAM().data(), SPU::RAM_SIZE);
 }
 
 bool System::HasMedia()
@@ -3060,15 +3060,15 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                      Settings::GetAudioBackendName(g_settings.audio_backend));
       }
 
-      g_spu.RecreateOutputStream();
+      SPU::RecreateOutputStream();
     }
     if (g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
-      g_spu.GetOutputStream()->SetStretchMode(g_settings.audio_stretch_mode);
+      SPU::GetOutputStream()->SetStretchMode(g_settings.audio_stretch_mode);
     if (g_settings.audio_buffer_ms != old_settings.audio_buffer_ms ||
         g_settings.audio_output_latency_ms != old_settings.audio_output_latency_ms ||
         g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
     {
-      g_spu.RecreateOutputStream();
+      SPU::RecreateOutputStream();
       UpdateSpeedLimiterState();
     }
 
@@ -3099,7 +3099,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         CPU::ClearICache();
     }
 
-    g_spu.GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
+    SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 
     if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
         g_settings.gpu_multisamples != old_settings.gpu_multisamples ||
@@ -3480,7 +3480,7 @@ void System::DoRunahead()
     const s32 temp = frames_to_run;
 #endif
 
-    g_spu.SetAudioOutputMuted(true);
+    SPU::SetAudioOutputMuted(true);
 
     while (frames_to_run > 0)
     {
@@ -3489,7 +3489,7 @@ void System::DoRunahead()
       frames_to_run--;
     }
 
-    g_spu.SetAudioOutputMuted(false);
+    SPU::SetAudioOutputMuted(false);
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
     Log_VerbosePrintf("Running %d frames to catch up took %.2f ms", temp, timer2.GetTimeMilliseconds());
@@ -3626,12 +3626,12 @@ void System::UpdateVolume()
   if (!IsValid())
     return;
 
-  g_spu.GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
+  SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 }
 
 bool System::IsDumpingAudio()
 {
-  return g_spu.IsDumpingAudio();
+  return SPU::IsDumpingAudio();
 }
 
 bool System::StartDumpingAudio(const char* filename)
@@ -3657,7 +3657,7 @@ bool System::StartDumpingAudio(const char* filename)
     filename = auto_filename.c_str();
   }
 
-  if (g_spu.StartDumpingAudio(filename))
+  if (SPU::StartDumpingAudio(filename))
   {
     Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Started dumping audio to '%s'."), filename);
     return true;
@@ -3672,7 +3672,7 @@ bool System::StartDumpingAudio(const char* filename)
 
 void System::StopDumpingAudio()
 {
-  if (System::IsShutdown() || !g_spu.StopDumpingAudio())
+  if (System::IsShutdown() || !SPU::StopDumpingAudio())
     return;
 
   Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Stopped dumping audio."), 5.0f);

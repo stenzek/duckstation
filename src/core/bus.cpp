@@ -1267,22 +1267,22 @@ ALWAYS_INLINE static TickCount DoAccessSPU(u32 offset, u32& value)
       case MemoryAccessSize::Word:
       {
         // 32-bit reads are read as two 16-bit accesses.
-        const u16 lsb = g_spu.ReadRegister(offset);
-        const u16 msb = g_spu.ReadRegister(offset + 2);
+        const u16 lsb = SPU::ReadRegister(offset);
+        const u16 msb = SPU::ReadRegister(offset + 2);
         value = ZeroExtend32(lsb) | (ZeroExtend32(msb) << 16);
       }
       break;
 
       case MemoryAccessSize::HalfWord:
       {
-        value = ZeroExtend32(g_spu.ReadRegister(offset));
+        value = ZeroExtend32(SPU::ReadRegister(offset));
       }
       break;
 
       case MemoryAccessSize::Byte:
       default:
       {
-        const u16 value16 = g_spu.ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
+        const u16 value16 = SPU::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
         value = FIXUP_HALFWORD_READ_VALUE(size, offset, value16);
       }
       break;
@@ -1299,21 +1299,21 @@ ALWAYS_INLINE static TickCount DoAccessSPU(u32 offset, u32& value)
       case MemoryAccessSize::Word:
       {
         DebugAssert(Common::IsAlignedPow2(offset, 2));
-        g_spu.WriteRegister(offset, Truncate16(value));
-        g_spu.WriteRegister(offset + 2, Truncate16(value >> 16));
+        SPU::WriteRegister(offset, Truncate16(value));
+        SPU::WriteRegister(offset + 2, Truncate16(value >> 16));
         break;
       }
 
       case MemoryAccessSize::HalfWord:
       {
         DebugAssert(Common::IsAlignedPow2(offset, 2));
-        g_spu.WriteRegister(offset, Truncate16(value));
+        SPU::WriteRegister(offset, Truncate16(value));
         break;
       }
 
       case MemoryAccessSize::Byte:
       {
-        g_spu.WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset),
+        SPU::WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset),
                             Truncate16(FIXUP_HALFWORD_READ_VALUE(size, offset, value)));
         break;
       }

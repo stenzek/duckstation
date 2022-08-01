@@ -641,7 +641,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       {
         if (HasPendingDiscEvent())
           m_drive_event->InvokeEarly();
-        g_spu.GeneratePendingSamples();
+        SPU::GeneratePendingSamples();
       }
 
       m_adpcm_muted = adpcm_muted;
@@ -2583,7 +2583,7 @@ void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannel
   if (m_muted || m_adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
-  g_spu.GeneratePendingSamples();
+  SPU::GeneratePendingSamples();
 
   if (m_last_sector_subheader.codinginfo.IsStereo())
   {
@@ -2689,7 +2689,7 @@ void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& 
   if (m_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
-  g_spu.GeneratePendingSamples();
+  SPU::GeneratePendingSamples();
 
   constexpr bool is_stereo = true;
   constexpr u32 num_samples = CDImage::RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);

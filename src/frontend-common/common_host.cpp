@@ -405,7 +405,7 @@ void ImGuiManager::RenderDebugWindows()
     if (g_settings.debugging.show_timers_state)
       g_timers.DrawDebugStateWindow();
     if (g_settings.debugging.show_spu_state)
-      g_spu.DrawDebugStateWindow();
+      SPU::DrawDebugStateWindow();
     if (g_settings.debugging.show_mdec_state)
       g_mdec.DrawDebugStateWindow();
     if (g_settings.debugging.show_dma_state)
@@ -908,7 +908,7 @@ DEFINE_HOTKEY("AudioMute", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("Hotke
   {
     g_settings.audio_output_muted = !g_settings.audio_output_muted;
     const s32 volume = System::GetAudioOutputVolume();
-    g_spu.GetOutputStream()->SetOutputVolume(volume);
+    SPU::GetOutputStream()->SetOutputVolume(volume);
     if (g_settings.audio_output_muted)
     {
       Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_MUTE,
@@ -942,7 +942,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("H
     const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
     g_settings.audio_output_volume = volume;
     g_settings.audio_fast_forward_volume = volume;
-    g_spu.GetOutputStream()->SetOutputVolume(volume);
+    SPU::GetOutputStream()->SetOutputVolume(volume);
     Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
                             fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume),
                             5.0f);
@@ -957,7 +957,7 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE(
                   const s32 volume = std::max<s32>(System::GetAudioOutputVolume() - 10, 0);
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  g_spu.GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream()->SetOutputVolume(volume);
                   Host::AddIconOSDMessage(
                     "AudioControlHotkey", ICON_FA_VOLUME_DOWN,
                     fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume), 5.0f);
