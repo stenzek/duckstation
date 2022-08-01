@@ -438,7 +438,8 @@ void CDROM::SetReadaheadSectors(u32 readahead_sectors)
   else
     m_reader.StopThread();
 
-  m_reader.QueueReadSector(m_requested_lba);
+  if (HasMedia())
+    m_reader.QueueReadSector(m_requested_lba);
 }
 
 void CDROM::CPUClockChanged()
