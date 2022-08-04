@@ -2189,9 +2189,9 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 #undef CHECK_ARG_PARAM
     }
 
-    if (!autoboot || !autoboot->filename.empty())
+    if (autoboot && !autoboot->filename.empty())
       autoboot->filename += ' ';
-    autoboot->filename += args[i].toStdString();
+    AutoBoot(autoboot)->filename += args[i].toStdString();
   }
 
   // To do anything useful, we need the config initialized.
