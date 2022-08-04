@@ -136,10 +136,7 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
 {
   switch (backend)
   {
-    case AudioBackend::Null:
-      return AudioStream::CreateNullStream(sample_rate, channels, buffer_ms);
-
-#ifndef _UWP
+#ifdef WITH_CUBEB
     case AudioBackend::Cubeb:
       return CommonHost::CreateCubebAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
@@ -148,6 +145,9 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
     case AudioBackend::XAudio2:
       return CommonHost::CreateXAudio2Stream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
+
+    case AudioBackend::Null:
+      return AudioStream::CreateNullStream(sample_rate, channels, buffer_ms);
 
     default:
       return nullptr;
