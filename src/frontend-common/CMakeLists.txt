@@ -90,8 +90,6 @@ if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 
     sdl_input_source.cpp
     sdl_input_source.h
-    sdl_initializer.cpp
-    sdl_initializer.h
   )
   target_compile_definitions(frontend-common PUBLIC "WITH_SDL2=1")
   target_include_directories(frontend-common PRIVATE ${SDL2_INCLUDE_DIRS})

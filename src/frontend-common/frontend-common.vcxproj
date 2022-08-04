@@ -34,9 +34,6 @@
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shadergen.cpp" />
-    <ClCompile Include="sdl_initializer.cpp">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="vulkan_host_display.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
@@ -77,9 +74,6 @@
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shadergen.h" />
-    <ClInclude Include="sdl_initializer.h">
-      <ExcludedFromBuild Condition="'$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="vulkan_host_display.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
