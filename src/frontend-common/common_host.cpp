@@ -918,15 +918,17 @@ DEFINE_HOTKEY("AudioMute", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("Hotke
   {
     g_settings.audio_output_muted = !g_settings.audio_output_muted;
     const s32 volume = System::GetAudioOutputVolume();
-    // g_spu.GetOutputStream()->SetOutputVolume(volume);
+    g_spu.GetOutputStream()->SetOutputVolume(volume);
     if (g_settings.audio_output_muted)
     {
-      Host::AddKeyedOSDMessage("AudioControlHotkey", Host::TranslateStdString("OSDMessage", "Volume: Muted"), 2.0f);
+      Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_MUTE,
+                              Host::TranslateStdString("OSDMessage", "Volume: Muted"), 5.0f);
     }
     else
     {
-      Host::AddKeyedFormattedOSDMessage("AudioControlHotkey", 2.0f, Host::TranslateString("OSDMessage", "Volume: %d%%"),
-                                        volume);
+      Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                              fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume),
+                              5.0f);
     }
   }
 })
@@ -935,11 +937,11 @@ DEFINE_HOTKEY("AudioCDAudioMute", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE
                 if (!pressed && System::IsValid())
                 {
                   g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
-                  Host::AddKeyedOSDMessage("AudioControlHotkey",
-                                           g_settings.cdrom_mute_cd_audio ?
-                                             Host::TranslateStdString("OSDMessage", "CD Audio Muted.") :
-                                             Host::TranslateStdString("OSDMessage", "CD Audio Unmuted."),
-                                           2.0f);
+                  Host::AddIconOSDMessage(
+                    "AudioControlHotkey", g_settings.cdrom_mute_cd_audio ? ICON_FA_VOLUME_MUTE : ICON_FA_VOLUME_UP,
+                    g_settings.cdrom_mute_cd_audio ? Host::TranslateStdString("OSDMessage", "CD Audio Muted.") :
+                                                     Host::TranslateStdString("OSDMessage", "CD Audio Unmuted."),
+                    2.0f);
                 }
               })
 DEFINE_HOTKEY("AudioVolumeUp", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("Hotkeys", "Volume Up"), [](s32 pressed) {
@@ -950,9 +952,10 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("H
     const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
     g_settings.audio_output_volume = volume;
     g_settings.audio_fast_forward_volume = volume;
-    // g_spu.GetOutputStream()->SetOutputVolume(volume);
-    Host::AddKeyedFormattedOSDMessage("AudioControlHotkey", 2.0f, Host::TranslateString("OSDMessage", "Volume: %d%%"),
-                                      volume);
+    g_spu.GetOutputStream()->SetOutputVolume(volume);
+    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                            fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume),
+                            5.0f);
   }
 })
 DEFINE_HOTKEY("AudioVolumeDown", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE("Hotkeys", "Volume Down"),
@@ -964,9 +967,10 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATABLE("Hotkeys", "Audio"), TRANSLATABLE(
                   const s32 volume = std::max<s32>(System::GetAudioOutputVolume() - 10, 0);
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  // g_spu.GetOutputStream()->SetOutputVolume(volume);
-                  Host::AddKeyedFormattedOSDMessage("AudioControlHotkey", 2.0f,
-                                                    Host::TranslateString("OSDMessage", "Volume: %d%%"), volume);
+                  g_spu.GetOutputStream()->SetOutputVolume(volume);
+                  Host::AddIconOSDMessage(
+                    "AudioControlHotkey", ICON_FA_VOLUME_DOWN,
+                    fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume), 5.0f);
                 }
               })
 

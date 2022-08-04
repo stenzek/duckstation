@@ -573,6 +573,11 @@ void Host::AddFormattedOSDMessage(float duration, const char* format, ...)
   return AddKeyedOSDMessage(std::string(), std::move(ret), duration);
 }
 
+void Host::AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
+{
+  return AddKeyedOSDMessage(std::move(key), fmt::format("{}  {}", icon, message), duration);
+}
+
 void Host::AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...)
 {
   std::va_list ap;
