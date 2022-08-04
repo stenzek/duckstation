@@ -325,13 +325,13 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 };
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogController", "Analog Deadzone"),
-   TRANSLATABLE("AnalogController",
+  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogJoystick", "Analog Deadzone"),
+   TRANSLATABLE("AnalogJoystick",
                 "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "1.00f", "0.00f", "1.00f", "0.01f"},
-  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogController", "Analog Sensitivity"),
+  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogJoystick", "Analog Sensitivity"),
    TRANSLATABLE(
-     "AnalogController",
+     "AnalogJoystick",
      "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f"}};
