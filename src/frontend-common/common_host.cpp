@@ -42,14 +42,6 @@
 #include <cstring>
 #include <ctime>
 
-#ifndef _UWP
-#include "cubeb_audio_stream.h"
-#endif
-
-#ifdef WITH_SDL2
-#include "sdl_audio_stream.h"
-#endif
-
 #ifdef WITH_DISCORD_PRESENCE
 #include "discord_rpc.h"
 #endif
@@ -60,7 +52,6 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
-#include "xaudio2_audio_stream.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #include <mmsystem.h>
@@ -156,11 +147,6 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
 #ifdef _WIN32
     case AudioBackend::XAudio2:
       return CommonHost::CreateXAudio2Stream(sample_rate, channels, buffer_ms, latency_ms, stretch);
-#endif
-
-#ifdef WITH_SDL2
-    case AudioBackend::SDL:
-      return CommonHost::CreateSDLAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
 
     default:

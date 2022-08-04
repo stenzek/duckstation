@@ -5,6 +5,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>WITH_CHEEVOS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(BuildingForUWP)'!='true'">WITH_CUBEB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">WITH_RAINTEGRATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64')">WITH_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64') And ('$(BuildingForUWP)'!='true')">WITH_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

@@ -3,8 +3,6 @@ add_library(frontend-common
   achievements.h
   common_host.cpp
   common_host.h
-  cubeb_audio_stream.cpp
-  cubeb_audio_stream.h
   fullscreen_ui.cpp
   fullscreen_ui.h
   game_list.cpp
@@ -32,7 +30,15 @@ add_library(frontend-common
   postprocessing_shadergen.h
 )
 
-target_link_libraries(frontend-common PUBLIC core common cubeb imgui tinyxml2 rapidjson scmversion)
+target_link_libraries(frontend-common PUBLIC core common imgui tinyxml2 rapidjson scmversion)
+
+if(ENABLE_CUBEB)
+  target_sources(frontend-common PRIVATE
+    cubeb_audio_stream.cpp
+    cubeb_audio_stream.h
+  )
+  target_link_libraries(frontend-common PRIVATE cubeb)
+endif()
 
 if(WIN32)
   target_sources(frontend-common PRIVATE
@@ -82,8 +88,6 @@ endif()
 
 if(SDL2_FOUND)
   target_sources(frontend-common PRIVATE 
-    sdl_audio_stream.cpp
-    sdl_audio_stream.h
     sdl_input_source.cpp
     sdl_input_source.h
     sdl_initializer.cpp

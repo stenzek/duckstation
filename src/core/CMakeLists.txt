@@ -129,6 +129,10 @@ if(WIN32)
   target_link_libraries(core PRIVATE winmm.lib)
 endif()
 
+if(ENABLE_CUBEB)
+  target_compile_definitions(core PUBLIC "WITH_CUBEB=1")
+endif()
+
 if(ENABLE_OPENGL)
   target_sources(core PRIVATE
     gpu_hw_opengl.cpp

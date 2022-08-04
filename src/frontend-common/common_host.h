@@ -34,10 +34,6 @@ void ReleaseHostDisplayResources();
 std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
                                                  AudioStretchMode stretch);
 #endif
-#ifdef WITH_SDL2
-std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
-                                                  AudioStretchMode stretch);
-#endif
 #ifndef _UWP
 std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
                                                     AudioStretchMode stretch);

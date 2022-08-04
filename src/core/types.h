@@ -112,13 +112,14 @@ enum class DisplayAspectRatio : u8
 enum class AudioBackend : u8
 {
   Null,
+#ifdef WITH_CUBEB
   Cubeb,
+#endif
 #ifdef _WIN32
   XAudio2,
 #endif
-#ifndef ANDROID
-  SDL,
-#else
+#ifdef __ANDROID__
+  AAudio,
   OpenSLES,
 #endif
   Count

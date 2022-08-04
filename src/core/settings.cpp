@@ -990,33 +990,31 @@ float Settings::GetDisplayAspectRatioValue() const
   }
 }
 
-static const auto s_audio_backend_names = make_array("Null", "Cubeb"
+static constexpr const char* s_audio_backend_names[] = {
+  "Null",
+#ifdef WITH_CUBEB
+  "Cubeb",
+#endif
 #ifdef _WIN32
-                                                     ,
-                                                     "XAudio2"
+  "XAudio2",
 #endif
-#ifndef ANDROID
-                                                     ,
-                                                     "SDL"
-#else
-                                                     ,
-                                                     "OpenSLES"
+#ifdef __ANDROID__
+  "AAudio",  "OpenSLES",
 #endif
-);
-static const auto s_audio_backend_display_names =
-  make_array(TRANSLATABLE("AudioBackend", "Null (No Output)"), TRANSLATABLE("AudioBackend", "Cubeb")
+};
+static constexpr const char* s_audio_backend_display_names[] = {
+  TRANSLATABLE("AudioBackend", "Null (No Output)"),
+#ifdef WITH_CUBEB
+  TRANSLATABLE("AudioBackend", "Cubeb"),
+#endif
 #ifdef _WIN32
-                                                                 ,
-             TRANSLATABLE("AudioBackend", "XAudio2")
+  TRANSLATABLE("AudioBackend", "XAudio2"),
 #endif
-#ifndef ANDROID
-               ,
-             TRANSLATABLE("AudioBackend", "SDL")
-#else
-                                                                 ,
-             TRANSLATABLE("AudioBackend", "OpenSL ES")
+#ifdef __ANDROID__
+  "AAudio",
+  "OpenSL ES",
 #endif
-  );
+};
 
 std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
 {

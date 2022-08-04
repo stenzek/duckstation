@@ -21,7 +21,6 @@
 #include "frontend-common/imgui_manager.h"
 #include "frontend-common/imgui_overlays.h"
 #include "frontend-common/input_manager.h"
-#include "frontend-common/sdl_audio_stream.h"
 #include "imgui.h"
 #include "mainwindow.h"
 #include "qtprogresscallback.h"

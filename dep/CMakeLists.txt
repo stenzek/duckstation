@@ -12,10 +12,12 @@ add_subdirectory(imgui)
 add_subdirectory(simpleini)
 add_subdirectory(vulkan)
 add_subdirectory(soundtouch)
-
 add_subdirectory(tinyxml2)
-add_subdirectory(cubeb)
 add_subdirectory(googletest)
+
+if(ENABLE_CUBEB)
+  add_subdirectory(cubeb)
+endif()
 
 if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc)
