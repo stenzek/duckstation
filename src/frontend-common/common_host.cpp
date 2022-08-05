@@ -131,6 +131,8 @@ void CommonHost::ReleaseHostDisplayResources()
   SaveStateSelectorUI::DestroyTextures();
 }
 
+#ifndef __ANDROID__
+
 std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
                                                      u32 latency_ms, AudioStretchMode stretch)
 {
@@ -153,6 +155,8 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
       return nullptr;
   }
 }
+
+#endif
 
 void CommonHost::UpdateLogSettings()
 {

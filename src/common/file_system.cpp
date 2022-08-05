@@ -48,6 +48,8 @@
 
 Log_SetChannel(FileSystem);
 
+#ifndef __ANDROID__
+
 #ifdef _WIN32
 static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 {
@@ -752,6 +754,8 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
   return open(filename, flags, mode);
 #endif
 }
+
+#endif
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode)
 {
@@ -1625,7 +1629,7 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return result;
 }
 
-#else
+#elif !defined(__ANDROID__)
 
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
                               u32 Flags, FileSystem::FindResultsArray* pResults)

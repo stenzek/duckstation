@@ -15,6 +15,7 @@ enum class InputSourceType : u32
 {
   Keyboard,
   Pointer,
+  Sensor,
 #ifdef _WIN32
   DInput,
   XInput,
@@ -22,6 +23,9 @@ enum class InputSourceType : u32
 #endif
 #ifdef WITH_SDL2
   SDL,
+#endif
+#ifdef __ANDROID__
+  Android,
 #endif
   Count,
 };
@@ -38,6 +42,8 @@ enum class InputSubclass : u32
   ControllerAxis = 1,
   ControllerMotor = 2,
   ControllerHaptic = 3,
+
+  SensorAccelerometer = 0,
 };
 
 /// A composite type representing a full input key which is part of an event.
@@ -173,6 +179,9 @@ InputBindingKey MakePointerButtonKey(u32 index, u32 button_index);
 /// (axis 0 = horizontal, 1 = vertical, 2 = wheel horizontal, 3 = wheel vertical).
 InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
+/// Creates a key for a host-specific sensor.
+InputBindingKey MakeSensorAxisKey(InputSubclass sensor, u32 axis);
+
 /// Parses an input binding key string.
 std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
 
@@ -242,6 +251,9 @@ void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 /// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate
 /// reporting.
 void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+
+/// Sets the state of the specified macro button.
+void SetMacroButtonState(u32 pad, u32 index, bool state);
 
 /// Returns true if the raw input source is being used.
 bool IsUsingRawInput();

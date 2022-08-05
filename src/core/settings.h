@@ -410,8 +410,13 @@ struct Settings
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
+#ifndef __ANDROID__
   static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 50;
   static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
+#else
+  static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 100;
+  static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
+#endif
   static constexpr AudioStretchMode DEFAULT_AUDIO_STRETCH_MODE = AudioStretchMode::TimeStretch;
 
   // Enable console logging by default on Linux platforms.
