@@ -1,5 +1,6 @@
 #include "audiosettingswidget.h"
 #include "core/spu.h"
+#include "frontend-common/common_host.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 #include "util/audio_stream.h"
@@ -29,10 +30,11 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
                                               Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
+  connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
+  updateDriverNames();
 
   m_ui.outputLatencyMinimal->setChecked(m_ui.outputLatencyMS->value() == 0);
   m_ui.outputLatencyMS->setEnabled(m_ui.outputLatencyMinimal->isChecked());
-  m_ui.driver->setEnabled(false);
 
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
   connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
@@ -91,6 +93,38 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
+
+void AudioSettingsWidget::updateDriverNames()
+{
+  const AudioBackend backend =
+    Settings::ParseAudioBackend(
+      m_dialog
+        ->getEffectiveStringValue("Audio", "Backend", Settings::GetAudioBackendName(Settings::DEFAULT_AUDIO_BACKEND))
+        .c_str())
+      .value_or(Settings::DEFAULT_AUDIO_BACKEND);
+
+  std::vector<std::string> names;
+
+#ifdef WITH_CUBEB
+  if (backend == AudioBackend::Cubeb)
+    names = CommonHost::GetCubebDriverNames();
+#endif
+
+  m_ui.driver->disconnect();
+  if (names.empty())
+  {
+    m_ui.driver->setEnabled(false);
+    m_ui.driver->clear();
+    return;
+  }
+
+  m_ui.driver->setEnabled(true);
+  for (const std::string& name : names)
+    m_ui.driver->addItem(QString::fromStdString(name));
+
+  SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "Audio", "Driver",
+                                                 std::move(names.front()));
+}
 
 void AudioSettingsWidget::updateLatencyLabel()
 {

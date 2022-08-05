@@ -2,6 +2,8 @@
 #include "core/system.h"
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 class SettingsInterface;
 
@@ -33,6 +35,7 @@ void ReleaseHostDisplayResources();
 #ifdef WITH_CUBEB
 std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
                                                     AudioStretchMode stretch);
+std::vector<std::string> GetCubebDriverNames();
 #endif
 #ifdef _WIN32
 std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,

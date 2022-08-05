@@ -275,6 +275,7 @@ void Settings::Load(SettingsInterface& si)
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
       .value_or(DEFAULT_AUDIO_BACKEND);
+  audio_driver = si.GetStringValue("Audio", "Driver");
   audio_stretch_mode =
     AudioStream::ParseStretchMode(
       si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
@@ -477,6 +478,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
+  si.SetStringValue("Audio", "Driver", audio_driver.c_str());
   si.SetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(audio_stretch_mode));
   si.SetUIntValue("Audio", "BufferMS", audio_buffer_ms);
   si.SetUIntValue("Audio", "OutputLatencyMS", audio_output_latency_ms);

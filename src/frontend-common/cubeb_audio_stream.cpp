@@ -4,7 +4,7 @@
 #include "common/string_util.h"
 #include "common_host.h"
 #include "core/host.h"
-#include "core/host_settings.h"
+#include "core/settings.h"
 #include "cubeb/cubeb.h"
 Log_SetChannel(CubebAudioStream);
 
@@ -73,9 +73,8 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
 
   cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 
-  std::string backend(Host::GetStringSettingValue("Audio", "CubebBackend"));
-
-  int rv = cubeb_init(&m_context, "DuckStation", backend.empty() ? nullptr : backend.c_str());
+  int rv =
+    cubeb_init(&m_context, "DuckStation", g_settings.audio_driver.empty() ? nullptr : g_settings.audio_driver.c_str());
   if (rv != CUBEB_OK)
   {
     Host::ReportFormattedErrorAsync("Error", "Could not initialize cubeb context: %d", rv);
@@ -198,4 +197,13 @@ std::unique_ptr<AudioStream> CommonHost::CreateCubebAudioStream(u32 sample_rate,
   if (!stream->Initialize(latency_ms))
     stream.reset();
   return stream;
+}
+
+std::vector<std::string> CommonHost::GetCubebDriverNames()
+{
+  std::vector<std::string> names;
+  const char** cubeb_names = cubeb_get_backend_names();
+  for (u32 i = 0; cubeb_names[i] != nullptr; i++)
+    names.emplace_back(cubeb_names[i]);
+  return names;
 }

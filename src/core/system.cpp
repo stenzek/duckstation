@@ -3048,7 +3048,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateOverclock();
     }
 
-    if (g_settings.audio_backend != old_settings.audio_backend)
+    if (g_settings.audio_backend != old_settings.audio_backend || g_settings.audio_driver != old_settings.audio_driver)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
