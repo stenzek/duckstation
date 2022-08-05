@@ -2210,13 +2210,6 @@ void System::UpdateSpeedLimiterState()
     }
   }
 
-  const bool video_sync_enabled = ShouldUseVSync();
-  const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
-  Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
-  Log_InfoPrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
-  Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
-                 m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
-
   if (IsValid())
   {
     AudioStream* stream = g_spu.GetOutputStream();
@@ -2235,6 +2228,13 @@ void System::UpdateSpeedLimiterState()
     ResetThrottler();
   }
 
+  const bool video_sync_enabled = ShouldUseVSync();
+  const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
+  Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
+  Log_InfoPrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
+  Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
+      m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+
   g_host_display->SetDisplayMaxFPS(max_display_fps);
   g_host_display->SetVSync(video_sync_enabled);
 
@@ -2251,7 +2251,7 @@ void System::UpdateSpeedLimiterState()
 
 bool System::ShouldUseVSync()
 {
-  return (!IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed()));
+  return (!IsRunning() || (g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed()));
 }
 
 bool System::IsFastForwardEnabled()
