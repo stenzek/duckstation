@@ -475,10 +475,7 @@ void FullscreenUI::OnSystemPaused()
 
 void FullscreenUI::OnSystemResumed()
 {
-  if (!IsInitialized())
-    return;
-
-  g_host_display->SetVSync(System::ShouldUseVSync());
+  // noop
 }
 
 void FullscreenUI::OnSystemDestroyed()

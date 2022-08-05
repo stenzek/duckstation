@@ -931,6 +931,7 @@ void System::PauseSystem(bool paused)
   else
   {
     Host::OnSystemResumed();
+    g_host_display->SetVSync(ShouldUseVSync());
     ResetPerformanceCounters();
     ResetThrottler();
   }
@@ -1252,6 +1253,8 @@ bool System::Initialize(bool force_software_renderer)
   s_throttle_frequency = 60.0f;
   s_frame_period = 0;
   s_next_frame_time = 0;
+  m_turbo_enabled = false;
+  m_fast_forward_enabled = false;
 
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
