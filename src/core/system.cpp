@@ -20,7 +20,6 @@
 #include "fmt/format.h"
 #include "game_database.h"
 #include "gpu.h"
-#include "gpu_sw.h"
 #include "gte.h"
 #include "host.h"
 #include "host_display.h"
@@ -2149,9 +2148,8 @@ void System::UpdatePerformanceCounters()
             100.0f;
   s_last_global_tick_counter = global_tick_counter;
 
-  const Threading::Thread* sw_thread =
-    g_gpu->IsHardwareRenderer() ? nullptr : static_cast<GPU_SW*>(g_gpu.get())->GetBackend().GetThread();
-  const u64 cpu_time = s_cpu_thread_handle.GetCPUTime();
+  const Threading::Thread* sw_thread = g_gpu->GetSWThread();
+  const u64 cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
   const u64 sw_time = sw_thread ? sw_thread->GetCPUTime() : 0;
   const u64 cpu_delta = cpu_time - s_last_cpu_time;
   const u64 sw_delta = sw_time - s_last_sw_time;
@@ -2176,20 +2174,14 @@ void System::ResetPerformanceCounters()
   s_last_frame_number = s_frame_number;
   s_last_internal_frame_number = s_internal_frame_number;
   s_last_global_tick_counter = TimingEvents::GetGlobalTickCounter();
-  s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
-  s_last_sw_time = 0;
-  if (!g_gpu->IsHardwareRenderer())
-  {
-    const Threading::Thread* sw_thread = static_cast<GPU_SW*>(g_gpu.get())->GetBackend().GetThread();
-    if (sw_thread)
-      s_last_sw_time = sw_thread->GetCPUTime();
-  }
+  s_last_cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
+  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
+    s_last_sw_time = sw_thread->GetCPUTime();
+  else
+    s_last_sw_time = 0;
+
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
-  s_cpu_thread_usage = 0.0f;
-  s_cpu_thread_time = 0.0f;
-  s_sw_thread_usage = 0.0f;
-  s_sw_thread_time = 0.0f;
   s_fps_timer.Reset();
   ResetThrottler();
 }

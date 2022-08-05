@@ -33,6 +33,8 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
+  const Threading::Thread* GetSWThread() const;
+
   virtual bool Initialize() override;
   virtual void Reset(bool clear_vram) override;
   virtual bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;

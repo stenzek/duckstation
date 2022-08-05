@@ -44,6 +44,11 @@ GPU_HW::~GPU_HW()
   }
 }
 
+const Threading::Thread* GPU_HW::GetSWThread() const
+{
+  return m_sw_renderer ? m_sw_renderer->GetThread() : nullptr;
+}
+
 bool GPU_HW::Initialize()
 {
   if (!GPU::Initialize())

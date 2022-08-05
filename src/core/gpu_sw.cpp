@@ -45,6 +45,11 @@ GPURenderer GPU_SW::GetRendererType() const
   return GPURenderer::Software;
 }
 
+const Threading::Thread* GPU_SW::GetSWThread() const
+{
+  return m_backend.GetThread();
+}
+
 bool GPU_SW::Initialize()
 {
   // we need something to draw in.. but keep the current api if we have one

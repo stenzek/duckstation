@@ -20,6 +20,11 @@ class HostDisplayTexture;
 class TimingEvent;
 class Timers;
 
+namespace Threading
+{
+class Thread;
+}
+
 class GPU
 {
 public:
@@ -74,6 +79,7 @@ public:
   virtual ~GPU();
 
   virtual GPURenderer GetRendererType() const = 0;
+  virtual const Threading::Thread* GetSWThread() const = 0;
 
   virtual bool Initialize();
   virtual void Reset(bool clear_vram);
