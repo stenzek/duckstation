@@ -456,10 +456,6 @@ Leaderboard Position: {} of {}</source>
         <translation>Включить быстрый доступ к памяти перекомпилятора</translation>
     </message>
     <message>
-        <source>Enable Recompiler ICache</source>
-        <translation type="vanished">Включить ICache перекомпилятора</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="229"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation type="unfinished">Включить запись замены текстур VRAM</translation>
@@ -751,14 +747,6 @@ Leaderboard Position: {} of {}</source>
         <translation>Максимальная задержка: 0 кадров (0,00 мс)</translation>
     </message>
     <message>
-        <source>Sync To Output</source>
-        <translation type="vanished">Синхронизировать с выходом</translation>
-    </message>
-    <message>
-        <source>Resampling</source>
-        <translation type="vanished">Передискретизация</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.ui" line="45"/>
         <location filename="../audiosettingswidget.cpp" line="73"/>
         <source>Start Dumping On Boot</source>
@@ -845,21 +833,9 @@ Leaderboard Position: {} of {}</source>
         <translation>Движок звука определяет, как кадры, созданные эмулятором, отправляются на хост. Cubeb обеспечивает наименьшую задержку, если у вас возникнут проблемы, попробуйте движок SDL. Пустой движок отключает весь вывод звука хоста.</translation>
     </message>
     <message>
-        <source>Buffer Size</source>
-        <translation type="vanished">Размер буфера</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
         <translation>Размер буфера определяет размер фрагментов звука, которые будет извлекать хост. Меньшие значения уменьшают задержку вывода, но могут вызвать сбой, если скорость эмуляции непостоянна. Обратите внимание, что движок Cubeb использует меньшие фрагменты независимо от этого значения, поэтому использование здесь низкого значения не может существенно изменить задержку.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Выбрано</translation>
-    </message>
-    <message>
-        <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="obsolete">Регулирует скорость эмуляции на основе аудио-движка, вытягивающего аудиокадры. Это помогает удалить шумы или треск, если эмуляция выполняется слишком быстро. Синхронизация будет автоматически отключена, если она не будет работать на 100% скорости.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="67"/>
@@ -893,18 +869,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../audiosettingswidget.cpp" line="78"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>Управляет громкостью звука, воспроизводимого на хосте, при перемотке вперед.</translation>
-    </message>
-    <message>
-        <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation type="vanished">При работе вне 100% - ной скорости происходит передискретизация звука с целевой скорости вместо отбрасывания кадров. Производит гораздо более приятный звук перемотки вперед/замедления при небольших затратах на производительность.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Maximum Latency: %n frames (%1ms)</source>
-        <translation type="vanished">
-            <numerusform>Максимальная задержка: %n кадр (%1мс.)</numerusform>
-            <numerusform>Максимальная задержка: %n кадра (%1мс.)</numerusform>
-            <numerusform>Максимальная задержка: %n кадров (%1мс.)</numerusform>
-        </translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="77"/>
@@ -2769,21 +2733,6 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerCustomSettingsDialog</name>
-    <message>
-        <source>%1 Settings</source>
-        <translation type="vanished">Настройки %1</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">Обзор...</translation>
-    </message>
-    <message>
-        <source>Select File</source>
-        <translation type="vanished">Выбрать файл</translation>
-    </message>
-</context>
-<context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="494"/>
@@ -2959,19 +2908,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerglobalsettingswidget.ui" line="357"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Используйте горячие клавиши для каждого профиля</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerMacroDialog</name>
-    <message>
-        <source>Controller Port %1 Macros</source>
-        <translation type="vanished">Макросы порта контроллера %1</translation>
-    </message>
-    <message>
-        <source>Macro %1
-%2</source>
-        <translation type="vanished">Макрос %1
-%2</translation>
     </message>
 </context>
 <context>
@@ -7667,33 +7603,6 @@ Are you sure you want to continue?</source>
     </message>
 </context>
 <context>
-    <name>NamcoGunCon</name>
-    <message>
-        <source>Crosshair Image Path</source>
-        <translation type="obsolete">Путь изображения перекрестия</translation>
-    </message>
-    <message>
-        <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="obsolete">Путь к изображению, чтобы использовать в качестве перекрестия/курсора.</translation>
-    </message>
-    <message>
-        <source>Crosshair Image Scale</source>
-        <translation type="obsolete">Масштаб изображения перекрестия</translation>
-    </message>
-    <message>
-        <source>Scale of crosshair image on screen.</source>
-        <translation type="obsolete">Масштаб изображения перекрестия на экране.</translation>
-    </message>
-    <message>
-        <source>X Scale</source>
-        <translation type="obsolete">X Масштаб</translation>
-    </message>
-    <message>
-        <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="obsolete">Масштабирует координаты X относительно центра экрана.</translation>
-    </message>
-</context>
-<context>
     <name>NeGcon</name>
     <message>
         <location filename="../../core/negcon.cpp" line="253"/>
@@ -7781,10 +7690,6 @@ Are you sure you want to continue?</source>
         <translation>Система сброшена.</translation>
     </message>
     <message>
-        <source>Loading state from &apos;%s&apos;...</source>
-        <translation type="vanished">Загрузка состояния из &apos;%s&apos;...</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="972"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Не удалось загрузить состояние из &apos;%s&apos;. Сброс.</translation>
@@ -7793,10 +7698,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/system.cpp" line="1007"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Не удалось сохранить состояние в &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>State saved to &apos;%s&apos;.</source>
-        <translation type="vanished">Состояние сохранено в &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="601"/>
@@ -7858,14 +7759,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/memory_card.cpp" line="336"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
         <translation>Карта памяти сохранена в &apos;{}&apos;.</translation>
-    </message>
-    <message>
-        <source>Failed to save memory card to &apos;%s&apos;</source>
-        <translation type="vanished">Не удалось сохранить карту памяти в &apos;%s&apos;</translation>
-    </message>
-    <message>
-        <source>Saved memory card to &apos;%s&apos;</source>
-        <translation type="vanished">Карта памяти сохранена в &apos;%s&apos;</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="71"/>
@@ -8117,10 +8010,6 @@ Are you sure you want to continue?</source>
         <location filename="../../frontend-common/common_host.cpp" line="963"/>
         <source>Volume: {}%</source>
         <translation>Громкость: {}%</translation>
-    </message>
-    <message>
-        <source>Volume: %d%%</source>
-        <translation type="vanished">Громкость: %d%%</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="932"/>
@@ -8461,10 +8350,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../postprocessingsettingswidget.cpp" line="24"/>
         <source>The current post-processing chain is invalid, it has been reset.</source>
         <translation>Текущая цепочка постобработки недействительна, она сброшена.</translation>
-    </message>
-    <message>
-        <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
-        <translation type="vanished">Текущая цепочка постобработки недействительна, она была сброшена. Любые внесенные изменения перезапишут существующую конфигурацию.</translation>
     </message>
 </context>
 <context>
