@@ -608,7 +608,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
     if (!bindings.empty())
     {
       AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
-                    if (!System::IsRunning())
+                    if (!System::IsValid())
                       return;
 
                     Controller* c = System::GetController(pad_index);
@@ -625,7 +625,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
     if (!bindings.empty())
     {
       AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
-                    if (!System::IsRunning())
+                    if (!System::IsValid())
                       return;
 
                     SetMacroButtonState(pad_index, macro_button_index, state);
