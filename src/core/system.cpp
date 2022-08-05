@@ -1246,7 +1246,7 @@ bool System::Initialize(bool force_software_renderer)
   s_last_frame_number = 0;
   s_last_internal_frame_number = 0;
   s_last_global_tick_counter = 0;
-  s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
+  s_last_cpu_time = 0;
   s_fps_timer.Reset();
   s_frame_timer.Reset();
 
