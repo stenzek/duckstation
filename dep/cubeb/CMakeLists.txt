@@ -9,7 +9,6 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_RUST_LIBS "Build rust backends" OFF)
 option(BUNDLE_SPEEX "Bundle the speex library" OFF)
 option(LAZY_LOAD_LIBS "Lazily load shared libraries" ON)
-option(USE_SANITIZERS "Use sanitizers" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
@@ -19,19 +18,6 @@ endif()
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(USE_SANITIZERS)
-  if(NOT COMMAND add_sanitizers)
-    list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/sanitizers-cmake/cmake")
-    find_package(Sanitizers)
-    if(NOT COMMAND add_sanitizers)
-      message(FATAL_ERROR "Could not find sanitizers-cmake: run\n\tgit submodule update --init --recursive\nin base git checkout")
-    endif()
-  endif()
-else()
-  macro(add_sanitizers UNUSED)
-  endmacro()
-endif()
 
 if (BUILD_RUST_LIBS)
   if(EXISTS "${PROJECT_SOURCE_DIR}/src/cubeb-pulse-rs")
@@ -73,8 +59,6 @@ set_target_properties(cubeb PROPERTIES
   VERSION ${cubeb_VERSION}
   SOVERSION ${cubeb_VERSION_MAJOR}
 )
-
-add_sanitizers(cubeb)
 
 include(GenerateExportHeader)
 generate_export_header(cubeb EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/cubeb_export.h)
