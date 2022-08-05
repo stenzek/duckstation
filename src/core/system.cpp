@@ -1,4 +1,5 @@
 #include "system.h"
+#include "IconsFontAwesome5.h"
 #include "achievements.h"
 #include "bios.h"
 #include "bus.h"
@@ -953,7 +954,15 @@ bool System::LoadState(const char* filename)
     return false;
 
   Log_InfoPrintf("Loading state from '%s'...", filename);
-  Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
+
+  {
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+    Host::AddIconOSDMessage(
+      "load_state", ICON_FA_FOLDER_OPEN,
+      fmt::format(Host::TranslateString("OSDMessage", "Loading state from '{}'...").GetCharArray(),
+                  Path::GetFileName(display_name)),
+      5.0f);
+  }
 
   SaveUndoLoadState();
 

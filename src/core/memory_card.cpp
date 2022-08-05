@@ -1,7 +1,9 @@
 #include "memory_card.h"
+#include "IconsFontAwesome5.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "host.h"
 #include "system.h"
@@ -305,13 +307,23 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (m_filename.empty())
     return false;
 
+  std::string osd_key;
+  std::string display_name;
+  if (display_osd_message)
+  {
+    osd_key = fmt::format("memory_card_save_{}", m_filename);
+    display_name = FileSystem::GetDisplayNameFromPath(m_filename);
+  }
+
   if (!MemoryCardImage::SaveToFile(m_data, m_filename.c_str()))
   {
     if (display_osd_message)
     {
-      Host::AddFormattedOSDMessage(
-        20.0f, Host::TranslateString("OSDMessage", "Failed to save memory card to '%s'"),
-        m_filename.c_str());
+      Host::AddIconOSDMessage(
+        std::move(osd_key), ICON_FA_SD_CARD,
+        fmt::format(Host::TranslateString("OSDMessage", "Failed to save memory card to '{}'.").GetCharArray(),
+                    Path::GetFileName(display_name)),
+        20.0f);
     }
 
     return false;
@@ -319,8 +331,11 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
 
   if (display_osd_message)
   {
-    Host::AddFormattedOSDMessage(
-      2.0f, Host::TranslateString("OSDMessage", "Saved memory card to '%s'"), m_filename.c_str());
+    Host::AddIconOSDMessage(
+      std::move(osd_key), ICON_FA_SD_CARD,
+      fmt::format(Host::TranslateString("OSDMessage", "Saved memory card to '{}'.").GetCharArray(),
+                  Path::GetFileName(display_name)),
+      5.0f);
   }
 
   return true;
