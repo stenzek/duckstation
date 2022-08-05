@@ -150,7 +150,6 @@ struct Settings
   u32 audio_output_volume = 100;
   u32 audio_fast_forward_volume = 100;
   bool audio_output_muted = false;
-  bool audio_sync_enabled = true;
   bool audio_dump_on_boot = false;
 
   // timing hacks section

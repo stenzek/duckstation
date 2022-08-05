@@ -20,7 +20,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend", &Settings::ParseAudioBackend,
                                                &Settings::GetAudioBackendName, Settings::DEFAULT_AUDIO_BACKEND);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToOutput, "Audio", "Sync", true);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.stretchMode, "Audio", "StretchMode",
                                                &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
                                                Settings::DEFAULT_AUDIO_STRETCH_MODE);
@@ -70,10 +69,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
        "this value, so using a low value here may not significantly change latency."));
-  dialog->registerWidgetHelp(m_ui.syncToOutput, tr("Sync To Output"), tr("Checked"),
-                             tr("Throttles the emulation speed based on the audio backend pulling audio frames. This "
-                                "helps to remove noises or crackling if emulation is too fast. Sync will "
-                                "automatically be disabled if not running at 100% speed."));
   dialog->registerWidgetHelp(
     m_ui.startDumpingOnBoot, tr("Start Dumping On Boot"), tr("Unchecked"),
     tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));

@@ -2210,14 +2210,10 @@ void System::UpdateSpeedLimiterState()
     }
   }
 
-  const bool is_non_standard_speed = IsRunningAtNonStandardSpeed();
-  const bool audio_sync_enabled =
-    !IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled = ShouldUseVSync();
   const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
-  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
-                 (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
+  Log_InfoPrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
   Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
                  m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
@@ -2233,10 +2229,6 @@ void System::UpdateSpeedLimiterState()
     stream->SetNominalRate(rate_adjust ? target_speed : 1.0f);
     if (s_target_speed < target_speed)
       stream->UpdateTargetTempo(target_speed);
-
-    // stream->SetSync(audio_sync_enabled);
-    // if (audio_sync_enabled)
-    // stream->EmptyBuffer();
 
     s_target_speed = target_speed;
     UpdateThrottlePeriod();
@@ -3191,7 +3183,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
-        g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
