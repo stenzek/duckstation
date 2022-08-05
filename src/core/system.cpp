@@ -1267,6 +1267,8 @@ bool System::Initialize(bool force_software_renderer)
     return false;
   }
 
+  GTE::UpdateAspectRatio();
+
   if (g_settings.gpu_pgxp_enable)
     PGXP::Initialize();
 
