@@ -18,10 +18,10 @@
 /**
  * Single producer single consumer lock-free and wait-free ring buffer.
  *
- * This data structure allows producing data from one thread, and consuming it on
- * another thread, safely and without explicit synchronization. If used on two
- * threads, this data structure uses atomics for thread safety. It is possible
- * to disable the use of atomics at compile time and only use this data
+ * This data structure allows producing data from one thread, and consuming it
+ * on another thread, safely and without explicit synchronization. If used on
+ * two threads, this data structure uses atomics for thread safety. It is
+ * possible to disable the use of atomics at compile time and only use this data
  * structure on one thread.
  *
  * The role for the producer and the consumer must be constant, i.e., the
@@ -48,9 +48,7 @@
  *   providing an external buffer to copy into is an easy way to have linear
  *   data for further processing.
  */
-template <typename T>
-class ring_buffer_base
-{
+template <typename T> class ring_buffer_base {
 public:
   /**
    * Constructor for a ring buffer.
@@ -61,11 +59,10 @@ public:
    * @param capacity The maximum number of element this ring buffer will hold.
    */
   ring_buffer_base(int capacity)
-    /* One more element to distinguish from empty and full buffer. */
-    : capacity_(capacity + 1)
+      /* One more element to distinguish from empty and full buffer. */
+      : capacity_(capacity + 1)
   {
-    assert(storage_capacity() <
-           std::numeric_limits<int>::max() / 2 &&
+    assert(storage_capacity() < std::numeric_limits<int>::max() / 2 &&
            "buffer too large for the type of index used.");
     assert(capacity_ > 0);
 
@@ -84,10 +81,7 @@ public:
    * @param count The number of elements to enqueue.
    * @return The number of element enqueued.
    */
-  int enqueue_default(int count)
-  {
-    return enqueue(nullptr, count);
-  }
+  int enqueue_default(int count) { return enqueue(nullptr, count); }
   /**
    * @brief Put an element in the queue
    *
@@ -97,20 +91,18 @@ public:
    *
    * @return 1 if the element was inserted, 0 otherwise.
    */
-  int enqueue(T& element)
-  {
-    return enqueue(&element, 1);
-  }
+  int enqueue(T & element) { return enqueue(&element, 1); }
   /**
    * Push `count` elements in the ring buffer.
    *
    * Only safely called on the producer thread.
    *
    * @param elements a pointer to a buffer containing at least `count` elements.
-   * If `elements` is nullptr, zero or default constructed elements are enqueued.
+   * If `elements` is nullptr, zero or default constructed elements are
+   * enqueued.
    * @param count The number of elements to read from `elements`
-   * @return The number of elements successfully coped from `elements` and inserted
-   * into the ring buffer.
+   * @return The number of elements successfully coped from `elements` and
+   * inserted into the ring buffer.
    */
   int enqueue(T * elements, int count)
   {
@@ -118,19 +110,17 @@ public:
     assert_correct_thread(producer_id);
 #endif
 
-    int rd_idx = read_index_.load(std::memory_order::memory_order_relaxed);
-    int wr_idx = write_index_.load(std::memory_order::memory_order_relaxed);
+    int wr_idx = write_index_.load(std::memory_order_relaxed);
+    int rd_idx = read_index_.load(std::memory_order_acquire);
 
     if (full_internal(rd_idx, wr_idx)) {
       return 0;
     }
 
-    int to_write =
-      std::min(available_write_internal(rd_idx, wr_idx), count);
+    int to_write = std::min(available_write_internal(rd_idx, wr_idx), count);
 
     /* First part, from the write index to the end of the array. */
-    int first_part = std::min(storage_capacity() - wr_idx,
-                                          to_write);
+    int first_part = std::min(storage_capacity() - wr_idx, to_write);
     /* Second part, from the beginning of the array */
     int second_part = to_write - first_part;
 
@@ -142,7 +132,8 @@ public:
       ConstructDefault(data_.get(), second_part);
     }
 
-    write_index_.store(increment_index(wr_idx, to_write), std::memory_order::memory_order_release);
+    write_index_.store(increment_index(wr_idx, to_write),
+                       std::memory_order_release);
 
     return to_write;
   }
@@ -163,15 +154,14 @@ public:
     assert_correct_thread(consumer_id);
 #endif
 
-    int wr_idx = write_index_.load(std::memory_order::memory_order_acquire);
-    int rd_idx = read_index_.load(std::memory_order::memory_order_relaxed);
+    int rd_idx = read_index_.load(std::memory_order_relaxed);
+    int wr_idx = write_index_.load(std::memory_order_acquire);
 
     if (empty_internal(rd_idx, wr_idx)) {
       return 0;
     }
 
-    int to_read =
-      std::min(available_read_internal(rd_idx, wr_idx), count);
+    int to_read = std::min(available_read_internal(rd_idx, wr_idx), count);
 
     int first_part = std::min(storage_capacity() - rd_idx, to_read);
     int second_part = to_read - first_part;
@@ -181,7 +171,8 @@ public:
       Copy(elements + first_part, data_.get(), second_part);
     }
 
-    read_index_.store(increment_index(rd_idx, to_read), std::memory_order::memory_order_relaxed);
+    read_index_.store(increment_index(rd_idx, to_read),
+                      std::memory_order_release);
 
     return to_read;
   }
@@ -197,8 +188,9 @@ public:
 #ifndef NDEBUG
     assert_correct_thread(consumer_id);
 #endif
-    return available_read_internal(read_index_.load(std::memory_order::memory_order_relaxed),
-                                   write_index_.load(std::memory_order::memory_order_relaxed));
+    return available_read_internal(
+        read_index_.load(std::memory_order_relaxed),
+        write_index_.load(std::memory_order_acquire));
   }
   /**
    * Get the number of available elements for consuming.
@@ -212,8 +204,9 @@ public:
 #ifndef NDEBUG
     assert_correct_thread(producer_id);
 #endif
-    return available_write_internal(read_index_.load(std::memory_order::memory_order_relaxed),
-                                    write_index_.load(std::memory_order::memory_order_relaxed));
+    return available_write_internal(
+        read_index_.load(std::memory_order_acquire),
+        write_index_.load(std::memory_order_relaxed));
   }
   /**
    * Get the total capacity, for this ring buffer.
@@ -222,10 +215,7 @@ public:
    *
    * @return The maximum capacity of this ring buffer.
    */
-  int capacity() const
-  {
-    return storage_capacity() - 1;
-  }
+  int capacity() const { return storage_capacity() - 1; }
   /**
    * Reset the consumer and producer thread identifier, in case the thread are
    * being changed. This has to be externally synchronized. This is no-op when
@@ -237,6 +227,7 @@ public:
     consumer_id = producer_id = std::thread::id();
 #endif
   }
+
 private:
   /** Return true if the ring buffer is empty.
    *
@@ -244,8 +235,7 @@ private:
    * @param write_index the write index to consider
    * @return true if the ring buffer is empty, false otherwise.
    **/
-  bool empty_internal(int read_index,
-                      int write_index) const
+  bool empty_internal(int read_index, int write_index) const
   {
     return write_index == read_index;
   }
@@ -258,8 +248,7 @@ private:
    * @param write_index the write index to consider
    * @return true if the ring buffer is full, false otherwise.
    **/
-  bool full_internal(int read_index,
-                     int write_index) const
+  bool full_internal(int read_index, int write_index) const
   {
     return (write_index + 1) % storage_capacity() == read_index;
   }
@@ -269,18 +258,13 @@ private:
    *
    * @return the number of elements that can be stored in the buffer.
    */
-  int storage_capacity() const
-  {
-    return capacity_;
-  }
+  int storage_capacity() const { return capacity_; }
   /**
    * Returns the number of elements available for reading.
    *
    * @return the number of available elements for reading.
    */
-  int
-  available_read_internal(int read_index,
-                          int write_index) const
+  int available_read_internal(int read_index, int write_index) const
   {
     if (write_index >= read_index) {
       return write_index - read_index;
@@ -293,9 +277,7 @@ private:
    *
    * @return the number of elements that can be written into the array.
    */
-  int
-  available_write_internal(int read_index,
-                           int write_index) const
+  int available_write_internal(int read_index, int write_index) const
   {
     /* We substract one element here to always keep at least one sample
      * free in the buffer, to distinguish between full and empty array. */
@@ -312,8 +294,7 @@ private:
    * @param increment the number by which `index` is incremented.
    * @return the new index.
    */
-  int
-  increment_index(int index, int increment) const
+  int increment_index(int index, int increment) const
   {
     assert(increment >= 0);
     return (index + increment) % storage_capacity();
@@ -325,7 +306,7 @@ private:
    * @param id the id of the thread that has called the calling method first.
    */
 #ifndef NDEBUG
-  static void assert_correct_thread(std::thread::id& id)
+  static void assert_correct_thread(std::thread::id & id)
   {
     if (id == std::thread::id()) {
       id = std::this_thread::get_id();
@@ -354,9 +335,7 @@ private:
 /**
  * Adapter for `ring_buffer_base` that exposes an interface in frames.
  */
-template <typename T>
-class audio_ring_buffer_base
-{
+template <typename T> class audio_ring_buffer_base {
 public:
   /**
    * @brief Constructor.
@@ -365,8 +344,8 @@ public:
    * @param capacity_in_frames  The capacity in frames.
    */
   audio_ring_buffer_base(int channel_count, int capacity_in_frames)
-    : channel_count(channel_count)
-    , ring_buffer(frames_to_samples(capacity_in_frames))
+      : channel_count(channel_count),
+        ring_buffer(frames_to_samples(capacity_in_frames))
   {
     assert(channel_count > 0);
   }
@@ -380,7 +359,8 @@ public:
    */
   int enqueue_default(int frame_count)
   {
-    return samples_to_frames(ring_buffer.enqueue(nullptr, frames_to_samples(frame_count)));
+    return samples_to_frames(
+        ring_buffer.enqueue(nullptr, frames_to_samples(frame_count)));
   }
   /**
    * @brief Enqueue `frames_count` frames of audio.
@@ -396,7 +376,8 @@ public:
 
   int enqueue(T * frames, int frame_count)
   {
-    return samples_to_frames(ring_buffer.enqueue(frames, frames_to_samples(frame_count)));
+    return samples_to_frames(
+        ring_buffer.enqueue(frames, frames_to_samples(frame_count)));
   }
 
   /**
@@ -413,7 +394,8 @@ public:
    */
   int dequeue(T * frames, int frame_count)
   {
-    return samples_to_frames(ring_buffer.dequeue(frames, frames_to_samples(frame_count)));
+    return samples_to_frames(
+        ring_buffer.dequeue(frames, frames_to_samples(frame_count)));
   }
   /**
    * Get the number of available frames of audio for consuming.
@@ -444,10 +426,8 @@ public:
    *
    * @return The maximum capacity of this ring buffer.
    */
-  int capacity() const
-  {
-    return samples_to_frames(ring_buffer.capacity());
-  }
+  int capacity() const { return samples_to_frames(ring_buffer.capacity()); }
+
 private:
   /**
    * @brief Frames to samples conversion.
@@ -456,10 +436,7 @@ private:
    *
    * @return  A number of samples.
    */
-  int frames_to_samples(int frames) const
-  {
-    return frames * channel_count;
-  }
+  int frames_to_samples(int frames) const { return frames * channel_count; }
   /**
    * @brief Samples to frames conversion.
    *
@@ -467,10 +444,7 @@ private:
    *
    * @return  A number of frames.
    */
-  int samples_to_frames(int samples) const
-  {
-    return samples / channel_count;
-  }
+  int samples_to_frames(int samples) const { return samples / channel_count; }
   /** Number of channels of audio that will stream through this ring buffer. */
   int channel_count;
   /** The underlying ring buffer that is used to store the data. */
@@ -482,14 +456,13 @@ private:
  * from two threads, one producer, one consumer (that never change role),
  * without explicit synchronization.
  */
-template<typename T>
-using lock_free_queue = ring_buffer_base<T>;
+template <typename T> using lock_free_queue = ring_buffer_base<T>;
 /**
  * Lock-free instantiation of the `audio_ring_buffer` type. This is safe to use
  * from two threads, one producer, one consumer (that never change role),
  * without explicit synchronization.
  */
-template<typename T>
+template <typename T>
 using lock_free_audio_ring_buffer = audio_ring_buffer_base<T>;
 
 #endif // CUBEB_RING_BUFFER_H

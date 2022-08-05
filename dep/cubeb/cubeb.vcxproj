@@ -51,5 +51,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <ItemDefinitionGroup>
+    <Lib>
+      <AdditionalDependencies>ksuser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+
   <Import Project="..\msvc\vsprops\Targets.props" />
 </Project>

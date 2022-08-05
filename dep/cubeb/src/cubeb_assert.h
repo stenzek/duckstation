@@ -16,7 +16,8 @@
  * export a function or macro called XASSERT that aborts the program.
  */
 
-#define XASSERT(expr) do {                                                     \
+#define XASSERT(expr)                                                          \
+  do {                                                                         \
     if (!(expr)) {                                                             \
       fprintf(stderr, "%s:%d - fatal error: %s\n", __FILE__, __LINE__, #expr); \
       abort();                                                                 \

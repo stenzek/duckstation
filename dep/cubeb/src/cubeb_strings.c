@@ -23,7 +23,7 @@ struct cubeb_strings {
 int
 cubeb_strings_init(cubeb_strings ** strings)
 {
-  cubeb_strings* strs = NULL;
+  cubeb_strings * strs = NULL;
 
   if (!strings) {
     return CUBEB_ERROR;
@@ -58,7 +58,7 @@ cubeb_strings_destroy(cubeb_strings * strings)
   sp = strings->data;
   se = sp + strings->count;
 
-  for ( ;  sp != se; sp++) {
+  for (; sp != se; sp++) {
     if (*sp) {
       free(*sp);
     }
@@ -88,7 +88,7 @@ cubeb_strings_lookup(cubeb_strings * strings, char const * s)
   sp = strings->data;
   se = sp + strings->count;
 
-  for ( ; sp != se; sp++) {
+  for (; sp != se; sp++) {
     if (*sp && strcmp(*sp, s) == 0) {
       return *sp;
     }
@@ -152,4 +152,3 @@ cubeb_strings_intern(cubeb_strings * strings, char const * s)
 
   return cubeb_strings_push(strings, s);
 }
-
