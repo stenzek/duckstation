@@ -3913,7 +3913,7 @@ Esta ação não poderá ser desfeita.</translation>
     <message>
         <location filename="../../core/analog_controller.cpp" line="794"/>
         <source>Analog Controller</source>
-        <translation>Controle digital</translation>
+        <translation>Controle analógico</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="230"/>
