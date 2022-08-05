@@ -208,7 +208,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 void ImGuiManager::DrawEnhancementsOverlay()
 {
   LargeString text;
-  text.AppendString(Settings::GetConsoleRegionName(System::GetRegion()));
+  text.AppendFmtString("{} {}", Settings::GetConsoleRegionName(System::GetRegion()), Settings::GetRendererName(g_gpu->GetRendererType()));
 
   if (g_settings.rewind_enable)
     text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
