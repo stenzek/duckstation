@@ -1000,11 +1000,24 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   }
   else
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "State saved to '%s'."), filename);
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+    Host::AddIconOSDMessage("save_state", ICON_FA_SAVE,
+                            fmt::format(Host::TranslateString("OSDMessage", "State saved to '{}'.").GetCharArray(),
+                                        Path::GetFileName(display_name)),
+                            5.0f);
     stream->Commit();
   }
 
   return result;
+}
+
+bool System::SaveResumeState()
+{
+  if (s_running_game_code.empty())
+    return false;
+
+  const std::string path(GetGameSaveStateFileName(s_running_game_code, -1));
+  return SaveState(path.c_str(), false);
 }
 
 bool System::BootSystem(SystemBootParameters parameters)
@@ -3522,11 +3535,8 @@ void System::ShutdownSystem(bool save_resume_state)
   if (!IsValid())
     return;
 
-  if (save_resume_state && !s_running_game_code.empty())
-  {
-    std::string path(GetGameSaveStateFileName(s_running_game_code, -1));
-    SaveState(path.c_str(), false);
-  }
+  if (save_resume_state)
+    SaveResumeState();
 
   DestroySystem();
 }
