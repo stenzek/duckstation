@@ -361,6 +361,9 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   for (u32 i = 0; i < cinfo->num_bindings; i++)
   {
     const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
+    if (bi.type == Controller::ControllerBindingType::Motor)
+      continue;
+
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(QString::fromUtf8(bi.display_name));
     item->setCheckState((std::find(m_binds.begin(), m_binds.end(), &bi) != m_binds.end()) ? Qt::Checked :
@@ -438,9 +441,15 @@ void ControllerMacroEditWidget::updateBinds()
     return;
 
   std::vector<const Controller::ControllerBindingInfo*> new_binds;
-  for (u32 i = 0; i < cinfo->num_bindings; i++)
+  for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
   {
-    const QListWidgetItem* item = m_ui.bindList->item(static_cast<int>(i));
+    const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
+    if (bi.type == Controller::ControllerBindingType::Motor)
+      continue;
+
+    const QListWidgetItem* item = m_ui.bindList->item(static_cast<int>(bind_index));
+    bind_index++;
+
     if (!item)
     {
       // shouldn't happen
@@ -475,36 +484,36 @@ void ControllerMacroEditWidget::updateBinds()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBindingWidget* parent) : QWidget(parent)
+ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBindingWidget* parent)
+  : QWidget(parent), m_parent(parent)
 {
-  QGridLayout* layout = new QGridLayout(this);
+  const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
+  if (!cinfo || cinfo->num_settings == 0)
+    return;
 
-  int row = createSettingWidgets(parent, layout);
+  QGroupBox* gbox = new QGroupBox(tr("%1 Settings").arg(qApp->translate("ControllerType", cinfo->display_name)), this);
+  QGridLayout* gbox_layout = new QGridLayout(gbox);
+  createSettingWidgets(parent, gbox, gbox_layout, cinfo);
 
-  QVBoxLayout* bottom_layout = new QVBoxLayout();
-  bottom_layout->setContentsMargins(0, 0, 0, 0);
+  QVBoxLayout* layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->addWidget(gbox);
+
   QHBoxLayout* bottom_hlayout = new QHBoxLayout();
-  bottom_hlayout->setContentsMargins(0, 0, 0, 0);
   QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
   restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
   connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
-  bottom_hlayout->addWidget(restore_defaults);
   bottom_hlayout->addStretch(1);
-  bottom_layout->addLayout(bottom_hlayout);
-  bottom_layout->addStretch(1);
-  layout->addLayout(bottom_layout, row++, 0, 1, 4);
+  bottom_hlayout->addWidget(restore_defaults);
+  layout->addLayout(bottom_hlayout);
+  layout->addStretch(1);
 }
 
 ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() {}
 
-int ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget* parent, QGridLayout* layout)
+void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget,
+                                                          QGridLayout* layout, const Controller::ControllerInfo* cinfo)
 {
-  const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
-  if (!cinfo || cinfo->num_settings == 0)
-    return 0;
-
-  setWindowTitle(tr("%1 Settings").arg(qApp->translate("ControllerType", cinfo->display_name)));
-
   const std::string& section = parent->getConfigSection();
   SettingsInterface* sif = parent->getDialog()->getProfileSettingsInterface();
   int current_row = 0;
@@ -595,17 +604,11 @@ int ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget
 
     layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
   }
-
-  resize(600, 100);
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
-
-  return current_row;
 }
 
 void ControllerCustomSettingsWidget::restoreDefaults()
 {
-  ControllerBindingWidget* parent = static_cast<ControllerBindingWidget*>(this->parent());
-  const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
+  const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(m_parent->getControllerType());
   if (!cinfo || cinfo->num_settings == 0)
     return;
 

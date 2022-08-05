@@ -12,8 +12,8 @@
 #include "ui_controllerbindingwidget_digital_controller.h"
 #include "ui_controllerbindingwidget_guncon.h"
 #include "ui_controllerbindingwidget_negcon.h"
-#include "ui_controllermacrowidget.h"
 #include "ui_controllermacroeditwidget.h"
+#include "ui_controllermacrowidget.h"
 
 class QVBoxLayout;
 
@@ -132,10 +132,14 @@ public:
   ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
   ~ControllerCustomSettingsWidget();
 
-  int createSettingWidgets(ControllerBindingWidget* parent, QGridLayout* layout);
+  void createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget, QGridLayout* layout,
+                            const Controller::ControllerInfo* cinfo);
 
 private Q_SLOTS:
   void restoreDefaults();
+
+private:
+  ControllerBindingWidget* m_parent;
 };
 
 //////////////////////////////////////////////////////////////////////////
