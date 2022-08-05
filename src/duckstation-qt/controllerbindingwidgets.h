@@ -12,14 +12,15 @@
 #include "ui_controllerbindingwidget_digital_controller.h"
 #include "ui_controllerbindingwidget_guncon.h"
 #include "ui_controllerbindingwidget_negcon.h"
-#include "ui_controllermacrodialog.h"
+#include "ui_controllermacrowidget.h"
 #include "ui_controllermacroeditwidget.h"
 
 class QVBoxLayout;
 
 class InputBindingWidget;
 class ControllerSettingsDialog;
-class ControllerMacroDialog;
+class ControllerCustomSettingsWidget;
+class ControllerMacroWidget;
 class ControllerMacroEditWidget;
 class ControllerBindingWidget_Base;
 
@@ -44,12 +45,14 @@ private Q_SLOTS:
   void onTypeChanged();
   void onAutomaticBindingClicked();
   void onClearBindingsClicked();
+  void onBindingsClicked();
   void onSettingsClicked();
   void onMacrosClicked();
 
 private:
   void populateControllerTypes();
-  void populateBindingWidget();
+  void populateWidgets();
+  void updateHeaderToolButtons();
   void doDeviceAutomaticBinding(const QString& device);
   void saveAndRefresh();
 
@@ -61,18 +64,20 @@ private:
   ControllerType m_controller_type;
   u32 m_port_number;
 
-  ControllerBindingWidget_Base* m_current_widget = nullptr;
+  ControllerBindingWidget_Base* m_bindings_widget = nullptr;
+  ControllerCustomSettingsWidget* m_settings_widget = nullptr;
+  ControllerMacroWidget* m_macros_widget = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-class ControllerMacroDialog : public QDialog
+class ControllerMacroWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  ControllerMacroDialog(ControllerBindingWidget* parent);
-  ~ControllerMacroDialog();
+  ControllerMacroWidget(ControllerBindingWidget* parent);
+  ~ControllerMacroWidget();
 
   void updateListItem(u32 index);
 
@@ -81,7 +86,7 @@ private:
 
   void createWidgets(ControllerBindingWidget* parent);
 
-  Ui::ControllerMacroDialog m_ui;
+  Ui::ControllerMacroWidget m_ui;
   ControllerSettingsDialog* m_dialog;
   std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
 };
@@ -93,7 +98,7 @@ class ControllerMacroEditWidget : public QWidget
   Q_OBJECT
 
 public:
-  ControllerMacroEditWidget(ControllerMacroDialog* parent, ControllerBindingWidget* bwidget, u32 index);
+  ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget, u32 index);
   ~ControllerMacroEditWidget();
 
   QString getSummary() const;
@@ -109,7 +114,7 @@ private:
 
   Ui::ControllerMacroEditWidget m_ui;
 
-  ControllerMacroDialog* m_parent;
+  ControllerMacroWidget* m_parent;
   ControllerBindingWidget* m_bwidget;
   u32 m_index;
 
@@ -119,13 +124,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-class ControllerCustomSettingsDialog : public QDialog
+class ControllerCustomSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  ControllerCustomSettingsDialog(ControllerBindingWidget* parent);
-  ~ControllerCustomSettingsDialog();
+  ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
+  ~ControllerCustomSettingsWidget();
 
   int createSettingWidgets(ControllerBindingWidget* parent, QGridLayout* layout);
 

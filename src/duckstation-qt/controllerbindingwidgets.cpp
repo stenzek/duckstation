@@ -26,10 +26,11 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 {
   m_ui.setupUi(this);
   populateControllerTypes();
-  populateBindingWidget();
+  populateWidgets();
 
   connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &ControllerBindingWidget::onTypeChanged);
+  connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
   connect(m_ui.settings, &QPushButton::clicked, this, &ControllerBindingWidget::onSettingsClicked);
   connect(m_ui.macros, &QPushButton::clicked, this, &ControllerBindingWidget::onMacrosClicked);
   connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::onAutomaticBindingClicked);
@@ -40,7 +41,7 @@ ControllerBindingWidget::~ControllerBindingWidget() = default;
 
 QIcon ControllerBindingWidget::getIcon() const
 {
-  return m_current_widget->getIcon();
+  return m_bindings_widget->getIcon();
 }
 
 void ControllerBindingWidget::populateControllerTypes()
@@ -67,47 +68,91 @@ void ControllerBindingWidget::populateControllerTypes()
   }
 }
 
-void ControllerBindingWidget::populateBindingWidget()
+void ControllerBindingWidget::populateWidgets()
 {
-  const bool is_initializing = (m_current_widget == nullptr);
-  if (!is_initializing)
+  const bool is_initializing = (m_ui.stackedWidget->count() == 0);
+  if (m_bindings_widget)
   {
-    m_ui.verticalLayout->removeWidget(m_current_widget);
-    delete m_current_widget;
-    m_current_widget = nullptr;
+    m_ui.stackedWidget->removeWidget(m_bindings_widget);
+    delete m_bindings_widget;
+    m_bindings_widget = nullptr;
+  }
+  if (m_settings_widget)
+  {
+    m_ui.stackedWidget->removeWidget(m_settings_widget);
+    delete m_settings_widget;
+    m_settings_widget = nullptr;
+  }
+  if (m_macros_widget)
+  {
+    m_ui.stackedWidget->removeWidget(m_macros_widget);
+    delete m_macros_widget;
+    m_macros_widget = nullptr;
   }
 
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(m_controller_type);
-  m_ui.settings->setEnabled(cinfo && cinfo->num_settings > 0);
-  m_ui.macros->setEnabled(cinfo && cinfo->num_bindings > 0);
+  const bool has_settings = (cinfo && cinfo->num_settings > 0);
+  const bool has_macros = (cinfo && cinfo->num_bindings > 0);
+  m_ui.settings->setEnabled(has_settings);
+  m_ui.macros->setEnabled(has_macros);
 
   switch (m_controller_type)
   {
     case ControllerType::AnalogController:
-      m_current_widget = ControllerBindingWidget_AnalogController::createInstance(this);
+      m_bindings_widget = ControllerBindingWidget_AnalogController::createInstance(this);
       break;
     case ControllerType::AnalogJoystick:
-      m_current_widget = ControllerBindingWidget_AnalogJoystick::createInstance(this);
+      m_bindings_widget = ControllerBindingWidget_AnalogJoystick::createInstance(this);
       break;
     case ControllerType::DigitalController:
-      m_current_widget = ControllerBindingWidget_DigitalController::createInstance(this);
+      m_bindings_widget = ControllerBindingWidget_DigitalController::createInstance(this);
       break;
     case ControllerType::GunCon:
-      m_current_widget = ControllerBindingWidget_GunCon::createInstance(this);
+      m_bindings_widget = ControllerBindingWidget_GunCon::createInstance(this);
       break;
     case ControllerType::NeGcon:
-      m_current_widget = ControllerBindingWidget_NeGcon::createInstance(this);
+      m_bindings_widget = ControllerBindingWidget_NeGcon::createInstance(this);
       break;
     default:
-      m_current_widget = new ControllerBindingWidget_Base(this);
+      m_bindings_widget = new ControllerBindingWidget_Base(this);
       break;
   }
 
-  m_ui.verticalLayout->addWidget(m_current_widget, 1);
+  m_ui.stackedWidget->addWidget(m_bindings_widget);
+  m_ui.stackedWidget->setCurrentWidget(m_bindings_widget);
+
+  if (has_settings)
+  {
+    m_settings_widget = new ControllerCustomSettingsWidget(this);
+    m_ui.stackedWidget->addWidget(m_settings_widget);
+  }
+
+  if (has_macros)
+  {
+    m_macros_widget = new ControllerMacroWidget(this);
+    m_ui.stackedWidget->addWidget(m_macros_widget);
+  }
+
+  updateHeaderToolButtons();
 
   // no need to do this on first init, only changes
   if (!is_initializing)
     m_dialog->updateListDescription(m_port_number, this);
+}
+
+void ControllerBindingWidget::updateHeaderToolButtons()
+{
+  const QWidget* current_widget = m_ui.stackedWidget->currentWidget();
+  const QSignalBlocker bindings_sb(m_ui.bindings);
+  const QSignalBlocker settings_sb(m_ui.settings);
+  const QSignalBlocker macros_sb(m_ui.macros);
+
+  const bool is_bindings = (current_widget == m_bindings_widget);
+  m_ui.bindings->setChecked(is_bindings);
+  m_ui.automaticBinding->setEnabled(is_bindings);
+  m_ui.clearBindings->setEnabled(is_bindings);
+  m_ui.macros->setChecked(current_widget == m_macros_widget);
+  m_ui.settings->setChecked((current_widget == m_settings_widget));
 }
 
 void ControllerBindingWidget::onTypeChanged()
@@ -132,7 +177,7 @@ void ControllerBindingWidget::onTypeChanged()
     g_emu_thread->applySettings();
   }
 
-  populateBindingWidget();
+  populateWidgets();
 }
 
 void ControllerBindingWidget::onAutomaticBindingClicked()
@@ -182,16 +227,28 @@ void ControllerBindingWidget::onClearBindingsClicked()
   saveAndRefresh();
 }
 
+void ControllerBindingWidget::onBindingsClicked()
+{
+  m_ui.stackedWidget->setCurrentWidget(m_bindings_widget);
+  updateHeaderToolButtons();
+}
+
 void ControllerBindingWidget::onSettingsClicked()
 {
-  ControllerCustomSettingsDialog dialog(this);
-  dialog.exec();
+  if (!m_settings_widget)
+    return;
+
+  m_ui.stackedWidget->setCurrentWidget(m_settings_widget);
+  updateHeaderToolButtons();
 }
 
 void ControllerBindingWidget::onMacrosClicked()
 {
-  ControllerMacroDialog dialog(this);
-  dialog.exec();
+  if (!m_macros_widget)
+    return;
+
+  m_ui.stackedWidget->setCurrentWidget(m_macros_widget);
+  updateHeaderToolButtons();
 }
 
 void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
@@ -232,22 +289,22 @@ void ControllerBindingWidget::saveAndRefresh()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerMacroDialog::ControllerMacroDialog(ControllerBindingWidget* parent) : QDialog(parent)
+ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);
   setWindowTitle(tr("Controller Port %1 Macros").arg(parent->getPortNumber() + 1u));
   createWidgets(parent);
 }
 
-ControllerMacroDialog::~ControllerMacroDialog() = default;
+ControllerMacroWidget::~ControllerMacroWidget() = default;
 
-void ControllerMacroDialog::updateListItem(u32 index)
+void ControllerMacroWidget::updateListItem(u32 index)
 {
   m_ui.portList->item(static_cast<int>(index))
     ->setText(tr("Macro %1\n%2").arg(index + 1).arg(m_macros[index]->getSummary()));
 }
 
-void ControllerMacroDialog::createWidgets(ControllerBindingWidget* parent)
+void ControllerMacroWidget::createWidgets(ControllerBindingWidget* parent)
 {
   for (u32 i = 0; i < NUM_MACROS; i++)
   {
@@ -260,16 +317,15 @@ void ControllerMacroDialog::createWidgets(ControllerBindingWidget* parent)
     updateListItem(i);
   }
 
-  m_ui.portList->setCurrentItem(0);
+  m_ui.portList->setCurrentRow(0);
   m_ui.container->setCurrentIndex(0);
 
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsDialog::close);
   connect(m_ui.portList, &QListWidget::currentRowChanged, m_ui.container, &QStackedWidget::setCurrentIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroDialog* parent, ControllerBindingWidget* bwidget,
+ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget,
                                                      u32 index)
   : QWidget(parent), m_parent(parent), m_bwidget(bwidget), m_index(index)
 {
@@ -419,22 +475,29 @@ void ControllerMacroEditWidget::updateBinds()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerCustomSettingsDialog::ControllerCustomSettingsDialog(ControllerBindingWidget* parent) : QDialog(parent)
+ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBindingWidget* parent) : QWidget(parent)
 {
   QGridLayout* layout = new QGridLayout(this);
 
   int row = createSettingWidgets(parent, layout);
 
-  QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::RestoreDefaults, this);
-  connect(bbox, &QDialogButtonBox::rejected, this, &QDialog::accept);
-  connect(bbox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this,
-          &ControllerCustomSettingsDialog::restoreDefaults);
-  layout->addWidget(bbox, row++, 0, 1, 4);
+  QVBoxLayout* bottom_layout = new QVBoxLayout();
+  bottom_layout->setContentsMargins(0, 0, 0, 0);
+  QHBoxLayout* bottom_hlayout = new QHBoxLayout();
+  bottom_hlayout->setContentsMargins(0, 0, 0, 0);
+  QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
+  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+  connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
+  bottom_hlayout->addWidget(restore_defaults);
+  bottom_hlayout->addStretch(1);
+  bottom_layout->addLayout(bottom_hlayout);
+  bottom_layout->addStretch(1);
+  layout->addLayout(bottom_layout, row++, 0, 1, 4);
 }
 
-ControllerCustomSettingsDialog::~ControllerCustomSettingsDialog() {}
+ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() {}
 
-int ControllerCustomSettingsDialog::createSettingWidgets(ControllerBindingWidget* parent, QGridLayout* layout)
+int ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget* parent, QGridLayout* layout)
 {
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
   if (!cinfo || cinfo->num_settings == 0)
@@ -539,7 +602,7 @@ int ControllerCustomSettingsDialog::createSettingWidgets(ControllerBindingWidget
   return current_row;
 }
 
-void ControllerCustomSettingsDialog::restoreDefaults()
+void ControllerCustomSettingsWidget::restoreDefaults()
 {
   ControllerBindingWidget* parent = static_cast<ControllerBindingWidget*>(this->parent());
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
@@ -689,16 +752,6 @@ void ControllerBindingWidget_Base::initBindingWidgets()
     ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "AnalogSensitivity",
                                                                       range, Controller::DEFAULT_STICK_SENSITIVITY);
   }
-
-#if 0
-  // FIXME
-  if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "SmallMotorScale",
-                                                                 Controller::DEFAULT_MOTOR_SCALE);
-  if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "LargeMotorScale",
-                                                                 Controller::DEFAULT_MOTOR_SCALE);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

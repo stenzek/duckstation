@@ -188,7 +188,7 @@
     <QtUi Include="controllersettingsdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="controllermacrodialog.ui">
+    <QtUi Include="controllermacrowidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="controllermacroeditwidget.ui">

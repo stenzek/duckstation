@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>833</width>
-    <height>562</height>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -38,22 +38,62 @@
          <widget class="QComboBox" name="controllerType"/>
         </item>
         <item>
-         <widget class="QPushButton" name="settings">
+         <widget class="QToolButton" name="bindings">
           <property name="text">
-           <string>Settings</string>
+           <string>Bindings</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
           <property name="icon">
-           <iconset theme="checkbox-multiple-blank-line"/>
+           <iconset theme="gamepad-line">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextBesideIcon</enum>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="macros">
+         <widget class="QToolButton" name="settings">
+          <property name="text">
+           <string>Settings</string>
+          </property>
+          <property name="icon">
+           <iconset theme="checkbox-multiple-blank-line">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextBesideIcon</enum>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="macros">
           <property name="text">
            <string>Macros</string>
           </property>
           <property name="icon">
-           <iconset theme="flashlight-line"/>
+           <iconset theme="flashlight-line">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextBesideIcon</enum>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -75,7 +115,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QPushButton" name="automaticBinding">
+         <widget class="QToolButton" name="automaticBinding">
           <property name="text">
            <string>Automatic Mapping</string>
           </property>
@@ -83,10 +123,13 @@
            <iconset theme="gamepad-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextBesideIcon</enum>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="clearBindings">
+         <widget class="QToolButton" name="clearBindings">
           <property name="text">
            <string>Clear Mapping</string>
           </property>
@@ -94,12 +137,18 @@
            <iconset theme="file-reduce-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextBesideIcon</enum>
+          </property>
          </widget>
         </item>
        </layout>
       </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget" />
    </item>
   </layout>
  </widget>
