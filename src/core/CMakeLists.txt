@@ -163,7 +163,11 @@ elseif(${CPU_ARCH} STREQUAL "aarch32")
   target_link_libraries(core PUBLIC vixl)
   message("Building AArch32 recompiler")
 elseif(${CPU_ARCH} STREQUAL "aarch64")
-  target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1" "WITH_MMAP_FASTMEM=1")
+  target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1")
+  if (NOT APPLE)
+    # Disabled until we support 16K pages.
+    target_compile_definitions(core PUBLIC "WITH_MMAP_FASTMEM=1")
+  endif()
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_aarch64.cpp
   )
