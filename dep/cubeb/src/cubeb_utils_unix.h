@@ -8,13 +8,12 @@
 #if !defined(CUBEB_UTILS_UNIX)
 #define CUBEB_UTILS_UNIX
 
-#include <pthread.h>
 #include <errno.h>
+#include <pthread.h>
 #include <stdio.h>
 
 /* This wraps a critical section to track the owner in debug mode. */
-class owned_critical_section
-{
+class owned_critical_section {
 public:
   owned_critical_section()
   {
@@ -29,7 +28,7 @@ public:
 #ifndef NDEBUG
     int r =
 #endif
-    pthread_mutex_init(&mutex, &attr);
+        pthread_mutex_init(&mutex, &attr);
 #ifndef NDEBUG
     assert(r == 0);
 #endif
@@ -42,7 +41,7 @@ public:
 #ifndef NDEBUG
     int r =
 #endif
-    pthread_mutex_destroy(&mutex);
+        pthread_mutex_destroy(&mutex);
 #ifndef NDEBUG
     assert(r == 0);
 #endif
@@ -53,7 +52,7 @@ public:
 #ifndef NDEBUG
     int r =
 #endif
-    pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&mutex);
 #ifndef NDEBUG
     assert(r == 0 && "Deadlock");
 #endif
@@ -64,7 +63,7 @@ public:
 #ifndef NDEBUG
     int r =
 #endif
-    pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&mutex);
 #ifndef NDEBUG
     assert(r == 0 && "Unlocking unlocked mutex");
 #endif
@@ -82,8 +81,8 @@ private:
   pthread_mutex_t mutex;
 
   // Disallow copy and assignment because pthread_mutex_t cannot be copied.
-  owned_critical_section(const owned_critical_section&);
-  owned_critical_section& operator=(const owned_critical_section&);
+  owned_critical_section(const owned_critical_section &);
+  owned_critical_section & operator=(const owned_critical_section &);
 };
 
 #endif /* CUBEB_UTILS_UNIX */

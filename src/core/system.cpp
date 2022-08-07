@@ -1,4 +1,5 @@
 #include "system.h"
+#include "IconsFontAwesome5.h"
 #include "achievements.h"
 #include "bios.h"
 #include "bus.h"
@@ -19,7 +20,6 @@
 #include "fmt/format.h"
 #include "game_database.h"
 #include "gpu.h"
-#include "gpu_sw.h"
 #include "gte.h"
 #include "host.h"
 #include "host_display.h"
@@ -930,6 +930,7 @@ void System::PauseSystem(bool paused)
   else
   {
     Host::OnSystemResumed();
+    g_host_display->SetVSync(ShouldUseVSync());
     ResetPerformanceCounters();
     ResetThrottler();
   }
@@ -953,7 +954,15 @@ bool System::LoadState(const char* filename)
     return false;
 
   Log_InfoPrintf("Loading state from '%s'...", filename);
-  Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Loading state from '%s'..."), filename);
+
+  {
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+    Host::AddIconOSDMessage(
+      "load_state", ICON_FA_FOLDER_OPEN,
+      fmt::format(Host::TranslateString("OSDMessage", "Loading state from '{}'...").GetCharArray(),
+                  Path::GetFileName(display_name)),
+      5.0f);
+  }
 
   SaveUndoLoadState();
 
@@ -1000,11 +1009,24 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   }
   else
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "State saved to '%s'."), filename);
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
+    Host::AddIconOSDMessage("save_state", ICON_FA_SAVE,
+                            fmt::format(Host::TranslateString("OSDMessage", "State saved to '{}'.").GetCharArray(),
+                                        Path::GetFileName(display_name)),
+                            5.0f);
     stream->Commit();
   }
 
   return result;
+}
+
+bool System::SaveResumeState()
+{
+  if (s_running_game_code.empty())
+    return false;
+
+  const std::string path(GetGameSaveStateFileName(s_running_game_code, -1));
+  return SaveState(path.c_str(), false);
 }
 
 bool System::BootSystem(SystemBootParameters parameters)
@@ -1230,6 +1252,8 @@ bool System::Initialize(bool force_software_renderer)
   s_throttle_frequency = 60.0f;
   s_frame_period = 0;
   s_next_frame_time = 0;
+  m_turbo_enabled = false;
+  m_fast_forward_enabled = false;
 
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
@@ -1246,7 +1270,7 @@ bool System::Initialize(bool force_software_renderer)
   s_last_frame_number = 0;
   s_last_internal_frame_number = 0;
   s_last_global_tick_counter = 0;
-  s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
+  s_last_cpu_time = 0;
   s_fps_timer.Reset();
   s_frame_timer.Reset();
 
@@ -1266,6 +1290,8 @@ bool System::Initialize(bool force_software_renderer)
     CPU::Shutdown();
     return false;
   }
+
+  GTE::UpdateAspectRatio();
 
   if (g_settings.gpu_pgxp_enable)
     PGXP::Initialize();
@@ -2122,9 +2148,8 @@ void System::UpdatePerformanceCounters()
             100.0f;
   s_last_global_tick_counter = global_tick_counter;
 
-  const Threading::Thread* sw_thread =
-    g_gpu->IsHardwareRenderer() ? nullptr : static_cast<GPU_SW*>(g_gpu.get())->GetBackend().GetThread();
-  const u64 cpu_time = s_cpu_thread_handle.GetCPUTime();
+  const Threading::Thread* sw_thread = g_gpu->GetSWThread();
+  const u64 cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
   const u64 sw_time = sw_thread ? sw_thread->GetCPUTime() : 0;
   const u64 cpu_delta = cpu_time - s_last_cpu_time;
   const u64 sw_delta = sw_time - s_last_sw_time;
@@ -2149,20 +2174,14 @@ void System::ResetPerformanceCounters()
   s_last_frame_number = s_frame_number;
   s_last_internal_frame_number = s_internal_frame_number;
   s_last_global_tick_counter = TimingEvents::GetGlobalTickCounter();
-  s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
-  s_last_sw_time = 0;
-  if (!g_gpu->IsHardwareRenderer())
-  {
-    const Threading::Thread* sw_thread = static_cast<GPU_SW*>(g_gpu.get())->GetBackend().GetThread();
-    if (sw_thread)
-      s_last_sw_time = sw_thread->GetCPUTime();
-  }
+  s_last_cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
+  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
+    s_last_sw_time = sw_thread->GetCPUTime();
+  else
+    s_last_sw_time = 0;
+
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
-  s_cpu_thread_usage = 0.0f;
-  s_cpu_thread_time = 0.0f;
-  s_sw_thread_usage = 0.0f;
-  s_sw_thread_time = 0.0f;
   s_fps_timer.Reset();
   ResetThrottler();
 }
@@ -2191,14 +2210,10 @@ void System::UpdateSpeedLimiterState()
     }
   }
 
-  const bool is_non_standard_speed = IsRunningAtNonStandardSpeed();
-  const bool audio_sync_enabled =
-    !IsRunning() || (m_throttler_enabled && g_settings.audio_sync_enabled && !is_non_standard_speed);
   const bool video_sync_enabled = ShouldUseVSync();
   const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
   Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
-  Log_InfoPrintf("Syncing to %s%s", audio_sync_enabled ? "audio" : "",
-                 (audio_sync_enabled && video_sync_enabled) ? " and video" : (video_sync_enabled ? "video" : ""));
+  Log_InfoPrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
   Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
                  m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
@@ -2214,10 +2229,6 @@ void System::UpdateSpeedLimiterState()
     stream->SetNominalRate(rate_adjust ? target_speed : 1.0f);
     if (s_target_speed < target_speed)
       stream->UpdateTargetTempo(target_speed);
-
-    // stream->SetSync(audio_sync_enabled);
-    // if (audio_sync_enabled)
-    // stream->EmptyBuffer();
 
     s_target_speed = target_speed;
     UpdateThrottlePeriod();
@@ -3029,7 +3040,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateOverclock();
     }
 
-    if (g_settings.audio_backend != old_settings.audio_backend)
+    if (g_settings.audio_backend != old_settings.audio_backend || g_settings.audio_driver != old_settings.audio_driver)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
@@ -3172,7 +3183,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
-        g_settings.audio_sync_enabled != old_settings.audio_sync_enabled ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
@@ -3520,11 +3530,8 @@ void System::ShutdownSystem(bool save_resume_state)
   if (!IsValid())
     return;
 
-  if (save_resume_state && !s_running_game_code.empty())
-  {
-    std::string path(GetGameSaveStateFileName(s_running_game_code, -1));
-    SaveState(path.c_str(), false);
-  }
+  if (save_resume_state)
+    SaveResumeState();
 
   DestroySystem();
 }

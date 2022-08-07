@@ -101,6 +101,8 @@ static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_vie
                                                            const std::string_view& sub_binding);
 static std::optional<InputBindingKey> ParsePointerKey(const std::string_view& source,
                                                       const std::string_view& sub_binding);
+static std::optional<InputBindingKey> ParseSensorKey(const std::string_view& source,
+                                                     const std::string_view& sub_binding);
 
 static std::vector<std::string_view> SplitChord(const std::string_view& binding);
 static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
@@ -120,7 +122,6 @@ static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBindin
 
 static void LoadMacroButtonConfig(SettingsInterface& si, const std::string& section, u32 pad,
                                   const Controller::ControllerInfo* cinfo);
-static void SetMacroButtonState(u32 pad, u32 index, bool state);
 static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 static void UpdateMacroButtons();
 } // namespace InputManager
@@ -162,6 +163,7 @@ static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis:
   {"X", "Y", "WheelX", "WheelY"}};
 static constexpr const std::array<const char*, 3> s_pointer_button_names = {
   {"LeftButton", "RightButton", "MiddleButton"}};
+static constexpr const std::array<const char*, 3> s_sensor_accelerometer_names = {{"Turn", "Tilt", "Rotate"}};
 
 struct PointerAxisState
 {
@@ -239,6 +241,10 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
   {
     return ParsePointerKey(source, sub_binding);
   }
+  else if (StringUtil::StartsWith(source, "Sensor"))
+  {
+    return ParseSensorKey(source, sub_binding);
+  }
   else
   {
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -300,6 +306,11 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingKey key)
       return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
                          key.negative ? '-' : '+');
     }
+  }
+  else if (key.source_type == InputSourceType::Sensor)
+  {
+    if (key.source_subtype == InputSubclass::SensorAccelerometer && key.data < s_sensor_accelerometer_names.size())
+      return fmt::format("Sensor/{}", s_sensor_accelerometer_names[key.data]);
   }
   else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
   {
@@ -403,22 +414,34 @@ InputBindingKey InputManager::MakePointerAxisKey(u32 index, InputPointerAxis axi
   return key;
 }
 
+InputBindingKey InputManager::MakeSensorAxisKey(InputSubclass sensor, u32 axis)
+{
+  InputBindingKey key = {};
+  key.data = static_cast<u32>(axis);
+  key.source_index = 0;
+  key.source_type = InputSourceType::Sensor;
+  key.source_subtype = sensor;
+  return key;
+}
+
 // ------------------------------------------------------------------------
 // Bind Encoders
 // ------------------------------------------------------------------------
 
 static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input_class_names = {{
   "Keyboard",
-  "Mouse",
+  "Pointer",
+  "Sensor",
 #ifdef _WIN32
   "DInput",
   "XInput",
-#endif
-#if defined(_WIN32)
   "RawInput",
 #endif
 #ifdef WITH_SDL2
   "SDL",
+#endif
+#ifdef __ANDROID__
+  "Android",
 #endif
 }};
 
@@ -513,6 +536,38 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
   return std::nullopt;
 }
 
+std::optional<InputBindingKey> InputManager::ParseSensorKey(const std::string_view& source,
+                                                            const std::string_view& sub_binding)
+{
+  if (source != "Sensor")
+    return std::nullopt;
+
+  InputBindingKey key = {};
+  key.source_type = InputSourceType::Sensor;
+  key.source_index = 0;
+
+  for (u32 i = 0; i < s_sensor_accelerometer_names.size(); i++)
+  {
+    if (StringUtil::StartsWith(sub_binding, s_sensor_accelerometer_names[i]))
+    {
+      key.source_subtype = InputSubclass::SensorAccelerometer;
+      key.data = i;
+
+      const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_names[i])));
+      if (dir_part == "+")
+        key.negative = false;
+      else if (dir_part == "-")
+        key.negative = true;
+      else
+        return std::nullopt;
+
+      return key;
+    }
+  }
+
+  return std::nullopt;
+}
+
 // ------------------------------------------------------------------------
 // Binding Enumeration
 // ------------------------------------------------------------------------
@@ -553,7 +608,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
     if (!bindings.empty())
     {
       AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
-                    if (!System::IsRunning())
+                    if (!System::IsValid())
                       return;
 
                     Controller* c = System::GetController(pad_index);
@@ -570,7 +625,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
     if (!bindings.empty())
     {
       AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
-                    if (!System::IsRunning())
+                    if (!System::IsValid())
                       return;
 
                     SetMacroButtonState(pad_index, macro_button_index, state);
@@ -1469,5 +1524,8 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
 #endif
 #ifdef WITH_SDL2
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource, true);
+#endif
+#ifdef __ANDROID__
+  UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource, true);
 #endif
 }

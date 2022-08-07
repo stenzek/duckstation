@@ -24,7 +24,7 @@
 #ifdef DISABLE_LIBAAUDIO_DLOPEN
 #define WRAP(x) x
 #else
-#define WRAP(x) cubeb_##x
+#define WRAP(x) (*cubeb_##x)
 #define LIBAAUDIO_API_VISIT(X)                                                 \
   X(AAudio_convertResultToText)                                                \
   X(AAudio_convertStreamStateToText)                                           \
@@ -78,6 +78,7 @@
   // X(AAudioStream_getContentType)                  \
   // X(AAudioStream_getInputPreset)                  \
   // X(AAudioStream_getSessionId)                    \
+// END: not needed or added later on
 
 #define MAKE_TYPEDEF(x) static decltype(x) * cubeb_##x;
 LIBAAUDIO_API_VISIT(MAKE_TYPEDEF)
@@ -934,7 +935,8 @@ aaudio_stream_init_impl(cubeb_stream * stm, cubeb_devid input_device,
   stm->resampler = cubeb_resampler_create(
       stm, input_stream_params ? &in_params : NULL,
       output_stream_params ? &out_params : NULL, target_sample_rate,
-      stm->data_callback, stm->user_ptr, CUBEB_RESAMPLER_QUALITY_DEFAULT);
+      stm->data_callback, stm->user_ptr, CUBEB_RESAMPLER_QUALITY_DEFAULT,
+      CUBEB_RESAMPLER_RECLOCK_NONE);
 
   if (!stm->resampler) {
     LOG("Failed to create resampler");
@@ -997,8 +999,10 @@ aaudio_stream_init(cubeb * ctx, cubeb_stream ** stream,
   stm->user_ptr = user_ptr;
   stm->data_callback = data_callback;
   stm->state_callback = state_callback;
-  stm->voice_input = input_stream_params && !!(input_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
-  stm->voice_output = output_stream_params && !!(output_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
+  stm->voice_input = input_stream_params &&
+                     !!(input_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
+  stm->voice_output = output_stream_params &&
+                      !!(output_stream_params->prefs & CUBEB_STREAM_PREF_VOICE);
   stm->previous_clock = 0;
 
   LOG("cubeb stream prefs: voice_input: %s voice_output: %s",
@@ -1450,7 +1454,6 @@ const static struct cubeb_ops aaudio_ops = {
     /*.stream_destroy =*/aaudio_stream_destroy,
     /*.stream_start =*/aaudio_stream_start,
     /*.stream_stop =*/aaudio_stream_stop,
-    /*.stream_reset_default_device =*/NULL,
     /*.stream_get_position =*/aaudio_stream_get_position,
     /*.stream_get_latency =*/aaudio_stream_get_latency,
     /*.stream_get_input_latency =*/aaudio_stream_get_input_latency,
@@ -1474,7 +1477,7 @@ aaudio_init(cubeb ** context, char const * /* context_name */)
 
 #define LOAD(x)                                                                \
   {                                                                            \
-    WRAP(x) = (decltype(WRAP(x)))(dlsym(libaaudio, #x));                       \
+    cubeb_##x = (decltype(x) *)(dlsym(libaaudio, #x));                         \
     if (!WRAP(x)) {                                                            \
       LOG("AAudio: Failed to load %s", #x);                                    \
       dlclose(libaaudio);                                                      \

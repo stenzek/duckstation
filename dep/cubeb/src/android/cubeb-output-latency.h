@@ -1,9 +1,9 @@
 #ifndef _CUBEB_OUTPUT_LATENCY_H_
 #define _CUBEB_OUTPUT_LATENCY_H_
 
-#include <stdbool.h>
-#include "cubeb_media_library.h"
 #include "../cubeb-jni.h"
+#include "cubeb_media_library.h"
+#include <stdbool.h>
 
 struct output_latency_function {
   media_lib * from_lib;
@@ -23,7 +23,7 @@ cubeb_output_latency_load_method(int version)
 
   ol->version = version;
 
-  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2){
+  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2) {
     ol->from_jni = cubeb_jni_init();
     return ol;
   }
@@ -36,7 +36,7 @@ bool
 cubeb_output_latency_method_is_loaded(output_latency_function * ol)
 {
   assert(ol);
-  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2){
+  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2) {
     return !!ol->from_jni;
   }
 
@@ -66,7 +66,7 @@ cubeb_get_output_latency(output_latency_function * ol)
 {
   assert(cubeb_output_latency_method_is_loaded(ol));
 
-  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2){
+  if (ol->version > ANDROID_JELLY_BEAN_MR1_4_2) {
     return cubeb_get_output_latency_from_jni(ol->from_jni);
   }
 

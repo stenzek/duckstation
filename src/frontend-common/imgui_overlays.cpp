@@ -168,7 +168,7 @@ void ImGuiManager::DrawPerformanceOverlay()
       FormatProcessorStat(text, System::GetCPUThreadUsage(), System::GetCPUThreadAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      if (!g_gpu->IsHardwareRenderer() && g_settings.gpu_use_thread)
+      if (g_gpu->GetSWThread())
       {
         text.Assign("SW: ");
         FormatProcessorStat(text, System::GetSWThreadUsage(), System::GetSWThreadAverageTime());
@@ -208,7 +208,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 void ImGuiManager::DrawEnhancementsOverlay()
 {
   LargeString text;
-  text.AppendString(Settings::GetConsoleRegionName(System::GetRegion()));
+  text.AppendFmtString("{} {}", Settings::GetConsoleRegionName(System::GetRegion()), Settings::GetRendererName(g_gpu->GetRendererType()));
 
   if (g_settings.rewind_enable)
     text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);

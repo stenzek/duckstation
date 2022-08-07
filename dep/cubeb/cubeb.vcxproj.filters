@@ -2,27 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="include\cubeb\cubeb.h" />
-    <ClInclude Include="src\speex\fixed_generic.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\resample_neon.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\resample_sse.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\speex_config_types.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\speex_resampler.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\stack_alloc.h">
-      <Filter>speex</Filter>
-    </ClInclude>
-    <ClInclude Include="src\speex\arch.h">
-      <Filter>speex</Filter>
-    </ClInclude>
     <ClInclude Include="include\cubeb\cubeb_export.h" />
     <ClInclude Include="src\cubeb-internal.h" />
     <ClInclude Include="src\cubeb-speex-resampler.h" />
@@ -37,6 +16,27 @@
     <ClInclude Include="src\cubeb_strings.h" />
     <ClInclude Include="src\cubeb_utils.h" />
     <ClInclude Include="src\cubeb_utils_win.h" />
+    <ClInclude Include="subprojects\speex\resample_neon.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\resample_sse.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\speex_config_types.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\speex_resampler.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\stack_alloc.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\arch.h">
+      <Filter>speex</Filter>
+    </ClInclude>
+    <ClInclude Include="subprojects\speex\fixed_generic.h">
+      <Filter>speex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="speex">
@@ -44,9 +44,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\speex\resample.c">
-      <Filter>speex</Filter>
-    </ClCompile>
     <ClCompile Include="src\cubeb_wasapi.cpp" />
     <ClCompile Include="src\cubeb_winmm.c" />
     <ClCompile Include="src\cubeb.c" />
@@ -55,5 +52,8 @@
     <ClCompile Include="src\cubeb_resampler.cpp" />
     <ClCompile Include="src\cubeb_strings.c" />
     <ClCompile Include="src\cubeb_utils.cpp" />
+    <ClCompile Include="subprojects\speex\resample.c">
+      <Filter>speex</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -39,7 +39,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="2">
+      <item row="6" column="0" colspan="2">
        <widget class="QCheckBox" name="startDumpingOnBoot">
         <property name="text">
          <string>Start Dumping On Boot</string>
@@ -123,13 +123,6 @@
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Stretch Mode:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QCheckBox" name="syncToOutput">
-        <property name="text">
-         <string>Sync To Output</string>
         </property>
        </widget>
       </item>

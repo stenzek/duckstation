@@ -199,6 +199,7 @@ void ResetSystem();
 /// Loads state from the specified filename.
 bool LoadState(const char* filename);
 bool SaveState(const char* filename, bool backup_existing_save);
+bool SaveResumeState();
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();

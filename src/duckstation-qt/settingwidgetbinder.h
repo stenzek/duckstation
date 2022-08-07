@@ -11,6 +11,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 
@@ -24,6 +25,10 @@
 #include "settingsdialog.h"
 
 namespace SettingWidgetBinder {
+static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
+static constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
+static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
+
 template<typename T>
 struct SettingAccessor
 {
@@ -305,92 +310,261 @@ struct SettingAccessor<QSlider>
 template<>
 struct SettingAccessor<QSpinBox>
 {
+  static bool isNullable(const QSpinBox* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
+
+  static void updateFont(QSpinBox* widget, bool isNull)
+  {
+    // We should be able to use QFont here.. but it doesn't update on change.
+    widget->setStyleSheet(isNull ? QStringLiteral("font-style: italic;") : QString());
+    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Default: ") : QString());
+  }
+
   static bool getBoolValue(const QSpinBox* widget) { return widget->value() > 0; }
   static void setBoolValue(QSpinBox* widget, bool value) { widget->setValue(value ? 1 : 0); }
-  static void makeNullableBool(QSpinBox* widget, bool globalSetting) { widget->setEnabled(false); }
-  static std::optional<bool> getNullableBoolValue(const QSpinBox* widget) { return getBoolValue(widget); }
+  static void makeNullableBool(QSpinBox* widget, bool globalSetting)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalSetting));
+  }
+  static std::optional<bool> getNullableBoolValue(const QSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getBoolValue(widget);
+  }
   static void setNullableBoolValue(QSpinBox* widget, std::optional<bool> value)
   {
-    setBoolValue(widget, value.value_or(false));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setBoolValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toBool());
+    updateFont(widget, !value.has_value());
   }
 
   static int getIntValue(const QSpinBox* widget) { return widget->value(); }
   static void setIntValue(QSpinBox* widget, int value) { widget->setValue(value); }
-  static void makeNullableInt(QSpinBox* widget, int globalValue) { widget->setEnabled(false); }
-  static std::optional<int> getNullableIntValue(const QSpinBox* widget) { return getIntValue(widget); }
+  static void makeNullableInt(QSpinBox* widget, int globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<int> getNullableIntValue(const QSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getIntValue(widget);
+  }
   static void setNullableIntValue(QSpinBox* widget, std::optional<int> value)
   {
-    setIntValue(widget, value.value_or(0));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setIntValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toInt());
+    updateFont(widget, !value.has_value());
   }
 
   static float getFloatValue(const QSpinBox* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QSpinBox* widget, float value) { widget->setValue(static_cast<int>(value)); }
-  static void makeNullableFloat(QSpinBox* widget, float globalValue) { widget->setEnabled(false); }
-  static std::optional<float> getNullableFloatValue(const QSpinBox* widget) { return getFloatValue(widget); }
+  static void makeNullableFloat(QSpinBox* widget, float globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<float> getNullableFloatValue(const QSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getFloatValue(widget);
+  }
   static void setNullableFloatValue(QSpinBox* widget, std::optional<float> value)
   {
-    setFloatValue(widget, value.value_or(0.0f));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setFloatValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toFloat());
+    updateFont(widget, !value.has_value());
   }
 
   static QString getStringValue(const QSpinBox* widget) { return QString::number(widget->value()); }
   static void setStringValue(QSpinBox* widget, const QString& value) { widget->setValue(value.toInt()); }
-  static void makeNullableString(QSpinBox* widget, const QString& globalValue) { widget->setEnabled(false); }
-  static std::optional<QString> getNullableStringValue(const QSpinBox* widget) { return getStringValue(widget); }
+  static void makeNullableString(QSpinBox* widget, const QString& globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<QString> getNullableStringValue(const QSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getStringValue(widget);
+  }
   static void setNullableStringValue(QSpinBox* widget, std::optional<QString> value)
   {
-    setStringValue(widget, value.value_or(QString()));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setStringValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toString());
+    updateFont(widget, !value.has_value());
   }
 
   template<typename F>
   static void connectValueChanged(QSpinBox* widget, F func)
   {
-    widget->connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), func);
+    if (!isNullable(widget))
+    {
+      widget->connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), func);
+    }
+    else
+    {
+      widget->setContextMenuPolicy(Qt::CustomContextMenu);
+      widget->connect(widget, &QSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
+        QMenu menu(widget);
+        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
+                        [widget, func = std::move(func)]() {
+                          const bool old = widget->blockSignals(true);
+                          setNullableIntValue(widget, std::nullopt);
+                          widget->blockSignals(old);
+                          updateFont(widget, true);
+                          func();
+                        });
+        menu.exec(widget->mapToGlobal(pt));
+      });
+      widget->connect(widget, &QSpinBox::valueChanged, widget, [widget, func = std::move(func)]() {
+        if (widget->property(IS_NULL_PROPERTY).toBool())
+        {
+          widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
+          updateFont(widget, false);
+        }
+        func();
+      });
+    }
   }
 };
 
 template<>
 struct SettingAccessor<QDoubleSpinBox>
 {
+  static bool isNullable(const QDoubleSpinBox* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
+
+  static void updateFont(QDoubleSpinBox* widget, bool isNull)
+  {
+    // We should be able to use QFont here.. but it doesn't update on change.
+    widget->setStyleSheet(isNull ? QStringLiteral("font-style: italic;") : QString());
+    widget->setPrefix(isNull ? qApp->translate("SettingWidgetBinder", "Default: ") : QString());
+  }
+
   static bool getBoolValue(const QDoubleSpinBox* widget) { return widget->value() > 0.0; }
   static void setBoolValue(QDoubleSpinBox* widget, bool value) { widget->setValue(value ? 1.0 : 0.0); }
-  static void makeNullableBool(QDoubleSpinBox* widget, bool globalSetting) { widget->setEnabled(false); }
-  static std::optional<bool> getNullableBoolValue(const QDoubleSpinBox* widget) { return getBoolValue(widget); }
+  static void makeNullableBool(QDoubleSpinBox* widget, bool globalSetting)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalSetting));
+  }
+  static std::optional<bool> getNullableBoolValue(const QDoubleSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getBoolValue(widget);
+  }
   static void setNullableBoolValue(QDoubleSpinBox* widget, std::optional<bool> value)
   {
-    setBoolValue(widget, value.value_or(false));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setBoolValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toBool());
+    updateFont(widget, !value.has_value());
   }
 
   static int getIntValue(const QDoubleSpinBox* widget) { return static_cast<int>(widget->value()); }
   static void setIntValue(QDoubleSpinBox* widget, int value) { widget->setValue(static_cast<double>(value)); }
-  static void makeNullableInt(QDoubleSpinBox* widget, int globalValue) { widget->setEnabled(false); }
-  static std::optional<int> getNullableIntValue(const QDoubleSpinBox* widget) { return getIntValue(widget); }
+  static void makeNullableInt(QDoubleSpinBox* widget, int globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<int> getNullableIntValue(const QDoubleSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getIntValue(widget);
+  }
   static void setNullableIntValue(QDoubleSpinBox* widget, std::optional<int> value)
   {
-    setIntValue(widget, value.value_or(0));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setIntValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toInt());
+    updateFont(widget, !value.has_value());
   }
 
   static float getFloatValue(const QDoubleSpinBox* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QDoubleSpinBox* widget, float value) { widget->setValue(static_cast<double>(value)); }
-  static void makeNullableFloat(QDoubleSpinBox* widget, float globalValue) { widget->setEnabled(false); }
-  static std::optional<float> getNullableFloatValue(const QDoubleSpinBox* widget) { return getFloatValue(widget); }
+  static void makeNullableFloat(QDoubleSpinBox* widget, float globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<float> getNullableFloatValue(const QDoubleSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getFloatValue(widget);
+  }
   static void setNullableFloatValue(QDoubleSpinBox* widget, std::optional<float> value)
   {
-    setFloatValue(widget, value.value_or(0.0f));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setFloatValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toFloat());
+    updateFont(widget, !value.has_value());
   }
 
   static QString getStringValue(const QDoubleSpinBox* widget) { return QString::number(widget->value()); }
   static void setStringValue(QDoubleSpinBox* widget, const QString& value) { widget->setValue(value.toDouble()); }
-  static void makeNullableString(QDoubleSpinBox* widget, const QString& globalValue) { widget->setEnabled(false); }
-  static std::optional<QString> getNullableStringValue(const QDoubleSpinBox* widget) { return getStringValue(widget); }
+  static void makeNullableString(QDoubleSpinBox* widget, const QString& globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<QString> getNullableStringValue(const QDoubleSpinBox* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getStringValue(widget);
+  }
   static void setNullableStringValue(QDoubleSpinBox* widget, std::optional<QString> value)
   {
-    setStringValue(widget, value.value_or(QString()));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setStringValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toString());
+    updateFont(widget, !value.has_value());
   }
 
   template<typename F>
   static void connectValueChanged(QDoubleSpinBox* widget, F func)
   {
-    widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), func);
+    if (!isNullable(widget))
+    {
+      widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), func);
+    }
+    else
+    {
+      widget->setContextMenuPolicy(Qt::CustomContextMenu);
+      widget->connect(widget, &QDoubleSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
+        QMenu menu(widget);
+        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
+                        [widget, func = std::move(func)]() {
+                          const bool old = widget->blockSignals(true);
+                          setNullableFloatValue(widget, std::nullopt);
+                          widget->blockSignals(old);
+                          updateFont(widget, true);
+                          func();
+                        });
+        menu.exec(widget->mapToGlobal(pt));
+      });
+      widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), widget,
+                      [widget, func = std::move(func)]() {
+                        if (widget->property(IS_NULL_PROPERTY).toBool())
+                        {
+                          widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
+                          updateFont(widget, false);
+                        }
+                        func();
+                      });
+    }
   }
 };
 
@@ -905,10 +1079,10 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
   }
   if (reset_button)
   {
-    QObject::connect(
-      reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value)]() {
-        Accessor::setStringValue(widget, QString::fromStdString(default_value));
-      });
+    QObject::connect(reset_button, &QAbstractButton::clicked, reset_button,
+                     [widget, default_value = std::move(default_value)]() {
+                       Accessor::setStringValue(widget, QString::fromStdString(default_value));
+                     });
   }
 }
 } // namespace SettingWidgetBinder

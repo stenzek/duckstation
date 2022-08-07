@@ -475,10 +475,7 @@ void FullscreenUI::OnSystemPaused()
 
 void FullscreenUI::OnSystemResumed()
 {
-  if (!IsInitialized())
-    return;
-
-  g_host_display->SetVSync(System::ShouldUseVSync());
+  // noop
 }
 
 void FullscreenUI::OnSystemDestroyed()
@@ -3187,11 +3184,6 @@ void FullscreenUI::DrawAudioSettingsPage()
                         "played through speakers.",
                         "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
   }
-
-  DrawToggleSetting("Sync To Output",
-                    "Throttles the emulation speed based on the audio backend pulling audio "
-                    "frames. Enable to reduce the chances of crackling.",
-                    "Audio", "Sync", true);
 
   EndMenuButtons();
 }

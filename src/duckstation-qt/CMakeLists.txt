@@ -41,6 +41,8 @@ set(SRCS
   controllerglobalsettingswidget.cpp
   controllerglobalsettingswidget.h
   controllerglobalsettingswidget.ui
+  controllermacroeditwidget.ui
+  controllermacrowidget.ui
   controllersettingsdialog.cpp
   controllersettingsdialog.h
   controllersettingsdialog.ui

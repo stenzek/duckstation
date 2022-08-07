@@ -275,6 +275,7 @@ void Settings::Load(SettingsInterface& si)
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
       .value_or(DEFAULT_AUDIO_BACKEND);
+  audio_driver = si.GetStringValue("Audio", "Driver");
   audio_stretch_mode =
     AudioStream::ParseStretchMode(
       si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
@@ -285,7 +286,6 @@ void Settings::Load(SettingsInterface& si)
   audio_fast_forward_volume = si.GetUIntValue("Audio", "FastForwardVolume", 100);
 
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
-  audio_sync_enabled = si.GetBoolValue("Audio", "Sync", true);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
   dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
@@ -477,13 +477,13 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
+  si.SetStringValue("Audio", "Driver", audio_driver.c_str());
   si.SetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(audio_stretch_mode));
   si.SetUIntValue("Audio", "BufferMS", audio_buffer_ms);
   si.SetUIntValue("Audio", "OutputLatencyMS", audio_output_latency_ms);
   si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
   si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
-  si.SetBoolValue("Audio", "Sync", audio_sync_enabled);
   si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);
 
   si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);

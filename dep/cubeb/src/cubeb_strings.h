@@ -22,12 +22,14 @@ typedef struct cubeb_strings cubeb_strings;
     interned string storage will be returned.
     @retval CUBEB_OK in case of success.
     @retval CUBEB_ERROR in case of error. */
-CUBEB_EXPORT int cubeb_strings_init(cubeb_strings ** strings);
+CUBEB_EXPORT int
+cubeb_strings_init(cubeb_strings ** strings);
 
 /** Destroy an interned string structure freeing all associated memory.
     @param strings An opaque pointer to the interned string storage to
                    destroy. */
-CUBEB_EXPORT void cubeb_strings_destroy(cubeb_strings * strings);
+CUBEB_EXPORT void
+cubeb_strings_destroy(cubeb_strings * strings);
 
 /** Add string to internal storage.
     @param strings Opaque pointer to interned string storage.
@@ -35,7 +37,8 @@ CUBEB_EXPORT void cubeb_strings_destroy(cubeb_strings * strings);
     @retval CUBEB_OK
     @retval CUBEB_ERROR
  */
-CUBEB_EXPORT char const * cubeb_strings_intern(cubeb_strings * strings, char const * s);
+CUBEB_EXPORT char const *
+cubeb_strings_intern(cubeb_strings * strings, char const * s);
 
 #if defined(__cplusplus)
 }

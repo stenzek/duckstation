@@ -23,6 +23,7 @@ public:
   ALWAYS_INLINE const GPU_SW_Backend& GetBackend() const { return m_backend; }
 
   GPURenderer GetRendererType() const override;
+  const Threading::Thread* GetSWThread() const;
 
   bool Initialize() override;
   bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;

@@ -10,25 +10,25 @@
  * accompanying file LICENSE for details.
  */
 
-#include <assert.h>
-#include <ctype.h>
-#include <limits.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/soundcard.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <poll.h>
+#include "cubeb-internal.h"
 #include "cubeb/cubeb.h"
 #include "cubeb_mixer.h"
 #include "cubeb_strings.h"
-#include "cubeb-internal.h"
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <poll.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/soundcard.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* Supported well by most hardware. */
 #ifndef OSS_PREFER_RATE
@@ -55,25 +55,25 @@
 #define ENV_AUDIO_DEVICE "AUDIO_DEVICE"
 
 #ifndef OSS_MAX_CHANNELS
-# if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 /*
  * The current maximum number of channels supported
  * on FreeBSD is 8.
  *
  * Reference: FreeBSD 12.1-RELEASE
  */
-#  define OSS_MAX_CHANNELS (8)
-# elif defined(__sun__)
+#define OSS_MAX_CHANNELS (8)
+#elif defined(__sun__)
 /*
  * The current maximum number of channels supported
  * on Illumos is 16.
  *
  * Reference: PSARC 2008/318
  */
-#  define OSS_MAX_CHANNELS (16)
-# else
-#  define OSS_MAX_CHANNELS (2)
-# endif
+#define OSS_MAX_CHANNELS (16)
+#else
+#define OSS_MAX_CHANNELS (2)
+#endif
 #endif
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)
@@ -89,13 +89,15 @@ struct cubeb {
 
   /* Our intern string store */
   pthread_mutex_t mutex; /* protects devid_strs */
-  cubeb_strings *devid_strs;
+  cubeb_strings * devid_strs;
 };
 
 struct oss_stream {
   oss_devnode_t name;
   int fd;
   void * buf;
+  unsigned int bufframes;
+  unsigned int maxframes;
 
   struct stream_info {
     int channels;
@@ -112,29 +114,26 @@ struct cubeb_stream {
   struct cubeb * context;
   void * user_ptr;
   pthread_t thread;
-  bool doorbell; /* (m) */
+  bool doorbell;              /* (m) */
   pthread_cond_t doorbell_cv; /* (m) */
-  pthread_cond_t stopped_cv; /* (m) */
+  pthread_cond_t stopped_cv;  /* (m) */
   pthread_mutex_t mtx; /* Members protected by this should be marked (m) */
   bool thread_created; /* (m) */
-  bool running; /* (m) */
-  bool destroying; /* (m) */
-  cubeb_state state; /* (m) */
+  bool running;        /* (m) */
+  bool destroying;     /* (m) */
+  cubeb_state state;   /* (m) */
   float volume /* (m) */;
   struct oss_stream play;
   struct oss_stream record;
   cubeb_data_callback data_cb;
   cubeb_state_callback state_cb;
   uint64_t frames_written /* (m) */;
-  unsigned int nfr; /* Number of frames allocated */
-  unsigned int nfrags;
-  unsigned int bufframes;
 };
 
 static char const *
-oss_cubeb_devid_intern(cubeb *context, char const * devid)
+oss_cubeb_devid_intern(cubeb * context, char const * devid)
 {
-  char const *is;
+  char const * is;
   pthread_mutex_lock(&context->mutex);
   is = cubeb_strings_intern(context->devid_strs, devid);
   pthread_mutex_unlock(&context->mutex);
@@ -142,7 +141,8 @@ oss_cubeb_devid_intern(cubeb *context, char const * devid)
 }
 
 int
-oss_init(cubeb **context, char const *context_name) {
+oss_init(cubeb ** context, char const * context_name)
+{
   cubeb * c;
 
   (void)context_name;
@@ -211,7 +211,7 @@ oss_get_min_latency(cubeb * context, cubeb_stream_params params,
 }
 
 static void
-oss_free_cubeb_device_info_strings(cubeb_device_info *cdi)
+oss_free_cubeb_device_info_strings(cubeb_device_info * cdi)
 {
   free((char *)cdi->device_id);
   free((char *)cdi->friendly_name);
@@ -230,8 +230,8 @@ oss_free_cubeb_device_info_strings(cubeb_device_info *cdi)
  * Return 0 if OK, otherwise 1.
  */
 static int
-oss_probe_open(const char *dsppath, cubeb_device_type type,
-               int *fdp, oss_audioinfo *resai)
+oss_probe_open(const char * dsppath, cubeb_device_type type, int * fdp,
+               oss_audioinfo * resai)
 {
   oss_audioinfo ai;
   int error;
@@ -258,81 +258,81 @@ oss_probe_open(const char *dsppath, cubeb_device_type type,
 
 struct sndstat_info {
   oss_devnode_t devname;
-  const char *desc;
+  const char * desc;
   cubeb_device_type type;
   int preferred;
 };
 
 static int
-oss_sndstat_line_parse(char *line, int is_ud, struct sndstat_info *sinfo)
+oss_sndstat_line_parse(char * line, int is_ud, struct sndstat_info * sinfo)
 {
-    char *matchptr = line, *n = NULL;
-    struct sndstat_info res;
+  char *matchptr = line, *n = NULL;
+  struct sndstat_info res;
 
-    memset(&res, 0, sizeof(res));
+  memset(&res, 0, sizeof(res));
 
-    n = strchr(matchptr, ':');
-    if (n == NULL)
+  n = strchr(matchptr, ':');
+  if (n == NULL)
+    goto fail;
+  if (is_ud == 0) {
+    unsigned int devunit;
+
+    if (sscanf(matchptr, "pcm%u: ", &devunit) < 1)
       goto fail;
-    if (is_ud == 0) {
-      unsigned int devunit;
 
-      if (sscanf(matchptr, "pcm%u: ", &devunit) < 1)
-        goto fail;
-
-      if (snprintf(res.devname, sizeof(res.devname), "/dev/dsp%u", devunit) < 1)
-        goto fail;
-    } else {
-      if (n - matchptr >= (ssize_t)(sizeof(res.devname) - strlen("/dev/")))
-        goto fail;
-
-      snprintf(res.devname, sizeof(res.devname), "/dev/");
-      strncat(res.devname, matchptr, n - matchptr);
-    }
-    matchptr = n + 1;
-
-    n = strchr(matchptr, '<');
-    if (n == NULL)
+    if (snprintf(res.devname, sizeof(res.devname), "/dev/dsp%u", devunit) < 1)
       goto fail;
-    matchptr = n + 1;
-    n = strrchr(matchptr, '>');
-    if (n == NULL)
+  } else {
+    if (n - matchptr >= (ssize_t)(sizeof(res.devname) - strlen("/dev/")))
       goto fail;
-    *n = 0;
-    res.desc = matchptr;
-    matchptr = n + 1;
 
-    n = strchr(matchptr, '(');
-    if (n == NULL)
-      goto fail;
-    matchptr = n + 1;
-    n = strrchr(matchptr, ')');
-    if (n == NULL)
-      goto fail;
-    *n = 0;
-    if (!isdigit(matchptr[0])) {
-      if (strstr(matchptr, "play") != NULL)
-        res.type |= CUBEB_DEVICE_TYPE_OUTPUT;
-      if (strstr(matchptr, "rec") != NULL)
-        res.type |= CUBEB_DEVICE_TYPE_INPUT;
-    } else {
-      int p, r;
-      if (sscanf(matchptr, "%dp:%*dv/%dr:%*dv", &p, &r) != 2)
-        goto fail;
-      if (p > 0)
-        res.type |= CUBEB_DEVICE_TYPE_OUTPUT;
-      if (r > 0)
-        res.type |= CUBEB_DEVICE_TYPE_INPUT;
-    }
-    matchptr = n + 1;
-    if (strstr(matchptr, "default") != NULL)
-      res.preferred = 1;
+    strlcpy(res.devname, "/dev/", sizeof(res.devname));
+    strncat(res.devname, matchptr, n - matchptr);
+  }
+  matchptr = n + 1;
 
-    *sinfo = res;
-    return 0;
+  n = strchr(matchptr, '<');
+  if (n == NULL)
+    goto fail;
+  matchptr = n + 1;
+  n = strrchr(matchptr, '>');
+  if (n == NULL)
+    goto fail;
+  *n = 0;
+  res.desc = matchptr;
+  matchptr = n + 1;
+
+  n = strchr(matchptr, '(');
+  if (n == NULL)
+    goto fail;
+  matchptr = n + 1;
+  n = strrchr(matchptr, ')');
+  if (n == NULL)
+    goto fail;
+  *n = 0;
+  if (!isdigit(matchptr[0])) {
+    if (strstr(matchptr, "play") != NULL)
+      res.type |= CUBEB_DEVICE_TYPE_OUTPUT;
+    if (strstr(matchptr, "rec") != NULL)
+      res.type |= CUBEB_DEVICE_TYPE_INPUT;
+  } else {
+    int p, r;
+    if (sscanf(matchptr, "%dp:%*dv/%dr:%*dv", &p, &r) != 2)
+      goto fail;
+    if (p > 0)
+      res.type |= CUBEB_DEVICE_TYPE_OUTPUT;
+    if (r > 0)
+      res.type |= CUBEB_DEVICE_TYPE_INPUT;
+  }
+  matchptr = n + 1;
+  if (strstr(matchptr, "default") != NULL)
+    res.preferred = 1;
+
+  *sinfo = res;
+  return 0;
 
 fail:
-    return 1;
+  return 1;
 }
 
 /*
@@ -344,10 +344,10 @@ static int
 oss_enumerate_devices(cubeb * context, cubeb_device_type type,
                       cubeb_device_collection * collection)
 {
-  cubeb_device_info *devinfop = NULL;
-  char *line = NULL;
+  cubeb_device_info * devinfop = NULL;
+  char * line = NULL;
   size_t linecap = 0;
-  FILE *sndstatfp = NULL;
+  FILE * sndstatfp = NULL;
   int collection_cnt = 0;
   int is_ud = 0;
   int skipall = 0;
@@ -360,7 +360,7 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
   if (sndstatfp == NULL)
     goto fail;
   while (getline(&line, &linecap, sndstatfp) > 0) {
-    const char *devid = NULL;
+    const char * devid = NULL;
     struct sndstat_info sinfo;
     oss_audioinfo ai;
 
@@ -373,7 +373,8 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
       skipall = 0;
       continue;
     }
-    if (!strncmp(line, SNDSTAT_USER_BEGIN_STR, strlen(SNDSTAT_USER_BEGIN_STR))) {
+    if (!strncmp(line, SNDSTAT_USER_BEGIN_STR,
+                 strlen(SNDSTAT_USER_BEGIN_STR))) {
       is_ud = 1;
       skipall = 0;
       continue;
@@ -433,8 +434,8 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
 
     collection_cnt++;
 
-    void *newp = reallocarray(devinfop, collection_cnt + 1,
-                              sizeof(cubeb_device_info));
+    void * newp =
+        reallocarray(devinfop, collection_cnt + 1, sizeof(cubeb_device_info));
     if (newp == NULL)
       goto fail;
     devinfop = newp;
@@ -464,7 +465,7 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
 {
   oss_sysinfo si;
   int error, i;
-  cubeb_device_info *devinfop = NULL;
+  cubeb_device_info * devinfop = NULL;
   int collection_cnt = 0;
   int mixer_fd = -1;
 
@@ -476,7 +477,8 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
 
   error = ioctl(mixer_fd, SNDCTL_SYSINFO, &si);
   if (error) {
-    LOG("Failed to run SNDCTL_SYSINFO on mixer %s. errno: %d", OSS_DEFAULT_MIXER, errno);
+    LOG("Failed to run SNDCTL_SYSINFO on mixer %s. errno: %d",
+        OSS_DEFAULT_MIXER, errno);
     goto fail;
   }
 
@@ -487,8 +489,8 @@ oss_enumerate_devices(cubeb * context, cubeb_device_type type,
   collection->count = 0;
   for (i = 0; i < si.numaudios; i++) {
     oss_audioinfo ai;
-    cubeb_device_info cdi = { 0 };
-    const char *devid = NULL;
+    cubeb_device_info cdi = {0};
+    const char * devid = NULL;
 
     ai.dev = i;
     error = ioctl(mixer_fd, SNDCTL_AUDIOINFO, &ai);
@@ -574,24 +576,24 @@ static unsigned int
 oss_chn_from_cubeb(cubeb_channel chn)
 {
   switch (chn) {
-    case CHANNEL_FRONT_LEFT:
-      return CHID_L;
-    case CHANNEL_FRONT_RIGHT:
-      return CHID_R;
-    case CHANNEL_FRONT_CENTER:
-      return CHID_C;
-    case CHANNEL_LOW_FREQUENCY:
-      return CHID_LFE;
-    case CHANNEL_BACK_LEFT:
-      return CHID_LR;
-    case CHANNEL_BACK_RIGHT:
-      return CHID_RR;
-    case CHANNEL_SIDE_LEFT:
-      return CHID_LS;
-    case CHANNEL_SIDE_RIGHT:
-      return CHID_RS;
-    default:
-      return CHID_UNDEF;
+  case CHANNEL_FRONT_LEFT:
+    return CHID_L;
+  case CHANNEL_FRONT_RIGHT:
+    return CHID_R;
+  case CHANNEL_FRONT_CENTER:
+    return CHID_C;
+  case CHANNEL_LOW_FREQUENCY:
+    return CHID_LFE;
+  case CHANNEL_BACK_LEFT:
+    return CHID_LR;
+  case CHANNEL_BACK_RIGHT:
+    return CHID_RR;
+  case CHANNEL_SIDE_LEFT:
+    return CHID_LS;
+  case CHANNEL_SIDE_RIGHT:
+    return CHID_RS;
+  default:
+    return CHID_UNDEF;
   }
 }
 
@@ -648,7 +650,8 @@ oss_copy_params(int fd, cubeb_stream * stream, cubeb_stream_params * params,
     return CUBEB_ERROR;
   }
   /* Mono layout is an exception */
-  if (params->layout != CUBEB_LAYOUT_UNDEFINED && params->layout != CUBEB_LAYOUT_MONO) {
+  if (params->layout != CUBEB_LAYOUT_UNDEFINED &&
+      params->layout != CUBEB_LAYOUT_MONO) {
     chnorder = oss_cubeb_layout_to_chnorder(params->layout);
     if (ioctl(fd, SNDCTL_DSP_SET_CHNORDER, &chnorder) == -1)
       LOG("Non-fatal error %d occured when setting channel order.", errno);
@@ -748,7 +751,8 @@ oss_get_rec_frames(cubeb_stream * s, unsigned int nframes)
   size_t read_ofs = 0;
   while (rem > 0) {
     ssize_t n;
-    if ((n = read(s->record.fd, (uint8_t *)s->record.buf + read_ofs, rem)) < 0) {
+    if ((n = read(s->record.fd, (uint8_t *)s->record.buf + read_ofs, rem)) <
+        0) {
       if (errno == EINTR)
         continue;
       return CUBEB_ERROR;
@@ -758,7 +762,6 @@ oss_get_rec_frames(cubeb_stream * s, unsigned int nframes)
   }
   return 0;
 }
-
 
 static int
 oss_put_play_frames(cubeb_stream * s, unsigned int nframes)
@@ -781,15 +784,84 @@ oss_put_play_frames(cubeb_stream * s, unsigned int nframes)
   return 0;
 }
 
+static int
+oss_wait_fds_for_space(cubeb_stream * s, long * nfrp)
+{
+  audio_buf_info bi;
+  struct pollfd pfds[2];
+  long nfr, tnfr;
+  int i;
+
+  assert(s->play.fd != -1 || s->record.fd != -1);
+  pfds[0].events = POLLOUT | POLLHUP;
+  pfds[0].revents = 0;
+  pfds[0].fd = s->play.fd;
+  pfds[1].events = POLLIN | POLLHUP;
+  pfds[1].revents = 0;
+  pfds[1].fd = s->record.fd;
+
+retry:
+  nfr = LONG_MAX;
+
+  if (poll(pfds, 2, 1000) == -1) {
+    return CUBEB_ERROR;
+  }
+
+  for (i = 0; i < 2; i++) {
+    if (pfds[i].revents & POLLHUP) {
+      return CUBEB_ERROR;
+    }
+  }
+
+  if (s->play.fd != -1) {
+    if (ioctl(s->play.fd, SNDCTL_DSP_GETOSPACE, &bi) == -1) {
+      return CUBEB_STATE_ERROR;
+    }
+    tnfr = bi.bytes / s->play.frame_size;
+    if (tnfr <= 0) {
+      /* too little space - stop polling record, if any */
+      pfds[0].fd = s->play.fd;
+      pfds[1].fd = -1;
+      goto retry;
+    } else if (tnfr > (long)s->play.maxframes) {
+      /* too many frames available - limit */
+      tnfr = (long)s->play.maxframes;
+    }
+    if (nfr > tnfr) {
+      nfr = tnfr;
+    }
+  }
+  if (s->record.fd != -1) {
+    if (ioctl(s->record.fd, SNDCTL_DSP_GETISPACE, &bi) == -1) {
+      return CUBEB_STATE_ERROR;
+    }
+    tnfr = bi.bytes / s->record.frame_size;
+    if (tnfr <= 0) {
+      /* too little space - stop polling playback, if any */
+      pfds[0].fd = -1;
+      pfds[1].fd = s->record.fd;
+      goto retry;
+    } else if (tnfr > (long)s->record.maxframes) {
+      /* too many frames available - limit */
+      tnfr = (long)s->record.maxframes;
+    }
+    if (nfr > tnfr) {
+      nfr = tnfr;
+    }
+  }
+
+  *nfrp = nfr;
+  return 0;
+}
+
 /* 1 - Stopped by cubeb_stream_stop, otherwise 0 */
 static int
-oss_audio_loop(cubeb_stream * s, cubeb_state *new_state)
+oss_audio_loop(cubeb_stream * s, cubeb_state * new_state)
 {
   cubeb_state state = CUBEB_STATE_STOPPED;
-  int trig = 0;
-  int drain = 0;
+  int trig = 0, drain = 0;
   const bool play_on = s->play.fd != -1, record_on = s->record.fd != -1;
-  long nfr = s->bufframes;
+  long nfr = 0;
 
   if (record_on) {
     if (ioctl(s->record.fd, SNDCTL_DSP_SETTRIGGER, &trig)) {
@@ -797,14 +869,15 @@ oss_audio_loop(cubeb_stream * s, cubeb_state *new_state)
       state = CUBEB_STATE_ERROR;
       goto breakdown;
     }
+
     trig |= PCM_ENABLE_INPUT;
-    if (ioctl(s->record.fd, SNDCTL_DSP_SETTRIGGER, &trig)) {
+    memset(s->record.buf, 0, s->record.bufframes * s->record.frame_size);
+
+    if (ioctl(s->record.fd, SNDCTL_DSP_SETTRIGGER, &trig) == -1) {
       LOG("Error %d occured when setting trigger on record fd", errno);
       state = CUBEB_STATE_ERROR;
       goto breakdown;
     }
-
-    memset(s->record.buf, 0, s->bufframes * s->record.frame_size);
   }
 
   if (!play_on && !record_on) {
@@ -826,12 +899,36 @@ oss_audio_loop(cubeb_stream * s, cubeb_state *new_state)
 
     long got = 0;
     if (nfr > 0) {
+      if (record_on) {
+        if (oss_get_rec_frames(s, nfr) == CUBEB_ERROR) {
+          state = CUBEB_STATE_ERROR;
+          goto breakdown;
+        }
+        if (s->record.floating) {
+          oss_linear32_to_float(s->record.buf, s->record.info.channels * nfr);
+        }
+      }
+
       got = s->data_cb(s, s->user_ptr, s->record.buf, s->play.buf, nfr);
       if (got == CUBEB_ERROR) {
         state = CUBEB_STATE_ERROR;
         goto breakdown;
       }
-      if (play_on) {
+      if (got < nfr) {
+        if (s->play.fd != -1) {
+          drain = 1;
+        } else {
+          /*
+           * This is a record-only stream and number of frames
+           * returned from data_cb() is smaller than number
+           * of frames required to read. Stop here.
+           */
+          state = CUBEB_STATE_STOPPED;
+          goto breakdown;
+        }
+      }
+
+      if (got > 0 && play_on) {
         float vol;
 
         pthread_mutex_lock(&s->mtx);
@@ -844,62 +941,20 @@ oss_audio_loop(cubeb_stream * s, cubeb_state *new_state)
           oss_linear16_set_vol((int16_t *)s->play.buf,
                                s->play.info.channels * got, vol);
         }
-      }
-      if (got < nfr) {
-        if (s->play.fd != -1) {
-          drain = 1;
-        } else {
-          /*
-           * This is a record-only stream and number of frames
-           * returned from data_cb() is smaller than number
-           * of frames required to read. Stop here.
-           */
-
-          state = CUBEB_STATE_STOPPED;
+        if (oss_put_play_frames(s, got) == CUBEB_ERROR) {
+          state = CUBEB_STATE_ERROR;
           goto breakdown;
         }
       }
-      nfr = 0;
-    }
-
-    if (got > 0) {
-      if (play_on && oss_put_play_frames(s, got) < 0) {
-          state = CUBEB_STATE_ERROR;
-          goto breakdown;
+      if (drain) {
+        state = CUBEB_STATE_DRAINED;
+        goto breakdown;
       }
     }
-    if (drain) {
-      state = CUBEB_STATE_DRAINED;
+
+    if (oss_wait_fds_for_space(s, &nfr) != 0) {
+      state = CUBEB_STATE_ERROR;
       goto breakdown;
-    }
-
-    audio_buf_info bi;
-    if (play_on) {
-      if (ioctl(s->play.fd, SNDCTL_DSP_GETOSPACE, &bi)) {
-        state = CUBEB_STATE_ERROR;
-        goto breakdown;
-      }
-      /*
-       * In duplex mode, playback direction drives recording direction to
-       * prevent building up latencies.
-       */
-      nfr = bi.fragsize * bi.fragments / s->play.frame_size;
-      if (nfr > s->bufframes) {
-        nfr = s->bufframes;
-      }
-    }
-
-    if (record_on) {
-      if (nfr == 0) {
-        nfr = s->nfr;
-      }
-      if (oss_get_rec_frames(s, nfr) == CUBEB_ERROR) {
-        state = CUBEB_STATE_ERROR;
-        goto breakdown;
-      }
-      if (s->record.floating) {
-        oss_linear32_to_float(s->record.buf, s->record.info.channels * nfr);
-      }
     }
   }
 
@@ -914,9 +969,9 @@ breakdown:
 }
 
 static void *
-oss_io_routine(void *arg)
+oss_io_routine(void * arg)
 {
-  cubeb_stream *s = arg;
+  cubeb_stream * s = arg;
   cubeb_state new_state;
   int stopped;
 
@@ -957,9 +1012,10 @@ static inline int
 oss_calc_frag_shift(unsigned int frames, unsigned int frame_size)
 {
   int n = 4;
-  int blksize = (frames * frame_size + OSS_NFRAGS - 1) / OSS_NFRAGS;
-  while ((1 << n) < blksize)
+  int blksize = frames * frame_size;
+  while ((1 << n) < blksize) {
     n++;
+  }
   return n;
 }
 
@@ -970,22 +1026,17 @@ oss_get_frag_params(unsigned int shift)
 }
 
 static int
-oss_stream_init(cubeb * context,
-                cubeb_stream ** stream,
-                char const * stream_name,
-                cubeb_devid input_device,
+oss_stream_init(cubeb * context, cubeb_stream ** stream,
+                char const * stream_name, cubeb_devid input_device,
                 cubeb_stream_params * input_stream_params,
                 cubeb_devid output_device,
                 cubeb_stream_params * output_stream_params,
-                unsigned int latency_frames,
-                cubeb_data_callback data_callback,
-                cubeb_state_callback state_callback,
-                void * user_ptr)
+                unsigned int latency_frames, cubeb_data_callback data_callback,
+                cubeb_state_callback state_callback, void * user_ptr)
 {
   int ret = CUBEB_OK;
-  unsigned int playnfr = 0, recnfr = 0;
-  cubeb_stream *s = NULL;
-  const char *defdsp;
+  cubeb_stream * s = NULL;
+  const char * defdsp;
 
   if (!(defdsp = getenv(ENV_AUDIO_DEVICE)) || *defdsp == '\0')
     defdsp = OSS_DEFAULT_DEVICE;
@@ -997,19 +1048,20 @@ oss_stream_init(cubeb * context,
   }
   s->state = CUBEB_STATE_STOPPED;
   s->record.fd = s->play.fd = -1;
-  s->nfr = latency_frames;
   if (input_device != NULL) {
-    snprintf(s->record.name, sizeof(s->record.name), "%s", input_device);
+    strlcpy(s->record.name, input_device, sizeof(s->record.name));
   } else {
-    snprintf(s->record.name, sizeof(s->record.name), "%s", defdsp);
+    strlcpy(s->record.name, defdsp, sizeof(s->record.name));
   }
   if (output_device != NULL) {
-    snprintf(s->play.name, sizeof(s->play.name), "%s", output_device);
+    strlcpy(s->play.name, output_device, sizeof(s->play.name));
   } else {
-    snprintf(s->play.name, sizeof(s->play.name), "%s", defdsp);
+    strlcpy(s->play.name, defdsp, sizeof(s->play.name));
   }
   if (input_stream_params != NULL) {
     unsigned int nb_channels;
+    uint32_t minframes;
+
     if (input_stream_params->prefs & CUBEB_STREAM_PREF_LOOPBACK) {
       LOG("Loopback not supported");
       ret = CUBEB_ERROR_NOT_SUPPORTED;
@@ -1018,48 +1070,56 @@ oss_stream_init(cubeb * context,
     nb_channels = cubeb_channel_layout_nb_channels(input_stream_params->layout);
     if (input_stream_params->layout != CUBEB_LAYOUT_UNDEFINED &&
         nb_channels != input_stream_params->channels) {
-      LOG("input_stream_params->layout does not match input_stream_params->channels");
+      LOG("input_stream_params->layout does not match "
+          "input_stream_params->channels");
       ret = CUBEB_ERROR_INVALID_PARAMETER;
       goto error;
     }
-    if (s->record.fd == -1) {
-      if ((s->record.fd = open(s->record.name, O_RDONLY)) == -1) {
-        LOG("Audio device \"%s\" could not be opened as read-only",
-            s->record.name);
-        ret = CUBEB_ERROR_DEVICE_UNAVAILABLE;
-        goto error;
-      }
+    if ((s->record.fd = open(s->record.name, O_RDONLY)) == -1) {
+      LOG("Audio device \"%s\" could not be opened as read-only",
+          s->record.name);
+      ret = CUBEB_ERROR_DEVICE_UNAVAILABLE;
+      goto error;
     }
     if ((ret = oss_copy_params(s->record.fd, s, input_stream_params,
                                &s->record.info)) != CUBEB_OK) {
       LOG("Setting record params failed");
       goto error;
     }
-    s->record.floating = (input_stream_params->format == CUBEB_SAMPLE_FLOAT32NE);
-    s->record.frame_size = s->record.info.channels * (s->record.info.precision / 8);
-    recnfr = (1 << oss_calc_frag_shift(s->nfr, s->record.frame_size)) / s->record.frame_size;
+    s->record.floating =
+        (input_stream_params->format == CUBEB_SAMPLE_FLOAT32NE);
+    s->record.frame_size =
+        s->record.info.channels * (s->record.info.precision / 8);
+    s->record.bufframes = latency_frames;
+
+    oss_get_min_latency(context, *input_stream_params, &minframes);
+    if (s->record.bufframes < minframes) {
+      s->record.bufframes = minframes;
+    }
   }
   if (output_stream_params != NULL) {
     unsigned int nb_channels;
+    uint32_t minframes;
+
     if (output_stream_params->prefs & CUBEB_STREAM_PREF_LOOPBACK) {
       LOG("Loopback not supported");
       ret = CUBEB_ERROR_NOT_SUPPORTED;
       goto error;
     }
-    nb_channels = cubeb_channel_layout_nb_channels(output_stream_params->layout);
+    nb_channels =
+        cubeb_channel_layout_nb_channels(output_stream_params->layout);
     if (output_stream_params->layout != CUBEB_LAYOUT_UNDEFINED &&
         nb_channels != output_stream_params->channels) {
-      LOG("output_stream_params->layout does not match output_stream_params->channels");
+      LOG("output_stream_params->layout does not match "
+          "output_stream_params->channels");
       ret = CUBEB_ERROR_INVALID_PARAMETER;
       goto error;
     }
-    if (s->play.fd == -1) {
-      if ((s->play.fd = open(s->play.name, O_WRONLY)) == -1) {
-        LOG("Audio device \"%s\" could not be opened as write-only",
-            s->play.name);
-        ret = CUBEB_ERROR_DEVICE_UNAVAILABLE;
-        goto error;
-      }
+    if ((s->play.fd = open(s->play.name, O_WRONLY)) == -1) {
+      LOG("Audio device \"%s\" could not be opened as write-only",
+          s->play.name);
+      ret = CUBEB_ERROR_DEVICE_UNAVAILABLE;
+      goto error;
     }
     if ((ret = oss_copy_params(s->play.fd, s, output_stream_params,
                                &s->play.info)) != CUBEB_OK) {
@@ -1068,17 +1128,16 @@ oss_stream_init(cubeb * context,
     }
     s->play.floating = (output_stream_params->format == CUBEB_SAMPLE_FLOAT32NE);
     s->play.frame_size = s->play.info.channels * (s->play.info.precision / 8);
-    playnfr = (1 << oss_calc_frag_shift(s->nfr, s->play.frame_size)) / s->play.frame_size;
+    s->play.bufframes = latency_frames;
+
+    oss_get_min_latency(context, *output_stream_params, &minframes);
+    if (s->play.bufframes < minframes) {
+      s->play.bufframes = minframes;
+    }
   }
-  /*
-   * Use the largest nframes among playing and recording streams to set OSS buffer size.
-   * After that, use the smallest allocated nframes among both direction to allocate our
-   * temporary buffers.
-   */
-  s->nfr = (playnfr > recnfr) ? playnfr : recnfr;
-  s->nfrags = OSS_NFRAGS;
   if (s->play.fd != -1) {
-    int frag = oss_get_frag_params(oss_calc_frag_shift(s->nfr, s->play.frame_size));
+    int frag = oss_get_frag_params(
+        oss_calc_frag_shift(s->play.bufframes, s->play.frame_size));
     if (ioctl(s->play.fd, SNDCTL_DSP_SETFRAGMENT, &frag))
       LOG("Failed to set play fd with SNDCTL_DSP_SETFRAGMENT. frag: 0x%x",
           frag);
@@ -1086,12 +1145,28 @@ oss_stream_init(cubeb * context,
     if (ioctl(s->play.fd, SNDCTL_DSP_GETOSPACE, &bi))
       LOG("Failed to get play fd's buffer info.");
     else {
-      if (bi.fragsize / s->play.frame_size < s->nfr)
-        s->nfr = bi.fragsize / s->play.frame_size;
+      s->play.bufframes = (bi.fragsize * bi.fragstotal) / s->play.frame_size;
     }
+    int lw;
+
+    /*
+     * Force 32 ms service intervals at most, or when recording is
+     * active, use the recording service intervals as a reference.
+     */
+    s->play.maxframes = (32 * output_stream_params->rate) / 1000;
+    if (s->record.fd != -1 || s->play.maxframes >= s->play.bufframes) {
+      lw = s->play.frame_size; /* Feed data when possible. */
+      s->play.maxframes = s->play.bufframes;
+    } else {
+      lw = (s->play.bufframes - s->play.maxframes) * s->play.frame_size;
+    }
+    if (ioctl(s->play.fd, SNDCTL_DSP_LOW_WATER, &lw))
+      LOG("Audio device \"%s\" (play) could not set trigger threshold",
+          s->play.name);
   }
   if (s->record.fd != -1) {
-    int frag = oss_get_frag_params(oss_calc_frag_shift(s->nfr, s->record.frame_size));
+    int frag = oss_get_frag_params(
+        oss_calc_frag_shift(s->record.bufframes, s->record.frame_size));
     if (ioctl(s->record.fd, SNDCTL_DSP_SETFRAGMENT, &frag))
       LOG("Failed to set record fd with SNDCTL_DSP_SETFRAGMENT. frag: 0x%x",
           frag);
@@ -1099,11 +1174,16 @@ oss_stream_init(cubeb * context,
     if (ioctl(s->record.fd, SNDCTL_DSP_GETISPACE, &bi))
       LOG("Failed to get record fd's buffer info.");
     else {
-      if (bi.fragsize / s->record.frame_size < s->nfr)
-        s->nfr = bi.fragsize / s->record.frame_size;
+      s->record.bufframes =
+          (bi.fragsize * bi.fragstotal) / s->record.frame_size;
     }
+
+    s->record.maxframes = s->record.bufframes;
+    int lw = s->record.frame_size;
+    if (ioctl(s->record.fd, SNDCTL_DSP_LOW_WATER, &lw))
+      LOG("Audio device \"%s\" (record) could not set trigger threshold",
+          s->record.name);
   }
-  s->bufframes = s->nfr * s->nfrags;
   s->context = context;
   s->volume = 1.0;
   s->state_cb = state_callback;
@@ -1125,13 +1205,14 @@ oss_stream_init(cubeb * context,
   s->doorbell = false;
 
   if (s->play.fd != -1) {
-    if ((s->play.buf = calloc(s->bufframes, s->play.frame_size)) == NULL) {
+    if ((s->play.buf = calloc(s->play.bufframes, s->play.frame_size)) == NULL) {
       ret = CUBEB_ERROR;
       goto error;
     }
   }
   if (s->record.fd != -1) {
-    if ((s->record.buf = calloc(s->bufframes, s->record.frame_size)) == NULL) {
+    if ((s->record.buf = calloc(s->record.bufframes, s->record.frame_size)) ==
+        NULL) {
       ret = CUBEB_ERROR;
       goto error;
     }
@@ -1225,10 +1306,10 @@ oss_get_current_device(cubeb_stream * stream, cubeb_device ** const device)
   if (*device == NULL) {
     return CUBEB_ERROR;
   }
-  (*device)->input_name = stream->record.fd != -1 ?
-    strdup(stream->record.name) : NULL;
-  (*device)->output_name = stream->play.fd != -1 ?
-    strdup(stream->play.name) : NULL;
+  (*device)->input_name =
+      stream->record.fd != -1 ? strdup(stream->record.name) : NULL;
+  (*device)->output_name =
+      stream->play.fd != -1 ? strdup(stream->play.name) : NULL;
   return CUBEB_OK;
 }
 
@@ -1255,7 +1336,6 @@ static struct cubeb_ops const oss_ops = {
     .stream_destroy = oss_stream_destroy,
     .stream_start = oss_stream_start,
     .stream_stop = oss_stream_stop,
-    .stream_reset_default_device = NULL,
     .stream_get_position = oss_stream_get_position,
     .stream_get_latency = oss_stream_get_latency,
     .stream_get_input_latency = NULL,

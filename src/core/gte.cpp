@@ -157,7 +157,7 @@ ALWAYS_INLINE static u32 TruncateRGB(s32 value)
 
 void Initialize()
 {
-  UpdateAspectRatio();
+  s_aspect_ratio = DisplayAspectRatio::R4_3;
   Reset();
 }
 

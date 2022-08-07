@@ -10,27 +10,22 @@
 #include <SLES/OpenSLES.h>
 
 static SLresult
-cubeb_get_sles_engine(SLObjectItf * pEngine,
-                      SLuint32 numOptions,
+cubeb_get_sles_engine(SLObjectItf * pEngine, SLuint32 numOptions,
                       const SLEngineOption * pEngineOptions,
                       SLuint32 numInterfaces,
                       const SLInterfaceID * pInterfaceIds,
                       const SLboolean * pInterfaceRequired)
 {
-  return slCreateEngine(pEngine,
-                        numOptions,
-                        pEngineOptions,
-                        numInterfaces,
-                        pInterfaceIds,
-                        pInterfaceRequired);
+  return slCreateEngine(pEngine, numOptions, pEngineOptions, numInterfaces,
+                        pInterfaceIds, pInterfaceRequired);
 }
 
 static void
 cubeb_destroy_sles_engine(SLObjectItf * self)
 {
   if (*self != NULL) {
-      (**self)->Destroy(*self);
-      *self = NULL;
+    (**self)->Destroy(*self);
+    *self = NULL;
   }
 }
 

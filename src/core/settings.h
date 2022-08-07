@@ -144,12 +144,12 @@ struct Settings
 
   AudioBackend audio_backend = DEFAULT_AUDIO_BACKEND;
   AudioStretchMode audio_stretch_mode = DEFAULT_AUDIO_STRETCH_MODE;
+  std::string audio_driver;
   u32 audio_output_latency_ms = DEFAULT_AUDIO_OUTPUT_LATENCY_MS;
   u32 audio_buffer_ms = DEFAULT_AUDIO_BUFFER_MS;
   u32 audio_output_volume = 100;
   u32 audio_fast_forward_volume = 100;
   bool audio_output_muted = false;
-  bool audio_sync_enabled = true;
   bool audio_dump_on_boot = false;
 
   // timing hacks section
@@ -410,8 +410,13 @@ struct Settings
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
+#ifndef __ANDROID__
   static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 50;
   static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
+#else
+  static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 100;
+  static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
+#endif
   static constexpr AudioStretchMode DEFAULT_AUDIO_STRETCH_MODE = AudioStretchMode::TimeStretch;
 
   // Enable console logging by default on Linux platforms.

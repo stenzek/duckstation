@@ -27,7 +27,6 @@
     <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_gamepropertiesdialog.cpp" />
     <ClCompile Include="gdbconnection.cpp" />
     <ClCompile Include="$(IntDir)moc_gdbconnection.cpp" />
     <ClCompile Include="gdbserver.cpp" />
@@ -186,6 +185,8 @@
     <QtUi Include="controllerbindingwidget_analog_joystick.ui" />
     <QtUi Include="controllerbindingwidget_negcon.ui" />
     <QtUi Include="controllerbindingwidget_guncon.ui" />
+    <QtUi Include="controllermacrowidget.ui" />
+    <QtUi Include="controllermacroeditwidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

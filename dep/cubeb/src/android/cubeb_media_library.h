@@ -3,7 +3,7 @@
 
 struct media_lib {
   void * libmedia;
-  int32_t (* get_output_latency)(uint32_t * latency, int stream_type);
+  int32_t (*get_output_latency)(uint32_t * latency, int stream_type);
 };
 
 typedef struct media_lib media_lib;
@@ -17,15 +17,17 @@ cubeb_load_media_library()
     return NULL;
   }
 
-  // Get the latency, in ms, from AudioFlinger. First, try the most recent signature.
-  // status_t AudioSystem::getOutputLatency(uint32_t* latency, audio_stream_type_t streamType)
-  ml.get_output_latency =
-    dlsym(ml.libmedia, "_ZN7android11AudioSystem16getOutputLatencyEPj19audio_stream_type_t");
+  // Get the latency, in ms, from AudioFlinger. First, try the most recent
+  // signature. status_t AudioSystem::getOutputLatency(uint32_t* latency,
+  // audio_stream_type_t streamType)
+  ml.get_output_latency = dlsym(
+      ml.libmedia,
+      "_ZN7android11AudioSystem16getOutputLatencyEPj19audio_stream_type_t");
   if (!ml.get_output_latency) {
     // In case of failure, try the signature from legacy version.
     // status_t AudioSystem::getOutputLatency(uint32_t* latency, int streamType)
     ml.get_output_latency =
-      dlsym(ml.libmedia, "_ZN7android11AudioSystem16getOutputLatencyEPji");
+        dlsym(ml.libmedia, "_ZN7android11AudioSystem16getOutputLatencyEPji");
     if (!ml.get_output_latency) {
       return NULL;
     }

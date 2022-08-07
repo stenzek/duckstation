@@ -15,6 +15,7 @@ public:
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
+  void updateDriverNames();
   void updateLatencyLabel();
   void updateVolumeLabel();
   void onMinimalOutputLatencyChecked(bool new_value);

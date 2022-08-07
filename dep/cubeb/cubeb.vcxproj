@@ -17,13 +17,13 @@
     <ClInclude Include="src\cubeb_strings.h" />
     <ClInclude Include="src\cubeb_utils.h" />
     <ClInclude Include="src\cubeb_utils_win.h" />
-    <ClInclude Include="src\speex\arch.h" />
-    <ClInclude Include="src\speex\fixed_generic.h" />
-    <ClInclude Include="src\speex\resample_neon.h" />
-    <ClInclude Include="src\speex\resample_sse.h" />
-    <ClInclude Include="src\speex\speex_config_types.h" />
-    <ClInclude Include="src\speex\speex_resampler.h" />
-    <ClInclude Include="src\speex\stack_alloc.h" />
+    <ClInclude Include="subprojects\speex\arch.h" />
+    <ClInclude Include="subprojects\speex\fixed_generic.h" />
+    <ClInclude Include="subprojects\speex\resample_neon.h" />
+    <ClInclude Include="subprojects\speex\resample_sse.h" />
+    <ClInclude Include="subprojects\speex\speex_config_types.h" />
+    <ClInclude Include="subprojects\speex\speex_resampler.h" />
+    <ClInclude Include="subprojects\speex\stack_alloc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\cubeb.c" />
@@ -34,22 +34,24 @@
     <ClCompile Include="src\cubeb_utils.cpp" />
     <ClCompile Include="src\cubeb_wasapi.cpp" />
     <ClCompile Include="src\cubeb_winmm.c" />
-    <ClCompile Include="src\speex\resample.c" />
+    <ClCompile Include="subprojects\speex\resample.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{72F9423C-91EE-4487-AAC6-555ED6F61AA1}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\msvc\vsprops\StaticLibrary.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PreprocessorDefinitions>USE_WASAPI;USE_WINMM;OUTSIDE_SPEEX;FLOATING_POINT;RANDOM_PREFIX=speex;EXPORT=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)subprojects;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
-
+  <ItemDefinitionGroup>
+    <Lib>
+      <AdditionalDependencies>ksuser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
   <Import Project="..\msvc\vsprops\Targets.props" />
 </Project>
