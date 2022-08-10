@@ -22,7 +22,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14.0" CACHE STRING "")
 
 # Global options.
 if(NOT ANDROID)
-  option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" ON)
+  option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
   option(BUILD_REGTEST "Build regression test runner" OFF)
   option(ENABLE_CUBEB "Build with Cubeb audio output" ON)
@@ -47,7 +47,7 @@ endif()
 if((LINUX OR FREEBSD) AND NOT ANDROID)
   option(USE_DRMKMS "Support DRM/KMS OpenGL contexts" OFF)
   option(USE_FBDEV "Support FBDev OpenGL contexts" OFF)
-  option(USE_EVDEV "Support EVDev controller interface" ON)
+  option(USE_EVDEV "Support EVDev controller interface" OFF)
 endif()
 
 # Force EGL when using Wayland
