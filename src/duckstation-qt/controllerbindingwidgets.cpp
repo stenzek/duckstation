@@ -521,14 +521,14 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
   for (u32 i = 0; i < cinfo->num_settings; i++)
   {
     const SettingInfo& si = cinfo->settings[i];
-    std::string key_name = si.key;
+    std::string key_name = si.name;
 
     switch (si.type)
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* cb = new QCheckBox(qApp->translate(cinfo->name, si.visible_name), this);
-        cb->setObjectName(QString::fromUtf8(si.key));
+        QCheckBox* cb = new QCheckBox(qApp->translate(cinfo->name, si.display_name), this);
+        cb->setObjectName(QString::fromUtf8(si.name));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, cb, section, std::move(key_name),
                                                                     si.BooleanDefaultValue());
         layout->addWidget(cb, current_row, 0, 1, 4);
@@ -539,12 +539,12 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       case SettingInfo::Type::Integer:
       {
         QSpinBox* sb = new QSpinBox(this);
-        sb->setObjectName(QString::fromUtf8(si.key));
+        sb->setObjectName(QString::fromUtf8(si.name));
         sb->setMinimum(si.IntegerMinValue());
         sb->setMaximum(si.IntegerMaxValue());
         sb->setSingleStep(si.IntegerStepValue());
         SettingWidgetBinder::BindWidgetToIntSetting(sif, sb, section, std::move(key_name), si.IntegerDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.visible_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -553,12 +553,12 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       case SettingInfo::Type::Float:
       {
         QDoubleSpinBox* sb = new QDoubleSpinBox(this);
-        sb->setObjectName(QString::fromUtf8(si.key));
+        sb->setObjectName(QString::fromUtf8(si.name));
         sb->setMinimum(si.FloatMinValue());
         sb->setMaximum(si.FloatMaxValue());
         sb->setSingleStep(si.FloatStepValue());
         SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, section, std::move(key_name), si.FloatDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.visible_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -567,9 +567,9 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       case SettingInfo::Type::String:
       {
         QLineEdit* le = new QLineEdit(this);
-        le->setObjectName(QString::fromUtf8(si.key));
+        le->setObjectName(QString::fromUtf8(si.name));
         SettingWidgetBinder::BindWidgetToStringSetting(sif, le, section, std::move(key_name), si.StringDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.visible_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(le, current_row, 1, 1, 3);
         current_row++;
       }
@@ -578,7 +578,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       case SettingInfo::Type::Path:
       {
         QLineEdit* le = new QLineEdit(this);
-        le->setObjectName(QString::fromUtf8(si.key));
+        le->setObjectName(QString::fromUtf8(si.name));
         QPushButton* browse_button = new QPushButton(tr("Browse..."), this);
         SettingWidgetBinder::BindWidgetToStringSetting(sif, le, section, std::move(key_name), si.StringDefaultValue());
         connect(browse_button, &QPushButton::clicked, [this, le]() {
@@ -591,7 +591,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         hbox->addWidget(le, 1);
         hbox->addWidget(browse_button);
 
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.visible_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addLayout(hbox, current_row, 1, 1, 3);
         current_row++;
       }
@@ -615,13 +615,13 @@ void ControllerCustomSettingsWidget::restoreDefaults()
   for (u32 i = 0; i < cinfo->num_settings; i++)
   {
     const SettingInfo& si = cinfo->settings[i];
-    const QString key(QString::fromStdString(si.key));
+    const QString key(QString::fromStdString(si.name));
 
     switch (si.type)
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* widget = findChild<QCheckBox*>(QString::fromStdString(si.key));
+        QCheckBox* widget = findChild<QCheckBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setChecked(si.BooleanDefaultValue());
       }
@@ -629,7 +629,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Integer:
       {
-        QSpinBox* widget = findChild<QSpinBox*>(QString::fromStdString(si.key));
+        QSpinBox* widget = findChild<QSpinBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setValue(si.IntegerDefaultValue());
       }
@@ -637,7 +637,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Float:
       {
-        QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.key));
+        QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setValue(si.FloatDefaultValue());
       }
@@ -645,7 +645,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::String:
       {
-        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.key));
+        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }
@@ -653,7 +653,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Path:
       {
-        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.key));
+        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }

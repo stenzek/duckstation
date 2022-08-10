@@ -1,4 +1,5 @@
 #include "analog_controller.h"
+#include "IconsFontAwesome5.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "host.h"
@@ -10,8 +11,9 @@ Log_SetChannel(AnalogController);
 
 AnalogController::AnalogController(u32 index) : Controller(index)
 {
+  m_status_byte = 0x5A;
   m_axis_state.fill(0x80);
-  Reset();
+  m_rumble_config.fill(0xFF);
 }
 
 AnalogController::~AnalogController() = default;
@@ -45,14 +47,16 @@ void AnalogController::Reset()
   {
     if (g_settings.controller_disable_analog_mode_forcing)
     {
-      Host::AddKeyedOSDMessage(
-        "analog_controller_mode_ignored",
+      Host::AddIconOSDMessage(
+        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
         Host::TranslateStdString(
           "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
     }
     else
-      SetAnalogMode(true);
+    {
+      SetAnalogMode(true, false);
+    }
   }
 }
 
@@ -94,11 +98,14 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      Host::AddFormattedOSDMessage(
-        5.0f,
-        m_analog_mode ? Host::TranslateString("AnalogController", "Controller %u switched to analog mode.") :
-                        Host::TranslateString("AnalogController", "Controller %u switched to digital mode."),
-        m_index + 1u);
+      Host::AddIconOSDMessage(
+        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+        fmt::format((m_analog_mode ?
+                       Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
+                       Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
+                      .GetCharArray(),
+                    m_index + 1u),
+        5.0f);
     }
   }
   return true;
@@ -230,17 +237,22 @@ void AnalogController::ResetTransferState()
   m_command_step = 0;
 }
 
-void AnalogController::SetAnalogMode(bool enabled)
+void AnalogController::SetAnalogMode(bool enabled, bool show_message)
 {
   if (m_analog_mode == enabled)
     return;
 
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
-  Host::AddFormattedOSDMessage(5.0f,
-                               enabled ?
-                                 Host::TranslateString("AnalogController", "Controller %u switched to analog mode.") :
-                                 Host::TranslateString("AnalogController", "Controller %u switched to digital mode."),
-                               m_index + 1u);
+  if (show_message)
+  {
+    Host::AddIconOSDMessage(
+      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+      fmt::format((enabled ? Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
+                             Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
+                    .GetCharArray(),
+                  m_index + 1u),
+      5.0f);
+  }
   m_analog_mode = enabled;
 }
 
@@ -248,15 +260,18 @@ void AnalogController::ProcessAnalogModeToggle()
 {
   if (m_analog_locked)
   {
-    Host::AddFormattedOSDMessage(
-      5.0f,
-      m_analog_mode ? Host::TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
-                      Host::TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."),
-      m_index + 1u);
+    Host::AddIconOSDMessage(
+      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+      fmt::format((m_analog_mode ?
+                     Host::TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
+                     Host::TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."))
+                    .GetCharArray(),
+                  m_index + 1u),
+      5.0f);
   }
   else
   {
-    SetAnalogMode(!m_analog_mode);
+    SetAnalogMode(!m_analog_mode, true);
     ResetRumbleConfig();
 
     if (m_dualshock_enabled)
@@ -604,7 +619,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         Log_DevPrintf("analog mode val 0x%02x", data_in);
 
         if (data_in == 0x00 || data_in == 0x01)
-          SetAnalogMode((data_in == 0x01));
+          SetAnalogMode((data_in == 0x01), true);
       }
       else if (m_command_step == 3)
       {
@@ -777,17 +792,17 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogController", "Analog Deadzone"),
    TRANSLATABLE("AnalogController",
                 "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
-   "0.00f", "0.00f", "1.00f", "0.01f"},
+   "0.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", 100.0f},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogController", "Analog Sensitivity"),
    TRANSLATABLE(
      "AnalogController",
-     "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+     "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
-   "1.33f", "0.01f", "2.00f", "0.01f"},
+   "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", 100.0f},
   {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
    TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
                                     "functioning, try increasing this value."),
-   "8", "0", "255", "1"}};
+   "8", "0", "255", "1", "%d", 1.0f}};
 
 const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
                                                            "AnalogController",
