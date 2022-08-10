@@ -207,7 +207,6 @@ static void DoResume();
 static void DoStartFile();
 static void DoStartBIOS();
 static void DoToggleFastForward();
-static void DoToggleSoftwareRenderer();
 static void DoShutdown(bool save_state);
 static void DoReset();
 static void DoChangeDiscFromFile();
@@ -268,17 +267,21 @@ static void DrawFloatRangeSetting(const char* title, const char* summary, const 
                                   float default_value, float min_value, float max_value, const char* format = "%f",
                                   bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                   ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#if 0
 static void DrawIntRectSetting(const char* title, const char* summary, const char* section, const char* left_key,
                                int default_left, const char* top_key, int default_top, const char* right_key,
                                int default_right, const char* bottom_key, int default_bottom, int min_value,
                                int max_value, const char* format = "%d", bool enabled = true,
                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                                ImFont* summary_font = g_medium_font);
+#endif
+#if 0
 static void DrawStringListSetting(const char* title, const char* summary, const char* section, const char* key,
                                   const char* default_value, const char* const* options,
                                   const char* const* option_values, size_t option_count, bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                   ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#endif
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(const char* title, const char* summary, const char* section, const char* key,
                             DataType default_value, std::optional<DataType> (*from_string_function)(const char* str),
@@ -291,9 +294,11 @@ static void DrawFloatListSetting(const char* title, const char* summary, const c
                                  size_t option_count, bool enabled = true,
                                  float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                                  ImFont* summary_font = g_medium_font);
+#if 0
 static void DrawFolderSetting(const char* title, const char* section, const char* key, const std::string& runtime_var,
                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                               ImFont* summary_font = g_medium_font);
+#endif
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
@@ -362,8 +367,6 @@ static void PopulateGameListEntryList();
 static HostDisplayTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static HostDisplayTexture* GetGameListCover(const GameList::Entry* entry);
 static HostDisplayTexture* GetCoverForCurrentGame();
-static std::string GetNotificationImageForGame(const GameList::Entry* entry);
-static std::string GetNotificationImageForGame(const std::string& game_path);
 
 // Lazily populated cover images.
 static std::unordered_map<std::string, std::string> s_cover_image_map;
@@ -726,11 +729,6 @@ void FullscreenUI::DoToggleFastForward()
 
     System::SetFastForwardEnabled(!System::IsFastForwardEnabled());
   });
-}
-
-void FullscreenUI::DoToggleSoftwareRenderer()
-{
-  Host::RunOnCPUThread(System::ToggleSoftwareRendering);
 }
 
 void FullscreenUI::DoChangeDiscFromFile()
@@ -1323,6 +1321,7 @@ void FullscreenUI::DrawFloatRangeSetting(const char* title, const char* summary,
   ImGui::PopFont();
 }
 
+#if 0
 void FullscreenUI::DrawIntRectSetting(const char* title, const char* summary, const char* section, const char* left_key,
                                       int default_left, const char* top_key, int default_top, const char* right_key,
                                       int default_right, const char* bottom_key, int default_bottom, int min_value,
@@ -1417,7 +1416,9 @@ void FullscreenUI::DrawIntRectSetting(const char* title, const char* summary, co
   ImGui::PopStyleVar(3);
   ImGui::PopFont();
 }
+#endif
 
+#if 0
 void FullscreenUI::DrawStringListSetting(const char* title, const char* summary, const char* section, const char* key,
                                          const char* default_value, const char* const* options,
                                          const char* const* option_values, size_t option_count, bool enabled,
@@ -1484,6 +1485,7 @@ void FullscreenUI::DrawStringListSetting(const char* title, const char* summary,
                      });
   }
 }
+#endif
 
 template<typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(const char* title, const char* summary, const char* section, const char* key,
@@ -1607,6 +1609,7 @@ void FullscreenUI::DrawFloatListSetting(const char* title, const char* summary, 
   }
 }
 
+#if 0
 void FullscreenUI::DrawFolderSetting(const char* title, const char* section, const char* key,
                                      const std::string& runtime_var,
                                      float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
@@ -1629,6 +1632,7 @@ void FullscreenUI::DrawFolderSetting(const char* title, const char* section, con
     });
   }
 }
+#endif
 
 void FullscreenUI::StartAutomaticBinding(u32 port)
 {
@@ -4185,12 +4189,14 @@ void FullscreenUI::DrawGameListWindow()
       // size
       ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
 
+#if 0
       // game settings
       const u32 user_setting_count = 0; // FIXME
       if (user_setting_count > 0)
         ImGui::Text("%u Per-Game Settings Set", user_setting_count);
       else
         ImGui::TextUnformatted("No Per-Game Settings Set");
+#endif
 
       ImGui::PopFont();
     }
@@ -4267,23 +4273,6 @@ HostDisplayTexture* FullscreenUI::GetCoverForCurrentGame()
     return s_fallback_disc_texture.get();
 
   return GetGameListCover(entry);
-}
-
-std::string FullscreenUI::GetNotificationImageForGame(const GameList::Entry* entry)
-{
-  std::string ret;
-
-  if (entry)
-    ret = GameList::GetCoverImagePathForEntry(entry);
-
-  return ret;
-}
-
-std::string FullscreenUI::GetNotificationImageForGame(const std::string& game_path)
-{
-  auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(game_path.c_str());
-  return entry ? GetNotificationImageForGame(entry) : std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////

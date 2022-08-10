@@ -144,7 +144,8 @@ bool MainWindow::confirmMessage(const QString& title, const QString& message)
 
 bool MainWindow::shouldHideCursor() const
 {
-  return m_mouse_cursor_hidden || (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
+  return m_mouse_cursor_hidden ||
+         (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
 }
 
 bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
@@ -718,7 +719,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   }
 
   QAction* open_memory_cards_action = menu->addAction(tr("Edit Memory Cards..."));
-  connect(open_memory_cards_action, &QAction::triggered, [this, entry]() {
+  connect(open_memory_cards_action, &QAction::triggered, [entry]() {
     QString paths[2];
     for (u32 i = 0; i < 2; i++)
     {
@@ -769,7 +770,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   delete_save_states_action->setEnabled(has_any_states);
   if (has_any_states)
   {
-    connect(delete_save_states_action, &QAction::triggered, [this, parent_window, entry] {
+    connect(delete_save_states_action, &QAction::triggered, [parent_window, entry] {
       if (QMessageBox::warning(
             parent_window, tr("Confirm Save State Deletion"),
             tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
@@ -809,7 +810,7 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
 
   menu->clear();
 
-  connect(menu->addAction(tr("Load From File...")), &QAction::triggered, [this]() {
+  connect(menu->addAction(tr("Load From File...")), &QAction::triggered, []() {
     const QString path(
       QFileDialog::getOpenFileName(g_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
@@ -836,7 +837,7 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
 
 void MainWindow::populateSaveStateMenu(const char* game_code, QMenu* menu)
 {
-  auto add_slot = [this, game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
+  auto add_slot = [game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_code, slot);
 
     const QString menu_title =
@@ -1281,7 +1282,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
   {
     QAction* action = menu.addAction(tr("Properties..."));
     connect(action, &QAction::triggered,
-            [this, entry]() { SettingsDialog::openGamePropertiesDialog(entry->path, entry->serial, entry->region); });
+            [entry]() { SettingsDialog::openGamePropertiesDialog(entry->path, entry->serial, entry->region); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));
@@ -1299,15 +1300,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-              [this, entry]() { g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
+              [entry]() { g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
 
-      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
+      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [entry]() {
         auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
         boot_params->override_fast_boot = true;
         g_emu_thread->bootSystem(std::move(boot_params));
       });
 
-      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
+      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [entry]() {
         auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
         boot_params->override_fast_boot = false;
         g_emu_thread->bootSystem(std::move(boot_params));
@@ -1533,7 +1534,7 @@ void MainWindow::setupAdditionalUi()
 
         QAction* raAction = raMenu->addAction(QString::fromUtf8(title));
         connect(raAction, &QAction::triggered, this,
-                [id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
+                [id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
       }
     });
     m_ui.menuDebug->insertMenu(m_ui.menuCPUExecutionMode->menuAction(), raMenu);
@@ -1802,7 +1803,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false); });
   connect(m_ui.actionReset, &QAction::triggered, g_emu_thread, &EmuThread::resetSystem);
-  connect(m_ui.actionPause, &QAction::toggled, [this](bool active) { g_emu_thread->setSystemPaused(active); });
+  connect(m_ui.actionPause, &QAction::toggled, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, [this]() { refreshGameList(false); });
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
@@ -1903,7 +1904,7 @@ void MainWindow::connectSignals()
                                                "DumpCPUToVRAMCopies", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
                                                "DumpVRAMToCPUCopies", false);
-  connect(m_ui.actionDumpAudio, &QAction::toggled, [this](bool checked) {
+  connect(m_ui.actionDumpAudio, &QAction::toggled, [](bool checked) {
     if (checked)
       g_emu_thread->startDumpingAudio();
     else
@@ -2027,7 +2028,7 @@ void MainWindow::setStyleFromSettings()
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor lighterGray(75, 75, 75);
+    // const QColor lighterGray(75, 75, 75);
     const QColor darkGray(53, 53, 53);
     const QColor gray(128, 128, 128);
     const QColor black(25, 25, 25);

@@ -230,7 +230,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Common::Error* error)
       index1.index_number = 1;
       index1.file_index = 0;
       index1.file_sector_size = 2048;
-      index1.file_offset = static_cast<u64>(track_address) * index1.file_sector_size;
+      index1.file_offset = static_cast<u64>(track_lba) * index1.file_sector_size;
       index1.mode = track_mode;
       index1.control.bits = control.bits;
       index1.is_pregap = false;
