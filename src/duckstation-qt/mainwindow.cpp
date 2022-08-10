@@ -142,11 +142,6 @@ bool MainWindow::confirmMessage(const QString& title, const QString& message)
   return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
 }
 
-bool MainWindow::shouldHideCursor() const
-{
-  return m_mouse_cursor_hidden || (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
-}
-
 bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 {
   Log_DevPrintf("createDisplay(%u, %u)", static_cast<u32>(fullscreen), static_cast<u32>(render_to_main));
@@ -182,16 +177,13 @@ bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
   updateWindowTitle();
   updateWindowState();
 
-  m_display_widget->setFocus();
   m_ui.actionStartFullscreenUI->setEnabled(false);
   m_ui.actionStartFullscreenUI2->setEnabled(false);
   m_ui.actionViewSystemDisplay->setEnabled(true);
   m_ui.actionFullscreen->setEnabled(true);
 
+  updateDisplayWidgetCursor();
   m_display_widget->setFocus();
-  m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-  m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
-  m_display_widget->updateCursor(s_system_valid && !s_system_paused);
 
   g_host_display->DoneRenderContextCurrent();
   return true;
@@ -237,10 +229,8 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
       container->showNormal();
     }
 
+    updateDisplayWidgetCursor();
     m_display_widget->setFocus();
-    m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-    m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
-    m_display_widget->updateCursor(s_system_valid && !s_system_paused);
 
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     return true;
@@ -277,11 +267,8 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
   updateWindowTitle();
   updateWindowState();
-
+  updateDisplayWidgetCursor();
   m_display_widget->setFocus();
-  m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-  m_display_widget->updateRelativeMode(m_relative_mouse_mode && s_system_valid && !s_system_paused);
-  m_display_widget->updateCursor(s_system_valid && !s_system_paused);
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
   m_ui.actionFullscreen->setChecked(fullscreen);
@@ -459,6 +446,12 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
   }
 }
 
+void MainWindow::updateDisplayWidgetCursor()
+{
+  m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused && m_relative_mouse_mode);
+  m_display_widget->updateCursor(s_system_valid && !s_system_paused && shouldHideMouseCursor());
+}
+
 void MainWindow::focusDisplayWidget()
 {
   if (!m_display_widget || centralWidget() != m_display_widget)
@@ -480,19 +473,9 @@ QWidget* MainWindow::getDisplayContainer() const
 void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor)
 {
   m_relative_mouse_mode = relative_mode;
-  m_mouse_cursor_hidden = hide_cursor;
-
+  m_hide_mouse_cursor = hide_cursor;
   if (m_display_widget)
-  {
-    m_display_widget->setShouldHideCursor(shouldHideCursor());
-
-    const bool update = s_system_valid && !s_system_paused;
-
-    m_display_widget->updateCursor(update);
-
-    if (update)
-      m_display_widget->updateRelativeMode(m_relative_mouse_mode);
-  }
+    updateDisplayWidgetCursor();
 }
 
 void MainWindow::onSystemStarting()
@@ -524,10 +507,7 @@ void MainWindow::onSystemPaused()
   updateStatusBarWidgetVisibility();
   m_ui.statusBar->showMessage(tr("Paused"));
   if (m_display_widget)
-  {
-    m_display_widget->updateRelativeMode(false);
-    m_display_widget->updateCursor(false);
-  }
+    updateDisplayWidgetCursor();
 }
 
 void MainWindow::onSystemResumed()
@@ -544,8 +524,7 @@ void MainWindow::onSystemResumed()
   updateStatusBarWidgetVisibility();
   if (m_display_widget)
   {
-    m_display_widget->updateRelativeMode(m_relative_mouse_mode);
-    m_display_widget->updateCursor(true);
+    updateDisplayWidgetCursor();
     m_display_widget->setFocus();
   }
 }
@@ -718,7 +697,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   }
 
   QAction* open_memory_cards_action = menu->addAction(tr("Edit Memory Cards..."));
-  connect(open_memory_cards_action, &QAction::triggered, [this, entry]() {
+  connect(open_memory_cards_action, &QAction::triggered, [entry]() {
     QString paths[2];
     for (u32 i = 0; i < 2; i++)
     {
@@ -769,7 +748,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   delete_save_states_action->setEnabled(has_any_states);
   if (has_any_states)
   {
-    connect(delete_save_states_action, &QAction::triggered, [this, parent_window, entry] {
+    connect(delete_save_states_action, &QAction::triggered, [parent_window, entry] {
       if (QMessageBox::warning(
             parent_window, tr("Confirm Save State Deletion"),
             tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
@@ -809,7 +788,7 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
 
   menu->clear();
 
-  connect(menu->addAction(tr("Load From File...")), &QAction::triggered, [this]() {
+  connect(menu->addAction(tr("Load From File...")), &QAction::triggered, []() {
     const QString path(
       QFileDialog::getOpenFileName(g_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
@@ -836,7 +815,7 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
 
 void MainWindow::populateSaveStateMenu(const char* game_code, QMenu* menu)
 {
-  auto add_slot = [this, game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
+  auto add_slot = [game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_code, slot);
 
     const QString menu_title =
@@ -1281,7 +1260,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
   {
     QAction* action = menu.addAction(tr("Properties..."));
     connect(action, &QAction::triggered,
-            [this, entry]() { SettingsDialog::openGamePropertiesDialog(entry->path, entry->serial, entry->region); });
+            [entry]() { SettingsDialog::openGamePropertiesDialog(entry->path, entry->serial, entry->region); });
 
     connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
       const QFileInfo fi(QString::fromStdString(entry->path));
@@ -1299,15 +1278,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-              [this, entry]() { g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
+              [entry]() { g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
 
-      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
+      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [entry]() {
         auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
         boot_params->override_fast_boot = true;
         g_emu_thread->bootSystem(std::move(boot_params));
       });
 
-      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
+      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [entry]() {
         auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
         boot_params->override_fast_boot = false;
         g_emu_thread->bootSystem(std::move(boot_params));
@@ -1533,7 +1512,7 @@ void MainWindow::setupAdditionalUi()
 
         QAction* raAction = raMenu->addAction(QString::fromUtf8(title));
         connect(raAction, &QAction::triggered, this,
-                [id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
+                [id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
       }
     });
     m_ui.menuDebug->insertMenu(m_ui.menuCPUExecutionMode->menuAction(), raMenu);
@@ -1728,7 +1707,8 @@ bool MainWindow::isRenderingToMain() const
 
 bool MainWindow::shouldHideMouseCursor() const
 {
-  return isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", false);
+  return m_hide_mouse_cursor ||
+         (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", false));
 }
 
 bool MainWindow::shouldHideMainWindow() const
@@ -1802,7 +1782,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false); });
   connect(m_ui.actionReset, &QAction::triggered, g_emu_thread, &EmuThread::resetSystem);
-  connect(m_ui.actionPause, &QAction::toggled, [this](bool active) { g_emu_thread->setSystemPaused(active); });
+  connect(m_ui.actionPause, &QAction::toggled, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, [this]() { refreshGameList(false); });
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
@@ -1903,7 +1883,7 @@ void MainWindow::connectSignals()
                                                "DumpCPUToVRAMCopies", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
                                                "DumpVRAMToCPUCopies", false);
-  connect(m_ui.actionDumpAudio, &QAction::toggled, [this](bool checked) {
+  connect(m_ui.actionDumpAudio, &QAction::toggled, [](bool checked) {
     if (checked)
       g_emu_thread->startDumpingAudio();
     else
@@ -2027,7 +2007,7 @@ void MainWindow::setStyleFromSettings()
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor lighterGray(75, 75, 75);
+    // const QColor lighterGray(75, 75, 75);
     const QColor darkGray(53, 53, 53);
     const QColor gray(128, 128, 128);
     const QColor black(25, 25, 25);

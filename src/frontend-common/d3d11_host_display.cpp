@@ -326,6 +326,9 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     Log_WarningPrint("Failed to get parent adapter/device/factory");
     return false;
   }
+  ComPtr<IDXGIDevice1> dxgi_device1;
+  if (SUCCEEDED(dxgi_device.As(&dxgi_device1)))
+    dxgi_device1->SetMaximumFrameLatency(1);
 
   DXGI_ADAPTER_DESC adapter_desc;
   if (SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
@@ -412,7 +415,7 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
   swap_chain_desc.BufferDesc.Height = height;
   swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = 3;
+  swap_chain_desc.BufferCount = 2;
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.OutputWindow = window_hwnd;
   swap_chain_desc.Windowed = TRUE;

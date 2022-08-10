@@ -292,8 +292,8 @@ echo "Creating AppRun..."
 cat > "$OUTDIR/AppRun" << EOF
 #!/bin/sh
 
-cd "\$(dirname "\$0")"
-exec ./usr/bin/$BINARY "\$@"
+APPDIR=\$(dirname "\$0")
+exec "\$APPDIR/usr/bin/$BINARY" "\$@"
 EOF
 chmod +x "$OUTDIR/AppRun"
 

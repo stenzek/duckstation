@@ -3,7 +3,7 @@
 VERSION_FILE="scmversion.cpp"
 
 CURDIR=$(pwd)
-if [ "$(uname -s)" == "Darwin" ]; then
+if [ "$(uname -s)" = "Darwin" ]; then
   cd "$(dirname $(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$0"))"
 else
   cd $(dirname $(readlink -f $0))

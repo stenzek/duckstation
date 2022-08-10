@@ -39,7 +39,7 @@ Other features include:
  - Digital and analog controllers for input (rumble is forwarded to host)
  - Namco GunCon lightgun support (simulated with mouse)
  - NeGcon support
- - Qt and NoGUI frontends for desktop
+ - Qt and "Big Picture" UI
  - Automatic updates for Windows builds
  - Automatic content scanning - game titles/hashes are provided by redump.org
  - Optional automatic switching of memory cards for each game
@@ -100,33 +100,31 @@ To use on Xbox One:
 
 ### Linux
 
-DuckStation does support Linux, but no support will be provided by the developer due to the huge range and variance of distributions. AppImage builds are provided, but we are not obliged to provide any assistance or investigate any issues, i.e. use at your own risk. However, these binaries may be incompatible with older Linux distros (e.g. Ubuntu distros earlier than 20.04 LTS) due to older distros not providing newer versions of the C/C++ standard libraries required by the AppImage binaries. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead.
+The only supported version of DuckStation for Linux are the AppImages in the releases page. The AppImages require a distribution equivalent to Ubuntu 20.04 or newer to run, which is also the minimum requirement for Qt 6. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead, they have a history of breaking things and there's a good chance that's the issue.
 
 #### Binaries
 
-**Linux users are encouraged to build from source when possible and optionally create their own AppImages for features such as desktop integration if desired.**
-
 To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download either `duckstation-qt-x64.AppImage` or `duckstation-nogui-x64.AppImage` for your desired frontend.
+ - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-qt.AppImage`.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
- - Optionally use a program such as [appimaged](https://github.com/AppImage/appimaged) or [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) for desktop integration. [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) can be used alongside appimaged to easily update your DuckStation AppImage.
-
+ 
 ### macOS
 
-MacOS builds are no longer provided, as I cannot support a platform which I do not own hardware for, and I'm not spending $1000+ out of my own pocket for a machine which I have no other use for.
+Universal MacOS builds are provided for both x64 and ARM64 (Apple Silicon). However, due to lack of hardware, investigating issues is difficult, so we can't guarantee everything functions as intended.
 
-You can still build from [source](#building), but you will have to debug any issues encountered yourself.
-
-If anyone is willing to volunteer to support the platform to ensure users have a good experience, I'm more than happy to re-enable the releases.
-
+To download:
+ - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-mac-release.zip`.
+ - Extract the zip by double-clicking it.
+ - Open DuckStation.app, optionally moving it to your desired location first.
+ - Depending on GateKeeper configuration, you may need to right click -> Open the first time you run it, as code signing certificates are out of the question for a project which brings in zero revenue.
+ 
 ### Android
 
 You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 (64-bit x86). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
 Google Play is the preferred distribution mechanism and will result in smaller download sizes: https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
-**No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, they will be ignored. This repository should also
-not be used to raise issues about the app, as it does not contain the app code, only the desktop versions.
+**No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, they will be ignored. This repository should also not be used to raise issues about the app, as it does not contain the app code, only the desktop versions.
 
 If you must use an APK, download links are:
 
@@ -153,9 +151,9 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 
 ### Windows
 Requirements:
- - Visual Studio 2019
+ - Visual Studio 2022
 
-1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git -b dev`).
+1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git`).
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
 3. Build solution.
 4. Binaries are located in `bin/x64`.
@@ -164,9 +162,9 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (`libsdl2-dev`, `libxrandr-dev`)
+ - SDL2 (at least version 2.0.22) (`libsdl2-dev`, `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
+ - Qt 6 (at least version 6.1.0) (`qtbase6-dev`, `qtbase6-private-dev`, `qtbase6-dev-tools`, `qttools6-dev`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): `libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules`
@@ -183,19 +181,18 @@ Requirements (Debian/Ubuntu package names):
 ### macOS
 **NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk; things may be horribly broken. Vulkan support may be unstable, so sticking to OpenGL or software renderer is recommended.
 
-Requirements (can be installed with [Homebrew](https://brew.sh/)):
- - CMake (installed by default? Otherwise, run `brew install cmake`)
- - SDL2 (`brew install sdl2`)
- - Qt 5 (`brew install qt5`)
+Requirements:
+ - CMake
+ - SDL2 (at least version 2.0.22)
+ - Qt 6 (at least version 6.1.0)
 
 Optional (recommended for faster builds):
- - Ninja (`brew install ninja`)
+ - Ninja
 
-1. Clone the repository. Submodules aren't necessary; there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
-2. Clone the macOS externals repository (for MoltenVK): `git clone https://github.com/stenzek/duckstation-ext-mac.git dep/mac`.
-3. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON -DQt5_DIR=/opt/homebrew/opt/qt@5/lib/cmake/Qt5` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds. Depending on your system, the `Qt5_DIR` value may have to be different (e.g. `/usr/local/opt/qt@5/lib/cmake/Qt5`).
+1. Clone the repository. Submodules aren't necessary; there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git`).
+2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON`. You may need to specify `-DQt6_DIR` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
 4. Compile the source code: `cmake --build build-release --parallel`.
-5. Run the binary, located in the build directory under `bin/DuckStation.app`. If the app crashes on startup, resign it using [macOS Gatekeeper Helper](https://github.com/wynioux/macOS-GateKeeper-Helper).
+5. Run the binary, located in the build directory under `bin/DuckStation.app`.
 
 ## User Directories
 The "User Directory" is where you should place your BIOS images, where settings are saved to, and memory cards/save states are saved by default.
@@ -234,7 +231,7 @@ Controller 1:
 
 Hotkeys:
  - **Escape:** Power off console
- - **ALT+ENTER:** Toggle fullscreen
+ - **F11:** Toggle fullscreen
  - **Tab:** Temporarily disable speed limiter
  - **Space:** Pause/resume emulation
 

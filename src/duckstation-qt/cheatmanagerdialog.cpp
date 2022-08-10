@@ -552,7 +552,7 @@ void CheatManagerDialog::addCodeClicked()
     group_item->setExpanded(true);
 
     Host::RunOnCPUThread(
-      [this, &new_code]() {
+      [&new_code]() {
         System::GetCheatList()->AddCode(std::move(new_code));
         System::SaveCheatList();
       },

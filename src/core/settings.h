@@ -21,13 +21,15 @@ struct SettingInfo
   };
 
   Type type;
-  const char* key;
-  const char* visible_name;
+  const char* name;
+  const char* display_name;
   const char* description;
   const char* default_value;
   const char* min_value;
   const char* max_value;
   const char* step_value;
+  const char* format;
+  float multiplier;
 
   const char* StringDefaultValue() const;
   bool BooleanDefaultValue() const;

@@ -79,19 +79,19 @@
     <BuildingForUWP Condition="'$(Configuration)'=='DebugUWP' Or '$(Configuration)'=='ReleaseUWP'">true</BuildingForUWP>
   </PropertyGroup>
 
-  <Import Project="$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="('$(Configuration)'=='DebugUWP' Or '$(Configuration)'=='ReleaseUWP') And Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="$(Configuration.Contains(UWP)) And Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
 
   <PropertyGroup Label="Globals">
     <ProjectName>$(MSBuildProjectName)</ProjectName>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Label="Globals" Condition="'$(BuildingForUWP)'!='true'">
+  <PropertyGroup Label="Globals" Condition="!$(Configuration.Contains(UWP))">
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   
-  <PropertyGroup Label="Globals" Condition="'$(BuildingForUWP)'=='true'">
+  <PropertyGroup Label="Globals" Condition="$(Configuration.Contains(UWP))">
     <MinimalCoreWin>true</MinimalCoreWin>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>

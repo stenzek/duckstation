@@ -11,6 +11,7 @@
 #include "ui_controllerbindingwidget_analog_joystick.h"
 #include "ui_controllerbindingwidget_digital_controller.h"
 #include "ui_controllerbindingwidget_guncon.h"
+#include "ui_controllerbindingwidget_mouse.h"
 #include "ui_controllerbindingwidget_negcon.h"
 #include "ui_controllermacroeditwidget.h"
 #include "ui_controllermacrowidget.h"
@@ -260,6 +261,24 @@ public:
 
 private:
   Ui::ControllerBindingWidget_GunCon m_ui;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class ControllerBindingWidget_Mouse final : public ControllerBindingWidget_Base
+{
+  Q_OBJECT
+
+public:
+  ControllerBindingWidget_Mouse(ControllerBindingWidget* parent);
+  ~ControllerBindingWidget_Mouse();
+
+  QIcon getIcon() const override;
+
+  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+  Ui::ControllerBindingWidget_Mouse m_ui;
 };
 
 //////////////////////////////////////////////////////////////////////////

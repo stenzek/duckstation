@@ -6,10 +6,10 @@
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='DebugFast' Or '$(Configuration)'=='DebugUWP'">
+  <PropertyGroup Condition="$(Configuration.Contains(Debug))">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='ReleaseLTCG' Or '$(Configuration)'=='ReleaseUWP'">
+  <PropertyGroup Condition="!$(Configuration.Contains(Debug))">
     <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
 </Project>

@@ -862,8 +862,13 @@ bool System::UpdateGameSettingsLayer()
   }
 
   std::string input_profile_name;
+  bool use_game_settings_for_controller = false;
   if (new_interface)
-    new_interface->GetStringValue("ControllerPorts", "InputProfileName", &input_profile_name);
+  {
+    new_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", &use_game_settings_for_controller);
+    if (!use_game_settings_for_controller)
+      new_interface->GetStringValue("ControllerPorts", "InputProfileName", &input_profile_name);
+  }
 
   if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
     return false;
@@ -872,31 +877,39 @@ bool System::UpdateGameSettingsLayer()
   s_game_settings_interface = std::move(new_interface);
 
   std::unique_ptr<INISettingsInterface> input_interface;
-  if (!input_profile_name.empty())
+  if (!use_game_settings_for_controller)
   {
-    const std::string filename(GetInputProfilePath(input_profile_name));
-    if (FileSystem::FileExists(filename.c_str()))
+    if (!input_profile_name.empty())
     {
-      Log_InfoPrintf("Loading input profile from '%s'...", filename.c_str());
-      input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-      if (!input_interface->Load())
+      const std::string filename(GetInputProfilePath(input_profile_name));
+      if (FileSystem::FileExists(filename.c_str()))
       {
-        Log_ErrorPrintf("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
-        input_interface.reset();
+        Log_InfoPrintf("Loading input profile from '%s'...", filename.c_str());
+        input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
+        if (!input_interface->Load())
+        {
+          Log_ErrorPrintf("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
+          input_interface.reset();
+          input_profile_name = {};
+        }
+      }
+      else
+      {
+        Log_InfoPrintf("No input profile found (tried '%s')", filename.c_str());
         input_profile_name = {};
       }
     }
-    else
-    {
-      Log_InfoPrintf("No input profile found (tried '%s')", filename.c_str());
-      input_profile_name = {};
-    }
+
+    Host::Internal::SetInputSettingsLayer(input_interface.get());
+  }
+  else
+  {
+    // using game settings for bindings too
+    Host::Internal::SetInputSettingsLayer(s_game_settings_interface.get());
   }
 
-  Host::Internal::SetInputSettingsLayer(input_interface.get());
   s_input_settings_interface = std::move(input_interface);
   s_input_profile_name = std::move(input_profile_name);
-
   return true;
 }
 
@@ -930,7 +943,7 @@ void System::PauseSystem(bool paused)
   else
   {
     Host::OnSystemResumed();
-    g_host_display->SetVSync(ShouldUseVSync());
+    UpdateDisplaySync();
     ResetPerformanceCounters();
     ResetThrottler();
   }
@@ -1198,13 +1211,12 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Good to go.
-  Host::OnSystemStarted();
-  UpdateSoftwareCursor();
-  g_spu.GetOutputStream()->SetPaused(false);
-
-  // Initial state must be set before loading state.
   s_state =
     (g_settings.start_paused || parameters.override_start_paused.value_or(false)) ? State::Paused : State::Running;
+  UpdateSoftwareCursor();
+  g_spu.GetOutputStream()->SetPaused(false);
+  Host::OnSystemStarted();
+
   if (s_state == State::Paused)
     Host::OnSystemPaused();
   else
@@ -1249,6 +1261,7 @@ bool System::Initialize(bool force_software_renderer)
   s_frame_number = 1;
   s_internal_frame_number = 1;
 
+  s_target_speed = g_settings.emulation_speed;
   s_throttle_frequency = 60.0f;
   s_frame_period = 0;
   s_next_frame_time = 0;
@@ -2064,30 +2077,18 @@ void System::ResetThrottler()
 
 void System::Throttle()
 {
-  // Allow variance of up to 40ms either way.
-#ifndef __ANDROID__
-  static constexpr double MAX_VARIANCE_TIME_NS = 40 * 1000000;
-#else
-  static constexpr double MAX_VARIANCE_TIME_NS = 50 * 1000000;
-#endif
+  // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
+  // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
+  // hundreds of frames when we resume.
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (current_time > s_next_frame_time)
+  {
+    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
+    s_next_frame_time += (diff / s_frame_period) * s_frame_period;
+    return;
+  }
 
-  // Use unsigned for defined overflow/wrap-around.
-  const Common::Timer::Value time = Common::Timer::GetCurrentValue();
-  const double sleep_time = (s_next_frame_time >= time) ?
-                              Common::Timer::ConvertValueToNanoseconds(s_next_frame_time - time) :
-                              -Common::Timer::ConvertValueToNanoseconds(time - s_next_frame_time);
-  if (sleep_time < -MAX_VARIANCE_TIME_NS)
-  {
-    // Don't display the slow messages in debug, it'll always be slow...
-#ifndef _DEBUG
-    Log_VerbosePrintf("System too slow, lost %.2f ms", (-sleep_time - MAX_VARIANCE_TIME_NS) / 1000000.0);
-#endif
-    ResetThrottler();
-  }
-  else
-  {
-    Common::Timer::SleepUntil(s_next_frame_time, true);
-  }
+  Common::Timer::SleepUntil(s_next_frame_time, true);
 }
 
 void System::RunFrames()
@@ -2210,12 +2211,7 @@ void System::UpdateSpeedLimiterState()
     }
   }
 
-  const bool video_sync_enabled = ShouldUseVSync();
-  const float max_display_fps = (!IsRunning() || m_throttler_enabled) ? 0.0f : g_settings.display_max_fps;
-  Log_InfoPrintf("Target speed: %f%%", target_speed * 100.0f);
-  Log_InfoPrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
-  Log_InfoPrintf("Max display fps: %f (%s)", max_display_fps,
-                 m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+  Log_VerbosePrintf("Target speed: %f%%", s_target_speed * 100.0f);
 
   if (IsValid())
   {
@@ -2235,23 +2231,36 @@ void System::UpdateSpeedLimiterState()
     ResetThrottler();
   }
 
-  g_host_display->SetDisplayMaxFPS(max_display_fps);
-  g_host_display->SetVSync(video_sync_enabled);
+  // Defer vsync update until we unpause, in case of fullscreen UI.
+  if (IsRunning())
+    UpdateDisplaySync();
 
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(m_throttler_enabled);
 
   // When syncing to host and using vsync, we don't need to sleep.
-  if (syncing_to_host && video_sync_enabled && m_display_all_frames)
+  if (syncing_to_host && ShouldUseVSync() && m_display_all_frames)
   {
     Log_InfoPrintf("Using host vsync for throttling.");
     m_throttler_enabled = false;
   }
 }
 
+void System::UpdateDisplaySync()
+{
+  const bool video_sync_enabled = ShouldUseVSync();
+  const float max_display_fps = m_throttler_enabled ? 0.0f : g_settings.display_max_fps;
+  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
+  Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
+    m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+
+  g_host_display->SetDisplayMaxFPS(max_display_fps);
+  g_host_display->SetVSync(video_sync_enabled);
+}
+
 bool System::ShouldUseVSync()
 {
-  return (!IsRunning() || (m_throttler_enabled && g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed()));
+  return g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed();
 }
 
 bool System::IsFastForwardEnabled()

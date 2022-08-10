@@ -542,6 +542,12 @@ bool GameDatabase::LoadFromCache()
     return false;
   }
 
+  if (gamedb_ts != file_gamedb_ts || gamesettings_ts != file_gamesettings_ts || compat_ts != file_compat_ts)
+  {
+    Log_DevPrintf("Cache is out of date, recreating.");
+    return false;
+  }
+
   s_entries.reserve(num_entries);
 
   for (u32 i = 0; i < num_entries; i++)

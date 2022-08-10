@@ -230,6 +230,9 @@ void Throttle();
 void UpdatePerformanceCounters();
 void ResetPerformanceCounters();
 
+/// Resets vsync/max present fps state.
+void UpdateDisplaySync();
+
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
 void UpdateControllers();

@@ -94,10 +94,10 @@ struct CodeBlock
   u32 recompile_count = 0;
   u32 invalidate_frame_number = 0;
 
-  const u32 GetPC() const { return key.GetPC(); }
-  const u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
-  const u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / HOST_PAGE_SIZE); }
-  const u32 GetEndPageIndex() const { return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / HOST_PAGE_SIZE); }
+  u32 GetPC() const { return key.GetPC(); }
+  u32 GetSizeInBytes() const { return static_cast<u32>(instructions.size()) * sizeof(Instruction); }
+  u32 GetStartPageIndex() const { return (key.GetPCPhysicalAddress() / HOST_PAGE_SIZE); }
+  u32 GetEndPageIndex() const { return ((key.GetPCPhysicalAddress() + GetSizeInBytes()) / HOST_PAGE_SIZE); }
   bool IsInRAM() const
   {
     // TODO: Constant

@@ -4,6 +4,7 @@ add_library(common
   assert.h
   bitfield.h
   bitutils.h
+  build_timestamp.h
   byte_stream.cpp
   byte_stream.h
   crash_handler.cpp

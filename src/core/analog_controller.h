@@ -108,7 +108,7 @@ private:
   u8 GetModeID() const;
   u8 GetIDByte() const;
 
-  void SetAnalogMode(bool enabled);
+  void SetAnalogMode(bool enabled, bool show_message);
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
   void UpdateHostVibration();
@@ -140,7 +140,7 @@ private:
   int m_rumble_config_small_motor_index = -1;
 
   bool m_analog_toggle_queued = false;
-  u8 m_status_byte = 0x5A;
+  u8 m_status_byte = 0;
 
   // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
   u8 m_digital_mode_extra_halfwords = 0;

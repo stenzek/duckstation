@@ -857,8 +857,6 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
     UpdatePointerRelativeDelta(index, InputPointerAxis::X, dx);
   if (dy != 0.0f)
     UpdatePointerRelativeDelta(index, InputPointerAxis::Y, dy);
-
-  ImGuiManager::UpdateMousePosition(x, y);
 }
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
@@ -943,14 +941,12 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
         dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
       }
 
-#if 0
       for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
       {
         dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
         dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
         dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
       }
-#endif
     }
 
     if (copy_pad_config)

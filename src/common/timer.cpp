@@ -186,8 +186,21 @@ void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    while (GetCurrentValue() < value)
-      SleepUntil(value, false);
+    for (;;)
+    {
+      Value current = GetCurrentValue();
+      if (current >= value)
+        break;
+
+      static constexpr Value min_sleep_time = 1 * 1000000;
+
+      // spin for the last 1ms
+      if ((value - current) > min_sleep_time)
+      {
+        SleepUntil(value, false);
+        continue;
+      }
+    }
   }
   else
   {

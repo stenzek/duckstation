@@ -34,6 +34,7 @@ set(SRCS
   controllerbindingwidget_analog_joystick.ui
   controllerbindingwidget_digital_controller.ui
   controllerbindingwidget_guncon.ui
+  controllerbindingwidget_mouse.ui
   controllerbindingwidget_negcon.ui
   controllerbindingwidgets.cpp
   controllerbindingwidgets.h

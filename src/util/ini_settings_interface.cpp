@@ -1,11 +1,64 @@
 #include "ini_settings_interface.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include <algorithm>
 #include <iterator>
-
+#include <mutex>
 Log_SetChannel(INISettingsInterface);
+
+#ifdef _WIN32
+#include <io.h> // _mktemp_s
+#else
+#include <stdlib.h> // mktemp
+#endif
+
+// To prevent races between saving and loading settings, particularly with game settings,
+// we only allow one ini to be parsed at any point in time.
+static std::mutex s_ini_load_save_mutex;
+
+static std::string GetTemporaryFileName(const std::string& original_filename)
+{
+  std::string temporary_filename;
+  temporary_filename.reserve(original_filename.length() + 8);
+
+#ifdef _WIN32
+  // On UWP, preserve the extension, as it affects permissions.
+#ifdef _UWP
+  const std::string_view original_view(original_filename);
+  const std::string_view extension(Path::GetExtension(original_view));
+  if (extension.length() < original_filename.length())
+  {
+    temporary_filename.append(original_view.substr(0, original_filename.length() - extension.length() - 1));
+    temporary_filename.append("_XXXXXX");
+    _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
+    temporary_filename += '.';
+    temporary_filename.append(extension);
+  }
+  else
+  {
+    temporary_filename.append(original_filename);
+    temporary_filename.append(".XXXXXXX");
+    _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
+  }
+#else
+  temporary_filename.append(original_filename);
+  temporary_filename.append(".XXXXXXX");
+  _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
+#endif
+#else
+  temporary_filename.append(original_filename);
+  temporary_filename.append(".XXXXXX");
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+  mkstemp(temporary_filename.data());
+#else
+  mktemp(temporary_filename.data());
+#endif
+#endif
+
+  return temporary_filename;
+}
 
 INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true) {}
 
@@ -20,6 +73,7 @@ bool INISettingsInterface::Load()
   if (m_filename.empty())
     return false;
 
+  std::unique_lock lock(s_ini_load_save_mutex);
   SI_Error err = SI_FAIL;
   auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
   if (fp)
@@ -33,12 +87,26 @@ bool INISettingsInterface::Save()
   if (m_filename.empty())
     return false;
 
+  std::unique_lock lock(s_ini_load_save_mutex);
+  std::string temp_filename(GetTemporaryFileName(m_filename));
   SI_Error err = SI_FAIL;
-  std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
+  std::FILE* fp = FileSystem::OpenCFile(temp_filename.c_str(), "wb");
   if (fp)
   {
     err = m_ini.SaveFile(fp, false);
     std::fclose(fp);
+
+    if (err != SI_OK)
+    {
+      // remove temporary file
+      FileSystem::DeleteFile(temp_filename.c_str());
+    }
+    else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str()))
+    {
+      Log_ErrorPrintf("Failed to rename '%s' to '%s'", temp_filename.c_str(), m_filename.c_str());
+      FileSystem::DeleteFile(temp_filename.c_str());
+      return false;
+    }
   }
 
   if (err != SI_OK)

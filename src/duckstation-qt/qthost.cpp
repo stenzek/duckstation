@@ -231,9 +231,6 @@ bool QtHost::SetCriticalFolders()
   // Write crash dumps to the data directory, since that'll be accessible for certain.
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
-  if (!FileSystem::SetWorkingDirectory(EmuFolders::DataRoot.c_str()))
-    Log_ErrorPrintf("Failed to set working directory to '%s'", EmuFolders::DataRoot.c_str());
-
   // the resources directory should exist, bail out if not
   if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
@@ -522,6 +519,8 @@ void EmuThread::applySettings(bool display_osd_messages /* = false */)
   }
 
   System::ApplySettings(display_osd_messages);
+  if (!FullscreenUI::IsInitialized() && System::IsPaused())
+    redrawDisplayWindow();
 }
 
 void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
@@ -533,6 +532,8 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   }
 
   System::ReloadGameSettings(display_osd_messages);
+  if (!FullscreenUI::IsInitialized() && System::IsPaused())
+    redrawDisplayWindow();
 }
 
 void EmuThread::updateEmuFolders()
@@ -674,6 +675,7 @@ void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
       g_host_display->SetMousePosition(static_cast<s32>(x), static_cast<s32>(y));
 
     InputManager::UpdatePointerAbsolutePosition(0, x, y);
+    ImGuiManager::UpdateMousePosition(x, y);
   }
   else
   {
@@ -681,6 +683,14 @@ void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
       InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, x);
     if (y != 0.0f)
       InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, y);
+
+    if (g_host_display)
+    {
+      const float abs_x = static_cast<float>(g_host_display->GetMousePositionX()) + x;
+      const float abs_y = static_cast<float>(g_host_display->GetMousePositionY()) + y;
+      g_host_display->SetMousePosition(static_cast<s32>(abs_x), static_cast<s32>(abs_y));
+      ImGuiManager::UpdateMousePosition(abs_x, abs_y);
+    }
   }
 }
 
@@ -936,7 +946,7 @@ void EmuThread::updateDisplayState()
   {
     System::UpdateSoftwareCursor();
 
-    if (!FullscreenUI::IsInitialized())
+    if (!FullscreenUI::IsInitialized() || System::IsPaused())
       redrawDisplayWindow();
   }
 

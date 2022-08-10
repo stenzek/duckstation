@@ -6,6 +6,7 @@
     <ClInclude Include="assert.h" />
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="bitutils.h" />
+    <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
