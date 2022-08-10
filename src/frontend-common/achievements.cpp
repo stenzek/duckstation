@@ -63,7 +63,7 @@ static void DeactivateAchievement(Achievement* achievement);
 static void SendPing();
 static void SendPlaying();
 static void UpdateRichPresence();
-static Achievement* GetAchievementByID(u32 id);
+static Achievement* GetMutableAchievementByID(u32 id);
 static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboards = true);
 static void ClearGameHash();
 static std::string GetUserAgent();
@@ -80,6 +80,7 @@ static void GetLbInfoCallback(s32 status_code, Common::HTTPDownloader::Request::
 static void GetPatches(u32 game_id);
 static std::string GetGameHash(CDImage* image);
 static void SetChallengeMode(bool enabled);
+static void SendGetGameId();
 static void GetGameIdCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
 static void SendPlayingCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
 static void UpdateRichPresence();
@@ -205,6 +206,18 @@ public:
     Achievements::DownloadImage(api_request.url, std::move(cache_filename));
     return true;
   }
+
+  std::string GetURL()
+  {
+    const int error = InitFunc(&api_request, this);
+    if (error != RC_OK)
+    {
+      FormattedError("%s failed: error %d (%s)", RAPIStructName<T>(), error, rc_error_str(error));
+      return std::string();
+    }
+
+    return api_request.url;
+  }
 };
 
 template<typename T, int (*ParseFunc)(T*, const char*), void (*DestroyFunc)(T*)>
@@ -278,7 +291,18 @@ void Achievements::LogFailedResponseJSON(const Common::HTTPDownloader::Request::
   Log_ErrorPrintf("API call failed. Response JSON was:\n%s", str_data.c_str());
 }
 
-static Achievements::Achievement* Achievements::GetAchievementByID(u32 id)
+const Achievements::Achievement* Achievements::GetAchievementByID(u32 id)
+{
+  for (const Achievement& ach : s_achievements)
+  {
+    if (ach.id == id)
+      return &ach;
+  }
+
+  return nullptr;
+}
+
+Achievements::Achievement* Achievements::GetMutableAchievementByID(u32 id)
 {
   for (Achievement& ach : s_achievements)
   {
@@ -420,7 +444,7 @@ void Achievements::Initialize()
   s_api_token = Host::GetBaseStringSettingValue("Cheevos", "Token");
   s_logged_in = (!s_username.empty() && !s_api_token.empty());
 
-  if (IsLoggedIn() && System::IsValid())
+  if (System::IsValid())
     GameChanged(System::GetRunningPath(), nullptr);
 }
 
@@ -742,6 +766,7 @@ bool Achievements::DoState(StateWrapper& sw)
       }
     }
     else
+#endif
     {
       // internally this happens twice.. not great.
       const int size = rc_runtime_progress_size(&s_rcheevos_runtime, nullptr);
@@ -757,7 +782,6 @@ bool Achievements::DoState(StateWrapper& sw)
         data_size = 0;
       }
     }
-#endif
 
     sw.Do(&data_size);
     if (data_size > 0)
@@ -829,8 +853,8 @@ void Achievements::LoginCallback(s32 status_code, Common::HTTPDownloader::Reques
     s_logged_in = true;
 
     // If we have a game running, set it up.
-    if (System::IsValid())
-      GameChanged(System::GetRunningPath(), nullptr);
+    if (!s_game_hash.empty())
+      SendGetGameId();
   }
 }
 
@@ -968,7 +992,10 @@ void Achievements::DisplayAchievementSummary()
     }
   }
 
-  ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
+  Host::RunOnCPUThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
+    if (FullscreenUI::IsInitialized())
+      ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+  });
 }
 
 void Achievements::GetUserUnlocksCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
@@ -990,7 +1017,7 @@ void Achievements::GetUserUnlocksCallback(s32 status_code, Common::HTTPDownloade
   // flag achievements as unlocked
   for (u32 i = 0; i < response.num_achievement_ids; i++)
   {
-    Achievement* cheevo = GetAchievementByID(response.achievement_ids[i]);
+    Achievement* cheevo = GetMutableAchievementByID(response.achievement_ids[i]);
     if (!cheevo)
     {
       Log_ErrorPrintf("Server returned unknown achievement %u", response.achievement_ids[i]);
@@ -1075,7 +1102,7 @@ void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::R
       continue;
     }
 
-    if (GetAchievementByID(defn.id))
+    if (GetMutableAchievementByID(defn.id))
     {
       Log_ErrorPrintf("Achievement %u already exists", defn.id);
       continue;
@@ -1351,6 +1378,12 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     return;
   }
 
+  if (IsLoggedIn())
+    SendGetGameId();
+}
+
+void Achievements::SendGetGameId()
+{
   RAPIRequest<rc_api_resolve_hash_request_t, rc_api_init_resolve_hash_request> request;
   request.username = s_username.c_str();
   request.api_token = s_api_token.c_str();
@@ -1643,7 +1676,7 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, Common::HTTPDownlo
 
 void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 {
-  Achievement* achievement = GetAchievementByID(achievement_id);
+  Achievement* achievement = GetMutableAchievementByID(achievement_id);
   if (!achievement)
   {
     Log_ErrorPrintf("Attempting to unlock unknown achievement %u", achievement_id);
@@ -1740,7 +1773,7 @@ std::string Achievements::GetAchievementProgressText(const Achievement& achievem
   return buf;
 }
 
-const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement)
+const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing)
 {
   std::string& badge_path = achievement.locked ? achievement.locked_badge_path : achievement.unlocked_badge_path;
   if (!badge_path.empty() || achievement.badge_name.empty())
@@ -1754,11 +1787,23 @@ const std::string& Achievements::GetAchievementBadgePath(const Achievement& achi
     return badge_path;
 
   // need to download it
+  if (download_if_missing)
+  {
+    RAPIRequest<rc_api_fetch_image_request_t, rc_api_init_fetch_image_request> request;
+    request.image_name = achievement.badge_name.c_str();
+    request.image_type = achievement.locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
+    request.DownloadImage(badge_path);
+  }
+
+  return badge_path;
+}
+
+std::string Achievements::GetAchievementBadgeURL(const Achievement& achievement)
+{
   RAPIRequest<rc_api_fetch_image_request_t, rc_api_init_fetch_image_request> request;
   request.image_name = achievement.badge_name.c_str();
   request.image_type = achievement.locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
-  request.DownloadImage(badge_path);
-  return badge_path;
+  return request.GetURL();
 }
 
 void Achievements::CheevosEventHandler(const rc_runtime_event_t* runtime_event)

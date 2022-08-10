@@ -143,9 +143,11 @@ const Leaderboard* GetLeaderboardByID(u32 id);
 u32 GetLeaderboardCount();
 bool IsLeaderboardTimeType(const Leaderboard& leaderboard);
 
+const Achievement* GetAchievementByID(u32 id);
 std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement);
 std::string GetAchievementProgressText(const Achievement& achievement);
-const std::string& GetAchievementBadgePath(const Achievement& achievement);
+const std::string& GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing = true);
+std::string GetAchievementBadgeURL(const Achievement& achievement);
 
 void UnlockAchievement(u32 achievement_id, bool add_notification = true);
 void SubmitLeaderboard(u32 leaderboard_id, int value);
