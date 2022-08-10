@@ -231,9 +231,6 @@ bool QtHost::SetCriticalFolders()
   // Write crash dumps to the data directory, since that'll be accessible for certain.
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
-  if (!FileSystem::SetWorkingDirectory(EmuFolders::DataRoot.c_str()))
-    Log_ErrorPrintf("Failed to set working directory to '%s'", EmuFolders::DataRoot.c_str());
-
   // the resources directory should exist, bail out if not
   if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
