@@ -116,6 +116,7 @@ using ImGuiFullscreen::ThreeWayToggleButton;
 using ImGuiFullscreen::ToggleButton;
 using ImGuiFullscreen::WantsToCloseMenu;
 
+#ifndef __ANDROID__
 namespace FullscreenUI {
 enum class MainWindowType
 {
@@ -158,11 +159,6 @@ enum class SettingsPage
   Advanced,
   Count
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Utility
-//////////////////////////////////////////////////////////////////////////
-static std::string TimeToPrintableString(time_t t);
 
 //////////////////////////////////////////////////////////////////////////
 // Main
@@ -389,24 +385,6 @@ static std::optional<u32> s_open_leaderboard_id;
 } // namespace FullscreenUI
 
 //////////////////////////////////////////////////////////////////////////
-// Utility
-//////////////////////////////////////////////////////////////////////////
-
-std::string FullscreenUI::TimeToPrintableString(time_t t)
-{
-  struct tm lt = {};
-#ifdef _MSC_VER
-  localtime_s(&lt, &t);
-#else
-  localtime_r(&t, &lt);
-#endif
-
-  char buf[256];
-  std::strftime(buf, sizeof(buf), "%c", &lt);
-  return std::string(buf);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
 
@@ -421,7 +399,7 @@ bool FullscreenUI::Initialize()
   ImGuiFullscreen::SetTheme();
   ImGuiFullscreen::UpdateLayoutScale();
 
-  if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") ||
+  if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png") ||
       !LoadResources())
   {
     DestroyResources();
@@ -437,7 +415,6 @@ bool FullscreenUI::Initialize()
   s_was_paused_on_quick_menu_open = false;
   s_about_window_open = false;
   s_hotkey_list_cache = InputManager::GetHotkeyList();
-  // GetMTGS().SetRunIdle(true);
 
   if (!System::IsValid())
     SwitchToLanding();
@@ -467,15 +444,14 @@ void FullscreenUI::OnSystemStarted()
 
 void FullscreenUI::OnSystemPaused()
 {
-  if (!IsInitialized())
-    return;
-
-  g_host_display->SetVSync(true);
+  // noop
 }
 
 void FullscreenUI::OnSystemResumed()
 {
-  // noop
+  // get rid of pause menu if we unpaused another way
+  if (s_current_main_window == MainWindowType::PauseMenu)
+    ClosePauseMenu();
 }
 
 void FullscreenUI::OnSystemDestroyed()
@@ -505,7 +481,15 @@ void FullscreenUI::PauseForMenuOpen()
 {
   s_was_paused_on_quick_menu_open = (System::GetState() == System::State::Paused);
   if (g_settings.pause_on_menu && !s_was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+  {
+    Host::RunOnCPUThread([]() {
+      System::PauseSystem(true);
+
+      // force vsync on when pausing
+      if (g_host_display)
+        g_host_display->SetVSync(true);
+    });
+  }
 
   s_pause_menu_was_open = true;
 }
@@ -635,7 +619,7 @@ void FullscreenUI::ReturnToMainWindow()
 
 bool FullscreenUI::LoadResources()
 {
-  s_app_icon_texture = LoadTexture("fullscreenui/duck.png");
+  s_app_icon_texture = LoadTexture("images/duck.png");
 
   s_fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
   s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
@@ -5796,3 +5780,104 @@ void DrawDebugDebugMenu()
   }
 }
 #endif
+
+#else
+
+// "Lightweight" version with only notifications for Android.
+namespace FullscreenUI {
+static bool s_initialized = false;
+static bool s_tried_to_initialize = false;
+}
+
+bool FullscreenUI::Initialize()
+{
+  if (s_initialized)
+    return true;
+
+  if (s_tried_to_initialize)
+    return false;
+
+  ImGuiFullscreen::SetTheme();
+  ImGuiFullscreen::UpdateLayoutScale();
+
+  if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png"))
+  {
+    ImGuiFullscreen::Shutdown();
+    s_tried_to_initialize = true;
+    return false;
+  }
+
+  s_initialized = true;
+  return true;
+}
+
+bool FullscreenUI::IsInitialized()
+{
+  return s_initialized;
+}
+
+bool FullscreenUI::HasActiveWindow()
+{
+  return false;
+}
+
+void FullscreenUI::OnSystemStarted()
+{
+  // noop
+}
+
+void FullscreenUI::OnSystemPaused()
+{
+  // noop
+}
+
+void FullscreenUI::OnSystemResumed()
+{
+  // noop
+}
+
+void FullscreenUI::OnSystemDestroyed()
+{
+  // noop
+}
+
+void FullscreenUI::OnRunningGameChanged()
+{
+  // noop
+}
+
+void FullscreenUI::OpenPauseMenu()
+{
+  // noop
+}
+
+bool FullscreenUI::OpenAchievementsWindow()
+{
+  return false;
+}
+
+bool FullscreenUI::OpenLeaderboardsWindow()
+{
+  return false;
+}
+
+void FullscreenUI::Shutdown()
+{
+  ImGuiFullscreen::Shutdown();
+  s_initialized = false;
+  s_tried_to_initialize = false;
+}
+
+void FullscreenUI::Render()
+{
+  if (!s_initialized)
+    return;
+
+  ImGuiFullscreen::UploadAsyncTextures();
+
+  ImGuiFullscreen::BeginLayout();
+  ImGuiFullscreen::EndLayout();
+  ImGuiFullscreen::ResetCloseMenuIfNeeded();
+}
+
+#endif    // __ANDROID__
