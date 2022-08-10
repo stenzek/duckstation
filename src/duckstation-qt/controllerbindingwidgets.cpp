@@ -113,6 +113,9 @@ void ControllerBindingWidget::populateWidgets()
     case ControllerType::NeGcon:
       m_bindings_widget = ControllerBindingWidget_NeGcon::createInstance(this);
       break;
+    case ControllerType::PlayStationMouse:
+      m_bindings_widget = ControllerBindingWidget_Mouse::createInstance(this);
+      break;
     default:
       m_bindings_widget = new ControllerBindingWidget_Base(this);
       break;
@@ -877,6 +880,27 @@ QIcon ControllerBindingWidget_GunCon::getIcon() const
 ControllerBindingWidget_Base* ControllerBindingWidget_GunCon::createInstance(ControllerBindingWidget* parent)
 {
   return new ControllerBindingWidget_GunCon(parent);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+ControllerBindingWidget_Mouse::ControllerBindingWidget_Mouse(ControllerBindingWidget* parent)
+  : ControllerBindingWidget_Base(parent)
+{
+  m_ui.setupUi(this);
+  initBindingWidgets();
+}
+
+ControllerBindingWidget_Mouse::~ControllerBindingWidget_Mouse() {}
+
+QIcon ControllerBindingWidget_Mouse::getIcon() const
+{
+  return QIcon::fromTheme(QStringLiteral("mouse-line"));
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_Mouse::createInstance(ControllerBindingWidget* parent)
+{
+  return new ControllerBindingWidget_Mouse(parent);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -176,6 +176,9 @@
     <QtUi Include="controllerbindingwidget_analog_joystick.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="controllerbindingwidget_mouse.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="controllerbindingwidget_negcon.ui">
       <FileType>Document</FileType>
     </QtUi>
