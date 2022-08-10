@@ -2078,6 +2078,17 @@ void System::ResetThrottler()
 
 void System::Throttle()
 {
+  // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
+  // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
+  // hundreds of frames when we resume.
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (current_time > s_next_frame_time)
+  {
+    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
+    s_next_frame_time += (diff / s_frame_period) * s_frame_period;
+    return;
+  }
+
   Common::Timer::SleepUntil(s_next_frame_time, true);
 }
 
