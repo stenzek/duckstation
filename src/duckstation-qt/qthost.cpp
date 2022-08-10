@@ -519,6 +519,8 @@ void EmuThread::applySettings(bool display_osd_messages /* = false */)
   }
 
   System::ApplySettings(display_osd_messages);
+  if (!FullscreenUI::IsInitialized() && System::IsPaused())
+    redrawDisplayWindow();
 }
 
 void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
@@ -530,6 +532,8 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   }
 
   System::ReloadGameSettings(display_osd_messages);
+  if (!FullscreenUI::IsInitialized() && System::IsPaused())
+    redrawDisplayWindow();
 }
 
 void EmuThread::updateEmuFolders()
@@ -942,7 +946,7 @@ void EmuThread::updateDisplayState()
   {
     System::UpdateSoftwareCursor();
 
-    if (!FullscreenUI::IsInitialized())
+    if (!FullscreenUI::IsInitialized() || System::IsPaused())
       redrawDisplayWindow();
   }
 
