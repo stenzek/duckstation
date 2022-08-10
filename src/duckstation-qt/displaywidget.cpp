@@ -292,7 +292,7 @@ bool DisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonRelease:
     {
       const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-      emit windowMouseButtonEvent(static_cast<int>(button_index + 1u), event->type() != QEvent::MouseButtonRelease);
+      emit windowMouseButtonEvent(static_cast<int>(button_index), event->type() != QEvent::MouseButtonRelease);
 
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
       if (event->type() == QEvent::MouseButtonDblClick &&

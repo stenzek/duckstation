@@ -745,11 +745,11 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
 
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 {
-  if (!ImGui::GetCurrentContext() || (key.data - 1u) >= std::size(ImGui::GetIO().MouseDown))
+  if (!ImGui::GetCurrentContext() || key.data >= std::size(ImGui::GetIO().MouseDown))
     return false;
 
   // still update state anyway
-  ImGui::GetIO().AddMouseButtonEvent(key.data - 1, value != 0.0f);
+  ImGui::GetIO().AddMouseButtonEvent(key.data, value != 0.0f);
 
   return s_imgui_wants_mouse.load(std::memory_order_acquire);
 }
