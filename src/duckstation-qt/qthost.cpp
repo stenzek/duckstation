@@ -671,6 +671,7 @@ void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
       g_host_display->SetMousePosition(static_cast<s32>(x), static_cast<s32>(y));
 
     InputManager::UpdatePointerAbsolutePosition(0, x, y);
+    ImGuiManager::UpdateMousePosition(x, y);
   }
   else
   {
@@ -678,6 +679,14 @@ void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
       InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, x);
     if (y != 0.0f)
       InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, y);
+
+    if (g_host_display)
+    {
+      const float abs_x = static_cast<float>(g_host_display->GetMousePositionX()) + x;
+      const float abs_y = static_cast<float>(g_host_display->GetMousePositionY()) + y;
+      g_host_display->SetMousePosition(static_cast<s32>(abs_x), static_cast<s32>(abs_y));
+      ImGuiManager::UpdateMousePosition(abs_x, abs_y);
+    }
   }
 }
 

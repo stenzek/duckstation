@@ -15,16 +15,14 @@ public:
 
   QPaintEngine* paintEngine() const override;
 
-  ALWAYS_INLINE void setShouldHideCursor(bool hide) { m_should_hide_cursor = hide; }
-
   int scaledWindowWidth() const;
   int scaledWindowHeight() const;
   qreal devicePixelRatioFromScreen() const;
 
   std::optional<WindowInfo> getWindowInfo();
 
-  void updateRelativeMode(bool master_enable);
-  void updateCursor(bool master_enable);
+  void updateRelativeMode(bool enabled);
+  void updateCursor(bool hidden);
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height, float scale);
@@ -46,7 +44,6 @@ private:
 #ifdef _WIN32
   bool m_clip_mouse_enabled = false;
 #endif
-  bool m_should_hide_cursor = false;
   bool m_cursor_hidden = false;
 
   std::vector<u32> m_keys_pressed_with_modifiers;

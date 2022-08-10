@@ -857,8 +857,6 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
     UpdatePointerRelativeDelta(index, InputPointerAxis::X, dx);
   if (dy != 0.0f)
     UpdatePointerRelativeDelta(index, InputPointerAxis::Y, dy);
-
-  ImGuiManager::UpdateMousePosition(x, y);
 }
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)

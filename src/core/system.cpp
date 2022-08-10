@@ -1211,13 +1211,12 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Good to go.
-  Host::OnSystemStarted();
-  UpdateSoftwareCursor();
-  g_spu.GetOutputStream()->SetPaused(false);
-
-  // Initial state must be set before loading state.
   s_state =
     (g_settings.start_paused || parameters.override_start_paused.value_or(false)) ? State::Paused : State::Running;
+  UpdateSoftwareCursor();
+  g_spu.GetOutputStream()->SetPaused(false);
+  Host::OnSystemStarted();
+
   if (s_state == State::Paused)
     Host::OnSystemPaused();
   else

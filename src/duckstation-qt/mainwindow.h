@@ -199,8 +199,8 @@ private:
   void restoreDisplayWindowGeometryFromConfig();
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
   void destroyDisplayWidget(bool show_game_list);
+  void updateDisplayWidgetCursor();
   void setDisplayFullscreen(const std::string& fullscreen_mode);
-  bool shouldHideCursor() const;
 
   SettingsDialog* getSettingsDialog();
   void doSettings(const char* category = nullptr);
@@ -261,7 +261,7 @@ private:
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;
   bool m_relative_mouse_mode = false;
-  bool m_mouse_cursor_hidden = false;
+  bool m_hide_mouse_cursor = false;
 
   bool m_display_created = false;
   bool m_save_states_invalidated = false;
