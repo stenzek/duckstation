@@ -941,14 +941,12 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
         dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
       }
 
-#if 0
       for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
       {
         dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
         dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
         dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
       }
-#endif
     }
 
     if (copy_pad_config)
