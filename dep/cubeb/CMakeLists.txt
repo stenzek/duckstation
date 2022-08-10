@@ -5,9 +5,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(cubeb
   VERSION 0.0.0)
 
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_RUST_LIBS "Build rust backends" OFF)
-option(BUNDLE_SPEEX "Bundle the speex library" OFF)
 option(LAZY_LOAD_LIBS "Lazily load shared libraries" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -26,13 +24,6 @@ if (BUILD_RUST_LIBS)
   if(EXISTS "${PROJECT_SOURCE_DIR}/src/cubeb-coreaudio-rs")
     set(USE_AUDIOUNIT_RUST 1)
   endif()
-endif()
-
-# On OS/2, visibility attribute is not supported.
-if(NOT OS2)
-  set(CMAKE_C_VISIBILITY_PRESET hidden)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-  set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 endif()
 
 set(CMAKE_CXX_WARNING_LEVEL 4)
@@ -60,17 +51,6 @@ set_target_properties(cubeb PROPERTIES
   SOVERSION ${cubeb_VERSION_MAJOR}
 )
 
-include(GenerateExportHeader)
-generate_export_header(cubeb EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/cubeb_export.h)
-target_include_directories(cubeb
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/exports>
-)
-
-include(GNUInstallDirs)
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/${PROJECT_NAME} TYPE INCLUDE)
-install(DIRECTORY ${CMAKE_BINARY_DIR}/exports/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
-
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
@@ -95,27 +75,15 @@ install(
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 )
 
-if(NOT BUNDLE_SPEEX)
-  find_package(PkgConfig)
-  if(PKG_CONFIG_FOUND)
-    pkg_check_modules(speexdsp IMPORTED_TARGET speexdsp)
-    if(speexdsp_FOUND)
-      add_library(speex ALIAS PkgConfig::speexdsp)
-    endif()
-  endif()
-endif()
-
-if(NOT TARGET speex)
-  add_library(speex OBJECT subprojects/speex/resample.c)
-  set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-  target_include_directories(speex INTERFACE subprojects)
-  target_compile_definitions(speex PUBLIC
-    OUTSIDE_SPEEX
-    FLOATING_POINT
-    EXPORT=
-    RANDOM_PREFIX=speex
-  )
-endif()
+add_library(speex OBJECT subprojects/speex/resample.c)
+set_target_properties(speex PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_include_directories(speex INTERFACE subprojects)
+target_compile_definitions(speex PUBLIC
+OUTSIDE_SPEEX
+FLOATING_POINT
+EXPORT=
+RANDOM_PREFIX=speex
+)
 
 # $<BUILD_INTERFACE:> required because of https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 target_link_libraries(cubeb PRIVATE $<BUILD_INTERFACE:speex>)
@@ -330,24 +298,4 @@ if(USE_AUDIOUNIT AND USE_AUDIOUNIT_RUST)
     debug "${PROJECT_SOURCE_DIR}/src/cubeb-coreaudio-rs/target/debug/libcubeb_coreaudio.a"
     optimized "${PROJECT_SOURCE_DIR}/src/cubeb-coreaudio-rs/target/release/libcubeb_coreaudio.a")
 endif()
-
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/docs/Doxyfile @ONLY)
-  add_custom_target(doc ALL
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/docs/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs
-    COMMENT "Generating API documentation with Doxygen" VERBATIM)
-endif()
-
-add_custom_target(clang-format-check
-  find
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    -type f (-name "*.cpp" -o -name "*.c" -o -name "*.h")
-    -not -path "*/subprojects/speex/*"
-    -print0
-  | xargs -0 clang-format -Werror -n
-  COMMENT "Check formatting with clang-format"
-  VERBATIM)
 
