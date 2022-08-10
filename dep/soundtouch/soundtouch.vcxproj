@@ -41,7 +41,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>SOUNDTOUCH_FLOAT_SAMPLES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOUNDTOUCH_FLOAT_SAMPLES;ST_NO_EXCEPTION_HANDLING=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">SOUNDTOUCH_USE_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">SOUNDTOUCH_ALLOW_SSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
