@@ -4,8 +4,12 @@
 #include "common/string_util.h"
 #include <algorithm>
 #include <iterator>
-
+#include <mutex>
 Log_SetChannel(INISettingsInterface);
+
+// To prevent races between saving and loading settings, particularly with game settings,
+// we only allow one ini to be parsed at any point in time.
+static std::mutex s_ini_load_save_mutex;
 
 INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true) {}
 
@@ -20,6 +24,7 @@ bool INISettingsInterface::Load()
   if (m_filename.empty())
     return false;
 
+  std::unique_lock lock(s_ini_load_save_mutex);
   SI_Error err = SI_FAIL;
   auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
   if (fp)
@@ -33,6 +38,7 @@ bool INISettingsInterface::Save()
   if (m_filename.empty())
     return false;
 
+  std::unique_lock lock(s_ini_load_save_mutex);
   SI_Error err = SI_FAIL;
   std::FILE* fp = FileSystem::OpenCFile(m_filename.c_str(), "wb");
   if (fp)
