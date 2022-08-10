@@ -114,7 +114,7 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
 
   const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
   entry->serial.clear();
-  entry->title = Path::StripExtension(display_name);
+  entry->title = Path::GetFileTitle(display_name);
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->total_size = ZeroExtend64(file_size);
   entry->type = EntryType::PSExe;
@@ -156,7 +156,7 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
   else
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-    entry->title += Path::StripExtension(display_name);
+    entry->title += Path::GetFileTitle(display_name);
   }
 
   return true;
@@ -193,7 +193,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   }
   else
   {
-    const std::string display_name(Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path)));
+    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 
     // no game code, so use the filename title
     entry->serial = System::GetGameCodeForImage(cdi.get(), true);
