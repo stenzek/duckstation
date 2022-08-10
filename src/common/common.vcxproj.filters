@@ -137,6 +137,7 @@
     <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="threading.h" />
     <ClInclude Include="scoped_guard.h" />
+    <ClInclude Include="build_timestamp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gl\program.cpp">
