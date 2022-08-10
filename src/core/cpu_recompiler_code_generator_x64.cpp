@@ -317,9 +317,11 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
       }
     }
     break;
-  }
 
-  Panic("Unknown sign-extend combination");
+    default:
+      Panic("Unknown sign-extend combination");
+      break;
+  }
 }
 
 void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)

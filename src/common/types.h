@@ -24,9 +24,7 @@
 
 // unreferenced parameter macro
 #ifndef UNREFERENCED_VARIABLE
-#if defined(_MSC_VER)
-#define UNREFERENCED_VARIABLE(P) (P)
-#elif defined(__GNUC__) || defined(__clang__) || defined(__EMSCRIPTEN__)
+#if defined(__GNUC__) || defined(__clang__) || defined(__EMSCRIPTEN__)
 #define UNREFERENCED_VARIABLE(P) (void)(P)
 #else
 #define UNREFERENCED_VARIABLE(P) (P)

@@ -33,7 +33,7 @@ public:
   GPU_HW();
   virtual ~GPU_HW();
 
-  const Threading::Thread* GetSWThread() const;
+  const Threading::Thread* GetSWThread() const override;
 
   virtual bool Initialize() override;
   virtual void Reset(bool clear_vram) override;

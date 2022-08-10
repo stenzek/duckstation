@@ -24,7 +24,7 @@ public:
   CDROMAsyncReader();
   ~CDROMAsyncReader();
 
-  const CDImage::LBA GetLastReadSector() const { return m_buffers[m_buffer_front.load()].lba; }
+  CDImage::LBA GetLastReadSector() const { return m_buffers[m_buffer_front.load()].lba; }
   const SectorBuffer& GetSectorBuffer() const { return m_buffers[m_buffer_front.load()].data; }
   const CDImage::SubChannelQ& GetSectorSubQ() const { return m_buffers[m_buffer_front.load()].subq; }
   u32 GetBufferedSectorCount() const { return m_buffer_count.load(); }
