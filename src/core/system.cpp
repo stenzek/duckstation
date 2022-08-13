@@ -1047,7 +1047,9 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (!parameters.save_state.empty())
   {
     // loading a state, so pull the media path from the save state to avoid a double change
-    parameters.filename = GetMediaPathFromSaveState(parameters.save_state.c_str());
+    std::string state_media(GetMediaPathFromSaveState(parameters.save_state.c_str()));
+    if (FileSystem::FileExists(state_media.c_str()))
+      parameters.filename = std::move(state_media);
   }
 
   if (parameters.filename.empty())
@@ -1777,6 +1779,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
                                                 "existing image '%s', this may result in instability."),
             media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
           media = std::move(old_media);
+          header.media_subimage_index = media->GetCurrentSubImage();
         }
         else
         {
