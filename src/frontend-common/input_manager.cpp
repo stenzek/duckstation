@@ -553,7 +553,7 @@ std::optional<InputBindingKey> InputManager::ParseSensorKey(const std::string_vi
       key.source_subtype = InputSubclass::SensorAccelerometer;
       key.data = i;
 
-      const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_names[i])));
+      const std::string_view dir_part(sub_binding.substr(std::strlen(s_sensor_accelerometer_names[i])));
       if (dir_part == "+")
         key.negative = false;
       else if (dir_part == "-")
