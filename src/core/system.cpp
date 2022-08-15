@@ -2192,15 +2192,16 @@ void System::ResetPerformanceCounters()
 
 void System::UpdateSpeedLimiterState()
 {
-  float target_speed = m_turbo_enabled ?
-                         g_settings.turbo_speed :
-                         (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
-  m_throttler_enabled = (target_speed != 0.0f);
+  const float old_target_speed = s_target_speed;
+  s_target_speed = m_turbo_enabled ?
+                     g_settings.turbo_speed :
+                     (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
+  m_throttler_enabled = (s_target_speed != 0.0f);
   m_display_all_frames = !m_throttler_enabled || g_settings.display_all_frames;
 
   bool syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
-      target_speed == 1.0f && IsValid())
+      s_target_speed == 1.0f && IsValid())
   {
     float host_refresh_rate;
     if (g_host_display->GetHostRefreshRate(&host_refresh_rate))
@@ -2210,7 +2211,7 @@ void System::UpdateSpeedLimiterState()
       Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate,
                      System::GetThrottleFrequency(), ratio, syncing_to_host ? "can sync" : "can't sync");
       if (syncing_to_host)
-        target_speed *= ratio;
+        s_target_speed *= ratio;
     }
   }
 
@@ -2218,18 +2219,18 @@ void System::UpdateSpeedLimiterState()
 
   if (IsValid())
   {
+    // Update audio output.
     AudioStream* stream = SPU::GetOutputStream();
-    if (g_settings.audio_fast_forward_volume != g_settings.audio_output_volume)
-      stream->SetOutputVolume(GetAudioOutputVolume());
+    stream->SetOutputVolume(GetAudioOutputVolume());
 
     // Adjust nominal rate when resampling, or syncing to host.
     const bool rate_adjust =
-      (syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && target_speed > 0.0f;
-    stream->SetNominalRate(rate_adjust ? target_speed : 1.0f);
-    if (s_target_speed < target_speed)
-      stream->UpdateTargetTempo(target_speed);
+      (syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && s_target_speed > 0.0f;
+    stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
 
-    s_target_speed = target_speed;
+    if (old_target_speed < s_target_speed)
+      stream->UpdateTargetTempo(s_target_speed);
+
     UpdateThrottlePeriod();
     ResetThrottler();
   }
@@ -2255,7 +2256,7 @@ void System::UpdateDisplaySync()
   const float max_display_fps = m_throttler_enabled ? 0.0f : g_settings.display_max_fps;
   Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
   Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
-    m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+                    m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
   g_host_display->SetDisplayMaxFPS(max_display_fps);
   g_host_display->SetVSync(video_sync_enabled);
