@@ -267,6 +267,10 @@ struct Settings
   {
     return (multitap_mode == MultitapMode::Port1Only || multitap_mode == MultitapMode::BothPorts);
   }
+  ALWAYS_INLINE bool IsMultitapPortEnabled(u32 port) const
+  {
+    return (port == 0) ? IsPort1MultitapEnabled() : IsPort2MultitapEnabled();
+  }
 
   ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
   {

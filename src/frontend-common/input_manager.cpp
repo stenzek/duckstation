@@ -924,6 +924,13 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
   {
+    if (Controller::PadIsMultitapSlot(port))
+    {
+      const auto [mt_port, mt_slot] = Controller::ConvertPadToPortAndSlot(port);
+      if (!g_settings.IsMultitapPortEnabled(mt_port))
+        continue;
+    }
+
     const std::string section(Controller::GetSettingsSection(port));
     const std::string type(src_si.GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(port)));
     if (copy_pad_config)
