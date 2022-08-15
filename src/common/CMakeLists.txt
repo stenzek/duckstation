@@ -38,6 +38,8 @@ add_library(common
   rectangle.h
   scoped_guard.h
   settings_interface.h
+  sha1_digest.cpp
+  sha1_digest.h
   string.cpp
   string.h
   string_util.cpp
