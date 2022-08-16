@@ -47,8 +47,6 @@ struct Entry
   size_t GetReleaseDateString(char* buffer, size_t buffer_size) const;
 
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
-
-  static_assert(sizeof(std::time_t) == sizeof(u64));
 };
 
 const char* GetEntryTypeName(EntryType type);

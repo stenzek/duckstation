@@ -273,14 +273,17 @@ void CommonHost::SetDefaultControllerSettings(SettingsInterface& si)
     si.SetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(i));
   }
 
+#ifndef __ANDROID__
   // Use the automapper to set this up.
   InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
+#endif
 }
 
 void CommonHost::SetDefaultHotkeyBindings(SettingsInterface& si)
 {
   si.ClearSection("Hotkeys");
 
+#ifndef __ANDROID__
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
   si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
   si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
@@ -291,6 +294,7 @@ void CommonHost::SetDefaultHotkeyBindings(SettingsInterface& si)
   si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
   si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
   si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
+#endif
 }
 
 void CommonHost::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
