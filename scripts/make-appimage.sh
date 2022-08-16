@@ -275,17 +275,7 @@ Plugins = ../lib/plugins
 EOF
 
 echo "Creating desktop..."
-cat > "$OUTDIR/duckstation-qt.desktop" << EOF
-[Desktop Entry]
-Type=Application
-Name=DuckStation
-GenericName=PlayStation 1 Emulator
-Comment=Fast PlayStation 1 emulator
-Icon=duckstation-qt
-TryExec=duckstation-qt
-Exec=duckstation-qt %f
-Categories=Game;Emulator;Qt;
-EOF
+cp "$ROOTDIR/extras/linux-desktop-files/duckstation-qt.desktop" "$OUTDIR"
 cp "$ROOTDIR/extras/icons/icon-256px.png" "$OUTDIR/duckstation-qt.png"
 
 echo "Creating AppRun..."
