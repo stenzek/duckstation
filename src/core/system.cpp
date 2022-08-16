@@ -147,11 +147,12 @@ static float s_target_speed = 1.0f;
 static Common::Timer::Value s_frame_period = 0;
 static Common::Timer::Value s_next_frame_time = 0;
 
-static bool m_frame_step_request = false;
-static bool m_fast_forward_enabled = false;
-static bool m_turbo_enabled = false;
-static bool m_throttler_enabled = true;
-static bool m_display_all_frames = true;
+static bool s_frame_step_request = false;
+static bool s_fast_forward_enabled = false;
+static bool s_turbo_enabled = false;
+static bool s_throttler_enabled = true;
+static bool s_display_all_frames = true;
+static bool s_syncing_to_host = false;
 
 static float s_average_frame_time_accumulator = 0.0f;
 static float s_worst_frame_time_accumulator = 0.0f;
@@ -1267,8 +1268,8 @@ bool System::Initialize(bool force_software_renderer)
   s_throttle_frequency = 60.0f;
   s_frame_period = 0;
   s_next_frame_time = 0;
-  m_turbo_enabled = false;
-  m_fast_forward_enabled = false;
+  s_turbo_enabled = false;
+  s_fast_forward_enabled = false;
 
   s_average_frame_time_accumulator = 0.0f;
   s_worst_frame_time_accumulator = 0.0f;
@@ -1436,7 +1437,7 @@ void System::Execute()
 {
   while (System::IsRunning())
   {
-    if (m_display_all_frames)
+    if (s_display_all_frames)
       System::RunFrame();
     else
       System::RunFrames();
@@ -1446,9 +1447,9 @@ void System::Execute()
     if (!IsValid())
       return;
 
-    if (m_frame_step_request)
+    if (s_frame_step_request)
     {
-      m_frame_step_request = false;
+      s_frame_step_request = false;
       PauseSystem(true);
     }
 
@@ -1456,7 +1457,7 @@ void System::Execute()
 
     System::UpdatePerformanceCounters();
 
-    if (m_throttler_enabled)
+    if (s_throttler_enabled)
       System::Throttle();
   }
 }
@@ -2193,13 +2194,13 @@ void System::ResetPerformanceCounters()
 void System::UpdateSpeedLimiterState()
 {
   const float old_target_speed = s_target_speed;
-  s_target_speed = m_turbo_enabled ?
+  s_target_speed = s_turbo_enabled ?
                      g_settings.turbo_speed :
-                     (m_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
-  m_throttler_enabled = (s_target_speed != 0.0f);
-  m_display_all_frames = !m_throttler_enabled || g_settings.display_all_frames;
+                     (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
+  s_throttler_enabled = (s_target_speed != 0.0f);
+  s_display_all_frames = !s_throttler_enabled || g_settings.display_all_frames;
 
-  bool syncing_to_host = false;
+  s_syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
       s_target_speed == 1.0f && IsValid())
   {
@@ -2207,12 +2208,19 @@ void System::UpdateSpeedLimiterState()
     if (g_host_display->GetHostRefreshRate(&host_refresh_rate))
     {
       const float ratio = host_refresh_rate / System::GetThrottleFrequency();
-      syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
+      s_syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
       Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate,
-                     System::GetThrottleFrequency(), ratio, syncing_to_host ? "can sync" : "can't sync");
-      if (syncing_to_host)
+                     System::GetThrottleFrequency(), ratio, s_syncing_to_host ? "can sync" : "can't sync");
+      if (s_syncing_to_host)
         s_target_speed *= ratio;
     }
+  }
+
+  // When syncing to host and using vsync, we don't need to sleep.
+  if (s_syncing_to_host && ShouldUseVSync() && s_display_all_frames)
+  {
+    Log_InfoPrintf("Using host vsync for throttling.");
+    s_throttler_enabled = false;
   }
 
   Log_VerbosePrintf("Target speed: %f%%", s_target_speed * 100.0f);
@@ -2225,7 +2233,7 @@ void System::UpdateSpeedLimiterState()
 
     // Adjust nominal rate when resampling, or syncing to host.
     const bool rate_adjust =
-      (syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && s_target_speed > 0.0f;
+      (s_syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && s_target_speed > 0.0f;
     stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
 
     if (old_target_speed < s_target_speed)
@@ -2240,23 +2248,17 @@ void System::UpdateSpeedLimiterState()
     UpdateDisplaySync();
 
   if (g_settings.increase_timer_resolution)
-    SetTimerResolutionIncreased(m_throttler_enabled);
-
-  // When syncing to host and using vsync, we don't need to sleep.
-  if (syncing_to_host && ShouldUseVSync() && m_display_all_frames)
-  {
-    Log_InfoPrintf("Using host vsync for throttling.");
-    m_throttler_enabled = false;
-  }
+    SetTimerResolutionIncreased(s_throttler_enabled);
 }
 
 void System::UpdateDisplaySync()
 {
   const bool video_sync_enabled = ShouldUseVSync();
-  const float max_display_fps = m_throttler_enabled ? 0.0f : g_settings.display_max_fps;
-  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO");
+  const bool syncing_to_host_vsync = (s_syncing_to_host && video_sync_enabled && s_display_all_frames);
+  const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
+  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO", syncing_to_host_vsync ? " (for throttling)" : "");
   Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
-                    m_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+                    s_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
   g_host_display->SetDisplayMaxFPS(max_display_fps);
   g_host_display->SetVSync(video_sync_enabled);
@@ -2269,7 +2271,7 @@ bool System::ShouldUseVSync()
 
 bool System::IsFastForwardEnabled()
 {
-  return m_fast_forward_enabled;
+  return s_fast_forward_enabled;
 }
 
 void System::SetFastForwardEnabled(bool enabled)
@@ -2277,13 +2279,13 @@ void System::SetFastForwardEnabled(bool enabled)
   if (!IsValid())
     return;
 
-  m_fast_forward_enabled = enabled;
+  s_fast_forward_enabled = enabled;
   UpdateSpeedLimiterState();
 }
 
 bool System::IsTurboEnabled()
 {
-  return m_turbo_enabled;
+  return s_turbo_enabled;
 }
 
 void System::SetTurboEnabled(bool enabled)
@@ -2291,7 +2293,7 @@ void System::SetTurboEnabled(bool enabled)
   if (!IsValid())
     return;
 
-  m_turbo_enabled = enabled;
+  s_turbo_enabled = enabled;
   UpdateSpeedLimiterState();
 }
 
@@ -2328,7 +2330,7 @@ void System::DoFrameStep()
     return;
 #endif
 
-  m_frame_step_request = true;
+  s_frame_step_request = true;
   PauseSystem(false);
 }
 
