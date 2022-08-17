@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=DuckStation NoGUI
-GenericName=PlayStation 1 Emulator
-Comment=Fast-ish PlayStation 1 emulator
-Icon=duckstation-nogui
-TryExec=duckstation-nogui
-Exec=duckstation-nogui %f
-Categories=Game;Emulator;

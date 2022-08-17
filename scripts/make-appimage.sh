@@ -286,7 +286,7 @@ TryExec=duckstation-qt
 Exec=duckstation-qt %f
 Categories=Game;Emulator;Qt;
 EOF
-cp "$ROOTDIR/extras/icons/icon-256px.png" "$OUTDIR/duckstation-qt.png"
+cp "$ROOTDIR/data/resources/images/duck.png" "$OUTDIR/duckstation-qt.png"
 
 echo "Creating AppRun..."
 cat > "$OUTDIR/AppRun" << EOF
