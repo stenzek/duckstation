@@ -558,8 +558,9 @@ void Achievements::SetChallengeMode(bool enabled)
   if (HasActiveGame())
   {
     Host::AddKeyedOSDMessage("achievements_set_challenge_mode",
-                             Host::TranslateStdString("Achievements", enabled ? "Hardcore mode is now enabled." :
-                                                                                "Hardcore mode is now disabled."),
+                             enabled ? 
+                               Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
+                               Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
                              10.0f);
   }
 
