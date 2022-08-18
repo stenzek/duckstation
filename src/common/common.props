@@ -11,7 +11,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies>$(RootBuildDir)fmt\fmt.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)zstd\zstd.lib;$(RootBuildDir)fmt\fmt.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

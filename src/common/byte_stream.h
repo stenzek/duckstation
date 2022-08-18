@@ -117,6 +117,10 @@ public:
   // null memory stream
   static std::unique_ptr<NullByteStream> CreateNullStream();
 
+  // zstd stream
+  static std::unique_ptr<ByteStream> CreateZstdCompressStream(ByteStream* src_stream, int compression_level);
+  static std::unique_ptr<ByteStream> CreateZstdDecompressStream(ByteStream* src_stream, u32 compressed_size);
+
   // copies one stream's contents to another. rewinds source streams automatically, and returns it back to its old
   // position.
   static bool CopyStream(ByteStream* pDestinationStream, ByteStream* pSourceStream);

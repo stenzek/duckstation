@@ -235,6 +235,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
