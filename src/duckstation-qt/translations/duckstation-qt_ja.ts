@@ -168,7 +168,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="139"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;left&quot;&gt;DuckStation は、RetroAchievements を実績データベースと進行状況の追跡に使用します。&lt;br&gt;実績を使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt; でアカウントの登録を行ってください。&lt;/p&gt;&lt;p align=&quot;left&quot;&gt;ゲーム内で実績リストを表示するには、&lt;span style=&quot; font-weight:600;&quot;&gt;一時停止メニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; (実績)をメニューから選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -268,98 +268,99 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/system.cpp" line="961"/>
         <source>Loading state</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートロード</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1162"/>
         <source>Resuming state</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブからの再開</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1850"/>
         <source>Hardcore mode disabled by state switch.</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートロードによりハードコアモードが無効化されました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="481"/>
         <source>Hardcore mode will be enabled on system reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>システムリセットするとハードコアモードが有効になります。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="509"/>
         <source>Confirm Hardcore Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードの確認</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="510"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードが有効な間は{0}を実行できません。ハードコアモードを無効にしますか? いいえを選択すると{0}はキャンセルされます。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="562"/>
         <source>Hardcore mode is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードが有効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="563"/>
         <source>Hardcore mode is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードが無効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="967"/>
         <source>{} (Hardcore Mode)</source>
-        <translation type="unfinished"></translation>
+        <translation>{} (ハードコアモード)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="975"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation type="unfinished"></translation>
+        <translation>{} 個の実績(全 {} 個中)と {} ポイント(全 {} ポイント中)を獲得済みです。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="981"/>
         <source>This game has no achievements.</source>
-        <translation type="unfinished">このゲームには実績がありません。</translation>
+        <translation>このゲームには実績がありません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="988"/>
         <source>Leaderboards are enabled.</source>
-        <translation type="unfinished">リーダーボードが有効になりました。</translation>
+        <translation>リーダーボードが有効になりました。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="992"/>
         <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードがオフのため、リーダーボードは無効になります。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1672"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
-        <translation type="unfinished"></translation>
+        <translation>あなたのスコア: {} (ベスト: {})
+リーダーボードでの順位: {} 位 ({} 人中)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="4941"/>
         <source>This game has {} leaderboards.</source>
-        <translation type="unfinished"></translation>
+        <translation>このゲームには {} 個のリーダーボードがあります。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="4959"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハードコアモードがオフになっているため、スコアの送信は無効になっています。リーダーボードは読み取り専用です。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="4994"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>タイム</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="4995"/>
         <source>Score</source>
-        <translation type="unfinished"></translation>
+        <translation>スコア</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="5051"/>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation>リーダーボードのデータをダウンロードしています。お待ちください...</translation>
     </message>
 </context>
 <context>
@@ -592,7 +593,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="208"/>
         <source>Apply Compatibility Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>互換性設定を適用する</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="254"/>
@@ -751,13 +752,13 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/analog_controller.cpp" line="104"/>
         <location filename="../../core/analog_controller.cpp" line="250"/>
         <source>Controller {} switched to analog mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー {} がアナログモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="105"/>
         <location filename="../../core/analog_controller.cpp" line="251"/>
         <source>Controller {} switched to digital mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー {} がデジタルモードに切り替わりました。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="783"/>
@@ -782,22 +783,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="792"/>
         <source>Analog Deadzone</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの遊び幅</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="793"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの遊び幅、つまり無視されるスティックの動きの割合を設定します。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="796"/>
         <source>Analog Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの感度</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="797"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの軸の倍率を設定します。DualShock 4、Xbox One コントローラーのような最近のコントローラーを使用する場合は、130%〜140% の値をお勧めします。</translation>
     </message>
     <message>
         <source>Analog Axis Scale</source>
@@ -835,22 +836,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="328"/>
         <source>Analog Deadzone</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの遊び幅</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="329"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの遊び幅、つまり無視されるスティックの動きの割合を設定します。</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="332"/>
         <source>Analog Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの感度</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="333"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログスティックの軸の倍率を設定します。DualShock 4、Xbox One コントローラーのような最近のコントローラーを使用する場合は、130%〜140% の値をお勧めします。</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -996,7 +997,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="132"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
-        <translation>最大レイテンシ―: 0 フレーム (0.00ms)</translation>
+        <translation>最大遅延: 0 フレーム (0.00ms)</translation>
     </message>
     <message>
         <source>Sync To Output</source>
@@ -1015,37 +1016,37 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="77"/>
         <source>Minimal</source>
-        <translation type="unfinished"></translation>
+        <translation>最小</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="90"/>
         <source>Off (Noisy)</source>
-        <translation type="unfinished"></translation>
+        <translation>オフ (ノイズ多)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="95"/>
         <source>Resampling (Pitch Shift)</source>
-        <translation type="unfinished"></translation>
+        <translation>リサンプリング (ピッチシフト(音程変化))</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="100"/>
         <source>Time Stretch (Tempo Change, Best Sound)</source>
-        <translation type="unfinished"></translation>
+        <translation>タイムストレッチ (テンポ変化、最良の音質)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="108"/>
         <source>Output Latency:</source>
-        <translation type="unfinished"></translation>
+        <translation>出力遅延:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="118"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>ドライバ:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="125"/>
         <source>Stretch Mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>ストレッチモード:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="173"/>
@@ -1088,7 +1089,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="63"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>オーディオバックエンドは、エミュレーターによって生成されたフレームがホストに送信される方法を決定します。Cubeb は最小のレイテンシーを提供します。問題が発生した場合は、SDL バックエンドを試してください。Null バックエンドは、すべてのホストオーディオ出力を無効にします。</translation>
+        <translation>オーディオバックエンドは、エミュレーターによって生成されたフレームがホストに送信される方法を決定します。Cubeb は最小の遅延を提供します。問題が発生した場合は、SDL バックエンドを試してください。Null バックエンドは、すべてのホストオーディオ出力を無効にします。</translation>
     </message>
     <message>
         <source>Buffer Size</source>
@@ -1097,7 +1098,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>バッファサイズは、ホストが取り出す音声のチャンクサイズを決定します。&lt;br&gt;値を小さくすると出力レイテンシーが減少しますが、エミュレーション速度が安定していない場合に音飛びが発生する可能性があります。&lt;br&gt;Cubeb バックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、レイテンシーが大幅に変わることはないことに注意してください。</translation>
+        <translation>バッファサイズは、ホストが取り出す音声のチャンクサイズを決定します。&lt;br&gt;値を小さくすると出力遅延が減少しますが、エミュレーション速度が安定していない場合に音飛びが発生する可能性があります。&lt;br&gt;Cubeb バックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、遅延が大幅に変わることはないことに注意してください。</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -1110,7 +1111,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="67"/>
         <source>Output Latency</source>
-        <translation type="unfinished"></translation>
+        <translation>出力遅延</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="73"/>
@@ -1142,27 +1143,27 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="85"/>
         <source>Stretch Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>ストレッチモード</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="85"/>
         <source>Time Stretching</source>
-        <translation type="unfinished"></translation>
+        <translation>タイムストレッチ</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="86"/>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation type="unfinished"></translation>
+        <translation>100% の速度を超えて実行している場合、フレームをドロップする代わりに音声のテンポを調整します。パフォーマンスへのわずかなコストで、はるかに優れた早送り/スローダウン音声を生成します。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="132"/>
         <source>Maximum Latency: %1 frames / %2 ms (%3ms buffer + %5ms output)</source>
-        <translation type="unfinished"></translation>
+        <translation>最大遅延: %1 フレーム / %2 ミリ秒 (%3ミリ秒バッファ + %5ミリ秒出力)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="140"/>
         <source>Maximum Latency: %1 frames / %2 ms</source>
-        <translation type="unfinished"></translation>
+        <translation>最大遅延: %1 フレーム / %2 ミリ秒</translation>
     </message>
     <message numerus="yes">
         <source>Maximum Latency: %n frames (%1ms)</source>
@@ -1389,7 +1390,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="91"/>
         <source>Use Global Setting</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用</translation>
     </message>
     <message>
         <source>Select Directory</source>
@@ -2094,7 +2095,7 @@ Leaderboard Position: {} of {}</source>
         <location filename="../consolesettingswidget.ui" line="134"/>
         <location filename="../consolesettingswidget.cpp" line="65"/>
         <source>Enable Recompiler ICache</source>
-        <translation type="unfinished">リコンパイラの命令キャッシュを有効にする</translation>
+        <translation>リコンパイラの命令キャッシュを有効にする</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="144"/>
@@ -2348,7 +2349,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="66"/>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレートされた CPU がキャッシュに命令をフェッチする必要がある場合に、リコンパイラ内でストールをシミュレートします。性能をわずかに犠牲にして、ゲームをコンソールのフレームレートに近付けます。インタープリタモードでは常に命令キャッシュをシミュレートします。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="80"/>
@@ -2441,54 +2442,54 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="32"/>
         <source>Controller Type</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラータイプ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="43"/>
         <source>Bindings</source>
-        <translation type="unfinished"></translation>
+        <translation>割り当て</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="63"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>設定</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="83"/>
         <source>Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>マクロ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="120"/>
         <location filename="../controllerbindingwidgets.cpp" line="263"/>
         <source>Automatic Mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>自動マッピング</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="134"/>
         <location filename="../controllerbindingwidgets.cpp" line="213"/>
         <source>Clear Mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>マッピングをクリア</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="203"/>
         <source>No devices available</source>
-        <translation type="unfinished"></translation>
+        <translation>利用可能なデバイスがありません</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="214"/>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
-        <translation type="unfinished"></translation>
+        <translation>このコントローラーのすべてのマッピングをクリアしてもよろしいですか？ この操作は元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="264"/>
         <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>デバイス &apos;%1&apos; 用の汎用マッピングを生成できませんでした</translation>
     </message>
 </context>
 <context>
@@ -2496,19 +2497,19 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="59"/>
         <source>D-Pad</source>
-        <translation type="unfinished"></translation>
+        <translation>方向キー</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="65"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="234"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="903"/>
         <source>Down</source>
-        <translation type="unfinished">↓</translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="95"/>
@@ -2539,118 +2540,118 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1203"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1243"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="105"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="274"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="863"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>←</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="145"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="314"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="983"/>
         <source>Up</source>
-        <translation type="unfinished">↑</translation>
+        <translation>↑</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="185"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="354"/>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="943"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>→</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="228"/>
         <source>Left Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>左スティック</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="397"/>
         <source>Large Motor</source>
-        <translation type="unfinished"></translation>
+        <translation>大型モーター</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="454"/>
         <source>Select</source>
-        <translation type="unfinished">セレクト</translation>
+        <translation>セレクト</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="488"/>
         <source>L1</source>
-        <translation type="unfinished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="522"/>
         <source>R1</source>
-        <translation type="unfinished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="556"/>
         <source>R2</source>
-        <translation type="unfinished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="590"/>
         <source>L2</source>
-        <translation type="unfinished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="624"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>スタート</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="688"/>
         <source>Face Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>△、○、Ｘ、□ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="694"/>
         <source>Cross</source>
-        <translation type="unfinished">Ｘ(下のボタン)</translation>
+        <translation>Ｘ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="734"/>
         <source>Square</source>
-        <translation type="unfinished">□(左のボタン)</translation>
+        <translation>□</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="774"/>
         <source>Triangle</source>
-        <translation type="unfinished">△(上のボタン)</translation>
+        <translation>△</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="814"/>
         <source>Circle</source>
-        <translation type="unfinished">○(右のボタン)</translation>
+        <translation>○</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="857"/>
         <source>Right Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>右スティック</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1026"/>
         <source>Small Motor</source>
-        <translation type="unfinished"></translation>
+        <translation>小型モーター</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1151"/>
         <source>R3</source>
-        <translation type="unfinished">R3</translation>
+        <translation>R3</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1191"/>
         <source>Analog</source>
-        <translation type="unfinished">アナログ切替</translation>
+        <translation>アナログ切替</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="1213"/>
         <source>L3</source>
-        <translation type="unfinished">L3</translation>
+        <translation>L3</translation>
     </message>
 </context>
 <context>
@@ -2658,19 +2659,19 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="59"/>
         <source>D-Pad</source>
-        <translation type="unfinished"></translation>
+        <translation>方向キー</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="65"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="234"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="863"/>
         <source>Down</source>
-        <translation type="unfinished">↓</translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="95"/>
@@ -2699,108 +2700,108 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1128"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1163"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="105"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="274"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="823"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>←</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="145"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="314"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="943"/>
         <source>Up</source>
-        <translation type="unfinished">↑</translation>
+        <translation>↑</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="185"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="354"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="903"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>→</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="228"/>
         <source>Left Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>左スティック</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="414"/>
         <source>L2</source>
-        <translation type="unfinished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="448"/>
         <source>L1</source>
-        <translation type="unfinished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="482"/>
         <source>R2</source>
-        <translation type="unfinished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="516"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>スタート</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="550"/>
         <source>R1</source>
-        <translation type="unfinished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="584"/>
         <source>Select</source>
-        <translation type="unfinished">セレクト</translation>
+        <translation>セレクト</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="648"/>
         <source>Face Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>△、○、Ｘ、□ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="654"/>
         <source>Cross</source>
-        <translation type="unfinished">Ｘ(下のボタン)</translation>
+        <translation>Ｘ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="694"/>
         <source>Square</source>
-        <translation type="unfinished">□(左のボタン)</translation>
+        <translation>□</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="734"/>
         <source>Triangle</source>
-        <translation type="unfinished">△(上のボタン)</translation>
+        <translation>△</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="774"/>
         <source>Circle</source>
-        <translation type="unfinished">○(右のボタン)</translation>
+        <translation>○</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="817"/>
         <source>Right Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>右スティック</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1058"/>
         <source>R3</source>
-        <translation type="unfinished">R3</translation>
+        <translation>R3</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1098"/>
         <source>L3</source>
-        <translation type="unfinished">L3</translation>
+        <translation>L3</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1151"/>
         <source>Mode</source>
-        <translation type="unfinished">モード</translation>
+        <translation>モード</translation>
     </message>
 </context>
 <context>
@@ -2809,7 +2810,7 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidgets.cpp" line="738"/>
         <location filename="../controllerbindingwidgets.cpp" line="754"/>
         <source>%1%</source>
-        <translation type="unfinished">%1%</translation>
+        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -2817,12 +2818,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="46"/>
         <source>L1</source>
-        <translation type="unfinished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="70"/>
@@ -2840,82 +2841,82 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="680"/>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="714"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="80"/>
         <source>L2</source>
-        <translation type="unfinished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="114"/>
         <source>R2</source>
-        <translation type="unfinished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="148"/>
         <source>R1</source>
-        <translation type="unfinished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="199"/>
         <source>Face Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>△、○、Ｘ、□ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="205"/>
         <source>Cross</source>
-        <translation type="unfinished">Ｘ(下のボタン)</translation>
+        <translation>Ｘ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="245"/>
         <source>Square</source>
-        <translation type="unfinished">□(左のボタン)</translation>
+        <translation>□</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="285"/>
         <source>Triangle</source>
-        <translation type="unfinished">△(上のボタン)</translation>
+        <translation>△</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="325"/>
         <source>Circle</source>
-        <translation type="unfinished">○(右のボタン)</translation>
+        <translation>○</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="470"/>
         <source>D-Pad</source>
-        <translation type="unfinished"></translation>
+        <translation>方向キー</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="476"/>
         <source>Down</source>
-        <translation type="unfinished">↓</translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="516"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>←</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="556"/>
         <source>Up</source>
-        <translation type="unfinished">↑</translation>
+        <translation>↑</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="596"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>→</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="656"/>
         <source>Select</source>
-        <translation type="unfinished">セレクト</translation>
+        <translation>セレクト</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="690"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>スタート</translation>
     </message>
 </context>
 <context>
@@ -2923,17 +2924,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="59"/>
         <source>Side Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>側面ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="65"/>
         <source>B</source>
-        <translation type="unfinished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="95"/>
@@ -2941,27 +2942,27 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_guncon.ui" line="289"/>
         <location filename="../controllerbindingwidget_guncon.ui" line="329"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="105"/>
         <source>A</source>
-        <translation type="unfinished">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="253"/>
         <source>Trigger</source>
-        <translation type="unfinished">トリガー</translation>
+        <translation>トリガー</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="259"/>
         <source>Fire Offscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>画面外を撃つ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="299"/>
         <source>Fire</source>
-        <translation type="unfinished"></translation>
+        <translation>発射</translation>
     </message>
 </context>
 <context>
@@ -2969,28 +2970,28 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="58"/>
         <source>Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="64"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>左</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="94"/>
         <location filename="../controllerbindingwidget_mouse.ui" line="134"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="104"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>右</translation>
     </message>
 </context>
 <context>
@@ -2998,17 +2999,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="26"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="59"/>
         <source>D-Pad</source>
-        <translation type="unfinished"></translation>
+        <translation>方向キー</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="65"/>
         <source>Down</source>
-        <translation type="unfinished">↓</translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="95"/>
@@ -3025,74 +3026,74 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_negcon.ui" line="641"/>
         <location filename="../controllerbindingwidget_negcon.ui" line="681"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="105"/>
         <location filename="../controllerbindingwidget_negcon.ui" line="651"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>←</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="145"/>
         <source>Up</source>
-        <translation type="unfinished">↑</translation>
+        <translation>↑</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="185"/>
         <location filename="../controllerbindingwidget_negcon.ui" line="611"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>→</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="228"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>スタート</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="279"/>
         <source>L</source>
-        <translation type="unfinished">L</translation>
+        <translation>L</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="313"/>
         <source>R</source>
-        <translation type="unfinished">R</translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="364"/>
         <source>Face Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>A、B、I、II ボタン</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="370"/>
         <source>I</source>
-        <translation type="unfinished">I</translation>
+        <translation>I</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="410"/>
         <source>II</source>
-        <translation type="unfinished">II</translation>
+        <translation>II</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="450"/>
         <source>B</source>
-        <translation type="unfinished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="490"/>
         <source>A</source>
-        <translation type="unfinished">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="605"/>
         <source>Steering/Twist</source>
-        <translation type="unfinished"></translation>
+        <translation>ステアリング/ねじり</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="843"/>
         <source>%1%</source>
-        <translation type="unfinished">%1%</translation>
+        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -3100,22 +3101,22 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="497"/>
         <source>%1 Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 設定</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="506"/>
         <source>Restore Default Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルト設定に戻す</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="585"/>
         <source>Browse...</source>
-        <translation type="unfinished">参照...</translation>
+        <translation>参照...</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="588"/>
         <source>Select File</source>
-        <translation type="unfinished">ファイルを選択</translation>
+        <translation>ファイルを選択</translation>
     </message>
 </context>
 <context>
@@ -3123,154 +3124,154 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="32"/>
         <source>Controller Multitap</source>
-        <translation type="unfinished"></translation>
+        <translation>マルチタップ</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="38"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
-        <translation type="unfinished"></translation>
+        <translation>マルチタップは最大 8 つのコントローラのコンソールへの接続を可能にします。各マルチタップが 4 つのポートを提供します。マルチタップはすべてのゲームでサポートされているわけではありません。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="48"/>
         <source>Multitap Mode:</source>
-        <translation type="unfinished">マルチタップモード:</translation>
+        <translation>マルチタップモード:</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="56"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>使用しない</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="61"/>
         <source>Enable on Port 1 Only</source>
-        <translation type="unfinished">ポート1のみ有効にする</translation>
+        <translation>ポート1のみ有効にする</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="66"/>
         <source>Enable on Port 2 Only</source>
-        <translation type="unfinished">ポート2のみ有効にする</translation>
+        <translation>ポート2のみ有効にする</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="71"/>
         <source>Enable on Ports 1 and 2</source>
-        <translation type="unfinished">ポート1および2で有効にする</translation>
+        <translation>ポート1および2で有効にする</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="82"/>
         <source>DInput Source</source>
-        <translation type="unfinished"></translation>
+        <translation>DirectInput</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="88"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
-        <translation type="unfinished"></translation>
+        <translation>DirectInput は、XInput をサポートしていない古いコントローラーのサポートを提供します。これらのコントローラーには、このオプションの代わりに SDL でアクセスすることをお勧めします。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="98"/>
         <source>Enable DInput Input Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Direct Input を有効化</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="108"/>
         <source>SDL Input Source</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="114"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL はほとんどのコントローラーをサポートします。また、DualShock 4 / DualSense コントローラーに Bluetooth モードで高度な機能(振動 / LED 制御)を提供します。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="124"/>
         <source>Enable SDL Input Source</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL を有効化</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="131"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>DualShock 4 / DualSense 拡張モード</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="141"/>
         <source>Detected Devices</source>
-        <translation type="unfinished"></translation>
+        <translation>検出されたデバイス</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="166"/>
         <source>Mouse/Pointer Source</source>
-        <translation type="unfinished"></translation>
+        <translation>マウス / ポインター</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="184"/>
         <location filename="../controllerglobalsettingswidget.ui" line="260"/>
         <source>10</source>
-        <translation type="unfinished">10x {10?}</translation>
+        <translation>10</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="216"/>
         <location filename="../controllerglobalsettingswidget.ui" line="267"/>
         <source>Invert</source>
-        <translation type="unfinished"></translation>
+        <translation>反転する</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="274"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Raw Input を使用すると、コントローラーのスティックをマウスポインターに割り当てるときに精度が向上します。複数のマウスを使用することも可能にします。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="284"/>
         <source>Vertical Sensitivity:</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直方向の感度:</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="291"/>
         <source>Horizontal Sensitivity:</source>
-        <translation type="unfinished"></translation>
+        <translation>水平方向の感度:</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="298"/>
         <source>Enable Mouse Mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>マウスへの割り当てを有効化</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="305"/>
         <source>Use Raw Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Raw Input を使用</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="315"/>
         <source>XInput Source</source>
-        <translation type="unfinished"></translation>
+        <translation>XInput</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="321"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
-        <translation type="unfinished"></translation>
+        <translation>XInput は、XBox 360 / XBox One / XBox Series のコントローラ、および XInput プロトコルを実装するサードパーティ製コントローラのサポートを提供します。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="331"/>
         <source>Enable XInput Input Source</source>
-        <translation type="unfinished"></translation>
+        <translation>XInput を有効化</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="341"/>
         <source>Profile Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイル設定</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="347"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
-        <translation type="unfinished"></translation>
+        <translation>このオプションを有効にすると、この入力プロファイル用のホットキーを設定し、グローバルホットキーの代わりに使用することができます。デフォルトでは、ホットキーは常にすべてのプロファイル間で共有されます。</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="357"/>
         <source>Use Per-Profile Hotkeys</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイルごとのホットキーを使用する</translation>
     </message>
 </context>
 <context>
@@ -3301,72 +3302,72 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="32"/>
         <source>Binds/Buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>割り当て/ボタン</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="38"/>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation type="unfinished"></translation>
+        <translation>このマクロでトリガーするボタンを選択します。すべてのボタンが同時にアクティブになります。</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="54"/>
         <source>Trigger</source>
-        <translation type="unfinished">トリガー</translation>
+        <translation>トリガー</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="60"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation type="unfinished"></translation>
+        <translation>このマクロを発動するためのトリガーを選択します。単一のボタン、または複数のボタンの組み合わせ (同時押し) を設定できます。Shift キーを押しながらクリックすると複数のトリガーを設定できます。</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="73"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>押しボタン</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="83"/>
         <source>Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>頻度</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="91"/>
         <source>Macro will toggle every N frames.</source>
-        <translation type="unfinished"></translation>
+        <translation>マクロは N フレームごとにトグルします。</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="98"/>
         <source>Set...</source>
-        <translation type="unfinished"></translation>
+        <translation>設定...</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="399"/>
         <source>Not Configured</source>
-        <translation type="unfinished"></translation>
+        <translation>設定されていません</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="405"/>
         <source>Set Frequency</source>
-        <translation type="unfinished"></translation>
+        <translation>頻度を設定</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="405"/>
         <source>Frequency: </source>
-        <translation type="unfinished"></translation>
+        <translation>頻度: </translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="434"/>
         <source>Macro will not repeat.</source>
-        <translation type="unfinished"></translation>
+        <translation>マクロは繰り返されません。</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="436"/>
         <source>Macro will toggle buttons every %1 frames.</source>
-        <translation type="unfinished"></translation>
+        <translation>マクロは %1 フレームごとにボタンを切り替えます。</translation>
     </message>
 </context>
 <context>
@@ -3374,13 +3375,14 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="298"/>
         <source>Controller Port %1 Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラーポート %1 のマクロ</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="307"/>
         <source>Macro %1
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>マクロ %1
+%2</translation>
     </message>
 </context>
 <context>
@@ -3388,44 +3390,44 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingsdialog.ui" line="23"/>
         <source>Controller Settings</source>
-        <translation type="unfinished">コントローラー設定</translation>
+        <translation>コントローラー設定</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="71"/>
         <source>Profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイル:</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="81"/>
         <source>New Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイル新規作成</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="92"/>
         <source>Load Profile</source>
-        <translation type="unfinished">プロファイル読み込み</translation>
+        <translation>プロファイル読み込み</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="102"/>
         <source>Delete Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイル削除</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="113"/>
         <location filename="../controllersettingsdialog.cpp" line="186"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished">デフォルトに戻す</translation>
+        <translation>デフォルトに戻す</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="90"/>
         <location filename="../controllersettingsdialog.cpp" line="101"/>
         <source>Create Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>入力プロファイルを作成</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="90"/>
         <source>Enter the name for the new input profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>新しい入力プロファイルに名前をつけてください:</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="97"/>
@@ -3433,27 +3435,27 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingsdialog.cpp" line="174"/>
         <location filename="../controllersettingsdialog.cpp" line="467"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="97"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; という名前のプロファイルは既に存在しています。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="102"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>すべての割り当て設定を現在選択されているプロファイルから新しいプロファイルにコピーしますか? いいえを選択すると、完全に空のプロファイルが作成されます。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="131"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>新しいプロファイルを &apos;%1&apos;.に保存できませんでした。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="141"/>
         <source>Load Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>入力プロファイルの読み込み</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="142"/>
@@ -3462,24 +3464,30 @@ This warning will only be shown once.</source>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; という名前の入力プロファイルをロードしてもよろしいですか?
+
+現在のすべてのグローバル割り当て設定が削除され、プロファイルの割り当て設定が読み込まれます。
+
+この操作を元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="163"/>
         <source>Delete Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>入力プロファイルの削除</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="164"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; という名前の入力プロファイルを削除してもよろしいですか?
+
+この操作を元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="174"/>
         <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>プロファイル &apos;%1&apos; の削除に失敗しました。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="187"/>
@@ -3488,41 +3496,47 @@ You cannot undo this action.</source>
 All shared bindings and configuration will be lost, but your input profiles will remain.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトのコントローラ構成を復元してもよろしいですか?
+
+すべての共有割り当て設定および構成が失われますが、あなたが作成した入力プロファイルは残ります。
+
+この操作を元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="350"/>
         <source>Global Settings</source>
-        <translation type="unfinished">全体設定</translation>
+        <translation>グローバル設定</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="392"/>
         <location filename="../controllersettingsdialog.cpp" line="432"/>
         <source>Controller Port %1%2
 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラーポート %1%2
+%3</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="393"/>
         <location filename="../controllersettingsdialog.cpp" line="433"/>
         <source>Controller Port %1
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラーポート %1
+%2</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="403"/>
         <source>Hotkeys</source>
-        <translation type="unfinished"></translation>
+        <translation>ホットキー</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="445"/>
         <source>Shared</source>
-        <translation type="unfinished"></translation>
+        <translation>共有</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="467"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; という名前の入力プロファイルが見つかりません。</translation>
     </message>
 </context>
 <context>
@@ -3667,13 +3681,13 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="809"/>
         <source>Analog Controller</source>
-        <translation type="unfinished"></translation>
+        <translation>アナログコントローラー</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="230"/>
         <location filename="../../core/settings.cpp" line="1050"/>
         <source>GunCon</source>
-        <translation type="unfinished"></translation>
+        <translation>ガンコン</translation>
     </message>
 </context>
 <context>
@@ -4333,7 +4347,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="246"/>
         <source>Show CPU Usage</source>
-        <translation type="unfinished"></translation>
+        <translation>CPU 使用率を表示</translation>
     </message>
     <message>
         <source>Show Game Frame Rate</source>
@@ -4382,7 +4396,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="232"/>
         <location filename="../displaysettingswidget.cpp" line="142"/>
         <source>Show FPS</source>
-        <translation type="unfinished"></translation>
+        <translation>フレームレート(FPS) を表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="239"/>
@@ -4587,27 +4601,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emptygamelistwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="33"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;サポートされている形式のゲームが見つかりませんでした。&lt;/span&gt;&lt;/p&gt;&lt;p&gt;始めるにはゲームを入れたディレクトリを追加してください。&lt;/p&gt;&lt;p&gt;以下の形式でダンプされたゲームがスキャンされてリストに登録されます:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="43"/>
         <source>TextLabel</source>
-        <translation type="unfinished">文字ラベル</translation>
+        <translation>文字ラベル</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="68"/>
         <source>Add Game Directory...</source>
-        <translation type="unfinished">ゲームディレクトリを追加...</translation>
+        <translation>ゲームディレクトリを追加...</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="105"/>
         <source>Scan For New Games</source>
-        <translation type="unfinished">新規ゲームをスキャン</translation>
+        <translation>新規ゲームをスキャン</translation>
     </message>
 </context>
 <context>
@@ -4615,12 +4629,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qthost.cpp" line="539"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="539"/>
         <source>No resume save state found.</source>
-        <translation type="unfinished">ステートセーブが見つかりません。</translation>
+        <translation>再開用ステートセーブが見つかりません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1323"/>
@@ -4629,39 +4643,43 @@ Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム ID: %1
+ゲーム名: %2
+実績: %5 (%6)
+
+</translation>
     </message>
     <message numerus="yes">
         <location filename="../qthost.cpp" line="1329"/>
         <source>%n points</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n ポイント</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1335"/>
         <source>Rich presence inactive or unsupported.</source>
-        <translation type="unfinished">リッチプレゼンスは非アクティブまたはサポートされていません。</translation>
+        <translation>リッチプレゼンスは非アクティブまたはサポートされていません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1339"/>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="unfinished">ゲームが読み込まれていないか、RetroAchievements が利用できません。</translation>
+        <translation>ゲームが読み込まれていないか、RetroAchievements が利用できません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1687"/>
         <source>%1x%2</source>
-        <translation type="unfinished">%1x%2</translation>
+        <translation>%1x%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1696"/>
         <source>Game: %1 FPS</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム: %1 FPS</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1706"/>
         <source>Video: %1 FPS (%2%)</source>
-        <translation type="unfinished"></translation>
+        <translation>表示: %1 FPS (%2%)</translation>
     </message>
 </context>
 <context>
@@ -4851,22 +4869,22 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="108"/>
         <source>Use Global Setting [Unlimited]</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用 [無制限]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Use Global Setting [%1%]</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用 [%1%]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="113"/>
         <source>Unlimited</source>
-        <translation type="unfinished">無制限</translation>
+        <translation>無制限</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="119"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
-        <translation type="unfinished">%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
+        <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
     <message numerus="yes">
         <location filename="../emulationsettingswidget.cpp" line="180"/>
@@ -5150,12 +5168,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../foldersettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="32"/>
         <source>Cache Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>キャッシュディレクトリ</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="41"/>
@@ -5163,7 +5181,7 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="121"/>
         <location filename="../foldersettingswidget.ui" line="161"/>
         <source>Browse...</source>
-        <translation type="unfinished">参照...</translation>
+        <translation>参照...</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="48"/>
@@ -5171,7 +5189,7 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="128"/>
         <location filename="../foldersettingswidget.ui" line="168"/>
         <source>Open...</source>
-        <translation type="unfinished">開く...</translation>
+        <translation>開く...</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="55"/>
@@ -5179,42 +5197,42 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="135"/>
         <location filename="../foldersettingswidget.ui" line="175"/>
         <source>Reset</source>
-        <translation type="unfinished">リセット</translation>
+        <translation>リセット</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="62"/>
         <source>Used for storing shaders and game list data.</source>
-        <translation type="unfinished"></translation>
+        <translation>シェーダーとゲームリストの保存に使用します。</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="72"/>
         <source>Covers Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>カバーディレクトリ</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="102"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームグリッド/大画面 UI に表示するカバー画像の保存に使用します。</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="112"/>
         <source>Screenshots Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>スクリーンショットディレクトリ</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="142"/>
         <source>Used for screenshots.</source>
-        <translation type="unfinished"></translation>
+        <translation>スクリーンショットの保存に使用します。</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="152"/>
         <source>Save States Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブディレクトリ</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="182"/>
         <source>Used for storing save states.</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブの保存に使用します。</translation>
     </message>
 </context>
 <context>
@@ -5413,22 +5431,22 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="71"/>
         <source>Disc</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスク</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="71"/>
         <source>PS-EXE</source>
-        <translation type="unfinished"></translation>
+        <translation>PS 用 EXE ファイル</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="71"/>
         <source>Playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイリスト</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="72"/>
         <source>PSF</source>
-        <translation type="unfinished"></translation>
+        <translation>PSF ファイル</translation>
     </message>
 </context>
 <context>
@@ -5469,7 +5487,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistmodel.cpp" line="568"/>
         <source>Type</source>
-        <translation>タイプ</translation>
+        <translation>種類</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="569"/>
@@ -5479,7 +5497,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistmodel.cpp" line="570"/>
         <source>Title</source>
-        <translation>ゲーム名(データベース上)</translation>
+        <translation>ゲーム名</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="571"/>
@@ -5620,37 +5638,37 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamelistwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">形式</translation>
+        <translation>形式</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="60"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームリスト</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="83"/>
         <source>Game Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームグリッド</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="106"/>
         <source>Show Titles</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム名を表示</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="169"/>
         <source>All Types</source>
-        <translation type="unfinished"></translation>
+        <translation>すべての種類</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="182"/>
         <source>All Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>すべてのリージョン</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="200"/>
         <source>Search...</source>
-        <translation type="unfinished"></translation>
+        <translation>検索...</translation>
     </message>
 </context>
 <context>
@@ -6228,107 +6246,107 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">ダイアログ</translation>
+        <translation>ダイアログ</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="57"/>
         <source>Image Path:</source>
-        <translation type="unfinished">イメージファイルパス:</translation>
+        <translation>イメージパス:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="71"/>
         <source>Serial:</source>
-        <translation type="unfinished"></translation>
+        <translation>シリアル番号:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="88"/>
         <source>#</source>
-        <translation type="unfinished">#</translation>
+        <translation>#</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="93"/>
         <source>Mode</source>
-        <translation type="unfinished">モード</translation>
+        <translation>モード</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="98"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>スタート</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="103"/>
         <source>Length</source>
-        <translation type="unfinished">長さ</translation>
+        <translation>長さ</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="108"/>
         <source>Hash</source>
-        <translation type="unfinished">ハッシュ</translation>
+        <translation>ハッシュ</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="113"/>
         <source>Status</source>
-        <translation type="unfinished">状態</translation>
+        <translation>状態</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="121"/>
         <source>Region:</source>
-        <translation type="unfinished">リージョン:</translation>
+        <translation>リージョン:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="128"/>
         <source>Developer:</source>
-        <translation type="unfinished"></translation>
+        <translation>開発元:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="135"/>
         <source>Controllers:</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="142"/>
         <source>Tracks:</source>
-        <translation type="unfinished">トラック:</translation>
+        <translation>トラック:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="163"/>
         <source>Release Info:</source>
-        <translation type="unfinished"></translation>
+        <translation>リリース情報:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="170"/>
         <source>Input Profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>入力プロファイル:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="184"/>
         <source>Genre:</source>
-        <translation type="unfinished"></translation>
+        <translation>ジャンル:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="222"/>
         <source>Compute Hashes...</source>
-        <translation type="unfinished"></translation>
+        <translation>ハッシュ値を計算...</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="238"/>
         <source>Type:</source>
-        <translation type="unfinished">チート種類:</translation>
+        <translation>種類:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="245"/>
         <source>Title:</source>
-        <translation type="unfinished">ゲーム名:</translation>
+        <translation>ゲーム名:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="259"/>
         <source>Compatibility:</source>
-        <translation type="unfinished">互換性:</translation>
+        <translation>互換性:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="275"/>
         <source>Edit...</source>
-        <translation type="unfinished"></translation>
+        <translation>編集...</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="61"/>
@@ -6341,82 +6359,82 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../gamesummarywidget.cpp" line="123"/>
         <location filename="../gamesummarywidget.cpp" line="124"/>
         <source>Unknown</source>
-        <translation type="unfinished">不明</translation>
+        <translation>不明</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="63"/>
         <source>%1 (Published by %2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (販売元: %2)</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="69"/>
         <source>Published by %1</source>
-        <translation type="unfinished"></translation>
+        <translation>販売元 %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="76"/>
         <source>Released %1</source>
-        <translation type="unfinished"></translation>
+        <translation>発売日 %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="82"/>
         <source>%1-%2 players</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイヤー %1-%2 人</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="84"/>
         <source>%1 players</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイヤー %1 人</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="91"/>
         <source>%1-%2 memory card blocks</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカード %1-%2 ブロック</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="93"/>
         <source>%1 memory card blocks</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカード %1 ブロック</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="134"/>
         <source>Use Global Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="176"/>
         <source>Track %1</source>
-        <translation type="unfinished"></translation>
+        <translation>トラック %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="184"/>
         <source>&lt;not computed&gt;</source>
-        <translation type="unfinished">&lt;未計算&gt;</translation>
+        <translation>&lt;未計算&gt;</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="212"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="212"/>
         <source>Failed to open CD image for hashing.</source>
-        <translation type="unfinished"></translation>
+        <translation>ハッシュ計算時に CD イメージを開くことができませんでした。</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="320"/>
         <source>Revision: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>リビジョン: %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="320"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="345"/>
         <source>Search on Redump.org</source>
-        <translation type="unfinished">Redump.org で検索</translation>
+        <translation>Redump.org で検索</translation>
     </message>
 </context>
 <context>
@@ -6434,12 +6452,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
         <source>Save State On Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation>シャットダウン時にステートセーブする</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
         <source>Create Save State Backups</source>
-        <translation type="unfinished">ステートセーブのバックアップを作成する</translation>
+        <translation>ステートセーブのバックアップを作成する</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
@@ -6467,12 +6485,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.ui" line="108"/>
         <source>Compress Save States</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブを圧縮する</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="118"/>
         <source>Game Display</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム表示</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="124"/>
@@ -6511,23 +6529,23 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.ui" line="131"/>
         <source>Double-Click Toggles Fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>ダブルクリックでフルスクリーン切り替え</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="138"/>
         <location filename="../generalsettingswidget.cpp" line="64"/>
         <source>Render To Separate Window</source>
-        <translation type="unfinished"></translation>
+        <translation>別のウィンドウに描画</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="145"/>
         <source>Hide Main Window When Running</source>
-        <translation type="unfinished"></translation>
+        <translation>実行時にメインウィンドウを非表示にする</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="152"/>
         <source>Disable Window Resizing</source>
-        <translation type="unfinished"></translation>
+        <translation>ウィンドウのサイズ変更を禁止する</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="159"/>
@@ -6616,7 +6634,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../generalsettingswidget.cpp" line="65"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation type="unfinished"></translation>
+        <translation>シミュレートされたコンソールの表示を、アプリケーションのメインウィンドウのゲームリスト上にレンダリングします。チェックすると、ディスプレイは別のウィンドウに表示されます。</translation>
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
@@ -6700,32 +6718,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/guncon.cpp" line="220"/>
         <source>Crosshair Image Path</source>
-        <translation type="unfinished">十字線画像のパス</translation>
+        <translation>十字線画像のパス</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="221"/>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="unfinished">十字線/カーソルとして使用する画像へのパス</translation>
+        <translation>十字線/カーソルとして使用する画像のパスを指定します。</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="222"/>
         <source>Crosshair Image Scale</source>
-        <translation type="unfinished">十字線画像スケール</translation>
+        <translation>十字線画像スケール</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="223"/>
         <source>Scale of crosshair image on screen.</source>
-        <translation type="unfinished">画面上の十字画像のスケール</translation>
+        <translation>画面上の十字画像のスケールを指定します。</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="224"/>
         <source>X Scale</source>
-        <translation type="unfinished">X スケール</translation>
+        <translation>X スケール</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="225"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="unfinished">画面の中心を基準にして X 座標をスケーリングします。</translation>
+        <translation>画面の中心を基準にして X 座標をスケーリングします。</translation>
     </message>
 </context>
 <context>
@@ -6874,7 +6892,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="591"/>
         <source>Open Pause Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>一時停止メニューを開く</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="650"/>
@@ -7281,17 +7299,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../inputbindingwidgets.cpp" line="412"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="413"/>
         <source>No devices with vibration motors were detected.</source>
-        <translation type="unfinished"></translation>
+        <translation>振動モーターを備えたデバイスは検出されませんでした。</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="419"/>
         <source>Select vibration motor for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 の振動モーターを選択します。</translation>
     </message>
 </context>
 <context>
@@ -7435,72 +7453,72 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="389"/>
         <source>B&amp;IOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS(&amp;I)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="398"/>
         <source>C&amp;onsole</source>
-        <translation type="unfinished"></translation>
+        <translation>コンソール(&amp;O)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="407"/>
         <source>E&amp;mulation</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション(&amp;M)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="416"/>
         <source>&amp;Controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー(&amp;C)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="425"/>
         <source>&amp;Hotkeys</source>
-        <translation type="unfinished"></translation>
+        <translation>ホットキー(&amp;H)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="434"/>
         <source>&amp;Display</source>
-        <translation type="unfinished"></translation>
+        <translation>表示(&amp;D)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="443"/>
         <source>&amp;Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>拡張(&amp;E)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="452"/>
         <source>&amp;Post-Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>ポストプロセス(&amp;P)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="547"/>
         <source>Audio</source>
-        <translation type="unfinished">音声</translation>
+        <translation>音声</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="556"/>
         <source>Achievements</source>
-        <translation type="unfinished"></translation>
+        <translation>実績</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="565"/>
         <source>Folders</source>
-        <translation type="unfinished"></translation>
+        <translation>フォルダ</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="574"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームリスト</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="583"/>
         <source>General</source>
-        <translation type="unfinished">一般</translation>
+        <translation>一般</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="592"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>高度な設定</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="727"/>
@@ -7510,7 +7528,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="777"/>
         <source>&amp;Memory Cards</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカード(&amp;M)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="852"/>
@@ -7535,12 +7553,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="931"/>
         <source>Start Big Picture Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>大画面モードを開始</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="940"/>
         <source>Big Picture</source>
-        <translation type="unfinished"></translation>
+        <translation>大画面</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="296"/>
@@ -7956,7 +7974,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="47"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="unfinished"></translation>
+        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cue シート (*.cue);;MAME CHD イメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecar イメージ (*.mds);;PlayStation EBOOT 形式 (*.pbp);;PlayStation 実行ファイル (*.exe *.psexe *.ps-exe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="157"/>
@@ -7965,17 +7983,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.cpp" line="960"/>
         <location filename="../mainwindow.cpp" line="1222"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="157"/>
         <source>Failed to get window info from widget</source>
-        <translation type="unfinished"></translation>
+        <translation>ウィジェットからウィンドウ情報を取得できませんでした</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="508"/>
         <source>Paused</source>
-        <translation type="unfinished"></translation>
+        <translation>一時停止中</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="624"/>
@@ -7990,98 +8008,98 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="683"/>
         <source>Resume (%1)</source>
-        <translation type="unfinished">再開 (%1)</translation>
+        <translation>再開 (%1)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="690"/>
         <location filename="../mainwindow.cpp" line="807"/>
         <location filename="../mainwindow.cpp" line="846"/>
         <source>Game Save %1 (%2)</source>
-        <translation type="unfinished">ゲームセーブ %1 (%2)</translation>
+        <translation>ゲームセーブ %1 (%2)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="699"/>
         <source>Edit Memory Cards...</source>
-        <translation type="unfinished">メモリーカードを編集...</translation>
+        <translation>メモリーカードを編集...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="747"/>
         <source>Delete Save States...</source>
-        <translation type="unfinished">ステートセーブを削除...</translation>
+        <translation>ステートセーブを削除...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="753"/>
         <source>Confirm Save State Deletion</source>
-        <translation type="unfinished">ステートセーブ削除の確認</translation>
+        <translation>ステートセーブ削除の確認</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="754"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
-        <translation type="unfinished">%1 のすべてのステートセーブを削除してもよろしいですか？
+        <translation>%1 のすべてのステートセーブを削除してもよろしいですか？
 
 元に戻すことはできません。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="791"/>
         <source>Load From File...</source>
-        <translation type="unfinished">ファイルからロード...</translation>
+        <translation>ファイルからロード...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="793"/>
         <location filename="../mainwindow.cpp" line="835"/>
         <source>Select Save State File</source>
-        <translation type="unfinished">ステートセーブファイルを選択</translation>
+        <translation>ステートセーブファイルを選択</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="793"/>
         <location filename="../mainwindow.cpp" line="835"/>
         <source>Save States (*.sav)</source>
-        <translation type="unfinished">ステートセーブ (*.sav)</translation>
+        <translation>ステートセーブ (*.sav)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="799"/>
         <source>Undo Load State</source>
-        <translation type="unfinished">ステートロード前に戻す(Undo)</translation>
+        <translation>ステートロード前に戻す(Undo)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="807"/>
         <location filename="../mainwindow.cpp" line="846"/>
         <source>Game Save %1 (Empty)</source>
-        <translation type="unfinished">ゲームセーブ %1 (空)</translation>
+        <translation>ゲームセーブ %1 (空)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="813"/>
         <location filename="../mainwindow.cpp" line="852"/>
         <source>Global Save %1 (%2)</source>
-        <translation type="unfinished">グローバルセーブ %1 (%2)</translation>
+        <translation>グローバルセーブ %1 (%2)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="813"/>
         <location filename="../mainwindow.cpp" line="852"/>
         <source>Global Save %1 (Empty)</source>
-        <translation type="unfinished">グローバルセーブ %1 (空)</translation>
+        <translation>グローバルセーブ %1 (空)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="830"/>
         <source>Save To File...</source>
-        <translation type="unfinished">ファイルにセーブ...</translation>
+        <translation>ファイルにセーブ...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="879"/>
         <source>&amp;Enabled Cheats</source>
-        <translation type="unfinished">チート有効化(&amp;E)</translation>
+        <translation>チート有効化(&amp;E)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="881"/>
         <source>&amp;Apply Cheats</source>
-        <translation type="unfinished">チート適用(&amp;A)</translation>
+        <translation>チート適用(&amp;A)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="935"/>
         <source>Load Resume State</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブからの再開</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="936"/>
@@ -8090,47 +8108,51 @@ The saves will not be recoverable.</source>
 %1.
 
 Do you want to load this state, or start from a fresh boot?</source>
-        <translation type="unfinished"></translation>
+        <translation>以下の日時に保存された、このゲームの再開用ステートセーブが見つかりました:
+
+%1。
+
+このステートセーブをロードしますか、それとも新規に起動しますか?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="941"/>
         <source>Fresh Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>新規に起動</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="942"/>
         <source>Delete And Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>削除して起動</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="961"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブファイル &apos;%1&apos; を削除できませんでした。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1018"/>
         <source>Confirm Disc Change</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスク交換の確認</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1019"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスクを交換しますか、それとも新しいイメージを(システムリセットして)起動しますか?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1021"/>
         <source>Swap Disc</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスク交換</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1022"/>
         <source>Reset</source>
-        <translation type="unfinished">リセット</translation>
+        <translation>リセット</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1023"/>
         <source>Cancel</source>
-        <translation type="unfinished">キャンセル</translation>
+        <translation>キャンセル</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1107"/>
@@ -8141,7 +8163,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1222"/>
         <source>You must select a disc to change discs.</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスクを変更するには、ディスクを選択する必要があります。</translation>
     </message>
     <message>
         <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
@@ -8279,12 +8301,12 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="2367"/>
         <source>Confirm Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation>シャットダウンの確認</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2370"/>
         <source>Save State For Resume</source>
-        <translation type="unfinished"></translation>
+        <translation>再開用にステートセーブする</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2449"/>
@@ -8760,7 +8782,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="vanished">十字線/カーソルとして使用する画像へのパス</translation>
+        <translation type="vanished">十字線/カーソルとして使用する画像のパスを指定します。</translation>
     </message>
     <message>
         <source>Crosshair Image Scale</source>
@@ -8768,7 +8790,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Scale of crosshair image on screen.</source>
-        <translation type="vanished">画面上の十字画像のスケール</translation>
+        <translation type="vanished">画面上の十字画像のスケールを指定します。</translation>
     </message>
     <message>
         <source>X Scale</source>
@@ -8920,27 +8942,27 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="555"/>
         <source>Cannot load state for game without serial.</source>
-        <translation type="unfinished"></translation>
+        <translation>シリアルのないゲームはステートセーブを読み込めません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="565"/>
         <source>No save state found in slot {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>スロット {} にステートセーブが見つかりません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="579"/>
         <source>Cannot save state for game without serial.</source>
-        <translation type="unfinished"></translation>
+        <translation>シリアルのないゲームはステートセーブを保存できません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="657"/>
         <source>Achievements are disabled or unavailable for  game.</source>
-        <translation type="unfinished"></translation>
+        <translation>このゲームでは、実績が無効になっているか、利用できません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="670"/>
         <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation type="unfinished"></translation>
+        <translation>このゲームでは、リーダーボードが無効になっているか、利用できません。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="740"/>
@@ -8977,7 +8999,7 @@ Are you sure you want to continue?</source>
         <location filename="../../frontend-common/common_host.cpp" line="951"/>
         <location filename="../../frontend-common/common_host.cpp" line="967"/>
         <source>Volume: {}%</source>
-        <translation type="unfinished"></translation>
+        <translation>音量: {}%</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="850"/>
@@ -9329,17 +9351,17 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="979"/>
         <source>Loading state from &apos;{}&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;{}&apos; からステートロードします...</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1029"/>
         <source>Save State</source>
-        <translation type="unfinished">ステートセーブ</translation>
+        <translation>ステートセーブ</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1037"/>
         <source>State saved to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;{}&apos; にステートセーブしました。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1356"/>
@@ -9445,12 +9467,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/memory_card.cpp" line="324"/>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカードを &apos;{}&apos; に保存できませんでした。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="336"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカードを &apos;{}&apos; に保存しました。</translation>
     </message>
     <message>
         <source>Failed to save memory card to &apos;%s&apos;</source>
@@ -9656,7 +9678,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="24"/>
         <source>The current post-processing chain is invalid, it has been reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のポストプロセスチェーンは無効です。リセットされました。</translation>
     </message>
     <message>
         <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
@@ -9739,27 +9761,27 @@ URL は次のとおりです: %1</translation>
         <location filename="../qthost.cpp" line="2131"/>
         <location filename="../qthost.cpp" line="2147"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2106"/>
         <source>File &apos;%1&apos; does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル &apos;%1&apos; は存在していません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2132"/>
         <source>The specified save state does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>指定されたステートセーブは存在していません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2148"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
-        <translation type="unfinished"></translation>
+        <translation>起動するファイル名が指定されていないため、GUI なしモードを使用できません。</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2149"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
-        <translation type="unfinished"></translation>
+        <translation>起動するファイル名が指定されていないため、バッチモードを使用できません。</translation>
     </message>
 </context>
 <context>
@@ -9952,18 +9974,18 @@ The saves will not be recoverable.</source>
         <location filename="../settingwidgetbinder.h" line="319"/>
         <location filename="../settingwidgetbinder.h" line="449"/>
         <source>Default: </source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルト: </translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="418"/>
         <location filename="../settingwidgetbinder.h" line="548"/>
         <source>Reset</source>
-        <translation type="unfinished">リセット</translation>
+        <translation>リセット</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1065"/>
         <source>Select folder for %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 フォルダを選択してください</translation>
     </message>
 </context>
 <context>
@@ -10045,62 +10067,62 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="66"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;一般設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、エミュレータの外観と動作を制御します。&lt;br&gt;&lt;br&gt;追加情報については、オプションにマウスを合わせてください。</translation>
+        <translation>&lt;strong&gt;一般設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、エミュレータの外観と動作を制御します。&lt;br&gt;&lt;br&gt;オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="47"/>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation>概要</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="49"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;概要&lt;/strong&gt;&lt;hr&gt;このページには、選択されたゲームに関する情報が表示されます。また、ディスクが正しくダンプされているかどうかを確認できます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="64"/>
         <source>General</source>
-        <translation type="unfinished">一般</translation>
+        <translation>一般</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="72"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームリスト</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="79"/>
         <source>BIOS</source>
-        <translation type="unfinished">BIOS</translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="81"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;BIOS 設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、どの BIOS が使用され、どのようにパッチが適用されるかを制御します。&lt;br&gt;&lt;br&gt;オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="83"/>
         <source>Console</source>
-        <translation type="unfinished">コンソール</translation>
+        <translation>コンソール</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="85"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;コンソール設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、シミュレートされたコンソールの構成を決定します。&lt;br&gt;&lt;br&gt;追加情報については、オプションにマウスを合わせてください。</translation>
+        <translation>&lt;strong&gt;コンソール設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、シミュレートされたコンソールの構成を決定します。&lt;br&gt;&lt;br&gt;オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="87"/>
         <source>Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>エミュレーション</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="89"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;エミュレーション設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、システムの速度と先行動作を決定します。&lt;br&gt;&lt;br&gt;オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="92"/>
         <source>Memory Cards</source>
-        <translation type="unfinished"></translation>
+        <translation>メモリーカード</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="74"/>
@@ -10123,7 +10145,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="97"/>
         <source>Display</source>
-        <translation type="unfinished"></translation>
+        <translation>表示</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="99"/>
@@ -10133,17 +10155,17 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>拡張</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="104"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation>&lt;strong&gt;拡張設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、元のコンソールと比較してビジュアルを改善できる拡張を制御します。追加情報については、各オプションにマウスを合わせてください。</translation>
+        <translation>&lt;strong&gt;拡張設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、元のコンソールと比較してビジュアルを改善できる拡張を制御します。各オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="110"/>
         <source>Post-Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>ポストプロセス</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="111"/>
@@ -10153,42 +10175,42 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="115"/>
         <source>Audio</source>
-        <translation type="unfinished">音声</translation>
+        <translation>音声</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="117"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;音声設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、コンソールの音声出力を制御します。追加情報については、オプションにマウスを合わせてください。</translation>
+        <translation>&lt;strong&gt;音声設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、コンソールの音声出力を制御します。オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="120"/>
         <source>Achievements</source>
-        <translation type="unfinished"></translation>
+        <translation>実績</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="122"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;実績設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは RetroAchievements を制御します。オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="152"/>
         <source>Folders</source>
-        <translation type="unfinished"></translation>
+        <translation>フォルダ</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="154"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;フォルダ設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、DuckStation が実行時データファイルを保存する場所を制御します。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="157"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>高度な設定</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="159"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;詳細設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、エミュレータのロギングと内部動作を制御します。追加情報については、オプションにマウスを合わせてください。</translation>
+        <translation>&lt;strong&gt;高度な設定&lt;/strong&gt;&lt;hr&gt;これらのオプションは、エミュレータのロギングと内部動作を制御します。オプションにカーソルを合わせると、追加情報が表示されます。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="216"/>
@@ -10208,23 +10230,23 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="497"/>
         <source>%1 [%2]</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 [%2]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="121"/>
         <source>Use Global Setting [Enabled]</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用 [有効化]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="122"/>
         <source>Use Global Setting [Disabled]</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用 [無効化]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="130"/>
         <location filename="../settingwidgetbinder.h" line="146"/>
         <source>Use Global Setting [%1]</source>
-        <translation type="unfinished"></translation>
+        <translation>グローバル設定を使用 [%1]</translation>
     </message>
 </context>
 <context>
@@ -10243,12 +10265,12 @@ The saves will not be recoverable.</source>
         <location filename="../../core/system.cpp" line="1246"/>
         <location filename="../../core/system.cpp" line="2958"/>
         <source>Error</source>
-        <translation type="unfinished">エラー</translation>
+        <translation>エラー</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1247"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
-        <translation type="unfinished"></translation>
+        <translation>起動用のステートセーブファイル &apos;{}&apos; の読み込みに失敗しました。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1757"/>
