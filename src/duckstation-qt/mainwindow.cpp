@@ -1483,7 +1483,7 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
       Host::SetBaseStringSettingValue("Main", "Language", new_language.toUtf8().constData());
-      QtHost::ReinstallTranslator();
+      QtHost::InstallTranslator();
       recreate();
     });
   }

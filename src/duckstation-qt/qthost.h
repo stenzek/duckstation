@@ -245,7 +245,7 @@ void RunOnUIThread(const std::function<void()>& func, bool block = false);
 std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
 
 /// Call when the language changes.
-void ReinstallTranslator();
+void InstallTranslator();
 
 /// Returns the application name and version, optionally including debug/devel config indicator.
 QString GetAppNameAndVersion();

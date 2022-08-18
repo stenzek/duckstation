@@ -120,6 +120,7 @@ set(SRCS
   qtkeycodes.cpp
   qtprogresscallback.cpp
   qtprogresscallback.h
+  qttranslations.cpp
   qtutils.cpp
   qtutils.h
   resource.h
