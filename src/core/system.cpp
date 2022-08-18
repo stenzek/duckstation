@@ -1859,7 +1859,6 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (s_state == State::Starting)
     s_state = State::Running;
 
-  SPU::GetOutputStream()->EmptyBuffer();
   ResetPerformanceCounters();
   ResetThrottler();
   return true;
