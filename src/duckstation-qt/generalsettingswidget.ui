@@ -39,6 +39,13 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="confirmPowerOff">
+        <property name="text">
+         <string>Confirm Power Off</string>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="1">
        <widget class="QCheckBox" name="saveStateOnExit">
         <property name="text">
@@ -46,10 +53,24 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="pauseOnFocusLoss">
+        <property name="text">
+         <string>Pause On Focus Loss</string>
+        </property>
+       </widget>
+      </item>
       <item row="6" column="0">
        <widget class="QCheckBox" name="applyGameSettings">
         <property name="text">
          <string>Apply Per-Game Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="createSaveStateBackups">
+        <property name="text">
+         <string>Create Save State Backups</string>
         </property>
        </widget>
       </item>
@@ -67,20 +88,6 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="confirmPowerOff">
-        <property name="text">
-         <string>Confirm Power Off</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="pauseOnFocusLoss">
-        <property name="text">
-         <string>Pause On Focus Loss</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
@@ -88,17 +95,17 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QCheckBox" name="createSaveStateBackups">
+      <item row="8" column="0">
+       <widget class="QCheckBox" name="enableDiscordPresence">
         <property name="text">
-         <string>Create Save State Backups</string>
+         <string>Enable Discord Presence</string>
         </property>
        </widget>
       </item>
       <item row="7" column="1">
-       <widget class="QCheckBox" name="enableDiscordPresence">
+       <widget class="QCheckBox" name="compressSaveStates">
         <property name="text">
-         <string>Enable Discord Presence</string>
+         <string>Compress Save States</string>
         </property>
        </widget>
       </item>

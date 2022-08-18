@@ -43,6 +43,8 @@
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
 #include "xxhash.h"
+#include "zstd.h"
+#include "zstd_errors.h"
 #include <cctype>
 #include <cinttypes>
 #include <cmath>
@@ -80,7 +82,8 @@ struct MemorySaveState
 
 namespace System {
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
-static bool InternalSaveState(ByteStream* state, u32 screenshot_size = 256);
+static bool InternalSaveState(ByteStream* state, u32 screenshot_size = 256,
+                              u32 compression_method = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
 static bool SaveMemoryState(MemorySaveState* mss);
 static bool LoadMemoryState(const MemorySaveState& mss);
 
@@ -963,6 +966,8 @@ bool System::LoadState(const char* filename)
   }
 #endif
 
+  Common::Timer load_timer;
+
   std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
     return false;
@@ -994,6 +999,7 @@ bool System::LoadState(const char* filename)
   ResetPerformanceCounters();
   ResetThrottler();
   Host::RenderDisplay();
+  Log_VerbosePrintf("Loading state took %.2f msec", load_timer.GetTimeMilliseconds());
   return true;
 }
 
@@ -1006,6 +1012,8 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
       Log_ErrorPrintf("Failed to rename save state backup '%s'", backup_filename.c_str());
   }
 
+  Common::Timer save_timer;
+
   std::unique_ptr<ByteStream> stream =
     ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
@@ -1014,7 +1022,10 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
 
   Log_InfoPrintf("Saving state to '%s'...", filename);
 
-  const bool result = InternalSaveState(stream.get());
+  const u32 screenshot_size = 256;
+  const bool result = InternalSaveState(stream.get(), screenshot_size,
+                                        g_settings.compress_save_states ? SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD :
+                                                                          SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
   if (!result)
   {
     Host::ReportFormattedErrorAsync(Host::TranslateString("OSDMessage", "Save State"),
@@ -1031,6 +1042,7 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
     stream->Commit();
   }
 
+  Log_VerbosePrintf("Saving state took %.2f msec", save_timer.GetTimeMilliseconds());
   return result;
 }
 
@@ -1468,7 +1480,7 @@ void System::RecreateSystem()
 
   const bool was_paused = System::IsPaused();
   std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::InternalSaveState(stream.get(), 0) || !stream->SeekAbsolute(0))
+  if (!System::InternalSaveState(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
   {
     Host::ReportErrorAsync("Error", "Failed to save state before system recreation. Shutting down.");
     DestroySystem();
@@ -1832,12 +1844,6 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (g_settings.HasAnyPerGameMemoryCards())
     UpdatePerGameMemoryCards();
 
-  if (header.data_compression_type != 0)
-  {
-    Host::ReportFormattedErrorAsync("Error", "Unknown save state compression type %u", header.data_compression_type);
-    return false;
-  }
-
 #ifdef WITH_CHEEVOS
   // Updating game/loading settings can turn on hardcore mode. Catch this.
   if (Achievements::ChallengeModeActive())
@@ -1852,9 +1858,35 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (!state->SeekAbsolute(header.offset_to_data))
     return false;
 
-  StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
-  if (!DoState(sw, nullptr, update_display, false))
+  if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE)
+  {
+    StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
+    if (!DoState(sw, nullptr, update_display, false))
+      return false;
+  }
+  else if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
+  {
+    std::unique_ptr<u8[]> compressed_buffer(std::make_unique<u8[]>(header.data_compressed_size));
+    std::unique_ptr<u8[]> uncompressed_buffer(std::make_unique<u8[]>(header.data_uncompressed_size));
+    if (!state->Read2(compressed_buffer.get(), header.data_compressed_size))
+      return false;
+
+    const size_t result = ZSTD_decompress(uncompressed_buffer.get(), header.data_uncompressed_size,
+                                          compressed_buffer.get(), header.data_compressed_size);
+    if (ZSTD_isError(result) || result != header.data_uncompressed_size)
+      return false;
+
+    compressed_buffer.reset();
+    ReadOnlyMemoryByteStream uncompressed_stream(uncompressed_buffer.get(), header.data_uncompressed_size);
+    StateWrapper sw(&uncompressed_stream, StateWrapper::Mode::Read, header.version);
+    if (!DoState(sw, nullptr, update_display, false))
+      return false;
+  }
+  else
+  {
+    Host::ReportFormattedErrorAsync("Error", "Unknown save state compression type %u", header.data_compression_type);
     return false;
+  }
 
   if (s_state == State::Starting)
     s_state = State::Running;
@@ -1864,7 +1896,8 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   return true;
 }
 
-bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 */)
+bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 */,
+                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/)
 {
   if (IsShutdown())
     return false;
@@ -1944,16 +1977,46 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
 
     g_gpu->RestoreGraphicsAPIState();
 
-    StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-    const bool result = DoState(sw, nullptr, false, false);
+    header.data_compression_type = compression_method;
+
+    bool result = false;
+    if (compression_method == SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE)
+    {
+      StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+      result = DoState(sw, nullptr, false, false);
+      header.data_uncompressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
+    }
+    else if (compression_method == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
+    {
+      GrowableMemoryByteStream staging(nullptr, MAX_SAVE_STATE_SIZE);
+      StateWrapper sw(&staging, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+      result = DoState(sw, nullptr, false, false);
+      if (result)
+      {
+        header.data_uncompressed_size = static_cast<u32>(staging.GetSize());
+
+        const size_t max_compressed_size = ZSTD_compressBound(header.data_uncompressed_size * 2);
+        std::unique_ptr<u8[]> compress_buffer(std::make_unique<u8[]>(max_compressed_size));
+        size_t compress_size = ZSTD_compress(compress_buffer.get(), max_compressed_size, staging.GetMemoryPointer(),
+                                             header.data_uncompressed_size, 0);
+        if (ZSTD_isError(compress_size))
+        {
+          Log_ErrorPrintf("ZSTD_compress() failed: %s", ZSTD_getErrorString(ZSTD_getErrorCode(compress_size)));
+        }
+        else
+        {
+          header.data_compressed_size = static_cast<u32>(compress_size);
+          result = state->Write2(compress_buffer.get(), header.data_compressed_size);
+          Log_DevPrintf("Compressed %u bytes of state to %u bytes with zstd", header.data_uncompressed_size,
+                        header.data_compressed_size);
+        }
+      }
+    }
 
     g_gpu->ResetGraphicsAPIState();
 
     if (!result)
       return false;
-
-    header.data_compression_type = 0;
-    header.data_uncompressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
   }
 
   // re-write header
@@ -2255,7 +2318,8 @@ void System::UpdateDisplaySync()
   const bool video_sync_enabled = ShouldUseVSync();
   const bool syncing_to_host_vsync = (s_syncing_to_host && video_sync_enabled && s_display_all_frames);
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO", syncing_to_host_vsync ? " (for throttling)" : "");
+  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO",
+                    syncing_to_host_vsync ? " (for throttling)" : "");
   Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
                     s_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 

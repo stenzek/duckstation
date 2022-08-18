@@ -70,7 +70,8 @@ struct Settings
   bool pause_on_focus_loss = false;
   bool pause_on_menu = true;
   bool save_state_on_exit = true;
-  bool create_save_state_backups = false;
+  bool create_save_state_backups = DEFAULT_SAVE_STATE_BACKUPS;
+  bool compress_save_states = DEFAULT_SAVE_STATE_COMPRESSION;
   bool confim_power_off = true;
   bool load_devices_from_save_states = false;
   bool apply_compatibility_settings = true;
@@ -434,11 +435,15 @@ struct Settings
 
   // Android doesn't create settings until they're first opened, so we have to override the defaults here.
 #ifndef __ANDROID__
+  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
+  static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_VSYNC_VALUE = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
 #else
-  static constexpr bool DEFAULT_VSYNC_VALUE = true;
+  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
+  static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
+  static constexpr bool DEFAULT_VSYNC_VALUE = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif

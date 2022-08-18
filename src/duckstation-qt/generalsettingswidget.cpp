@@ -1,5 +1,6 @@
 #include "generalsettingswidget.h"
 #include "autoupdaterdialog.h"
+#include "generalsettingswidget.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
@@ -32,7 +33,9 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, "Main", "DisableWindowResize", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "Main", "HideCursorInFullscreen", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
-                                               false);
+                                               Settings::DEFAULT_SAVE_STATE_BACKUPS);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.compressSaveStates, "Main", "CompressSaveStates",
+                                               Settings::DEFAULT_SAVE_STATE_COMPRESSION);
   connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this,
           &GeneralSettingsWidget::onRenderToSeparateWindowChanged);
 

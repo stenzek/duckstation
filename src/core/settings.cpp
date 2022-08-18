@@ -167,7 +167,8 @@ void Settings::Load(SettingsInterface& si)
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
   pause_on_menu = si.GetBoolValue("Main", "PauseOnMenu", true);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
-  create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", true);
+  create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
+  compress_save_states = si.GetBoolValue("Main", "CompressSaveStates", DEFAULT_SAVE_STATE_COMPRESSION);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
@@ -391,6 +392,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "PauseOnMenu", pause_on_menu);
   si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
   si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
+  si.SetBoolValue("Main", "CompressSaveStates", compress_save_states);
   si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
   si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);

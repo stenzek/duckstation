@@ -20,7 +20,7 @@
 
   <ItemDefinitionGroup>
     <Lib>
-      <AdditionalDependencies>$(RootBuildDir)tinyxml2\tinyxml2.lib;$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)util\util.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(RootBuildDir)zstd\zstd.lib;$(RootBuildDir)tinyxml2\tinyxml2.lib;$(RootBuildDir)rcheevos\rcheevos.lib;$(RootBuildDir)imgui\imgui.lib;$(RootBuildDir)stb\stb.lib;$(RootBuildDir)xxhash\xxhash.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)util\util.lib;$(RootBuildDir)common\common.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="('$(BuildingForUWP)'!='true' And '$(Platform)'!='ARM64')">$(RootBuildDir)rainterface\rainterface.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='ARM64'">$(RootBuildDir)vixl\vixl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>

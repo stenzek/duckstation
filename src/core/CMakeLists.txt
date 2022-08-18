@@ -117,7 +117,7 @@ set(RECOMPILER_SRCS
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
-target_link_libraries(core PRIVATE stb xxhash imgui rapidjson tinyxml2)
+target_link_libraries(core PRIVATE stb xxhash imgui rapidjson tinyxml2 Zstd::Zstd)
 
 if(WIN32)
   target_sources(core PRIVATE
