@@ -79,10 +79,6 @@
         <translation>ログイン(&amp;L)</translation>
     </message>
     <message>
-        <source>&amp;Cancel</source>
-        <translation type="vanished">取消(&amp;C)</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.cpp" line="42"/>
         <source>Login Error</source>
         <translation>ログインエラー</translation>
@@ -101,10 +97,6 @@
         <location filename="../achievementlogindialog.cpp" line="44"/>
         <source>Login failed.</source>
         <translation>ログインに失敗しました。</translation>
-    </message>
-    <message>
-        <source>RetroAchievements Login</source>
-        <translation type="vanished">RetroAchievements ログイン</translation>
     </message>
 </context>
 <context>
@@ -169,10 +161,6 @@
         <location filename="../achievementsettingswidget.ui" line="139"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;left&quot;&gt;DuckStation は、RetroAchievements を実績データベースと進行状況の追跡に使用します。&lt;br&gt;実績を使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt; でアカウントの登録を行ってください。&lt;/p&gt;&lt;p align=&quot;left&quot;&gt;ゲーム内で実績リストを表示するには、&lt;span style=&quot; font-weight:600;&quot;&gt;一時停止メニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; (実績)をメニューから選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;left&quot;&gt;DuckStation は、RetroAchievements を実績データベースと進行状況の追跡に使用します。&lt;br&gt;実績を使用するには、&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt; でアカウントの登録を行ってください。&lt;/p&gt;&lt;p align=&quot;left&quot;&gt;ゲーム内で実績リストを表示するには、&lt;span style=&quot; font-weight:600;&quot;&gt;クイックメニューを開く&lt;/span&gt; のホットキーを押して &lt;span style=&quot; font-weight:600;&quot;&gt;実績&lt;/span&gt; をメニューから選択してください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
@@ -241,26 +229,6 @@ Login token generated on %2.</source>
         <location filename="../achievementsettingswidget.cpp" line="102"/>
         <source>Not Logged In.</source>
         <translation>ログインしていません。</translation>
-    </message>
-    <message>
-        <source>Enabling hardcore mode will shut down your current game.
-
-</source>
-        <translation type="vanished">ハードコアモードを有効にすると、現在のゲームがシャットダウンされます。
-
-</translation>
-    </message>
-    <message>
-        <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
-
-</source>
-        <translation type="vanished">現在の状態は保存されますが、ハードコアモードを無効にするまで読み込めません。
-
-</translation>
-    </message>
-    <message>
-        <source>Do you want to continue?</source>
-        <translation type="vanished">続行しますか？</translation>
     </message>
 </context>
 <context>
@@ -440,10 +408,6 @@ Leaderboard Position: {} of {}</source>
         <translation>拡張設定を表示する</translation>
     </message>
     <message>
-        <source>Controller Enhanced Mode (PS4/PS5)</source>
-        <translation type="vanished">コントローラー拡張モード (PS4/PS5)</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="212"/>
         <source>Multisample Antialiasing</source>
         <translation>マルチサンプルアンチエイリアス</translation>
@@ -467,10 +431,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../advancedsettingswidget.cpp" line="224"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>リコンパイラの高速メモリアクセスを有効にする</translation>
-    </message>
-    <message>
-        <source>Enable Recompiler ICache</source>
-        <translation type="vanished">リコンパイラの命令キャッシュを有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="229"/>
@@ -631,29 +591,9 @@ Leaderboard Position: {} of {}</source>
         <source>Unchecked</source>
         <translation>チェックなし</translation>
     </message>
-    <message>
-        <source>These options are tweakable to improve performance/game compatibility. Use at your own risk, modified values will not be supported.</source>
-        <translation type="vanished">これらのオプションは、パフォーマンス/ゲームの互換性を向上させるために調整可能です。自己責任で使用してください。変更された値はサポートされません。</translation>
-    </message>
-    <message>
-        <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">デバッグデバイスとシェーダーを使用して、それらをサポートする API をレンダリングできるようにします。エミュレータをデバッグするときにのみ使用する必要があります。</translation>
-    </message>
-    <message>
-        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
-        <translation type="vanished">CPU の命令キャッシュをリコンパイラでシミュレートするかどうかを決定します。パフォーマンスをわずかに犠牲にして精度を向上させます。ゲームの実行速度が速すぎる場合は、このオプションを有効にしてみてください。</translation>
-    </message>
 </context>
 <context>
     <name>AnalogController</name>
-    <message>
-        <source>Controller %u switched to analog mode.</source>
-        <translation type="vanished">コントローラー %u がアナログモードに切り替わりました。</translation>
-    </message>
-    <message>
-        <source>Controller %u switched to digital mode.</source>
-        <translation type="vanished">コントローラー %u がデジタルモードに切り替わりました。</translation>
-    </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="266"/>
         <source>Controller %u is locked to analog mode by the game.</source>
@@ -663,90 +603,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/analog_controller.cpp" line="267"/>
         <source>Controller %u is locked to digital mode by the game.</source>
         <translation>コントローラー %u は、ゲームによってデジタルモードにロックされています。</translation>
-    </message>
-    <message>
-        <source>LeftX</source>
-        <translation type="vanished">左スティック X</translation>
-    </message>
-    <message>
-        <source>LeftY</source>
-        <translation type="vanished">左スティック Y</translation>
-    </message>
-    <message>
-        <source>RightX</source>
-        <translation type="vanished">右スティック X</translation>
-    </message>
-    <message>
-        <source>RightY</source>
-        <translation type="vanished">右スティック Y</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">↑</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">↓</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">→</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation type="vanished">セレクト</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">スタート</translation>
-    </message>
-    <message>
-        <source>Triangle</source>
-        <translation type="vanished">△(上のボタン)</translation>
-    </message>
-    <message>
-        <source>Cross</source>
-        <translation type="vanished">Ｘ(下のボタン)</translation>
-    </message>
-    <message>
-        <source>Circle</source>
-        <translation type="vanished">○(右のボタン)</translation>
-    </message>
-    <message>
-        <source>Square</source>
-        <translation type="vanished">□(左のボタン)</translation>
-    </message>
-    <message>
-        <source>L1</source>
-        <translation type="vanished">L1</translation>
-    </message>
-    <message>
-        <source>L2</source>
-        <translation type="vanished">L2</translation>
-    </message>
-    <message>
-        <source>R1</source>
-        <translation type="vanished">R1</translation>
-    </message>
-    <message>
-        <source>R2</source>
-        <translation type="vanished">R2</translation>
-    </message>
-    <message>
-        <source>L3</source>
-        <translation type="vanished">L3</translation>
-    </message>
-    <message>
-        <source>R3</source>
-        <translation type="vanished">R3</translation>
-    </message>
-    <message>
-        <source>Analog</source>
-        <translation type="vanished">アナログ切替</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="104"/>
@@ -801,14 +657,6 @@ Leaderboard Position: {} of {}</source>
         <translation>アナログスティックの軸の倍率を設定します。DualShock 4、Xbox One コントローラーのような最近のコントローラーを使用する場合は、130%〜140% の値をお勧めします。</translation>
     </message>
     <message>
-        <source>Analog Axis Scale</source>
-        <translation type="vanished">アナログ軸スケール</translation>
-    </message>
-    <message>
-        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例: DualShock 4、XboxOne コントローラー。</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="802"/>
         <source>Vibration Bias</source>
         <translation>振動の強さ</translation>
@@ -853,98 +701,6 @@ Leaderboard Position: {} of {}</source>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>アナログスティックの軸の倍率を設定します。DualShock 4、Xbox One コントローラーのような最近のコントローラーを使用する場合は、130%〜140% の値をお勧めします。</translation>
     </message>
-    <message>
-        <source>LeftX</source>
-        <translation type="vanished">左スティック X</translation>
-    </message>
-    <message>
-        <source>LeftY</source>
-        <translation type="vanished">左スティック Y</translation>
-    </message>
-    <message>
-        <source>RightX</source>
-        <translation type="vanished">右スティック X</translation>
-    </message>
-    <message>
-        <source>RightY</source>
-        <translation type="vanished">右スティック Y</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">↑</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">↓</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">→</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation type="vanished">セレクト</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">スタート</translation>
-    </message>
-    <message>
-        <source>Triangle</source>
-        <translation type="vanished">△(上のボタン)</translation>
-    </message>
-    <message>
-        <source>Cross</source>
-        <translation type="vanished">Ｘ(下のボタン)</translation>
-    </message>
-    <message>
-        <source>Circle</source>
-        <translation type="vanished">○(右のボタン)</translation>
-    </message>
-    <message>
-        <source>Square</source>
-        <translation type="vanished">□(左のボタン)</translation>
-    </message>
-    <message>
-        <source>L1</source>
-        <translation type="vanished">L1</translation>
-    </message>
-    <message>
-        <source>L2</source>
-        <translation type="vanished">L2</translation>
-    </message>
-    <message>
-        <source>R1</source>
-        <translation type="vanished">R1</translation>
-    </message>
-    <message>
-        <source>R2</source>
-        <translation type="vanished">R2</translation>
-    </message>
-    <message>
-        <source>L3</source>
-        <translation type="vanished">L3</translation>
-    </message>
-    <message>
-        <source>R3</source>
-        <translation type="vanished">R3</translation>
-    </message>
-    <message>
-        <source>Analog</source>
-        <translation type="vanished">アナログ切替</translation>
-    </message>
-    <message>
-        <source>Analog Axis Scale</source>
-        <translation type="vanished">アナログ軸スケール</translation>
-    </message>
-    <message>
-        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">アナログスティックの軸の倍率を設定します。最近のコントローラーを使用する場合は、1.30〜1.40の値をお勧めします。 &lt;br&gt;例: DualShock 4、XboxOne コントローラー。</translation>
-    </message>
 </context>
 <context>
     <name>AudioBackend</name>
@@ -962,14 +718,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/settings.cpp" line="1013"/>
         <source>XAudio2</source>
         <translation>XAudio2</translation>
-    </message>
-    <message>
-        <source>SDL</source>
-        <translation type="vanished">SDL</translation>
-    </message>
-    <message>
-        <source>OpenSL ES</source>
-        <translation type="vanished">OpenSL ES</translation>
     </message>
 </context>
 <context>
@@ -998,14 +746,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../audiosettingswidget.ui" line="132"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
         <translation>最大遅延: 0 フレーム (0.00ms)</translation>
-    </message>
-    <message>
-        <source>Sync To Output</source>
-        <translation type="vanished">出力と同期する</translation>
-    </message>
-    <message>
-        <source>Resampling</source>
-        <translation type="vanished">リサンプリング</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="45"/>
@@ -1092,21 +832,9 @@ Leaderboard Position: {} of {}</source>
         <translation>オーディオバックエンドは、エミュレーターによって生成されたフレームがホストに送信される方法を決定します。Cubeb は最小の遅延を提供します。問題が発生した場合は、SDL バックエンドを試してください。Null バックエンドは、すべてのホストオーディオ出力を無効にします。</translation>
     </message>
     <message>
-        <source>Buffer Size</source>
-        <translation type="vanished">バッファサイズ</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="68"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
         <translation>バッファサイズは、ホストが取り出す音声のチャンクサイズを決定します。&lt;br&gt;値を小さくすると出力遅延が減少しますが、エミュレーション速度が安定していない場合に音飛びが発生する可能性があります。&lt;br&gt;Cubeb バックエンドは、この値に関係なく小さいチャンクを使用するため、ここで低い値を使用しても、遅延が大幅に変わることはないことに注意してください。</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">チェックする</translation>
-    </message>
-    <message>
-        <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="vanished">オーディオバックエンドがオーディオフレームを取り出す早さに合わせてエミュレーション速度を抑制します。これは、エミュレーションが速すぎる場合に&lt;br&gt;ノイズやパチパチという音を取り除くのに役立ちます。100％の速度で実行されていない場合、同期は自動的に無効になります。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="67"/>
@@ -1165,12 +893,6 @@ Leaderboard Position: {} of {}</source>
         <source>Maximum Latency: %1 frames / %2 ms</source>
         <translation>最大遅延: %1 フレーム / %2 ミリ秒</translation>
     </message>
-    <message numerus="yes">
-        <source>Maximum Latency: %n frames (%1ms)</source>
-        <translation type="vanished">
-            <numerusform>最大レイテンシ―: %n フレーム (%1ms)</numerusform>
-        </translation>
-    </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="77"/>
         <source>Fast Forward Volume</source>
@@ -1185,10 +907,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../audiosettingswidget.cpp" line="82"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>CD-ROM から CD-DA と XA の両方の音声を強制的にミュートします。一部のゲームでバックグラウンドミュージックを無効にするために使用できます。</translation>
-    </message>
-    <message>
-        <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation type="vanished">100％以外の速度で実行している場合、フレームドロップをしないように、 実行速度から音声をリサンプリングします。少しのパフォーマンス低下で&lt;br&gt;はるかに優れた早送り/スロー再生時の音声再生をします。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="146"/>
@@ -1392,10 +1110,6 @@ Leaderboard Position: {} of {}</source>
         <source>Use Global Setting</source>
         <translation>グローバル設定を使用</translation>
     </message>
-    <message>
-        <source>Select Directory</source>
-        <translation type="vanished">ディレクトリを選択</translation>
-    </message>
 </context>
 <context>
     <name>CPUExecutionMode</name>
@@ -1459,14 +1173,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../cheatcodeeditordialog.ui" line="53"/>
         <source>Activation:</source>
         <translation>適用方法:</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">保存</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">キャンセル</translation>
     </message>
     <message>
         <location filename="../cheatcodeeditordialog.cpp" line="20"/>
@@ -1978,46 +1684,7 @@ Leaderboard Position: {} of {}</source>
     </message>
 </context>
 <context>
-    <name>Cheevos</name>
-    <message>
-        <source>Logging in to RetroAchivements...</source>
-        <translation type="vanished">RetroAchivements にログイン...</translation>
-    </message>
-    <message>
-        <source>Downloading achievement resources...</source>
-        <translation type="vanished">実績情報をダウンロード中...</translation>
-    </message>
-    <message>
-        <source> (Hardcore Mode)</source>
-        <translation type="vanished"> (ハードコアモード)</translation>
-    </message>
-    <message>
-        <source>You have earned %u of %u achievements, and %u of %u points.</source>
-        <translation type="vanished">実績 %u / %u ,ポイント %u / %u を獲得しました。</translation>
-    </message>
-    <message>
-        <source>This game has no achievements.</source>
-        <translation type="vanished">このゲームには実績がありません。</translation>
-    </message>
-    <message>
-        <source>Leaderboards are enabled.</source>
-        <translation type="vanished">リーダーボードが有効になりました。</translation>
-    </message>
-    <message>
-        <source>Leaderboards are DISABLED because Hardcore Mode is off.</source>
-        <translation type="vanished">ハードコアモードがオフのため、リーダーボードは無効になります。</translation>
-    </message>
-</context>
-<context>
     <name>CommonHostInterface</name>
-    <message>
-        <source>Are you sure you want to stop emulation?</source>
-        <translation type="vanished">エミュレーションを停止してもよろしいですか？</translation>
-    </message>
-    <message>
-        <source>The current state will be saved.</source>
-        <translation type="vanished">現在の状態が保存されます。</translation>
-    </message>
     <message>
         <location filename="../../core/system.cpp" line="3845"/>
         <source>Invalid version %u (%s version %u)</source>
@@ -2231,14 +1898,6 @@ Leaderboard Position: {} of {}</source>
         <translation>非同期先読み:</translation>
     </message>
     <message>
-        <source>Controller Ports</source>
-        <translation type="vanished">コントローラーポート</translation>
-    </message>
-    <message>
-        <source>Multitap:</source>
-        <translation type="vanished">マルチタップ:</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="285"/>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Enable Region Check</source>
@@ -2390,18 +2049,6 @@ Leaderboard Position: {} of {}</source>
         <location filename="../consolesettingswidget.cpp" line="98"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
         <translation>ディスクイメージとパッチファイルが同じディレクトリにある場合、自動的にパッチを適用します。現在、このオプションでは PPF パッチのみがサポートされます。</translation>
-    </message>
-    <message>
-        <source>Multitap</source>
-        <translation type="vanished">マルチタップ</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">使用しない</translation>
-    </message>
-    <message>
-        <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation type="vanished">指定されたコントローラーポートでマルチタップを有効にします。マルチタップに対応しないゲームでは、使用しないでください。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="131"/>
@@ -3275,29 +2922,6 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerInterface</name>
-    <message>
-        <source>None</source>
-        <translation type="vanished">なし</translation>
-    </message>
-    <message>
-        <source>SDL</source>
-        <translation type="vanished">SDL</translation>
-    </message>
-    <message>
-        <source>XInput</source>
-        <translation type="vanished">XInput</translation>
-    </message>
-    <message>
-        <source>DInput</source>
-        <translation type="vanished">DInput</translation>
-    </message>
-    <message>
-        <source>Evdev</source>
-        <translation type="vanished">Evdev</translation>
-    </message>
-</context>
-<context>
     <name>ControllerMacroEditWidget</name>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="14"/>
@@ -3540,105 +3164,6 @@ You cannot undo this action.</source>
     </message>
 </context>
 <context>
-    <name>ControllerSettingsWidget</name>
-    <message>
-        <source>Controller Type:</source>
-        <translation type="vanished">コントローラータイプ:</translation>
-    </message>
-    <message>
-        <source>Load Profile</source>
-        <translation type="vanished">プロファイル読み込み</translation>
-    </message>
-    <message>
-        <source>Save Profile</source>
-        <translation type="vanished">プロファイル保存</translation>
-    </message>
-    <message>
-        <source>Clear All</source>
-        <translation type="vanished">すべてクリア</translation>
-    </message>
-    <message>
-        <source>Clear Bindings</source>
-        <translation type="vanished">割り当てをクリア</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation type="vanished">割り当てられているすべてのボタン設定をクリアしてもよろしいですか？ 元に戻すことはできません。</translation>
-    </message>
-    <message>
-        <source>Rebind All</source>
-        <translation type="vanished">すべて再割り当て</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation type="vanished">すべてのボタン設定を再割り当てしてもよろしいですか？ 現在割り当てられているすべてのボタン設定は、元に戻せないようにクリアされます。確認後、再割り当てが開始されます。</translation>
-    </message>
-    <message>
-        <source>Port %1</source>
-        <translation type="vanished">ポート %1</translation>
-    </message>
-    <message>
-        <source>Port %1%2</source>
-        <translation type="vanished">ポート %1%2</translation>
-    </message>
-    <message>
-        <source>Button Bindings:</source>
-        <translation type="vanished">ボタン割り当て:</translation>
-    </message>
-    <message>
-        <source>Axis Bindings:</source>
-        <translation type="vanished">Axis 軸割り当て:</translation>
-    </message>
-    <message>
-        <source>Rumble</source>
-        <translation type="vanished">振動</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">参照...</translation>
-    </message>
-    <message>
-        <source>Select File</source>
-        <translation type="vanished">ファイルを選択</translation>
-    </message>
-    <message>
-        <source>Auto Fire Buttons</source>
-        <translation type="vanished">連射ボタン設定</translation>
-    </message>
-    <message>
-        <source>Auto Fire %1</source>
-        <translation type="vanished">連射ボタン %1</translation>
-    </message>
-    <message>
-        <source> Frames</source>
-        <translation type="vanished"> フレーム</translation>
-    </message>
-    <message>
-        <source>Select path to input profile ini</source>
-        <translation type="vanished">プロファイル ini を入力するためのパスを選択します</translation>
-    </message>
-    <message>
-        <source>New...</source>
-        <translation type="vanished">新規...</translation>
-    </message>
-    <message>
-        <source>Enter Input Profile Name</source>
-        <translation type="vanished">入力プロファイル名を入力</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">エラー</translation>
-    </message>
-    <message>
-        <source>No name entered, input profile was not saved.</source>
-        <translation type="vanished">名前が入力されていません。入力プロファイルは保存されませんでした。</translation>
-    </message>
-    <message>
-        <source>No path selected, input profile was not saved.</source>
-        <translation type="vanished">パスが選択されていません。入力プロファイルは保存されませんでした。</translation>
-    </message>
-</context>
-<context>
     <name>ControllerType</name>
     <message>
         <location filename="../../core/settings.cpp" line="1048"/>
@@ -3661,10 +3186,6 @@ You cannot undo this action.</source>
         <location filename="../../core/settings.cpp" line="1049"/>
         <source>Analog Joystick</source>
         <translation>アナログジョイスティック</translation>
-    </message>
-    <message>
-        <source>Namco GunCon</source>
-        <translation type="vanished">ナムコ ガンコン</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="195"/>
@@ -4131,62 +3652,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DigitalController</name>
     <message>
-        <source>Up</source>
-        <translation type="vanished">↑</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">↓</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">→</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation type="vanished">セレクト</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">スタート</translation>
-    </message>
-    <message>
-        <source>Triangle</source>
-        <translation type="vanished">△(上のボタン)</translation>
-    </message>
-    <message>
-        <source>Cross</source>
-        <translation type="vanished">Ｘ(下のボタン)</translation>
-    </message>
-    <message>
-        <source>Circle</source>
-        <translation type="vanished">○(右のボタン)</translation>
-    </message>
-    <message>
-        <source>Square</source>
-        <translation type="vanished">□(左のボタン)</translation>
-    </message>
-    <message>
-        <source>L1</source>
-        <translation type="vanished">L1</translation>
-    </message>
-    <message>
-        <source>L2</source>
-        <translation type="vanished">L2</translation>
-    </message>
-    <message>
-        <source>R1</source>
-        <translation type="vanished">R1</translation>
-    </message>
-    <message>
-        <source>R2</source>
-        <translation type="vanished">R2</translation>
-    </message>
-    <message>
         <location filename="../../core/digital_controller.cpp" line="169"/>
         <source>Force Pop&apos;n Controller Mode</source>
         <translation>強制的にポップンコントローラー扱いにする</translation>
@@ -4348,14 +3813,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="246"/>
         <source>Show CPU Usage</source>
         <translation>CPU 使用率を表示</translation>
-    </message>
-    <message>
-        <source>Show Game Frame Rate</source>
-        <translation type="vanished">ゲームフレームレートを表示</translation>
-    </message>
-    <message>
-        <source>Show Display FPS</source>
-        <translation type="vanished">ディスプレイ FPS を表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="253"/>
@@ -4558,10 +4015,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="143"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>ディスプレイの右上隅にゲームの内部フレームレートを表示します。</translation>
-    </message>
-    <message>
-        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation type="vanished">ディスプレイの右上隅に、システムによって1秒あたりに表示されるフレーム(または v-sync)の数を表示します。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="146"/>
@@ -5150,18 +4603,6 @@ Achievements: %5 (%6)
         <source>Unchecked</source>
         <translation>チェックなし</translation>
     </message>
-    <message>
-        <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">メモリを介した頂点の追跡が失敗した場合のフォールバックとして画面座標を使用します。 PGXP の互換性が向上する可能性があります。</translation>
-    </message>
-    <message>
-        <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">CPU を介して頂点操作を追跡しようとします。一部のゲームでは、PGXP を有効にするためにこのオプションが必要です。非常に遅く、リコンパイラと互換性がありません。</translation>
-    </message>
-    <message>
-        <source>%1x%2</source>
-        <translation type="vanished">%1x%2</translation>
-    </message>
 </context>
 <context>
     <name>FolderSettingsWidget</name>
@@ -5382,10 +4823,6 @@ Achievements: %5 (%6)
         <location filename="../qtutils.cpp" line="684"/>
         <source>Automatic based on window size</source>
         <translation>自動 (ウィンドウサイズから算出)</translation>
-    </message>
-    <message>
-        <source>9x</source>
-        <translation type="vanished">9x</translation>
     </message>
 </context>
 <context>
@@ -5628,10 +5065,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Select Path</source>
         <translation>パスを選択</translation>
     </message>
-    <message>
-        <source>Excluded Paths</source>
-        <translation type="vanished">除外されたパス</translation>
-    </message>
 </context>
 <context>
     <name>GameListWidget</name>
@@ -5669,483 +5102,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../gamelistwidget.ui" line="200"/>
         <source>Search...</source>
         <translation>検索...</translation>
-    </message>
-</context>
-<context>
-    <name>GamePropertiesDialog</name>
-    <message>
-        <source>Dialog</source>
-        <translation type="vanished">ダイアログ</translation>
-    </message>
-    <message>
-        <source>Properties</source>
-        <translation type="vanished">プロパティ</translation>
-    </message>
-    <message>
-        <source>Image Path:</source>
-        <translation type="vanished">イメージファイルパス:</translation>
-    </message>
-    <message>
-        <source>Game Code:</source>
-        <translation type="vanished">ゲームコード:</translation>
-    </message>
-    <message>
-        <source>Title:</source>
-        <translation type="vanished">ゲーム名:</translation>
-    </message>
-    <message>
-        <source>Region:</source>
-        <translation type="vanished">リージョン:</translation>
-    </message>
-    <message>
-        <source>Compatibility:</source>
-        <translation type="vanished">互換性:</translation>
-    </message>
-    <message>
-        <source>Upscaling Issues:</source>
-        <translation type="vanished">アップスケーリングの問題:</translation>
-    </message>
-    <message>
-        <source>Comments:</source>
-        <translation type="vanished">コメント:</translation>
-    </message>
-    <message>
-        <source>Version Tested:</source>
-        <translation type="vanished">動作確認したバージョン:</translation>
-    </message>
-    <message>
-        <source>Set to Current</source>
-        <translation type="vanished">現バージョンに設定</translation>
-    </message>
-    <message>
-        <source>Tracks:</source>
-        <translation type="vanished">トラック:</translation>
-    </message>
-    <message>
-        <source>#</source>
-        <translation type="vanished">#</translation>
-    </message>
-    <message>
-        <source>Mode</source>
-        <translation type="vanished">モード</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">開始位置</translation>
-    </message>
-    <message>
-        <source>Length</source>
-        <translation type="vanished">長さ</translation>
-    </message>
-    <message>
-        <source>Hash</source>
-        <translation type="vanished">ハッシュ</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation type="vanished">状態</translation>
-    </message>
-    <message>
-        <source>User Settings (Console)</source>
-        <translation type="vanished">ユーザー設定 (コンソール)</translation>
-    </message>
-    <message>
-        <source>100% (effective 33.3mhz)</source>
-        <translation type="vanished">100% (実効33.3MHz)</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation type="vanished">8MB RAM を有効にする (開発コンソール)</translation>
-    </message>
-    <message>
-        <source>CD-ROM Seek Speedup:</source>
-        <translation type="vanished">CD-ROM シーク高速化:</translation>
-    </message>
-    <message>
-        <source>Infinite/Instantaneous</source>
-        <translation type="vanished">無限/瞬間</translation>
-    </message>
-    <message>
-        <source>None (Normal Speed)</source>
-        <translation type="vanished">なし (実機通り)</translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="vanished">2x</translation>
-    </message>
-    <message>
-        <source>3x</source>
-        <translation type="vanished">3x</translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="vanished">4x</translation>
-    </message>
-    <message>
-        <source>5x</source>
-        <translation type="vanished">5x</translation>
-    </message>
-    <message>
-        <source>6x</source>
-        <translation type="vanished">6x</translation>
-    </message>
-    <message>
-        <source>7x</source>
-        <translation type="vanished">7x</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="vanished">8x</translation>
-    </message>
-    <message>
-        <source>9x</source>
-        <translation type="vanished">9x</translation>
-    </message>
-    <message>
-        <source>10x</source>
-        <translation type="vanished">10x</translation>
-    </message>
-    <message>
-        <source>User Settings (Graphics)</source>
-        <translation type="vanished">ユーザー設定 (グラフィック)</translation>
-    </message>
-    <message>
-        <source>:</source>
-        <translation type="vanished">:</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">ダウンサンプリング:</translation>
-    </message>
-    <message>
-        <source>Renderer:</source>
-        <translation type="vanished">レンダラー:</translation>
-    </message>
-    <message>
-        <source>Multisample Antialiasing:</source>
-        <translation type="vanished">マルチサンプルアンチエイリアス:</translation>
-    </message>
-    <message>
-        <source>PGXP Preserve Projection Precision</source>
-        <translation type="vanished">PGXP で投影精度を維持する</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Buffer</source>
-        <translation type="vanished">PGXP 深度バッファ</translation>
-    </message>
-    <message>
-        <source>Other Settings</source>
-        <translation type="vanished">その他の設定</translation>
-    </message>
-    <message>
-        <source>CD-ROM Read Speedup:</source>
-        <translation type="vanished">CD-ROM 読み込み高速化:</translation>
-    </message>
-    <message>
-        <source>None (Double Speed)</source>
-        <translation type="vanished">なし (実機通り、倍速)</translation>
-    </message>
-    <message>
-        <source>2x (Quad Speed)</source>
-        <translation type="vanished">2x (4倍速)</translation>
-    </message>
-    <message>
-        <source>3x (6x Speed)</source>
-        <translation type="vanished">3x (6倍速)</translation>
-    </message>
-    <message>
-        <source>4x (8x Speed)</source>
-        <translation type="vanished">4x (8倍速)</translation>
-    </message>
-    <message>
-        <source>5x (10x Speed)</source>
-        <translation type="vanished">5x (10倍速)</translation>
-    </message>
-    <message>
-        <source>6x (12x Speed)</source>
-        <translation type="vanished">6x (12倍速)</translation>
-    </message>
-    <message>
-        <source>7x (14x Speed)</source>
-        <translation type="vanished">7x (14倍速)</translation>
-    </message>
-    <message>
-        <source>8x (16x Speed)</source>
-        <translation type="vanished">8x (16倍速)</translation>
-    </message>
-    <message>
-        <source>9x (18x Speed)</source>
-        <translation type="vanished">9x (18倍速)</translation>
-    </message>
-    <message>
-        <source>10x (20x Speed)</source>
-        <translation type="vanished">10x (20倍速)</translation>
-    </message>
-    <message>
-        <source>Runahead Frames:</source>
-        <translation type="vanished">先行実行フレーム数:</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">無効</translation>
-    </message>
-    <message>
-        <source>1 Frame</source>
-        <translation type="vanished">1 フレーム</translation>
-    </message>
-    <message>
-        <source>2 Frames</source>
-        <translation type="vanished">2 フレーム</translation>
-    </message>
-    <message>
-        <source>3 Frames</source>
-        <translation type="vanished">3 フレーム</translation>
-    </message>
-    <message>
-        <source>4 Frames</source>
-        <translation type="vanished">4 フレーム</translation>
-    </message>
-    <message>
-        <source>5 Frames</source>
-        <translation type="vanished">5 フレーム</translation>
-    </message>
-    <message>
-        <source>6 Frames</source>
-        <translation type="vanished">6 フレーム</translation>
-    </message>
-    <message>
-        <source>7 Frames</source>
-        <translation type="vanished">7 フレーム</translation>
-    </message>
-    <message>
-        <source>8 Frames</source>
-        <translation type="vanished">8 フレーム</translation>
-    </message>
-    <message>
-        <source>9 Frames</source>
-        <translation type="vanished">9 フレーム</translation>
-    </message>
-    <message>
-        <source>10 Frames</source>
-        <translation type="vanished">10 フレーム</translation>
-    </message>
-    <message>
-        <source>User Settings (Input)</source>
-        <translation type="vanished">ユーザー設定 (入力)</translation>
-    </message>
-    <message>
-        <source>CPU Clock Speed Control</source>
-        <translation type="vanished">CPU クロック速度制御</translation>
-    </message>
-    <message>
-        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation type="vanished">クロック速度制御を有効にする (オーバークロック/アンダークロック)</translation>
-    </message>
-    <message>
-        <source>GPU Screen Display</source>
-        <translation type="vanished">GPU 画面表示</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio:</source>
-        <translation type="vanished">アスペクト比:</translation>
-    </message>
-    <message>
-        <source>Crop Mode:</source>
-        <translation type="vanished">トリミングモード:</translation>
-    </message>
-    <message>
-        <source>Linear Upscaling</source>
-        <translation type="vanished">リニアアップスケーリング</translation>
-    </message>
-    <message>
-        <source>Integer Upscaling</source>
-        <translation type="vanished">整数アップスケーリング</translation>
-    </message>
-    <message>
-        <source>GPU Enhancements</source>
-        <translation type="vanished">GPU 機能強化</translation>
-    </message>
-    <message>
-        <source>Resolution Scale:</source>
-        <translation type="vanished">解像度スケール:</translation>
-    </message>
-    <message>
-        <source>Texture Filtering:</source>
-        <translation type="vanished">テクスチャフィルタリング:</translation>
-    </message>
-    <message>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">トゥルーカラーレンダリング (24ビット、ディザリングを無効化)</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">スケーリングされたディザリング (ディザパターンを解像度に合わせてスケーリング)</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">NTSC タイミングを強制 (60hz-PAL)</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation type="vanished">24ビット表示時に強制的に 4:3 にする (ムービー再生中のワイドスクリーンを無効化)</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack</source>
-        <translation type="vanished">ワイドスクリーンハック</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Correction</source>
-        <translation type="vanished">PGXP ジオメトリ補正を有効にする</translation>
-    </message>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">コントローラー設定</translation>
-    </message>
-    <message>
-        <source>Controller 1 Type:</source>
-        <translation type="vanished">コントローラー 1 のタイプ:</translation>
-    </message>
-    <message>
-        <source>Controller 2 Type:</source>
-        <translation type="vanished">コントローラー 2 のタイプ:</translation>
-    </message>
-    <message>
-        <source>Input Profile For Bindings:</source>
-        <translation type="vanished">入力割り当てプロファイル:</translation>
-    </message>
-    <message>
-        <source>Memory Card Settings</source>
-        <translation type="vanished">メモリーカード設定</translation>
-    </message>
-    <message>
-        <source>Memory Card 1 Type:</source>
-        <translation type="vanished">メモリーカード 1 のタイプ:</translation>
-    </message>
-    <message>
-        <source>Memory Card 1 Shared Path:</source>
-        <translation type="vanished">メモリーカード 1 の共有パス:</translation>
-    </message>
-    <message>
-        <source>Memory Card 2 Type:</source>
-        <translation type="vanished">メモリーカード 2 のタイプ:</translation>
-    </message>
-    <message>
-        <source>Memory Card 2 Shared Path:</source>
-        <translation type="vanished">メモリーカード 2 の共有パス:</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">参照...</translation>
-    </message>
-    <message>
-        <source>Multitap Mode:</source>
-        <translation type="vanished">マルチタップモード:</translation>
-    </message>
-    <message>
-        <source>Compatibility Settings</source>
-        <translation type="vanished">互換性設定</translation>
-    </message>
-    <message>
-        <source>Traits</source>
-        <translation type="vanished">特性</translation>
-    </message>
-    <message>
-        <source>Overrides</source>
-        <translation type="vanished">オーバーライド</translation>
-    </message>
-    <message>
-        <source>Display Active Offset:</source>
-        <translation type="vanished">オーバースキャン範囲調整 (画面左端/右端):</translation>
-    </message>
-    <message>
-        <source>Display Line Offset:</source>
-        <translation type="vanished">オーバースキャン範囲調整 (画面上端/下端):
-
-(トリミングモード 「オーバースキャンエリアのみ」 設定時のみ有効)</translation>
-    </message>
-    <message>
-        <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA スライスの最長 Tick 数:</translation>
-    </message>
-    <message>
-        <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA 休止 Tick 数:</translation>
-    </message>
-    <message>
-        <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU FIFO サイズ:</translation>
-    </message>
-    <message>
-        <source>GPU Max Run Ahead:</source>
-        <translation type="vanished">GPU 最大先行実行(Run-Ahead):</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Tolerance:</source>
-        <translation type="vanished">PGXP ジオメトリトレランス(形状公差):</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Threshold:</source>
-        <translation type="vanished">PGXP 深度 しきい値:</translation>
-    </message>
-    <message>
-        <source>Compute &amp;&amp; Verify Hashes</source>
-        <translation type="vanished">ハッシュの計算と検証</translation>
-    </message>
-    <message>
-        <source>Computing hash for track %1/index %2...</source>
-        <translation type="vanished">ハッシュを計算しています...トラック %1 /インデックス %2</translation>
-    </message>
-    <message>
-        <source>Search on Redump.org</source>
-        <translation type="vanished">Redump.org で検索</translation>
-    </message>
-    <message>
-        <source>Export Compatibility Info</source>
-        <translation type="vanished">互換性情報のエクスポート</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">閉じる</translation>
-    </message>
-    <message>
-        <source>Game Properties - %1</source>
-        <translation type="vanished">ゲームのプロパティ - %1</translation>
-    </message>
-    <message>
-        <source>(unchanged)</source>
-        <translation type="vanished">(変更なし)</translation>
-    </message>
-    <message>
-        <source>&lt;not computed&gt;</source>
-        <translation type="vanished">&lt;未計算&gt;</translation>
-    </message>
-    <message>
-        <source>Select path to memory card image</source>
-        <translation type="vanished">メモリーカードイメージのパスを選択します</translation>
-    </message>
-    <message>
-        <source>%1% (%2MHz)</source>
-        <translation type="vanished">%1% (%2MHz)</translation>
-    </message>
-    <message>
-        <source>Not yet implemented</source>
-        <translation type="vanished">まだ実装されていません</translation>
-    </message>
-    <message>
-        <source>Compatibility Info Export</source>
-        <translation type="vanished">互換性情報のエクスポート</translation>
-    </message>
-    <message>
-        <source>Press OK to copy to clipboard.</source>
-        <translation type="vanished">[OK]を押すとクリップボードにコピーします。</translation>
-    </message>
-    <message>
-        <source>Revision:</source>
-        <translation type="vanished">リビジョン:</translation>
-    </message>
-    <message>
-        <source>&lt;not verified&gt;</source>
-        <translation type="vanished">&lt;未検証&gt;</translation>
     </message>
 </context>
 <context>
@@ -6505,10 +5461,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>スクリーンセーバーを禁止する</translation>
     </message>
     <message>
-        <source>Render To Main Window</source>
-        <translation type="vanished">メインウィンドウにレンダリングする</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Pause On Focus Loss</source>
@@ -6554,10 +5506,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>フルスクリーン時カーソルを非表示にする</translation>
     </message>
     <message>
-        <source>Enable Fullscreen UI</source>
-        <translation type="vanished">フルスクリーン UI を有効にする</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.ui" line="169"/>
         <source>Automatic Updater</source>
         <translation>自動更新</translation>
@@ -6576,14 +5524,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../generalsettingswidget.ui" line="221"/>
         <source>Check for Updates...</source>
         <translation>更新の確認...</translation>
-    </message>
-    <message>
-        <source>Miscellaneous</source>
-        <translation type="vanished">その他</translation>
-    </message>
-    <message>
-        <source>Controller Backend:</source>
-        <translation type="vanished">コントローラーバックエンド:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="50"/>
@@ -6637,10 +5577,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>シミュレートされたコンソールの表示を、アプリケーションのメインウィンドウのゲームリスト上にレンダリングします。チェックすると、ディスプレイは別のウィンドウに表示されます。</translation>
     </message>
     <message>
-        <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation type="vanished">シミュレートされたコンソールの表示を、アプリケーションのメインウィンドウのゲームリスト上にレンダリングします。&lt;br&gt;チェックを外すと、ディスプレイは別のウィンドウに表示されます。</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>ゲームの開始時にエミュレータを一時停止します。</translation>
@@ -6666,21 +5602,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>ゲームの開始時にチートを自動的にロードして適用します。</translation>
     </message>
     <message>
-        <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
-        <translation type="vanished">NoGUI フロントエンドで使用されるコントローラー操作に適したフルスクリーン UI モードを有効にします。</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.cpp" line="107"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
-    </message>
-    <message>
-        <source>Controller Backend</source>
-        <translation type="vanished">コントローラーバックエンド</translation>
-    </message>
-    <message>
-        <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation type="vanished">コントローラー入力に使用されるバックエンドを決定します。Windows ユーザーは、互換性のために SDL2 よりも XInput を使用することが良い場合があります。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
@@ -6703,14 +5627,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../generalsettingswidget.cpp" line="100"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>起動時にプログラムの更新を自動的にチェックします。更新は後で延期することも、完全にスキップすることもできます。</translation>
-    </message>
-    <message>
-        <source>Unlimited</source>
-        <translation type="vanished">無制限</translation>
-    </message>
-    <message>
-        <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
-        <translation type="vanished">%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
 </context>
 <context>
@@ -6775,10 +5691,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../frontend-common/common_host.cpp" line="663"/>
         <source>General</source>
         <translation>一般</translation>
-    </message>
-    <message>
-        <source>Open Quick Menu</source>
-        <translation type="vanished">クイックメニューを開く</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="598"/>
@@ -7364,10 +6276,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Trace</source>
         <translation>トレース</translation>
     </message>
-    <message>
-        <source>Success</source>
-        <translation type="vanished">成功</translation>
-    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -7611,30 +6519,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>終了(&amp;X)</translation>
     </message>
     <message>
-        <source>C&amp;onsole Settings...</source>
-        <translation type="vanished">コンソール設定(&amp;O)...</translation>
-    </message>
-    <message>
-        <source>&amp;Controller Settings...</source>
-        <translation type="vanished">コントローラー設定(&amp;C)...</translation>
-    </message>
-    <message>
-        <source>&amp;Hotkey Settings...</source>
-        <translation type="vanished">ホットキー設定(&amp;H)...</translation>
-    </message>
-    <message>
-        <source>&amp;Display Settings...</source>
-        <translation type="vanished">表示設定(&amp;D)...</translation>
-    </message>
-    <message>
-        <source>&amp;Enhancement Settings...</source>
-        <translation type="vanished">拡張設定(&amp;E)...</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing Settings...</source>
-        <translation type="vanished">ポストプロセス設定(&amp;P)...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="461"/>
         <source>Fullscreen</source>
         <translation>フルスクリーン</translation>
@@ -7675,22 +6559,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>チート...</translation>
     </message>
     <message>
-        <source>Audio Settings...</source>
-        <translation type="vanished">音声設定...</translation>
-    </message>
-    <message>
-        <source>Game List Settings...</source>
-        <translation type="vanished">ゲームリスト設定...</translation>
-    </message>
-    <message>
-        <source>General Settings...</source>
-        <translation type="vanished">一般設定...</translation>
-    </message>
-    <message>
-        <source>B&amp;IOS Settings...</source>
-        <translation type="vanished">BIOS 設定(&amp;I)...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="35"/>
         <source>&amp;System</source>
         <translation>システム(&amp;S)</translation>
@@ -7711,10 +6579,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>イメージ起動(&amp;F)...</translation>
     </message>
     <message>
-        <source>E&amp;mulation Settings...</source>
-        <translation type="vanished">エミュレーション設定(&amp;M)...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="511"/>
         <source>About &amp;Qt...</source>
         <translation>Qt について(&amp;Q)...</translation>
@@ -7723,14 +6587,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.ui" line="520"/>
         <source>&amp;About DuckStation...</source>
         <translation>DuckStation について(&amp;A)...</translation>
-    </message>
-    <message>
-        <source>Achievement Settings...</source>
-        <translation type="vanished">実績設定...</translation>
-    </message>
-    <message>
-        <source>Advanced Settings...</source>
-        <translation type="vanished">高度な設定...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="601"/>
@@ -7853,10 +6709,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>スクリーンショット(&amp;S)</translation>
     </message>
     <message>
-        <source>&amp;Memory Card Settings...</source>
-        <translation type="vanished">メモリーカード設定(&amp;M)...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="786"/>
         <location filename="../mainwindow.cpp" line="660"/>
         <source>Resume</source>
@@ -7946,14 +6798,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.cpp" line="167"/>
         <source>Failed to create host display device context.</source>
         <translation>ホストディスプレイデバイスコンテキストの作成に失敗しました。</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cue ファイル (*.cue);;MAME CHD イメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecar イメージ (*.mds);;PlayStation EBOOT 形式 (*.pbp);;PlayStation 実行ファイル (*.exe *.psexe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
-    </message>
-    <message>
-        <source>Failed to create host display.</source>
-        <translation type="vanished">ホスト表示の作成に失敗しました。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="595"/>
@@ -8164,10 +7008,6 @@ Do you want to load this state, or start from a fresh boot?</source>
         <location filename="../mainwindow.cpp" line="1222"/>
         <source>You must select a disc to change discs.</source>
         <translation>ディスクを変更するには、ディスクを選択する必要があります。</translation>
-    </message>
-    <message>
-        <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
-        <translation type="vanished">現在実行中のファイルのゲームリストエントリが見つかりませんでした。このファイルがゲームリストでスキャンされた場所にあることを確認してください。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1261"/>
@@ -8697,10 +7537,6 @@ Are you sure you want to continue?</source>
         <source>Select path to memory card image</source>
         <translation>メモリーカードイメージのパスを選択します</translation>
     </message>
-    <message>
-        <source>Select path to memory card directory</source>
-        <translation type="vanished">メモリーカードイメージのパスを選択します</translation>
-    </message>
 </context>
 <context>
     <name>MemoryCardType</name>
@@ -8759,98 +7595,7 @@ Are you sure you want to continue?</source>
     </message>
 </context>
 <context>
-    <name>NamcoGunCon</name>
-    <message>
-        <source>Trigger</source>
-        <translation type="vanished">トリガー</translation>
-    </message>
-    <message>
-        <source>ShootOffscreen</source>
-        <translation type="vanished">画面外を撃つ</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="vanished">A</translation>
-    </message>
-    <message>
-        <source>B</source>
-        <translation type="vanished">B</translation>
-    </message>
-    <message>
-        <source>Crosshair Image Path</source>
-        <translation type="vanished">十字線画像のパス</translation>
-    </message>
-    <message>
-        <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="vanished">十字線/カーソルとして使用する画像のパスを指定します。</translation>
-    </message>
-    <message>
-        <source>Crosshair Image Scale</source>
-        <translation type="vanished">十字線画像スケール</translation>
-    </message>
-    <message>
-        <source>Scale of crosshair image on screen.</source>
-        <translation type="vanished">画面上の十字画像のスケールを指定します。</translation>
-    </message>
-    <message>
-        <source>X Scale</source>
-        <translation type="vanished">X スケール</translation>
-    </message>
-    <message>
-        <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="vanished">画面の中心を基準にして X 座標をスケーリングします。</translation>
-    </message>
-</context>
-<context>
     <name>NeGcon</name>
-    <message>
-        <source>Steering</source>
-        <translation type="vanished">ねじり</translation>
-    </message>
-    <message>
-        <source>I</source>
-        <translation type="vanished">I</translation>
-    </message>
-    <message>
-        <source>II</source>
-        <translation type="vanished">II</translation>
-    </message>
-    <message>
-        <source>L</source>
-        <translation type="vanished">L</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">↑</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">↓</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">→</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="vanished">A</translation>
-    </message>
-    <message>
-        <source>B</source>
-        <translation type="vanished">B</translation>
-    </message>
-    <message>
-        <source>R</source>
-        <translation type="vanished">R</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">スタート</translation>
-    </message>
     <message>
         <location filename="../../core/negcon.cpp" line="253"/>
         <source>Steering Axis Deadzone</source>
@@ -8870,10 +7615,6 @@ Are you sure you want to continue?</source>
         <translation>システムがリセットされました。</translation>
     </message>
     <message>
-        <source>Loading state from &apos;%s&apos;...</source>
-        <translation type="vanished">&apos;%s&apos; からステートロード中...</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="989"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>&apos;%s&apos; からのステートロードに失敗しました。リセットします。</translation>
@@ -8882,10 +7623,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/system.cpp" line="1030"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>&apos;%s&apos; にステートセーブできませんでした。</translation>
-    </message>
-    <message>
-        <source>State saved to &apos;%s&apos;.</source>
-        <translation type="vanished">&apos;%s&apos; にステートセーブしました。</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="603"/>
@@ -9017,14 +7754,6 @@ Are you sure you want to continue?</source>
         <translation>巻き戻しが有効化されていません。</translation>
     </message>
     <message>
-        <source>Achievements are disabled or unavailable for this game.</source>
-        <translation type="vanished">このゲームでは、実績が無効になっているか、利用できません。</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled or unavailable for this game.</source>
-        <translation type="vanished">このゲームでは、リーダーボードが無効になっているか、利用できません。</translation>
-    </message>
-    <message>
         <location filename="../../frontend-common/common_host.cpp" line="760"/>
         <location filename="../../frontend-common/common_host.cpp" line="772"/>
         <location filename="../../frontend-common/common_host.cpp" line="784"/>
@@ -9047,10 +7776,6 @@ Are you sure you want to continue?</source>
         <translation>音量: ミュート</translation>
     </message>
     <message>
-        <source>Volume: %d%%</source>
-        <translation type="vanished">音量: %d%%</translation>
-    </message>
-    <message>
         <location filename="../../frontend-common/common_host.cpp" line="936"/>
         <source>CD Audio Muted.</source>
         <translation>CD 音声をミュートしました。</translation>
@@ -9059,10 +7784,6 @@ Are you sure you want to continue?</source>
         <location filename="../../frontend-common/common_host.cpp" line="937"/>
         <source>CD Audio Unmuted.</source>
         <translation>CD 音声のミュートを解除しました。</translation>
-    </message>
-    <message>
-        <source>Loaded input profile from &apos;%s&apos;</source>
-        <translation type="vanished">&apos;%s&apos; から入力プロファイルを読み込みました</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3697"/>
@@ -9102,14 +7823,6 @@ Please configure a supported controller from the list above.</source>
         <translation>ポート %u (%s) のコントローラーは %s ではサポートされていません。
 サポートされているコントローラー: %s
 上記のリストからサポートされているコントローラーを構成してください。</translation>
-    </message>
-    <message>
-        <source>Input profile &apos;%s&apos; cannot be found.</source>
-        <translation type="vanished">入力プロファイル &apos;%s&apos; が見つかりません。</translation>
-    </message>
-    <message>
-        <source>Using input profile &apos;%s&apos;.</source>
-        <translation type="vanished">入力プロファイル &apos;%s&apos; を使用します。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3936"/>
@@ -9177,18 +7890,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../core/system.cpp" line="2382"/>
         <source>No cheats are loaded.</source>
         <translation>チートはロードされていません。</translation>
-    </message>
-    <message>
-        <source>Hotkey unavailable because achievements hardcore mode is active.</source>
-        <translation type="vanished">実績用ハードコアモードがアクティブなため、ホットキーを使用できません。</translation>
-    </message>
-    <message>
-        <source>Rewinding...</source>
-        <translation type="vanished">巻き戻し中...</translation>
-    </message>
-    <message>
-        <source>Stopped rewinding.</source>
-        <translation type="vanished">巻き戻しを停止しました。</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="4007"/>
@@ -9475,14 +8176,6 @@ Please configure a supported controller from the list above.</source>
         <translation>メモリーカードを &apos;{}&apos; に保存しました。</translation>
     </message>
     <message>
-        <source>Failed to save memory card to &apos;%s&apos;</source>
-        <translation type="vanished">メモリーカードを &apos;%s&apos; に保存できませんでした</translation>
-    </message>
-    <message>
-        <source>Saved memory card to &apos;%s&apos;</source>
-        <translation type="vanished">メモリーカードを &apos;%s&apos; に保存しました</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="356"/>
         <source>Acquired exclusive fullscreen.</source>
         <translation>排他的フルスクリーンを取得しました。</translation>
@@ -9507,34 +8200,6 @@ Please configure a supported controller from the list above.</source>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
         <translation>ゲームごとの設定に基づき、アナログモードの強制を無効化します。コントローラーはデジタルモードで動作します。</translation>
     </message>
-    <message>
-        <source>Failed to read executable from disc. Achievements disabled.</source>
-        <translation type="vanished">ディスクから実行可能ファイルを読み取れませんでした。実績を無効化します。</translation>
-    </message>
-    <message>
-        <source>mmap fastmem is not available on this platform, using LUT instead.</source>
-        <translation type="vanished">mmap fastmem は、このプラットフォームでは使用できません。代わりに LUT を使用します。</translation>
-    </message>
-    <message>
-        <source>Speed limiter enabled.</source>
-        <translation type="vanished">実行速度制限が有効になりました。</translation>
-    </message>
-    <message>
-        <source>Speed limiter disabled.</source>
-        <translation type="vanished">実行速度制限が無効になりました。</translation>
-    </message>
-    <message numerus="yes">
-        <source>Loaded %n cheats from list.</source>
-        <translation type="vanished">
-            <numerusform>リストから %n チートを読み込みました。</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source> %n cheats are enabled.</source>
-        <translation type="vanished">
-            <numerusform> %n チートが有効になっています。</numerusform>
-        </translation>
-    </message>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="2390"/>
         <source>%n cheats are now active.</source>
@@ -9549,23 +8214,9 @@ Please configure a supported controller from the list above.</source>
             <numerusform>%n 個のチートが無効になりました。</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>Loaded %n cheats from database.</source>
-        <translation type="vanished">
-            <numerusform>データベースから、%n チートを読み込みました。</numerusform>
-        </translation>
-    </message>
 </context>
 <context>
     <name>PlayStationMouse</name>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">←</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">→</translation>
-    </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="189"/>
         <source>Relative Mouse Mode</source>
@@ -9658,14 +8309,6 @@ Please configure a supported controller from the list above.</source>
         <translation>シェーダー再読み込み(&amp;R)</translation>
     </message>
     <message>
-        <source>Load Preset</source>
-        <translation type="vanished">プリセット読み込み</translation>
-    </message>
-    <message>
-        <source>Save Preset</source>
-        <translation type="vanished">プリセット保存</translation>
-    </message>
-    <message>
         <location filename="../postprocessingsettingswidget.ui" line="67"/>
         <source>Post Processing Chain</source>
         <translation>ポストプロセスチェーン</translation>
@@ -9680,10 +8323,6 @@ Please configure a supported controller from the list above.</source>
         <source>The current post-processing chain is invalid, it has been reset.</source>
         <translation>現在のポストプロセスチェーンは無効です。リセットされました。</translation>
     </message>
-    <message>
-        <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
-        <translation type="vanished">現在のポストプロセスチェーンは無効です。リセットされました。変更を加えると、既存の構成が上書きされます。</translation>
-    </message>
 </context>
 <context>
     <name>PostProcessingShaderConfigDialog</name>
@@ -9691,10 +8330,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../postprocessingshaderconfigwidget.cpp" line="149"/>
         <source>%1 Shader Options</source>
         <translation>%1 シェーダーオプション</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">閉じる</translation>
     </message>
 </context>
 <context>
@@ -9724,21 +8359,9 @@ Please configure a supported controller from the list above.</source>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
-    <message>
-        <source>Reset to Defaults</source>
-        <translation type="vanished">デフォルトにリセット</translation>
-    </message>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <source>DuckStation Error</source>
-        <translation type="vanished">DuckStation エラー</translation>
-    </message>
-    <message>
-        <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation type="vanished">ホストインターフェイスの初期化に失敗しました。続行できません。</translation>
-    </message>
     <message>
         <location filename="../qtutils.cpp" line="672"/>
         <source>Failed to open URL</source>
@@ -9782,119 +8405,6 @@ URL は次のとおりです: %1</translation>
         <location filename="../qthost.cpp" line="2149"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>起動するファイル名が指定されていないため、バッチモードを使用できません。</translation>
-    </message>
-</context>
-<context>
-    <name>QtHostInterface</name>
-    <message>
-        <source>Load From File...</source>
-        <translation type="vanished">ファイルからロード...</translation>
-    </message>
-    <message>
-        <source>Undo Load State</source>
-        <translation type="vanished">ステートロード前に戻す(Undo)</translation>
-    </message>
-    <message>
-        <source>Save To File...</source>
-        <translation type="vanished">ファイルにセーブ...</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (%2)</source>
-        <translation type="vanished">ゲームセーブ %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (Empty)</source>
-        <translation type="vanished">ゲームセーブ %1 (空)</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (%2)</source>
-        <translation type="vanished">グローバルセーブ %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (Empty)</source>
-        <translation type="vanished">グローバルセーブ %1 (空)</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation type="vanished">再開</translation>
-    </message>
-    <message>
-        <source>Load State</source>
-        <translation type="vanished">ステートロード</translation>
-    </message>
-    <message>
-        <source>Resume (%1)</source>
-        <translation type="vanished">再開 (%1)</translation>
-    </message>
-    <message>
-        <source>Game ID: %1
-Game Title: %2
-Game Developer: %3
-Game Publisher: %4
-Achievements: %5 (%6)
-
-</source>
-        <translation type="vanished">ゲーム ID: %1
-ゲーム名: %2
-ゲーム開発元: %3
-ゲーム販売元: %4
-実績: %5 (%6)
-
-</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n points</source>
-        <translation type="vanished">
-            <numerusform>%n ポイント</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rich presence inactive or unsupported.</source>
-        <translation type="vanished">リッチプレゼンスは非アクティブまたはサポートされていません。</translation>
-    </message>
-    <message>
-        <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="vanished">ゲームが読み込まれていないか、RetroAchievements が利用できません。</translation>
-    </message>
-    <message>
-        <source>No resume save state found.</source>
-        <translation type="vanished">ステートセーブが見つかりません。</translation>
-    </message>
-    <message>
-        <source>Select Save State File</source>
-        <translation type="vanished">ステートセーブファイルを選択</translation>
-    </message>
-    <message>
-        <source>Save States (*.sav)</source>
-        <translation type="vanished">ステートセーブ (*.sav)</translation>
-    </message>
-    <message>
-        <source>Edit Memory Cards...</source>
-        <translation type="vanished">メモリーカードを編集...</translation>
-    </message>
-    <message>
-        <source>Delete Save States...</source>
-        <translation type="vanished">ステートセーブを削除...</translation>
-    </message>
-    <message>
-        <source>Confirm Save State Deletion</source>
-        <translation type="vanished">ステートセーブ削除の確認</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all save states for %1?
-
-The saves will not be recoverable.</source>
-        <translation type="vanished">%1 のすべてのステートセーブを削除してもよろしいですか？
-
-元に戻すことはできません。</translation>
-    </message>
-    <message>
-        <source>&amp;Enabled Cheats</source>
-        <translation type="vanished">チート有効化(&amp;E)</translation>
-    </message>
-    <message>
-        <source>&amp;Apply Cheats</source>
-        <translation type="vanished">チート適用(&amp;A)</translation>
     </message>
 </context>
 <context>
@@ -9996,70 +8506,6 @@ The saves will not be recoverable.</source>
         <translation>DuckStation 設定</translation>
     </message>
     <message>
-        <source>General Settings</source>
-        <translation type="vanished">一般設定</translation>
-    </message>
-    <message>
-        <source>BIOS Settings</source>
-        <translation type="vanished">BIOS 設定</translation>
-    </message>
-    <message>
-        <source>Console Settings</source>
-        <translation type="vanished">コンソール設定</translation>
-    </message>
-    <message>
-        <source>Emulation Settings</source>
-        <translation type="vanished">エミュレーション設定</translation>
-    </message>
-    <message>
-        <source>Game List Settings</source>
-        <translation type="vanished">ゲームリスト設定</translation>
-    </message>
-    <message>
-        <source>Hotkey Settings</source>
-        <translation type="vanished">ホットキー設定</translation>
-    </message>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">コントローラー設定</translation>
-    </message>
-    <message>
-        <source>Memory Card Settings</source>
-        <translation type="vanished">メモリーカード設定</translation>
-    </message>
-    <message>
-        <source>Display Settings</source>
-        <translation type="vanished">表示設定</translation>
-    </message>
-    <message>
-        <source>Enhancement Settings</source>
-        <translation type="vanished">拡張設定</translation>
-    </message>
-    <message>
-        <source>Post-Processing Settings</source>
-        <translation type="vanished">ポストプロセス設定</translation>
-    </message>
-    <message>
-        <source>Achievement Settings</source>
-        <translation type="vanished">実績設定</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation type="vanished">デフォルトに戻す</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">閉じる</translation>
-    </message>
-    <message>
-        <source>Audio Settings</source>
-        <translation type="vanished">音声設定</translation>
-    </message>
-    <message>
-        <source>Advanced Settings</source>
-        <translation type="vanished">高度な設定</translation>
-    </message>
-    <message>
         <location filename="../settingsdialog.cpp" line="142"/>
         <source>This DuckStation build was not compiled with RetroAchievements support.</source>
         <translation>この DuckStation ビルドは、RetroAchievements を使用できるようにコンパイルされていません。</translation>
@@ -10128,14 +8574,6 @@ The saves will not be recoverable.</source>
         <location filename="../settingsdialog.cpp" line="74"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
         <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStation がゲームリストに登録するゲームを探すディレクトリの一覧を示しています。&lt;br&gt;検索ディレクトリの追加、削除、およびサブディレクトリ検索の有無を切り替えることができます。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;ホットキー設定&lt;/strong&gt;&lt;hr&gt;ホットキーを割り当てると、キーやコントローラーのボタンを押すだけでリセットやスクリーンショットの撮影などのイベントを実行できます。&lt;br&gt;ホットキー名がそれぞれの機能を示しています。各項目の右のボタンをクリックするとカウントダウンが開始されるので、&lt;br&gt;割り当てたいキーまたはコントローラーのボタン/軸を押してください。ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。&lt;br&gt;割り当てをクリアするには、ボタンを右クリックします。複数のボタンを割り当てるには、Shift キーを押しながらボタンをクリックします。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;コントローラー設定&lt;/strong&gt;&lt;hr&gt;このページでは、シミュレートさせたいコントローラーのタイプを選択し、キーまたはホストゲームコントローラーのボタンを好きなように割り当てることができます。&lt;br&gt;各項目の右のボタンをクリックするとカウントダウンが開始されるので、割り当てたいキーまたはコントローラーのボタン/軸を押してください。&lt;br&gt;(振動については、振動させたいコントローラーの任意のボタン/軸を押してください。) ボタンが押されずにタイマーが経過した場合、割り当ては変更されません。&lt;br&gt;割り当てをクリアするには、ボタンを右クリックします。複数のボタンを割り当てるには、Shift キーを押しながらボタンをクリックします。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="94"/>
@@ -10344,14 +8782,6 @@ Do you wish to continue?</source>
 SBI ファイルを追加する方法については、README を確認してください。
 
 続行しますか？</translation>
-    </message>
-    <message>
-        <source>Failed to acquire host display.</source>
-        <translation type="vanished">ホストディスプレイの取得に失敗しました。</translation>
-    </message>
-    <message>
-        <source>System failed to boot. The log may contain more information.</source>
-        <translation type="vanished">システムの起動に失敗しました。ログに、より多くの情報が含まれている場合があります。</translation>
     </message>
 </context>
 </TS>
