@@ -3,7 +3,7 @@ import os
 import re
 import xml.etree.ElementTree as ET
 
-src_file = "src/duckstation-qt/qthost.cpp"
+src_file = "src/duckstation-qt/qttranslations.cpp"
 root_dir = os.path.join(os.path.dirname(__file__), "..")
 src_path = os.path.join(root_dir, src_file)
 
