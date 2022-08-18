@@ -286,8 +286,8 @@ void CommonHost::SetDefaultHotkeyBindings(SettingsInterface& si)
 #ifndef __ANDROID__
   si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
   si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
-  si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/Alt & Keyboard/Return");
   si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
+  si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/F11");
 
   si.SetStringValue("Hotkeys", "OpenPauseMenu", "Keyboard/Escape");
   si.SetStringValue("Hotkeys", "LoadSelectedSaveState", "Keyboard/F1");
