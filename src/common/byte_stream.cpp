@@ -33,9 +33,9 @@ class FileByteStream : public ByteStream
 public:
   FileByteStream(FILE* pFile) : m_pFile(pFile) { DebugAssert(m_pFile != nullptr); }
 
-  virtual ~FileByteStream() { fclose(m_pFile); }
+  virtual ~FileByteStream() override { fclose(m_pFile); }
 
-  virtual bool ReadByte(u8* pDestByte) override
+  bool ReadByte(u8* pDestByte) override
   {
     if (m_errorState)
       return false;
@@ -49,7 +49,7 @@ public:
     return true;
   }
 
-  virtual u32 Read(void* pDestination, u32 ByteCount) override
+  u32 Read(void* pDestination, u32 ByteCount) override
   {
     if (m_errorState)
       return 0;
@@ -61,7 +61,7 @@ public:
     return readCount;
   }
 
-  virtual bool Read2(void* pDestination, u32 ByteCount, u32* pNumberOfBytesRead /* = nullptr */) override
+  bool Read2(void* pDestination, u32 ByteCount, u32* pNumberOfBytesRead /* = nullptr */) override
   {
     if (m_errorState)
       return false;
@@ -80,7 +80,7 @@ public:
     return true;
   }
 
-  virtual bool WriteByte(u8 SourceByte) override
+  bool WriteByte(u8 SourceByte) override
   {
     if (m_errorState)
       return false;
@@ -94,7 +94,7 @@ public:
     return true;
   }
 
-  virtual u32 Write(const void* pSource, u32 ByteCount) override
+  u32 Write(const void* pSource, u32 ByteCount) override
   {
     if (m_errorState)
       return 0;
@@ -106,7 +106,7 @@ public:
     return writeCount;
   }
 
-  virtual bool Write2(const void* pSource, u32 ByteCount, u32* pNumberOfBytesWritten /* = nullptr */) override
+  bool Write2(const void* pSource, u32 ByteCount, u32* pNumberOfBytesWritten /* = nullptr */) override
   {
     if (m_errorState)
       return false;
@@ -127,7 +127,7 @@ public:
 
 #if defined(_WIN32)
 
-  virtual bool SeekAbsolute(u64 Offset) override
+  bool SeekAbsolute(u64 Offset) override
   {
     if (m_errorState)
       return false;
@@ -141,7 +141,7 @@ public:
     return true;
   }
 
-  virtual bool SeekRelative(s64 Offset) override
+  bool SeekRelative(s64 Offset) override
   {
     if (m_errorState)
       return false;
@@ -155,7 +155,7 @@ public:
     return true;
   }
 
-  virtual bool SeekToEnd() override
+  bool SeekToEnd() override
   {
     if (m_errorState)
       return false;
@@ -169,9 +169,9 @@ public:
     return true;
   }
 
-  virtual u64 GetPosition() const override { return _ftelli64(m_pFile); }
+  u64 GetPosition() const override { return _ftelli64(m_pFile); }
 
-  virtual u64 GetSize() const override
+  u64 GetSize() const override
   {
     s64 OldPos = _ftelli64(m_pFile);
     _fseeki64(m_pFile, 0, SEEK_END);
@@ -182,7 +182,7 @@ public:
 
 #else
 
-  virtual bool SeekAbsolute(u64 Offset) override
+  bool SeekAbsolute(u64 Offset) override
   {
     if (m_errorState)
       return false;
@@ -196,7 +196,7 @@ public:
     return true;
   }
 
-  virtual bool SeekRelative(s64 Offset) override
+  bool SeekRelative(s64 Offset) override
   {
     if (m_errorState)
       return false;
@@ -210,7 +210,7 @@ public:
     return true;
   }
 
-  virtual bool SeekToEnd() override
+  bool SeekToEnd() override
   {
     if (m_errorState)
       return false;
@@ -224,9 +224,9 @@ public:
     return true;
   }
 
-  virtual u64 GetPosition() const override { return static_cast<u64>(ftello(m_pFile)); }
+  u64 GetPosition() const override { return static_cast<u64>(ftello(m_pFile)); }
 
-  virtual u64 GetSize() const override
+  u64 GetSize() const override
   {
     off_t OldPos = ftello(m_pFile);
     fseeko(m_pFile, 0, SEEK_END);
@@ -237,7 +237,7 @@ public:
 
 #endif
 
-  virtual bool Flush() override
+  bool Flush() override
   {
     if (m_errorState)
       return false;
@@ -259,7 +259,7 @@ protected:
   FILE* m_pFile;
 };
 
-class AtomicUpdatedFileByteStream : public FileByteStream
+class AtomicUpdatedFileByteStream final : public FileByteStream
 {
 public:
   AtomicUpdatedFileByteStream(FILE* pFile, std::string originalFileName, std::string temporaryFileName)
@@ -268,7 +268,7 @@ public:
   {
   }
 
-  virtual ~AtomicUpdatedFileByteStream()
+  ~AtomicUpdatedFileByteStream() override
   {
     if (m_discarded)
     {
@@ -304,18 +304,7 @@ public:
     // fclose called by FileByteStream destructor
   }
 
-  virtual bool Flush() override
-  {
-    if (fflush(m_pFile) != 0)
-    {
-      m_errorState = true;
-      return false;
-    }
-
-    return true;
-  }
-
-  virtual bool Commit() override
+  bool Commit() override
   {
     Assert(!m_discarded);
     if (m_committed)
@@ -364,7 +353,7 @@ public:
     return (!m_discarded);
   }
 
-  virtual bool Discard() override
+  bool Discard() override
   {
     Assert(!m_committed);
     m_discarded = true;
