@@ -43,8 +43,6 @@
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
 #include "xxhash.h"
-#include "zstd.h"
-#include "zstd_errors.h"
 #include <cctype>
 #include <cinttypes>
 #include <cmath>
@@ -1866,19 +1864,8 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   }
   else if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
   {
-    std::unique_ptr<u8[]> compressed_buffer(std::make_unique<u8[]>(header.data_compressed_size));
-    std::unique_ptr<u8[]> uncompressed_buffer(std::make_unique<u8[]>(header.data_uncompressed_size));
-    if (!state->Read2(compressed_buffer.get(), header.data_compressed_size))
-      return false;
-
-    const size_t result = ZSTD_decompress(uncompressed_buffer.get(), header.data_uncompressed_size,
-                                          compressed_buffer.get(), header.data_compressed_size);
-    if (ZSTD_isError(result) || result != header.data_uncompressed_size)
-      return false;
-
-    compressed_buffer.reset();
-    ReadOnlyMemoryByteStream uncompressed_stream(uncompressed_buffer.get(), header.data_uncompressed_size);
-    StateWrapper sw(&uncompressed_stream, StateWrapper::Mode::Read, header.version);
+    std::unique_ptr<ByteStream> dstream(ByteStream::CreateZstdDecompressStream(state, header.data_compressed_size));
+    StateWrapper sw(dstream.get(), StateWrapper::Mode::Read, header.version);
     if (!DoState(sw, nullptr, update_display, false))
       return false;
   }
@@ -1988,29 +1975,11 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     }
     else if (compression_method == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
     {
-      GrowableMemoryByteStream staging(nullptr, MAX_SAVE_STATE_SIZE);
-      StateWrapper sw(&staging, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-      result = DoState(sw, nullptr, false, false);
-      if (result)
-      {
-        header.data_uncompressed_size = static_cast<u32>(staging.GetSize());
-
-        const size_t max_compressed_size = ZSTD_compressBound(header.data_uncompressed_size * 2);
-        std::unique_ptr<u8[]> compress_buffer(std::make_unique<u8[]>(max_compressed_size));
-        size_t compress_size = ZSTD_compress(compress_buffer.get(), max_compressed_size, staging.GetMemoryPointer(),
-                                             header.data_uncompressed_size, 0);
-        if (ZSTD_isError(compress_size))
-        {
-          Log_ErrorPrintf("ZSTD_compress() failed: %s", ZSTD_getErrorString(ZSTD_getErrorCode(compress_size)));
-        }
-        else
-        {
-          header.data_compressed_size = static_cast<u32>(compress_size);
-          result = state->Write2(compress_buffer.get(), header.data_compressed_size);
-          Log_DevPrintf("Compressed %u bytes of state to %u bytes with zstd", header.data_uncompressed_size,
-                        header.data_compressed_size);
-        }
-      }
+      std::unique_ptr<ByteStream> cstream(ByteStream::CreateZstdCompressStream(state, 0));
+      StateWrapper sw(cstream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+      result = DoState(sw, nullptr, false, false) && cstream->Commit();
+      header.data_uncompressed_size = static_cast<u32>(cstream->GetPosition());
+      header.data_compressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
     }
 
     g_gpu->ResetGraphicsAPIState();
