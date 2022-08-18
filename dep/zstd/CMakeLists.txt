@@ -32,6 +32,6 @@ if(NOT MSVC AND CPU_ARCH STREQUAL "x64")
 	target_sources(zstd PRIVATE lib/decompress/huf_decompress_amd64.S)
 endif()
 
-target_include_directories(zstd PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zstd/lib")
+target_include_directories(zstd PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
 add_library(Zstd::Zstd ALIAS zstd)
