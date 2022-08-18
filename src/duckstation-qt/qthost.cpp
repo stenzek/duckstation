@@ -502,7 +502,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
     return;
 
   // force a frame to be drawn to repaint the window
-  renderDisplay();
+  renderDisplay(false);
 }
 
 void EmuThread::bootOrLoadState(std::string path)
@@ -626,7 +626,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
 
     // force redraw if we're paused
     if (!System::IsRunning() && !FullscreenUI::HasActiveWindow())
-      renderDisplay();
+      renderDisplay(false);
   }
 }
 
@@ -641,7 +641,7 @@ void EmuThread::redrawDisplayWindow()
   if (!g_host_display || System::IsShutdown())
     return;
 
-  renderDisplay();
+  renderDisplay(false);
 }
 
 void EmuThread::toggleFullscreen()
@@ -875,7 +875,7 @@ void Host::OnSystemPaused()
 
   emit g_emu_thread->systemPaused();
   g_emu_thread->startBackgroundControllerPollTimer();
-  g_emu_thread->renderDisplay();
+  g_emu_thread->renderDisplay(false);
 }
 
 void Host::OnSystemResumed()
@@ -1244,7 +1244,7 @@ void EmuThread::singleStepCPU()
     return;
 
   System::SingleStepCPU();
-  renderDisplay();
+  renderDisplay(false);
 }
 
 void EmuThread::dumpRAM(const QString& filename)
@@ -1444,7 +1444,7 @@ void EmuThread::run()
         continue;
       }
 
-      renderDisplay();
+      renderDisplay(false);
     }
   }
 
@@ -1458,27 +1458,32 @@ void EmuThread::run()
   moveToThread(m_ui_thread);
 }
 
-void EmuThread::renderDisplay()
+void EmuThread::renderDisplay(bool skip_present)
 {
   // acquire for IO.MousePos.
   std::atomic_thread_fence(std::memory_order_acquire);
 
-  FullscreenUI::Render();
-  ImGuiManager::RenderOverlays();
-  ImGuiManager::RenderOSD();
-  ImGuiManager::RenderDebugWindows();
-  g_host_display->Render();
+  if (!skip_present)
+  {
+    FullscreenUI::Render();
+    ImGuiManager::RenderOverlays();
+    ImGuiManager::RenderOSD();
+    ImGuiManager::RenderDebugWindows();
+  }
+
+  g_host_display->Render(skip_present);
+
   ImGuiManager::NewFrame();
 }
 
 void Host::InvalidateDisplay()
 {
-  g_emu_thread->renderDisplay();
+  g_emu_thread->renderDisplay(false);
 }
 
-void Host::RenderDisplay()
+void Host::RenderDisplay(bool skip_present)
 {
-  g_emu_thread->renderDisplay();
+  g_emu_thread->renderDisplay(skip_present);
 }
 
 void EmuThread::wakeThread()

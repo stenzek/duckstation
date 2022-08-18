@@ -394,7 +394,7 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   ImGui::End();
 
   ImGui::EndFrame();
-  g_host_display->Render();
+  g_host_display->Render(false);
   ImGui::NewFrame();
 }
 

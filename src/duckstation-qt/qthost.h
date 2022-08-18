@@ -94,7 +94,7 @@ public:
   bool acquireHostDisplay(HostDisplay::RenderAPI api);
   void connectDisplaySignals(DisplayWidget* widget);
   void releaseHostDisplay();
-  void renderDisplay();
+  void renderDisplay(bool skip_present);
 
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();

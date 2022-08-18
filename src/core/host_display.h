@@ -124,7 +124,7 @@ public:
                                u32 width, u32 height, void* out_data, u32 out_data_stride) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual bool Render() = 0;
+  virtual bool Render(bool skip_present) = 0;
 
   /// Renders the display with postprocessing to the specified image.
   virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
@@ -318,6 +318,6 @@ void ReleaseHostDisplay();
 //void EndPresentFrame();
 
 /// Provided by the host; renders the display.
-void RenderDisplay();
+void RenderDisplay(bool skip_present);
 void InvalidateDisplay();
 } // namespace Host

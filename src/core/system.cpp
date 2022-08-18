@@ -996,7 +996,7 @@ bool System::LoadState(const char* filename)
 
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::RenderDisplay();
+  Host::RenderDisplay(false);
   Log_VerbosePrintf("Loading state took %.2f msec", load_timer.GetTimeMilliseconds());
   return true;
 }
@@ -1463,7 +1463,7 @@ void System::Execute()
       PauseSystem(true);
     }
 
-    Host::RenderDisplay();
+    Host::RenderDisplay(g_host_display->ShouldSkipDisplayingFrame());
 
     System::UpdatePerformanceCounters();
 
@@ -1502,7 +1502,7 @@ void System::RecreateSystem()
 
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::RenderDisplay();
+  Host::RenderDisplay(false);
 
   if (was_paused)
     PauseSystem(true);

@@ -738,9 +738,9 @@ void OpenGLHostDisplay::DestroyResources()
   m_display_program.Destroy();
 }
 
-bool OpenGLHostDisplay::Render()
+bool OpenGLHostDisplay::Render(bool skip_present)
 {
-  if (ShouldSkipDisplayingFrame())
+  if (skip_present || m_window_info.type == WindowInfo::Type::Surfaceless)
   {
     if (ImGui::GetCurrentContext())
       ImGui::Render();

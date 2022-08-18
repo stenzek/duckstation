@@ -67,7 +67,7 @@ public:
 
   void SetVSync(bool enabled) override;
 
-  bool Render() override;
+  bool Render(bool skip_present) override;
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                         HostDisplayPixelFormat* out_format) override;
 

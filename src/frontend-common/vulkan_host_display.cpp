@@ -572,9 +572,9 @@ bool VulkanHostDisplay::DoneRenderContextCurrent()
   return true;
 }
 
-bool VulkanHostDisplay::Render()
+bool VulkanHostDisplay::Render(bool skip_present)
 {
-  if (ShouldSkipDisplayingFrame() || !m_swap_chain)
+  if (skip_present || !m_swap_chain)
   {
     if (ImGui::GetCurrentContext())
       ImGui::Render();
