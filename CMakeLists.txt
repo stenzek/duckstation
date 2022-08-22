@@ -3,6 +3,7 @@ project(duckstation C CXX)
 
 message("CMake Version: ${CMAKE_VERSION}")
 message("CMake System Name: ${CMAKE_SYSTEM_NAME}")
+message("Build Type: ${CMAKE_BUILD_TYPE}")
 
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
@@ -56,6 +57,7 @@ if(USE_WAYLAND)
 endif()
 
 if(ANDROID)
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   set(BUILD_NOGUI_FRONTEND OFF)
   set(BUILD_QT_FRONTEND OFF)
   set(BUILD_REGTEST OFF)
