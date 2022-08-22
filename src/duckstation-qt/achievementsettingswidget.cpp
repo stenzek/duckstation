@@ -17,7 +17,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Cheevos", "Enabled", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Cheevos", "Enabled", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresence, "Cheevos", "RichPresence", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.challengeMode, "Cheevos", "ChallengeMode", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.testMode, "Cheevos", "TestMode", false);

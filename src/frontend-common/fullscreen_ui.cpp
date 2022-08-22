@@ -4694,7 +4694,6 @@ void FullscreenUI::DrawAchievementsWindow()
 
 bool FullscreenUI::OpenLeaderboardsWindow()
 {
-#ifdef WITH_CHEEVOS
   if (!System::IsValid() || !Achievements::HasActiveGame() || Achievements::GetLeaderboardCount() == 0 || !Initialize())
     return false;
 
@@ -4705,9 +4704,6 @@ bool FullscreenUI::OpenLeaderboardsWindow()
   s_open_leaderboard_id.reset();
   QueueResetFocus();
   return true;
-#else
-  return false;
-#endif
 }
 
 void FullscreenUI::DrawLeaderboardListEntry(const Achievements::Leaderboard& lboard)

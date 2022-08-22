@@ -558,13 +558,12 @@ void Achievements::SetChallengeMode(bool enabled)
   if (HasActiveGame())
   {
     Host::AddKeyedOSDMessage("achievements_set_challenge_mode",
-                             enabled ? 
-                               Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
-                               Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
+                             enabled ? Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
+                                       Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
                              10.0f);
   }
 
-  if (HasActiveGame() && !g_settings.achievements_test_mode)
+  if (HasActiveGame() && !IsTestModeActive())
   {
     // deactivate, but don't clear all achievements (getting unlocks will reactivate them)
     std::unique_lock lock(s_achievements_mutex);
@@ -668,7 +667,7 @@ void Achievements::FrameUpdate()
     rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &PeekMemory, nullptr, nullptr);
     UpdateRichPresence();
 
-    if (!g_settings.achievements_test_mode)
+    if (!IsTestModeActive())
     {
       const s32 ping_frequency =
         g_settings.achievements_rich_presence ? RICH_PRESENCE_PING_FREQUENCY : NO_RICH_PRESENCE_PING_FREQUENCY;
@@ -1091,7 +1090,7 @@ void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::R
     // Skip local and unofficial achievements for now, unless "Test Unofficial Achievements" is enabled
     if (defn.category == RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL)
     {
-      if (!g_settings.achievements_unofficial_test_mode)
+      if (!IsUnofficialTestModeActive())
       {
         Log_WarningPrintf("Skipping unofficial achievement %u (%s)", defn.id, defn.title);
         continue;
@@ -1147,7 +1146,7 @@ void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::R
   // parse rich presence
   if (std::strlen(response.rich_presence_script) > 0)
   {
-    int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, response.rich_presence_script, nullptr, 0);
+    const int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, response.rich_presence_script, nullptr, 0);
     if (res == RC_OK)
       s_has_rich_presence = true;
     else
@@ -1164,7 +1163,7 @@ void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::R
 
   if (!s_achievements.empty() || s_has_rich_presence)
   {
-    if (!g_settings.achievements_test_mode)
+    if (!IsTestModeActive())
     {
       GetUserUnlocks();
     }
@@ -1313,6 +1312,7 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     if (!temp_image)
     {
       Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
+      std::unique_lock lock(s_achievements_mutex);
       DisableChallengeMode();
       ClearGameInfo();
       return;
@@ -1424,7 +1424,8 @@ void Achievements::UpdateRichPresence()
     return;
 
   char buffer[512];
-  int res = rc_runtime_get_richpresence(&s_rcheevos_runtime, buffer, sizeof(buffer), PeekMemory, nullptr, nullptr);
+  const int res =
+    rc_runtime_get_richpresence(&s_rcheevos_runtime, buffer, sizeof(buffer), PeekMemory, nullptr, nullptr);
   if (res <= 0)
   {
     const bool had_rich_presence = !s_rich_presence_string.empty();
@@ -1634,6 +1635,9 @@ void Achievements::DeactivateAchievement(Achievement* achievement)
 
 void Achievements::UnlockAchievementCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
 {
+  if (!System::IsValid())
+    return;
+
   RAPIResponse<rc_api_award_achievement_response_t, rc_api_process_award_achievement_response,
                rc_api_destroy_award_achievement_response>
     response(status_code, data);
@@ -1646,6 +1650,9 @@ void Achievements::UnlockAchievementCallback(s32 status_code, Common::HTTPDownlo
 
 void Achievements::SubmitLeaderboardCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
 {
+  if (!System::IsValid())
+    return;
+
   RAPIResponse<rc_api_submit_lboard_entry_response_t, rc_api_process_submit_lboard_entry_response,
                rc_api_destroy_submit_lboard_entry_response>
     response(status_code, data);
@@ -1712,7 +1719,7 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
   ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description,
                                    GetAchievementBadgePath(*achievement));
 
-  if (g_settings.achievements_test_mode)
+  if (IsTestModeActive())
   {
     Log_WarningPrintf("Skipping sending achievement %u unlock to server because of test mode.", achievement_id);
     return;
@@ -1736,7 +1743,7 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 
 void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)
 {
-  if (g_settings.achievements_test_mode)
+  if (IsTestModeActive())
   {
     Log_WarningPrintf("Skipping sending leaderboard %u result to server because of test mode.", leaderboard_id);
     return;
@@ -1870,6 +1877,7 @@ static void RACallbackEstimateTitle(char* buf);
 static void RACallbackResetEmulator();
 static void RACallbackLoadROM(const char* unused);
 static unsigned char RACallbackReadMemory(unsigned int address);
+static unsigned int RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
 static void RACallbackWriteMemory(unsigned int address, unsigned char value);
 
 static bool s_raintegration_initialized = false;
@@ -1896,6 +1904,7 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
   // Apparently this has to be done early, or the memory inspector doesn't work.
   // That's a bit unfortunate, because the RAM size can vary between games, and depending on the option.
   RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, Bus::RAM_2MB_SIZE);
+  RA_InstallMemoryBankBlockReader(0, RACallbackReadMemoryBlock);
 
   // Fire off a login anyway. Saves going into the menu and doing it.
   RA_AttemptLogin(0);
@@ -1923,54 +1932,21 @@ void Achievements::RAIntegration::GameChanged()
   RA_ActivateGame(s_game_id);
 }
 
-std::vector<std::pair<int, const char*>> Achievements::RAIntegration::GetMenuItems()
+std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::GetMenuItems()
 {
-  // NOTE: I *really* don't like doing this. But sadly it's the only way we can integrate with Qt.
-  static constexpr int IDM_RA_RETROACHIEVEMENTS = 1700;
-  static constexpr int IDM_RA_OVERLAYSETTINGS = 1701;
-  static constexpr int IDM_RA_FILES_MEMORYBOOKMARKS = 1703;
-  static constexpr int IDM_RA_FILES_ACHIEVEMENTS = 1704;
-  static constexpr int IDM_RA_FILES_MEMORYFINDER = 1705;
-  static constexpr int IDM_RA_FILES_LOGIN = 1706;
-  static constexpr int IDM_RA_FILES_LOGOUT = 1707;
-  static constexpr int IDM_RA_FILES_ACHIEVEMENTEDITOR = 1708;
-  static constexpr int IDM_RA_HARDCORE_MODE = 1710;
-  static constexpr int IDM_RA_REPORTBROKENACHIEVEMENTS = 1711;
-  static constexpr int IDM_RA_GETROMCHECKSUM = 1712;
-  static constexpr int IDM_RA_OPENUSERPAGE = 1713;
-  static constexpr int IDM_RA_OPENGAMEPAGE = 1714;
-  static constexpr int IDM_RA_PARSERICHPRESENCE = 1716;
-  static constexpr int IDM_RA_TOGGLELEADERBOARDS = 1717;
-  static constexpr int IDM_RA_NON_HARDCORE_WARNING = 1718;
+  std::array<RA_MenuItem, 64> items;
+  const int num_items = RA_GetPopupMenuItems(items.data());
 
-  std::vector<std::pair<int, const char*>> ret;
+  std::vector<std::tuple<int, std::string, bool>> ret;
+  ret.reserve(static_cast<u32>(num_items));
 
-  const char* username = RA_UserName();
-  if (!username || std::strlen(username) == 0)
+  for (int i = 0; i < num_items; i++)
   {
-    ret.emplace_back(IDM_RA_FILES_LOGIN, "&Login");
-  }
-  else
-  {
-    ret.emplace_back(IDM_RA_FILES_LOGOUT, "Log&out");
-    ret.emplace_back(0, nullptr);
-    ret.emplace_back(IDM_RA_OPENUSERPAGE, "Open my &User Page");
-    ret.emplace_back(IDM_RA_OPENGAMEPAGE, "Open this &Game's Page");
-    ret.emplace_back(0, nullptr);
-    ret.emplace_back(IDM_RA_HARDCORE_MODE, "&Hardcore Mode");
-    ret.emplace_back(IDM_RA_NON_HARDCORE_WARNING, "Non-Hardcore &Warning");
-    ret.emplace_back(0, nullptr);
-    ret.emplace_back(IDM_RA_TOGGLELEADERBOARDS, "Enable &Leaderboards");
-    ret.emplace_back(IDM_RA_OVERLAYSETTINGS, "O&verlay Settings");
-    ret.emplace_back(0, nullptr);
-    ret.emplace_back(IDM_RA_FILES_ACHIEVEMENTS, "Assets Li&st");
-    ret.emplace_back(IDM_RA_FILES_ACHIEVEMENTEDITOR, "Assets &Editor");
-    ret.emplace_back(IDM_RA_FILES_MEMORYFINDER, "&Memory Inspector");
-    ret.emplace_back(IDM_RA_FILES_MEMORYBOOKMARKS, "Memory &Bookmarks");
-    ret.emplace_back(IDM_RA_PARSERICHPRESENCE, "Rich &Presence Monitor");
-    ret.emplace_back(0, nullptr);
-    ret.emplace_back(IDM_RA_REPORTBROKENACHIEVEMENTS, "&Report Achievement Problem");
-    ret.emplace_back(IDM_RA_GETROMCHECKSUM, "View Game H&ash");
+    const RA_MenuItem& it = items[i];
+    if (!it.sLabel)
+      ret.emplace_back(0, std::string(), false);
+    else
+      ret.emplace_back(static_cast<int>(it.nID), StringUtil::WideStringToUTF8String(it.sLabel), it.bChecked);
   }
 
   return ret;
@@ -2031,6 +2007,17 @@ unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int add
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
   CPU::SafeWriteMemoryByte(address, value);
+}
+
+unsigned int Achievements::RAIntegration::RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer,
+                                                                    unsigned int nBytes)
+{
+  if (nAddress >= Bus::g_ram_size)
+    return 0;
+
+  const u32 copy_size = std::min<u32>(Bus::g_ram_size - nAddress, nBytes);
+  std::memcpy(pBuffer, Bus::g_ram + nAddress, copy_size);
+  return copy_size;
 }
 
 #endif

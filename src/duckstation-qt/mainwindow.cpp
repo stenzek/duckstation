@@ -1502,7 +1502,7 @@ void MainWindow::setupAdditionalUi()
       raMenu->clear();
 
       const auto items = Achievements::RAIntegration::GetMenuItems();
-      for (const auto& [id, title] : items)
+      for (const auto& [id, title, checked] : items)
       {
         if (id == 0)
         {
@@ -1511,6 +1511,12 @@ void MainWindow::setupAdditionalUi()
         }
 
         QAction* raAction = raMenu->addAction(QString::fromUtf8(title));
+        if (checked)
+        {
+          raAction->setCheckable(true);
+          raAction->setChecked(checked);
+        }
+
         connect(raAction, &QAction::triggered, this,
                 [id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
       }

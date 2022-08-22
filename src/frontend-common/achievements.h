@@ -113,7 +113,6 @@ bool LoginAsync(const char* username, const char* password);
 bool Login(const char* username, const char* password);
 void Logout();
 
-bool HasActiveGame();
 void GameChanged(const std::string& path, CDImage* image);
 
 /// Re-enables hardcode mode if it is enabled in the settings.
@@ -158,7 +157,7 @@ void SwitchToRAIntegration();
 namespace RAIntegration {
 void MainWindowChanged(void* new_handle);
 void GameChanged();
-std::vector<std::pair<int, const char*>> GetMenuItems();
+std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
 void ActivateMenuItem(int item);
 } // namespace RAIntegration
 #endif
