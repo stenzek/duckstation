@@ -58,7 +58,7 @@ static int rc_url_encode(char* encoded, size_t len, const char* str) {
 
 int rc_url_award_cheevo(char* buffer, size_t size, const char* user_name, const char* login_token,
                         unsigned cheevo_id, int hardcore, const char* game_hash) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   int written;
 
@@ -88,7 +88,7 @@ int rc_url_award_cheevo(char* buffer, size_t size, const char* user_name, const 
 }
 
 int rc_url_submit_lboard(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned lboard_id, int value) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   char signature[64];
   unsigned char hash[16];
@@ -136,7 +136,7 @@ int rc_url_get_gameid(char* buffer, size_t size, const char* hash) {
 }
 
 int rc_url_get_patch(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned gameid) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   int written;
 
@@ -172,7 +172,7 @@ int rc_url_get_badge_image(char* buffer, size_t size, const char* badge_name) {
 }
 
 int rc_url_login_with_password(char* buffer, size_t size, const char* user_name, const char* password) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_password[256];
   int written;
 
@@ -196,7 +196,7 @@ int rc_url_login_with_password(char* buffer, size_t size, const char* user_name,
 }
 
 int rc_url_login_with_token(char* buffer, size_t size, const char* user_name, const char* login_token) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   int written;
 
@@ -220,7 +220,7 @@ int rc_url_login_with_token(char* buffer, size_t size, const char* user_name, co
 }
 
 int rc_url_get_unlock_list(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned gameid, int hardcore) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   int written;
 
@@ -246,7 +246,7 @@ int rc_url_get_unlock_list(char* buffer, size_t size, const char* user_name, con
 }
 
 int rc_url_post_playing(char* buffer, size_t size, const char* user_name, const char* login_token, unsigned gameid) {
-  char urle_user_name[256];
+  char urle_user_name[64];
   char urle_login_token[64];
   int written;
 

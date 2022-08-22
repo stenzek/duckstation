@@ -1606,16 +1606,19 @@ int rc_hash_generate_from_buffer(char hash[33], int console_id, const uint8_t* b
 
     case RC_CONSOLE_AMSTRAD_PC:
     case RC_CONSOLE_APPLE_II:
+    case RC_CONSOLE_ARCADIA_2001:
     case RC_CONSOLE_ATARI_2600:
     case RC_CONSOLE_ATARI_JAGUAR:
     case RC_CONSOLE_COLECOVISION:
     case RC_CONSOLE_COMMODORE_64:
+    case RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER:
     case RC_CONSOLE_FAIRCHILD_CHANNEL_F:
     case RC_CONSOLE_GAMEBOY:
     case RC_CONSOLE_GAMEBOY_ADVANCE:
     case RC_CONSOLE_GAMEBOY_COLOR:
     case RC_CONSOLE_GAME_GEAR:
     case RC_CONSOLE_INTELLIVISION:
+    case RC_CONSOLE_INTERTON_VC_4000:
     case RC_CONSOLE_MAGNAVOX_ODYSSEY2:
     case RC_CONSOLE_MASTER_SYSTEM:
     case RC_CONSOLE_MEGA_DRIVE:
@@ -1898,15 +1901,18 @@ int rc_hash_generate_from_file(char hash[33], int console_id, const char* path)
       return rc_hash_error(buffer);
     }
 
+    case RC_CONSOLE_ARCADIA_2001:
     case RC_CONSOLE_ATARI_2600:
     case RC_CONSOLE_ATARI_JAGUAR:
     case RC_CONSOLE_COLECOVISION:
+    case RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER:
     case RC_CONSOLE_FAIRCHILD_CHANNEL_F:
     case RC_CONSOLE_GAMEBOY:
     case RC_CONSOLE_GAMEBOY_ADVANCE:
     case RC_CONSOLE_GAMEBOY_COLOR:
     case RC_CONSOLE_GAME_GEAR:
     case RC_CONSOLE_INTELLIVISION:
+    case RC_CONSOLE_INTERTON_VC_4000:
     case RC_CONSOLE_MAGNAVOX_ODYSSEY2:
     case RC_CONSOLE_MASTER_SYSTEM:
     case RC_CONSOLE_MEGADUCK:
@@ -2131,14 +2137,15 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
                     iterator->consoles[2] = RC_CONSOLE_PLAYSTATION_2; /* PCSX2 supports directly opening the bin file*/
                     iterator->consoles[3] = RC_CONSOLE_SEGA_CD; /* Genesis Plus GX supports directly opening the bin file*/
 
-                    /* fallback to megadrive which just does a full hash */
+                    /* fallback to megadrive which just does a full hash. */
                     iterator->consoles[4] = RC_CONSOLE_MEGA_DRIVE;
                     break;
                  }
               }
            }
 
-          /* bin is associated with MegaDrive, Sega32X, Atari 2600, Watara Supervision, MegaDuck, and Fairchild Channel F.
+          /* bin is associated with MegaDrive, Sega32X, Atari 2600, Watara Supervision, MegaDuck,
+           * Fairchild Channel F, Arcadia 2001, and Interton VC 4000.
            * Since they all use the same hashing algorithm, only specify one of them */
           iterator->consoles[0] = RC_CONSOLE_MEGA_DRIVE;
         }
@@ -2346,6 +2353,10 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         {
           iterator->consoles[0] = RC_CONSOLE_PC_ENGINE;
         }
+        else if (rc_path_compare_extension(ext, "pgm"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER;
+        }
         break;
 
       case 'r':
@@ -2394,6 +2405,10 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         else if (rc_path_compare_extension(ext, "tic"))
         {
           iterator->consoles[0] = RC_CONSOLE_TIC80;
+        }
+        else if (rc_path_compare_extension(ext, "tvc"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER;
         }
         break;
 

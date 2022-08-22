@@ -21,6 +21,9 @@ const char* rc_console_name(int console_id)
     case RC_CONSOLE_ARCADE:
       return "Arcade";
 
+    case RC_CONSOLE_ARCADIA_2001:
+      return "Arcadia 2001";
+
     case RC_CONSOLE_ARDUBOY:
       return "Arduboy";
 
@@ -57,6 +60,9 @@ const char* rc_console_name(int console_id)
     case RC_CONSOLE_DREAMCAST:
       return "Dreamcast";
 
+    case RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER:
+      return "Elektor TV Games Computer";
+
     case RC_CONSOLE_EVENTS:
       return "Events";
 
@@ -89,6 +95,9 @@ const char* rc_console_name(int console_id)
 
     case RC_CONSOLE_INTELLIVISION:
       return "Intellivision";
+
+    case RC_CONSOLE_INTERTON_VC_4000:
+      return "Interton VC 4000";
 
     case RC_CONSOLE_MAGNAVOX_ODYSSEY2:
       return "Magnavox Odyssey 2";
@@ -274,6 +283,16 @@ static const rc_memory_region_t _rc_memory_regions_appleii[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_appleii = { _rc_memory_regions_appleii, 2 };
 
+/* ===== Arcadia 2001 ===== */
+/* https://amigan.yatho.com/a-coding.txt */
+/* RAM banks 1 and 2 only exist on some variant models - no game actually uses them */
+static const rc_memory_region_t _rc_memory_regions_arcadia_2001[] = {
+    { 0x000000U, 0x0000FFU, 0x001800U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 3 */
+    { 0x000100U, 0x0001FFU, 0x001900U, RC_MEMORY_TYPE_HARDWARE_CONTROLLER, "I/O Area" },
+    { 0x000200U, 0x0002FFU, 0x001A00U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RAM bank 4 */
+};
+static const rc_memory_regions_t rc_memory_regions_arcadia_2001 = { _rc_memory_regions_arcadia_2001, 3 };
+
 /* ===== Arduboy ===== */
 /* https://scienceprog.com/avr-microcontroller-memory-map/ (Atmega32) */
 static const rc_memory_region_t _rc_memory_regions_arduboy[] = {
@@ -355,6 +374,16 @@ static const rc_memory_region_t _rc_memory_regions_dreamcast[] = {
     { 0x00000000U, 0x00FFFFFFU, 0x0C000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
 };
 static const rc_memory_regions_t rc_memory_regions_dreamcast = { _rc_memory_regions_dreamcast, 1 };
+
+/* ===== Elektor TV Games Computer ===== */
+/* https://amigan.yatho.com/e-coding.txt */
+static const rc_memory_region_t _rc_memory_regions_elektor_tv_games[] = {
+    { 0x000000U, 0x0013FFU, 0x000800U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    { 0x001400U, 0x0014FFU, 0x001C00U, RC_MEMORY_TYPE_UNUSED, "Unused" }, /* mirror of $1D00-$1DFF */
+    { 0x001500U, 0x0016FFU, 0x001D00U, RC_MEMORY_TYPE_HARDWARE_CONTROLLER, "I/O Area" }, /* two 256-byte I/O areas */
+    { 0x001700U, 0x0017FFU, 0x001F00U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+};
+static const rc_memory_regions_t rc_memory_regions_elektor_tv_games = { _rc_memory_regions_elektor_tv_games, 4 };
 
 /* ===== Fairchild Channel F ===== */
 static const rc_memory_region_t _rc_memory_regions_fairchild_channel_f[] = {
@@ -453,6 +482,16 @@ static const rc_memory_region_t _rc_memory_regions_intellivision[] = {
     { 0x010080U, 0x04007FU, 0x004000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Cartridge RAM" },
 };
 static const rc_memory_regions_t rc_memory_regions_intellivision = { _rc_memory_regions_intellivision, 10 };
+
+/* ===== Interton VC 4000 ===== */
+/* https://amigan.yatho.com/i-coding.txt */
+/* Cartridge RAM is not persisted, it's just expanded storage */
+static const rc_memory_region_t _rc_memory_regions_interton_vc_4000[] = {
+    { 0x000000U, 0x0003FFU, 0x001800U, RC_MEMORY_TYPE_SYSTEM_RAM, "Cartridge RAM" },
+    { 0x000400U, 0x0004FFU, 0x001E00U, RC_MEMORY_TYPE_HARDWARE_CONTROLLER, "I/O Area" },
+    { 0x000500U, 0x0005FFU, 0x001F00U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, 
+};
+static const rc_memory_regions_t rc_memory_regions_interton_vc_4000 = { _rc_memory_regions_interton_vc_4000, 3 };
 
 /* ===== Magnavox Odyssey 2 ===== */
 /* https://sudonull.com/post/76885-Architecture-and-programming-Philips-Videopac-Magnavox-Odyssey-2 */
@@ -758,6 +797,9 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
     case RC_CONSOLE_APPLE_II:
       return &rc_memory_regions_appleii;
 
+    case RC_CONSOLE_ARCADIA_2001:
+      return &rc_memory_regions_arcadia_2001;
+
     case RC_CONSOLE_ARDUBOY:
       return &rc_memory_regions_arduboy;
 
@@ -782,6 +824,9 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
     case RC_CONSOLE_DREAMCAST:
       return &rc_memory_regions_dreamcast;
 
+    case RC_CONSOLE_ELEKTOR_TV_GAMES_COMPUTER:
+      return &rc_memory_regions_elektor_tv_games;
+
     case RC_CONSOLE_FAIRCHILD_CHANNEL_F:
       return &rc_memory_regions_fairchild_channel_f;
 
@@ -800,6 +845,9 @@ const rc_memory_regions_t* rc_console_memory_regions(int console_id)
 
     case RC_CONSOLE_INTELLIVISION:
       return &rc_memory_regions_intellivision;
+
+    case RC_CONSOLE_INTERTON_VC_4000:
+      return &rc_memory_regions_interton_vc_4000;
 
     case RC_CONSOLE_MAGNAVOX_ODYSSEY2:
       return &rc_memory_regions_magnavox_odyssey_2;
