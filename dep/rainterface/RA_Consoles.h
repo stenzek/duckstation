@@ -76,6 +76,7 @@ enum ConsoleID
     MegaDuck = 69,
     Zeebo = 70,
     Arduboy = 71,
+    WASM4 = 72,
 
     NumConsoleIDs
 };

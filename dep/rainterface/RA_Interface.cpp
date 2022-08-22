@@ -20,12 +20,14 @@ static int          (CCONV* _RA_InitClientOffline)(HWND hMainWnd, const char* sC
 static void         (CCONV* _RA_InstallSharedFunctions)(int(*)(), void(*)(), void(*)(), void(*)(), void(*)(char*), void(*)(), void(*)(const char*)) = nullptr;
 static void         (CCONV* _RA_SetForceRepaint)(int bEnable) = nullptr;
 static HMENU        (CCONV* _RA_CreatePopupMenu)() = nullptr;
+static int          (CCONV* _RA_GetPopupMenuItems)(RA_MenuItem*) = nullptr;
 static void         (CCONV* _RA_InvokeDialog)(LPARAM nID) = nullptr;
 static void         (CCONV* _RA_SetUserAgentDetail)(const char* sDetail);
 static void         (CCONV* _RA_AttemptLogin)(int bBlocking) = nullptr;
 static int          (CCONV* _RA_SetConsoleID)(unsigned int nConsoleID) = nullptr;
 static void         (CCONV* _RA_ClearMemoryBanks)() = nullptr;
 static void         (CCONV* _RA_InstallMemoryBank)(int nBankID, RA_ReadMemoryFunc* pReader, RA_WriteMemoryFunc* pWriter, int nBankSize) = nullptr;
+static void         (CCONV* _RA_InstallMemoryBankBlockReader)(int nBankID, RA_ReadMemoryBlockFunc* pReader) = nullptr;
 static int          (CCONV* _RA_Shutdown)() = nullptr;
 // Overlay
 static int          (CCONV* _RA_IsOverlayFullyVisible)() = nullptr;
@@ -134,9 +136,20 @@ void RA_InstallMemoryBank(int nBankID, RA_ReadMemoryFunc pReader, RA_WriteMemory
         _RA_InstallMemoryBank(nBankID, pReader, pWriter, nBankSize);
 }
 
+void RA_InstallMemoryBankBlockReader(int nBankID, RA_ReadMemoryBlockFunc pReader)
+{
+    if (_RA_InstallMemoryBankBlockReader != nullptr)
+        _RA_InstallMemoryBankBlockReader(nBankID, pReader);
+}
+
 HMENU RA_CreatePopupMenu(void)
 {
     return (_RA_CreatePopupMenu != nullptr) ? _RA_CreatePopupMenu() : nullptr;
+}
+
+int RA_GetPopupMenuItems(RA_MenuItem *pItems)
+{
+    return (_RA_GetPopupMenuItems != nullptr) ? _RA_GetPopupMenuItems(pItems) : 0;
 }
 
 void RA_UpdateAppTitle(const char* sCustomMsg)
@@ -293,6 +306,7 @@ static BOOL DoBlockingHttpCall(const char* sHostUrl, const char* sRequestedPage,
 {
     BOOL bResults = FALSE, bSuccess = FALSE;
     HINTERNET hSession = nullptr, hConnect = nullptr, hRequest = nullptr;
+    size_t nHostnameLen;
 
     WCHAR wBuffer[1024];
     size_t nTemp;
@@ -313,6 +327,17 @@ static BOOL DoBlockingHttpCall(const char* sHostUrl, const char* sRequestedPage,
         nPort = INTERNET_DEFAULT_HTTPS_PORT;
     }
 
+    const char* sPort = strchr(sHostName, ':');
+    if (sPort)
+    {
+        nHostnameLen = sPort - sHostName;
+        nPort = atoi(sPort + 1);
+    }
+    else
+    {
+        nHostnameLen = strlen(sHostName);
+    }
+
     // Use WinHttpOpen to obtain a session handle.
     hSession = WinHttpOpen(L"RetroAchievements Client Bootstrap",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
@@ -327,10 +352,11 @@ static BOOL DoBlockingHttpCall(const char* sHostUrl, const char* sRequestedPage,
     else
     {
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-        mbstowcs_s(&nTemp, wBuffer, sizeof(wBuffer) / sizeof(wBuffer[0]), sHostName, strlen(sHostName) + 1);
+        mbstowcs_s(&nTemp, wBuffer, sizeof(wBuffer) / sizeof(wBuffer[0]), sHostName, nHostnameLen);
 #else
-        nTemp = mbstowcs(wBuffer, sHostName, strlen(sHostName) + 1);
+        nTemp = mbstowcs(wBuffer, sHostName, nHostnameLen);
 #endif
+
         if (nTemp > 0)
         {
             hConnect = WinHttpConnect(hSession, wBuffer, nPort, 0);
@@ -659,12 +685,14 @@ static const char* CCONV _RA_InstallIntegration()
     _RA_InstallSharedFunctions = (void(CCONV*)(int(*)(), void(*)(), void(*)(), void(*)(), void(*)(char*), void(*)(), void(*)(const char*))) GetProcAddress(g_hRADLL, "_RA_InstallSharedFunctionsExt");
     _RA_SetForceRepaint = (void(CCONV*)(int))                                        GetProcAddress(g_hRADLL, "_RA_SetForceRepaint");
     _RA_CreatePopupMenu = (HMENU(CCONV*)(void))                                      GetProcAddress(g_hRADLL, "_RA_CreatePopupMenu");
+    _RA_GetPopupMenuItems = (int(CCONV*)(RA_MenuItem*))                              GetProcAddress(g_hRADLL, "_RA_GetPopupMenuItems");
     _RA_InvokeDialog = (void(CCONV*)(LPARAM))                                        GetProcAddress(g_hRADLL, "_RA_InvokeDialog");
     _RA_SetUserAgentDetail = (void(CCONV*)(const char*))                             GetProcAddress(g_hRADLL, "_RA_SetUserAgentDetail");
     _RA_AttemptLogin = (void(CCONV*)(int))                                           GetProcAddress(g_hRADLL, "_RA_AttemptLogin");
     _RA_SetConsoleID = (int(CCONV*)(unsigned int))                                   GetProcAddress(g_hRADLL, "_RA_SetConsoleID");
     _RA_ClearMemoryBanks = (void(CCONV*)())                                          GetProcAddress(g_hRADLL, "_RA_ClearMemoryBanks");
     _RA_InstallMemoryBank = (void(CCONV*)(int, RA_ReadMemoryFunc*, RA_WriteMemoryFunc*, int)) GetProcAddress(g_hRADLL, "_RA_InstallMemoryBank");
+    _RA_InstallMemoryBankBlockReader = (void(CCONV*)(int, RA_ReadMemoryBlockFunc*))  GetProcAddress(g_hRADLL, "_RA_InstallMemoryBankBlockReader");
     _RA_Shutdown = (int(CCONV*)())                                                   GetProcAddress(g_hRADLL, "_RA_Shutdown");
     _RA_IsOverlayFullyVisible = (int(CCONV*)())                                      GetProcAddress(g_hRADLL, "_RA_IsOverlayFullyVisible");
     _RA_SetPaused = (void(CCONV*)(int))                                              GetProcAddress(g_hRADLL, "_RA_SetPaused");
@@ -983,12 +1011,14 @@ void RA_Shutdown()
     _RA_InstallSharedFunctions = nullptr;
     _RA_SetForceRepaint = nullptr;
     _RA_CreatePopupMenu = nullptr;
+    _RA_GetPopupMenuItems = nullptr;
     _RA_InvokeDialog = nullptr;
     _RA_SetUserAgentDetail = nullptr;
     _RA_AttemptLogin = nullptr;
     _RA_SetConsoleID = nullptr;
     _RA_ClearMemoryBanks = nullptr;
     _RA_InstallMemoryBank = nullptr;
+    _RA_InstallMemoryBankBlockReader = nullptr;
     _RA_Shutdown = nullptr;
     _RA_IsOverlayFullyVisible = nullptr;
     _RA_SetPaused = nullptr;
