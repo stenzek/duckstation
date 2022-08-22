@@ -5,7 +5,14 @@ else()
   set(COMPILE_OPTIONS -Ofast)
 endif()
 
-add_library(soundtouch
+if(NOT ANDROID)
+  add_library(soundtouch STATIC)
+else()
+  add_library(soundtouch SHARED)
+  set(COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}" "ST_EXPORT")
+endif()
+
+target_sources(soundtouch PRIVATE
   source/SoundTouch/AAFilter.cpp
   source/SoundTouch/BPMDetect.cpp
   source/SoundTouch/cpu_detect_x86.cpp

@@ -164,8 +164,13 @@ namespace soundtouch
 ///   tempo/pitch/rate/samplerate settings.
 #define SETTING_INITIAL_LATENCY             8
 
+#ifdef ST_EXPORT
+#define ST_VISIBILITY __attribute__ ((visibility ("default")))
+#else
+#define ST_VISIBILITY
+#endif
 
-class SoundTouch : public FIFOProcessor
+class ST_VISIBILITY SoundTouch : public FIFOProcessor
 {
 private:
     /// Rate transposer class instance
