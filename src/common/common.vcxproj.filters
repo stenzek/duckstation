@@ -117,7 +117,6 @@
     <ClInclude Include="d3d12\shader_cache.h">
       <Filter>d3d12</Filter>
     </ClInclude>
-    <ClInclude Include="http_downloader_uwp.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="vulkan\entry_points.h">
@@ -245,7 +244,6 @@
     </ClCompile>
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
-    <ClCompile Include="http_downloader_uwp.cpp" />
     <ClCompile Include="vulkan\loader.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>

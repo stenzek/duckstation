@@ -22,33 +22,12 @@ static std::string GetTemporaryFileName(const std::string& original_filename)
 {
   std::string temporary_filename;
   temporary_filename.reserve(original_filename.length() + 8);
+  temporary_filename.append(original_filename);
 
 #ifdef _WIN32
-  // On UWP, preserve the extension, as it affects permissions.
-#ifdef _UWP
-  const std::string_view original_view(original_filename);
-  const std::string_view extension(Path::GetExtension(original_view));
-  if (extension.length() < original_filename.length())
-  {
-    temporary_filename.append(original_view.substr(0, original_filename.length() - extension.length() - 1));
-    temporary_filename.append("_XXXXXX");
-    _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
-    temporary_filename += '.';
-    temporary_filename.append(extension);
-  }
-  else
-  {
-    temporary_filename.append(original_filename);
-    temporary_filename.append(".XXXXXXX");
-    _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
-  }
-#else
-  temporary_filename.append(original_filename);
   temporary_filename.append(".XXXXXXX");
   _mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
-#endif
 #else
-  temporary_filename.append(original_filename);
   temporary_filename.append(".XXXXXX");
 #if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
   mkstemp(temporary_filename.data());

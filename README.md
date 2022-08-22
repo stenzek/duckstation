@@ -80,24 +80,6 @@ To set up:
 
 The Qt frontend includes an automatic update checker. Builds downloaded after 2020/08/07 will automatically check for updates each time the emulator starts, this can be disabled in Settings. Alternatively, you can force an update check by clicking `Help->Check for Updates`.
 
-### Universal Windows Platform / Xbox One
-
-The DuckStation fullscreen UI is available for the Universal Windows Platform and Xbox One.
-
-To use on Xbox One:
-
-1. Ensure your console is in developer mode. You will need to purchase a developer license from Microsoft.
-2. Download the duckstation-uwp.appx file.
-3. Navigate to the device portal for your console (displayed in the home screen).
-4. Install the appx file by clicking Add in the main page.
-5. Set the app to Game mode instead of App mode: Scroll down to DuckStation in the listinng, press the `Change View` button, select `View Details`, and change `App` to `Game`.
-6. Upload a BIOS image to the local state directory for DuckStation, or place your BIOS image on a removable USB drive. If using a USB drive, you will need to set the BIOS path in DuckStation's settings to point to this directory.
-7. Add games to the local state games directory, or use a removable USB drive. Again, you will have to register this path in Game List Settings for it to scan.
-8. Launch the app, and enjoy. By default, the `Change View` button will open the quick menu.
-9. Don't forget to enable enhancements, an Xbox One S can do 8x resolution scale with 4K output, Series consoles can go higher.
-
-**NOTE:** I'd recommend using a USB drive for saving memory cards, as the local state directory will be removed when you uninstall the app.
-
 ### Linux
 
 The only supported version of DuckStation for Linux are the AppImages in the releases page. The AppImages require a distribution equivalent to Ubuntu 20.04 or newer to run, which is also the minimum requirement for Qt 6. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead, they have a history of breaking things and there's a good chance that's the issue.

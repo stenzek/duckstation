@@ -39,7 +39,7 @@
     <ClCompile Include="gpu_hw_d3d12.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
     <ClCompile Include="gpu_hw_vulkan.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
@@ -49,7 +49,7 @@
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="gpu_hw_opengl.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="host.cpp" />
     <ClCompile Include="host_display.cpp" />
@@ -109,7 +109,7 @@
     <ClInclude Include="gpu_hw_d3d12.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_vulkan.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_backend.h" />
@@ -121,7 +121,7 @@
     <ClInclude Include="gpu.h" />
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gpu_hw_opengl.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64' Or '$(BuildingForUWP)'=='true'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host.h" />

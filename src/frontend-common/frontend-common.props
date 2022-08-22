@@ -11,7 +11,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(BuildingForUWP)'!='true'">
+  <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>WITH_SDL2=1;WITH_DINPUT=1;WITH_DISCORD_PRESENCE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\discord-rpc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -21,5 +21,5 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" Condition="'$(BuildingForUWP)'!='true'" />
+  <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
 </Project>

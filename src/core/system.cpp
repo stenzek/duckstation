@@ -55,9 +55,7 @@ Log_SetChannel(System);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
-#ifndef _UWP
 #include <mmsystem.h>
-#endif
 #endif
 
 // #define PROFILE_MEMORY_SAVE_STATES 1
@@ -4256,7 +4254,7 @@ void System::HostDisplayResized()
 
 void System::SetTimerResolutionIncreased(bool enabled)
 {
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
   static bool current_state = false;
   if (current_state == enabled)
     return;

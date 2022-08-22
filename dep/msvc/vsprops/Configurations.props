@@ -49,57 +49,13 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugUWP|ARM64">
-      <Configuration>DebugUWP</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugUWP|Win32">
-      <Configuration>DebugUWP</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugUWP|x64">
-      <Configuration>DebugUWP</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseUWP|ARM64">
-      <Configuration>ReleaseUWP</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseUWP|Win32">
-      <Configuration>ReleaseUWP</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ReleaseUWP|x64">
-      <Configuration>ReleaseUWP</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
-
-  <PropertyGroup Label="UserMacros">
-    <BuildingForUWP Condition="'$(Configuration)'=='DebugUWP' Or '$(Configuration)'=='ReleaseUWP'">true</BuildingForUWP>
-  </PropertyGroup>
-
-  <Import Project="$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="$(Configuration.Contains(UWP)) And Exists('$(SolutionDir)packages\Microsoft.Windows.CppWinRT.2.0.210505.3\build\native\Microsoft.Windows.CppWinRT.props')" />
 
   <PropertyGroup Label="Globals">
     <ProjectName>$(MSBuildProjectName)</ProjectName>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Globals" Condition="!$(Configuration.Contains(UWP))">
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  
-  <PropertyGroup Label="Globals" Condition="$(Configuration.Contains(UWP))">
-    <MinimalCoreWin>true</MinimalCoreWin>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
-    <AppContainerApplication>true</AppContainerApplication>
-    <ApplicationType>Windows Store</ApplicationType>
-    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="UserMacros">

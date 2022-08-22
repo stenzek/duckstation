@@ -53,7 +53,7 @@ static void DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
   }
 }
 
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 
 // The include order here is critical.
 // clang-format off

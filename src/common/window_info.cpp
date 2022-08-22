@@ -2,7 +2,7 @@
 #include "common/log.h"
 Log_SetChannel(WindowInfo);
 
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
 
 #include "common/windows_headers.h"
 #include <dwmapi.h>

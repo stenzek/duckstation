@@ -111,7 +111,6 @@ private:
   CacheIndex m_pipeline_index;
 
   D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
-  bool m_use_pipeline_cache = false;
   bool m_debug = false;
 };
 

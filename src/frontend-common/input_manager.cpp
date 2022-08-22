@@ -870,7 +870,7 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 
 bool InputManager::IsUsingRawInput()
 {
-#if defined(_WIN32) && !defined(_UWP)
+#if defined(_WIN32)
   return static_cast<bool>(s_input_sources[static_cast<u32>(InputSourceType::RawInput)]);
 #else
   return false;

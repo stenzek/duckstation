@@ -2884,7 +2884,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
     fullscreen_mode_set = true;
   }
 
-#ifndef _UWP
   if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
                           fullscreen_mode.empty() ? "Borderless Fullscreen" : fullscreen_mode.c_str()))
   {
@@ -2911,7 +2910,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
     };
     OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
   }
-#endif
 #endif
 
   const GPURenderer renderer =
