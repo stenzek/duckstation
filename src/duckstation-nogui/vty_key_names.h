@@ -8,7 +8,7 @@
 #include <optional>
 #include <string_view>
 
-namespace EvDevKeyNames {
+namespace VTYKeyNames {
 
 static const std::map<int, const char*> s_evdev_key_names = {{KEY_ESC, "Escape"},
                                                              {KEY_1, "1"},
@@ -275,4 +275,4 @@ static inline std::optional<int> GetKeyCodeForName(const std::string_view key_na
   return std::nullopt;
 }
 
-} // namespace EvDevKeyNames
+} // namespace VTYKeyNames

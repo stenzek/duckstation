@@ -2,26 +2,29 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
-    <ClCompile Include="vty_host_interface.cpp">
+    <ClCompile Include="nogui_host.cpp" />
+    <ClCompile Include="vty_nogui_platform.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="nogui_host_interface.cpp" />
-    <ClCompile Include="sdl_host_interface.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="win32_host_interface.cpp" />
+    <ClCompile Include="wayland_nogui_platform.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="win32_nogui_platform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vty_host_interface.h">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="evdev_key_names.h">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="nogui_host_interface.h" />
+    <ClInclude Include="nogui_host.h" />
+    <ClInclude Include="nogui_platform.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="sdl_host_interface.h" />
-    <ClInclude Include="sdl_key_names.h" />
-    <ClInclude Include="win32_host_interface.h" />
+    <ClInclude Include="vty_key_names.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="vty_nogui_platform.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="wayland_nogui_platform.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="win32_nogui_platform.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-nogui.manifest" />
