@@ -48,17 +48,7 @@ Log_SetChannel(EmuThread);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
-#include "frontend-common/d3d11_host_display.h"
-#include "frontend-common/d3d12_host_display.h"
 #include <ShlObj.h>
-#endif
-
-#ifdef WITH_OPENGL
-#include "frontend-common/opengl_host_display.h"
-#endif
-
-#ifdef WITH_VULKAN
-#include "frontend-common/vulkan_host_display.h"
 #endif
 
 #ifdef WITH_CHEEVOS
@@ -723,43 +713,9 @@ bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
     releaseHostDisplay();
   }
 
-  switch (api)
-  {
-#ifdef WITH_VULKAN
-    case HostDisplay::RenderAPI::Vulkan:
-      g_host_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
-      break;
-#endif
-
-#ifdef WITH_OPENGL
-    case HostDisplay::RenderAPI::OpenGL:
-    case HostDisplay::RenderAPI::OpenGLES:
-      g_host_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
-      break;
-#endif
-
-#ifdef _WIN32
-    case HostDisplay::RenderAPI::D3D12:
-      g_host_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
-      break;
-
-    case HostDisplay::RenderAPI::D3D11:
-      g_host_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
-      break;
-#endif
-
-    default:
-#if defined(_WIN32) && defined(_M_ARM64)
-      g_host_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
-#elif defined(_WIN32)
-      g_host_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
-#elif defined(WITH_OPENGL)
-      g_host_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
-#elif defined(WITH_VULKAN)
-      g_host_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
-#endif
-      break;
-  }
+  g_host_display = Host::CreateDisplayForAPI(api);
+  if (!g_host_display)
+    return false;
 
   if (!createDisplayRequested(m_is_fullscreen, m_is_rendering_to_main))
   {

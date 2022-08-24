@@ -52,9 +52,19 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
+#include "frontend-common/d3d11_host_display.h"
+#include "frontend-common/d3d12_host_display.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #include <mmsystem.h>
+#endif
+
+#ifdef WITH_OPENGL
+#include "frontend-common/opengl_host_display.h"
+#endif
+
+#ifdef WITH_VULKAN
+#include "frontend-common/vulkan_host_display.h"
 #endif
 
 Log_SetChannel(CommonHostInterface);
@@ -119,6 +129,44 @@ void CommonHost::PumpMessagesOnCPUThread()
   if (Achievements::IsActive())
     Achievements::FrameUpdate();
 #endif
+}
+
+std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(HostDisplay::RenderAPI api)
+{
+  switch (api)
+  {
+#ifdef WITH_VULKAN
+    case HostDisplay::RenderAPI::Vulkan:
+      return std::make_unique<FrontendCommon::VulkanHostDisplay>();
+#endif
+
+#ifdef WITH_OPENGL
+    case HostDisplay::RenderAPI::OpenGL:
+    case HostDisplay::RenderAPI::OpenGLES:
+      return std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+#endif
+
+#ifdef _WIN32
+    case HostDisplay::RenderAPI::D3D12:
+      return std::make_unique<FrontendCommon::D3D12HostDisplay>();
+
+    case HostDisplay::RenderAPI::D3D11:
+      return std::make_unique<FrontendCommon::D3D11HostDisplay>();
+#endif
+
+    default:
+#if defined(_WIN32) && defined(_M_ARM64)
+      return std::make_unique<FrontendCommon::D3D12HostDisplay>();
+#elif defined(_WIN32)
+      return std::make_unique<FrontendCommon::D3D11HostDisplay>();
+#elif defined(WITH_OPENGL)
+      return std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+#elif defined(WITH_VULKAN)
+      return std::make_unique<FrontendCommon::VulkanHostDisplay>();
+#else
+      return {};
+#endif
+  }
 }
 
 bool CommonHost::CreateHostDisplayResources()

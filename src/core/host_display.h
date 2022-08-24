@@ -304,6 +304,8 @@ protected:
 extern std::unique_ptr<HostDisplay> g_host_display;
 
 namespace Host {
+std::unique_ptr<HostDisplay> CreateDisplayForAPI(HostDisplay::RenderAPI api);
+
 /// Creates the host display. This may create a new window. The API used depends on the current configuration.
 bool AcquireHostDisplay(HostDisplay::RenderAPI api);
 
