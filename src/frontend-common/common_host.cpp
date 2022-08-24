@@ -92,7 +92,6 @@ void CommonHost::Initialize()
 {
   // This will call back to Host::LoadSettings() -> ReloadSources().
   System::LoadSettings(false);
-  UpdateLogSettings();
 
 #ifdef WITH_CHEEVOS
 #ifdef WITH_RAINTEGRATION
@@ -347,6 +346,7 @@ void CommonHost::SetDefaultHotkeyBindings(SettingsInterface& si)
 
 void CommonHost::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
+  UpdateLogSettings();
   InputManager::ReloadSources(si, lock);
   InputManager::ReloadBindings(si, *Host::GetSettingsInterfaceForBindings());
 

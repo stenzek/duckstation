@@ -107,8 +107,8 @@ if(USE_EVDEV)
   target_include_directories(frontend-common PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
   target_link_libraries(frontend-common PRIVATE ${LIBEVDEV_LIBRARIES})
   target_sources(frontend-common PRIVATE
-    evdev_controller_interface.cpp
-    evdev_controller_interface.h
+    evdev_input_source.cpp
+    evdev_input_source.h
   )
 endif()
 

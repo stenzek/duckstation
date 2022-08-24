@@ -440,6 +440,9 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
 #ifdef WITH_SDL2
   "SDL",
 #endif
+#ifdef WITH_EVDEV
+  "Evdev",
+#endif
 #ifdef __ANDROID__
   "Android",
 #endif
@@ -1527,6 +1530,9 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
 #endif
 #ifdef WITH_SDL2
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource, true);
+#endif
+#ifdef WITH_EVDEV
+  UpdateInputSourceState(si, settings_lock, InputSourceType::Evdev, &InputSource::CreateEvdevSource, true);
 #endif
 #ifdef __ANDROID__
   UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource, true);

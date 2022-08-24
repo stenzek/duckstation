@@ -69,6 +69,9 @@ public:
 #ifdef WITH_SDL2
   static std::unique_ptr<InputSource> CreateSDLSource();
 #endif
+#ifdef WITH_EVDEV
+  static std::unique_ptr<InputSource> CreateEvdevSource();
+#endif
 #ifdef __ANDROID__
   static std::unique_ptr<InputSource> CreateAndroidSource();
 #endif

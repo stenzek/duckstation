@@ -24,6 +24,9 @@ enum class InputSourceType : u32
 #ifdef WITH_SDL2
   SDL,
 #endif
+#ifdef WITH_EVDEV
+  Evdev,
+#endif
 #ifdef __ANDROID__
   Android,
 #endif
