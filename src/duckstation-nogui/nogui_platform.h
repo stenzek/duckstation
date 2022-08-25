@@ -37,6 +37,9 @@ public:
 
   virtual bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) = 0;
 
+  virtual bool OpenURL(const std::string_view& url) = 0;
+  virtual bool CopyTextToClipboard(const std::string_view& text) = 0;
+
 #ifdef _WIN32
   static std::unique_ptr<NoGUIPlatform> CreateWin32Platform();
 #endif

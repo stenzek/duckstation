@@ -27,6 +27,7 @@ void ProcessPlatformMouseMoveEvent(float x, float y);
 void ProcessPlatformMouseButtonEvent(s32 button, bool pressed);
 void ProcessPlatformMouseWheelEvent(float x, float y);
 void ProcessPlatformKeyEvent(s32 key, bool pressed);
+void ProcessPlatformTextEvent(const char* text);
 void PlatformWindowFocusGained();
 void PlatformWindowFocusLost();
 bool GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* height);

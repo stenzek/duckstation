@@ -455,6 +455,18 @@ bool WaylandNoGUIPlatform::RequestRenderWindowSize(s32 new_window_width, s32 new
   return false;
 }
 
+bool WaylandNoGUIPlatform::OpenURL(const std::string_view& url)
+{
+  Log_ErrorPrintf("WaylandNoGUIPlatform::OpenURL() not implemented: %.*s", static_cast<int>(url.size()), url.data());
+  return false;
+}
+
+bool WaylandNoGUIPlatform::CopyTextToClipboard(const std::string_view& text)
+{
+  Log_ErrorPrintf("WaylandNoGUIPlatform::CopyTextToClipboard() not implemented: %.*s", static_cast<int>(text.size()), text.data());
+  return false;
+}
+
 std::unique_ptr<NoGUIPlatform> NoGUIPlatform::CreateWaylandPlatform()
 {
   std::unique_ptr<WaylandNoGUIPlatform> ret = std::unique_ptr<WaylandNoGUIPlatform>(new WaylandNoGUIPlatform());

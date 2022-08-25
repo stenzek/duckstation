@@ -36,6 +36,9 @@ public:
 
   bool RequestRenderWindowSize(s32 new_window_width, s32 new_window_height) override;
 
+  bool OpenURL(const std::string_view& url) override;
+  bool CopyTextToClipboard(const std::string_view& text) override;
+
 private:
   void OpenEVDevFDs();
   void CloseEVDevFDs();

@@ -317,6 +317,19 @@ bool X11NoGUIPlatform::RequestRenderWindowSize(s32 new_window_width, s32 new_win
   return false;
 }
 
+bool X11NoGUIPlatform::OpenURL(const std::string_view& url)
+{
+  Log_ErrorPrintf("X11NoGUIPlatform::OpenURL() not implemented: %.*s", static_cast<int>(url.size()), url.data());
+  return false;
+}
+
+bool X11NoGUIPlatform::CopyTextToClipboard(const std::string_view& text)
+{
+  Log_ErrorPrintf("X11NoGUIPlatform::CopyTextToClipboard() not implemented: %.*s", static_cast<int>(text.size()),
+                  text.data());
+  return false;
+}
+
 std::unique_ptr<NoGUIPlatform> NoGUIPlatform::CreateX11Platform()
 {
   std::unique_ptr<X11NoGUIPlatform> ret = std::unique_ptr<X11NoGUIPlatform>(new X11NoGUIPlatform());

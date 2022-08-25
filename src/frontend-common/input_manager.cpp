@@ -901,6 +901,7 @@ void InputManager::SetDefaultConfig(SettingsInterface& si)
   si.ClearSection("InputSources");
   si.SetBoolValue("InputSources", "SDL", true);
   si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+  si.SetBoolValue("InputSources", "Evdev", false);
   si.SetBoolValue("InputSources", "XInput", false);
   si.SetBoolValue("InputSources", "RawInput", false);
 }

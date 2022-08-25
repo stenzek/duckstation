@@ -733,6 +733,22 @@ ImFont* ImGuiManager::GetLargeFont()
   return s_large_font;
 }
 
+bool ImGuiManager::WantsTextInput()
+{
+  return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::AddTextInput(std::string str)
+{
+  if (!ImGui::GetCurrentContext())
+    return;
+
+  if (!s_imgui_wants_keyboard.load(std::memory_order_acquire))
+    return;
+
+  ImGui::GetIO().AddInputCharactersUTF8(str.c_str());
+}
+
 void ImGuiManager::UpdateMousePosition(float x, float y)
 {
   if (!ImGui::GetCurrentContext())

@@ -5,6 +5,7 @@
     <ClCompile Include="win32_nogui_platform.cpp" />
     <ClCompile Include="vty_nogui_platform.cpp" />
     <ClCompile Include="wayland_nogui_platform.cpp" />
+    <ClCompile Include="x11_nogui_platform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -14,6 +15,7 @@
     <ClInclude Include="vty_key_names.h" />
     <ClInclude Include="nogui_platform.h" />
     <ClInclude Include="wayland_nogui_platform.h" />
+    <ClInclude Include="x11_nogui_platform.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-nogui.manifest" />

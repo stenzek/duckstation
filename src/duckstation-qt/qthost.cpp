@@ -34,6 +34,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
+#include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
@@ -541,6 +542,13 @@ void EmuThread::onDisplayWindowKeyEvent(int key, bool pressed)
                              GenericInputBinding::Unknown);
 }
 
+void EmuThread::onDisplayWindowTextEntered(const QString& text)
+{
+  DebugAssert(isOnThread());
+
+  ImGuiManager::AddTextInput(text.toStdString());
+}
+
 void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
 {
   // display might be null here if the event happened after shutdown
@@ -763,6 +771,7 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
   connect(widget, &DisplayWidget::windowResizedEvent, this, &EmuThread::onDisplayWindowResized);
   connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
   connect(widget, &DisplayWidget::windowKeyEvent, this, &EmuThread::onDisplayWindowKeyEvent);
+  connect(widget, &DisplayWidget::windowTextEntered, this, &EmuThread::onDisplayWindowTextEntered);
   connect(widget, &DisplayWidget::windowMouseMoveEvent, this, &EmuThread::onDisplayWindowMouseMoveEvent);
   connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &EmuThread::onDisplayWindowMouseButtonEvent);
   connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &EmuThread::onDisplayWindowMouseWheelEvent);
@@ -1487,6 +1496,21 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
 
   return emit g_emu_thread->messageConfirmed(QString::fromUtf8(title.data(), title.size()),
                                              QString::fromUtf8(message.data(), message.size()));
+}
+
+void Host::OpenURL(const std::string_view& url)
+{
+  QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
+}
+
+bool Host::CopyTextToClipboard(const std::string_view& text)
+{
+  QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    if (clipboard)
+      clipboard->setText(text);
+  });
+  return true;
 }
 
 void Host::ReportDebuggerMessage(const std::string_view& message)

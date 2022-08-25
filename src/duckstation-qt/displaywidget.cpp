@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
+#include "frontend-common/imgui_manager.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -205,6 +206,14 @@ bool DisplayWidget::event(QEvent* event)
     case QEvent::KeyRelease:
     {
       const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+
+      if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
+      {
+        const QString text(key_event->text());
+        if (!text.isEmpty())
+          emit windowTextEntered(text);
+      }
+
       if (key_event->isAutoRepeat())
         return true;
 

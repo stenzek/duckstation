@@ -118,4 +118,10 @@ void SetMouseMode(bool relative, bool hide_cursor);
 
 /// Safely executes a function on the VM thread.
 void RunOnCPUThread(std::function<void()> function, bool block = false);
+
+/// Opens a URL, using the default application.
+void OpenURL(const std::string_view& url);
+
+/// Copies the provided text to the host's clipboard, if present.
+bool CopyTextToClipboard(const std::string_view& text);
 } // namespace Host

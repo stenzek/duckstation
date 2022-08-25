@@ -41,6 +41,7 @@ public:
   static u32 GetMSForBufferSize(u32 sample_rate, u32 buffer_size);
 
   static const char* GetStretchModeName(AudioStretchMode mode);
+  static const char* GetStretchModeDisplayName(AudioStretchMode mode);
   static std::optional<AudioStretchMode> ParseStretchMode(const char* name);
 
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }

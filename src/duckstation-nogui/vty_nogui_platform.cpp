@@ -108,6 +108,19 @@ bool VTYNoGUIPlatform::RequestRenderWindowSize(s32 new_window_width, s32 new_win
   return false;
 }
 
+bool VTYNoGUIPlatform::OpenURL(const std::string_view& url)
+{
+  Log_ErrorPrintf("VTYNoGUIPlatform::OpenURL() not implemented: %.*s", static_cast<int>(url.size()), url.data());
+  return false;
+}
+
+bool VTYNoGUIPlatform::CopyTextToClipboard(const std::string_view& text)
+{
+  Log_ErrorPrintf("VTYNoGUIPlatform::CopyTextToClipboard() not implemented: %.*s", static_cast<int>(text.size()),
+                  text.data());
+  return false;
+}
+
 void VTYNoGUIPlatform::SetPlatformWindowTitle(std::string title)
 {
   Log_InfoPrintf("Window Title: %s", title.c_str());

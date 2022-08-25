@@ -62,10 +62,18 @@ u32 AudioStream::GetMSForBufferSize(u32 sample_rate, u32 buffer_size)
 }
 
 static constexpr const auto s_stretch_mode_names = make_array("None", "Resample", "TimeStretch");
+static constexpr const auto s_stretch_mode_display_names = make_array("None", "Resampling", "Time Stretching");
 
 const char* AudioStream::GetStretchModeName(AudioStretchMode mode)
 {
   return (static_cast<u32>(mode) < s_stretch_mode_names.size()) ? s_stretch_mode_names[static_cast<u32>(mode)] : "";
+}
+
+const char* AudioStream::GetStretchModeDisplayName(AudioStretchMode mode)
+{
+  return (static_cast<u32>(mode) < s_stretch_mode_display_names.size()) ?
+           s_stretch_mode_display_names[static_cast<u32>(mode)] :
+           "";
 }
 
 std::optional<AudioStretchMode> AudioStream::ParseStretchMode(const char* name)

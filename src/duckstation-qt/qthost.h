@@ -190,6 +190,7 @@ private Q_SLOTS:
   void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
   void onDisplayWindowResized(int width, int height);
   void onDisplayWindowKeyEvent(int key, bool pressed);
+  void onDisplayWindowTextEntered(const QString& text);
   void doBackgroundControllerPoll();
   void runOnEmuThread(std::function<void()> callback);
 

@@ -1,12 +1,15 @@
 #include "win32_nogui_platform.h"
 #include "common/log.h"
+#include "common/scoped_guard.h"
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "core/host.h"
 #include "core/host_settings.h"
+#include "frontend-common/imgui_manager.h"
 #include "nogui_host.h"
 #include "resource.h"
 #include "win32_key_names.h"
+#include <shellapi.h>
 #include <tchar.h>
 Log_SetChannel(Win32HostInterface);
 
@@ -255,6 +258,37 @@ bool Win32NoGUIPlatform::RequestRenderWindowSize(s32 new_window_width, s32 new_w
   return SetWindowPos(m_hwnd, NULL, rc.left, rc.top, new_window_width, new_window_height, SWP_SHOWWINDOW);
 }
 
+bool Win32NoGUIPlatform::OpenURL(const std::string_view& url)
+{
+  return (ShellExecuteW(nullptr, L"open", StringUtil::UTF8StringToWideString(url).c_str(), nullptr, nullptr,
+                        SW_SHOWNORMAL) != NULL);
+}
+
+bool Win32NoGUIPlatform::CopyTextToClipboard(const std::string_view& text)
+{
+  const int wlen = MultiByteToWideChar(CP_UTF8, 0, text.data(), static_cast<int>(text.length()), nullptr, 0);
+  if (wlen < 0)
+    return false;
+
+  if (!OpenClipboard(m_hwnd))
+    return false;
+
+  ScopedGuard clipboard_cleanup([]() { CloseClipboard(); });
+  EmptyClipboard();
+
+  const HANDLE hText = GlobalAlloc(GMEM_MOVEABLE, (wlen + 1) * sizeof(wchar_t));
+  if (hText == NULL)
+    return false;
+
+  LPWSTR mem = static_cast<LPWSTR>(GlobalLock(hText));
+  MultiByteToWideChar(CP_UTF8, 0, text.data(), static_cast<int>(text.length()), mem, wlen);
+  mem[wlen] = 0;
+  GlobalUnlock(hText);
+
+  SetClipboardData(CF_UNICODETEXT, hText);
+  return true;
+}
+
 LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   Win32NoGUIPlatform* platform = static_cast<Win32NoGUIPlatform*>(g_nogui_window.get());
@@ -276,6 +310,23 @@ LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
       const bool pressed = (msg == WM_KEYDOWN);
       NoGUIHost::ProcessPlatformKeyEvent(static_cast<s32>(wParam), pressed);
+    }
+    break;
+
+    case WM_CHAR:
+    {
+      if (ImGuiManager::WantsTextInput())
+      {
+        const WCHAR utf16[2] = {static_cast<wchar_t>(wParam), 0};
+        char utf8[8] = {};
+        const int utf8_len =
+          WideCharToMultiByte(CP_UTF8, 0, utf16, sizeof(utf16), utf8, sizeof(utf8) - 1, nullptr, nullptr);
+        if (utf8_len > 0)
+        {
+          utf8[utf8_len] = 0;
+          NoGUIHost::ProcessPlatformTextEvent(utf8);
+        }
+      }
     }
     break;
 

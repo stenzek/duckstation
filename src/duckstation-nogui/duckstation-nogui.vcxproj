@@ -10,6 +10,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="win32_nogui_platform.cpp" />
+    <ClCompile Include="x11_nogui_platform.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nogui_host.h" />
@@ -25,6 +28,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="win32_nogui_platform.h" />
+    <ClInclude Include="x11_nogui_platform.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-nogui.manifest" />

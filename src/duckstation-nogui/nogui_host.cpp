@@ -509,6 +509,14 @@ void NoGUIHost::ProcessPlatformKeyEvent(s32 key, bool pressed)
   });
 }
 
+void NoGUIHost::ProcessPlatformTextEvent(const char* text)
+{
+  if (!ImGuiManager::WantsTextInput())
+    return;
+
+  Host::RunOnCPUThread([text = std::string(text)]() { ImGuiManager::AddTextInput(std::move(text)); });
+}
+
 void NoGUIHost::PlatformWindowFocusGained()
 {
   Host::RunOnCPUThread([]() {
@@ -845,6 +853,16 @@ void Host::RenderDisplay(bool skip_present)
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   g_nogui_window->RequestRenderWindowSize(width, height);
+}
+
+void Host::OpenURL(const std::string_view& url)
+{
+  g_nogui_window->OpenURL(url);
+}
+
+bool Host::CopyTextToClipboard(const std::string_view& text)
+{
+  return g_nogui_window->CopyTextToClipboard(text);
 }
 
 void Host::OnPerformanceCountersUpdated()
