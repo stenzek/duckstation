@@ -327,6 +327,10 @@ void GPU_HW_OpenGL::SetCapabilities()
   m_use_texture_buffer_for_vram_writes = false;
 #else
   m_use_texture_buffer_for_vram_writes = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+
+  // And Samsung's ANGLE/GLES driver?
+  if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "ANGLE"))
+    m_use_texture_buffer_for_vram_writes = false;
 #endif
   m_texture_stream_buffer_size = VRAM_UPDATE_TEXTURE_BUFFER_SIZE;
   if (m_use_texture_buffer_for_vram_writes)
