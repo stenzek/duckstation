@@ -55,7 +55,7 @@ static const FormatHandler* GetFormatHandler(const std::string_view& extension)
 {
   for (const FormatHandler& handler : s_format_handlers)
   {
-    if (StringUtil::Strncasecmp(extension.data(), handler.extension, extension.size()))
+    if (StringUtil::Strncasecmp(extension.data(), handler.extension, extension.size()) == 0)
       return &handler;
   }
 
@@ -567,7 +567,7 @@ bool STBBufferSaverPNG(const RGBA8Image& image, std::vector<u8>* buffer, int qua
   };
 
   return (stbi_write_png_to_func(write_func, buffer, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
-                                 image.GetByteStride()) == 0);
+                                 image.GetByteStride()) != 0);
 }
 
 bool STBBufferSaverJPEG(const RGBA8Image& image, std::vector<u8>* buffer, int quality)
@@ -580,7 +580,7 @@ bool STBBufferSaverJPEG(const RGBA8Image& image, std::vector<u8>* buffer, int qu
   };
 
   return (stbi_write_jpg_to_func(write_func, buffer, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
-                                 quality) == 0);
+                                 quality) != 0);
 }
 
 bool STBFileSaverPNG(const RGBA8Image& image, const char* filename, std::FILE* fp, int quality)
@@ -590,7 +590,7 @@ bool STBFileSaverPNG(const RGBA8Image& image, const char* filename, std::FILE* f
   };
 
   return (stbi_write_png_to_func(write_func, fp, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
-                                 image.GetByteStride()) == 0);
+                                 image.GetByteStride()) != 0);
 }
 
 bool STBFileSaverJPEG(const RGBA8Image& image, const char* filename, std::FILE* fp, int quality)
@@ -599,6 +599,6 @@ bool STBFileSaverJPEG(const RGBA8Image& image, const char* filename, std::FILE* 
     std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
   };
 
-  return (stbi_write_jpg_to_func(write_func, fp, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(), quality) ==
+  return (stbi_write_jpg_to_func(write_func, fp, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(), quality) !=
           0);
 }
