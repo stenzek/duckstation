@@ -91,7 +91,7 @@ static bool s_save_state_on_shutdown = false;
 static bool s_was_paused_by_focus_loss = false;
 
 static Threading::Thread s_cpu_thread;
-static Threading::KernelSemaphore s_host_display_created;
+static Threading::KernelSemaphore s_host_display_created_or_destroyed;
 static std::atomic_bool s_running{false};
 static std::mutex s_cpu_thread_events_mutex;
 static std::condition_variable s_cpu_thread_event_done;
@@ -726,10 +726,10 @@ bool NoGUIHost::AcquireHostDisplay(HostDisplay::RenderAPI api)
         g_nogui_window->DestroyPlatformWindow();
     }
 
-    s_host_display_created.Post();
+    s_host_display_created_or_destroyed.Post();
   });
 
-  s_host_display_created.Wait();
+  s_host_display_created_or_destroyed.Wait();
 
   if (!g_host_display)
   {
@@ -781,7 +781,11 @@ void NoGUIHost::ReleaseHostDisplay()
   ImGuiManager::Shutdown();
   g_host_display->DestroyRenderDevice();
   g_host_display.reset();
-  g_nogui_window->ExecuteInMessageLoop([]() { g_nogui_window->DestroyPlatformWindow(); });
+  g_nogui_window->ExecuteInMessageLoop([]() {
+    g_nogui_window->DestroyPlatformWindow();
+    s_host_display_created_or_destroyed.Post();
+  });
+  s_host_display_created_or_destroyed.Wait();
 }
 
 void Host::ReleaseHostDisplay()
