@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+enum class RenderAPI : u32;
+
 struct SettingInfo
 {
   enum class Type
@@ -332,6 +334,7 @@ struct Settings
   static std::optional<GPURenderer> ParseRendererName(const char* str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
+  static RenderAPI GetRenderAPIForRenderer(GPURenderer renderer);
 
   static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);

@@ -33,7 +33,7 @@ GPURenderer GPU_HW_Vulkan::GetRendererType() const
 
 bool GPU_HW_Vulkan::Initialize()
 {
-  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::Vulkan))
+  if (!Host::AcquireHostDisplay(RenderAPI::Vulkan))
   {
     Log_ErrorPrintf("Host render API is incompatible");
     return false;

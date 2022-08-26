@@ -443,7 +443,7 @@ void EmuThread::startFullscreenUI()
   if (s_start_fullscreen_ui_fullscreen)
     m_is_fullscreen = true;
 
-  if (!acquireHostDisplay(HostDisplay::GetPreferredAPI()))
+  if (!acquireHostDisplay(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)))
   {
     m_run_fullscreen_ui = false;
     return;
@@ -707,7 +707,7 @@ void EmuThread::requestDisplaySize(float scale)
   System::RequestDisplaySize(scale);
 }
 
-bool EmuThread::acquireHostDisplay(HostDisplay::RenderAPI api)
+bool EmuThread::acquireHostDisplay(RenderAPI api)
 {
   if (g_host_display)
   {
@@ -1632,7 +1632,7 @@ void Host::CommitBaseSettingChanges()
     QtHost::QueueSettingsSave();
 }
 
-bool Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api)
 {
   return g_emu_thread->acquireHostDisplay(api);
 }

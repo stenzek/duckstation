@@ -91,7 +91,7 @@ public:
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
   ALWAYS_INLINE bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
-  bool acquireHostDisplay(HostDisplay::RenderAPI api);
+  bool acquireHostDisplay(RenderAPI api);
   void connectDisplaySignals(DisplayWidget* widget);
   void releaseHostDisplay();
   void renderDisplay(bool skip_present);

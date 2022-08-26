@@ -34,7 +34,7 @@ GPURenderer GPU_HW_D3D12::GetRendererType() const
 
 bool GPU_HW_D3D12::Initialize()
 {
-  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::D3D12))
+  if (!Host::AcquireHostDisplay(RenderAPI::D3D12))
   {
     Log_ErrorPrintf("Host render API is incompatible");
     return false;

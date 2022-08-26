@@ -5,7 +5,7 @@
 class GPU_HW_ShaderGen : public ShaderGen
 {
 public:
-  GPU_HW_ShaderGen(HostDisplay::RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
+  GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
                    bool true_color, bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits,
                    bool pgxp_depth, bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();

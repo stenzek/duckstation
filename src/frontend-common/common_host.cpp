@@ -130,26 +130,26 @@ void CommonHost::PumpMessagesOnCPUThread()
 #endif
 }
 
-std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(HostDisplay::RenderAPI api)
+std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(RenderAPI api)
 {
   switch (api)
   {
 #ifdef WITH_VULKAN
-    case HostDisplay::RenderAPI::Vulkan:
+    case RenderAPI::Vulkan:
       return std::make_unique<FrontendCommon::VulkanHostDisplay>();
 #endif
 
 #ifdef WITH_OPENGL
-    case HostDisplay::RenderAPI::OpenGL:
-    case HostDisplay::RenderAPI::OpenGLES:
+    case RenderAPI::OpenGL:
+    case RenderAPI::OpenGLES:
       return std::make_unique<FrontendCommon::OpenGLHostDisplay>();
 #endif
 
 #ifdef _WIN32
-    case HostDisplay::RenderAPI::D3D12:
+    case RenderAPI::D3D12:
       return std::make_unique<FrontendCommon::D3D12HostDisplay>();
 
-    case HostDisplay::RenderAPI::D3D11:
+    case RenderAPI::D3D11:
       return std::make_unique<FrontendCommon::D3D11HostDisplay>();
 #endif
 

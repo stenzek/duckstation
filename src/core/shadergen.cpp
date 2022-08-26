@@ -10,22 +10,22 @@
 
 Log_SetChannel(ShaderGen);
 
-ShaderGen::ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend)
+ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
   : m_render_api(render_api),
-    m_glsl(render_api != HostDisplay::RenderAPI::D3D11 && render_api != HostDisplay::RenderAPI::D3D12),
+    m_glsl(render_api != RenderAPI::D3D11 && render_api != RenderAPI::D3D12),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
 #if defined(WITH_OPENGL) || defined(WITH_VULKAN)
   if (m_glsl)
   {
 #ifdef WITH_OPENGL
-    if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
+    if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
       SetGLSLVersionString();
 
     m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
     m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
     
-    if (m_render_api == HostDisplay::RenderAPI::OpenGL)
+    if (m_render_api == RenderAPI::OpenGL)
     {
       // SSAA with interface blocks is broken on AMD's OpenGL driver.
       const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
@@ -62,7 +62,7 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, bool enable
 void ShaderGen::SetGLSLVersionString()
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-  const bool glsl_es = (m_render_api == HostDisplay::RenderAPI::OpenGLES);
+  const bool glsl_es = (m_render_api == RenderAPI::OpenGLES);
   Assert(glsl_version != nullptr);
 
   // Skip any strings in front of the version code.
@@ -105,14 +105,14 @@ void ShaderGen::SetGLSLVersionString()
 
 void ShaderGen::WriteHeader(std::stringstream& ss)
 {
-  if (m_render_api == HostDisplay::RenderAPI::OpenGL || m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
     ss << m_glsl_version_string << "\n\n";
-  else if (m_render_api == HostDisplay::RenderAPI::Vulkan)
+  else if (m_render_api == RenderAPI::Vulkan)
     ss << "#version 450 core\n\n";
 
 #ifdef WITH_OPENGL
   // Extension enabling for OpenGL.
-  if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  if (m_render_api == RenderAPI::OpenGLES)
   {
     // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
     if (GLAD_GL_EXT_blend_func_extended)
@@ -131,7 +131,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#define DRIVER_POWERVR 1\n";
     }
   }
-  else if (m_render_api == HostDisplay::RenderAPI::OpenGL)
+  else if (m_render_api == RenderAPI::OpenGL)
   {
     // Need extensions for binding layout if GL<4.3.
     if (m_use_glsl_binding_layout && !GLAD_GL_VERSION_4_3)
@@ -150,14 +150,14 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   }
 #endif
 
-  DefineMacro(ss, "API_OPENGL", m_render_api == HostDisplay::RenderAPI::OpenGL);
-  DefineMacro(ss, "API_OPENGL_ES", m_render_api == HostDisplay::RenderAPI::OpenGLES);
-  DefineMacro(ss, "API_D3D11", m_render_api == HostDisplay::RenderAPI::D3D11);
-  DefineMacro(ss, "API_D3D12", m_render_api == HostDisplay::RenderAPI::D3D12);
-  DefineMacro(ss, "API_VULKAN", m_render_api == HostDisplay::RenderAPI::Vulkan);
+  DefineMacro(ss, "API_OPENGL", m_render_api == RenderAPI::OpenGL);
+  DefineMacro(ss, "API_OPENGL_ES", m_render_api == RenderAPI::OpenGLES);
+  DefineMacro(ss, "API_D3D11", m_render_api == RenderAPI::D3D11);
+  DefineMacro(ss, "API_D3D12", m_render_api == RenderAPI::D3D12);
+  DefineMacro(ss, "API_VULKAN", m_render_api == RenderAPI::Vulkan);
 
 #ifdef WITH_OPENGL
-  if (m_render_api == HostDisplay::RenderAPI::OpenGLES)
+  if (m_render_api == RenderAPI::OpenGLES)
   {
     ss << "precision highp float;\n";
     ss << "precision highp int;\n";

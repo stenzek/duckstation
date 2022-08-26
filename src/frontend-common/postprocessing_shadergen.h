@@ -8,7 +8,7 @@ namespace FrontendCommon {
 class PostProcessingShaderGen : public ShaderGen
 {
 public:
-  PostProcessingShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend);
+  PostProcessingShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
   ~PostProcessingShaderGen();
 
   std::string GeneratePostProcessingVertexShader(const PostProcessingShader& shader);

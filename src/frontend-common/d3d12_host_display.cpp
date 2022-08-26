@@ -60,9 +60,9 @@ D3D12HostDisplay::~D3D12HostDisplay()
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
 }
 
-HostDisplay::RenderAPI D3D12HostDisplay::GetRenderAPI() const
+RenderAPI D3D12HostDisplay::GetRenderAPI() const
 {
-  return HostDisplay::RenderAPI::D3D12;
+  return RenderAPI::D3D12;
 }
 
 void* D3D12HostDisplay::GetRenderDevice() const

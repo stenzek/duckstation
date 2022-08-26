@@ -21,7 +21,7 @@ HostDisplayTexture::~HostDisplayTexture() = default;
 
 HostDisplay::~HostDisplay() = default;
 
-HostDisplay::RenderAPI HostDisplay::GetPreferredAPI()
+RenderAPI HostDisplay::GetPreferredAPI()
 {
 #ifdef _WIN32
   return RenderAPI::D3D11;

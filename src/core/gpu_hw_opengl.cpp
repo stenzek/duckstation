@@ -43,16 +43,16 @@ GPURenderer GPU_HW_OpenGL::GetRendererType() const
 
 bool GPU_HW_OpenGL::Initialize()
 {
-  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::OpenGL))
+  if (!Host::AcquireHostDisplay(RenderAPI::OpenGL))
   {
     Log_ErrorPrintf("Host render API type is incompatible");
     return false;
   }
 
   const bool opengl_is_available =
-    ((g_host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGL &&
+    ((g_host_display->GetRenderAPI() == RenderAPI::OpenGL &&
       (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
-     (g_host_display->GetRenderAPI() == HostDisplay::RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
+     (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
   if (!opengl_is_available)
   {
     Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",

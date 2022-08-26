@@ -59,9 +59,9 @@ D3D11HostDisplay::~D3D11HostDisplay()
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
 }
 
-HostDisplay::RenderAPI D3D11HostDisplay::GetRenderAPI() const
+RenderAPI D3D11HostDisplay::GetRenderAPI() const
 {
-  return HostDisplay::RenderAPI::D3D11;
+  return RenderAPI::D3D11;
 }
 
 void* D3D11HostDisplay::GetRenderDevice() const
@@ -1026,7 +1026,7 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
   shader_cache.Open(EmuFolders::Cache, m_device->GetFeatureLevel(), SHADER_CACHE_VERSION,
                     g_settings.gpu_use_debug_device);
 
-  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::D3D11, true);
+  FrontendCommon::PostProcessingShaderGen shadergen(RenderAPI::D3D11, true);
   u32 max_ubo_size = 0;
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)

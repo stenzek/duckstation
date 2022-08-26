@@ -55,9 +55,9 @@ VulkanHostDisplay::~VulkanHostDisplay()
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
 }
 
-HostDisplay::RenderAPI VulkanHostDisplay::GetRenderAPI() const
+RenderAPI VulkanHostDisplay::GetRenderAPI() const
 {
-  return HostDisplay::RenderAPI::Vulkan;
+  return RenderAPI::Vulkan;
 }
 
 void* VulkanHostDisplay::GetRenderDevice() const
@@ -950,7 +950,7 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   m_post_processing_stages.clear();
 
-  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::Vulkan, false);
+  FrontendCommon::PostProcessingShaderGen shadergen(RenderAPI::Vulkan, false);
   bool only_use_push_constants = true;
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)

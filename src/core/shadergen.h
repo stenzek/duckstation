@@ -7,7 +7,7 @@
 class ShaderGen
 {
 public:
-  ShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend);
+  ShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
   ~ShaderGen();
 
   static bool UseGLSLBindingLayout();
@@ -19,7 +19,7 @@ public:
   std::string GenerateSampleFragmentShader();
 
 protected:
-  ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == HostDisplay::RenderAPI::Vulkan); }
+  ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == RenderAPI::Vulkan); }
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;
@@ -45,7 +45,7 @@ protected:
                                  bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false,
                                  bool msaa = false, bool ssaa = false, bool declare_sample_id = false);
 
-  HostDisplay::RenderAPI m_render_api;
+  RenderAPI m_render_api;
   bool m_glsl;
   bool m_supports_dual_source_blend;
   bool m_use_glsl_interface_blocks;

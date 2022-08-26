@@ -366,7 +366,7 @@ protected:
   u32 m_multisamples = 1;
   u32 m_max_resolution_scale = 1;
   u32 m_max_multisamples = 1;
-  HostDisplay::RenderAPI m_render_api = HostDisplay::RenderAPI::None;
+  RenderAPI m_render_api = RenderAPI::None;
   bool m_true_color = true;
 
   union

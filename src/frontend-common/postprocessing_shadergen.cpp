@@ -2,7 +2,7 @@
 
 namespace FrontendCommon {
 
-PostProcessingShaderGen::PostProcessingShaderGen(HostDisplay::RenderAPI render_api, bool supports_dual_source_blend)
+PostProcessingShaderGen::PostProcessingShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
   : ShaderGen(render_api, supports_dual_source_blend)
 {
 }

@@ -77,7 +77,7 @@ static std::unique_ptr<NoGUIPlatform> CreatePlatform();
 static std::string GetWindowTitle(const std::string& game_title);
 static void UpdateWindowTitle(const std::string& game_title);
 static void GameListRefreshThreadEntryPoint(bool invalidate_cache);
-static bool AcquireHostDisplay(HostDisplay::RenderAPI api);
+static bool AcquireHostDisplay(RenderAPI api);
 static void ReleaseHostDisplay();
 } // namespace NoGUIHost
 
@@ -658,7 +658,7 @@ void NoGUIHost::CPUThreadEntryPoint()
   CommonHost::Initialize();
 
   // start the GS thread up and get it going
-  if (AcquireHostDisplay(HostDisplay::GetPreferredAPI()))
+  if (AcquireHostDisplay(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)))
   {
     // kick a game list refresh if we're not in batch mode
     if (!InBatchMode())
@@ -699,7 +699,7 @@ void NoGUIHost::CPUThreadMainLoop()
   }
 }
 
-bool NoGUIHost::AcquireHostDisplay(HostDisplay::RenderAPI api)
+bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
 {
   Assert(!g_host_display);
 
@@ -759,7 +759,7 @@ bool NoGUIHost::AcquireHostDisplay(HostDisplay::RenderAPI api)
   return true;
 }
 
-bool Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api)
 {
   if (g_host_display && g_host_display->GetRenderAPI() == api)
   {

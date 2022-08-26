@@ -53,7 +53,7 @@ private:
     u32 num_uniform_buffer_updates;
   };
 
-  ALWAYS_INLINE bool IsGLES() const { return (m_render_api == HostDisplay::RenderAPI::OpenGLES); }
+  ALWAYS_INLINE bool IsGLES() const { return (m_render_api == RenderAPI::OpenGLES); }
 
   std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 

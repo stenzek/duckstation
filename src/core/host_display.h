@@ -8,6 +8,16 @@
 #include <tuple>
 #include <vector>
 
+enum class RenderAPI : u32
+{
+  None,
+  D3D11,
+  D3D12,
+  Vulkan,
+  OpenGL,
+  OpenGLES
+};
+
 enum class HostDisplayPixelFormat : u32
 {
   Unknown,
@@ -37,16 +47,6 @@ public:
 class HostDisplay
 {
 public:
-  enum class RenderAPI
-  {
-    None,
-    D3D11,
-    D3D12,
-    Vulkan,
-    OpenGL,
-    OpenGLES
-  };
-
   enum class Alignment
   {
     LeftOrTop,
@@ -304,10 +304,10 @@ protected:
 extern std::unique_ptr<HostDisplay> g_host_display;
 
 namespace Host {
-std::unique_ptr<HostDisplay> CreateDisplayForAPI(HostDisplay::RenderAPI api);
+std::unique_ptr<HostDisplay> CreateDisplayForAPI(RenderAPI api);
 
 /// Creates the host display. This may create a new window. The API used depends on the current configuration.
-bool AcquireHostDisplay(HostDisplay::RenderAPI api);
+bool AcquireHostDisplay(RenderAPI api);
 
 /// Destroys the host display. This may close the display window.
 void ReleaseHostDisplay();

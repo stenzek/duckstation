@@ -44,7 +44,7 @@ OpenGLHostDisplay::~OpenGLHostDisplay()
   AssertMsg(!m_gl_context, "Context should have been destroyed by now");
 }
 
-HostDisplay::RenderAPI OpenGLHostDisplay::GetRenderAPI() const
+RenderAPI OpenGLHostDisplay::GetRenderAPI() const
 {
   return m_gl_context->IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
 }
@@ -947,7 +947,7 @@ bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   m_post_processing_stages.clear();
 
-  FrontendCommon::PostProcessingShaderGen shadergen(HostDisplay::RenderAPI::OpenGL, false);
+  FrontendCommon::PostProcessingShaderGen shadergen(RenderAPI::OpenGL, false);
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
   {

@@ -35,7 +35,7 @@ GPURenderer GPU_HW_D3D11::GetRendererType() const
 
 bool GPU_HW_D3D11::Initialize()
 {
-  if (!Host::AcquireHostDisplay(HostDisplay::RenderAPI::D3D11))
+  if (!Host::AcquireHostDisplay(RenderAPI::D3D11))
   {
     Log_ErrorPrintf("Host render API is incompatible");
     return false;

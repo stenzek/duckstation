@@ -850,6 +850,30 @@ const char* Settings::GetRendererDisplayName(GPURenderer renderer)
   return s_gpu_renderer_display_names[static_cast<int>(renderer)];
 }
 
+RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
+{
+  switch (renderer)
+  {
+#ifdef _WIN32
+    case GPURenderer::HardwareD3D11:
+      return RenderAPI::D3D11;
+    case GPURenderer::HardwareD3D12:
+      return RenderAPI::D3D12;
+#endif
+#ifdef WITH_VULKAN
+    case GPURenderer::HardwareVulkan:
+      return RenderAPI::Vulkan;
+#endif
+#ifdef WITH_OPENGL
+    case GPURenderer::HardwareOpenGL:
+      return RenderAPI::OpenGL;
+#endif
+    case GPURenderer::Software:
+    default:
+      return HostDisplay::GetPreferredAPI();
+  }
+}
+
 static constexpr auto s_texture_filter_names =
   make_array("Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha");
 static constexpr auto s_texture_filter_display_names =
