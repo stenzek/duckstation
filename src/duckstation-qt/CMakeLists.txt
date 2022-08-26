@@ -192,7 +192,6 @@ if(WIN32)
 endif()
 
 if(APPLE)
-  include(BundleUtilities)
   set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
 
   # Ask for an application bundle.
