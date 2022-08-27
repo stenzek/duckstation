@@ -16,6 +16,7 @@
 #include "core/host_display.h"
 #include "fmt/core.h"
 #include "imgui_internal.h"
+#include "imgui_stdlib.h"
 #include <cmath>
 #include <condition_variable>
 #include <deque>
@@ -31,6 +32,7 @@ static void TextureLoaderThread();
 
 static void DrawFileSelector();
 static void DrawChoiceDialog();
+static void DrawInputDialog();
 static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
@@ -87,6 +89,14 @@ static ChoiceDialogCallback s_choice_dialog_callback;
 static ImGuiID s_enum_choice_button_id = 0;
 static s32 s_enum_choice_button_value = 0;
 static bool s_enum_choice_button_set = false;
+
+static bool s_input_dialog_open = false;
+static std::string s_input_dialog_title;
+static std::string s_input_dialog_message;
+static std::string s_input_dialog_caption;
+static std::string s_input_dialog_text;
+static std::string s_input_dialog_ok_text;
+static InputStringDialogCallback s_input_dialog_callback;
 
 struct FileSelectorItem
 {
@@ -190,6 +200,7 @@ void ImGuiFullscreen::Shutdown()
 
   s_notifications.clear();
   s_background_progress_dialogs.clear();
+  CloseInputDialog();
   s_choice_dialog_open = false;
   s_choice_dialog_checkable = false;
   s_choice_dialog_title = {};
@@ -436,6 +447,7 @@ void ImGuiFullscreen::EndLayout()
 {
   DrawFileSelector();
   DrawChoiceDialog();
+  DrawInputDialog();
 
   const float notification_margin = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
@@ -1832,6 +1844,95 @@ void ImGuiFullscreen::DrawChoiceDialog()
     s_choice_dialog_callback(-1, no_string, false);
     CloseChoiceDialog();
   }
+}
+
+bool ImGuiFullscreen::IsInputDialogOpen()
+{
+  return s_input_dialog_open;
+}
+
+void ImGuiFullscreen::OpenInputStringDialog(std::string title, std::string message, std::string caption,
+                                            std::string ok_button_text, InputStringDialogCallback callback)
+{
+  s_input_dialog_open = true;
+  s_input_dialog_title = std::move(title);
+  s_input_dialog_message = std::move(message);
+  s_input_dialog_caption = std::move(caption);
+  s_input_dialog_ok_text = std::move(ok_button_text);
+  s_input_dialog_callback = std::move(callback);
+}
+
+void ImGuiFullscreen::DrawInputDialog()
+{
+  if (!s_input_dialog_open)
+    return;
+
+  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::OpenPopup(s_input_dialog_title.c_str());
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushFont(g_large_font);
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
+                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                               ImGuiWindowFlags_NoMove))
+  {
+    ImGui::TextWrapped("%s", s_input_dialog_message.c_str());
+    ImGui::NewLine();
+
+    if (!s_input_dialog_caption.empty())
+      ImGui::TextUnformatted(s_input_dialog_caption.c_str());
+    ImGui::InputText("##input", &s_input_dialog_text);
+
+    ImGui::NewLine();
+
+    BeginMenuButtons();
+
+    const bool ok_enabled = !s_input_dialog_text.empty();
+
+    if (ActiveButton(s_input_dialog_ok_text.c_str(), false, ok_enabled) && ok_enabled)
+    {
+      // have to move out in case they open another dialog in the callback
+      InputStringDialogCallback cb(std::move(s_input_dialog_callback));
+      std::string text(std::move(s_input_dialog_text));
+      CloseInputDialog();
+      ImGui::CloseCurrentPopup();
+      cb(std::move(text));
+    }
+
+    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
+    {
+      CloseInputDialog();
+
+      ImGui::CloseCurrentPopup();
+    }
+
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+  if (!is_open)
+    CloseInputDialog();
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+}
+
+void ImGuiFullscreen::CloseInputDialog()
+{
+  if (!s_input_dialog_open)
+    return;
+
+  s_input_dialog_open = false;
+  s_input_dialog_title = {};
+  s_input_dialog_message = {};
+  s_input_dialog_caption = {};
+  s_input_dialog_ok_text = {};
+  s_input_dialog_text = {};
+  s_input_dialog_callback = {};
 }
 
 static float s_notification_vertical_position = 0.3f;

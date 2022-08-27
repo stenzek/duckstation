@@ -107,6 +107,7 @@ using ImGuiFullscreen::NavButton;
 using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenFileSelector;
+using ImGuiFullscreen::OpenInputStringDialog;
 using ImGuiFullscreen::PopPrimaryColor;
 using ImGuiFullscreen::PushPrimaryColor;
 using ImGuiFullscreen::QueueResetFocus;
@@ -246,7 +247,6 @@ static void DrawEmulationSettingsPage();
 static void DrawDisplaySettingsPage();
 static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
-static void DrawCreateMemoryCardWindow();
 static void DrawControllerSettingsPage();
 static void DrawHotkeySettingsPage();
 static void DrawAchievementsSettingsPage();
@@ -268,6 +268,9 @@ static void DoCopyGameSettings();
 static void DoClearGameSettings();
 static void CopyGlobalControllerSettingsToGame();
 static void ResetControllerSettings();
+static void DoLoadInputProfile();
+static void DoSaveInputProfile();
+static void DoSaveInputProfile(const std::string& name);
 
 static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                               const char* key, bool default_value, bool enabled = true, bool allow_tristate = true,
@@ -1877,7 +1880,16 @@ ImGuiFullscreen::ChoiceDialogOptions FullscreenUI::GetGameListDirectoryOptions(b
 
 void FullscreenUI::DoCopyGameSettings()
 {
-  //
+  if (!s_game_settings_interface)
+    return;
+
+  Settings temp_settings;
+  temp_settings.Load(*GetEditingSettingsInterface(false));
+  temp_settings.Save(*s_game_settings_interface);
+  SetSettingsChanged(s_game_settings_interface.get());
+
+  ShowToast("Game Settings Copied", fmt::format("Game settings initialized with global settings for '{}'.",
+                                                Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
 void FullscreenUI::DoClearGameSettings()
@@ -1889,190 +1901,11 @@ void FullscreenUI::DoClearGameSettings()
   if (!s_game_settings_interface->GetFileName().empty())
     FileSystem::DeleteFile(s_game_settings_interface->GetFileName().c_str());
 
-  s_settings_changed.store(false, std::memory_order_release);
-  Host::RunOnCPUThread([]() { System::ReloadGameSettings(false); });
+  SetSettingsChanged(s_game_settings_interface.get());
 
-  ShowToast("Game Settings Cleared", fmt::format("Game settings have been cleared for {}.",
+  ShowToast("Game Settings Cleared", fmt::format("Game settings have been cleared for '{}'.",
                                                  Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
-
-#if 0
-
-static bool SettingInfoButton(const SettingInfo& si, const char* section)
-{
-  // this.. isn't pretty :(
-  TinyString title;
-  title.Format("%s##%s/%s", si.visible_name, section, si.key);
-  switch (si.type)
-  {
-    case SettingInfo::Type::Boolean:
-    {
-      bool value = s_host_interface->GetSettingsInterface()->GetBoolValue(
-        section, si.key, StringUtil::FromChars<bool>(si.default_value).value_or(false));
-      if (ToggleButton(title, si.description, &value))
-      {
-        s_host_interface->GetSettingsInterface()->SetBoolValue(section, si.key, value);
-        return true;
-      }
-
-      return false;
-    }
-
-    case SettingInfo::Type::Integer:
-    {
-      int value = s_host_interface->GetSettingsInterface()->GetIntValue(
-        section, si.key, StringUtil::FromChars<int>(si.default_value).value_or(0));
-      const int min = StringUtil::FromChars<int>(si.min_value).value_or(0);
-      const int max = StringUtil::FromChars<int>(si.max_value).value_or(0);
-      const int step = StringUtil::FromChars<int>(si.step_value).value_or(0);
-      if (RangeButton(title, si.description, &value, min, max, step))
-      {
-        s_host_interface->GetSettingsInterface()->SetIntValue(section, si.key, value);
-        return true;
-      }
-
-      return false;
-    }
-
-    case SettingInfo::Type::Float:
-    {
-      float value = s_host_interface->GetSettingsInterface()->GetFloatValue(
-        section, si.key, StringUtil::FromChars<float>(si.default_value).value_or(0));
-      const float min = StringUtil::FromChars<float>(si.min_value).value_or(0);
-      const float max = StringUtil::FromChars<float>(si.max_value).value_or(0);
-      const float step = StringUtil::FromChars<float>(si.step_value).value_or(0);
-      if (RangeButton(title, si.description, &value, min, max, step))
-      {
-        s_host_interface->GetSettingsInterface()->SetFloatValue(section, si.key, value);
-        return true;
-      }
-
-      return false;
-    }
-
-    case SettingInfo::Type::Path:
-    {
-      std::string value = s_host_interface->GetSettingsInterface()->GetStringValue(section, si.key);
-      if (MenuButtonWithValue(title, si.description, value.c_str()))
-      {
-        std::string section_copy(section);
-        std::string key_copy(si.key);
-        auto callback = [section_copy, key_copy](const std::string& path) {
-          if (!path.empty())
-          {
-            s_host_interface->GetSettingsInterface()->SetStringValue(section_copy.c_str(), key_copy.c_str(),
-                                                                     path.c_str());
-            s_host_interface->RunLater(SaveAndApplySettings);
-          }
-
-          ClearImGuiFocus();
-          CloseFileSelector();
-        };
-        OpenFileSelector(si.visible_name, false, std::move(callback), ImGuiFullscreen::FileSelectorFilters(),
-                         std::string(Path::GetDirectory(std::move(value))));
-      }
-
-      return false;
-    }
-
-    default:
-      return false;
-  }
-}
-
-#endif
-
-#ifdef WITH_CHEEVOS
-
-#if 0
-static void DrawAchievementsLoginWindow()
-{
-  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushFont(g_large_font);
-
-  bool is_open = true;
-  if (ImGui::BeginPopupModal("Achievements Login", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-  {
-
-    ImGui::TextWrapped("Please enter user name and password for retroachievements.org.");
-    ImGui::NewLine();
-    ImGui::TextWrapped(
-      "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
-
-    ImGui::NewLine();
-
-    static char username[256] = {};
-    static char password[256] = {};
-
-    ImGui::Text("User Name: ");
-    ImGui::SameLine(LayoutScale(200.0f));
-    ImGui::InputText("##username", username, sizeof(username));
-
-    ImGui::Text("Password: ");
-    ImGui::SameLine(LayoutScale(200.0f));
-    ImGui::InputText("##password", password, sizeof(password), ImGuiInputTextFlags_Password);
-
-    ImGui::NewLine();
-
-    BeginMenuButtons();
-
-    const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0);
-
-    if (ActiveButton(ICON_FA_KEY "  Login", false, login_enabled))
-    {
-      Cheevos::LoginAsync(username, password);
-      std::memset(username, 0, sizeof(username));
-      std::memset(password, 0, sizeof(password));
-      ImGui::CloseCurrentPopup();
-    }
-
-    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
-      ImGui::CloseCurrentPopup();
-
-    EndMenuButtons();
-
-    ImGui::EndPopup();
-  }
-
-  ImGui::PopFont();
-  ImGui::PopStyleVar(2);
-}
-
-static bool ConfirmChallengeModeEnable()
-{
-  if (!System::IsValid())
-    return true;
-
-  const bool cheevos_enabled = s_host_interface->GetBoolSettingValue("Cheevos", "Enabled", false);
-  const bool cheevos_hardcore = s_host_interface->GetBoolSettingValue("Cheevos", "ChallengeMode", false);
-  if (!cheevos_enabled || !cheevos_hardcore)
-    return true;
-
-  SmallString message;
-  message.AppendString("Enabling hardcore mode will shut down your current game.\n\n");
-
-  if (s_host_interface->ShouldSaveResumeState())
-  {
-    message.AppendString(
-      "The current state will be saved, but you will be unable to load it until you disable hardcore mode.\n\n");
-  }
-
-  message.AppendString("Do you want to continue?");
-
-  if (!s_host_interface->ConfirmMessage(message))
-    return false;
-
-  SaveAndApplySettings();
-  s_host_interface->PowerOffSystem(s_host_interface->ShouldSaveResumeState());
-  return true;
-}
-#endif
-
-#endif
 
 void FullscreenUI::DrawSettingsWindow()
 {
@@ -2274,7 +2107,6 @@ void FullscreenUI::DrawSummarySettingsPage()
 
   MenuHeading("Options");
 
-  // TODO: Implement this.
   if (MenuButton(ICON_FA_COPY "  Copy Settings", "Copies the current global settings to this game.", false))
     DoCopyGameSettings();
   if (MenuButton(ICON_FA_TRASH "  Clear Settings", "Clears all settings set for this game."))
@@ -2687,6 +2519,90 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
   ShowToast(std::string(), "Per-game controller configuration initialized with global settings.");
 }
 
+void FullscreenUI::DoLoadInputProfile()
+{
+  std::vector<std::string> profiles(InputManager::GetInputProfileNames());
+  if (profiles.empty())
+  {
+    ShowToast(std::string(), "No input profiles available.");
+    return;
+  }
+
+  ImGuiFullscreen::ChoiceDialogOptions coptions;
+  coptions.reserve(profiles.size());
+  for (std::string& name : profiles)
+    coptions.emplace_back(std::move(name), false);
+  OpenChoiceDialog(ICON_FA_FOLDER_OPEN "  Load Profile", false, std::move(coptions),
+                   [](s32 index, const std::string& title, bool checked) {
+                     if (index < 0)
+                       return;
+
+                     INISettingsInterface ssi(System::GetInputProfilePath(title));
+                     if (!ssi.Load())
+                     {
+                       ShowToast(std::string(), fmt::format("Failed to load '{}'.", title));
+                       CloseChoiceDialog();
+                       return;
+                     }
+
+                     auto lock = Host::GetSettingsLock();
+                     SettingsInterface* dsi = GetEditingSettingsInterface();
+                     InputManager::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
+                     SetSettingsChanged(dsi);
+                     ShowToast(std::string(), fmt::format("Input profile '{}' loaded.", title));
+                     CloseChoiceDialog();
+                   });
+}
+
+void FullscreenUI::DoSaveInputProfile(const std::string& name)
+{
+  INISettingsInterface dsi(System::GetInputProfilePath(name));
+
+  auto lock = Host::GetSettingsLock();
+  SettingsInterface* ssi = GetEditingSettingsInterface();
+  InputManager::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
+  if (dsi.Save())
+    ShowToast(std::string(), fmt::format("Input profile '{}' saved.", name));
+  else
+    ShowToast(std::string(), fmt::format("Failed to save input profile '{}'.", name));
+}
+
+void FullscreenUI::DoSaveInputProfile()
+{
+  std::vector<std::string> profiles(InputManager::GetInputProfileNames());
+  if (profiles.empty())
+  {
+    ShowToast(std::string(), "No input profiles available.");
+    return;
+  }
+
+  ImGuiFullscreen::ChoiceDialogOptions coptions;
+  coptions.reserve(profiles.size() + 1);
+  coptions.emplace_back("Create New...", false);
+  for (std::string& name : profiles)
+    coptions.emplace_back(std::move(name), false);
+  OpenChoiceDialog(
+    ICON_FA_SAVE "  Save Profile", false, std::move(coptions), [](s32 index, const std::string& title, bool checked) {
+      if (index < 0)
+        return;
+
+      if (index > 0)
+      {
+        DoSaveInputProfile(title);
+        CloseChoiceDialog();
+        return;
+      }
+
+      CloseChoiceDialog();
+
+      OpenInputStringDialog(ICON_FA_SAVE "  Save Profile", "Enter the name of the input profile you wish to create.",
+                            std::string(), ICON_FA_FOLDER_PLUS "  Create", [](std::string title) {
+                              if (!title.empty())
+                                DoSaveInputProfile(title);
+                            });
+    });
+}
+
 void FullscreenUI::ResetControllerSettings()
 {
   SettingsInterface* dsi = GetEditingSettingsInterface();
@@ -2736,15 +2652,19 @@ void FullscreenUI::DrawControllerSettingsPage()
   {
     if (MenuButton(ICON_FA_FOLDER_MINUS "  Reset Settings",
                    "Resets all configuration to defaults (including bindings)."))
+    {
       ResetControllerSettings();
+    }
   }
 
   if (MenuButton(ICON_FA_FOLDER_OPEN "  Load Profile",
                  "Replaces these settings with a previously saved input profile."))
   {
+    DoLoadInputProfile();
   }
   if (MenuButton(ICON_FA_SAVE "  Save Profile", "Stores the current settings to an input profile."))
   {
+    DoSaveInputProfile();
   }
 
   MenuHeading("Input Sources");
@@ -3031,8 +2951,34 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   MenuHeading("Settings and Operations");
   if (MenuButton(ICON_FA_PLUS "  Create Memory Card", "Creates a new memory card file or folder."))
-    ImGui::OpenPopup("Create Memory Card");
-  DrawCreateMemoryCardWindow();
+  {
+    OpenInputStringDialog(
+      ICON_FA_PLUS "  Create Memory Card", "Enter the name of the memory card you wish to create.",
+      "Card Name: ", ICON_FA_FOLDER_PLUS "  Create", [](std::string memcard_name) {
+        if (memcard_name.empty())
+          return;
+
+        const std::string filename(Path::Combine(EmuFolders::MemoryCards, fmt::format("{}.mcd", memcard_name)));
+        if (!FileSystem::FileExists(filename.c_str()))
+        {
+          MemoryCardImage::DataArray data;
+          MemoryCardImage::Format(&data);
+          if (!FileSystem::WriteBinaryFile(filename.c_str(), data.data(), data.size()))
+          {
+            FileSystem::DeleteFile(filename.c_str());
+            ShowToast(std::string(), fmt::format("Failed to create memory card '{}'.", memcard_name));
+          }
+          else
+          {
+            ShowToast(std::string(), fmt::format("Memory card '{}' created.", memcard_name));
+          }
+        }
+        else
+        {
+          ShowToast(std::string(), fmt::format("A memory card with the name '{}' already exists.", memcard_name));
+        }
+      });
+  }
 
   DrawFolderSetting(bsi, ICON_FA_FOLDER_OPEN "  Memory Card Directory", "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
@@ -3121,73 +3067,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   }
 
   EndMenuButtons();
-}
-
-void FullscreenUI::DrawCreateMemoryCardWindow()
-{
-  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushFont(g_large_font);
-
-  bool is_open = true;
-  if (ImGui::BeginPopupModal("Create Memory Card", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-  {
-    ImGui::TextWrapped("Enter the name of the memory card you wish to create.");
-    ImGui::NewLine();
-
-    static char memcard_name[256] = {};
-    ImGui::Text("Card Name: ");
-    ImGui::InputText("##name", memcard_name, sizeof(memcard_name));
-
-    ImGui::NewLine();
-
-    BeginMenuButtons();
-
-    const bool create_enabled = (std::strlen(memcard_name) > 0);
-
-    if (ActiveButton(ICON_FA_FOLDER_OPEN "  Create", false, create_enabled) && std::strlen(memcard_name) > 0)
-    {
-      const std::string filename(Path::Combine(EmuFolders::MemoryCards, fmt::format("{}.mcd", memcard_name)));
-      if (!FileSystem::FileExists(filename.c_str()))
-      {
-        MemoryCardImage::DataArray data;
-        MemoryCardImage::Format(&data);
-        if (!FileSystem::WriteBinaryFile(filename.c_str(), data.data(), data.size()))
-        {
-          FileSystem::DeleteFile(filename.c_str());
-          ShowToast(std::string(), fmt::format("Failed to create memory card '{}'.", memcard_name));
-        }
-        else
-        {
-          ShowToast(std::string(), fmt::format("Memory card '{}' created.", memcard_name));
-
-          std::memset(memcard_name, 0, sizeof(memcard_name));
-          ImGui::CloseCurrentPopup();
-        }
-      }
-      else
-      {
-        ShowToast(std::string(), fmt::format("A memory card with the name '{}' already exists.", memcard_name));
-      }
-    }
-
-    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
-    {
-      std::memset(memcard_name, 0, sizeof(memcard_name));
-
-      ImGui::CloseCurrentPopup();
-    }
-
-    EndMenuButtons();
-
-    ImGui::EndPopup();
-  }
-
-  ImGui::PopFont();
-  ImGui::PopStyleVar(2);
 }
 
 void FullscreenUI::DrawDisplaySettingsPage()
