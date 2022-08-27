@@ -217,14 +217,14 @@ public:
   static bool IsDeviceName(const char* filename);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> Open(const char* filename, bool allow_patches, Common::Error* error);
   static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, bool apply_patches, Common::Error* error);
   static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Common::Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
@@ -232,15 +232,42 @@ public:
                                                   ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
   // Accessors.
-  const std::string& GetFileName() const { return m_filename; }
-  LBA GetPositionOnDisc() const { return m_position_on_disc; }
-  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
-  LBA GetPositionInTrack() const { return m_position_in_track; }
-  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
-  LBA GetLBACount() const { return m_lba_count; }
-  u32 GetIndexNumber() const { return m_current_index->index_number; }
-  u32 GetTrackNumber() const { return m_current_index->track_number; }
-  u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
+  const std::string& GetFileName() const
+  {
+    return m_filename;
+  }
+  LBA GetPositionOnDisc() const
+  {
+    return m_position_on_disc;
+  }
+  Position GetMSFPositionOnDisc() const
+  {
+    return Position::FromLBA(m_position_on_disc);
+  }
+  LBA GetPositionInTrack() const
+  {
+    return m_position_in_track;
+  }
+  Position GetMSFPositionInTrack() const
+  {
+    return Position::FromLBA(m_position_in_track);
+  }
+  LBA GetLBACount() const
+  {
+    return m_lba_count;
+  }
+  u32 GetIndexNumber() const
+  {
+    return m_current_index->index_number;
+  }
+  u32 GetTrackNumber() const
+  {
+    return m_current_index->track_number;
+  }
+  u32 GetTrackCount() const
+  {
+    return static_cast<u32>(m_tracks.size());
+  }
   LBA GetTrackStartPosition(u8 track) const;
   Position GetTrackStartMSFPosition(u8 track) const;
   LBA GetTrackLength(u8 track) const;
@@ -248,11 +275,26 @@ public:
   TrackMode GetTrackMode(u8 track) const;
   LBA GetTrackIndexPosition(u8 track, u8 index) const;
   LBA GetTrackIndexLength(u8 track, u8 index) const;
-  u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
-  u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
-  u32 GetIndexCount() const { return static_cast<u32>(m_indices.size()); }
-  const std::vector<Track>& GetTracks() const { return m_tracks; }
-  const std::vector<Index>& GetIndices() const { return m_indices; }
+  u32 GetFirstTrackNumber() const
+  {
+    return m_tracks.front().track_number;
+  }
+  u32 GetLastTrackNumber() const
+  {
+    return m_tracks.back().track_number;
+  }
+  u32 GetIndexCount() const
+  {
+    return static_cast<u32>(m_indices.size());
+  }
+  const std::vector<Track>& GetTracks() const
+  {
+    return m_tracks;
+  }
+  const std::vector<Index>& GetIndices() const
+  {
+    return m_indices;
+  }
   const Track& GetTrack(u32 track) const;
   const Index& GetIndex(u32 i) const;
 

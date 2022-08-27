@@ -1,5 +1,6 @@
 #include "cd_image.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -17,7 +18,7 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
   return sizes[static_cast<u32>(mode)];
 }
 
-std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches, Common::Error* error)
 {
   const char* extension;
 
@@ -37,43 +38,67 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, Common::Error* erro
     return nullptr;
   }
 
+  std::unique_ptr<CDImage> image;
   if (StringUtil::Strcasecmp(extension, ".cue") == 0)
   {
-    return OpenCueSheetImage(filename, error);
+    image = OpenCueSheetImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
            StringUtil::Strcasecmp(extension, ".iso") == 0)
   {
-    return OpenBinImage(filename, error);
+    image = OpenBinImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
   {
-    return OpenCHDImage(filename, error);
+    image = OpenCHDImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".ecm") == 0)
   {
-    return OpenEcmImage(filename, error);
+    image = OpenEcmImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
   {
-    return OpenMdsImage(filename, error);
+    image = OpenMdsImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".pbp") == 0)
   {
-    return OpenPBPImage(filename, error);
+    image = OpenPBPImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".m3u") == 0)
   {
-    return OpenM3uImage(filename, error);
+    image = OpenM3uImage(filename, allow_patches, error);
+  }
+  else if (IsDeviceName(filename))
+  {
+    image = OpenDeviceImage(filename, error);
+  }
+  else
+  {
+    Log_ErrorPrintf("Unknown extension '%s' from filename '%s'", extension, filename);
+    return nullptr;
   }
 
-  if (IsDeviceName(filename))
-    return OpenDeviceImage(filename, error);
+  if (allow_patches)
+  {
+#ifdef __ANDROID__
+    const std::string ppf_filename(
+      Path::BuildRelativePath(filename, Path::ReplaceExtension(filename_display_name, "ppf")));
+#else
+    const std::string ppf_filename(
+      Path::BuildRelativePath(filename, Path::ReplaceExtension(Path::GetFileName(filename), "ppf")));
+#endif
+    if (FileSystem::FileExists(ppf_filename.c_str()))
+    {
+      image = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(image));
+      if (!image)
+      {
+        if (error)
+          error->SetFormattedMessage("Failed to apply ppf patch from '%s'.", ppf_filename.c_str());
+      }
+    }
+  }
 
-#undef CASE_COMPARE
-
-  Log_ErrorPrintf("Unknown extension '%s' from filename '%s'", extension, filename);
-  return nullptr;
+  return image;
 }
 
 CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const

@@ -129,7 +129,7 @@ std::string GameDatabase::GetSerialForPath(const char* path)
 
   if (System::IsLoadableFilename(path) && !System::IsExeFileName(path) && !System::IsPsfFileName(path))
   {
-    std::unique_ptr<CDImage> image(CDImage::Open(path, nullptr));
+    std::unique_ptr<CDImage> image(CDImage::Open(path, false, nullptr));
     if (image)
       ret = GetSerialForDisc(image.get());
   }

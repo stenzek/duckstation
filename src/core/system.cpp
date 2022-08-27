@@ -87,11 +87,8 @@ static bool LoadEXE(const char* filename);
 
 static std::string GetExecutableNameForImage(ISOReader& iso, bool strip_subdirectories);
 
-/// Opens CD image, preloading if needed.
-static std::unique_ptr<CDImage> OpenCDImage(const char* path, Common::Error* error, bool check_for_patches);
 static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
-static bool ShouldCheckForImagePatches();
 
 static void StallCPU(TickCount ticks);
 
@@ -406,7 +403,7 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
 
 std::string System::GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, false, nullptr);
   if (!cdi)
     return {};
 
@@ -694,7 +691,7 @@ std::optional<DiscRegion> System::GetRegionForPath(const char* image_path)
   else if (IsPsfFileName(image_path))
     return GetRegionForPsf(image_path);
 
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, false, nullptr);
   if (!cdi)
     return {};
 
@@ -751,37 +748,6 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_display, bool
   }
 
   return true;
-}
-
-std::unique_ptr<CDImage> System::OpenCDImage(const char* path, Common::Error* error, bool check_for_patches)
-{
-  std::unique_ptr<CDImage> media = CDImage::Open(path, error);
-  if (!media)
-    return {};
-
-  if (check_for_patches)
-  {
-    const std::string ppf_filename(
-      Path::BuildRelativePath(path, Path::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf")));
-    if (FileSystem::FileExists(ppf_filename.c_str()))
-    {
-      media = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(media));
-      if (!media)
-      {
-        Host::AddFormattedOSDMessage(
-          30.0f, Host::TranslateString("OSDMessage", "Failed to apply ppf patch from '%s', using unpatched image."),
-          ppf_filename.c_str());
-        return OpenCDImage(path, error, false);
-      }
-    }
-  }
-
-  return media;
-}
-
-bool System::ShouldCheckForImagePatches()
-{
-  return Host::GetBoolSettingValue("CDROM", "LoadImagePatches", false);
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -1094,7 +1060,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", parameters.filename.c_str());
-      media = OpenCDImage(parameters.filename.c_str(), &error, ShouldCheckForImagePatches());
+      media = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, &error);
       if (!media)
       {
         Host::ReportErrorAsync("Error", fmt::format("Failed to load CD image '{}': {}",
@@ -1777,7 +1743,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
     }
     else
     {
-      media = OpenCDImage(media_filename.c_str(), &error, ShouldCheckForImagePatches());
+      media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
       if (!media)
       {
         if (old_media)
@@ -2831,7 +2797,7 @@ std::string System::GetMediaFileName()
 bool System::InsertMedia(const char* path)
 {
   Common::Error error;
-  std::unique_ptr<CDImage> image = OpenCDImage(path, &error, ShouldCheckForImagePatches());
+  std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   if (!image)
   {
     Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to open disc image '%s': %s."),

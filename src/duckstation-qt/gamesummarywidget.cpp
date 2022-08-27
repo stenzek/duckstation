@@ -161,7 +161,7 @@ void GameSummaryWidget::populateTracksInfo()
   m_ui.tracks->clearContents();
   QtUtils::ResizeColumnsForTableView(m_ui.tracks, {70, 75, 95, 95, 215, 40});
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), nullptr);
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
     return;
 
@@ -206,7 +206,7 @@ void GameSummaryWidget::onComputeHashClicked()
     return;
   }
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), nullptr);
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
   {
     QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));

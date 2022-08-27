@@ -269,6 +269,7 @@ void Settings::Load(SettingsInterface& si)
     static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
+  cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_read_speedup = si.GetIntValue("CDROM", "ReadSpeedup", 1);
   cdrom_seek_speedup = si.GetIntValue("CDROM", "SeekSpeedup", 1);
@@ -474,6 +475,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
+  si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
   si.SetIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
   si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);

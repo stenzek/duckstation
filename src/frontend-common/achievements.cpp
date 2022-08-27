@@ -1307,7 +1307,7 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
   if (!path.empty() && (!image || (g_settings.achievements_use_first_disc_from_playlist && image->HasSubImages() &&
                                    image->GetCurrentSubImage() != 0)))
   {
-    temp_image = CDImage::Open(path.c_str(), nullptr);
+    temp_image = CDImage::Open(path.c_str(), g_settings.cdrom_load_image_patches, nullptr);
     image = temp_image.get();
     if (!temp_image)
     {
@@ -1336,7 +1336,8 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
 
   if (image && image->HasSubImages() && image->GetCurrentSubImage() != 0)
   {
-    std::unique_ptr<CDImage> image_copy(CDImage::Open(image->GetFileName().c_str(), nullptr));
+    std::unique_ptr<CDImage> image_copy(
+      CDImage::Open(image->GetFileName().c_str(), g_settings.cdrom_load_image_patches, nullptr));
     if (!image_copy)
     {
       Log_ErrorPrintf("Failed to reopen image '%s'", image->GetFileName().c_str());

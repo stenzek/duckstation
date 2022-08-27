@@ -164,7 +164,7 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
 
 bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), nullptr);
+  std::unique_ptr<CDImage> cdi = CDImage::Open(path.c_str(), false, nullptr);
   if (!cdi)
     return false;
 
