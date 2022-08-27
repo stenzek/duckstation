@@ -40,6 +40,7 @@ public:
   bool Initialize();
 
   void ReportError(const std::string_view& title, const std::string_view& message) override;
+  bool ConfirmMessage(const std::string_view& title, const std::string_view& message) override;
 
   void SetDefaultConfig(SettingsInterface& si) override;
 

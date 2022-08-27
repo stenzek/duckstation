@@ -16,6 +16,7 @@ public:
   virtual ~NoGUIPlatform() = default;
 
   virtual void ReportError(const std::string_view& title, const std::string_view& message) = 0;
+  virtual bool ConfirmMessage(const std::string_view& title, const std::string_view& message) = 0;
 
   virtual void SetDefaultConfig(SettingsInterface& si) = 0;
 

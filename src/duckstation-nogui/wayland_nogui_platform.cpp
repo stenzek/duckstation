@@ -78,9 +78,13 @@ bool WaylandNoGUIPlatform::Initialize()
 
 void WaylandNoGUIPlatform::ReportError(const std::string_view& title, const std::string_view& message)
 {
-  const std::string title_copy(title);
-  const std::string message_copy(message);
-  Log_ErrorPrintf("%s: %s", title_copy.c_str(), message_copy.c_str());
+  // not implemented
+}
+
+bool WaylandNoGUIPlatform::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+{
+  // not implemented
+  return true;
 }
 
 void WaylandNoGUIPlatform::SetDefaultConfig(SettingsInterface& si) {}

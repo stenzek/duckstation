@@ -79,6 +79,14 @@ void Win32NoGUIPlatform::ReportError(const std::string_view& title, const std::s
   MessageBoxW(m_hwnd, message_copy.c_str(), title_copy.c_str(), MB_ICONERROR | MB_OK);
 }
 
+bool Win32NoGUIPlatform::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+{
+  const std::wstring title_copy(StringUtil::UTF8StringToWideString(title));
+  const std::wstring message_copy(StringUtil::UTF8StringToWideString(message));
+
+  return (MessageBoxW(m_hwnd, message_copy.c_str(), title_copy.c_str(), MB_ICONQUESTION | MB_YESNO) == IDYES);
+}
+
 void Win32NoGUIPlatform::SetDefaultConfig(SettingsInterface& si)
 {
   // noop

@@ -293,7 +293,6 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 
 bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
 {
-  // TODO: Post to window
   if (!title.empty() && !message.empty())
   {
     Log_ErrorPrintf("ConfirmMessage: %.*s: %.*s", static_cast<int>(title.size()), title.data(),
@@ -304,7 +303,7 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
     Log_ErrorPrintf("ConfirmMessage: %.*s", static_cast<int>(message.size()), message.data());
   }
 
-  return true;
+  return g_nogui_window->ConfirmMessage(title, message);
 }
 
 void Host::ReportDebuggerMessage(const std::string_view& message)
