@@ -1,3 +1,4 @@
+import code
 import sys
 import os
 import glob
@@ -50,21 +51,18 @@ for token in tokens:
 codepoints.sort()
 codepoints.append(0) # null terminator
 
-startc = None
+startc = codepoints[0]
 endc = None
-pairs = []
+pairs = [startc]
 for codepoint in codepoints:
     if endc is not None and (endc + 1) != codepoint:
-        if startc is not None:
-            pairs.append(startc)
-            pairs.append(endc)
+        pairs.append(endc)
+        pairs.append(codepoint)
         startc = codepoint
         endc = codepoint
     else:
         endc = codepoint
-if startc is not None:
-    pairs.append(startc)
-    pairs.append(endc)
+pairs.append(endc)
 
 pairs_str = ",".join(list(map(lambda x: "0x{:x}".format(x), pairs)))
 
