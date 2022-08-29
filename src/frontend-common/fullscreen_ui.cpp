@@ -2107,7 +2107,7 @@ void FullscreenUI::DrawSummarySettingsPage()
 
   MenuHeading("Options");
 
-  if (MenuButton(ICON_FA_COPY "  Copy Settings", "Copies the current global settings to this game.", false))
+  if (MenuButton(ICON_FA_COPY "  Copy Settings", "Copies the current global settings to this game."))
     DoCopyGameSettings();
   if (MenuButton(ICON_FA_TRASH "  Clear Settings", "Clears all settings set for this game."))
     DoClearGameSettings();
@@ -2362,7 +2362,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
                     "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.",
                     "Console", "Enable8MBRAM", false);
 
-  MenuHeading("CPU Emulation (MIPS R3000A Derivative)");
+  MenuHeading("CPU Emulation");
 
   DrawEnumSetting(
     bsi, "Execution Mode", "Determines how the emulated CPU executes instructions. Recompiler is recommended.", "CPU",
@@ -2372,17 +2372,26 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawToggleSetting(bsi, "Enable Overclocking", "When this option is chosen, the clock speed set below will be used.",
                     "CPU", "OverclockEnable", false);
 
-#if 0
-  s32 overclock_percent =
-    s_settings_copy.cpu_overclock_enable ? static_cast<s32>(s_settings_copy.GetCPUOverclockPercent()) : 100;
-  if (RangeButton("Overclocking Percentage",
-    "Selects the percentage of the normal clock speed the emulated hardware will run at.",
-    &overclock_percent, 10, 1000, 10, "%d%%", s_settings_copy.cpu_overclock_enable))
+  const bool oc_enable = GetEffectiveBoolSetting(bsi, "CPU", "OverclockEnable", false);
+  if (oc_enable)
   {
-    s_settings_copy.SetCPUOverclockPercent(static_cast<u32>(overclock_percent));
-    settings_changed = true;
+    u32 oc_numerator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockNumerator", 1);
+    u32 oc_denominator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockDenominator", 1);
+    s32 oc_percent = static_cast<s32>(Settings::CPUOverclockFractionToPercent(oc_numerator, oc_denominator));
+    if (RangeButton("Overclocking Percentage",
+                    "Selects the percentage of the normal clock speed the emulated hardware will run at.", &oc_percent,
+                    10, 1000, 10, "%d%%"))
+    {
+      Settings::CPUOverclockPercentToFraction(oc_percent, &oc_numerator, &oc_denominator);
+      bsi->SetUIntValue("CPU", "OverclockNumerator", oc_numerator);
+      bsi->SetUIntValue("CPU", "OverclockDenominator", oc_denominator);
+      SetSettingsChanged(bsi);
+    }
   }
-#endif
+
+  DrawToggleSetting(bsi, "Enable Recompiler ICache",
+                    "Makes games run closer to their console framerate, at a small cost to performance.", "CPU",
+                    "RecompilerICache", false);
 
   MenuHeading("CD-ROM Emulation");
 
@@ -3076,6 +3085,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                "7x", "8x", "9x (for 4K)", "10x", "11x", "12x", "13x", "14x", "15x", "16x");
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
+  const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
 
@@ -3085,43 +3095,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   "Renderer", Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
                   &Settings::GetRendererDisplayName, GPURenderer::Count);
 
-#if 0
-  static std::string fullscreen_mode;
-  static bool fullscreen_mode_set;
-  if (!fullscreen_mode_set)
-  {
-    fullscreen_mode = s_host_interface->GetSettingsInterface()->GetStringValue("GPU", "FullscreenMode", "");
-    fullscreen_mode_set = true;
-  }
-
-  if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
-                          fullscreen_mode.empty() ? "Borderless Fullscreen" : fullscreen_mode.c_str()))
-  {
-    HostDisplay::AdapterAndModeList aml(s_host_interface->GetDisplay()->GetAdapterAndModeList());
-
-    ImGuiFullscreen::ChoiceDialogOptions options;
-    options.reserve(aml.fullscreen_modes.size() + 1);
-    options.emplace_back("Borderless Fullscreen", fullscreen_mode.empty());
-    for (std::string& mode : aml.fullscreen_modes)
-      options.emplace_back(std::move(mode), mode == fullscreen_mode);
-
-    auto callback = [](s32 index, const std::string& title, bool checked) {
-      if (index < 0)
-        return;
-      else if (index == 0)
-        std::string().swap(fullscreen_mode);
-      else
-        fullscreen_mode = title;
-
-      s_host_interface->GetSettingsInterface()->SetStringValue("GPU", "FullscreenMode", fullscreen_mode.c_str());
-      s_host_interface->GetSettingsInterface()->Save();
-      s_host_interface->AddOSDMessage("Resolution change will be applied after restarting.", 10.0f);
-      CloseChoiceDialog();
-    };
-    OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
-  }
-#endif
-
   const GPURenderer renderer =
     Settings::ParseRendererName(
       GetEffectiveStringSetting(bsi, "GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
@@ -3129,31 +3102,93 @@ void FullscreenUI::DrawDisplaySettingsPage()
       .value_or(Settings::DEFAULT_GPU_RENDERER);
   const bool is_hardware = (renderer != GPURenderer::Software);
 
-  DrawIntListSetting(
-    bsi, "Internal Resolution Scale",
-    "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.", "GPU",
-    "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
+  std::optional<std::string> adapter(
+    bsi->GetOptionalStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>("")));
+  
+  if (MenuButtonWithValue("GPU Adapter", "Selects the GPU to use for rendering.",
+                          adapter.has_value() ? (adapter->empty() ? "Default" : adapter->c_str()) :
+                                                "Use Global Setting"))
+  {
+    HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
 
-  DrawEnumSetting(bsi, "Texture Filtering",
-                  "Smooths out the blockyness of magnified textures on 3D objects. Will have a greater effect "
-                  "on higher resolution scales.",
-                  "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                  &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
-                  is_hardware);
+    ImGuiFullscreen::ChoiceDialogOptions options;
+    options.reserve(aml.adapter_names.size() + 2);
+    if (game_settings)
+      options.emplace_back("Use Global Setting", !adapter.has_value());
+    options.emplace_back("Default", adapter.has_value() && adapter->empty());
+    for (std::string& mode : aml.adapter_names)
+    {
+      const bool checked = (adapter.has_value() && mode == adapter.value());
+      options.emplace_back(std::move(mode), checked);
+    }
 
-  DrawToggleSetting(bsi, "True Color Rendering",
-                    "Disables dithering and uses the full 8 bits per channel of color information. May break "
-                    "rendering in some games.",
-                    "GPU", "TrueColor", true, is_hardware);
+    auto callback = [game_settings](s32 index, const std::string& title, bool checked) {
+      if (index < 0)
+        return;
 
-  DrawToggleSetting(bsi, "Widescreen Hack",
-                    "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.", "GPU",
-                    "WidescreenHack", false, is_hardware);
+      const char* value;
+      if (game_settings && index == 0)
+        value = nullptr;
+      else if ((!game_settings && index == 0) || (game_settings && index == 1))
+        value = "";
+      else
+        value = title.c_str();
 
-  DrawToggleSetting(bsi, "PGXP Geometry Correction",
-                    "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
-                    "transfers.",
-                    "GPU", "PGXPEnable", false);
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      if (!value)
+        bsi->DeleteValue("GPU", "Adapter");
+      else
+        bsi->SetStringValue("GPU", "Adapter", value);
+      SetSettingsChanged(bsi);
+      ShowToast(std::string(), "GPU adapter will be applied after restarting.", 10.0f);
+      CloseChoiceDialog();
+    };
+    OpenChoiceDialog(ICON_FA_TV "  GPU Adapter", false, std::move(options), std::move(callback));
+  }
+
+  std::optional<std::string> fsmode(bsi->GetOptionalStringValue(
+    "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>("")));
+
+  if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
+                          fsmode.has_value() ? (fsmode->empty() ? "Borderless Fullscreen" : fsmode->c_str()) :
+                                               "Use Global Setting"))
+  {
+    HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
+
+    ImGuiFullscreen::ChoiceDialogOptions options;
+    options.reserve(aml.fullscreen_modes.size() + 2);
+    if (game_settings)
+      options.emplace_back("Use Global Setting", !fsmode.has_value());
+    options.emplace_back("Borderless Fullscreen", fsmode.has_value() && fsmode->empty());
+    for (std::string& mode : aml.fullscreen_modes)
+    {
+      const bool checked = (fsmode.has_value() && mode == fsmode.value());
+      options.emplace_back(std::move(mode), checked);
+    }
+
+    auto callback = [game_settings](s32 index, const std::string& title, bool checked) {
+      if (index < 0)
+        return;
+
+      const char* value;
+      if (game_settings && index == 0)
+        value = nullptr;
+      else if ((!game_settings && index == 0) || (game_settings && index == 1))
+        value = "";
+      else
+        value = title.c_str();
+
+      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+      if (!value)
+        bsi->DeleteValue("GPU", "FullscreenMode");
+      else
+        bsi->SetStringValue("GPU", "FullscreenMode", value);
+      SetSettingsChanged(bsi);
+      ShowToast(std::string(), "Resolution change will be applied after restarting.", 10.0f);
+      CloseChoiceDialog();
+    };
+    OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
+  }
 
   switch (renderer)
   {
@@ -3211,6 +3246,34 @@ void FullscreenUI::DrawDisplaySettingsPage()
     "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.",
     "Display", "DisplayAllFrames", false);
 
+  MenuHeading("Rendering");
+
+  DrawIntListSetting(
+    bsi, "Internal Resolution Scale",
+    "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.", "GPU",
+    "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
+
+  DrawEnumSetting(bsi, "Texture Filtering",
+                  "Smooths out the blockyness of magnified textures on 3D objects. Will have a greater effect "
+                  "on higher resolution scales.",
+                  "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
+                  &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
+                  is_hardware);
+
+  DrawToggleSetting(bsi, "True Color Rendering",
+                    "Disables dithering and uses the full 8 bits per channel of color information. May break "
+                    "rendering in some games.",
+                    "GPU", "TrueColor", true, is_hardware);
+
+  DrawToggleSetting(bsi, "Widescreen Hack",
+                    "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.", "GPU",
+                    "WidescreenHack", false, is_hardware);
+
+  DrawToggleSetting(bsi, "PGXP Geometry Correction",
+                    "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
+                    "transfers.",
+                    "GPU", "PGXPEnable", false);
+
   MenuHeading("Screen Display");
 
   DrawEnumSetting(bsi, "Aspect Ratio", "Changes the aspect ratio used to display the console's output to the screen.",
@@ -3267,7 +3330,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     "to the hardware renderers.",
                     "GPU", "ChromaSmoothing24Bit", false);
 
-  MenuHeading("PGXP (Precision Geometry Transform Pipeline");
+  MenuHeading("PGXP (Precision Geometry Transform Pipeline)");
 
   const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
   const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
@@ -3651,32 +3714,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
   dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(0x21, 0x21, 0x21, 200));
-
-#if 0
-  // title info
-  {
-    const ImVec2 title_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(),
-                                                        -1.0f, s_current_game_title.c_str()));
-    const ImVec2 subtitle_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                            -1.0f, s_current_game_subtitle.c_str()));
-
-    ImVec2 title_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - title_size.x,
-                     display_size.y - LayoutScale(20.0f + 50.0f));
-    ImVec2 subtitle_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - subtitle_size.x,
-                        title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-    float rp_height = 0.0f;
-
-    dl->AddText(g_large_font, g_large_font->FontSize, title_pos, IM_COL32(255, 255, 255, 255),
-                s_current_game_title.c_str());
-    dl->AddText(g_medium_font, g_medium_font->FontSize, subtitle_pos, IM_COL32(255, 255, 255, 255),
-                s_current_game_subtitle.c_str());
-
-    const ImVec2 image_min(display_size.x - LayoutScale(20.0f + 50.0f) - rp_height,
-                           display_size.y - LayoutScale(20.0f + 50.0f) - rp_height);
-    const ImVec2 image_max(image_min.x + LayoutScale(50.0f) + rp_height, image_min.y + LayoutScale(50.0f) + rp_height);
-    dl->AddImage(GetCoverForCurrentGame()->GetHandle(), image_min, image_max);
-  }
-#endif
 
   // title info
   {
@@ -4414,15 +4451,6 @@ void FullscreenUI::DrawGameListWindow()
 
       // size
       ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
-
-#if 0
-      // game settings
-      const u32 user_setting_count = 0; // FIXME
-      if (user_setting_count > 0)
-        ImGui::Text("%u Per-Game Settings Set", user_setting_count);
-      else
-        ImGui::TextUnformatted("No Per-Game Settings Set");
-#endif
 
       ImGui::PopFont();
     }
