@@ -210,8 +210,7 @@ private:
   QEventLoop* m_event_loop = nullptr;
   QTimer* m_background_controller_polling_timer = nullptr;
 
-  std::atomic_bool m_shutdown_flag{false};
-
+  bool m_shutdown_flag = false;
   bool m_run_fullscreen_ui = false;
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;

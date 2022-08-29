@@ -162,6 +162,23 @@ void DisplayWidget::updateCursor(bool hidden)
   }
 }
 
+void DisplayWidget::handleCloseEvent(QCloseEvent* event)
+{
+  // Closing the separate widget will either cancel the close, or trigger shutdown.
+  // In the latter case, it's going to destroy us, so don't let Qt do it first.
+  if (QtHost::IsSystemValid())
+  {
+    QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true),
+                              Q_ARG(bool, false));
+  }
+  else
+  {
+    QMetaObject::invokeMethod(g_main_window, "requestExit");
+  }
+
+  event->ignore();
+}
+
 void DisplayWidget::updateCenterPos()
 {
 #ifdef _WIN32
@@ -348,11 +365,7 @@ bool DisplayWidget::event(QEvent* event)
 
     case QEvent::Close:
     {
-      // Closing the separate widget will either cancel the close, or trigger shutdown.
-      // In the latter case, it's going to destroy us, so don't let Qt do it first.
-      QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true),
-                                Q_ARG(bool, false));
-      event->ignore();
+      handleCloseEvent(static_cast<QCloseEvent*>(event));
       return true;
     }
 
@@ -416,13 +429,9 @@ DisplayWidget* DisplayContainer::removeDisplayWidget()
 
 bool DisplayContainer::event(QEvent* event)
 {
-  if (event->type() == QEvent::Close)
+  if (event->type() == QEvent::Close && m_display_widget)
   {
-    // Closing the separate widget will either cancel the close, or trigger shutdown.
-    // In the latter case, it's going to destroy us, so don't let Qt do it first.
-    QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true), Q_ARG(bool, true),
-                              Q_ARG(bool, false));
-    event->ignore();
+    m_display_widget->handleCloseEvent(static_cast<QCloseEvent*>(event));
     return true;
   }
 

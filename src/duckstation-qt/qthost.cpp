@@ -1373,7 +1373,9 @@ void EmuThread::stop()
 
 void EmuThread::stopInThread()
 {
-  m_shutdown_flag.store(true);
+  stopFullscreenUI();
+
+  m_shutdown_flag = true;
   m_event_loop->quit();
 }
 
@@ -1390,7 +1392,7 @@ void EmuThread::run()
   startBackgroundControllerPollTimer();
 
   // main loop
-  while (!m_shutdown_flag.load())
+  while (!m_shutdown_flag)
   {
     if (System::IsRunning())
     {
@@ -1398,9 +1400,6 @@ void EmuThread::run()
     }
     else
     {
-      m_event_loop->processEvents(QEventLoop::AllEvents);
-      CommonHost::PumpMessagesOnCPUThread();
-
       // we want to keep rendering the UI when paused and fullscreen UI is enabled
       if (!FullscreenUI::HasActiveWindow() && !System::IsRunning())
       {
@@ -1409,7 +1408,10 @@ void EmuThread::run()
         continue;
       }
 
-      renderDisplay(false);
+      m_event_loop->processEvents(QEventLoop::AllEvents);
+      CommonHost::PumpMessagesOnCPUThread();
+      if (g_host_display)
+        renderDisplay(false);
     }
   }
 

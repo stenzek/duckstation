@@ -2259,9 +2259,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     return;
   }
 
-  if (g_emu_thread->isRunningFullscreenUI())
-    g_emu_thread->stopFullscreenUI();
-
   saveGeometryToConfig();
   m_is_closing = true;
 
@@ -2412,7 +2409,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     // Closing the window should shut down everything. If we don't set the closing flag here,
     // the VM shutdown may not complete by the time closeEvent() is called, leading to a confirm.
     m_is_closing = true;
-    close();
+    QGuiApplication::quit();
   }
 
   return true;
@@ -2424,7 +2421,9 @@ void MainWindow::requestExit(bool allow_save_to_state /* = true */)
   if (!requestShutdown(true, allow_save_to_state, true))
     return;
 
-  close();
+  // We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
+  // doesn't quit the application.
+  QGuiApplication::quit();
 }
 
 void MainWindow::checkForSettingChanges()

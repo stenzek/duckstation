@@ -5,6 +5,8 @@
 #include <QtWidgets/QWidget>
 #include <optional>
 
+class QCloseEvent;
+
 class DisplayWidget final : public QWidget
 {
   Q_OBJECT
@@ -23,6 +25,8 @@ public:
 
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);
+
+  void handleCloseEvent(QCloseEvent* event);
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height, float scale);
