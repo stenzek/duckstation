@@ -95,7 +95,8 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
 const char* Controller::GetDefaultPadType(u32 pad)
 {
-  return (pad == 0) ? "DigitalController" : "None";
+  return Settings::GetControllerTypeName((pad == 0) ? Settings::DEFAULT_CONTROLLER_1_TYPE :
+                                                      Settings::DEFAULT_CONTROLLER_2_TYPE);
 }
 
 const Controller::ControllerInfo* Controller::GetControllerInfo(ControllerType type)
