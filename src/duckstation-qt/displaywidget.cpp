@@ -110,8 +110,7 @@ void DisplayWidget::updateRelativeMode(bool enabled)
   if (m_relative_mouse_enabled == enabled && m_clip_mouse_enabled == clip_cursor)
     return;
 
-  Log_InfoPrintf("updateRelativeMode(): relative=%s, clip=%s", enabled ? "yes" : "no",
-                 clip_cursor ? "yes" : "no");
+  Log_InfoPrintf("updateRelativeMode(): relative=%s, clip=%s", enabled ? "yes" : "no", clip_cursor ? "yes" : "no");
 
   if (!clip_cursor && m_clip_mouse_enabled)
   {
@@ -299,8 +298,8 @@ bool DisplayWidget::event(QEvent* event)
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
       if (event->type() == QEvent::MouseButtonDblClick &&
           static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
-          !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) &&
-          Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
+          !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) && QtHost::IsSystemValid() &&
+          !QtHost::IsSystemPaused() && Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
         g_emu_thread->toggleFullscreen();
       }
