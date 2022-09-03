@@ -234,17 +234,17 @@ Login token generated on %2.</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="961"/>
+        <location filename="../../core/system.cpp" line="925"/>
         <source>Loading state</source>
         <translation>ステートロード</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1162"/>
+        <location filename="../../core/system.cpp" line="1126"/>
         <source>Resuming state</source>
         <translation>ステートセーブからの再開</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1850"/>
+        <location filename="../../core/system.cpp" line="1814"/>
         <source>Hardcore mode disabled by state switch.</source>
         <translation>ステートロードによりハードコアモードが無効化されました。</translation>
     </message>
@@ -264,69 +264,69 @@ Login token generated on %2.</source>
         <translation>ハードコアモードが有効な間は{0}を実行できません。ハードコアモードを無効にしますか? いいえを選択すると{0}はキャンセルされます。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="562"/>
+        <location filename="../../frontend-common/achievements.cpp" line="561"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>ハードコアモードが有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="563"/>
+        <location filename="../../frontend-common/achievements.cpp" line="562"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>ハードコアモードが無効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="967"/>
+        <location filename="../../frontend-common/achievements.cpp" line="966"/>
         <source>{} (Hardcore Mode)</source>
         <translation>{} (ハードコアモード)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="975"/>
+        <location filename="../../frontend-common/achievements.cpp" line="974"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
         <translation>{} 個の実績(全 {} 個中)と {} ポイント(全 {} ポイント中)を獲得済みです。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="981"/>
+        <location filename="../../frontend-common/achievements.cpp" line="980"/>
         <source>This game has no achievements.</source>
         <translation>このゲームには実績がありません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="988"/>
+        <location filename="../../frontend-common/achievements.cpp" line="987"/>
         <source>Leaderboards are enabled.</source>
         <translation>リーダーボードが有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="992"/>
+        <location filename="../../frontend-common/achievements.cpp" line="991"/>
         <source>Leaderboards are disabled because hardcore mode is off.</source>
         <translation>ハードコアモードがオフのため、リーダーボードは無効になります。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1672"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1680"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
         <translation>あなたのスコア: {} (ベスト: {})
 リーダーボードでの順位: {} 位 ({} 人中)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="4941"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5209"/>
         <source>This game has {} leaderboards.</source>
         <translation>このゲームには {} 個のリーダーボードがあります。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="4959"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5227"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>ハードコアモードがオフになっているため、スコアの送信は無効になっています。リーダーボードは読み取り専用です。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="4994"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5262"/>
         <source>Time</source>
         <translation>タイム</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="4995"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5263"/>
         <source>Score</source>
         <translation>スコア</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5051"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5319"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>リーダーボードのデータをダウンロードしています。お待ちください...</translation>
     </message>
@@ -705,17 +705,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1008"/>
+        <location filename="../../core/settings.cpp" line="1034"/>
         <source>Null (No Output)</source>
         <translation>Null (出力なし)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1010"/>
+        <location filename="../../core/settings.cpp" line="1036"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1013"/>
+        <location filename="../../core/settings.cpp" line="1039"/>
         <source>XAudio2</source>
         <translation>XAudio2</translation>
     </message>
@@ -1114,17 +1114,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="747"/>
+        <location filename="../../core/settings.cpp" line="749"/>
         <source>Interpreter (Slowest)</source>
         <translation>インタープリタ (最も遅い)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="748"/>
+        <location filename="../../core/settings.cpp" line="750"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>キャッシュされたインタープリタ (高速)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="749"/>
+        <location filename="../../core/settings.cpp" line="751"/>
         <source>Recompiler (Fastest)</source>
         <translation>リコンパイラ (最速)</translation>
     </message>
@@ -1132,17 +1132,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="778"/>
+        <location filename="../../core/settings.cpp" line="780"/>
         <source>Disabled (Slowest)</source>
         <translation>無効 (最も遅い)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="779"/>
+        <location filename="../../core/settings.cpp" line="781"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (ハードウェア, 最速, 64ビットのみ)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="780"/>
+        <location filename="../../core/settings.cpp" line="782"/>
         <source>LUT (Faster)</source>
         <translation>LUT (高速)</translation>
     </message>
@@ -1686,7 +1686,7 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CommonHostInterface</name>
     <message>
-        <location filename="../../core/system.cpp" line="3845"/>
+        <location filename="../../core/system.cpp" line="3809"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>無効なバージョン %u (%s バージョン %u)</translation>
     </message>
@@ -1694,22 +1694,22 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="689"/>
+        <location filename="../../core/settings.cpp" line="691"/>
         <source>Auto-Detect</source>
         <translation>自動検出</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="689"/>
+        <location filename="../../core/settings.cpp" line="691"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="690"/>
+        <location filename="../../core/settings.cpp" line="692"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, カナダ)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="690"/>
+        <location filename="../../core/settings.cpp" line="692"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (ヨーロッパ, オーストラリア)</translation>
     </message>
@@ -3166,36 +3166,36 @@ You cannot undo this action.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1048"/>
+        <location filename="../../core/settings.cpp" line="1074"/>
         <source>None</source>
         <translation>なし</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="174"/>
-        <location filename="../../core/settings.cpp" line="1048"/>
+        <location filename="../../core/settings.cpp" line="1074"/>
         <source>Digital Controller</source>
         <translation>デジタルコントローラー</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1049"/>
+        <location filename="../../core/settings.cpp" line="1075"/>
         <source>Analog Controller (DualShock)</source>
         <translation>アナログコントローラー (DualShock)</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="341"/>
-        <location filename="../../core/settings.cpp" line="1049"/>
+        <location filename="../../core/settings.cpp" line="1075"/>
         <source>Analog Joystick</source>
         <translation>アナログジョイスティック</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="195"/>
-        <location filename="../../core/settings.cpp" line="1050"/>
+        <location filename="../../core/settings.cpp" line="1076"/>
         <source>PlayStation Mouse</source>
         <translation>プレイステーションマウス</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="258"/>
-        <location filename="../../core/settings.cpp" line="1051"/>
+        <location filename="../../core/settings.cpp" line="1077"/>
         <source>NeGcon</source>
         <translation>ネジコン</translation>
     </message>
@@ -3206,7 +3206,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="230"/>
-        <location filename="../../core/settings.cpp" line="1050"/>
+        <location filename="../../core/settings.cpp" line="1076"/>
         <source>GunCon</source>
         <translation>ガンコン</translation>
     </message>
@@ -3665,22 +3665,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="718"/>
+        <location filename="../../core/settings.cpp" line="720"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (日本)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="718"/>
+        <location filename="../../core/settings.cpp" line="720"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, カナダ)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="719"/>
+        <location filename="../../core/settings.cpp" line="721"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (ヨーロッパ, オーストラリア)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="719"/>
+        <location filename="../../core/settings.cpp" line="721"/>
         <source>Other</source>
         <translation>その他</translation>
     </message>
@@ -3688,17 +3688,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="944"/>
+        <location filename="../../core/settings.cpp" line="970"/>
         <source>Auto (Game Native)</source>
         <translation>自動 (ゲーム本来の比率)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="944"/>
+        <location filename="../../core/settings.cpp" line="970"/>
         <source>Auto (Match Window)</source>
         <translation>自動 (ウィンドウに合わせる)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="945"/>
+        <location filename="../../core/settings.cpp" line="971"/>
         <source>Custom</source>
         <translation>カスタム</translation>
     </message>
@@ -3706,17 +3706,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="916"/>
+        <location filename="../../core/settings.cpp" line="942"/>
         <source>None</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="916"/>
+        <location filename="../../core/settings.cpp" line="942"/>
         <source>Only Overscan Area</source>
         <translation>オーバースキャンエリアのみ</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="917"/>
+        <location filename="../../core/settings.cpp" line="943"/>
         <source>All Borders</source>
         <translation>すべてのボーダー</translation>
     </message>
@@ -4080,17 +4080,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="539"/>
+        <location filename="../qthost.cpp" line="530"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="539"/>
+        <location filename="../qthost.cpp" line="530"/>
         <source>No resume save state found.</source>
         <translation>再開用ステートセーブが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1323"/>
+        <location filename="../qthost.cpp" line="1288"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -4103,34 +4103,34 @@ Achievements: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1329"/>
+        <location filename="../qthost.cpp" line="1294"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n ポイント</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1335"/>
+        <location filename="../qthost.cpp" line="1300"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>リッチプレゼンスは非アクティブまたはサポートされていません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1339"/>
+        <location filename="../qthost.cpp" line="1304"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>ゲームが読み込まれていないか、RetroAchievements が利用できません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1687"/>
+        <location filename="../qthost.cpp" line="1674"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1696"/>
+        <location filename="../qthost.cpp" line="1683"/>
         <source>Game: %1 FPS</source>
         <translation>ゲーム: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1706"/>
+        <location filename="../qthost.cpp" line="1693"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>表示: %1 FPS (%2%)</translation>
     </message>
@@ -4679,17 +4679,17 @@ Achievements: %5 (%6)
 <context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="887"/>
+        <location filename="../../core/settings.cpp" line="913"/>
         <source>Disabled</source>
         <translation>無効</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="887"/>
+        <location filename="../../core/settings.cpp" line="913"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation>ボックス (ダウンサンプル 3D/すべてスムーズ)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="888"/>
+        <location filename="../../core/settings.cpp" line="914"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>アダプティブ (3D を保持/スムーズ 2D)</translation>
     </message>
@@ -4697,27 +4697,27 @@ Achievements: %5 (%6)
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="819"/>
+        <location filename="../../core/settings.cpp" line="821"/>
         <source>Hardware (D3D11)</source>
         <translation>ハードウェア (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="819"/>
+        <location filename="../../core/settings.cpp" line="821"/>
         <source>Hardware (D3D12)</source>
         <translation>ハードウェア (D3D12)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="822"/>
+        <location filename="../../core/settings.cpp" line="824"/>
         <source>Hardware (Vulkan)</source>
         <translation>ハードウェア (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="825"/>
+        <location filename="../../core/settings.cpp" line="827"/>
         <source>Hardware (OpenGL)</source>
         <translation>ハードウェア (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="827"/>
+        <location filename="../../core/settings.cpp" line="829"/>
         <source>Software</source>
         <translation>ソフトウェア</translation>
     </message>
@@ -4828,37 +4828,37 @@ Achievements: %5 (%6)
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="856"/>
+        <location filename="../../core/settings.cpp" line="882"/>
         <source>Nearest-Neighbor</source>
         <translation>最近傍</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="856"/>
+        <location filename="../../core/settings.cpp" line="882"/>
         <source>Bilinear</source>
         <translation>バイリニア</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="857"/>
+        <location filename="../../core/settings.cpp" line="883"/>
         <source>JINC2</source>
         <translation>JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="857"/>
+        <location filename="../../core/settings.cpp" line="883"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>バイリニア (エッジブレンディングなし)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="858"/>
+        <location filename="../../core/settings.cpp" line="884"/>
         <source>xBR</source>
         <translation>xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="858"/>
+        <location filename="../../core/settings.cpp" line="884"/>
         <source>JINC2 (No Edge Blending)</source>
         <translation>JINC2 (エッジブレンディングなし)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="859"/>
+        <location filename="../../core/settings.cpp" line="885"/>
         <source>xBR (No Edge Blending)</source>
         <translation>xBR (エッジブレンディングなし)</translation>
     </message>
@@ -5678,470 +5678,470 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="591"/>
-        <location filename="../../frontend-common/common_host.cpp" line="598"/>
-        <location filename="../../frontend-common/common_host.cpp" line="605"/>
-        <location filename="../../frontend-common/common_host.cpp" line="611"/>
-        <location filename="../../frontend-common/common_host.cpp" line="617"/>
-        <location filename="../../frontend-common/common_host.cpp" line="624"/>
-        <location filename="../../frontend-common/common_host.cpp" line="630"/>
-        <location filename="../../frontend-common/common_host.cpp" line="636"/>
-        <location filename="../../frontend-common/common_host.cpp" line="643"/>
-        <location filename="../../frontend-common/common_host.cpp" line="650"/>
-        <location filename="../../frontend-common/common_host.cpp" line="663"/>
+        <location filename="../../frontend-common/common_host.cpp" line="639"/>
+        <location filename="../../frontend-common/common_host.cpp" line="646"/>
+        <location filename="../../frontend-common/common_host.cpp" line="653"/>
+        <location filename="../../frontend-common/common_host.cpp" line="659"/>
+        <location filename="../../frontend-common/common_host.cpp" line="665"/>
+        <location filename="../../frontend-common/common_host.cpp" line="672"/>
+        <location filename="../../frontend-common/common_host.cpp" line="678"/>
+        <location filename="../../frontend-common/common_host.cpp" line="684"/>
+        <location filename="../../frontend-common/common_host.cpp" line="691"/>
+        <location filename="../../frontend-common/common_host.cpp" line="698"/>
+        <location filename="../../frontend-common/common_host.cpp" line="711"/>
         <source>General</source>
         <translation>一般</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="598"/>
+        <location filename="../../frontend-common/common_host.cpp" line="646"/>
         <source>Fast Forward</source>
         <translation>早送り</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="605"/>
+        <location filename="../../frontend-common/common_host.cpp" line="653"/>
         <source>Toggle Fast Forward</source>
         <translation>早送りオン/オフ切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="611"/>
+        <location filename="../../frontend-common/common_host.cpp" line="659"/>
         <source>Turbo</source>
         <translation>ターボ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="617"/>
+        <location filename="../../frontend-common/common_host.cpp" line="665"/>
         <source>Toggle Turbo</source>
         <translation>ターボオン/オフ切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="624"/>
+        <location filename="../../frontend-common/common_host.cpp" line="672"/>
         <source>Toggle Fullscreen</source>
         <translation>フルスクリーン/ウィンドウ表示切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="630"/>
+        <location filename="../../frontend-common/common_host.cpp" line="678"/>
         <source>Toggle Pause</source>
         <translation>一時停止/再開</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="712"/>
+        <location filename="../../frontend-common/common_host.cpp" line="760"/>
         <source>Toggle Cheats</source>
         <translation>チート有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="636"/>
+        <location filename="../../frontend-common/common_host.cpp" line="684"/>
         <source>Power Off System</source>
         <translation>システム電源オフ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="718"/>
+        <location filename="../../frontend-common/common_host.cpp" line="766"/>
         <source>Toggle Patch Codes</source>
         <translation>パッチコード有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="677"/>
+        <location filename="../../frontend-common/common_host.cpp" line="725"/>
         <source>Reset System</source>
         <translation>システムリセット</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="643"/>
+        <location filename="../../frontend-common/common_host.cpp" line="691"/>
         <source>Save Screenshot</source>
         <translation>スクリーンショットを保存</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="682"/>
+        <location filename="../../frontend-common/common_host.cpp" line="730"/>
         <source>Change Disc</source>
         <translation>ディスク交換</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="699"/>
+        <location filename="../../frontend-common/common_host.cpp" line="747"/>
         <source>Frame Step</source>
         <translation>コマ送り</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="705"/>
+        <location filename="../../frontend-common/common_host.cpp" line="753"/>
         <source>Rewind</source>
         <translation>巻き戻し</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="726"/>
+        <location filename="../../frontend-common/common_host.cpp" line="774"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
         <translation>クロック速度制御 有効/無効の切り替え (オーバークロック)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="789"/>
-        <location filename="../../frontend-common/common_host.cpp" line="795"/>
-        <location filename="../../frontend-common/common_host.cpp" line="821"/>
-        <location filename="../../frontend-common/common_host.cpp" line="827"/>
-        <location filename="../../frontend-common/common_host.cpp" line="833"/>
-        <location filename="../../frontend-common/common_host.cpp" line="839"/>
-        <location filename="../../frontend-common/common_host.cpp" line="845"/>
-        <location filename="../../frontend-common/common_host.cpp" line="856"/>
-        <location filename="../../frontend-common/common_host.cpp" line="862"/>
-        <location filename="../../frontend-common/common_host.cpp" line="883"/>
+        <location filename="../../frontend-common/common_host.cpp" line="837"/>
+        <location filename="../../frontend-common/common_host.cpp" line="843"/>
+        <location filename="../../frontend-common/common_host.cpp" line="869"/>
+        <location filename="../../frontend-common/common_host.cpp" line="875"/>
+        <location filename="../../frontend-common/common_host.cpp" line="881"/>
+        <location filename="../../frontend-common/common_host.cpp" line="887"/>
+        <location filename="../../frontend-common/common_host.cpp" line="893"/>
+        <location filename="../../frontend-common/common_host.cpp" line="904"/>
+        <location filename="../../frontend-common/common_host.cpp" line="910"/>
+        <location filename="../../frontend-common/common_host.cpp" line="931"/>
         <source>Graphics</source>
         <translation>グラフィック</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="790"/>
+        <location filename="../../frontend-common/common_host.cpp" line="838"/>
         <source>Toggle Software Rendering</source>
         <translation>ソフトウェアレンダリング有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="795"/>
+        <location filename="../../frontend-common/common_host.cpp" line="843"/>
         <source>Toggle PGXP</source>
         <translation>PGXP 有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="863"/>
+        <location filename="../../frontend-common/common_host.cpp" line="911"/>
         <source>Toggle PGXP Depth Buffer</source>
         <translation>PGXP 深度バッファ有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="822"/>
+        <location filename="../../frontend-common/common_host.cpp" line="870"/>
         <source>Increase Resolution Scale</source>
         <translation>解像度スケールを上げる</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="591"/>
+        <location filename="../../frontend-common/common_host.cpp" line="639"/>
         <source>Open Pause Menu</source>
         <translation>一時停止メニューを開く</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="650"/>
+        <location filename="../../frontend-common/common_host.cpp" line="698"/>
         <source>Open Achievement List</source>
         <translation>実績リストを開く</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="663"/>
+        <location filename="../../frontend-common/common_host.cpp" line="711"/>
         <source>Open Leaderboard List</source>
         <translation>リーダーボードリストを開く</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="677"/>
-        <location filename="../../frontend-common/common_host.cpp" line="682"/>
-        <location filename="../../frontend-common/common_host.cpp" line="692"/>
-        <location filename="../../frontend-common/common_host.cpp" line="699"/>
-        <location filename="../../frontend-common/common_host.cpp" line="705"/>
-        <location filename="../../frontend-common/common_host.cpp" line="712"/>
-        <location filename="../../frontend-common/common_host.cpp" line="718"/>
         <location filename="../../frontend-common/common_host.cpp" line="725"/>
+        <location filename="../../frontend-common/common_host.cpp" line="730"/>
+        <location filename="../../frontend-common/common_host.cpp" line="740"/>
+        <location filename="../../frontend-common/common_host.cpp" line="747"/>
         <location filename="../../frontend-common/common_host.cpp" line="753"/>
-        <location filename="../../frontend-common/common_host.cpp" line="765"/>
-        <location filename="../../frontend-common/common_host.cpp" line="777"/>
+        <location filename="../../frontend-common/common_host.cpp" line="760"/>
+        <location filename="../../frontend-common/common_host.cpp" line="766"/>
+        <location filename="../../frontend-common/common_host.cpp" line="773"/>
+        <location filename="../../frontend-common/common_host.cpp" line="801"/>
+        <location filename="../../frontend-common/common_host.cpp" line="813"/>
+        <location filename="../../frontend-common/common_host.cpp" line="825"/>
         <source>System</source>
         <translation>システム</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="692"/>
+        <location filename="../../frontend-common/common_host.cpp" line="740"/>
         <source>Swap Memory Card Slots</source>
         <translation>メモリーカードスロットを交換</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="754"/>
+        <location filename="../../frontend-common/common_host.cpp" line="802"/>
         <source>Increase Emulation Speed</source>
         <translation>エミュレーション速度を上げる</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="766"/>
+        <location filename="../../frontend-common/common_host.cpp" line="814"/>
         <source>Decrease Emulation Speed</source>
         <translation>エミュレーション速度を下げる</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="778"/>
+        <location filename="../../frontend-common/common_host.cpp" line="826"/>
         <source>Reset Emulation Speed</source>
         <translation>エミュレーション速度をリセット</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="828"/>
+        <location filename="../../frontend-common/common_host.cpp" line="876"/>
         <source>Decrease Resolution Scale</source>
         <translation>解像度スケールを下げる</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="834"/>
+        <location filename="../../frontend-common/common_host.cpp" line="882"/>
         <source>Toggle Post-Processing</source>
         <translation>ポストプロセス有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="840"/>
+        <location filename="../../frontend-common/common_host.cpp" line="888"/>
         <source>Reload Post Processing Shaders</source>
         <translation>ポストプロセスシェーダーをリロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="846"/>
+        <location filename="../../frontend-common/common_host.cpp" line="894"/>
         <source>Reload Texture Replacements</source>
         <translation>テクスチャ置換をリロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="856"/>
+        <location filename="../../frontend-common/common_host.cpp" line="904"/>
         <source>Toggle Widescreen</source>
         <translation>ワイドスクリーン有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="883"/>
+        <location filename="../../frontend-common/common_host.cpp" line="931"/>
         <source>Toggle PGXP CPU Mode</source>
         <translation>PGXP CPU モード有効/無効の切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="972"/>
-        <location filename="../../frontend-common/common_host.cpp" line="977"/>
-        <location filename="../../frontend-common/common_host.cpp" line="982"/>
-        <location filename="../../frontend-common/common_host.cpp" line="987"/>
-        <location filename="../../frontend-common/common_host.cpp" line="993"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1000"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1006"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1020"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1025"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1030"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1035"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1041"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1048"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1054"/>
         <source>Save States</source>
         <translation>ステートセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="973"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1021"/>
         <source>Load From Selected Slot</source>
         <translation>選択したスロットからロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="978"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1026"/>
         <source>Save To Selected Slot</source>
         <translation>選択したスロットにセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="983"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1031"/>
         <source>Select Previous Save Slot</source>
         <translation>前のセーブスロットを選択</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="988"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1036"/>
         <source>Select Next Save Slot</source>
         <translation>次のセーブスロットを選択</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="993"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1041"/>
         <source>Undo Load State</source>
         <translation>ステートロード前に戻す(Undo)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1012"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1060"/>
         <source>Load Game State 1</source>
         <translation>ゲームステート 1 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1014"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1062"/>
         <source>Load Game State 2</source>
         <translation>ゲームステート 2 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1016"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1064"/>
         <source>Load Game State 3</source>
         <translation>ゲームステート 3 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1018"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1066"/>
         <source>Load Game State 4</source>
         <translation>ゲームステート 4 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1020"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1068"/>
         <source>Load Game State 5</source>
         <translation>ゲームステート 5 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1022"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1070"/>
         <source>Load Game State 6</source>
         <translation>ゲームステート 6 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1024"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1072"/>
         <source>Load Game State 7</source>
         <translation>ゲームステート 7 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1026"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1074"/>
         <source>Load Game State 8</source>
         <translation>ゲームステート 8 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1028"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1076"/>
         <source>Load Game State 9</source>
         <translation>ゲームステート 9 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1030"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1078"/>
         <source>Load Game State 10</source>
         <translation>ゲームステート 10 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1013"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1061"/>
         <source>Save Game State 1</source>
         <translation>ゲームステート 1 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1015"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1063"/>
         <source>Save Game State 2</source>
         <translation>ゲームステート 2 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1017"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1065"/>
         <source>Save Game State 3</source>
         <translation>ゲームステート 3 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1019"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1067"/>
         <source>Save Game State 4</source>
         <translation>ゲームステート 4 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1021"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1069"/>
         <source>Save Game State 5</source>
         <translation>ゲームステート 5 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1023"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1071"/>
         <source>Save Game State 6</source>
         <translation>ゲームステート 6 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1025"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1073"/>
         <source>Save Game State 7</source>
         <translation>ゲームステート 7 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1027"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1075"/>
         <source>Save Game State 8</source>
         <translation>ゲームステート 8 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1029"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1077"/>
         <source>Save Game State 9</source>
         <translation>ゲームステート 9 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1031"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1079"/>
         <source>Save Game State 10</source>
         <translation>ゲームステート 10 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1033"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1081"/>
         <source>Load Global State 1</source>
         <translation>グローバルステート 1 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1035"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1083"/>
         <source>Load Global State 2</source>
         <translation>グローバルステート 2 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1037"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1085"/>
         <source>Load Global State 3</source>
         <translation>グローバルステート 3 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1039"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1087"/>
         <source>Load Global State 4</source>
         <translation>グローバルステート 4 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1041"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1089"/>
         <source>Load Global State 5</source>
         <translation>グローバルステート 5 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1043"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1091"/>
         <source>Load Global State 6</source>
         <translation>グローバルステート 6 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1045"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1093"/>
         <source>Load Global State 7</source>
         <translation>グローバルステート 7 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1047"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1095"/>
         <source>Load Global State 8</source>
         <translation>グローバルステート 8 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1049"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1097"/>
         <source>Load Global State 9</source>
         <translation>グローバルステート 9 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1051"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1099"/>
         <source>Load Global State 10</source>
         <translation>グローバルステート 10 をロード</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1034"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1082"/>
         <source>Save Global State 1</source>
         <translation>グローバルステート 1 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1036"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1084"/>
         <source>Save Global State 2</source>
         <translation>グローバルステート 2 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1038"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1086"/>
         <source>Save Global State 3</source>
         <translation>グローバルステート 3 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1040"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1088"/>
         <source>Save Global State 4</source>
         <translation>グローバルステート 4 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1042"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1090"/>
         <source>Save Global State 5</source>
         <translation>グローバルステート 5 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1044"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1092"/>
         <source>Save Global State 6</source>
         <translation>グローバルステート 6 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1046"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1094"/>
         <source>Save Global State 7</source>
         <translation>グローバルステート 7 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1048"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1096"/>
         <source>Save Global State 8</source>
         <translation>グローバルステート 8 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1050"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1098"/>
         <source>Save Global State 9</source>
         <translation>グローバルステート 9 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1052"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1100"/>
         <source>Save Global State 10</source>
         <translation>グローバルステート 10 にセーブ</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="910"/>
-        <location filename="../../frontend-common/common_host.cpp" line="929"/>
-        <location filename="../../frontend-common/common_host.cpp" line="941"/>
-        <location filename="../../frontend-common/common_host.cpp" line="955"/>
+        <location filename="../../frontend-common/common_host.cpp" line="958"/>
+        <location filename="../../frontend-common/common_host.cpp" line="977"/>
+        <location filename="../../frontend-common/common_host.cpp" line="989"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1003"/>
         <source>Audio</source>
         <translation>音声</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="910"/>
+        <location filename="../../frontend-common/common_host.cpp" line="958"/>
         <source>Toggle Mute</source>
         <translation>音声有り無しの切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="929"/>
+        <location filename="../../frontend-common/common_host.cpp" line="977"/>
         <source>Toggle CD Audio Mute</source>
         <translation>CD 音声有り無しの切り替え</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="941"/>
+        <location filename="../../frontend-common/common_host.cpp" line="989"/>
         <source>Volume Up</source>
         <translation>音量を上げる</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="955"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1003"/>
         <source>Volume Down</source>
         <translation>音量を下げる</translation>
     </message>
@@ -6227,52 +6227,52 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="660"/>
         <source>None</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="660"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="660"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="659"/>
+        <location filename="../../core/settings.cpp" line="661"/>
         <source>Performance</source>
         <translation>パフォーマンス</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="659"/>
+        <location filename="../../core/settings.cpp" line="661"/>
         <source>Information</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="662"/>
         <source>Developer</source>
         <translation>開発</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="662"/>
         <source>Profile</source>
         <translation>プロファイル</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="662"/>
         <source>Verbose</source>
         <translation>詳細</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="661"/>
+        <location filename="../../core/settings.cpp" line="663"/>
         <source>Debug</source>
         <translation>デバッグ</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="661"/>
+        <location filename="../../core/settings.cpp" line="663"/>
         <source>Trace</source>
         <translation>トレース</translation>
     </message>
@@ -6816,9 +6816,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>CD-ROM デバイスが見つかりませんでした。CD-ROM ドライブが接続されており、&lt;br&gt;それにアクセスするための十分な権限があることを確認してください。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="47"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation>すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cue シート (*.cue);;MAME CHD イメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecar イメージ (*.mds);;PlayStation EBOOT 形式 (*.pbp);;PlayStation 実行ファイル (*.exe *.psexe *.ps-exe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
+        <translation type="vanished">すべてのファイル (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;シングルトラックイメージ (*.bin *.img *.iso);;Cue シート (*.cue);;MAME CHD イメージ (*.chd);;Error Code Modeler イメージ (*.ecm);;Media Descriptor Sidecar イメージ (*.mds);;PlayStation EBOOT 形式 (*.pbp);;PlayStation 実行ファイル (*.exe *.psexe *.ps-exe);;ポータブルサウンド形式 (*.psf *.minipsf);;プレイリスト (*.m3u)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="47"/>
+        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="157"/>
@@ -7000,7 +7004,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1107"/>
-        <location filename="../mainwindow.cpp" line="2527"/>
+        <location filename="../mainwindow.cpp" line="2532"/>
         <source>Cheat Manager</source>
         <translation>チートマネージャ</translation>
     </message>
@@ -7096,90 +7100,90 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>%1x 倍</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1894"/>
-        <location filename="../mainwindow.cpp" line="1901"/>
-        <location filename="../mainwindow.cpp" line="1910"/>
+        <location filename="../mainwindow.cpp" line="1900"/>
+        <location filename="../mainwindow.cpp" line="1907"/>
+        <location filename="../mainwindow.cpp" line="1916"/>
         <source>Destination File</source>
         <translation>宛先ファイル</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1894"/>
-        <location filename="../mainwindow.cpp" line="1910"/>
+        <location filename="../mainwindow.cpp" line="1900"/>
+        <location filename="../mainwindow.cpp" line="1916"/>
         <source>Binary Files (*.bin)</source>
         <translation>バイナリファイル (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1902"/>
+        <location filename="../mainwindow.cpp" line="1908"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>バイナリファイル (*.bin);;PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1926"/>
+        <location filename="../mainwindow.cpp" line="1932"/>
         <source>Default</source>
         <translation>デフォルト</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1927"/>
+        <location filename="../mainwindow.cpp" line="1933"/>
         <source>Fusion</source>
         <translation>フュージョン</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1928"/>
+        <location filename="../mainwindow.cpp" line="1934"/>
         <source>Dark Fusion (Gray)</source>
         <translation>ダークフュージョン (グレイ)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1929"/>
+        <location filename="../mainwindow.cpp" line="1935"/>
         <source>Dark Fusion (Blue)</source>
         <translation>ダークフュージョン (ブルー)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1930"/>
+        <location filename="../mainwindow.cpp" line="1936"/>
         <source>QDarkStyle</source>
         <translation>Q ダークスタイル</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2367"/>
+        <location filename="../mainwindow.cpp" line="2370"/>
         <source>Confirm Shutdown</source>
         <translation>シャットダウンの確認</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2370"/>
+        <location filename="../mainwindow.cpp" line="2373"/>
         <source>Save State For Resume</source>
         <translation>再開用にステートセーブする</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2449"/>
         <location filename="../mainwindow.cpp" line="2454"/>
-        <location filename="../mainwindow.cpp" line="2474"/>
-        <location filename="../mainwindow.cpp" line="2483"/>
+        <location filename="../mainwindow.cpp" line="2459"/>
+        <location filename="../mainwindow.cpp" line="2479"/>
+        <location filename="../mainwindow.cpp" line="2488"/>
         <source>Memory Card Not Found</source>
         <translation>メモリーカードが見つかりません</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2450"/>
+        <location filename="../mainwindow.cpp" line="2455"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>メモリーカード&lt;br&gt;&apos;%1&apos;&lt;br&gt;は存在しません。
 空のメモリーカードを作成しますか？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2455"/>
+        <location filename="../mainwindow.cpp" line="2460"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>メモリーカードの作成に失敗しました &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2475"/>
-        <location filename="../mainwindow.cpp" line="2484"/>
+        <location filename="../mainwindow.cpp" line="2480"/>
+        <location filename="../mainwindow.cpp" line="2489"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>メモリーカード &apos;%1&apos; が見つかりませんでした。ゲームを開始し、保存(作成)してください。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2525"/>
+        <location filename="../mainwindow.cpp" line="2530"/>
         <source>Do not show again</source>
         <translation>再度表示しない</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2529"/>
+        <location filename="../mainwindow.cpp" line="2534"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -7192,17 +7196,17 @@ Are you sure you want to continue?</source>
 続行してもよろしいですか？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2591"/>
+        <location filename="../mainwindow.cpp" line="2596"/>
         <source>Updater Error</source>
         <translation>更新エラー</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2597"/>
+        <location filename="../mainwindow.cpp" line="2602"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;申し訳ありませんが、GitHub の公式リリースではない DuckStation バージョンを更新しようとしています。非互換性を防ぐために、自動更新は公式ビルドでのみ有効になっています。&lt;/p&gt;&lt;p&gt;公式ビルドを取得するには、以下のリンクの「ダウンロードと実行」の手順に従ってください。&lt;/p&gt;&lt;p&gt; &lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt; https://github.com/stenzek/duckstation/ &lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2603"/>
+        <location filename="../mainwindow.cpp" line="2608"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>現在のプラットフォームでは、自動更新はサポートされていません。</translation>
     </message>
@@ -7541,32 +7545,32 @@ Are you sure you want to continue?</source>
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1080"/>
+        <location filename="../../core/settings.cpp" line="1106"/>
         <source>No Memory Card</source>
         <translation>メモリーカードなし</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1080"/>
+        <location filename="../../core/settings.cpp" line="1106"/>
         <source>Shared Between All Games</source>
         <translation>すべてのゲームでカードを共有する</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1081"/>
+        <location filename="../../core/settings.cpp" line="1107"/>
         <source>Separate Card Per Game (Game Code)</source>
         <translation>ゲームごとに別々のカード (ゲームコード)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1082"/>
+        <location filename="../../core/settings.cpp" line="1108"/>
         <source>Separate Card Per Game (Game Title)</source>
         <translation>ゲームごとに別々のカード (ゲーム名)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1083"/>
+        <location filename="../../core/settings.cpp" line="1109"/>
         <source>Separate Card Per Game (File Title)</source>
         <translation>ゲームごとに別々のカード (ファイル名)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1084"/>
+        <location filename="../../core/settings.cpp" line="1110"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>非永続カード (セーブしないでください)</translation>
     </message>
@@ -7574,22 +7578,22 @@ Are you sure you want to continue?</source>
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1136"/>
+        <location filename="../../core/settings.cpp" line="1162"/>
         <source>Disabled</source>
         <translation>使用しない</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1136"/>
+        <location filename="../../core/settings.cpp" line="1162"/>
         <source>Enable on Port 1 Only</source>
         <translation>ポート1のみ有効にする</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1137"/>
+        <location filename="../../core/settings.cpp" line="1163"/>
         <source>Enable on Port 2 Only</source>
         <translation>ポート2のみ有効にする</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1137"/>
+        <location filename="../../core/settings.cpp" line="1163"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>ポート1および2で有効にする</translation>
     </message>
@@ -7610,208 +7614,208 @@ Are you sure you want to continue?</source>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../../core/system.cpp" line="926"/>
+        <location filename="../../core/system.cpp" line="890"/>
         <source>System reset.</source>
         <translation>システムがリセットされました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="989"/>
+        <location filename="../../core/system.cpp" line="953"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>&apos;%s&apos; からのステートロードに失敗しました。リセットします。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1030"/>
+        <location filename="../../core/system.cpp" line="994"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>&apos;%s&apos; にステートセーブできませんでした。</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="603"/>
+        <location filename="../../core/settings.cpp" line="605"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP はソフトウェアレンダラーと互換性がないため、PGXP を無効にします。</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="621"/>
+        <location filename="../../core/settings.cpp" line="623"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
         <translation>巻き戻しは、Android 用の32ビット ARM ではサポートされていません。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3129"/>
+        <location filename="../../core/system.cpp" line="3093"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>リコンパイラオプションが変更されました。すべてのブロックをフラッシュします。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3072"/>
+        <location filename="../../core/system.cpp" line="3036"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>GPU レンダラー %s%s に切り替えます。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3094"/>
+        <location filename="../../core/system.cpp" line="3058"/>
         <source>Switching to %s audio backend.</source>
         <translation>オーディオバックエンド %s に切り替えます。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3116"/>
+        <location filename="../../core/system.cpp" line="3080"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>CPU 実行モード %s に切り替えます。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3188"/>
+        <location filename="../../core/system.cpp" line="3152"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP が有効になりました。すべてのブロックを再コンパイルします。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3189"/>
+        <location filename="../../core/system.cpp" line="3153"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP が無効になりました。すべてのブロックを再コンパイルします。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4182"/>
+        <location filename="../../core/system.cpp" line="4146"/>
         <source>Switching to %s renderer...</source>
         <translation>レンダラー %s に切り替えます...</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="50"/>
-        <location filename="../../core/system.cpp" line="3249"/>
-        <location filename="../../core/system.cpp" line="4110"/>
+        <location filename="../../core/system.cpp" line="3213"/>
+        <location filename="../../core/system.cpp" line="4074"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>ポストプロセスシェーダーチェーンの読み込みに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="555"/>
+        <location filename="../../frontend-common/common_host.cpp" line="603"/>
         <source>Cannot load state for game without serial.</source>
         <translation>シリアルのないゲームはステートセーブを読み込めません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="565"/>
+        <location filename="../../frontend-common/common_host.cpp" line="613"/>
         <source>No save state found in slot {}.</source>
         <translation>スロット {} にステートセーブが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="579"/>
+        <location filename="../../frontend-common/common_host.cpp" line="627"/>
         <source>Cannot save state for game without serial.</source>
         <translation>シリアルのないゲームはステートセーブを保存できません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="657"/>
+        <location filename="../../frontend-common/common_host.cpp" line="705"/>
         <source>Achievements are disabled or unavailable for  game.</source>
         <translation>このゲームでは、実績が無効になっているか、利用できません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="670"/>
+        <location filename="../../frontend-common/common_host.cpp" line="718"/>
         <source>Leaderboards are disabled or unavailable for  game.</source>
         <translation>このゲームでは、リーダーボードが無効になっているか、利用できません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="740"/>
+        <location filename="../../frontend-common/common_host.cpp" line="788"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
         <translation>CPU クロック速度制御が有効になりました (%u%% / %.3f MHz)。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="747"/>
+        <location filename="../../frontend-common/common_host.cpp" line="795"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
         <translation>CPU クロック速度制御が無効になりました (%.3f MHz)。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="806"/>
+        <location filename="../../frontend-common/common_host.cpp" line="854"/>
         <source>PGXP is now enabled.</source>
         <translation>PGXP が有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="807"/>
+        <location filename="../../frontend-common/common_host.cpp" line="855"/>
         <source>PGXP is now disabled.</source>
         <translation>PGXP が無効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="877"/>
+        <location filename="../../frontend-common/common_host.cpp" line="925"/>
         <source>PGXP Depth Buffer is now enabled.</source>
         <translation>PGXP 深度バッファが有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="878"/>
+        <location filename="../../frontend-common/common_host.cpp" line="926"/>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>PGXP 深度バッファが無効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="924"/>
-        <location filename="../../frontend-common/common_host.cpp" line="951"/>
-        <location filename="../../frontend-common/common_host.cpp" line="967"/>
+        <location filename="../../frontend-common/common_host.cpp" line="972"/>
+        <location filename="../../frontend-common/common_host.cpp" line="999"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1015"/>
         <source>Volume: {}%</source>
         <translation>音量: {}%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="850"/>
+        <location filename="../../frontend-common/common_host.cpp" line="898"/>
         <source>Texture replacements reloaded.</source>
         <translation>テクスチャ置換がリロードされました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3636"/>
+        <location filename="../../core/system.cpp" line="3600"/>
         <source>Failed to save undo load state.</source>
         <translation>ステートロード取り消し(Undo)用のステートセーブに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2340"/>
+        <location filename="../../core/system.cpp" line="2304"/>
         <source>Rewinding is not enabled.</source>
         <translation>巻き戻しが有効化されていません。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="760"/>
-        <location filename="../../frontend-common/common_host.cpp" line="772"/>
-        <location filename="../../frontend-common/common_host.cpp" line="784"/>
+        <location filename="../../frontend-common/common_host.cpp" line="808"/>
+        <location filename="../../frontend-common/common_host.cpp" line="820"/>
+        <location filename="../../frontend-common/common_host.cpp" line="832"/>
         <source>Emulation speed set to %u%%.</source>
         <translation>エミュレーション速度を %u%% に設定しました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="897"/>
+        <location filename="../../frontend-common/common_host.cpp" line="945"/>
         <source>PGXP CPU mode is now enabled.</source>
         <translation>PGXP CPU モードが有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="898"/>
+        <location filename="../../frontend-common/common_host.cpp" line="946"/>
         <source>PGXP CPU mode is now disabled.</source>
         <translation>PGXP CPU モードが無効になりました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="919"/>
+        <location filename="../../frontend-common/common_host.cpp" line="967"/>
         <source>Volume: Muted</source>
         <translation>音量: ミュート</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="936"/>
+        <location filename="../../frontend-common/common_host.cpp" line="984"/>
         <source>CD Audio Muted.</source>
         <translation>CD 音声をミュートしました。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="937"/>
+        <location filename="../../frontend-common/common_host.cpp" line="985"/>
         <source>CD Audio Unmuted.</source>
         <translation>CD 音声のミュートを解除しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3697"/>
+        <location filename="../../core/system.cpp" line="3661"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>&apos;%s&apos; への音声ダンプを開始しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3702"/>
+        <location filename="../../core/system.cpp" line="3666"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>&apos;%s&apos; への音声ダンプを開始できませんでした。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3713"/>
+        <location filename="../../core/system.cpp" line="3677"/>
         <source>Stopped dumping audio.</source>
         <translation>音声ダンプを停止しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3743"/>
+        <location filename="../../core/system.cpp" line="3707"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>スクリーンショットファイル &apos;%s&apos; は既に存在します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3755"/>
+        <location filename="../../core/system.cpp" line="3719"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>スクリーンショットを &apos;%s&apos; に保存できませんでした</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3760"/>
+        <location filename="../../core/system.cpp" line="3724"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>スクリーンショットを &apos;%s&apos; に保存しました。</translation>
     </message>
@@ -7825,106 +7829,106 @@ Please configure a supported controller from the list above.</source>
 上記のリストからサポートされているコントローラーを構成してください。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3936"/>
+        <location filename="../../core/system.cpp" line="3900"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>&apos;%s&apos; からのチートのロードに失敗しました。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3943"/>
+        <location filename="../../core/system.cpp" line="3907"/>
         <source>%n cheats are enabled. This may result in instability.</source>
         <translation>
             <numerusform>チート %n が有効になっています。これにより、不安定になる可能性があります。</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4158"/>
+        <location filename="../../core/system.cpp" line="4122"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
         <translation>ワイドスクリーンハックが有効になりました。アスペクト比は %s に設定されました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4166"/>
+        <location filename="../../core/system.cpp" line="4130"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
         <translation>ワイドスクリーンハックが無効になりました。アスペクト比は %s に設定されました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2737"/>
+        <location filename="../../core/system.cpp" line="2701"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>メモリーカードポートを交換しました。両方のポートにメモリーカードがあります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2742"/>
+        <location filename="../../core/system.cpp" line="2706"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>メモリーカードポートを交換しました。ポート2にはメモリーカードがあり、ポート1は空です。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2748"/>
+        <location filename="../../core/system.cpp" line="2712"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>メモリーカードポートを交換しました。ポート1にはメモリーカードがあり、ポート2は空です。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2754"/>
+        <location filename="../../core/system.cpp" line="2718"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>メモリーカードポートを交換しました。どちらのポートにもメモリーカードはありません。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4023"/>
+        <location filename="../../core/system.cpp" line="3987"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>チートリスト &apos;%s&apos; を削除しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4066"/>
+        <location filename="../../core/system.cpp" line="4030"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>チート &apos;%s&apos; を有効にしました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4071"/>
+        <location filename="../../core/system.cpp" line="4035"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>チート &apos;%s&apos; を無効にしました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3990"/>
+        <location filename="../../core/system.cpp" line="3954"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>チートリストを &apos;%s&apos; に保存できませんでした</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2382"/>
+        <location filename="../../core/system.cpp" line="2346"/>
         <source>No cheats are loaded.</source>
         <translation>チートはロードされていません。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4007"/>
+        <location filename="../../core/system.cpp" line="3971"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
         <translation>
             <numerusform>%n 個のチートを &apos;%s&apos; に保存しました。</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4088"/>
+        <location filename="../../core/system.cpp" line="4052"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>チート &apos;%s&apos; を適用しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4093"/>
+        <location filename="../../core/system.cpp" line="4057"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>チート &apos;%s&apos; は既に有効になっています。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4107"/>
+        <location filename="../../core/system.cpp" line="4071"/>
         <source>Post-processing is now enabled.</source>
         <translation>ポストプロセスが有効になりました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4116"/>
+        <location filename="../../core/system.cpp" line="4080"/>
         <source>Post-processing is now disabled.</source>
         <translation>ポストプロセスが無効になりました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4127"/>
+        <location filename="../../core/system.cpp" line="4091"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>ポストプロセスシェーダーチェーンの読み込みに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4129"/>
+        <location filename="../../core/system.cpp" line="4093"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>ポストプロセスシェーダーがリロードされました。</translation>
     </message>
@@ -8045,77 +8049,76 @@ Please configure a supported controller from the list above.</source>
         <translation>CD イメージのプリキャッシングに失敗しました。予期せぬ動作をする恐れがあります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="774"/>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation>PPF パッチ &apos;%s&apos; を適用できませんでした。パッチを適用せずにイメージを使用します。</translation>
+        <translation type="vanished">PPF パッチ &apos;%s&apos; を適用できませんでした。パッチを適用せずにイメージを使用します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="979"/>
+        <location filename="../../core/system.cpp" line="943"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>&apos;{}&apos; からステートロードします...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1029"/>
+        <location filename="../../core/system.cpp" line="993"/>
         <source>Save State</source>
         <translation>ステートセーブ</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1037"/>
+        <location filename="../../core/system.cpp" line="1001"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>&apos;{}&apos; にステートセーブしました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1356"/>
+        <location filename="../../core/system.cpp" line="1320"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>CPU クロック速度が %u%% (%u / %u) に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1363"/>
+        <location filename="../../core/system.cpp" line="1327"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>CD-ROM 読み込み高速化が %ux (実効速度 %ux)に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1372"/>
+        <location filename="../../core/system.cpp" line="1336"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>CD-ROM シーク高速化が &quot;無限/瞬間&quot; に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1379"/>
+        <location filename="../../core/system.cpp" line="1343"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>CD-ROM シーク高速化が %ux に設定されています。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1548"/>
+        <location filename="../../core/system.cpp" line="1512"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>%s レンダラーの初期化に失敗しました。代わりにソフトウェアレンダラーを使用します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1635"/>
+        <location filename="../../core/system.cpp" line="1599"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU オーバークロック (現在 %u%%) はステートセーブ内では %u%% でした。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1789"/>
+        <location filename="../../core/system.cpp" line="1753"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>ステートセーブ中で使用していた CD イメージ &apos;%s&apos; を開くことができませんでした: %s. 既存の CD イメージ &apos;%s&apos; を使用します。これにより、不安定になる可能性があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2839"/>
+        <location filename="../../core/system.cpp" line="2803"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>ディスクイメージ &apos;%s&apos; を開くことができませんでした: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3025"/>
+        <location filename="../../core/system.cpp" line="2989"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>サブイメージ %u (&apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3031"/>
+        <location filename="../../core/system.cpp" line="2995"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>サブイメージ %s (%u 枚目、&apos;%s&apos; 内)に切り替えました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2851"/>
+        <location filename="../../core/system.cpp" line="2815"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>ディスク &apos;%s&apos; (%s) を挿入しました。</translation>
     </message>
@@ -8186,7 +8189,7 @@ Please configure a supported controller from the list above.</source>
         <translation>排他的フルスクリーンの取得に失敗しました。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="621"/>
+        <location filename="../qthost.cpp" line="619"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>排他的フルスクリーンを失いました。</translation>
     </message>
@@ -8201,14 +8204,14 @@ Please configure a supported controller from the list above.</source>
         <translation>ゲームごとの設定に基づき、アナログモードの強制を無効化します。コントローラーはデジタルモードで動作します。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2390"/>
+        <location filename="../../core/system.cpp" line="2354"/>
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform>%n 個のチートが有効になりました。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2391"/>
+        <location filename="../../core/system.cpp" line="2355"/>
         <source>%n cheats are now inactive.</source>
         <translation>
             <numerusform>%n 個のチートが無効になりました。</numerusform>
@@ -8380,29 +8383,29 @@ URL は次のとおりです: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2105"/>
-        <location filename="../qthost.cpp" line="2131"/>
-        <location filename="../qthost.cpp" line="2147"/>
+        <location filename="../qthost.cpp" line="2092"/>
+        <location filename="../qthost.cpp" line="2118"/>
+        <location filename="../qthost.cpp" line="2134"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2106"/>
+        <location filename="../qthost.cpp" line="2093"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>ファイル &apos;%1&apos; は存在していません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2132"/>
+        <location filename="../qthost.cpp" line="2119"/>
         <source>The specified save state does not exist.</source>
         <translation>指定されたステートセーブは存在していません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2148"/>
+        <location filename="../qthost.cpp" line="2135"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>起動するファイル名が指定されていないため、GUI なしモードを使用できません。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2149"/>
+        <location filename="../qthost.cpp" line="2136"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>起動するファイル名が指定されていないため、バッチモードを使用できません。</translation>
     </message>
@@ -8690,58 +8693,58 @@ URL は次のとおりです: %1</translation>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="1748"/>
+        <location filename="../../core/system.cpp" line="1712"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>ステートセーブに互換性がありません。最小バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1175"/>
+        <location filename="../../core/system.cpp" line="1139"/>
         <source>Failed to load %s BIOS.</source>
         <translation>BIOS %s の読み込みに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1246"/>
-        <location filename="../../core/system.cpp" line="2958"/>
+        <location filename="../../core/system.cpp" line="1210"/>
+        <location filename="../../core/system.cpp" line="2922"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1247"/>
+        <location filename="../../core/system.cpp" line="1211"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>起動用のステートセーブファイル &apos;{}&apos; の読み込みに失敗しました。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1757"/>
+        <location filename="../../core/system.cpp" line="1721"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>ステートセーブに互換性がありません。最大バージョンは %u ですが、ステートセーブはバージョン %u です。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1798"/>
+        <location filename="../../core/system.cpp" line="1762"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>ステートセーブで使用していた CD イメージ &apos;%s&apos;を開くことができませんでした: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1817"/>
+        <location filename="../../core/system.cpp" line="1781"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>ステートセーブで使用していたサブイメージ %u (CD イメージ &apos;%s&apos; 内)への切り替えに失敗しました: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2627"/>
+        <location filename="../../core/system.cpp" line="2591"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>実行中のゲームにはコードがないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2644"/>
+        <location filename="../../core/system.cpp" line="2608"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>実行中のゲームには名称がないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2664"/>
+        <location filename="../../core/system.cpp" line="2628"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>実行中のゲームのパスがないため、ゲームごとのメモリーカードをスロット %u に使用することはできません。代わりに共有カードを使用します。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2960"/>
+        <location filename="../../core/system.cpp" line="2924"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -8758,12 +8761,12 @@ The name of the SBI file must match the name of the disc image.</source>
 SBI ファイルの名前は、ディスクイメージの名前と一致する必要があります。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2856"/>
+        <location filename="../../core/system.cpp" line="2820"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>ゲームが変更されました。メモリーカードを再読み込みします。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2947"/>
+        <location filename="../../core/system.cpp" line="2911"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
