@@ -741,7 +741,7 @@ void FullscreenUI::DoStartFile()
     CloseFileSelector();
   };
 
-  OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters());
+  OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters());
 }
 
 void FullscreenUI::DoStartBIOS()
@@ -795,7 +795,7 @@ void FullscreenUI::DoChangeDiscFromFile()
     ReturnToMainWindow();
   };
 
-  OpenFileSelector(ICON_FA_COMPACT_DISC "  Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
+  OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
                    std::string(Path::GetDirectory(System::GetRunningPath())));
 }
 
@@ -833,7 +833,7 @@ void FullscreenUI::DoChangeDisc()
     ReturnToMainWindow();
   };
 
-  OpenChoiceDialog(ICON_FA_COMPACT_DISC "  Select Disc Image", true, std::move(options), std::move(callback));
+  OpenChoiceDialog(ICON_FA_COMPACT_DISC " Select Disc Image", true, std::move(options), std::move(callback));
 }
 
 void FullscreenUI::DoCheatsMenu()
@@ -875,7 +875,7 @@ void FullscreenUI::DoCheatsMenu()
     else
       System::SetCheatCodeState(static_cast<u32>(index), checked, true);
   };
-  OpenChoiceDialog(ICON_FA_FROWN "  Cheat List", true, std::move(options), std::move(callback));
+  OpenChoiceDialog(ICON_FA_FROWN " Cheat List", true, std::move(options), std::move(callback));
 }
 
 void FullscreenUI::DoToggleAnalogMode()
@@ -943,38 +943,36 @@ void FullscreenUI::DrawLandingWindow()
 
     BeginMenuButtons(7, 0.5f);
 
-    if (MenuButton(" " ICON_FA_PLAY_CIRCLE "  Resume",
-                   "Starts the console from where it was before it was last closed."))
+    if (MenuButton(ICON_FA_PLAY_CIRCLE " Resume", "Starts the console from where it was before it was last closed."))
     {
       System::GetMostRecentResumeSaveStatePath();
       DoResume();
     }
 
-    if (MenuButton(" " ICON_FA_FOLDER_OPEN "  Start File", "Launch a game by selecting a file/disc image."))
+    if (MenuButton(ICON_FA_FOLDER_OPEN " Start File", "Launch a game by selecting a file/disc image."))
     {
       DoStartFile();
     }
 
-    if (MenuButton(" " ICON_FA_TOOLBOX "  Start BIOS", "Start the console without any disc inserted."))
+    if (MenuButton(ICON_FA_TOOLBOX " Start BIOS", "Start the console without any disc inserted."))
     {
       DoStartBIOS();
     }
 
-    if (MenuButton(" " ICON_FA_UNDO "  Load State", "Loads a global save state."))
+    if (MenuButton(ICON_FA_UNDO " Load State", "Loads a global save state."))
     {
       OpenSaveStateSelector(true);
     }
 
-    if (MenuButton(" " ICON_FA_LIST "  Open Game List",
-                   "Launch a game from images scanned from your game directories."))
+    if (MenuButton(ICON_FA_LIST " Open Game List", "Launch a game from images scanned from your game directories."))
     {
       SwitchToGameList();
     }
 
-    if (MenuButton(" " ICON_FA_SLIDERS_H "  Settings", "Change settings for the emulator."))
+    if (MenuButton(ICON_FA_SLIDERS_H " Settings", "Change settings for the emulator."))
       SwitchToSettings();
 
-    if (MenuButton(" " ICON_FA_SIGN_OUT_ALT "  Exit", "Exits the program."))
+    if (MenuButton(ICON_FA_SIGN_OUT_ALT " Exit", "Exits the program."))
     {
       DoRequestExit();
     }
@@ -1128,17 +1126,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, Controller::Co
     switch (type)
     {
       case Controller::ControllerBindingType::Button:
-        title = fmt::format(ICON_FA_DOT_CIRCLE "  {}", display_name);
+        title = fmt::format(ICON_FA_DOT_CIRCLE " {}", display_name);
         break;
       case Controller::ControllerBindingType::Axis:
       case Controller::ControllerBindingType::HalfAxis:
-        title = fmt::format(ICON_FA_BULLSEYE "  {}", display_name);
+        title = fmt::format(ICON_FA_BULLSEYE " {}", display_name);
         break;
       case Controller::ControllerBindingType::Motor:
-        title = fmt::format(ICON_FA_BELL "  {}", display_name);
+        title = fmt::format(ICON_FA_BELL " {}", display_name);
         break;
       case Controller::ControllerBindingType::Macro:
-        title = fmt::format(ICON_FA_PIZZA_SLICE "  {}", display_name);
+        title = fmt::format(ICON_FA_PIZZA_SLICE " {}", display_name);
         break;
       default:
         title = display_name;
@@ -1246,7 +1244,7 @@ void FullscreenUI::DrawInputBindingWindow()
     return;
   }
 
-  const char* title = ICON_FA_GAMEPAD "  Set Input Binding";
+  const char* title = ICON_FA_GAMEPAD " Set Input Binding";
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(title);
@@ -1917,7 +1915,7 @@ void FullscreenUI::DrawSettingsWindow()
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category", UIPrimaryColor))
   {
-    static constexpr float ITEM_WIDTH = 22.0f;
+    static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const char* global_icons[] = {
       ICON_FA_WINDOW_MAXIMIZE, ICON_FA_LIST,    ICON_FA_HDD,        ICON_FA_SLIDERS_H,
@@ -1972,7 +1970,7 @@ void FullscreenUI::DrawSettingsWindow()
       ReturnToMainWindow();
 
     if (s_game_settings_entry)
-      NavTitle(fmt::format("{} ({})", titles[static_cast<u32>(pages[index])], s_game_settings_entry->title).c_str());
+      NavTitle(s_game_settings_entry->title.c_str());
     else
       NavTitle(titles[static_cast<u32>(pages[index])]);
 
@@ -2075,41 +2073,41 @@ void FullscreenUI::DrawSummarySettingsPage()
 
   if (s_game_settings_entry)
   {
-    if (MenuButton(ICON_FA_WINDOW_MAXIMIZE "  Title", s_game_settings_entry->title.c_str(), true))
+    if (MenuButton(ICON_FA_WINDOW_MAXIMIZE " Title", s_game_settings_entry->title.c_str(), true))
       CopyTextToClipboard("Game title copied to clipboard.", s_game_settings_entry->title);
-    if (MenuButton(ICON_FA_PAGER "  Serial", s_game_settings_entry->serial.c_str(), true))
+    if (MenuButton(ICON_FA_PAGER " Serial", s_game_settings_entry->serial.c_str(), true))
       CopyTextToClipboard("Game serial copied to clipboard.", s_game_settings_entry->serial);
-    if (MenuButton(ICON_FA_COMPACT_DISC "  Type", GameList::GetEntryTypeDisplayName(s_game_settings_entry->type), true))
+    if (MenuButton(ICON_FA_COMPACT_DISC " Type", GameList::GetEntryTypeDisplayName(s_game_settings_entry->type), true))
     {
       CopyTextToClipboard("Game type copied to clipboard.",
                           GameList::GetEntryTypeDisplayName(s_game_settings_entry->type));
     }
-    if (MenuButton(ICON_FA_BOX "  Region", Settings::GetDiscRegionDisplayName(s_game_settings_entry->region), true))
+    if (MenuButton(ICON_FA_BOX " Region", Settings::GetDiscRegionDisplayName(s_game_settings_entry->region), true))
     {
       CopyTextToClipboard("Game region copied to clipboard.",
                           Settings::GetDiscRegionDisplayName(s_game_settings_entry->region));
     }
-    if (MenuButton(ICON_FA_STAR "  Compatibility Rating",
+    if (MenuButton(ICON_FA_STAR " Compatibility Rating",
                    GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility), true))
     {
       CopyTextToClipboard("Game compatibility rating copied to clipboard.",
                           GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility));
     }
-    if (MenuButton(ICON_FA_FOLDER_OPEN "  Path", s_game_settings_entry->path.c_str(), true))
+    if (MenuButton(ICON_FA_FOLDER_OPEN " Path", s_game_settings_entry->path.c_str(), true))
     {
       CopyTextToClipboard("Game path copied to clipboard.", s_game_settings_entry->path);
     }
   }
   else
   {
-    MenuButton(ICON_FA_BAN "  Details unavailable for game not scanned in game list.", "");
+    MenuButton(ICON_FA_BAN " Details unavailable for game not scanned in game list.", "");
   }
 
   MenuHeading("Options");
 
-  if (MenuButton(ICON_FA_COPY "  Copy Settings", "Copies the current global settings to this game."))
+  if (MenuButton(ICON_FA_COPY " Copy Settings", "Copies the current global settings to this game."))
     DoCopyGameSettings();
-  if (MenuButton(ICON_FA_TRASH "  Clear Settings", "Clears all settings set for this game."))
+  if (MenuButton(ICON_FA_TRASH " Clear Settings", "Clears all settings set for this game."))
     DoClearGameSettings();
 
   EndMenuButtons();
@@ -2123,64 +2121,73 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   MenuHeading("Behavior");
 
-  DrawToggleSetting(bsi, "Pause On Start", "Pauses the emulator when a game is started.", "Main", "StartPaused", false);
-  DrawToggleSetting(bsi, "Pause On Focus Loss",
+  DrawToggleSetting(bsi, ICON_FA_PAUSE " Pause On Start", "Pauses the emulator when a game is started.", "Main",
+                    "StartPaused", false);
+  DrawToggleSetting(bsi, ICON_FA_VIDEO " Pause On Focus Loss",
                     "Pauses the emulator when you minimize the window or switch to another "
                     "application, and unpauses when you switch back.",
                     "Main", "PauseOnFocusLoss", false);
-  DrawToggleSetting(bsi, "Pause On Menu",
+  DrawToggleSetting(bsi, ICON_FA_WINDOW_MAXIMIZE " Pause On Menu",
                     "Pauses the emulator when you open the quick menu, and unpauses when you close it.", "Main",
                     "PauseOnMenu", true);
-  DrawToggleSetting(bsi, "Confirm Power Off",
+  DrawToggleSetting(bsi, ICON_FA_POWER_OFF " Confirm Power Off",
                     "Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
                     "when the hotkey is pressed.",
                     "Main", "ConfirmPowerOff", true);
-  DrawToggleSetting(bsi, "Save State On Exit",
+  DrawToggleSetting(bsi, ICON_FA_SAVE " Save State On Exit",
                     "Automatically saves the emulator state when powering down or exiting. You can then "
                     "resume directly from where you left off next time.",
                     "Main", "SaveStateOnExit", true);
-  DrawToggleSetting(bsi, "Start Fullscreen", "Automatically switches to fullscreen mode when the program is started.",
-                    "Main", "StartFullscreen", false);
-  DrawToggleSetting(bsi, "Hide Cursor In Fullscreen",
+  DrawToggleSetting(bsi, ICON_FA_TV " Start Fullscreen",
+                    "Automatically switches to fullscreen mode when the program is started.", "Main", "StartFullscreen",
+                    false);
+  DrawToggleSetting(bsi, ICON_FA_MOUSE "  Double-Click Toggles Fullscreen",
+                    "Switches between full screen and windowed when the window is double-clicked.", "Main",
+                    "DoubleClickTogglesFullscreen", true);
+  DrawToggleSetting(bsi, ICON_FA_MOUSE_POINTER "Hide Cursor In Fullscreen",
                     "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.", "Main",
                     "HideCursorInFullscreen", true);
-  DrawToggleSetting(bsi, "Inhibit Screensaver",
+  DrawToggleSetting(bsi, ICON_FA_MAGIC " Inhibit Screensaver",
                     "Prevents the screen saver from activating and the host from sleeping while emulation is running.",
                     "Main", "InhibitScreensaver", true);
-  DrawToggleSetting(bsi, "Load Devices From Save States",
+  DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Load Devices From Save States",
                     "When enabled, memory cards and controllers will be overwritten when save states are loaded.",
                     "Main", "LoadDevicesFromSaveStates", false);
-  DrawToggleSetting(bsi, "Apply Per-Game Settings",
+  DrawToggleSetting(bsi, ICON_FA_COGS " Apply Per-Game Settings",
                     "When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.",
                     "Main", "ApplyGameSettings", true);
-  DrawToggleSetting(bsi, "Automatically Load Cheats", "Automatically loads and applies cheats on game start.", "Main",
-                    "AutoLoadCheats", true);
+  DrawToggleSetting(bsi, ICON_FA_FROWN " Automatically Load Cheats",
+                    "Automatically loads and applies cheats on game start.", "Main", "AutoLoadCheats", true);
 
 #ifdef WITH_DISCORD_PRESENCE
   MenuHeading("Integration");
-  DrawToggleSetting(bsi, "Enable Discord Presence",
+  DrawToggleSetting(bsi, ICON_FA_CHARGING_STATION " Enable Discord Presence",
                     "Shows the game you are currently playing as part of your profile on Discord.", "Main",
                     "EnableDiscordPresence", false);
 #endif
 
   MenuHeading("On-Screen Display");
-  DrawToggleSetting(bsi, "Show OSD Messages", "Shows on-screen-display messages when events occur.", "Display",
-                    "ShowOSDMessages", true);
-  DrawToggleSetting(bsi, "Show Game Frame Rate",
-                    "Shows the internal frame rate of the game in the top-right corner of the display.", "Display",
-                    "ShowFPS", false);
-  DrawToggleSetting(bsi, "Show FPS",
-                    "Shows the number of frames (or v-syncs) displayed per second by the system "
-                    "in the top-right corner of the display.",
-                    "Display", "ShowFPS", false);
+  DrawIntRangeSetting(bsi, ICON_FA_SEARCH " OSD Scale", "Determines how large the on-screen messages and monitor are.",
+                      "Display", "OSDScale", 100, 25, 500, "%d%%");
+  DrawToggleSetting(bsi, ICON_FA_LIST " Show OSD Messages", "Shows on-screen-display messages when events occur.",
+                    "Display", "ShowOSDMessages", true);
   DrawToggleSetting(
-    bsi, "Show Speed",
+    bsi, ICON_FA_CLOCK " Show Speed",
     "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.",
     "Display", "ShowSpeed", false);
-  DrawToggleSetting(bsi, "Show Resolution",
+  DrawToggleSetting(bsi, ICON_FA_RULER " Show FPS",
+                    "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right "
+                    "corner of the display.",
+                    "Display", "ShowFPS", false);
+  DrawToggleSetting(bsi, ICON_FA_BATTERY_HALF " Show CPU Usage",
+                    "Shows the CPU usage based on threads in the top-right corner of the display.", "Display",
+                    "ShowCPU", false);
+  DrawToggleSetting(bsi, ICON_FA_SPINNER " Show GPU Usage",
+                    "Shows the host's GPU usage in the top-right corner of the display.", "Display", "ShowGPU", false);
+  DrawToggleSetting(bsi, ICON_FA_RULER_VERTICAL " Show Resolution",
                     "Shows the current rendering resolution of the system in the top-right corner of the display.",
                     "Display", "ShowResolution", false);
-  DrawToggleSetting(bsi, "Show Controller Input",
+  DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Controller Input",
                     "Shows the current controller state of the system in the bottom-left corner of the display.",
                     "Display", "ShowInputs", false);
 
@@ -2193,9 +2200,9 @@ void FullscreenUI::DrawGameListSettingsPage()
 
   MenuHeading("Game List");
 
-  if (MenuButton(ICON_FA_FOLDER_PLUS "  Add Search Directory", "Adds a new directory to the game search list."))
+  if (MenuButton(ICON_FA_FOLDER_PLUS " Add Search Directory", "Adds a new directory to the game search list."))
   {
-    OpenFileSelector(ICON_FA_FOLDER_PLUS "  Add Search Directory", true, [](const std::string& dir) {
+    OpenFileSelector(ICON_FA_FOLDER_PLUS " Add Search Directory", true, [](const std::string& dir) {
       if (!dir.empty())
       {
         auto lock = Host::GetSettingsLock();
@@ -2212,10 +2219,10 @@ void FullscreenUI::DrawGameListSettingsPage()
     });
   }
 
-  if (MenuButton(ICON_FA_FOLDER_OPEN "  Change Recursive Directories",
+  if (MenuButton(ICON_FA_FOLDER_OPEN " Change Recursive Directories",
                  "Sets whether subdirectories are searched for each game directory"))
   {
-    OpenChoiceDialog(ICON_FA_FOLDER_OPEN "  Change Recursive Directories", true, GetGameListDirectoryOptions(true),
+    OpenChoiceDialog(ICON_FA_FOLDER_OPEN " Change Recursive Directories", true, GetGameListDirectoryOptions(true),
                      [](s32 index, const std::string& title, bool checked) {
                        if (index < 0)
                          return;
@@ -2239,9 +2246,9 @@ void FullscreenUI::DrawGameListSettingsPage()
                      });
   }
 
-  if (MenuButton(ICON_FA_FOLDER_MINUS "  Remove Search Directory", "Removes a directory from the game search list."))
+  if (MenuButton(ICON_FA_FOLDER_MINUS " Remove Search Directory", "Removes a directory from the game search list."))
   {
-    OpenChoiceDialog(ICON_FA_FOLDER_MINUS "  Remove Search Directory", false, GetGameListDirectoryOptions(false),
+    OpenChoiceDialog(ICON_FA_FOLDER_MINUS " Remove Search Directory", false, GetGameListDirectoryOptions(false),
                      [](s32 index, const std::string& title, bool checked) {
                        if (index < 0)
                          return;
@@ -2257,9 +2264,9 @@ void FullscreenUI::DrawGameListSettingsPage()
                      });
   }
 
-  if (MenuButton(ICON_FA_SEARCH "  Scan For New Games", "Identifies any new files added to the game directories."))
+  if (MenuButton(ICON_FA_SEARCH " Scan For New Games", "Identifies any new files added to the game directories."))
     Host::RefreshGameListAsync(false);
-  if (MenuButton(ICON_FA_SEARCH_PLUS "  Rescan All Games", "Forces a full rescan of all games previously identified."))
+  if (MenuButton(ICON_FA_SEARCH_PLUS " Rescan All Games", "Forces a full rescan of all games previously identified."))
     Host::RefreshGameListAsync(true);
 
   MenuHeading("Search Directories");
@@ -2541,7 +2548,7 @@ void FullscreenUI::DoLoadInputProfile()
   coptions.reserve(profiles.size());
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(ICON_FA_FOLDER_OPEN "  Load Profile", false, std::move(coptions),
+  OpenChoiceDialog(ICON_FA_FOLDER_OPEN " Load Profile", false, std::move(coptions),
                    [](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
@@ -2591,7 +2598,7 @@ void FullscreenUI::DoSaveInputProfile()
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
   OpenChoiceDialog(
-    ICON_FA_SAVE "  Save Profile", false, std::move(coptions), [](s32 index, const std::string& title, bool checked) {
+    ICON_FA_SAVE " Save Profile", false, std::move(coptions), [](s32 index, const std::string& title, bool checked) {
       if (index < 0)
         return;
 
@@ -2604,8 +2611,8 @@ void FullscreenUI::DoSaveInputProfile()
 
       CloseChoiceDialog();
 
-      OpenInputStringDialog(ICON_FA_SAVE "  Save Profile", "Enter the name of the input profile you wish to create.",
-                            std::string(), ICON_FA_FOLDER_PLUS "  Create", [](std::string title) {
+      OpenInputStringDialog(ICON_FA_SAVE " Save Profile", "Enter the name of the input profile you wish to create.",
+                            std::string(), ICON_FA_FOLDER_PLUS " Create", [](std::string title) {
                               if (!title.empty())
                                 DoSaveInputProfile(title);
                             });
@@ -2631,7 +2638,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   if (IsEditingGameSettings(bsi))
   {
-    if (DrawToggleSetting(bsi, ICON_FA_COG "  Per-Game Configuration",
+    if (DrawToggleSetting(bsi, ICON_FA_COG " Per-Game Configuration",
                           "Uses game-specific settings for controllers for this game.", "Pad",
                           "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
     {
@@ -2654,24 +2661,23 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   if (IsEditingGameSettings(bsi))
   {
-    if (MenuButton(ICON_FA_COPY "  Copy Global Settings", "Copies the global controller configuration to this game."))
+    if (MenuButton(ICON_FA_COPY " Copy Global Settings", "Copies the global controller configuration to this game."))
       CopyGlobalControllerSettingsToGame();
   }
   else
   {
-    if (MenuButton(ICON_FA_FOLDER_MINUS "  Reset Settings",
+    if (MenuButton(ICON_FA_FOLDER_MINUS " Reset Settings",
                    "Resets all configuration to defaults (including bindings)."))
     {
       ResetControllerSettings();
     }
   }
 
-  if (MenuButton(ICON_FA_FOLDER_OPEN "  Load Profile",
-                 "Replaces these settings with a previously saved input profile."))
+  if (MenuButton(ICON_FA_FOLDER_OPEN " Load Profile", "Replaces these settings with a previously saved input profile."))
   {
     DoLoadInputProfile();
   }
-  if (MenuButton(ICON_FA_SAVE "  Save Profile", "Stores the current settings to an input profile."))
+  if (MenuButton(ICON_FA_SAVE " Save Profile", "Stores the current settings to an input profile."))
   {
     DoSaveInputProfile();
   }
@@ -2679,25 +2685,25 @@ void FullscreenUI::DrawControllerSettingsPage()
   MenuHeading("Input Sources");
 
 #ifdef WITH_SDL2
-  DrawToggleSetting(bsi, ICON_FA_COG "  Enable SDL Input Source", "The SDL input source supports most controllers.",
+  DrawToggleSetting(bsi, ICON_FA_COG " Enable SDL Input Source", "The SDL input source supports most controllers.",
                     "InputSources", "SDL", true, true, false);
-  DrawToggleSetting(bsi, ICON_FA_WIFI "  SDL DualShock 4 / DualSense Enhanced Mode",
+  DrawToggleSetting(bsi, ICON_FA_WIFI " SDL DualShock 4 / DualSense Enhanced Mode",
                     "Provides vibration and LED control support over Bluetooth.", "InputSources",
                     "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 #endif
 #ifdef WITH_EVDEV
-  DrawToggleSetting(bsi, ICON_FA_COG "  Enable Evdev Input Source",
+  DrawToggleSetting(bsi, ICON_FA_COG " Enable Evdev Input Source",
                     "You can use evdev as a fallback if SDL doesn't work with your device.", "InputSources", "Evdev",
                     false);
 #endif
 #ifdef _WIN32
-  DrawToggleSetting(bsi, ICON_FA_COG "  Enable XInput Input Source",
+  DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
                     "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.", "InputSources",
                     "XInput", false);
 #endif
 
   MenuHeading("Multitap");
-  DrawEnumSetting(bsi, ICON_FA_PLUS_SQUARE "  Multitap Mode",
+  DrawEnumSetting(bsi, ICON_FA_PLUS_SQUARE " Multitap Mode",
                   "Enables an additional three controller slots on each port. Not supported in all games.",
                   "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE, &Settings::ParseMultitapModeName,
                   &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
@@ -2726,14 +2732,14 @@ void FullscreenUI::DrawControllerSettingsPage()
       continue;
 
     MenuHeading((mtap_enabled[mtap_port] ?
-                   fmt::format(ICON_FA_PLUG "  Controller Port {}{}", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-                   fmt::format(ICON_FA_PLUG "  Controller Port {}", mtap_port + 1))
+                   fmt::format(ICON_FA_PLUG " Controller Port {}{}", mtap_port + 1, mtap_slot_names[mtap_slot]) :
+                   fmt::format(ICON_FA_PLUG " Controller Port {}", mtap_port + 1))
                   .c_str());
 
     const std::string section(fmt::format("Pad{}", global_slot + 1));
     const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
-    if (MenuButton(fmt::format(ICON_FA_GAMEPAD "  Controller Type##type{}", global_slot).c_str(),
+    if (MenuButton(fmt::format(ICON_FA_GAMEPAD " Controller Type##type{}", global_slot).c_str(),
                    ci ? ci->display_name : "Unknown"))
     {
       std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
@@ -2760,7 +2766,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (!ci || ci->num_bindings == 0)
       continue;
 
-    if (MenuButton(ICON_FA_MAGIC "  Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
+    if (MenuButton(ICON_FA_MAGIC " Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
       StartAutomaticBinding(global_slot);
 
     for (u32 i = 0; i < ci->num_bindings; i++)
@@ -2769,9 +2775,9 @@ void FullscreenUI::DrawControllerSettingsPage()
       DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, bi.display_name, true);
     }
 
-    MenuHeading((mtap_enabled[mtap_port] ? fmt::format(ICON_FA_MICROCHIP "  Controller Port {}{} Macros", mtap_port + 1,
+    MenuHeading((mtap_enabled[mtap_port] ? fmt::format(ICON_FA_MICROCHIP " Controller Port {}{} Macros", mtap_port + 1,
                                                        mtap_slot_names[mtap_slot]) :
-                                           fmt::format(ICON_FA_MICROCHIP "  Controller Port {} Macros", mtap_port + 1))
+                                           fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
                   .c_str());
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
@@ -2782,7 +2788,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
       std::string binds_string(
         bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
-      if (MenuButton(fmt::format(ICON_FA_KEYBOARD "  Macro {} Buttons", macro_index + 1).c_str(),
+      if (MenuButton(fmt::format(ICON_FA_KEYBOARD " Macro {} Buttons", macro_index + 1).c_str(),
                      binds_string.empty() ? "No Buttons Selected" : binds_string.c_str()))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
@@ -2848,7 +2854,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       }
 
       const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
-      const std::string freq_title(fmt::format(ICON_FA_LIGHTBULB "  Macro {} Frequency", macro_index + 1));
+      const std::string freq_title(fmt::format(ICON_FA_LIGHTBULB " Macro {} Frequency", macro_index + 1));
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
       const std::string freq_summary((frequency == 0) ? std::string("Macro will not auto-toggle.") :
                                                         fmt::format("Macro will toggle every {} frames.", frequency));
@@ -2891,15 +2897,15 @@ void FullscreenUI::DrawControllerSettingsPage()
     {
       MenuHeading(
         (mtap_enabled[mtap_port] ?
-           fmt::format(ICON_FA_SLIDERS_H "  Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-           fmt::format(ICON_FA_SLIDERS_H "  Controller Port {} Settings", mtap_port + 1))
+           fmt::format(ICON_FA_SLIDERS_H " Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
+           fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
           .c_str());
 
       for (u32 i = 0; i < ci->num_settings; i++)
       {
         const SettingInfo& si = ci->settings[i];
         TinyString title;
-        title.Fmt(ICON_FA_COG "  {}", si.display_name);
+        title.Fmt(ICON_FA_COG " {}", si.display_name);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
@@ -2959,11 +2965,11 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   BeginMenuButtons();
 
   MenuHeading("Settings and Operations");
-  if (MenuButton(ICON_FA_PLUS "  Create Memory Card", "Creates a new memory card file or folder."))
+  if (MenuButton(ICON_FA_PLUS " Create Memory Card", "Creates a new memory card file or folder."))
   {
     OpenInputStringDialog(
-      ICON_FA_PLUS "  Create Memory Card", "Enter the name of the memory card you wish to create.",
-      "Card Name: ", ICON_FA_FOLDER_PLUS "  Create", [](std::string memcard_name) {
+      ICON_FA_PLUS " Create Memory Card", "Enter the name of the memory card you wish to create.",
+      "Card Name: ", ICON_FA_FOLDER_PLUS " Create", [](std::string memcard_name) {
         if (memcard_name.empty())
           return;
 
@@ -2989,17 +2995,17 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
       });
   }
 
-  DrawFolderSetting(bsi, ICON_FA_FOLDER_OPEN "  Memory Card Directory", "MemoryCards", "Directory",
+  DrawFolderSetting(bsi, ICON_FA_FOLDER_OPEN " Memory Card Directory", "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
 
-  if (!game_settings && MenuButton(ICON_FA_MAGIC "  Reset Memory Card Directory",
+  if (!game_settings && MenuButton(ICON_FA_MAGIC " Reset Memory Card Directory",
                                    "Resets memory card directory to default (user directory)."))
   {
     bsi->SetStringValue("MemoryCards", "Directory", "memcards");
     SetSettingsChanged(bsi);
   }
 
-  DrawToggleSetting(bsi, ICON_FA_SEARCH "  Use Single Card For Sub-Images",
+  DrawToggleSetting(bsi, ICON_FA_SEARCH " Use Single Card For Sub-Images",
                     "When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, "
                     "use a single memory card for all discs.",
                     "MemoryCards", "UsePlaylistTitle", true);
@@ -3010,7 +3016,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
     const MemoryCardType default_type =
       (i == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
-    DrawEnumSetting(bsi, TinyString::FromFmt(ICON_FA_SD_CARD "  Memory Card {} Type", i + 1),
+    DrawEnumSetting(bsi, TinyString::FromFmt(ICON_FA_SD_CARD " Memory Card {} Type", i + 1),
                     SmallString::FromFmt("Sets which sort of memory card image will be used for slot {}.", i + 1),
                     "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName,
                     &Settings::GetMemoryCardTypeName, &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
@@ -3027,7 +3033,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                                    std::optional<const char*>((i == 0) ? "shared_card_1.mcd" : "shared_card_2.mcd")));
 
     TinyString title;
-    title.Fmt(ICON_FA_FILE "  Shared Card Name##card_name_{}", i);
+    title.Fmt(ICON_FA_FILE " Shared Card Name##card_name_{}", i);
     if (MenuButtonWithValue(title, "The selected memory card image will be used in shared mode for this slot.",
                             path_value.has_value() ? path_value->c_str() : "Use Global Setting", is_shared))
     {
@@ -3104,7 +3110,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   std::optional<std::string> adapter(
     bsi->GetOptionalStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>("")));
-  
+
   if (MenuButtonWithValue("GPU Adapter", "Selects the GPU to use for rendering.",
                           adapter.has_value() ? (adapter->empty() ? "Default" : adapter->c_str()) :
                                                 "Use Global Setting"))
@@ -3143,7 +3149,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
       ShowToast(std::string(), "GPU adapter will be applied after restarting.", 10.0f);
       CloseChoiceDialog();
     };
-    OpenChoiceDialog(ICON_FA_TV "  GPU Adapter", false, std::move(options), std::move(callback));
+    OpenChoiceDialog(ICON_FA_TV " GPU Adapter", false, std::move(options), std::move(callback));
   }
 
   std::optional<std::string> fsmode(bsi->GetOptionalStringValue(
@@ -3187,7 +3193,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
       ShowToast(std::string(), "Resolution change will be applied after restarting.", 10.0f);
       CloseChoiceDialog();
     };
-    OpenChoiceDialog(ICON_FA_TV "  Fullscreen Resolution", false, std::move(options), std::move(callback));
+    OpenChoiceDialog(ICON_FA_TV " Fullscreen Resolution", false, std::move(options), std::move(callback));
   }
 
   switch (renderer)
@@ -3426,8 +3432,8 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::IsUsingRAIntegration())
   {
     BeginMenuButtons();
-    ActiveButton(ICON_FA_BAN "  RAIntegration is being used instead of the built-in achievements implementation.",
-                 false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(ICON_FA_BAN " RAIntegration is being used instead of the built-in achievements implementation.", false,
+                 false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     EndMenuButtons();
     return;
   }
@@ -3442,17 +3448,17 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   BeginMenuButtons();
 
   MenuHeading("Settings");
-  DrawToggleSetting(bsi, ICON_FA_TROPHY "  Enable Achievements",
+  DrawToggleSetting(bsi, ICON_FA_TROPHY " Enable Achievements",
                     "When enabled and logged in, DuckStation will scan for achievements on startup.", "Cheevos",
                     "Enabled", false);
 
   const bool enabled = bsi->GetBoolValue("Cheevos", "Enabled", false);
   const bool challenge = bsi->GetBoolValue("Cheevos", "ChallengeMode", false);
 
-  DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS "  Rich Presence",
+  DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS " Rich Presence",
                     "When enabled, rich presence information will be collected and sent to the server where supported.",
                     "Cheevos", "RichPresence", true, enabled);
-  if (DrawToggleSetting(bsi, ICON_FA_HARD_HAT "  Hardcore Mode",
+  if (DrawToggleSetting(bsi, ICON_FA_HARD_HAT " Hardcore Mode",
                         "\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown functions, but "
                         "you receive double the "
                         "achievement points.",
@@ -3461,14 +3467,14 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     if (System::IsValid() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
       ShowToast(std::string(), "Hardcore mode will be enabled on next game restart.");
   }
-  DrawToggleSetting(bsi, ICON_FA_LIST_OL "  Leaderboards",
+  DrawToggleSetting(bsi, ICON_FA_LIST_OL " Leaderboards",
                     "Enables tracking and submission of leaderboards in supported games.", "Cheevos", "Leaderboards",
                     true, enabled && challenge);
-  DrawToggleSetting(bsi, ICON_FA_MEDAL "  Test Unofficial Achievements",
+  DrawToggleSetting(bsi, ICON_FA_MEDAL " Test Unofficial Achievements",
                     "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "
                     "tracked by RetroAchievements.",
                     "Cheevos", "UnofficialTestMode", false, enabled);
-  DrawToggleSetting(bsi, ICON_FA_STETHOSCOPE "  Test Mode",
+  DrawToggleSetting(bsi, ICON_FA_STETHOSCOPE " Test Mode",
                     "When enabled, DuckStation will assume all achievements are locked and not send any unlock "
                     "notifications to the server.",
                     "Cheevos", "TestMode", false, enabled);
@@ -3477,34 +3483,34 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::IsLoggedIn())
   {
     ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-    ActiveButton(SmallString::FromFormat(ICON_FA_USER "  Username: %s", Achievements::GetUsername().c_str()), false,
+    ActiveButton(SmallString::FromFormat(ICON_FA_USER " Username: %s", Achievements::GetUsername().c_str()), false,
                  false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     TinyString ts_string;
     ts_string.AppendFmtString(
       "{:%Y-%m-%d %H:%M:%S}",
       fmt::localtime(StringUtil::FromChars<u64>(bsi->GetStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
-    ActiveButton(SmallString::FromFormat(ICON_FA_CLOCK "  Login token generated on %s", ts_string.GetCharArray()),
-                 false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(SmallString::FromFormat(ICON_FA_CLOCK " Login token generated on %s", ts_string.GetCharArray()), false,
+                 false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     ImGui::PopStyleColor();
 
-    if (MenuButton(ICON_FA_KEY "  Logout", "Logs out of RetroAchievements."))
+    if (MenuButton(ICON_FA_KEY " Logout", "Logs out of RetroAchievements."))
     {
       Host::RunOnCPUThread([]() { Achievements::Logout(); });
     }
   }
   else if (Achievements::IsActive())
   {
-    ActiveButton(ICON_FA_USER "  Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(ICON_FA_USER " Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-    if (MenuButton(ICON_FA_KEY "  Login", "Logs in to RetroAchievements."))
+    if (MenuButton(ICON_FA_KEY " Login", "Logs in to RetroAchievements."))
       ImGui::OpenPopup("Achievements Login");
 
     DrawAchievementsLoginWindow();
   }
   else
   {
-    ActiveButton(ICON_FA_USER "  Achievements are disabled.", false, false,
+    ActiveButton(ICON_FA_USER " Achievements are disabled.", false, false,
                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   }
 
@@ -3512,11 +3518,11 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::HasActiveGame())
   {
     ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-    ActiveButton(fmt::format(ICON_FA_BOOKMARK "  Game ID: {}", Achievements::GetGameID()).c_str(), false, false,
+    ActiveButton(fmt::format(ICON_FA_BOOKMARK " Game ID: {}", Achievements::GetGameID()).c_str(), false, false,
                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-    ActiveButton(fmt::format(ICON_FA_BOOK "  Game Title: {}", Achievements::GetGameTitle()).c_str(), false, false,
+    ActiveButton(fmt::format(ICON_FA_BOOK " Game Title: {}", Achievements::GetGameTitle()).c_str(), false, false,
                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-    ActiveButton(fmt::format(ICON_FA_TROPHY "  Achievements: {} ({} points)", Achievements::GetAchievementCount(),
+    ActiveButton(fmt::format(ICON_FA_TROPHY " Achievements: {} ({} points)", Achievements::GetAchievementCount(),
                              Achievements::GetMaximumPointsForGame())
                    .c_str(),
                  false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -3524,12 +3530,12 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     const std::string& rich_presence_string = Achievements::GetRichPresenceString();
     if (!rich_presence_string.empty())
     {
-      ActiveButton(fmt::format(ICON_FA_MAP "  {}", rich_presence_string).c_str(), false, false,
+      ActiveButton(fmt::format(ICON_FA_MAP " {}", rich_presence_string).c_str(), false, false,
                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
     else
     {
-      ActiveButton(ICON_FA_MAP "  Rich presence inactive or unsupported.", false, false,
+      ActiveButton(ICON_FA_MAP " Rich presence inactive or unsupported.", false, false,
                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
 
@@ -3537,7 +3543,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   }
   else
   {
-    ActiveButton(ICON_FA_BAN "  Game not loaded or no RetroAchievements available.", false, false,
+    ActiveButton(ICON_FA_BAN " Game not loaded or no RetroAchievements available.", false, false,
                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   }
 
@@ -3581,7 +3587,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0);
 
-    if (ActiveButton(ICON_FA_KEY "  Login", false, login_enabled))
+    if (ActiveButton(ICON_FA_KEY " Login", false, login_enabled))
     {
       Achievements::LoginAsync(username, password);
       std::memset(username, 0, sizeof(username));
@@ -3589,7 +3595,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
       ImGui::CloseCurrentPopup();
     }
 
-    if (ActiveButton(ICON_FA_TIMES "  Cancel", false))
+    if (ActiveButton(ICON_FA_TIMES " Cancel", false))
     {
       std::memset(username, 0, sizeof(username));
       std::memset(password, 0, sizeof(password));
@@ -3610,7 +3616,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
   BeginMenuButtons();
-  ActiveButton(ICON_FA_BAN "  This build was not compiled with RetroAchivements support.", false, false,
+  ActiveButton(ICON_FA_BAN " This build was not compiled with RetroAchivements support.", false, false,
                ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   EndMenuButtons();
 }
@@ -3796,47 +3802,47 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
         const bool can_load_or_save_state = System::IsValid();
 
-        if (ActiveButton(ICON_FA_PLAY "  Resume Game", false) || WantsToCloseMenu())
+        if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
           ClosePauseMenu();
 
-        if (ActiveButton(ICON_FA_FAST_FORWARD "  Toggle Fast Forward", false))
+        if (ActiveButton(ICON_FA_FAST_FORWARD " Toggle Fast Forward", false))
         {
           ClosePauseMenu();
           DoToggleFastForward();
         }
 
-        if (ActiveButton(ICON_FA_UNDO "  Load State", false, can_load_or_save_state))
+        if (ActiveButton(ICON_FA_UNDO " Load State", false, can_load_or_save_state))
         {
           if (OpenSaveStateSelector(true))
             s_current_main_window = MainWindowType::None;
         }
 
-        if (ActiveButton(ICON_FA_DOWNLOAD "  Save State", false, can_load_or_save_state))
+        if (ActiveButton(ICON_FA_DOWNLOAD " Save State", false, can_load_or_save_state))
         {
           if (OpenSaveStateSelector(false))
             s_current_main_window = MainWindowType::None;
         }
 
-        if (ActiveButton(ICON_FA_FROWN_OPEN "  Cheat List", false,
+        if (ActiveButton(ICON_FA_FROWN_OPEN " Cheat List", false,
                          !System::GetRunningCode().empty() && !Achievements::ChallengeModeActive()))
         {
           s_current_main_window = MainWindowType::None;
           DoCheatsMenu();
         }
 
-        if (ActiveButton(ICON_FA_GAMEPAD "  Toggle Analog", false))
+        if (ActiveButton(ICON_FA_GAMEPAD " Toggle Analog", false))
         {
           ClosePauseMenu();
           DoToggleAnalogMode();
         }
 
-        if (ActiveButton(ICON_FA_WRENCH "  Game Properties", false, !System::GetRunningCode().empty()))
+        if (ActiveButton(ICON_FA_WRENCH " Game Properties", false, !System::GetRunningCode().empty()))
         {
           SwitchToGameSettings();
         }
 
 #ifdef WITH_CHEEVOS
-        if (ActiveButton(ICON_FA_TROPHY "  Achievements", false,
+        if (ActiveButton(ICON_FA_TROPHY " Achievements", false,
                          Achievements::HasActiveGame() && Achievements::SafeHasAchievementsOrLeaderboards()))
         {
           const auto lock = Achievements::GetLock();
@@ -3848,25 +3854,25 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
             OpenPauseSubMenu(PauseSubMenu::Achievements);
         }
 #else
-        ActiveButton(ICON_FA_TROPHY "  Achievements", false, false);
+        ActiveButton(ICON_FA_TROPHY " Achievements", false, false);
 #endif
 
-        if (ActiveButton(ICON_FA_CAMERA "  Save Screenshot", false))
+        if (ActiveButton(ICON_FA_CAMERA " Save Screenshot", false))
         {
           System::SaveScreenshot();
           ClosePauseMenu();
         }
 
-        if (ActiveButton(ICON_FA_COMPACT_DISC "  Change Disc", false))
+        if (ActiveButton(ICON_FA_COMPACT_DISC " Change Disc", false))
         {
           s_current_main_window = MainWindowType::None;
           DoChangeDisc();
         }
 
-        if (ActiveButton(ICON_FA_SLIDERS_H "  Settings", false))
+        if (ActiveButton(ICON_FA_SLIDERS_H " Settings", false))
           SwitchToSettings();
 
-        if (ActiveButton(ICON_FA_POWER_OFF "  Close Game", false))
+        if (ActiveButton(ICON_FA_POWER_OFF " Close Game", false))
         {
           // skip submenu when we can't save anyway
           if (!can_load_or_save_state)
@@ -3880,23 +3886,23 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::Exit:
       {
         if (just_focused)
-          ImGui::SetFocusID(ImGui::GetID(ICON_FA_POWER_OFF "  Exit Without Saving"), ImGui::GetCurrentWindow());
+          ImGui::SetFocusID(ImGui::GetID(ICON_FA_POWER_OFF " Exit Without Saving"), ImGui::GetCurrentWindow());
 
-        if (ActiveButton(ICON_FA_BACKWARD "  Back To Pause Menu", false))
+        if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false))
         {
           OpenPauseSubMenu(PauseSubMenu::None);
         }
 
-        if (ActiveButton(ICON_FA_SYNC "  Reset System", false))
+        if (ActiveButton(ICON_FA_SYNC " Reset System", false))
         {
           ClosePauseMenu();
           DoReset();
         }
 
-        if (ActiveButton(ICON_FA_SAVE "  Exit And Save State", false))
+        if (ActiveButton(ICON_FA_SAVE " Exit And Save State", false))
           DoShutdown(true);
 
-        if (ActiveButton(ICON_FA_POWER_OFF "  Exit Without Saving", false))
+        if (ActiveButton(ICON_FA_POWER_OFF " Exit Without Saving", false))
           DoShutdown(false);
       }
       break;
@@ -3904,13 +3910,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #ifdef WITH_CHEEVOS
       case PauseSubMenu::Achievements:
       {
-        if (ActiveButton(ICON_FA_BACKWARD "  Back To Pause Menu", false))
+        if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false))
           OpenPauseSubMenu(PauseSubMenu::None);
 
-        if (ActiveButton(ICON_FA_TROPHY "  Achievements", false))
+        if (ActiveButton(ICON_FA_TROPHY " Achievements", false))
           OpenAchievementsWindow();
 
-        if (ActiveButton(ICON_FA_STOPWATCH "  Leaderboards", false))
+        if (ActiveButton(ICON_FA_STOPWATCH " Leaderboards", false))
           OpenLeaderboardsWindow();
       }
       break;
@@ -4470,7 +4476,7 @@ void FullscreenUI::DrawGameListWindow()
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
     BeginMenuButtons();
-    if (ActiveButton(ICON_FA_BACKWARD "  Back", false))
+    if (ActiveButton(ICON_FA_BACKWARD " Back", false))
       ReturnToMainWindow();
     EndMenuButtons();
   }
@@ -4582,14 +4588,14 @@ void FullscreenUI::DrawAboutWindow()
     ImGui::NewLine();
 
     BeginMenuButtons();
-    if (ActiveButton(ICON_FA_GLOBE "  GitHub Repository", false))
+    if (ActiveButton(ICON_FA_GLOBE " GitHub Repository", false))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
-    if (ActiveButton(ICON_FA_BUG "  Issue Tracker", false))
+    if (ActiveButton(ICON_FA_BUG " Issue Tracker", false))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/issues");
-    if (ActiveButton(ICON_FA_COMMENT "  Discord Server", false))
+    if (ActiveButton(ICON_FA_COMMENT " Discord Server", false))
       ExitFullscreenAndOpenURL("https://discord.gg/Buktv3t");
 
-    if (ActiveButton(ICON_FA_WINDOW_CLOSE "  Close", false))
+    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Close", false))
     {
       ImGui::CloseCurrentPopup();
       s_about_window_open = false;
@@ -4625,7 +4631,7 @@ bool FullscreenUI::DrawErrorWindow(const char* message)
 
     BeginMenuButtons();
 
-    if (ActiveButton(ICON_FA_WINDOW_CLOSE "  Close", false))
+    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Close", false))
     {
       ImGui::CloseCurrentPopup();
       is_open = false;
@@ -4666,13 +4672,13 @@ bool FullscreenUI::DrawConfirmWindow(const char* message, bool* result)
 
     bool done = false;
 
-    if (ActiveButton(ICON_FA_CHECK "  Yes", false))
+    if (ActiveButton(ICON_FA_CHECK " Yes", false))
     {
       *result = true;
       done = true;
     }
 
-    if (ActiveButton(ICON_FA_TIMES "  No", false))
+    if (ActiveButton(ICON_FA_TIMES " No", false))
     {
       *result = false;
       done = true;
