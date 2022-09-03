@@ -115,6 +115,7 @@ GameListModel::GameListModel(QObject* parent /* = nullptr */)
   : QAbstractTableModel(parent), m_cover_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   loadCommonImages();
+  setCoverScale(1.0f);
   setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
@@ -560,7 +561,6 @@ void GameListModel::loadCommonImages()
     m_compatibility_pixmaps[i] = QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
 
   m_placeholder_pixmap.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
-  setCoverScale(1.0f);
 }
 
 void GameListModel::setColumnDisplayNames()
