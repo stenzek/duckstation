@@ -712,7 +712,7 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
     const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
     RenderDisplay(cmdlist, left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
                   m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+                  m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
   }
 
   cmdlist->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
@@ -726,6 +726,18 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
   *out_format = hdformat;
 
   return m_readback_staging_texture.ReadPixels(0, 0, width, height, out_pixels->data(), stride);
+}
+
+bool D3D12HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+  g_d3d12_context->SetEnableGPUTiming(enabled);
+  m_gpu_timing_enabled = enabled;
+  return true;
+}
+
+float D3D12HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+  return g_d3d12_context->GetAndResetAccumulatedGPUTime();
 }
 
 void D3D12HostDisplay::RenderImGui(ID3D12GraphicsCommandList* cmdlist)
@@ -752,7 +764,7 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist)
 
   RenderDisplay(cmdlist, left, top, width, height, m_display_texture_handle, m_display_texture_width,
                 m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+                m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 left, s32 top, s32 width, s32 height,

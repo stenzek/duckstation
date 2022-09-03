@@ -85,6 +85,13 @@ public:
     m_mouse_position_y = y;
   }
 
+  ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture_handle; }
+  ALWAYS_INLINE s32 GetDisplayTopMargin() const { return m_display_top_margin; }
+  ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
+  ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
+  ALWAYS_INLINE float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
+  ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
+
   virtual RenderAPI GetRenderAPI() const = 0;
   virtual void* GetRenderDevice() const = 0;
   virtual void* GetRenderContext() const = 0;
@@ -136,12 +143,6 @@ public:
   virtual bool CreateImGuiContext() = 0;
   virtual void DestroyImGuiContext() = 0;
   virtual bool UpdateImGuiFontTexture() = 0;
-
-  const void* GetDisplayTextureHandle() const { return m_display_texture_handle; }
-  s32 GetDisplayTopMargin() const { return m_display_top_margin; }
-  s32 GetDisplayWidth() const { return m_display_width; }
-  s32 GetDisplayHeight() const { return m_display_height; }
-  float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
 
   bool UsesLowerLeftOrigin() const;
   void SetDisplayMaxFPS(float max_fps);
@@ -209,11 +210,14 @@ public:
 
   virtual bool GetHostRefreshRate(float* refresh_rate);
 
-  void SetDisplayLinearFiltering(bool enabled) { m_display_linear_filtering = enabled; }
+  /// Enables/disables GPU frame timing.
+  virtual bool SetGPUTimingEnabled(bool enabled);
+
+  /// Returns the amount of GPU time utilized since the last time this method was called.
+  virtual float GetAndResetAccumulatedGPUTime();
+
   void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
-  void SetDisplayIntegerScaling(bool enabled) { m_display_integer_scaling = enabled; }
   void SetDisplayAlignment(Alignment alignment) { m_display_alignment = alignment; }
-  void SetDisplayStretch(bool stretch) { m_display_stretch = stretch; }
 
   /// Sets the software cursor to the specified texture. Ownership of the texture is transferred.
   void SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale = 1.0f);
@@ -256,6 +260,8 @@ protected:
   ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }
   ALWAYS_INLINE bool HasDisplayTexture() const { return (m_display_texture_handle != nullptr); }
 
+  bool IsUsingLinearFiltering() const;
+
   void CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top, float* out_width,
                          float* out_height, float* out_left_padding, float* out_top_padding, float* out_scale,
                          float* out_x_scale, bool apply_aspect_ratio = true) const;
@@ -294,10 +300,8 @@ protected:
   std::unique_ptr<HostDisplayTexture> m_cursor_texture;
   float m_cursor_texture_scale = 1.0f;
 
-  bool m_display_linear_filtering = false;
   bool m_display_changed = false;
-  bool m_display_integer_scaling = false;
-  bool m_display_stretch = false;
+  bool m_gpu_timing_enabled = false;
 };
 
 /// Returns a pointer to the current host display abstraction. Assumes AcquireHostDisplay() has been caled.

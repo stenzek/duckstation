@@ -732,7 +732,7 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
     BeginSwapChainRenderPass(fb, width, height);
     RenderDisplay(left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
                   m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                  m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+                  m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
   }
 
   vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
@@ -789,7 +789,7 @@ void VulkanHostDisplay::RenderDisplay()
   BeginSwapChainRenderPass(m_swap_chain->GetCurrentFramebuffer(), m_swap_chain->GetWidth(), m_swap_chain->GetHeight());
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                m_display_texture_view_height, m_display_linear_filtering);
+                m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
@@ -816,8 +816,8 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
     dsupdate.Update(g_vulkan_context->GetDevice());
   }
 
-  const float position_adjust = m_display_linear_filtering ? 0.5f : 0.0f;
-  const float size_adjust = m_display_linear_filtering ? 1.0f : 0.0f;
+  const float position_adjust = IsUsingLinearFiltering() ? 0.5f : 0.0f;
+  const float size_adjust = IsUsingLinearFiltering() ? 1.0f : 0.0f;
   const PushConstants pc{(static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
                          (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
                          (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
@@ -874,6 +874,22 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 
+bool VulkanHostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+  if (g_vulkan_context->SetEnableGPUTiming(enabled))
+  {
+    m_gpu_timing_enabled = enabled;
+    return true;
+  }
+
+  return false;
+}
+
+float VulkanHostDisplay::GetAndResetAccumulatedGPUTime()
+{
+  return g_vulkan_context->GetAndResetAccumulatedGPUTime();
+}
+
 HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList(const WindowInfo* wi)
 {
   AdapterAndModeList ret;
@@ -907,8 +923,7 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::StaticGetAdapterAndModeList(c
     ret.fullscreen_modes.reserve(fsmodes.size());
     for (const Vulkan::SwapChain::FullscreenModeInfo& fmi : fsmodes)
     {
-      ret.fullscreen_modes.push_back(
-        GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
+      ret.fullscreen_modes.push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
     }
   }
 
@@ -1096,7 +1111,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   {
     BeginSwapChainRenderPass(target_fb, target_width, target_height);
     RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
     return;
   }
 
@@ -1104,7 +1119,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   BeginSwapChainRenderPass(m_post_processing_input_framebuffer, target_width, target_height);
   RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
   vkCmdEndRenderPass(cmdbuffer);
   Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

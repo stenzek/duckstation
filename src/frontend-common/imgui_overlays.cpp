@@ -186,6 +186,13 @@ void ImGuiManager::DrawPerformanceOverlay()
 #endif
     }
 
+    if (g_settings.display_show_gpu && g_host_display->IsGPUTimingEnabled())
+    {
+      text.Assign("GPU: ");
+      FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
+      DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+    }
+
     if (g_settings.display_show_status_indicators)
     {
       const bool rewinding = System::IsRewinding();

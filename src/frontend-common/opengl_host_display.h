@@ -62,7 +62,12 @@ public:
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                         HostDisplayPixelFormat* out_format) override;
 
+  bool SetGPUTimingEnabled(bool enabled) override;
+  float GetAndResetAccumulatedGPUTime() override;
+
 protected:
+  static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+
   const char* GetGLSLVersionString() const;
   std::string GetGLSLVersionHeader() const;
 
@@ -98,6 +103,11 @@ protected:
                                 s32 texture_view_y, s32 texture_view_width, s32 texture_view_height, u32 target_width,
                                 u32 target_height);
 
+  void CreateTimestampQueries();
+  void DestroyTimestampQueries();
+  void PopTimestampQuery();
+  void KickTimestampQuery();
+
   std::unique_ptr<GL::Context> m_gl_context;
 
   GL::Program m_display_program;
@@ -117,6 +127,13 @@ protected:
   GL::Texture m_post_processing_input_texture;
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
+
+  std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
+  float m_accumulated_gpu_time = 0.0f;
+  u8 m_read_timestamp_query = 0;
+  u8 m_write_timestamp_query = 0;
+  u8 m_waiting_timestamp_queries = 0;
+  bool m_timestamp_query_started = false;
 
   bool m_display_texture_is_linear_filtered = false;
   bool m_use_gles2_draw_path = false;

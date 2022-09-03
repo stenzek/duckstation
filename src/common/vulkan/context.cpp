@@ -622,9 +622,17 @@ bool Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, c
   // Grab the graphics and present queues.
   vkGetDeviceQueue(m_device, m_graphics_queue_family_index, 0, &m_graphics_queue);
   if (surface)
-  {
     vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
-  }
+
+  m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
+                            queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+                            m_device_properties.limits.timestampPeriod > 0);
+  Log_VerbosePrintf("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
+                    m_gpu_timing_supported ? "supported" : "not supported",
+                    static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
+                    queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
+                    m_device_properties.limits.timestampPeriod);
+
   return true;
 }
 
@@ -751,6 +759,20 @@ bool Context::CreateGlobalDescriptorPool()
     return false;
   }
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_global_descriptor_pool, "Global Descriptor Pool");
+
+  if (m_gpu_timing_supported)
+  {
+    const VkQueryPoolCreateInfo query_create_info = {
+      VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr, 0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 2, 0};
+    res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_timestamp_query_pool);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkCreateQueryPool failed: ");
+      m_gpu_timing_supported = false;
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -831,6 +853,19 @@ void Context::WaitForGPUIdle()
   vkDeviceWaitIdle(m_device);
 }
 
+float Context::GetAndResetAccumulatedGPUTime()
+{
+  const float time = m_accumulated_gpu_time;
+  m_accumulated_gpu_time = 0.0f;
+  return time;
+}
+
+bool Context::SetEnableGPUTiming(bool enabled)
+{
+  m_gpu_timing_enabled = enabled && m_gpu_timing_supported;
+  return (enabled == m_gpu_timing_enabled);
+}
+
 void Context::WaitForCommandBufferCompletion(u32 index)
 {
   // Wait for this command buffer to be completed.
@@ -867,6 +902,12 @@ void Context::SubmitCommandBuffer(VkSemaphore wait_semaphore /* = VK_NULL_HANDLE
                                   uint32_t present_image_index /* = 0xFFFFFFFF */, bool submit_on_thread /* = false */)
 {
   FrameResources& resources = m_frame_resources[m_current_frame];
+
+  if (m_gpu_timing_enabled && resources.timestamp_written)
+  {
+    vkCmdWriteTimestamp(m_current_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool,
+                        m_current_frame * 2 + 1);
+  }
 
   // End the current command buffer.
   VkResult res = vkEndCommandBuffer(resources.command_buffer);
@@ -1048,9 +1089,41 @@ void Context::ActivateCommandBuffer(u32 index)
   if (res != VK_SUCCESS)
     LOG_VULKAN_ERROR(res, "vkResetDescriptorPool failed: ");
 
+  if (m_gpu_timing_enabled)
+  {
+    if (resources.timestamp_written)
+    {
+      std::array<u64, 2> timestamps;
+      res =
+        vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
+                              sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
+      if (res == VK_SUCCESS)
+      {
+        // if we didn't write the timestamp at the start of the cmdbuffer (just enabled timing), the first TS will be
+        // zero
+        if (timestamps[0] > 0)
+        {
+          const double ns_diff =
+            (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
+          m_accumulated_gpu_time = static_cast<float>(static_cast<double>(m_accumulated_gpu_time) + (ns_diff / 1000000.0));
+        }
+      }
+      else
+      {
+        LOG_VULKAN_ERROR(res, "vkGetQueryPoolResults failed: ");
+      }
+    }
+
+    vkCmdResetQueryPool(resources.command_buffer, m_timestamp_query_pool, index * 2, 2);
+    vkCmdWriteTimestamp(resources.command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool,
+                        index * 2);
+  }
+
+  resources.fence_counter = m_next_fence_counter++;
+  resources.timestamp_written = m_gpu_timing_enabled;
+
   m_current_frame = index;
   m_current_command_buffer = resources.command_buffer;
-  resources.fence_counter = m_next_fence_counter++;
 }
 
 void Context::ExecuteCommandBuffer(bool wait_for_completion)

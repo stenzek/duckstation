@@ -67,6 +67,9 @@ public:
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                         HostDisplayPixelFormat* out_format) override;
 
+  bool SetGPUTimingEnabled(bool enabled) override;
+  float GetAndResetAccumulatedGPUTime() override;
+
   static AdapterAndModeList StaticGetAdapterAndModeList(const WindowInfo* wi);
 
 protected:

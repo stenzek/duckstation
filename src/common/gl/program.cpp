@@ -164,7 +164,7 @@ bool Program::GetBinary(std::vector<u8>* out_data, u32* out_data_format)
   }
 
   *out_data_format = static_cast<u32>(format);
-  Log_InfoPrintf("Program binary retrieved, %zu bytes, format %u", out_data->size(), *out_data_format);
+  Log_DevPrintf("Program binary retrieved, %zu bytes, format %u", out_data->size(), *out_data_format);
   return true;
 }
 

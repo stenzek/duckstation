@@ -17,7 +17,7 @@
 
 namespace FrontendCommon {
 
-class D3D12HostDisplay : public HostDisplay
+class D3D12HostDisplay final : public HostDisplay
 {
 public:
   template<typename T>
@@ -26,31 +26,31 @@ public:
   D3D12HostDisplay();
   ~D3D12HostDisplay();
 
-  virtual RenderAPI GetRenderAPI() const override;
-  virtual void* GetRenderDevice() const override;
-  virtual void* GetRenderContext() const override;
+  RenderAPI GetRenderAPI() const override;
+  void* GetRenderDevice() const override;
+  void* GetRenderContext() const override;
 
-  virtual bool HasRenderDevice() const override;
-  virtual bool HasRenderSurface() const override;
+  bool HasRenderDevice() const override;
+  bool HasRenderSurface() const override;
 
-  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
+  bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
                                   bool threaded_presentation) override;
-  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
+  bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                                       bool threaded_presentation) override;
-  virtual void DestroyRenderDevice() override;
+  void DestroyRenderDevice() override;
 
-  virtual bool MakeRenderContextCurrent() override;
-  virtual bool DoneRenderContextCurrent() override;
+  bool MakeRenderContextCurrent() override;
+  bool DoneRenderContextCurrent() override;
 
-  virtual bool ChangeRenderWindow(const WindowInfo& new_wi) override;
-  virtual void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
-  virtual bool SupportsFullscreen() const override;
-  virtual bool IsFullscreen() override;
-  virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
-  virtual AdapterAndModeList GetAdapterAndModeList() override;
-  virtual void DestroyRenderSurface() override;
+  bool ChangeRenderWindow(const WindowInfo& new_wi) override;
+  void ResizeRenderWindow(s32 new_window_width, s32 new_window_height) override;
+  bool SupportsFullscreen() const override;
+  bool IsFullscreen() override;
+  bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+  AdapterAndModeList GetAdapterAndModeList() override;
+  void DestroyRenderSurface() override;
 
-  virtual bool SetPostProcessingChain(const std::string_view& config) override;
+  bool SetPostProcessingChain(const std::string_view& config) override;
 
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     HostDisplayPixelFormat format, const void* data, u32 data_stride,
@@ -66,11 +66,14 @@ public:
 
   bool GetHostRefreshRate(float* refresh_rate) override;
 
-  virtual void SetVSync(bool enabled) override;
+  void SetVSync(bool enabled) override;
 
-  virtual bool Render(bool skip_present) override;
-  virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
+  bool Render(bool skip_present) override;
+  bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                                 HostDisplayPixelFormat* out_format) override;
+
+  bool SetGPUTimingEnabled(bool enabled) override;
+  float GetAndResetAccumulatedGPUTime() override;
 
   static AdapterAndModeList StaticGetAdapterAndModeList();
 

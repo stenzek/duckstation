@@ -755,6 +755,13 @@ bool D3D11HostDisplay::Render(bool skip_present)
     return false;
   }
 
+  // When using vsync, the time here seems to include the time for the buffer to become available.
+  // This blows our our GPU usage number considerably, so read the timestamp before the final blit
+  // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
+  // the time, when it's more like a couple of percent.
+  if (m_vsync && m_gpu_timing_enabled)
+    PopTimestampQuery();
+
   static constexpr std::array<float, 4> clear_color = {};
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
@@ -766,10 +773,16 @@ bool D3D11HostDisplay::Render(bool skip_present)
 
   RenderSoftwareCursor();
 
+  if (!m_vsync && m_gpu_timing_enabled)
+    PopTimestampQuery();
+
   if (!m_vsync && m_using_allow_tearing)
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
     m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+
+  if (m_gpu_timing_enabled)
+    KickTimestampQuery();
 
   return true;
 }
@@ -806,7 +819,7 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
     {
       RenderDisplay(left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
                     m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                    m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+                    m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
     }
   }
 
@@ -851,7 +864,7 @@ void D3D11HostDisplay::RenderDisplay()
 
   RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                m_display_texture_view_height, m_display_linear_filtering);
+                m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
@@ -864,8 +877,9 @@ void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, v
   m_context->PSSetShaderResources(0, 1, reinterpret_cast<ID3D11ShaderResourceView**>(&texture_handle));
   m_context->PSSetSamplers(0, 1, linear_filter ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
-  const float position_adjust = m_display_linear_filtering ? 0.5f : 0.0f;
-  const float size_adjust = m_display_linear_filtering ? 1.0f : 0.0f;
+  const bool linear = IsUsingLinearFiltering();
+  const float position_adjust = linear ? 0.5f : 0.0f;
+  const float size_adjust = linear ? 1.0f : 0.0f;
   const float uniforms[4] = {
     (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
     (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
@@ -1102,7 +1116,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
     RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
     return;
   }
 
@@ -1110,7 +1124,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   m_context->ClearRenderTargetView(m_post_processing_input_texture.GetD3DRTV(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_post_processing_input_texture.GetD3DRTVArray(), nullptr);
   RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                texture_view_x, texture_view_y, texture_view_width, texture_view_height, m_display_linear_filtering);
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
   texture_handle = m_post_processing_input_texture.GetD3DSRV();
   texture_width = m_post_processing_input_texture.GetWidth();
@@ -1157,6 +1171,124 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
 
   ID3D11ShaderResourceView* null_srv = nullptr;
   m_context->PSSetShaderResources(0, 1, &null_srv);
+}
+
+bool D3D11HostDisplay::CreateTimestampQueries()
+{
+  for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)
+  {
+    for (u32 j = 0; j < 3; j++)
+    {
+      const CD3D11_QUERY_DESC qdesc((j == 0) ? D3D11_QUERY_TIMESTAMP_DISJOINT : D3D11_QUERY_TIMESTAMP);
+      const HRESULT hr = m_device->CreateQuery(&qdesc, m_timestamp_queries[i][j].ReleaseAndGetAddressOf());
+      if (FAILED(hr))
+      {
+        m_timestamp_queries = {};
+        return false;
+      }
+    }
+  }
+
+  KickTimestampQuery();
+  return true;
+}
+
+void D3D11HostDisplay::DestroyTimestampQueries()
+{
+  if (!m_timestamp_queries[0][0])
+    return;
+
+  if (m_timestamp_query_started)
+    m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+
+  m_timestamp_queries = {};
+  m_read_timestamp_query = 0;
+  m_write_timestamp_query = 0;
+  m_waiting_timestamp_queries = 0;
+  m_timestamp_query_started = 0;
+}
+
+void D3D11HostDisplay::PopTimestampQuery()
+{
+  while (m_waiting_timestamp_queries > 0)
+  {
+    D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
+    const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].Get(), &disjoint,
+                                                   sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+    if (disjoint_hr != S_OK)
+      break;
+
+    if (disjoint.Disjoint)
+    {
+      Log_VerbosePrintf("GPU timing disjoint, resetting.");
+      m_read_timestamp_query = 0;
+      m_write_timestamp_query = 0;
+      m_waiting_timestamp_queries = 0;
+      m_timestamp_query_started = 0;
+    }
+    else
+    {
+      u64 start = 0, end = 0;
+      const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].Get(), &start,
+                                                  sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+      const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].Get(), &end, sizeof(end),
+                                                D3D11_ASYNC_GETDATA_DONOTFLUSH);
+      if (start_hr == S_OK && end_hr == S_OK)
+      {
+        const float delta = static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
+        m_accumulated_gpu_time += delta;
+        m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+        m_waiting_timestamp_queries--;
+      }
+    }
+  }
+
+  if (m_timestamp_query_started)
+  {
+    m_context->End(m_timestamp_queries[m_write_timestamp_query][2].Get());
+    m_context->End(m_timestamp_queries[m_write_timestamp_query][0].Get());
+    m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+    m_timestamp_query_started = false;
+    m_waiting_timestamp_queries++;
+  }
+}
+
+void D3D11HostDisplay::KickTimestampQuery()
+{
+  if (m_timestamp_query_started || !m_timestamp_queries[0][0] || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
+    return;
+
+  m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].Get());
+  m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+  m_timestamp_query_started = true;
+}
+
+bool D3D11HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+  if (m_gpu_timing_enabled == enabled)
+    return true;
+
+  m_gpu_timing_enabled = enabled;
+  if (m_gpu_timing_enabled)
+  {
+    if (!CreateTimestampQueries())
+      return false;
+
+    KickTimestampQuery();
+    return true;
+  }
+  else
+  {
+    DestroyTimestampQueries();
+    return true;
+  }
+}
+
+float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+  const float value = m_accumulated_gpu_time;
+  m_accumulated_gpu_time = 0.0f;
+  return value;
 }
 
 } // namespace FrontendCommon

@@ -162,11 +162,15 @@ static float s_cpu_thread_usage = 0.0f;
 static float s_cpu_thread_time = 0.0f;
 static float s_sw_thread_usage = 0.0f;
 static float s_sw_thread_time = 0.0f;
+static float s_average_gpu_time = 0.0f;
+static float s_accumulated_gpu_time = 0.0f;
+static float s_gpu_usage = 0.0f;
 static u32 s_last_frame_number = 0;
 static u32 s_last_internal_frame_number = 0;
 static u32 s_last_global_tick_counter = 0;
 static u64 s_last_cpu_time = 0;
 static u64 s_last_sw_time = 0;
+static u32 s_presents_since_last_update = 0;
 static Common::Timer s_fps_timer;
 static Common::Timer s_frame_timer;
 static Threading::ThreadHandle s_cpu_thread_handle;
@@ -349,6 +353,14 @@ float System::GetSWThreadUsage()
 float System::GetSWThreadAverageTime()
 {
   return s_sw_thread_time;
+}
+float System::GetGPUUsage()
+{
+  return s_gpu_usage;
+}
+float System::GetGPUAverageTime()
+{
+  return s_average_gpu_time;
 }
 
 bool System::IsExeFileName(const std::string_view& path)
@@ -1257,9 +1269,13 @@ bool System::Initialize(bool force_software_renderer)
   s_cpu_thread_time = 0.0f;
   s_sw_thread_usage = 0.0f;
   s_sw_thread_time = 0.0f;
+  s_average_gpu_time = 0.0f;
+  s_accumulated_gpu_time = 0.0f;
+  s_gpu_usage = 0.0f;
   s_last_frame_number = 0;
   s_last_internal_frame_number = 0;
   s_last_global_tick_counter = 0;
+  s_presents_since_last_update = 0;
   s_last_cpu_time = 0;
   s_fps_timer.Reset();
   s_frame_timer.Reset();
@@ -1427,7 +1443,13 @@ void System::Execute()
       PauseSystem(true);
     }
 
-    Host::RenderDisplay(g_host_display->ShouldSkipDisplayingFrame());
+    const bool skip_present = g_host_display->ShouldSkipDisplayingFrame();
+    Host::RenderDisplay(skip_present);
+    if (!skip_present && g_host_display->IsGPUTimingEnabled())
+    {
+      s_accumulated_gpu_time += g_host_display->GetAndResetAccumulatedGPUTime();
+      s_presents_since_last_update++;
+    }
 
     System::UpdatePerformanceCounters();
 
@@ -2125,7 +2147,7 @@ void System::UpdatePerformanceCounters()
   if (time < 1.0f)
     return;
 
-  const float frames_presented = static_cast<float>(s_frame_number - s_last_frame_number);
+  const float frames_run = static_cast<float>(s_frame_number - s_last_frame_number);
   const u32 global_tick_counter = TimingEvents::GetGlobalTickCounter();
 
   // TODO: Make the math here less rubbish
@@ -2133,13 +2155,13 @@ void System::UpdatePerformanceCounters()
     100.0 * (1.0 / ((static_cast<double>(ticks_diff) * static_cast<double>(Threading::GetThreadTicksPerSecond())) /
                     Common::Timer::GetFrequency() / 1000000000.0));
   const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
-                              (1.0 / static_cast<double>(frames_presented));
+                              (1.0 / static_cast<double>(frames_run));
 
   s_worst_frame_time = s_worst_frame_time_accumulator;
   s_worst_frame_time_accumulator = 0.0f;
-  s_average_frame_time = s_average_frame_time_accumulator / frames_presented;
+  s_average_frame_time = s_average_frame_time_accumulator / frames_run;
   s_average_frame_time_accumulator = 0.0f;
-  s_vps = static_cast<float>(frames_presented / time);
+  s_vps = static_cast<float>(frames_run / time);
   s_last_frame_number = s_frame_number;
   s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
   s_last_internal_frame_number = s_internal_frame_number;
@@ -2163,8 +2185,16 @@ void System::UpdatePerformanceCounters()
 
   s_fps_timer.ResetTo(now_ticks);
 
-  Log_VerbosePrintf("FPS: %.2f VPS: %.2f CPU: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps, s_cpu_thread_usage,
-                    s_average_frame_time, s_worst_frame_time);
+  if (g_host_display->IsGPUTimingEnabled())
+  {
+    s_average_gpu_time = s_accumulated_gpu_time / static_cast<float>(std::max(s_presents_since_last_update, 1u));
+    s_gpu_usage = s_accumulated_gpu_time / (time * 10.0f);
+  }
+  s_accumulated_gpu_time = 0.0f;
+  s_presents_since_last_update = 0;
+
+  Log_VerbosePrintf("FPS: %.2f VPS: %.2f CPU: %.2f GPU: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps,
+                    s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_worst_frame_time);
 
   Host::OnPerformanceCountersUpdated();
 }
@@ -3123,10 +3153,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
         g_settings.rewind_enable != old_settings.rewind_enable ||
-        g_settings.runahead_frames != old_settings.runahead_frames ||
-        g_settings.display_linear_filtering != old_settings.display_linear_filtering ||
-        g_settings.display_integer_scaling != old_settings.display_integer_scaling ||
-        g_settings.display_stretch != old_settings.display_stretch)
+        g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings();
       Host::InvalidateDisplay();

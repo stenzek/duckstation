@@ -181,6 +181,8 @@ float GetCPUThreadUsage();
 float GetCPUThreadAverageTime();
 float GetSWThreadUsage();
 float GetSWThreadAverageTime();
+float GetGPUUsage();
+float GetGPUAverageTime();
 
 /// Loads global settings (i.e. EmuConfig).
 void LoadSettings(bool display_osd_messages);

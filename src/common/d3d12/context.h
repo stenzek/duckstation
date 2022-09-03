@@ -31,6 +31,9 @@ public:
 
     // Textures that don't fit into this buffer will be uploaded with a staging buffer.
     TEXTURE_UPLOAD_BUFFER_SIZE = 16 * 1024 * 1024,
+
+    /// Start/End timestamp queries.
+    NUM_TIMESTAMP_QUERIES_PER_CMDLIST = 2,
   };
 
   ~Context();
@@ -92,6 +95,9 @@ public:
   void DeferDescriptorDestruction(DescriptorHeapManager& manager, u32 index);
   void DeferDescriptorDestruction(DescriptorHeapManager& manager, DescriptorHandle* handle);
 
+  float GetAndResetAccumulatedGPUTime();
+  void SetEnableGPUTiming(bool enabled);
+
 private:
   struct CommandListResources
   {
@@ -100,6 +106,7 @@ private:
     std::vector<ID3D12Resource*> pending_resources;
     std::vector<std::pair<DescriptorHeapManager&, u32>> pending_descriptors;
     u64 ready_fence_value = 0;
+    bool has_timestamp_query = false;
   };
 
   Context();
@@ -110,6 +117,7 @@ private:
   bool CreateDescriptorHeaps();
   bool CreateCommandLists();
   bool CreateTextureStreamBuffer();
+  bool CreateTimestampQuery();
   void MoveToNextCommandList();
   void DestroyPendingResources(CommandListResources& cmdlist);
   void DestroyResources();
@@ -125,6 +133,12 @@ private:
 
   std::array<CommandListResources, NUM_COMMAND_LISTS> m_command_lists;
   u32 m_current_command_list = NUM_COMMAND_LISTS - 1;
+
+  ComPtr<ID3D12QueryHeap> m_timestamp_query_heap;
+  ComPtr<ID3D12Resource> m_timestamp_query_buffer;
+  double m_timestamp_frequency = 0.0;
+  float m_accumulated_gpu_time = 0.0f;
+  bool m_gpu_timing_enabled = false;
 
   DescriptorHeapManager m_descriptor_heap_manager;
   DescriptorHeapManager m_rtv_heap_manager;

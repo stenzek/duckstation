@@ -178,14 +178,15 @@ void OpenGLHostDisplay::BindDisplayPixelsTexture()
 {
   if (m_display_pixels_texture_id == 0)
   {
+    const bool linear = IsUsingLinearFiltering();
     glGenTextures(1, &m_display_pixels_texture_id);
     glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
-    m_display_texture_is_linear_filtered = m_display_linear_filtering;
+    m_display_texture_is_linear_filtered = linear;
   }
   else
   {
@@ -195,12 +196,13 @@ void OpenGLHostDisplay::BindDisplayPixelsTexture()
 
 void OpenGLHostDisplay::UpdateDisplayPixelsTextureFilter()
 {
-  if (m_display_linear_filtering == m_display_texture_is_linear_filtered)
+  const bool linear = IsUsingLinearFiltering();
+  if (linear == m_display_texture_is_linear_filtered)
     return;
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_display_linear_filtering ? GL_LINEAR : GL_NEAREST);
-  m_display_texture_is_linear_filtered = m_display_linear_filtering;
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+  m_display_texture_is_linear_filtered = linear;
 }
 
 bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
@@ -435,7 +437,7 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
       glDebugMessageCallback(GLDebugCallback, nullptr);
 
     glEnable(GL_DEBUG_OUTPUT);
-    // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   }
 
   if (!CreateResources())
@@ -520,8 +522,7 @@ HostDisplay::AdapterAndModeList OpenGLHostDisplay::GetAdapterAndModeList()
   {
     for (const GL::Context::FullscreenModeInfo& fmi : m_gl_context->EnumerateFullscreenModes())
     {
-      aml.fullscreen_modes.push_back(
-        GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
+      aml.fullscreen_modes.push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
     }
   }
 
@@ -760,7 +761,14 @@ bool OpenGLHostDisplay::Render(bool skip_present)
 
   RenderSoftwareCursor();
 
+  if (m_gpu_timing_enabled)
+    PopTimestampQuery();
+
   m_gl_context->SwapBuffers();
+
+  if (m_gpu_timing_enabled)
+    KickTimestampQuery();
+
   return true;
 }
 
@@ -792,7 +800,7 @@ bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
       RenderDisplay(left, height - top - draw_height, draw_width, draw_height, m_display_texture_handle,
                     m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
                     m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
-                    m_display_linear_filtering);
+                    IsUsingLinearFiltering());
     }
   }
 
@@ -830,7 +838,7 @@ void OpenGLHostDisplay::RenderDisplay()
 
   RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
                 m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                m_display_texture_view_width, m_display_texture_view_height, m_display_linear_filtering);
+                m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 static void DrawFullscreenQuadES2(s32 tex_view_x, s32 tex_view_y, s32 tex_view_width, s32 tex_view_height,
@@ -871,8 +879,9 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
 
   if (!m_use_gles2_draw_path)
   {
-    const float position_adjust = m_display_linear_filtering ? 0.5f : 0.0f;
-    const float size_adjust = m_display_linear_filtering ? 1.0f : 0.0f;
+    const bool linear = IsUsingLinearFiltering();
+    const float position_adjust = linear ? 0.5f : 0.0f;
+    const float size_adjust = linear ? 1.0f : 0.0f;
     const float flip_adjust = (texture_view_height < 0) ? -1.0f : 1.0f;
     m_display_program.Uniform4f(
       0, (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
@@ -1041,7 +1050,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   {
     RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
                   texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
-                  texture_view_height, m_display_linear_filtering);
+                  texture_view_height, IsUsingLinearFiltering());
     return;
   }
 
@@ -1050,7 +1059,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   glClear(GL_COLOR_BUFFER_BIT);
   RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
                 texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
-                m_display_linear_filtering);
+                IsUsingLinearFiltering());
 
   texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_post_processing_input_texture.GetGLId()));
   texture_width = m_post_processing_input_texture.GetWidth();
@@ -1097,6 +1106,124 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
 
   glBindSampler(0, 0);
   m_post_processing_ubo->Unbind();
+}
+
+void OpenGLHostDisplay::CreateTimestampQueries()
+{
+  const bool gles = m_gl_context->IsGLES();
+  const auto GenQueries = gles ? glGenQueriesEXT : glGenQueries;
+
+  GenQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
+  KickTimestampQuery();
+}
+
+void OpenGLHostDisplay::DestroyTimestampQueries()
+{
+  if (m_timestamp_queries[0] == 0)
+    return;
+
+  const bool gles = m_gl_context->IsGLES();
+  const auto DeleteQueries = gles ? glDeleteQueriesEXT : glDeleteQueries;
+
+  if (m_timestamp_query_started)
+  {
+    const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
+    EndQuery(m_timestamp_queries[m_write_timestamp_query]);
+  }
+
+  DeleteQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
+  m_timestamp_queries.fill(0);
+  m_read_timestamp_query = 0;
+  m_write_timestamp_query = 0;
+  m_waiting_timestamp_queries = 0;
+  m_timestamp_query_started = false;
+}
+
+void OpenGLHostDisplay::PopTimestampQuery()
+{
+  const bool gles = m_gl_context->IsGLES();
+
+  if (gles)
+  {
+    GLint disjoint = 0;
+    glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint);
+    if (disjoint)
+    {
+      Log_VerbosePrintf("GPU timing disjoint, resetting.");
+      if (m_timestamp_query_started)
+        glEndQueryEXT(GL_TIME_ELAPSED);
+
+      m_read_timestamp_query = 0;
+      m_write_timestamp_query = 0;
+      m_waiting_timestamp_queries = 0;
+      m_timestamp_query_started = false;
+    }
+  }
+
+  while (m_waiting_timestamp_queries > 0)
+  {
+    const auto GetQueryObjectiv = gles ? glGetQueryObjectivEXT : glGetQueryObjectiv;
+    const auto GetQueryObjectui64v = gles ? glGetQueryObjectui64vEXT : glGetQueryObjectui64v;
+
+    GLint available = 0;
+    GetQueryObjectiv(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT_AVAILABLE, &available);
+    DebugAssert(m_read_timestamp_query != m_write_timestamp_query);
+
+    if (!available)
+      break;
+
+    u64 result = 0;
+    GetQueryObjectui64v(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT, &result);
+    m_accumulated_gpu_time += static_cast<float>(static_cast<double>(result) / 1000000.0);
+    m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+    m_waiting_timestamp_queries--;
+  }
+
+  if (m_timestamp_query_started)
+  {
+    const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
+    EndQuery(GL_TIME_ELAPSED);
+
+    m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+    m_timestamp_query_started = false;
+    m_waiting_timestamp_queries++;
+  }
+}
+
+void OpenGLHostDisplay::KickTimestampQuery()
+{
+  if (m_timestamp_query_started || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
+    return;
+
+  const bool gles = m_gl_context->IsGLES();
+  const auto BeginQuery = gles ? glBeginQueryEXT : glBeginQuery;
+
+  BeginQuery(GL_TIME_ELAPSED, m_timestamp_queries[m_write_timestamp_query]);
+  m_timestamp_query_started = true;
+}
+
+bool OpenGLHostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+  if (m_gpu_timing_enabled == enabled)
+    return true;
+
+  if (enabled && m_gl_context->IsGLES() && !GLAD_GL_EXT_disjoint_timer_query)
+    return false;
+
+  m_gpu_timing_enabled = enabled;
+  if (m_gpu_timing_enabled)
+    CreateTimestampQueries();
+  else
+    DestroyTimestampQueries();
+
+  return true;
+}
+
+float OpenGLHostDisplay::GetAndResetAccumulatedGPUTime()
+{
+  const float value = m_accumulated_gpu_time;
+  m_accumulated_gpu_time = 0.0f;
+  return value;
 }
 
 } // namespace FrontendCommon

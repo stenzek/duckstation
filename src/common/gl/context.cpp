@@ -55,14 +55,27 @@ static bool ShouldPreferESContext()
 #endif
 }
 
-static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer)
+static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer, const char* gl_version)
 {
   if (std::strstr(gl_vendor, "ARM"))
   {
     // GL_{EXT,OES}_copy_image seem to be implemented on the CPU in the Mali drivers...
-    Log_VerbosePrintf("Mali driver detected, disabling GL_{EXT,OES}_copy_image");
-    GLAD_GL_EXT_copy_image = 0;
-    GLAD_GL_OES_copy_image = 0;
+    // Older drivers don't implement timer queries correctly either.
+    int gl_major_version, gl_minor_version, unused_version, major_version, patch_version;
+    if (std::sscanf(gl_version, "OpenGL ES %d.%d v%d.r%dp%d", &gl_major_version, &gl_minor_version, &unused_version,
+                    &major_version, &patch_version) == 5 &&
+        gl_major_version >= 3 && gl_minor_version >= 2 && major_version >= 32)
+    {
+      // r32p0 and beyond seem okay.
+      Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
+    }
+    else
+    {
+      Log_VerbosePrintf("Older Mali driver detected, disabling GL_{EXT,OES}_copy_image, disjoint_timer_query.");
+      GLAD_GL_EXT_copy_image = 0;
+      GLAD_GL_OES_copy_image = 0;
+      GLAD_GL_EXT_disjoint_timer_query = 0;
+    }
   }
 }
 
@@ -173,7 +186,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   Log_InfoPrintf("GL_VERSION: %s", gl_version);
   Log_InfoPrintf("GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
 
-  DisableBrokenExtensions(gl_vendor, gl_renderer);
+  DisableBrokenExtensions(gl_vendor, gl_renderer, gl_version);
 
   return context;
 }

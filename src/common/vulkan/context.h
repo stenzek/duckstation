@@ -180,6 +180,9 @@ public:
 
   void WaitForGPUIdle();
 
+  float GetAndResetAccumulatedGPUTime();
+  bool SetEnableGPUTiming(bool enabled);
+
 private:
   Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device);
 
@@ -216,6 +219,7 @@ private:
     VkFence fence = VK_NULL_HANDLE;
     u64 fence_counter = 0;
     bool needs_fence_wait = false;
+    bool timestamp_written = false;
 
     std::vector<std::function<void()>> cleanup_resources;
   };
@@ -232,6 +236,11 @@ private:
   u32 m_graphics_queue_family_index = 0;
   VkQueue m_present_queue = VK_NULL_HANDLE;
   u32 m_present_queue_family_index = 0;
+
+  VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
+  float m_accumulated_gpu_time = 0.0f;
+  bool m_gpu_timing_enabled = false;
+  bool m_gpu_timing_supported = false;
 
   std::array<FrameResources, NUM_COMMAND_BUFFERS> m_frame_resources;
   u64 m_next_fence_counter = 1;

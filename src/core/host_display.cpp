@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+#include "settings.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -164,6 +165,16 @@ bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
   return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
+bool HostDisplay::SetGPUTimingEnabled(bool enabled)
+{
+  return false;
+}
+
+float HostDisplay::GetAndResetAccumulatedGPUTime()
+{
+  return 0.0f;
+}
+
 void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
 {
   m_cursor_texture = std::move(texture);
@@ -216,13 +227,18 @@ void HostDisplay::ClearSoftwareCursor()
   m_cursor_texture_scale = 1.0f;
 }
 
+bool HostDisplay::IsUsingLinearFiltering() const
+{
+  return g_settings.display_linear_filtering;
+}
+
 void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top,
                                     float* out_width, float* out_height, float* out_left_padding,
                                     float* out_top_padding, float* out_scale, float* out_x_scale,
                                     bool apply_aspect_ratio /* = true */) const
 {
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-  const float display_aspect_ratio = m_display_stretch ? window_ratio : m_display_aspect_ratio;
+  const float display_aspect_ratio = g_settings.display_stretch ? window_ratio : m_display_aspect_ratio;
   const float x_scale =
     apply_aspect_ratio ?
       (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
@@ -242,12 +258,12 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
-    if (m_display_integer_scaling)
+    if (g_settings.display_integer_scaling)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
     {
-      if (m_display_integer_scaling)
+      if (g_settings.display_integer_scaling)
         *out_left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
       else
         *out_left_padding = 0.0f;
@@ -276,7 +292,7 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
   {
     // align in middle horizontally
     scale = static_cast<float>(window_height) / display_height;
-    if (m_display_integer_scaling)
+    if (g_settings.display_integer_scaling)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
@@ -301,7 +317,7 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
 
     if (out_top_padding)
     {
-      if (m_display_integer_scaling)
+      if (g_settings.display_integer_scaling)
         *out_top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
       else
         *out_top_padding = 0.0f;

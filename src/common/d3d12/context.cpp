@@ -138,7 +138,7 @@ bool Context::Create(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_
   if (!g_d3d12_context->CreateDevice(dxgi_factory, adapter_index, enable_debug_layer) ||
       !g_d3d12_context->CreateCommandQueue() || !g_d3d12_context->CreateFence() ||
       !g_d3d12_context->CreateDescriptorHeaps() || !g_d3d12_context->CreateCommandLists() ||
-      !g_d3d12_context->CreateTextureStreamBuffer())
+      !g_d3d12_context->CreateTimestampQuery() || !g_d3d12_context->CreateTextureStreamBuffer())
   {
     Destroy();
     return false;
@@ -326,20 +326,64 @@ void Context::MoveToNextCommandList()
   // We may have to wait if this command list hasn't finished on the GPU.
   CommandListResources& res = m_command_lists[m_current_command_list];
   WaitForFence(res.ready_fence_value);
+  res.ready_fence_value = m_current_fence_value;
 
   // Begin command list.
   res.command_allocator->Reset();
   res.command_list->Reset(res.command_allocator.Get(), nullptr);
+
+  if (res.has_timestamp_query)
+  {
+    // readback timestamp from the last time this cmdlist was used.
+    // we don't need to worry about disjoint in dx12, the frequency is reliable within a single cmdlist.
+    const u32 offset = (m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+    const D3D12_RANGE read_range = {offset, offset + (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST)};
+    void* map;
+    HRESULT hr = m_timestamp_query_buffer->Map(0, &read_range, &map);
+    if (SUCCEEDED(hr))
+    {
+      u64 timestamps[2];
+      std::memcpy(timestamps, static_cast<const u8*>(map) + offset, sizeof(timestamps));
+      m_accumulated_gpu_time +=
+        static_cast<float>(static_cast<double>(timestamps[1] - timestamps[0]) / m_timestamp_frequency);
+
+      const D3D12_RANGE write_range = {};
+      m_timestamp_query_buffer->Unmap(0, &write_range);
+    }
+    else
+    {
+      Log_WarningPrintf("Map() for timestamp query failed: %08X", hr);
+    }
+  }
+
+  res.has_timestamp_query = m_gpu_timing_enabled;
+  if (m_gpu_timing_enabled)
+  {
+    res.command_list->EndQuery(m_timestamp_query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
+                               m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
+  }
+
   res.command_list->SetDescriptorHeaps(static_cast<UINT>(m_gpu_descriptor_heaps.size()), m_gpu_descriptor_heaps.data());
-  res.ready_fence_value = m_current_fence_value;
 }
 
 void Context::ExecuteCommandList(bool wait_for_completion)
 {
   CommandListResources& res = m_command_lists[m_current_command_list];
+  HRESULT hr;
+
+  if (res.has_timestamp_query)
+  {
+    // write the timestamp back at the end of the cmdlist
+    res.command_list->EndQuery(m_timestamp_query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
+                               (m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST) + 1);
+    res.command_list->ResolveQueryData(m_timestamp_query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
+                                       m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST,
+                                       NUM_TIMESTAMP_QUERIES_PER_CMDLIST, m_timestamp_query_buffer.Get(),
+                                       m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+  }
 
   // Close and queue command list.
-  HRESULT hr = res.command_list->Close();
+  hr = res.command_list->Close();
   AssertMsg(SUCCEEDED(hr), "Close command list");
   const std::array<ID3D12CommandList*, 1> execute_lists{res.command_list.Get()};
   m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
@@ -391,6 +435,8 @@ void Context::DestroyResources()
 {
   ExecuteCommandList(true);
 
+  m_timestamp_query_buffer.Reset();
+  m_timestamp_query_heap.Reset();
   m_texture_stream_buffer.Destroy(false);
   m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
   m_sampler_heap_manager.Destroy();
@@ -449,5 +495,62 @@ void Context::WaitForGPUIdle()
     WaitForFence(m_command_lists[index].ready_fence_value);
     index = (index + 1) % NUM_COMMAND_LISTS;
   }
+}
+
+bool Context::CreateTimestampQuery()
+{
+  constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
+  constexpr u32 BUFFER_SIZE = sizeof(u64) * QUERY_COUNT;
+
+  const D3D12_QUERY_HEAP_DESC desc = {D3D12_QUERY_HEAP_TYPE_TIMESTAMP, QUERY_COUNT};
+  HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("CreateQueryHeap() for timestamp failed with %08X", hr);
+    return false;
+  }
+
+  const D3D12_HEAP_PROPERTIES heap_properties = {D3D12_HEAP_TYPE_READBACK};
+  const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER,
+                                             0,
+                                             BUFFER_SIZE,
+                                             1,
+                                             1,
+                                             1,
+                                             DXGI_FORMAT_UNKNOWN,
+                                             {1, 0},
+                                             D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+                                             D3D12_RESOURCE_FLAG_NONE};
+  hr = m_device->CreateCommittedResource(&heap_properties, D3D12_HEAP_FLAG_NONE, &resource_desc,
+                                         D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                         IID_PPV_ARGS(m_timestamp_query_buffer.ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("CreateResource() for timestamp failed with %08X", hr);
+    return false;
+  }
+
+  u64 frequency;
+  hr = m_command_queue->GetTimestampFrequency(&frequency);
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("GetTimestampFrequency() failed: %08X", hr);
+    return false;
+  }
+
+  m_timestamp_frequency = static_cast<double>(frequency) / 1000.0;
+  return true;
+}
+
+float Context::GetAndResetAccumulatedGPUTime()
+{
+  const float time = m_accumulated_gpu_time;
+  m_accumulated_gpu_time = 0.0f;
+  return time;
+}
+
+void Context::SetEnableGPUTiming(bool enabled)
+{
+  m_gpu_timing_enabled = enabled;
 }
 } // namespace D3D12
