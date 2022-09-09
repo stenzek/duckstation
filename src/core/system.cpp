@@ -1912,9 +1912,9 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     u32 screenshot_stride;
     HostDisplayPixelFormat screenshot_format;
     if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height, &screenshot_buffer, &screenshot_stride,
-                                         &screenshot_format) ||
-        !g_host_display->ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer,
-                                                   screenshot_stride, HostDisplayPixelFormat::RGBA8))
+                                         &screenshot_format) &&
+        g_host_display->ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer,
+                                                  screenshot_stride, screenshot_format))
     {
       if (screenshot_stride != (screenshot_width * sizeof(u32)))
       {
