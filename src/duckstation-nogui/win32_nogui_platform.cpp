@@ -325,10 +325,10 @@ LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
       if (ImGuiManager::WantsTextInput())
       {
-        const WCHAR utf16[2] = {static_cast<wchar_t>(wParam), 0};
+        const WCHAR utf16[1] = {static_cast<WCHAR>(wParam)};
         char utf8[8] = {};
         const int utf8_len =
-          WideCharToMultiByte(CP_UTF8, 0, utf16, sizeof(utf16), utf8, sizeof(utf8) - 1, nullptr, nullptr);
+          WideCharToMultiByte(CP_UTF8, 0, utf16, std::size(utf16), utf8, sizeof(utf8) - 1, nullptr, nullptr);
         if (utf8_len > 0)
         {
           utf8[utf8_len] = 0;
