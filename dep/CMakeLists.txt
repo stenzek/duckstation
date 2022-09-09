@@ -15,6 +15,7 @@ add_subdirectory(vulkan)
 add_subdirectory(soundtouch)
 add_subdirectory(tinyxml2)
 add_subdirectory(googletest)
+add_subdirectory(cpuinfo)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)

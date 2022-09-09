@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\msvc\vsprops\Configurations.props" />
+  <ItemGroup>
+    <ClCompile Include="deps\clog\src\clog.c" />
+    <ClCompile Include="src\api.c" />
+    <ClCompile Include="src\arm\cache.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arm\uarch.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\arm\windows\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\cache.c" />
+    <ClCompile Include="src\init.c" />
+    <ClCompile Include="src\x86\cache\descriptor.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\deterministic.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\info.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\isa.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\name.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\topology.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\uarch.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\vendor.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\windows\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="deps\clog\include\clog.h" />
+    <ClInclude Include="include\cpuinfo.h" />
+    <ClInclude Include="src\arm\api.h" />
+    <ClInclude Include="src\arm\midr.h" />
+    <ClInclude Include="src\arm\windows\api.h" />
+    <ClInclude Include="src\cpuinfo\common.h" />
+    <ClInclude Include="src\cpuinfo\internal-api.h" />
+    <ClInclude Include="src\cpuinfo\log.h" />
+    <ClInclude Include="src\cpuinfo\utils.h" />
+    <ClInclude Include="src\x86\api.h" />
+    <ClInclude Include="src\x86\cpuid.h" />
+    <ClInclude Include="src\x86\windows\api.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EE55AA65-EA6B-4861-810B-78354B53A807}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="..\msvc\vsprops\StaticLibrary.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)deps\clog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="..\msvc\vsprops\Targets.props" />
+</Project>
