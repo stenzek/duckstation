@@ -20,6 +20,8 @@ add_library(common
   hash_combine.h
   heap_array.h
   heterogeneous_containers.h
+  http_downloader.cpp
+  http_downloader.h
   layered_settings_interface.cpp
   layered_settings_interface.h
   log.cpp
@@ -86,6 +88,8 @@ if(WIN32)
     d3d11/stream_buffer.h
     d3d11/texture.cpp
     d3d11/texture.h
+    http_downloader_winhttp.cpp
+    http_downloader_winhttp.h
     thirdparty/StackWalker.cpp
     thirdparty/StackWalker.h
     win32_progress_callback.cpp
@@ -93,6 +97,16 @@ if(WIN32)
     windows_headers.h
   )
   target_link_libraries(common PRIVATE d3dcompiler.lib)
+endif()
+
+if(NOT WIN32 AND NOT ANDROID)
+  target_sources(common PRIVATE
+    http_downloader_curl.cpp
+    http_downloader_curl.h
+  )
+  target_link_libraries(common PRIVATE
+    CURL::libcurl
+  )
 endif()
 
 if(ANDROID)
@@ -239,29 +253,6 @@ if(ENABLE_VULKAN)
   if(APPLE)
     # Needed for Vulkan Swap Chain.
     target_link_libraries(common PRIVATE "objc")
-  endif()
-endif()
-
-
-
-if(ENABLE_CHEEVOS)
-  target_sources(common PRIVATE
-    http_downloader.cpp
-    http_downloader.h
-  )
-  if(WIN32)
-    target_sources(common PRIVATE
-      http_downloader_winhttp.cpp
-      http_downloader_winhttp.h
-    )
-  elseif(NOT ANDROID)
-    target_sources(common PRIVATE
-      http_downloader_curl.cpp
-      http_downloader_curl.h
-    )
-    target_link_libraries(common PRIVATE
-      CURL::libcurl
-    )
   endif()
 endif()
 

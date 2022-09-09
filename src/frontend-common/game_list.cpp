@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
+#include "common/http_downloader.h"
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/path.h"
@@ -18,9 +19,9 @@
 #include <array>
 #include <cctype>
 #include <ctime>
-#include <unordered_map>
 #include <string_view>
 #include <tinyxml2.h>
+#include <unordered_map>
 #include <utility>
 Log_SetChannel(GameList);
 
@@ -687,4 +688,114 @@ size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) c
 #endif
 
   return std::strftime(buffer, buffer_size, "%d %B %Y", &date_tm);
+}
+
+bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, ProgressCallback* progress /*= nullptr*/)
+{
+  if (!progress)
+    progress = ProgressCallback::NullProgressCallback;
+
+  bool has_title = false;
+  bool has_file_title = false;
+  bool has_serial = false;
+  for (const std::string& url_template : url_templates)
+  {
+    if (!has_title && url_template.find("${title}") != std::string::npos)
+      has_title = true;
+    if (!has_file_title && url_template.find("${filetitle}") != std::string::npos)
+      has_file_title = true;
+    if (!has_serial && url_template.find("${serial}") != std::string::npos)
+      has_serial = true;
+  }
+  if (!has_title && !has_file_title && !has_serial)
+  {
+    progress->DisplayError("URL template must contain at least one of ${title}, ${filetitle}, or ${serial}.");
+    return false;
+  }
+
+  std::vector<std::pair<std::string, std::string>> download_urls;
+  {
+    std::unique_lock lock(s_mutex);
+    for (const GameList::Entry& entry : m_entries)
+    {
+      const std::string existing_path(GetCoverImagePathForEntry(&entry));
+      if (!existing_path.empty())
+        continue;
+
+      for (const std::string& url_template : url_templates)
+      {
+        std::string url(url_template);
+        if (has_title)
+          StringUtil::ReplaceAll(&url, "${title}", Common::HTTPDownloader::URLEncode(entry.title));
+        if (has_file_title)
+        {
+          std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
+          StringUtil::ReplaceAll(&url, "${filetitle}",
+                                 Common::HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
+        }
+        if (has_serial)
+          StringUtil::ReplaceAll(&url, "${serial}", Common::HTTPDownloader::URLEncode(entry.serial));
+
+        download_urls.emplace_back(entry.path, std::move(url));
+      }
+    }
+  }
+  if (download_urls.empty())
+  {
+    progress->DisplayError("No URLs to download enumerated.");
+    return false;
+  }
+
+  std::unique_ptr<Common::HTTPDownloader> downloader(Common::HTTPDownloader::Create());
+  if (!downloader)
+  {
+    progress->DisplayError("Failed to create HTTP downloader.");
+    return false;
+  }
+
+  progress->SetCancellable(true);
+  progress->SetProgressRange(static_cast<u32>(download_urls.size()));
+
+  for (auto& [entry_path, url] : download_urls)
+  {
+    if (progress->IsCancelled())
+      break;
+
+    // make sure it didn't get done already
+    {
+      std::unique_lock lock(s_mutex);
+      const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+      if (!entry || !GetCoverImagePathForEntry(entry).empty())
+      {
+        progress->IncrementProgressValue();
+        continue;
+      }
+
+      progress->SetFormattedStatusText("Downloading cover for %s...", entry->title.c_str());
+    }
+
+    // we could actually do a few in parallel here...
+    std::string filename(Common::HTTPDownloader::URLDecode(url));
+    downloader->CreateRequest(std::move(url), [entry_path = std::move(entry_path), filename = std::move(filename)](
+                                                s32 status_code, Common::HTTPDownloader::Request::Data data) {
+      if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
+        return;
+
+      std::unique_lock lock(s_mutex);
+      const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+      if (!entry || !GetCoverImagePathForEntry(entry).empty())
+        return;
+
+      std::string write_path(GetNewCoverImagePathForEntry(entry, filename.c_str()));
+      if (write_path.empty())
+        return;
+
+      FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size());
+      Host::CoversChanged();
+    });
+    downloader->WaitForAllRequests();
+    progress->IncrementProgressValue();
+  }
+
+  return true;
 }

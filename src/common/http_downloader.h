@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace Common {
@@ -53,6 +54,8 @@ public:
   virtual ~HTTPDownloader();
 
   static std::unique_ptr<HTTPDownloader> Create(const char* user_agent = DEFAULT_USER_AGENT);
+  static std::string URLEncode(const std::string_view& str);
+  static std::string URLDecode(const std::string_view& str);
 
   void SetTimeout(float timeout);
   void SetMaxActiveRequests(u32 max_active_requests);

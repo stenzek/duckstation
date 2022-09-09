@@ -656,6 +656,14 @@ void FullscreenUI::Render()
   ImGuiFullscreen::ResetCloseMenuIfNeeded();
 }
 
+void FullscreenUI::InvalidateCoverCache()
+{
+  if (!IsInitialized())
+    return;
+
+  Host::RunOnCPUThread([]() { s_cover_image_map.clear(); });
+}
+
 void FullscreenUI::ReturnToMainWindow()
 {
   if (s_pause_menu_was_open)

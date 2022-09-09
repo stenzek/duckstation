@@ -1078,6 +1078,21 @@ void Host::CancelGameListRefresh()
   QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
+void Host::DownloadCoversAsync(std::vector<std::string> url_templates)
+{
+  //
+}
+
+void Host::CancelCoversDownload()
+{
+  //
+}
+
+void Host::CoversChanged()
+{
+  //
+}
+
 void EmuThread::loadState(const QString& filename)
 {
   if (!isOnThread())

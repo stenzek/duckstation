@@ -75,6 +75,8 @@ void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* p
 std::string GetCoverImagePathForEntry(const Entry* entry);
 std::string GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title);
 std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename);
+
+bool DownloadCovers(const std::vector<std::string>& url_templates, ProgressCallback* progress = nullptr);
 }; // namespace GameList
 
 namespace Host {
@@ -83,4 +85,8 @@ void RefreshGameListAsync(bool invalidate_cache);
 
 /// Cancels game list refresh, if there is one in progress.
 void CancelGameListRefresh();
+
+void DownloadCoversAsync(std::vector<std::string> url_templates);
+void CancelCoversDownload();
+void CoversChanged();
 } // namespace Host

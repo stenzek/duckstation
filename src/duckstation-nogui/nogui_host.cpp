@@ -76,7 +76,9 @@ static void CPUThreadMainLoop();
 static std::unique_ptr<NoGUIPlatform> CreatePlatform();
 static std::string GetWindowTitle(const std::string& game_title);
 static void UpdateWindowTitle(const std::string& game_title);
-static void GameListRefreshThreadEntryPoint(bool invalidate_cache);
+static void CancelAsyncOp();
+static void StartAsyncOp(std::function<void(ProgressCallback*)> callback);
+static void AsyncOpThreadEntryPoint(std::function<void(ProgressCallback*)> callback);
 static bool AcquireHostDisplay(RenderAPI api);
 static void ReleaseHostDisplay();
 } // namespace NoGUIHost
@@ -99,9 +101,9 @@ static std::condition_variable s_cpu_thread_event_posted;
 static std::deque<std::pair<std::function<void()>, bool>> s_cpu_thread_events;
 static u32 s_blocking_cpu_events_pending = 0; // TODO: Token system would work better here.
 
-static std::mutex s_game_list_refresh_lock;
-static std::thread s_game_list_refresh_thread;
-static FullscreenUI::ProgressCallback* s_game_list_refresh_progress = nullptr;
+static std::mutex s_async_op_mutex;
+static std::thread s_async_op_thread;
+static FullscreenUI::ProgressCallback* s_async_op_progress = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -961,39 +963,66 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
     s_cpu_thread_event_done.wait(lock, []() { return s_blocking_cpu_events_pending == 0; });
 }
 
-void NoGUIHost::GameListRefreshThreadEntryPoint(bool invalidate_cache)
+void NoGUIHost::StartAsyncOp(std::function<void(ProgressCallback*)> callback)
 {
-  Threading::SetNameOfCurrentThread("Game List Refresh");
+  CancelAsyncOp();
+  s_async_op_thread = std::thread(AsyncOpThreadEntryPoint, std::move(callback));
+}
 
-  FullscreenUI::ProgressCallback callback("game_list_refresh");
-  std::unique_lock lock(s_game_list_refresh_lock);
-  s_game_list_refresh_progress = &callback;
+void NoGUIHost::CancelAsyncOp()
+{
+  std::unique_lock lock(s_async_op_mutex);
+  if (!s_async_op_thread.joinable())
+    return;
+
+  if (s_async_op_progress)
+    s_async_op_progress->SetCancelled();
 
   lock.unlock();
-  GameList::Refresh(invalidate_cache, false, &callback);
+  s_async_op_thread.join();
+}
+
+void NoGUIHost::AsyncOpThreadEntryPoint(std::function<void(ProgressCallback*)> callback)
+{
+  Threading::SetNameOfCurrentThread("Async Op");
+
+  FullscreenUI::ProgressCallback fs_callback("async_op");
+  std::unique_lock lock(s_async_op_mutex);
+  s_async_op_progress = &fs_callback;
+
+  lock.unlock();
+  callback(&fs_callback);
   lock.lock();
 
-  s_game_list_refresh_progress = nullptr;
+  s_async_op_progress = nullptr;
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
-  CancelGameListRefresh();
-
-  s_game_list_refresh_thread = std::thread(NoGUIHost::GameListRefreshThreadEntryPoint, invalidate_cache);
+  NoGUIHost::StartAsyncOp(
+    [invalidate_cache](ProgressCallback* progress) { GameList::Refresh(invalidate_cache, false, progress); });
 }
 
 void Host::CancelGameListRefresh()
 {
-  std::unique_lock lock(s_game_list_refresh_lock);
-  if (!s_game_list_refresh_thread.joinable())
-    return;
+  NoGUIHost::CancelAsyncOp();
+}
 
-  if (s_game_list_refresh_progress)
-    s_game_list_refresh_progress->SetCancelled();
+void Host::DownloadCoversAsync(std::vector<std::string> url_templates)
+{
+  NoGUIHost::StartAsyncOp([url_templates = std::move(url_templates)](ProgressCallback* progress) {
+    GameList::DownloadCovers(url_templates, progress);
+  });
+}
 
-  lock.unlock();
-  s_game_list_refresh_thread.join();
+void Host::CancelCoversDownload()
+{
+  NoGUIHost::CancelAsyncOp();
+}
+
+void Host::CoversChanged()
+{
+  Host::RunOnCPUThread([]() { FullscreenUI::InvalidateCoverCache(); });
 }
 
 bool Host::IsFullscreen()
@@ -1340,6 +1369,7 @@ int main(int argc, char* argv[])
 
   g_nogui_window->RunMessageLoop();
 
+  NoGUIHost::CancelAsyncOp();
   NoGUIHost::StopCPUThread();
 
   // Ensure log is flushed.
