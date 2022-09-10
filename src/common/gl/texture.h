@@ -10,6 +10,8 @@ public:
   Texture(Texture&& moved);
   ~Texture();
 
+  static bool UseTextureStorage(bool multisampled);
+
   bool Create(u32 width, u32 height, u32 samples, GLenum internal_format, GLenum format, GLenum type,
               const void* data = nullptr, bool linear_filter = false, bool wrap = false);
   void Replace(u32 width, u32 height, GLenum internal_format, GLenum format, GLenum type, const void* data);
@@ -17,6 +19,7 @@ public:
 
   void Destroy();
 
+  bool UseTextureStorage() const;
   void SetLinearFilter(bool enabled);
 
   bool IsValid() const { return m_id != 0; }

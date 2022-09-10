@@ -46,15 +46,9 @@ public:
   std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     HostDisplayPixelFormat format, const void* data, u32 data_stride,
                                                     bool dynamic = false) override;
-  void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
-                     u32 texture_data_stride) override;
   bool DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y, u32 width,
                        u32 height, void* out_data, u32 out_data_stride) override;
   bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const override;
-  bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                             u32* out_pitch) override;
-  void EndSetDisplayPixels() override;
-  bool SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch) override;
 
   void SetVSync(bool enabled) override;
 
@@ -64,6 +58,13 @@ public:
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
+
+  ALWAYS_INLINE GL::Context* GetGLContext() const { return m_gl_context.get(); }
+  ALWAYS_INLINE bool UsePBOForUploads() const { return m_use_pbo_for_pixels; }
+  ALWAYS_INLINE bool UseGLES3DrawPath() const { return m_use_gles2_draw_path; }
+  ALWAYS_INLINE std::vector<u8>& GetTextureRepackBuffer() { return m_texture_repack_buffer; }
+
+  GL::StreamBuffer* GetTextureStreamBuffer();
 
 protected:
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
@@ -77,9 +78,6 @@ protected:
   bool CreateImGuiContext() override;
   void DestroyImGuiContext() override;
   bool UpdateImGuiFontTexture() override;
-
-  void BindDisplayPixelsTexture();
-  void UpdateDisplayPixelsTextureFilter();
 
   void RenderDisplay();
   void RenderImGui();
@@ -117,11 +115,8 @@ protected:
   GLuint m_display_linear_sampler = 0;
   GLuint m_uniform_buffer_alignment = 1;
 
-  GLuint m_display_pixels_texture_id = 0;
-  std::unique_ptr<GL::StreamBuffer> m_display_pixels_texture_pbo;
-  u32 m_display_pixels_texture_pbo_map_offset = 0;
-  u32 m_display_pixels_texture_pbo_map_size = 0;
-  std::vector<u8> m_gles_pixels_repack_buffer;
+  std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
+  std::vector<u8> m_texture_repack_buffer;
 
   PostProcessingChain m_post_processing_chain;
   GL::Texture m_post_processing_input_texture;
@@ -135,7 +130,6 @@ protected:
   u8 m_waiting_timestamp_queries = 0;
   bool m_timestamp_query_started = false;
 
-  bool m_display_texture_is_linear_filtered = false;
   bool m_use_gles2_draw_path = false;
   bool m_use_pbo_for_pixels = false;
 };

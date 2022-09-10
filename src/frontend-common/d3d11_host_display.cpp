@@ -23,7 +23,7 @@ Log_SetChannel(D3D11HostDisplay);
 
 namespace FrontendCommon {
 
-class D3D11HostDisplayTexture : public HostDisplayTexture
+class D3D11HostDisplayTexture final : public HostDisplayTexture
 {
 public:
   D3D11HostDisplayTexture(D3D11::Texture texture, HostDisplayPixelFormat format, bool dynamic)
@@ -39,6 +39,41 @@ public:
   u32 GetLevels() const override { return m_texture.GetLevels(); }
   u32 GetSamples() const override { return m_texture.GetSamples(); }
   HostDisplayPixelFormat GetFormat() const override { return m_format; }
+
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override
+  {
+    if (!m_dynamic || m_texture.GetWidth() != width || m_texture.GetHeight() != height)
+      return false;
+
+    D3D11_MAPPED_SUBRESOURCE sr;
+    HRESULT hr = static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())
+                   ->Map(m_texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
+    if (FAILED(hr))
+    {
+      Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
+      return false;
+    }
+
+    *out_buffer = sr.pData;
+    *out_pitch = sr.RowPitch;
+    return true;
+  }
+
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height)
+  {
+    static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())->Unmap(m_texture, 0);
+  }
+
+  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override
+  {
+    if (m_dynamic)
+      return HostDisplayTexture::Update(x, y, width, height, data, pitch);
+
+    const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
+    static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())
+      ->UpdateSubresource(m_texture, 0, &dst_box, data, pitch, pitch * height);
+    return true;
+  }
 
   ALWAYS_INLINE ID3D11Texture2D* GetD3DTexture() const { return m_texture.GetD3DTexture(); }
   ALWAYS_INLINE ID3D11ShaderResourceView* GetD3DSRV() const { return m_texture.GetD3DSRV(); }
@@ -107,43 +142,6 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
   return std::make_unique<D3D11HostDisplayTexture>(std::move(tex), format, dynamic);
 }
 
-void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                     const void* texture_data, u32 texture_data_stride)
-{
-  D3D11HostDisplayTexture* d3d11_texture = static_cast<D3D11HostDisplayTexture*>(texture);
-  if (!d3d11_texture->IsDynamic())
-  {
-    const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
-    m_context->UpdateSubresource(d3d11_texture->GetD3DTexture(), 0, &dst_box, texture_data, texture_data_stride,
-                                 texture_data_stride * height);
-  }
-  else
-  {
-    D3D11_MAPPED_SUBRESOURCE sr;
-    HRESULT hr = m_context->Map(d3d11_texture->GetD3DTexture(), 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
-    if (FAILED(hr))
-      Panic("Failed to map dynamic host display texture");
-
-    char* dst_ptr = static_cast<char*>(sr.pData) + (y * sr.RowPitch) + (x * sizeof(u32));
-    const char* src_ptr = static_cast<const char*>(texture_data);
-    if (sr.RowPitch == texture_data_stride)
-    {
-      std::memcpy(dst_ptr, src_ptr, texture_data_stride * height);
-    }
-    else
-    {
-      for (u32 row = 0; row < height; row++)
-      {
-        std::memcpy(dst_ptr, src_ptr, width * sizeof(u32));
-        src_ptr += texture_data_stride;
-        dst_ptr += sr.RowPitch;
-      }
-    }
-
-    m_context->Unmap(d3d11_texture->GetD3DTexture(), 0);
-  }
-}
-
 bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
@@ -180,43 +178,6 @@ bool D3D11HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format)
   UINT support = 0;
   const UINT required = D3D11_FORMAT_SUPPORT_TEXTURE2D | D3D11_FORMAT_SUPPORT_SHADER_SAMPLE;
   return (SUCCEEDED(m_device->CheckFormatSupport(dfmt, &support)) && ((support & required) == required));
-}
-
-bool D3D11HostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                                             u32* out_pitch)
-{
-  ClearDisplayTexture();
-
-  const DXGI_FORMAT dxgi_format = s_display_pixel_format_mapping[static_cast<u32>(format)];
-  if (m_display_pixels_texture.GetWidth() < width || m_display_pixels_texture.GetHeight() < height ||
-      m_display_pixels_texture.GetFormat() != dxgi_format)
-  {
-    if (!m_display_pixels_texture.Create(m_device.Get(), width, height, 1, 1, dxgi_format, D3D11_BIND_SHADER_RESOURCE,
-                                         nullptr, 0, true))
-    {
-      return false;
-    }
-  }
-
-  D3D11_MAPPED_SUBRESOURCE sr;
-  HRESULT hr = m_context->Map(m_display_pixels_texture.GetD3DTexture(), 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
-    return false;
-  }
-
-  *out_buffer = sr.pData;
-  *out_pitch = sr.RowPitch;
-
-  SetDisplayTexture(m_display_pixels_texture.GetD3DSRV(), format, m_display_pixels_texture.GetWidth(),
-                    m_display_pixels_texture.GetHeight(), 0, 0, static_cast<u32>(width), static_cast<u32>(height));
-  return true;
-}
-
-void D3D11HostDisplay::EndSetDisplayPixels()
-{
-  m_context->Unmap(m_display_pixels_texture.GetD3DTexture(), 0);
 }
 
 bool D3D11HostDisplay::GetHostRefreshRate(float* refresh_rate)
@@ -1235,7 +1196,8 @@ void D3D11HostDisplay::PopTimestampQuery()
                                                 D3D11_ASYNC_GETDATA_DONOTFLUSH);
       if (start_hr == S_OK && end_hr == S_OK)
       {
-        const float delta = static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
+        const float delta =
+          static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
         m_accumulated_gpu_time += delta;
         m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
         m_waiting_timestamp_queries--;

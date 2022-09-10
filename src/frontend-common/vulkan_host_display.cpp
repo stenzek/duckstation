@@ -1,7 +1,9 @@
 ﻿#include "vulkan_host_display.h"
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
+#include "common/string_util.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
 #include "common/vulkan/shader_cache.h"
@@ -22,9 +24,8 @@ namespace FrontendCommon {
 class VulkanHostDisplayTexture : public HostDisplayTexture
 {
 public:
-  VulkanHostDisplayTexture(Vulkan::Texture texture, Vulkan::StagingTexture staging_texture,
-                           HostDisplayPixelFormat format)
-    : m_texture(std::move(texture)), m_staging_texture(std::move(staging_texture)), m_format(format)
+  VulkanHostDisplayTexture(Vulkan::Texture texture, HostDisplayPixelFormat format)
+    : m_texture(std::move(texture)), m_format(format)
   {
   }
   ~VulkanHostDisplayTexture() override = default;
@@ -37,13 +38,51 @@ public:
   u32 GetSamples() const override { return m_texture.GetSamples(); }
   HostDisplayPixelFormat GetFormat() const override { return m_format; }
 
+  u32 CalcUpdatePitch(u32 width) const
+  {
+    return Common::AlignUp(width * HostDisplay::GetDisplayPixelFormatSize(m_format),
+                           g_vulkan_context->GetBufferCopyRowPitchAlignment());
+  }
+
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)
+  {
+    const u32 pitch = CalcUpdatePitch(width);
+    const u32 required_size = pitch * height;
+    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+    if (required_size > buffer.GetCurrentSize())
+      return false;
+
+    // TODO: allocate temporary buffer if this fails...
+    if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+    {
+      g_vulkan_context->ExecuteCommandBuffer(false);
+      if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+        return false;
+    }
+
+    *out_buffer = buffer.GetCurrentHostPointer();
+    *out_pitch = pitch;
+    return true;
+  }
+
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height)
+  {
+    const u32 pitch = CalcUpdatePitch(width);
+    const u32 required_size = pitch * height;
+
+    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+    const u32 buffer_offset = buffer.GetCurrentOffset();
+    buffer.CommitMemory(required_size);
+
+    m_texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height,
+                               buffer.GetBuffer(), buffer_offset);
+  }
+
   const Vulkan::Texture& GetTexture() const { return m_texture; }
   Vulkan::Texture& GetTexture() { return m_texture; }
-  Vulkan::StagingTexture& GetStagingTexture() { return m_staging_texture; }
 
 private:
   Vulkan::Texture m_texture;
-  Vulkan::StagingTexture m_staging_texture;
   HostDisplayPixelFormat m_format;
 };
 
@@ -168,6 +207,9 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
   static constexpr VkImageUsageFlags usage =
     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
+  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
+                                            "VulkanHostDisplay::CreateTexture");
+
   Vulkan::Texture texture;
   if (!texture.Create(width, height, levels, layers, vk_format, static_cast<VkSampleCountFlagBits>(samples),
                       (layers > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
@@ -176,24 +218,41 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
     return {};
   }
 
-  Vulkan::StagingTexture staging_texture;
-  if (data || dynamic)
-  {
-    if (!staging_texture.Create(dynamic ? Vulkan::StagingBuffer::Type::Mutable : Vulkan::StagingBuffer::Type::Upload,
-                                vk_format, width, height))
-    {
-      return {};
-    }
-  }
-  const Vulkan::Util::DebugScope debugScope(g_vulkan_context->GetCurrentCommandBuffer(),
-                                            "VulkanHostDisplay::CreateTexture");
   texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   if (data)
   {
-    staging_texture.WriteTexels(0, 0, width, height, data, data_stride);
-    staging_texture.CopyToTexture(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, texture, 0, 0, 0, 0, width,
-                                  height);
+    const u32 row_size = width * GetDisplayPixelFormatSize(format);
+    const u32 data_upload_pitch = Common::AlignUp(row_size, g_vulkan_context->GetBufferCopyRowPitchAlignment());
+    const u32 data_size = data_upload_pitch * height;
+    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+
+    if (data_size < buffer.GetCurrentSize())
+    {
+      if (!buffer.ReserveMemory(data_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+      {
+        g_vulkan_context->ExecuteCommandBuffer(false);
+        if (!buffer.ReserveMemory(data_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+          goto use_staging;
+      }
+
+      StringUtil::StrideMemCpy(buffer.GetCurrentHostPointer(), data_upload_pitch, data, data_stride, row_size, height);
+      const u32 buffer_offset = buffer.GetCurrentOffset();
+      buffer.CommitMemory(data_size);
+      texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, 0, 0, width, height,
+                               buffer.GetBuffer(), buffer_offset);
+    }
+    else
+    {
+    use_staging:
+      Vulkan::StagingTexture staging_texture;
+      if (!staging_texture.Create(Vulkan::StagingBuffer::Type::Upload, vk_format, width, height))
+        return {};
+
+      staging_texture.WriteTexels(0, 0, width, height, data, data_stride);
+      staging_texture.CopyToTexture(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, texture, 0, 0, 0, 0, width,
+                                    height);
+    }
   }
   else
   {
@@ -206,40 +265,7 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
 
   texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-  // don't need to keep the staging texture around if we're not dynamic
-  if (!dynamic)
-    staging_texture.Destroy(true);
-
-  return std::make_unique<VulkanHostDisplayTexture>(std::move(texture), std::move(staging_texture), format);
-}
-
-void VulkanHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                      const void* data, u32 data_stride)
-{
-  VulkanHostDisplayTexture* vk_texture = static_cast<VulkanHostDisplayTexture*>(texture);
-
-  Vulkan::StagingTexture* staging_texture;
-  if (vk_texture->GetStagingTexture().IsValid())
-  {
-    staging_texture = &vk_texture->GetStagingTexture();
-  }
-  else
-  {
-    // TODO: This should use a stream buffer instead for speed.
-    if (m_upload_staging_texture.IsValid())
-      m_upload_staging_texture.Flush();
-
-    if ((m_upload_staging_texture.GetWidth() < width || m_upload_staging_texture.GetHeight() < height) &&
-        !m_upload_staging_texture.Create(Vulkan::StagingBuffer::Type::Upload, VK_FORMAT_R8G8B8A8_UNORM, width, height))
-    {
-      Panic("Failed to create upload staging texture");
-    }
-
-    staging_texture = &m_upload_staging_texture;
-  }
-
-  staging_texture->WriteTexels(0, 0, width, height, data, data_stride);
-  staging_texture->CopyToTexture(0, 0, vk_texture->GetTexture(), x, y, 0, 0, width, height);
+  return std::make_unique<VulkanHostDisplayTexture>(std::move(texture), format);
 }
 
 bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
@@ -269,43 +295,6 @@ bool VulkanHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format
 
   const VkFormatFeatureFlags required = (VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT);
   return ((fp.optimalTilingFeatures & required) == required);
-}
-
-bool VulkanHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                                              u32* out_pitch)
-{
-  const VkFormat vk_format = s_display_pixel_format_mapping[static_cast<u32>(format)];
-
-  if (m_display_pixels_texture.GetWidth() < width || m_display_pixels_texture.GetHeight() < height ||
-      m_display_pixels_texture.GetFormat() != vk_format)
-  {
-    if (!m_display_pixels_texture.Create(width, height, 1, 1, vk_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
-                                         VK_IMAGE_TILING_OPTIMAL,
-                                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT))
-    {
-      return false;
-    }
-  }
-
-  if ((m_upload_staging_texture.GetWidth() < width || m_upload_staging_texture.GetHeight() < height) &&
-      !m_upload_staging_texture.Create(Vulkan::StagingBuffer::Type::Upload, vk_format, width, height))
-  {
-    return false;
-  }
-
-  SetDisplayTexture(&m_display_pixels_texture, format, m_display_pixels_texture.GetWidth(),
-                    m_display_pixels_texture.GetHeight(), 0, 0, width, height);
-
-  *out_buffer = m_upload_staging_texture.GetMappedPointer();
-  *out_pitch = m_upload_staging_texture.GetMappedStride();
-  return true;
-}
-
-void VulkanHostDisplay::EndSetDisplayPixels()
-{
-  m_upload_staging_texture.CopyToTexture(0, 0, m_display_pixels_texture, 0, 0, 0, 0,
-                                         static_cast<u32>(m_display_texture_view_width),
-                                         static_cast<u32>(m_display_texture_view_height));
 }
 
 void VulkanHostDisplay::SetVSync(bool enabled)
@@ -518,9 +507,7 @@ void VulkanHostDisplay::DestroyResources()
   m_post_processing_ubo.Destroy(true);
   m_post_processing_chain.ClearStages();
 
-  m_display_pixels_texture.Destroy(false);
   m_readback_staging_texture.Destroy(false);
-  m_upload_staging_texture.Destroy(false);
 
   Vulkan::Util::SafeDestroyPipeline(m_display_pipeline);
   Vulkan::Util::SafeDestroyPipeline(m_cursor_pipeline);

@@ -103,6 +103,21 @@ void GPU_SW::UpdateSettings()
   m_backend.UpdateSettings();
 }
 
+HostDisplayTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, HostDisplayPixelFormat format)
+{
+  if (!m_display_texture || m_display_texture->GetWidth() != width || m_display_texture->GetHeight() != height ||
+      m_display_texture->GetFormat() != format)
+  {
+    g_host_display->ClearDisplayTexture();
+    m_display_texture.reset();
+    m_display_texture = g_host_display->CreateTexture(width, height, 1, 1, 1, format, nullptr, 0, true);
+    if (!m_display_texture)
+      Log_ErrorPrintf("Failed to create %ux%u %u texture", width, height, static_cast<u32>(format));
+  }
+
+  return m_display_texture.get();
+}
+
 template<HostDisplayPixelFormat out_format, typename out_type>
 static void CopyOutRow16(const u16* src_ptr, out_type* dst_ptr, u32 width);
 
@@ -240,13 +255,14 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
   using OutputPixelType = std::conditional_t<
     display_format == HostDisplayPixelFormat::RGBA8 || display_format == HostDisplayPixelFormat::BGRA8, u32, u16>;
 
+  HostDisplayTexture* texture = GetDisplayTexture(width, height, display_format);
+  if (!texture)
+    return;
+
   if (!interlaced)
   {
-    if (!g_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
-                                               &dst_stride))
-    {
+    if (!texture->BeginUpdate(width, height, reinterpret_cast<void**>(&dst_ptr), &dst_stride))
       return;
-    }
   }
   else
   {
@@ -293,13 +309,11 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
   }
 
   if (!interlaced)
-  {
-    g_host_display->EndSetDisplayPixels();
-  }
+    texture->EndUpdate(0, 0, width, height);
   else
-  {
-    g_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
-  }
+    texture->Update(0, 0, width, height, m_display_texture_buffer.data(), output_stride);
+
+  g_host_display->SetDisplayTexture(texture->GetHandle(), display_format, width, height, 0, 0, width, height);
 }
 
 void GPU_SW::CopyOut15Bit(HostDisplayPixelFormat display_format, u32 src_x, u32 src_y, u32 width, u32 height, u32 field,
@@ -334,13 +348,14 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   using OutputPixelType = std::conditional_t<
     display_format == HostDisplayPixelFormat::RGBA8 || display_format == HostDisplayPixelFormat::BGRA8, u32, u16>;
 
+  HostDisplayTexture* texture = GetDisplayTexture(width, height, display_format);
+  if (!texture)
+    return;
+
   if (!interlaced)
   {
-    if (!g_host_display->BeginSetDisplayPixels(display_format, width, height, reinterpret_cast<void**>(&dst_ptr),
-                                               &dst_stride))
-    {
+    if (!texture->BeginUpdate(width, height, reinterpret_cast<void**>(&dst_ptr), &dst_stride))
       return;
-    }
   }
   else
   {
@@ -451,13 +466,11 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   }
 
   if (!interlaced)
-  {
-    g_host_display->EndSetDisplayPixels();
-  }
+    texture->EndUpdate(0, 0, width, height);
   else
-  {
-    g_host_display->SetDisplayPixels(display_format, width, height, m_display_texture_buffer.data(), output_stride);
-  }
+    texture->Update(0, 0, width, height, m_display_texture_buffer.data(), output_stride);
+
+  g_host_display->SetDisplayTexture(texture->GetHandle(), display_format, width, height, 0, 0, width, height);
 }
 
 void GPU_SW::CopyOut24Bit(HostDisplayPixelFormat display_format, u32 src_x, u32 src_y, u32 skip_x, u32 width,

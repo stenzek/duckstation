@@ -7,6 +7,7 @@
 
 #include "../types.h"
 #include "loader.h"
+#include "stream_buffer.h"
 #include <array>
 #include <atomic>
 #include <condition_variable>
@@ -91,22 +92,31 @@ public:
   ALWAYS_INLINE bool SupportsDualSourceBlend() const { return m_device_features.dualSrcBlend == VK_TRUE; }
 
   // Helpers for getting constants
-  ALWAYS_INLINE VkDeviceSize GetUniformBufferAlignment() const
+  ALWAYS_INLINE u32 GetUniformBufferAlignment() const
   {
-    return m_device_properties.limits.minUniformBufferOffsetAlignment;
+    return static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment);
   }
-  ALWAYS_INLINE VkDeviceSize GetTexelBufferAlignment() const
+  ALWAYS_INLINE u32 GetTexelBufferAlignment() const
   {
-    return m_device_properties.limits.minTexelBufferOffsetAlignment;
+    return static_cast<u32>(m_device_properties.limits.minTexelBufferOffsetAlignment);
   }
-  ALWAYS_INLINE VkDeviceSize GetStorageBufferAlignment() const
+  ALWAYS_INLINE u32 GetStorageBufferAlignment() const
   {
-    return m_device_properties.limits.minStorageBufferOffsetAlignment;
+    return static_cast<u32>(m_device_properties.limits.minStorageBufferOffsetAlignment);
   }
-  ALWAYS_INLINE VkDeviceSize GetBufferImageGranularity() const
+  ALWAYS_INLINE u32 GetBufferImageGranularity() const
   {
-    return m_device_properties.limits.bufferImageGranularity;
+    return static_cast<u32>(m_device_properties.limits.bufferImageGranularity);
   }
+  ALWAYS_INLINE u32 GetBufferCopyOffsetAlignment() const
+  {
+    return static_cast<u32>(m_device_properties.limits.optimalBufferCopyOffsetAlignment);
+  }
+  ALWAYS_INLINE u32 GetBufferCopyRowPitchAlignment() const
+  {
+    return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
+  }
+  ALWAYS_INLINE u32 GetMaxImageDimension2D() const { return m_device_properties.limits.maxImageDimension2D; }
 
   // Finds a memory type index for the specified memory properties and the bits returned by
   // vkGetImageMemoryRequirements
@@ -125,6 +135,7 @@ public:
   // is submitted, after that you should call these functions again.
   ALWAYS_INLINE VkDescriptorPool GetGlobalDescriptorPool() const { return m_global_descriptor_pool; }
   ALWAYS_INLINE VkCommandBuffer GetCurrentCommandBuffer() const { return m_current_command_buffer; }
+  ALWAYS_INLINE StreamBuffer& GetTextureUploadBuffer() { return m_texture_upload_buffer; }
   ALWAYS_INLINE VkDescriptorPool GetCurrentDescriptorPool() const
   {
     return m_frame_resources[m_current_frame].descriptor_pool;
@@ -198,6 +209,7 @@ private:
   void DestroyCommandBuffers();
   bool CreateGlobalDescriptorPool();
   void DestroyGlobalDescriptorPool();
+  bool CreateTextureStreamBuffer();
   void DestroyRenderPassCache();
 
   void ActivateCommandBuffer(u32 index);
@@ -247,7 +259,7 @@ private:
   u64 m_completed_fence_counter = 0;
   u32 m_current_frame;
 
-  bool m_owns_device = false;
+  StreamBuffer m_texture_upload_buffer;
 
   std::atomic_bool m_last_present_failed{false};
   std::atomic_bool m_present_done{true};

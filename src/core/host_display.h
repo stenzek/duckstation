@@ -41,6 +41,10 @@ public:
   virtual u32 GetLevels() const = 0;
   virtual u32 GetSamples() const = 0;
   virtual HostDisplayPixelFormat GetFormat() const = 0;
+
+  virtual bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)/* = 0*/;
+  virtual void EndUpdate(u32 x, u32 y, u32 width, u32 height)/* = 0*/;
+  virtual bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch);
 };
 
 // Interface to the frontend's renderer.
@@ -124,9 +128,6 @@ public:
   virtual std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                             HostDisplayPixelFormat format, const void* data,
                                                             u32 data_stride, bool dynamic = false) = 0;
-  virtual void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
-                             u32 data_stride) = 0;
-
   virtual bool DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
                                u32 width, u32 height, void* out_data, u32 out_data_stride) = 0;
 
@@ -202,11 +203,6 @@ public:
   static void FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride);
 
   virtual bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const = 0;
-
-  virtual bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                                     u32* out_pitch) = 0;
-  virtual void EndSetDisplayPixels() = 0;
-  virtual bool SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch);
 
   virtual bool GetHostRefreshRate(float* refresh_rate);
 

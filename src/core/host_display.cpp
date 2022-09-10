@@ -20,6 +20,25 @@ std::unique_ptr<HostDisplay> g_host_display;
 
 HostDisplayTexture::~HostDisplayTexture() = default;
 
+bool HostDisplayTexture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) /* = 0*/
+{
+  return false;
+}
+
+void HostDisplayTexture::EndUpdate(u32 x, u32 y, u32 width, u32 height) /* = 0*/ {}
+
+bool HostDisplayTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+{
+  void* map_ptr;
+  u32 map_pitch;
+  if (!BeginUpdate(width, height, &map_ptr, &map_pitch))
+    return false;
+
+  StringUtil::StrideMemCpy(map_ptr, map_pitch, data, pitch, std::min(pitch, map_pitch), height);
+  EndUpdate(x, y, width, height);
+  return true;
+}
+
 HostDisplay::~HostDisplay() = default;
 
 RenderAPI HostDisplay::GetPreferredAPI()
@@ -122,36 +141,6 @@ u32 HostDisplay::GetDisplayPixelFormatSize(HostDisplayPixelFormat format)
     default:
       return 0;
   }
-}
-
-bool HostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer, u32 pitch)
-{
-  void* map_ptr;
-  u32 map_pitch;
-  if (!BeginSetDisplayPixels(format, width, height, &map_ptr, &map_pitch))
-    return false;
-
-  if (pitch == map_pitch)
-  {
-    std::memcpy(map_ptr, buffer, height * map_pitch);
-  }
-  else
-  {
-    const u32 copy_size = width * GetDisplayPixelFormatSize(format);
-    DebugAssert(pitch >= copy_size && map_pitch >= copy_size);
-
-    const u8* src_ptr = static_cast<const u8*>(buffer);
-    u8* dst_ptr = static_cast<u8*>(map_ptr);
-    for (u32 i = 0; i < height; i++)
-    {
-      std::memcpy(dst_ptr, src_ptr, copy_size);
-      src_ptr += pitch;
-      dst_ptr += map_pitch;
-    }
-  }
-
-  EndSetDisplayPixels();
-  return true;
 }
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)

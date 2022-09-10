@@ -19,8 +19,13 @@ std::unique_ptr<Vulkan::Context> g_vulkan_context;
 
 namespace Vulkan {
 
+enum : u32
+{
+  TEXTURE_BUFFER_SIZE = 16 * 1024 * 1024,
+};
+
 Context::Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device)
-  : m_instance(instance), m_physical_device(physical_device), m_owns_device(owns_device)
+  : m_instance(instance), m_physical_device(physical_device)
 {
   // Read device physical memory properties, we need it for allocating buffers
   vkGetPhysicalDeviceProperties(physical_device, &m_device_properties);
@@ -37,29 +42,7 @@ Context::Context(VkInstance instance, VkPhysicalDevice physical_device, bool own
     std::max(m_device_properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(1));
 }
 
-Context::~Context()
-{
-  StopPresentThread();
-
-  if (m_device != VK_NULL_HANDLE)
-    WaitForGPUIdle();
-
-  DestroyRenderPassCache();
-  DestroyGlobalDescriptorPool();
-  DestroyCommandBuffers();
-
-  if (m_owns_device && m_device != VK_NULL_HANDLE)
-    vkDestroyDevice(m_device, nullptr);
-
-  if (m_debug_messenger_callback != VK_NULL_HANDLE)
-    DisableDebugUtils();
-
-  if (m_owns_device)
-  {
-    vkDestroyInstance(m_instance, nullptr);
-    Vulkan::UnloadVulkanLibrary();
-  }
-}
+Context::~Context() = default;
 
 bool Context::CheckValidationLayerAvailablility()
 {
@@ -369,6 +352,7 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
       !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers() ||
+      !g_vulkan_context->CreateTextureStreamBuffer() ||
       (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, true)) == nullptr))
   {
     // Since we are destroying the instance, we're also responsible for destroying the surface.
@@ -415,6 +399,29 @@ bool Context::CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice g
 void Context::Destroy()
 {
   AssertMsg(g_vulkan_context, "Has context");
+
+  g_vulkan_context->StopPresentThread();
+
+  if (g_vulkan_context->m_device != VK_NULL_HANDLE)
+    g_vulkan_context->WaitForGPUIdle();
+
+  g_vulkan_context->m_texture_upload_buffer.Destroy(false);
+
+  g_vulkan_context->DestroyRenderPassCache();
+  g_vulkan_context->DestroyGlobalDescriptorPool();
+  g_vulkan_context->DestroyCommandBuffers();
+
+  if (g_vulkan_context->m_device != VK_NULL_HANDLE)
+    vkDestroyDevice(g_vulkan_context->m_device, nullptr);
+
+  if (g_vulkan_context->m_debug_messenger_callback != VK_NULL_HANDLE)
+    g_vulkan_context->DisableDebugUtils();
+
+  if (g_vulkan_context->m_instance != VK_NULL_HANDLE)
+    vkDestroyInstance(g_vulkan_context->m_instance, nullptr);
+
+  Vulkan::UnloadVulkanLibrary();
+
   g_vulkan_context.reset();
 }
 
@@ -785,6 +792,17 @@ void Context::DestroyGlobalDescriptorPool()
   }
 }
 
+bool Context::CreateTextureStreamBuffer()
+{
+  if (!m_texture_upload_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, TEXTURE_BUFFER_SIZE))
+  {
+    Log_ErrorPrintf("Failed to allocate texture upload buffer");
+    return false;
+  }
+
+  return true;
+}
+
 void Context::DestroyRenderPassCache()
 {
   for (auto& it : m_render_pass_cache)
@@ -1105,7 +1123,8 @@ void Context::ActivateCommandBuffer(u32 index)
         {
           const double ns_diff =
             (timestamps[1] - timestamps[0]) * static_cast<double>(m_device_properties.limits.timestampPeriod);
-          m_accumulated_gpu_time = static_cast<float>(static_cast<double>(m_accumulated_gpu_time) + (ns_diff / 1000000.0));
+          m_accumulated_gpu_time =
+            static_cast<float>(static_cast<double>(m_accumulated_gpu_time) + (ns_diff / 1000000.0));
         }
       }
       else

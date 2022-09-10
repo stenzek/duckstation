@@ -13,28 +13,35 @@ Log_SetChannel(OpenGLHostDisplay);
 
 namespace FrontendCommon {
 
-class OpenGLHostDisplayTexture : public HostDisplayTexture
+enum : u32
+{
+  TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024,
+};
+
+class OpenGLHostDisplayTexture final : public HostDisplayTexture
 {
 public:
-  OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format)
-    : m_texture(std::move(texture)), m_format(format)
-  {
-  }
-  ~OpenGLHostDisplayTexture() override = default;
+  OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format);
+  ~OpenGLHostDisplayTexture() override;
 
-  void* GetHandle() const override { return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture.GetGLId())); }
-  u32 GetWidth() const override { return m_texture.GetWidth(); }
-  u32 GetHeight() const override { return m_texture.GetHeight(); }
-  u32 GetLayers() const override { return 1; }
-  u32 GetLevels() const override { return 1; }
-  u32 GetSamples() const override { return m_texture.GetSamples(); }
-  HostDisplayPixelFormat GetFormat() const override { return m_format; }
+  void* GetHandle() const override;
+  u32 GetWidth() const override;
+  u32 GetHeight() const override;
+  u32 GetLayers() const override;
+  u32 GetLevels() const override;
+  u32 GetSamples() const override;
+  HostDisplayPixelFormat GetFormat() const override;
 
-  GLuint GetGLID() const { return m_texture.GetGLId(); }
+  GLuint GetGLID() const;
+
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override;
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override;
+  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override;
 
 private:
   GL::Texture m_texture;
   HostDisplayPixelFormat m_format;
+  u32 m_map_offset = 0;
 };
 
 OpenGLHostDisplay::OpenGLHostDisplay() = default;
@@ -105,43 +112,6 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
   return std::make_unique<OpenGLHostDisplayTexture>(std::move(tex), format);
 }
 
-void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                      const void* texture_data, u32 texture_data_stride)
-{
-  OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
-  const auto [gl_internal_format, gl_format, gl_type] =
-    GetPixelFormatMapping(m_gl_context->IsGLES(), texture->GetFormat());
-
-  GLint alignment;
-  if (texture_data_stride & 1)
-    alignment = 1;
-  else if (texture_data_stride & 2)
-    alignment = 2;
-  else
-    alignment = 4;
-
-  GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
-  glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
-
-  glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-
-  if (!m_use_gles2_draw_path)
-  {
-    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / GetDisplayPixelFormatSize(texture->GetFormat()));
-  }
-
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, texture_data);
-
-  if (!m_use_gles2_draw_path)
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
-  glBindTexture(GL_TEXTURE_2D, old_texture_binding);
-}
-
 bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
                                         u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
@@ -174,150 +144,10 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   return true;
 }
 
-void OpenGLHostDisplay::BindDisplayPixelsTexture()
-{
-  if (m_display_pixels_texture_id == 0)
-  {
-    const bool linear = IsUsingLinearFiltering();
-    glGenTextures(1, &m_display_pixels_texture_id);
-    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
-    m_display_texture_is_linear_filtered = linear;
-  }
-  else
-  {
-    glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-  }
-}
-
-void OpenGLHostDisplay::UpdateDisplayPixelsTextureFilter()
-{
-  const bool linear = IsUsingLinearFiltering();
-  if (linear == m_display_texture_is_linear_filtered)
-    return;
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-  m_display_texture_is_linear_filtered = linear;
-}
-
 bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
 {
   const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
   return (gl_internal_format != static_cast<GLenum>(0));
-}
-
-bool OpenGLHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                                              u32* out_pitch)
-{
-  const u32 pixel_size = GetDisplayPixelFormatSize(format);
-  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
-  const u32 size_required = stride * height * pixel_size;
-
-  if (m_use_pbo_for_pixels)
-  {
-    const u32 buffer_size = Common::AlignUpPow2(size_required * 2, 4 * 1024 * 1024);
-    if (!m_display_pixels_texture_pbo || m_display_pixels_texture_pbo->GetSize() < buffer_size)
-    {
-      m_display_pixels_texture_pbo.reset();
-      m_display_pixels_texture_pbo = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, buffer_size);
-      if (!m_display_pixels_texture_pbo)
-        return false;
-    }
-
-    const auto map = m_display_pixels_texture_pbo->Map(GetDisplayPixelFormatSize(format), size_required);
-    m_display_texture_format = format;
-    m_display_pixels_texture_pbo_map_offset = map.buffer_offset;
-    m_display_pixels_texture_pbo_map_size = size_required;
-    *out_buffer = map.pointer;
-    *out_pitch = stride;
-  }
-  else
-  {
-    if (m_gles_pixels_repack_buffer.size() < size_required)
-      m_gles_pixels_repack_buffer.resize(size_required);
-
-    *out_buffer = m_gles_pixels_repack_buffer.data();
-    *out_pitch = stride;
-  }
-
-  BindDisplayPixelsTexture();
-  SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_id)), format, width, height,
-                    0, 0, width, height);
-  return true;
-}
-
-void OpenGLHostDisplay::EndSetDisplayPixels()
-{
-  const u32 width = static_cast<u32>(m_display_texture_view_width);
-  const u32 height = static_cast<u32>(m_display_texture_view_height);
-
-  const auto [gl_internal_format, gl_format, gl_type] =
-    GetPixelFormatMapping(m_gl_context->IsGLES(), m_display_texture_format);
-
-  glBindTexture(GL_TEXTURE_2D, m_display_pixels_texture_id);
-  if (m_use_pbo_for_pixels)
-  {
-    m_display_pixels_texture_pbo->Unmap(m_display_pixels_texture_pbo_map_size);
-    m_display_pixels_texture_pbo->Bind();
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-                 reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_pbo_map_offset)));
-    m_display_pixels_texture_pbo->Unbind();
-
-    m_display_pixels_texture_pbo_map_offset = 0;
-    m_display_pixels_texture_pbo_map_size = 0;
-  }
-  else
-  {
-    // glTexImage2D should be quicker on Mali...
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-                 m_gles_pixels_repack_buffer.data());
-  }
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-bool OpenGLHostDisplay::SetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, const void* buffer,
-                                         u32 pitch)
-{
-  BindDisplayPixelsTexture();
-
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
-  const u32 pixel_size = GetDisplayPixelFormatSize(format);
-  const bool is_packed_tightly = (pitch == (pixel_size * width));
-
-  // If we have GLES3, we can set row_length.
-  if (!m_use_gles2_draw_path || is_packed_tightly)
-  {
-    if (!is_packed_tightly)
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, buffer);
-
-    if (!is_packed_tightly)
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  }
-  else
-  {
-    // Otherwise, we need to repack the image.
-    const u32 packed_pitch = width * pixel_size;
-    const u32 repack_size = packed_pitch * height;
-    if (m_gles_pixels_repack_buffer.size() < repack_size)
-      m_gles_pixels_repack_buffer.resize(repack_size);
-    StringUtil::StrideMemCpy(m_gles_pixels_repack_buffer.data(), packed_pitch, buffer, pitch, packed_pitch, height);
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-                 m_gles_pixels_repack_buffer.data());
-  }
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_pixels_texture_id)), format, width, height,
-                    0, 0, width, height);
-  return true;
 }
 
 void OpenGLHostDisplay::SetVSync(bool enabled)
@@ -420,9 +250,9 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   m_use_pbo_for_pixels = !m_use_gles2_draw_path;
   if (GetRenderAPI() == RenderAPI::OpenGLES)
   {
-    // Adreno seems to corrupt textures through PBOs...
+    // Adreno seems to corrupt textures through PBOs... and Mali is slow.
     const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    if (std::strstr(gl_vendor, "Qualcomm") || std::strstr(gl_vendor, "Broadcom"))
+    if (std::strstr(gl_vendor, "Qualcomm") || std::strstr(gl_vendor, "ARM") || std::strstr(gl_vendor, "Broadcom"))
       m_use_pbo_for_pixels = false;
   }
 
@@ -713,12 +543,6 @@ void OpenGLHostDisplay::DestroyResources()
   m_post_processing_ubo.reset();
   m_post_processing_stages.clear();
 
-  if (m_display_pixels_texture_id != 0)
-  {
-    glDeleteTextures(1, &m_display_pixels_texture_id);
-    m_display_pixels_texture_id = 0;
-  }
-
   if (m_display_vao != 0)
   {
     glDeleteVertexArrays(1, &m_display_vao);
@@ -877,9 +701,10 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
   m_display_program.Bind();
 
+  const bool linear = IsUsingLinearFiltering();
+
   if (!m_use_gles2_draw_path)
   {
-    const bool linear = IsUsingLinearFiltering();
     const float position_adjust = linear ? 0.5f : 0.0f;
     const float size_adjust = linear ? 1.0f : 0.0f;
     const float flip_adjust = (texture_view_height < 0) ? -1.0f : 1.0f;
@@ -895,8 +720,9 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
   }
   else
   {
-    if (static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)) == m_display_pixels_texture_id)
-      UpdateDisplayPixelsTextureFilter();
+    // TODO: This sucks.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 
     DrawFullscreenQuadES2(m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                           m_display_texture_view_height, m_display_texture_width, m_display_texture_height);
@@ -1207,8 +1033,11 @@ bool OpenGLHostDisplay::SetGPUTimingEnabled(bool enabled)
   if (m_gpu_timing_enabled == enabled)
     return true;
 
-  if (enabled && m_gl_context->IsGLES() && !GLAD_GL_EXT_disjoint_timer_query)
+  if (enabled && m_gl_context->IsGLES() &&
+      (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT))
+  {
     return false;
+  }
 
   m_gpu_timing_enabled = enabled;
   if (m_gpu_timing_enabled)
@@ -1224,6 +1053,180 @@ float OpenGLHostDisplay::GetAndResetAccumulatedGPUTime()
   const float value = m_accumulated_gpu_time;
   m_accumulated_gpu_time = 0.0f;
   return value;
+}
+
+GL::StreamBuffer* OpenGLHostDisplay::GetTextureStreamBuffer()
+{
+  if (m_use_gles2_draw_path || m_texture_stream_buffer)
+    return m_texture_stream_buffer.get();
+
+  m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE);
+  return m_texture_stream_buffer.get();
+}
+
+OpenGLHostDisplayTexture::OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format)
+  : m_texture(std::move(texture)), m_format(format)
+{
+}
+
+OpenGLHostDisplayTexture::~OpenGLHostDisplayTexture() = default;
+
+void* OpenGLHostDisplayTexture::GetHandle() const
+{
+  return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture.GetGLId()));
+}
+
+u32 OpenGLHostDisplayTexture::GetWidth() const
+{
+  return m_texture.GetWidth();
+}
+
+u32 OpenGLHostDisplayTexture::GetHeight() const
+{
+  return m_texture.GetHeight();
+}
+
+u32 OpenGLHostDisplayTexture::GetLayers() const
+{
+  return 1;
+}
+
+u32 OpenGLHostDisplayTexture::GetLevels() const
+{
+  return 1;
+}
+
+u32 OpenGLHostDisplayTexture::GetSamples() const
+{
+  return m_texture.GetSamples();
+}
+
+HostDisplayPixelFormat OpenGLHostDisplayTexture::GetFormat() const
+{
+  return m_format;
+}
+
+GLuint OpenGLHostDisplayTexture::GetGLID() const
+{
+  return m_texture.GetGLId();
+}
+
+bool OpenGLHostDisplayTexture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)
+{
+  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
+  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
+  const u32 size_required = stride * height;
+  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
+  GL::StreamBuffer* buffer = display->UsePBOForUploads() ? display->GetTextureStreamBuffer() : nullptr;
+
+  if (buffer && size_required < buffer->GetSize())
+  {
+    auto map = buffer->Map(4096, size_required);
+    m_map_offset = map.buffer_offset;
+    *out_buffer = map.pointer;
+    *out_pitch = stride;
+  }
+  else
+  {
+    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
+    if (repack_buffer.size() < size_required)
+      repack_buffer.resize(size_required);
+
+    *out_buffer = repack_buffer.data();
+    *out_pitch = stride;
+  }
+
+  return true;
+}
+
+void OpenGLHostDisplayTexture::EndUpdate(u32 x, u32 y, u32 width, u32 height)
+{
+  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
+  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
+  const u32 size_required = stride * height;
+  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
+  GL::StreamBuffer* buffer = display->UsePBOForUploads() ? display->GetTextureStreamBuffer() : nullptr;
+
+  const auto [gl_internal_format, gl_format, gl_type] =
+    GetPixelFormatMapping(display->GetGLContext()->IsGLES(), m_format);
+  const bool whole_texture = (!m_texture.UseTextureStorage() && x == 0 && y == 0 && width == m_texture.GetWidth() &&
+                              height == m_texture.GetHeight());
+
+  m_texture.Create(width, height, 1, gl_internal_format, gl_format, gl_type, nullptr, false, false);
+  m_texture.Bind();
+  if (buffer && size_required < buffer->GetSize())
+  {
+    buffer->Unmap(size_required);
+    buffer->Bind();
+
+    if (whole_texture)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
+                   reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
+    }
+    else
+    {
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type,
+                      reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
+    }
+
+    buffer->Unbind();
+  }
+  else
+  {
+    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
+
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
+  }
+}
+
+bool OpenGLHostDisplayTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+{
+  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
+  const auto [gl_internal_format, gl_format, gl_type] =
+    GetPixelFormatMapping(display->GetGLContext()->IsGLES(), m_format);
+  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
+  const bool is_packed_tightly = (pitch == (pixel_size * width));
+
+  const bool whole_texture = (!m_texture.UseTextureStorage() && x == 0 && y == 0 && width == m_texture.GetWidth() &&
+                              height == m_texture.GetHeight());
+  m_texture.Bind();
+
+  // If we have GLES3, we can set row_length.
+  if (!display->UseGLES3DrawPath() || is_packed_tightly)
+  {
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
+
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, data);
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, data);
+
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  }
+  else
+  {
+    // Otherwise, we need to repack the image.
+    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
+    const u32 packed_pitch = width * pixel_size;
+    const u32 repack_size = packed_pitch * height;
+    if (repack_buffer.size() < repack_size)
+      repack_buffer.resize(repack_size);
+
+    StringUtil::StrideMemCpy(repack_buffer.data(), packed_pitch, data, pitch, packed_pitch, height);
+
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
+  }
+
+  return true;
 }
 
 } // namespace FrontendCommon

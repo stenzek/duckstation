@@ -21,7 +21,7 @@ static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat
   s_display_pixel_format_mapping = {{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
                                      DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM}};
 
-class D3D12HostDisplayTexture : public HostDisplayTexture
+class D3D12HostDisplayTexture final : public HostDisplayTexture
 {
 public:
   D3D12HostDisplayTexture(D3D12::Texture texture) : m_texture(std::move(texture)) {}
@@ -43,6 +43,16 @@ public:
     }
 
     return HostDisplayPixelFormat::Count;
+  }
+
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override
+  {
+    return m_texture.BeginStreamUpdate(0, 0, width, height, out_buffer, out_pitch);
+  }
+
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override
+  {
+    m_texture.EndStreamUpdate(x, y, width, height);
   }
 
   const D3D12::Texture& GetTexture() const { return m_texture; }
@@ -107,13 +117,6 @@ std::unique_ptr<HostDisplayTexture> D3D12HostDisplay::CreateTexture(u32 width, u
   return std::make_unique<D3D12HostDisplayTexture>(std::move(tex));
 }
 
-void D3D12HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                     const void* texture_data, u32 texture_data_stride)
-{
-  static_cast<D3D12HostDisplayTexture*>(texture)->GetTexture().LoadData(x, y, width, height, texture_data,
-                                                                        texture_data_stride);
-}
-
 bool D3D12HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
@@ -137,36 +140,6 @@ bool D3D12HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format)
     return false;
 
   return g_d3d12_context->SupportsTextureFormat(dfmt);
-}
-
-bool D3D12HostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
-                                             u32* out_pitch)
-{
-  ClearDisplayTexture();
-
-  const DXGI_FORMAT dxgi_format = s_display_pixel_format_mapping[static_cast<u32>(format)];
-  if (m_display_pixels_texture.GetWidth() < width || m_display_pixels_texture.GetHeight() < height ||
-      m_display_pixels_texture.GetFormat() != dxgi_format)
-  {
-    if (!m_display_pixels_texture.Create(width, height, 1, dxgi_format, dxgi_format, DXGI_FORMAT_UNKNOWN,
-                                         DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_NONE))
-    {
-      return false;
-    }
-  }
-
-  if (!m_display_pixels_texture.BeginStreamUpdate(0, 0, width, height, out_buffer, out_pitch))
-    return false;
-
-  SetDisplayTexture(&m_display_pixels_texture, format, m_display_pixels_texture.GetWidth(),
-                    m_display_pixels_texture.GetHeight(), 0, 0, static_cast<u32>(width), static_cast<u32>(height));
-  return true;
-}
-
-void D3D12HostDisplay::EndSetDisplayPixels()
-{
-  m_display_pixels_texture.EndStreamUpdate(0, 0, static_cast<u32>(m_display_texture_view_width),
-                                           static_cast<u32>(m_display_texture_view_height));
 }
 
 bool D3D12HostDisplay::GetHostRefreshRate(float* refresh_rate)
@@ -772,10 +745,13 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 lef
                                      s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
                                      bool linear_filter)
 {
-  const float uniforms[4] = {static_cast<float>(texture_view_x) / static_cast<float>(texture_width),
-                             static_cast<float>(texture_view_y) / static_cast<float>(texture_height),
-                             (static_cast<float>(texture_view_width) - 0.5f) / static_cast<float>(texture_width),
-                             (static_cast<float>(texture_view_height) - 0.5f) / static_cast<float>(texture_height)};
+  const float position_adjust = linear_filter ? 0.5f : 0.0f;
+  const float size_adjust = linear_filter ? 1.0f : 0.0f;
+  const float uniforms[4] = {
+    (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
+    (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
+    (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
+    (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture_height)};
   if (!m_display_uniform_buffer.ReserveMemory(sizeof(uniforms), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
     Panic("Failed to reserve UBO space");
 
