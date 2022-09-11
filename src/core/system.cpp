@@ -759,6 +759,8 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_display, bool
     g_gpu->ResetGraphicsAPIState();
   }
 
+  // fix up vsync etc
+  UpdateSpeedLimiterState();
   return true;
 }
 
