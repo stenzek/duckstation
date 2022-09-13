@@ -17,10 +17,10 @@
    <string>DuckStation</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
+   <iconset>
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
-  <widget class="QStackedWidget" name="mainContainer" />
+  <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -105,7 +105,8 @@
       <string>Theme</string>
      </property>
      <property name="icon">
-      <iconset theme="paint-brush-line"/>
+      <iconset theme="paint-brush-line">
+       <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuSettingsLanguage">
@@ -113,7 +114,8 @@
       <string>Language</string>
      </property>
      <property name="icon">
-      <iconset theme="global-line"/>
+      <iconset theme="global-line">
+       <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
     <addaction name="separator"/>
@@ -229,6 +231,7 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionMemory_Card_Editor"/>
+    <addaction name="actionCoverDownloader"/>
     <addaction name="actionCheatManager"/>
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
@@ -468,7 +471,7 @@
   </action>
   <action name="actionGitHubRepository">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset>
      <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
    </property>
    <property name="text">
@@ -477,7 +480,7 @@
   </action>
   <action name="actionIssueTracker">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset>
      <normaloff>:/icons/IssueTracker.png</normaloff>:/icons/IssueTracker.png</iconset>
    </property>
    <property name="text">
@@ -486,7 +489,7 @@
   </action>
   <action name="actionDiscordServer">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset>
      <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
    </property>
    <property name="text">
@@ -504,7 +507,7 @@
   </action>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset>
      <normaloff>:/icons/QT.png</normaloff>:/icons/QT.png</iconset>
    </property>
    <property name="text">
@@ -513,7 +516,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset>
      <normaloff>:/icons/duck_64.png</normaloff>:/icons/duck_64.png</iconset>
    </property>
    <property name="text">
@@ -938,6 +941,11 @@
    </property>
    <property name="text">
     <string>Big Picture</string>
+   </property>
+  </action>
+  <action name="actionCoverDownloader">
+   <property name="text">
+    <string>Cover Downloader</string>
    </property>
   </action>
  </widget>

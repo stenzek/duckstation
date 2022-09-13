@@ -10,6 +10,7 @@
 #include "core/memory_card.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
 #include "frontend-common/game_list.h"
@@ -1828,6 +1829,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -2519,6 +2521,13 @@ void MainWindow::onAchievementsChallengeModeChanged()
 void MainWindow::onToolsMemoryCardEditorTriggered()
 {
   openMemoryCardEditor(QString(), QString());
+}
+
+void MainWindow::onToolsCoverDownloaderTriggered()
+{
+  CoverDownloadDialog dlg(this);
+  connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
+  dlg.exec();
 }
 
 void MainWindow::onToolsCheatManagerTriggered()

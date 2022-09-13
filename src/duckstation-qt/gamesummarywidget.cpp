@@ -220,7 +220,7 @@ void GameSummaryWidget::onComputeHashClicked()
     QtConcurrent::run([]() { return &GameDatabase::GetTrackHashesMap(); });
 #endif
 
-  QtProgressCallback progress_callback(this);
+  QtModalProgressCallback progress_callback(this);
   progress_callback.SetProgressRange(image->GetTrackCount());
 
   std::vector<CDImageHasher::Hash> track_hashes;

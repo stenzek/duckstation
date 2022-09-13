@@ -48,6 +48,9 @@ set(SRCS
   controllersettingsdialog.h
   controllersettingsdialog.ui
   controllersettingwidgetbinder.h
+  coverdownloaddialog.cpp
+  coverdownloaddialog.h
+  coverdownloaddialog.ui
   debuggermodels.cpp
   debuggermodels.h
   debuggerwindow.cpp

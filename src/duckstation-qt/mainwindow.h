@@ -147,6 +147,7 @@ private Q_SLOTS:
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
+  void onToolsCoverDownloaderTriggered();
   void onToolsCheatManagerTriggered();
   void onToolsOpenDataDirectoryTriggered();
 
