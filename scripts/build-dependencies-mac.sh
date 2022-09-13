@@ -96,7 +96,7 @@ tar xf "curl-$CURL.tar.gz"
 cd "curl-$CURL"
 mkdir build-x64
 cd build-x64
-../configure --prefix "$INSTALLDIR" --with-secure-transport
+../configure --prefix "$INSTALLDIR" --with-secure-transport --without-brotli
 make "-j$NPROCS"
 make install
 cd ..
