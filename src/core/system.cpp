@@ -3124,7 +3124,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Recompiler options changed, flushing all blocks."),
                           5.0f);
-      CPU::CodeCache::Flush();
+
+      // changing memory exceptions can re-enable fastmem
+      if (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
+        CPU::CodeCache::Reinitialize();
+      else
+        CPU::CodeCache::Flush();
 
       if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
         CPU::ClearICache();
