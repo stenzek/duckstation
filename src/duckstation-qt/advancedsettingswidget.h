@@ -48,7 +48,8 @@ private:
 
   Ui::AdvancedSettingsWidget m_ui;
 
-  void onResetToDefaultClicked();
-
   QVector<TweakOption> m_tweak_options;
+
+  void addTweakOptions();
+  void onResetToDefaultClicked();
 };

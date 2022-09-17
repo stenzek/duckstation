@@ -199,66 +199,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
   m_ui.tweakOptionTable->setColumnWidth(0, 380);
   m_ui.tweakOptionTable->setColumnWidth(1, 170);
 
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main", "DisableAllEnhancements",
-                        false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Enhancement Settings"), "Display", "ShowEnhancements",
-                        false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display", "ShowStatusIndicators",
-                        true);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
-                        "ApplyCompatibilitySettings", true);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
-
-  addMSAATweakOption(dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache", false);
-  addFloatRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("PGXP Geometry Tolerance"), "GPU", "PGXPTolerance", -1.0f,
-                           100.0f, 0.25f, -1.0f);
-  addFloatRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("PGXP Depth Clear Threshold"), "GPU",
-                           "PGXPDepthClearThreshold", 0.0f, 4096.0f, 1.0f, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
-                        "RecompilerMemoryExceptions", false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Block Linking"), "CPU",
-                        "RecompilerBlockLinking", true);
-  addChoiceTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU", "FastmemMode",
-                       Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
-                       Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
-                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
-                        "TextureReplacements", "EnableVRAMWriteReplacements", false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Preload Texture Replacements"), "TextureReplacements",
-                        "PreloadTextures", false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Dump Replaceable VRAM Writes"), "TextureReplacements",
-                        "DumpVRAMWrites", false);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Set Dumped VRAM Write Alpha Channel"), "TextureReplacements",
-                        "DumpVRAMWriteForceAlphaChannel", true);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"), "TextureReplacements",
-                         "DumpVRAMWriteWidthThreshold", 1, VRAM_WIDTH,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Height"), "TextureReplacements",
-                         "DumpVRAMWriteHeightThreshold", 1, VRAM_HEIGHT,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 100,
-                         10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100, 10000,
-                         Settings::DEFAULT_DMA_HALT_TICKS);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
-                         Settings::DEFAULT_GPU_FIFO_SIZE);
-  addIntRangeTweakOption(dialog, m_ui.tweakOptionTable, tr("GPU Max Run-Ahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
-                         Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Use Debug Host GPU Device"), "GPU", "UseDebugDevice", false);
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
-                        "IncreaseTimerResolution", true);
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
-                        "AllowBootingWithoutSBIFile", false);
-
-  addBooleanTweakOption(dialog, m_ui.tweakOptionTable, tr("Create Save State Backups"), "General",
-                        "CreateSaveStateBackups", false);
+  addTweakOptions();
 
   dialog->registerWidgetHelp(m_ui.logLevel, tr("Log Level"), tr("Information"),
                              tr("Sets the verbosity of messages logged. Higher levels will log more messages."));
@@ -276,41 +217,145 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
+void AdvancedSettingsWidget::addTweakOptions()
+{
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable All Enhancements"), "Main",
+                        "DisableAllEnhancements", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Enhancement Settings"), "Display", "ShowEnhancements",
+                        false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display",
+                        "ShowStatusIndicators", true);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
+                        "ApplyCompatibilitySettings", true);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
+
+  addMSAATweakOption(m_dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache", false);
+  addFloatRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PGXP Geometry Tolerance"), "GPU", "PGXPTolerance",
+                           -1.0f, 100.0f, 0.25f, -1.0f);
+  addFloatRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PGXP Depth Clear Threshold"), "GPU",
+                           "PGXPDepthClearThreshold", 0.0f, 4096.0f, 1.0f, Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
+                        "RecompilerMemoryExceptions", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Block Linking"), "CPU",
+                        "RecompilerBlockLinking", true);
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
+                       "FastmemMode", Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
+                       Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
+                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
+                        "TextureReplacements", "EnableVRAMWriteReplacements", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Preload Texture Replacements"), "TextureReplacements",
+                        "PreloadTextures", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Dump Replaceable VRAM Writes"), "TextureReplacements",
+                        "DumpVRAMWrites", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Set Dumped VRAM Write Alpha Channel"),
+                        "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"), "TextureReplacements",
+                         "DumpVRAMWriteWidthThreshold", 1, VRAM_WIDTH,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Height"), "TextureReplacements",
+                         "DumpVRAMWriteHeightThreshold", 1, VRAM_HEIGHT,
+                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
+
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 100,
+                         10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100, 10000,
+                         Settings::DEFAULT_DMA_HALT_TICKS);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
+                         Settings::DEFAULT_GPU_FIFO_SIZE);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Run-Ahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
+                         Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Use Debug Host GPU Device"), "GPU", "UseDebugDevice",
+                        false);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
+                        "IncreaseTimerResolution", true);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
+                        "AllowBootingWithoutSBIFile", false);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Create Save State Backups"), "General",
+                        "CreateSaveStateBackups", false);
+}
+
 void AdvancedSettingsWidget::onResetToDefaultClicked()
 {
-  int i = 0;
+  if (!m_dialog->isPerGameSettings())
+  {
+    int i = 0;
 
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show enhancement settings
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
-  setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, i++, -1.0f); // PGXP geometry tolerance
-  setFloatRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);                 // PGXP depth clear threshold
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Recompiler memory exceptions
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                              // Recompiler block linking
-  setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Set dumped VRAM write alpha channel
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
-  setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                         static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Use debug host GPU device
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase timer resolution
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Allow booting without SBI file
-  setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Create save state backups
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show enhancement settings
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache
+    setFloatRangeTweakOption(m_ui.tweakOptionTable, i++, -1.0f); // PGXP geometry tolerance
+    setFloatRangeTweakOption(m_ui.tweakOptionTable, i++,
+                             Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD); // PGXP depth clear threshold
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);             // Recompiler memory exceptions
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);              // Recompiler block linking
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Set dumped VRAM write alpha channel
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Use debug host GPU device
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase timer resolution
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Create save state backups
+
+    return;
+  }
+
+  // for per-game it's easier to just clear and recreate
+  SettingsInterface* sif = m_dialog->getSettingsInterface();
+  sif->DeleteValue("Main", "DisableAllEnhancements");
+  sif->DeleteValue("Display", "ShowEnhancements");
+  sif->DeleteValue("Display", "ShowStatusIndicators");
+  sif->DeleteValue("Main", "ApplyCompatibilitySettings");
+  sif->DeleteValue("Display", "MaxFPS");
+  sif->DeleteValue("GPU", "Multisamples");
+  sif->DeleteValue("GPU", "PerSampleShading");
+  sif->DeleteValue("GPU", "PGXPVertexCache");
+  sif->DeleteValue("GPU", "PGXPTolerance");
+  sif->DeleteValue("GPU", "PGXPDepthClearThreshold");
+  sif->DeleteValue("CPU", "RecompilerMemoryExceptions");
+  sif->DeleteValue("CPU", "RecompilerBlockLinking");
+  sif->DeleteValue("CPU", "FastmemMode");
+  sif->DeleteValue("TextureReplacements", "EnableVRAMWriteReplacements");
+  sif->DeleteValue("TextureReplacements", "PreloadTextures");
+  sif->DeleteValue("TextureReplacements", "DumpVRAMWrites");
+  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel");
+  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteWidthThreshold");
+  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteHeightThreshold");
+  sif->DeleteValue("Hacks", "DMAMaxSliceTicks");
+  sif->DeleteValue("Hacks", "DMAHaltTicks");
+  sif->DeleteValue("Hacks", "GPUFIFOSize");
+  sif->DeleteValue("Hacks", "GPUMaxRunAhead");
+  sif->DeleteValue("GPU", "UseDebugDevice");
+  sif->DeleteValue("Main", "IncreaseTimerResolution");
+  sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
+  sif->DeleteValue("General", "CreateSaveStateBackups");
+  sif->Save();
+  while (m_ui.tweakOptionTable->rowCount() > 0)
+    m_ui.tweakOptionTable->removeRow(m_ui.tweakOptionTable->rowCount() - 1);
+  addTweakOptions();
 }
