@@ -1426,7 +1426,7 @@ void MainWindow::setupAdditionalUi()
       qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, mode]() {
-      Host::SetBaseBoolSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
+      Host::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
       g_emu_thread->applySettings();
       updateDebugMenuCPUExecutionMode();
     });
