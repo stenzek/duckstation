@@ -34,7 +34,7 @@ private:
   class CoverDownloadThread : public QtAsyncProgressThread
   {
   public:
-    CoverDownloadThread(QWidget* parent, const QString& urls);
+    CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials);
     ~CoverDownloadThread();
 
   protected:
@@ -42,6 +42,7 @@ private:
 
   private:
     std::vector<std::string> m_urls;
+    bool m_use_serials;
   };
 
   void startThread();

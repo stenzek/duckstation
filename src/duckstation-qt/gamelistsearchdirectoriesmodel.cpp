@@ -176,4 +176,6 @@ void GameListSearchDirectoriesModel::saveToSettings()
     Host::DeleteBaseSettingValue("GameList", "RecursivePaths");
   else
     Host::SetBaseStringListSettingValue("GameList", "RecursivePaths", recursive_paths);
+
+  Host::CommitBaseSettingChanges();
 }

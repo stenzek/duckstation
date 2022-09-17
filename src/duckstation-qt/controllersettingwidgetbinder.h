@@ -46,6 +46,7 @@ static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* wid
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
       const bool new_value = Accessor::getBoolValue(widget);
       Host::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
   }
@@ -78,6 +79,7 @@ static void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* wi
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
       const float new_value = Accessor::getFloatValue(widget);
       Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
   }
@@ -110,6 +112,7 @@ static void BindWidgetToInputProfileNormalized(SettingsInterface* sif, WidgetTyp
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), range]() {
       const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
       Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
   }
@@ -153,7 +156,7 @@ static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
         Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
       else
         Host::DeleteBaseSettingValue(section.c_str(), key.c_str());
-
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
   }

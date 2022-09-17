@@ -308,6 +308,7 @@ void ControllerSettingsDialog::setStringValue(const char* section, const char* k
   else
   {
     Host::SetBaseStringSettingValue(section, key, value);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }

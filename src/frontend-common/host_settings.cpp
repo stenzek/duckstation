@@ -106,6 +106,55 @@ std::vector<std::string> Host::GetStringListSetting(const char* section, const c
 	return s_layered_settings_interface.GetStringList(section, key);
 }
 
+void Host::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetBoolValue(section, key, value);
+}
+
+void Host::SetBaseIntSettingValue(const char* section, const char* key, int value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetIntValue(section, key, value);
+}
+
+void Host::SetBaseFloatSettingValue(const char* section, const char* key, float value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetFloatValue(section, key, value);
+}
+
+void Host::SetBaseStringSettingValue(const char* section, const char* key, const char* value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetStringValue(section, key, value);
+}
+
+void Host::SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetStringList(section, key, values);
+}
+
+bool Host::AddValueToBaseStringListSetting(const char* section, const char* key, const char* value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->AddToStringList(section, key, value);
+}
+
+bool Host::RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
+    ->RemoveFromStringList(section, key, value);
+}
+
+void Host::DeleteBaseSettingValue(const char* section, const char* key)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->DeleteValue(section, key);
+}
+
 SettingsInterface* Host::Internal::GetBaseSettingsLayer()
 {
 	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE);

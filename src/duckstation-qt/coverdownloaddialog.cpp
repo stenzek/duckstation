@@ -5,6 +5,7 @@
 CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/) : QDialog(parent)
 {
   m_ui.setupUi(this);
+  m_ui.coverIcon->setPixmap(QIcon::fromTheme("image-fill").pixmap(32));
   updateEnabled();
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);
@@ -29,7 +30,8 @@ void CoverDownloadDialog::onDownloadStatus(const QString& text)
 
 void CoverDownloadDialog::onDownloadProgress(int value, int range)
 {
-  // limit to once every five seconds
+  // Limit to once every five seconds, otherwise it's way too flickery.
+  // Ideally in the future we'd have some way to invalidate only a single cover.
   if (m_last_refresh_time.GetTimeSeconds() >= 5.0f)
   {
     emit coverRefreshRequested();
@@ -83,7 +85,8 @@ void CoverDownloadDialog::updateEnabled()
 
 void CoverDownloadDialog::startThread()
 {
-  m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText());
+  m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), m_ui.useSerialFileNames->isChecked());
+  m_last_refresh_time.Reset();
   connect(m_thread.get(), &CoverDownloadThread::statusUpdated, this, &CoverDownloadDialog::onDownloadStatus);
   connect(m_thread.get(), &CoverDownloadThread::progressUpdated, this, &CoverDownloadDialog::onDownloadProgress);
   connect(m_thread.get(), &CoverDownloadThread::threadFinished, this, &CoverDownloadDialog::onDownloadComplete);
@@ -101,8 +104,8 @@ void CoverDownloadDialog::cancelThread()
   m_thread.reset();
 }
 
-CoverDownloadDialog::CoverDownloadThread::CoverDownloadThread(QWidget* parent, const QString& urls)
-  : QtAsyncProgressThread(parent)
+CoverDownloadDialog::CoverDownloadThread::CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials)
+  : QtAsyncProgressThread(parent), m_use_serials(use_serials)
 {
   for (const QString& str : urls.split(QChar('\n')))
     m_urls.push_back(str.toStdString());
@@ -112,5 +115,5 @@ CoverDownloadDialog::CoverDownloadThread::~CoverDownloadThread() = default;
 
 void CoverDownloadDialog::CoverDownloadThread::runAsync()
 {
-  GameList::DownloadCovers(m_urls, this);
+  GameList::DownloadCovers(m_urls, m_use_serials, this);
 }

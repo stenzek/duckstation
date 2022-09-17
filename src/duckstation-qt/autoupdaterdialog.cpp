@@ -436,6 +436,7 @@ bool AutoUpdaterDialog::updateNeeded() const
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
   Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
+  Host::CommitBaseSettingChanges();
   done(0);
 }
 

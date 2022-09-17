@@ -177,6 +177,7 @@ void ControllerBindingWidget::onTypeChanged()
   {
     Host::SetBaseStringSettingValue(m_config_section.c_str(), "Type",
                                     Settings::GetControllerTypeName(m_controller_type));
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 

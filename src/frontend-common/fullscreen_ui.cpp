@@ -9,6 +9,7 @@
 #include "common/path.h"
 #include "common/string.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common_host.h"
 #include "core/bios.h"
 #include "core/cheats.h"
@@ -99,10 +100,13 @@ using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::LoadTexture;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
+using ImGuiFullscreen::MenuButtonWithoutSummary;
 using ImGuiFullscreen::MenuButtonWithValue;
 using ImGuiFullscreen::MenuHeading;
 using ImGuiFullscreen::MenuHeadingButton;
 using ImGuiFullscreen::MenuImageButton;
+using ImGuiFullscreen::ModAlpha;
+using ImGuiFullscreen::MulAlpha;
 using ImGuiFullscreen::NavButton;
 using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
@@ -148,7 +152,6 @@ enum class SettingsPage
 {
   Summary,
   Interface,
-  GameList,
   Console,
   Emulation,
   BIOS,
@@ -162,14 +165,28 @@ enum class SettingsPage
   Count
 };
 
+enum class GameListPage
+{
+  Grid,
+  List,
+  Settings,
+  Count
+};
+
 //////////////////////////////////////////////////////////////////////////
 // Utility
 //////////////////////////////////////////////////////////////////////////
 static std::string TimeToPrintableString(time_t t);
+static void StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name);
+static void AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback,
+                                    FullscreenUI::ProgressCallback* progress);
+static void CancelAsyncOpWithName(const std::string_view& name);
+static void CancelAsyncOps();
 
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
+static void ToggleTheme();
 static void PauseForMenuOpen();
 static void ClosePauseMenu();
 static void OpenPauseSubMenu(PauseSubMenu submenu);
@@ -189,6 +206,11 @@ static bool s_tried_to_initialize = false;
 static bool s_pause_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
+
+// async operations (e.g. cover downloads)
+using AsyncOpEntry = std::pair<std::thread, std::unique_ptr<FullscreenUI::ProgressCallback>>;
+static std::mutex s_async_op_mutex;
+static std::deque<AsyncOpEntry> s_async_ops;
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -240,7 +262,6 @@ static void SwitchToGameSettingsForSerial(const std::string_view& serial);
 static void DrawSettingsWindow();
 static void DrawSummarySettingsPage();
 static void DrawInterfaceSettingsPage();
-static void DrawGameListSettingsPage();
 static void DrawBIOSSettingsPage();
 static void DrawConsoleSettingsPage();
 static void DrawEmulationSettingsPage();
@@ -321,7 +342,6 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
-static ImGuiFullscreen::ChoiceDialogOptions GetGameListDirectoryOptions(bool recursive_as_checked);
 static void BeginInputBinding(SettingsInterface* bsi, Controller::ControllerBindingType type,
                               const std::string_view& section, const std::string_view& key,
                               const std::string_view& display_name);
@@ -356,6 +376,7 @@ struct SaveStateListEntry
   std::string summary;
   std::string path;
   std::unique_ptr<HostDisplayTexture> preview_texture;
+  time_t timestamp;
   s32 slot;
   bool global;
 };
@@ -371,6 +392,8 @@ static bool OpenLoadStateSelectorForGame(const std::string& game_path);
 static bool OpenSaveStateSelector(bool is_loading);
 static void CloseSaveStateSelector();
 static void DrawSaveStateSelector(bool is_loading, bool fullscreen);
+static bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
+static void DrawResumeStateSelector();
 static void DoLoadState(std::string path);
 static void DoSaveState(s32 slot, bool global);
 
@@ -378,11 +401,18 @@ static std::vector<SaveStateListEntry> s_save_state_selector_slots;
 static std::string s_save_state_selector_game_path;
 static bool s_save_state_selector_open = false;
 static bool s_save_state_selector_loading = true;
+static bool s_save_state_selector_resuming = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Game List
 //////////////////////////////////////////////////////////////////////////
 static void DrawGameListWindow();
+static void DrawCoverDownloaderWindow();
+static void DrawGameList(const ImVec2& heading_size);
+static void DrawGameGrid(const ImVec2& heading_size);
+static void HandleGameListActivate(const GameList::Entry* entry);
+static void HandleGameListOptions(const GameList::Entry* entry);
+static void DrawGameListSettingsPage(const ImVec2& heading_size);
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
 static HostDisplayTexture* GetTextureForGameListEntryType(GameList::EntryType type);
@@ -392,6 +422,7 @@ static HostDisplayTexture* GetCoverForCurrentGame();
 // Lazily populated cover images.
 static std::unordered_map<std::string, std::string> s_cover_image_map;
 static std::vector<const GameList::Entry*> s_game_list_sorted_entries;
+static GameListPage s_game_list_page = GameListPage::Grid;
 
 #ifdef WITH_CHEEVOS
 //////////////////////////////////////////////////////////////////////////
@@ -426,6 +457,77 @@ std::string FullscreenUI::TimeToPrintableString(time_t t)
   return std::string(buf);
 }
 
+void FullscreenUI::StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name)
+{
+  CancelAsyncOpWithName(name);
+
+  std::unique_lock lock(s_async_op_mutex);
+  std::unique_ptr<FullscreenUI::ProgressCallback> progress(
+    std::make_unique<FullscreenUI::ProgressCallback>(std::move(name)));
+  std::thread thread(AsyncOpThreadEntryPoint, std::move(callback), progress.get());
+  s_async_ops.emplace_back(std::move(thread), std::move(progress));
+}
+
+void FullscreenUI::CancelAsyncOpWithName(const std::string_view& name)
+{
+  std::unique_lock lock(s_async_op_mutex);
+  for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
+  {
+    if (name != iter->second->GetName())
+      continue;
+
+    // move the thread out so it doesn't detach itself, then join
+    std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
+    std::thread thread(std::move(iter->first));
+    progress->SetCancelled();
+    s_async_ops.erase(iter);
+    lock.unlock();
+    if (thread.joinable())
+      thread.join();
+    lock.lock();
+    break;
+  }
+}
+
+void FullscreenUI::CancelAsyncOps()
+{
+  std::unique_lock lock(s_async_op_mutex);
+  while (!s_async_ops.empty())
+  {
+    auto iter = s_async_ops.begin();
+
+    // move the thread out so it doesn't detach itself, then join
+    std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
+    std::thread thread(std::move(iter->first));
+    progress->SetCancelled();
+    s_async_ops.erase(iter);
+    lock.unlock();
+    if (thread.joinable())
+      thread.join();
+    lock.lock();
+  }
+}
+
+void FullscreenUI::AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback,
+                                           FullscreenUI::ProgressCallback* progress)
+{
+  Threading::SetNameOfCurrentThread(fmt::format("{} Async Op", progress->GetName()).c_str());
+
+  callback(progress);
+
+  // if we were removed from the list, it means we got cancelled, and the main thread is blocking
+  std::unique_lock lock(s_async_op_mutex);
+  for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
+  {
+    if (iter->second.get() == progress)
+    {
+      iter->first.detach();
+      s_async_ops.erase(iter);
+      break;
+    }
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
@@ -438,7 +540,7 @@ bool FullscreenUI::Initialize()
   if (s_tried_to_initialize)
     return false;
 
-  ImGuiFullscreen::SetTheme();
+  ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", false));
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png") ||
@@ -519,6 +621,14 @@ void FullscreenUI::OnRunningGameChanged()
     s_current_game_subtitle = {};
 }
 
+void FullscreenUI::ToggleTheme()
+{
+  const bool new_light = !Host::GetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", false);
+  Host::SetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", new_light);
+  Host::CommitBaseSettingChanges();
+  ImGuiFullscreen::SetTheme(new_light);
+}
+
 void FullscreenUI::PauseForMenuOpen()
 {
   s_was_paused_on_quick_menu_open = (System::GetState() == System::State::Paused);
@@ -573,6 +683,7 @@ void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
 
 void FullscreenUI::Shutdown()
 {
+  CancelAsyncOps();
   CloseSaveStateSelector();
   s_cover_image_map.clear();
   s_game_list_sorted_entries = {};
@@ -626,7 +737,12 @@ void FullscreenUI::Render()
   }
 
   if (s_save_state_selector_open)
-    DrawSaveStateSelector(s_save_state_selector_loading, false);
+  {
+    if (s_save_state_selector_resuming)
+      DrawResumeStateSelector();
+    else
+      DrawSaveStateSelector(s_save_state_selector_loading, false);
+  }
 
   if (s_about_window_open)
     DrawAboutWindow();
@@ -678,7 +794,7 @@ bool FullscreenUI::LoadResources()
 
   s_fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
   s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
-  s_fallback_exe_texture = LoadTexture("fullscreenui/multimedia-player.png");
+  s_fallback_psf_texture = LoadTexture("fullscreenui/multimedia-player.png");
   s_fallback_playlist_texture = LoadTexture("fullscreenui/address-book-new.png");
 
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
@@ -934,9 +1050,9 @@ void FullscreenUI::SwitchToLanding()
 
 void FullscreenUI::DrawLandingWindow()
 {
-  BeginFullscreenColumns();
+  BeginFullscreenColumns(nullptr, 0.0f, true);
 
-  if (BeginFullscreenColumnWindow(0.0f, 570.0f, "logo", UIPrimaryDarkColor))
+  if (BeginFullscreenColumnWindow(0.0f, -710.0f, "logo", UIPrimaryDarkColor))
   {
     const float image_size = LayoutScale(380.f);
     ImGui::SetCursorPos(ImVec2((ImGui::GetWindowWidth() * 0.5f) - (image_size * 0.5f),
@@ -945,11 +1061,16 @@ void FullscreenUI::DrawLandingWindow()
   }
   EndFullscreenColumnWindow();
 
-  if (BeginFullscreenColumnWindow(570.0f, LAYOUT_SCREEN_WIDTH, "menu", UIBackgroundColor))
+  if (BeginFullscreenColumnWindow(-710.0f, 0.0f, "menu", UIBackgroundColor))
   {
     ResetFocusHere();
 
     BeginMenuButtons(7, 0.5f);
+
+    if (MenuButton(ICON_FA_LIST " Game List", "Launch a game from images scanned from your game directories."))
+    {
+      SwitchToGameList();
+    }
 
     if (MenuButton(ICON_FA_PLAY_CIRCLE " Resume", "Starts the console from where it was before it was last closed."))
     {
@@ -970,11 +1091,6 @@ void FullscreenUI::DrawLandingWindow()
     if (MenuButton(ICON_FA_UNDO " Load State", "Loads a global save state."))
     {
       OpenSaveStateSelector(true);
-    }
-
-    if (MenuButton(ICON_FA_LIST " Open Game List", "Launch a game from images scanned from your game directories."))
-    {
-      SwitchToGameList();
     }
 
     if (MenuButton(ICON_FA_SLIDERS_H " Settings", "Change settings for the emulator."))
@@ -999,17 +1115,26 @@ void FullscreenUI::DrawLandingWindow()
         DoToggleFullscreen();
       }
 
-      if (FloatingButton(ICON_FA_QUESTION_CIRCLE, fullscreen_pos.x, 0.0f, -1.0f, -1.0f, -1.0f, 0.0f))
+      if (FloatingButton(ICON_FA_QUESTION_CIRCLE, fullscreen_pos.x, 0.0f, -1.0f, -1.0f, -1.0f, 0.0f, true, g_large_font,
+                         &fullscreen_pos))
+      {
         OpenAboutWindow();
+      }
+
+      if (FloatingButton(ICON_FA_LIGHTBULB, fullscreen_pos.x, 0.0f, -1.0f, -1.0f, -1.0f, 0.0f, true, g_large_font,
+                         &fullscreen_pos))
+      {
+        ToggleTheme();
+      }
     }
 
     EndMenuButtons();
 
-    const ImVec2 text_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, g_scm_tag_str));
-    ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - text_size.x - LayoutScale(15.0f),
-                               ImGui::GetWindowHeight() - text_size.y - LayoutScale(15.0f)));
+    const ImVec2 rev_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, g_scm_tag_str));
+    ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - rev_size.x - LayoutScale(20.0f),
+                               ImGui::GetWindowHeight() - rev_size.y - LayoutScale(20.0f)));
     ImGui::PushFont(g_medium_font);
-    ImGui::TextUnformatted(g_scm_tag_str);
+    ImGui::Text(g_scm_tag_str);
     ImGui::PopFont();
   }
 
@@ -1313,6 +1438,13 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
                                       float height, ImFont* font, ImFont* summary_font)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
+
+  if (options && option_count == 0)
+  {
+    while (options[option_count] != nullptr)
+      option_count++;
+  }
+
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
   const int index = value.has_value() ? (value.value() - option_offset) : std::numeric_limits<int>::min();
@@ -1368,7 +1500,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -1376,10 +1509,14 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
-  if (ImGui::BeginPopupModal(title, nullptr,
+  bool is_open = true;
+  if (ImGui::BeginPopupModal(title, &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
-    ImGui::SetNextItemWidth(LayoutScale(450.0f));
+    BeginMenuButtons();
+
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
     s32 dlg_value = static_cast<s32>(value.value_or(default_value));
     if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
     {
@@ -1391,9 +1528,11 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
       SetSettingsChanged(bsi);
     }
 
-    BeginMenuButtons();
-    if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    {
       ImGui::CloseCurrentPopup();
+    }
     EndMenuButtons();
 
     ImGui::EndPopup();
@@ -1417,7 +1556,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -1425,10 +1565,14 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
-  if (ImGui::BeginPopupModal(title, nullptr,
+  bool is_open = true;
+  if (ImGui::BeginPopupModal(title, &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
-    ImGui::SetNextItemWidth(LayoutScale(450.0f));
+    BeginMenuButtons();
+
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
     float dlg_value = value.value_or(default_value) * multiplier;
     if (ImGui::SliderFloat("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
     {
@@ -1442,9 +1586,11 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
       SetSettingsChanged(bsi);
     }
 
-    BeginMenuButtons();
-    if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    {
       ImGui::CloseCurrentPopup();
+    }
     EndMenuButtons();
 
     ImGui::EndPopup();
@@ -1479,7 +1625,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 320.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 370.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -1487,7 +1634,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
-  if (ImGui::BeginPopupModal(title, nullptr,
+  bool is_open = true;
+  if (ImGui::BeginPopupModal(title, &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
     s32 dlg_left_value = static_cast<s32>(left_value.value_or(default_left));
@@ -1495,22 +1643,34 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     s32 dlg_right_value = static_cast<s32>(right_value.value_or(default_right));
     s32 dlg_bottom_value = static_cast<s32>(bottom_value.value_or(default_bottom));
 
+    BeginMenuButtons();
+
+    const float midpoint = LayoutScale(150.0f);
+    const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
     ImGui::TextUnformatted("Left: ");
-    ImGui::SameLine();
+    ImGui::SameLine(midpoint);
+    ImGui::SetNextItemWidth(end);
     const bool left_modified =
       ImGui::SliderInt("##left", &dlg_left_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     ImGui::TextUnformatted("Top: ");
-    ImGui::SameLine();
+    ImGui::SameLine(midpoint);
+    ImGui::SetNextItemWidth(end);
     const bool top_modified =
       ImGui::SliderInt("##top", &dlg_top_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     ImGui::TextUnformatted("Right: ");
-    ImGui::SameLine();
+    ImGui::SameLine(midpoint);
+    ImGui::SetNextItemWidth(end);
     const bool right_modified =
       ImGui::SliderInt("##right", &dlg_right_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     ImGui::TextUnformatted("Bottom: ");
-    ImGui::SameLine();
+    ImGui::SameLine(midpoint);
+    ImGui::SetNextItemWidth(end);
     const bool bottom_modified =
       ImGui::SliderInt("##bottom", &dlg_bottom_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     if (left_modified)
     {
       if (IsEditingGameSettings(bsi) && dlg_left_value == default_left)
@@ -1543,9 +1703,10 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     if (left_modified || top_modified || right_modified || bottom_modified)
       SetSettingsChanged(bsi);
 
-    BeginMenuButtons();
-    if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    {
       ImGui::CloseCurrentPopup();
+    }
     EndMenuButtons();
 
     ImGui::EndPopup();
@@ -1793,8 +1954,10 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 
                      const std::string& name = names[index];
                      auto lock = Host::GetSettingsLock();
-                     const bool result = InputManager::MapController(*GetEditingSettingsInterface(), port,
-                                                                     InputManager::GetGenericBindingMapping(name));
+                     SettingsInterface* bsi = GetEditingSettingsInterface();
+                     const bool result =
+                       InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
+                     SetSettingsChanged(bsi);
 
                      // and the toast needs to happen on the UI thread.
                      ShowToast({}, result ? fmt::format("Automatic mapping completed for {}.", name) :
@@ -1808,11 +1971,6 @@ void FullscreenUI::SwitchToSettings()
   s_game_settings_entry.reset();
   s_game_settings_interface.reset();
 
-  // populate the cache with all settings from ini
-  auto lock = Host::GetSettingsLock();
-  SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
-
-  PopulateGameListDirectoryCache(bsi);
   PopulateGraphicsAdapterList();
 
   s_current_main_window = MainWindowType::Settings;
@@ -1876,14 +2034,6 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
     s_game_list_directories_cache.emplace_back(std::move(dir), true);
 }
 
-ImGuiFullscreen::ChoiceDialogOptions FullscreenUI::GetGameListDirectoryOptions(bool recursive_as_checked)
-{
-  ImGuiFullscreen::ChoiceDialogOptions options;
-  for (const auto& it : s_game_list_directories_cache)
-    options.emplace_back(it.first, it.second && recursive_as_checked);
-  return options;
-}
-
 void FullscreenUI::DoCopyGameSettings()
 {
   if (!s_game_settings_interface)
@@ -1921,28 +2071,29 @@ void FullscreenUI::DrawSettingsWindow()
 
   const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category", UIPrimaryColor))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
+                            ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const char* global_icons[] = {
-      ICON_FA_WINDOW_MAXIMIZE, ICON_FA_LIST,    ICON_FA_HDD,        ICON_FA_SLIDERS_H,
-      ICON_FA_MICROCHIP,       ICON_FA_MAGIC,   ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
-      ICON_FA_KEYBOARD,        ICON_FA_SD_CARD, ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
+      ICON_FA_WINDOW_MAXIMIZE,     ICON_FA_HDD,     ICON_FA_SLIDERS_H, ICON_FA_MICROCHIP, ICON_FA_MAGIC,
+      ICON_FA_HEADPHONES,          ICON_FA_GAMEPAD, ICON_FA_KEYBOARD,  ICON_FA_SD_CARD,   ICON_FA_TROPHY,
+      ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr const char* per_game_icons[] = {
       ICON_FA_PARAGRAPH, ICON_FA_HDD,        ICON_FA_SLIDERS_H,
       ICON_FA_MAGIC,     ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
       ICON_FA_SD_CARD,   ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr SettingsPage global_pages[] = {
-      SettingsPage::Interface, SettingsPage::GameList,    SettingsPage::Console,      SettingsPage::Emulation,
-      SettingsPage::BIOS,      SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller,
-      SettingsPage::Hotkey,    SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
+      SettingsPage::Interface,   SettingsPage::Console,      SettingsPage::Emulation,  SettingsPage::BIOS,
+      SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller, SettingsPage::Hotkey,
+      SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr SettingsPage per_game_pages[] = {
       SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation,
       SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
-      {"Summary", "Interface Settings", "Game List Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
+      {"Summary", "Interface Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
        "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Audio Settings",
        "Achievements Settings", "Advanced Settings"}};
 
@@ -1963,15 +2114,18 @@ void FullscreenUI::DrawSettingsWindow()
 
     BeginNavBar();
 
-    if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
+    if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
     {
-      index = (index == 0) ? (count - 1) : (index - 1);
-      s_settings_page = pages[index];
-    }
-    else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
-    {
-      index = (index + 1) % count;
-      s_settings_page = pages[index];
+      if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
+      {
+        index = (index == 0) ? (count - 1) : (index - 1);
+        s_settings_page = pages[index];
+      }
+      else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
+      {
+        index = (index + 1) % count;
+        s_settings_page = pages[index];
+      }
     }
 
     if (NavButton(ICON_FA_BACKWARD, true, true))
@@ -2019,10 +2173,6 @@ void FullscreenUI::DrawSettingsWindow()
 
       case SettingsPage::Interface:
         DrawInterfaceSettingsPage();
-        break;
-
-      case SettingsPage::GameList:
-        DrawGameListSettingsPage();
         break;
 
       case SettingsPage::BIOS:
@@ -2166,6 +2316,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     "Main", "ApplyGameSettings", true);
   DrawToggleSetting(bsi, ICON_FA_FROWN " Automatically Load Cheats",
                     "Automatically loads and applies cheats on game start.", "Main", "AutoLoadCheats", true);
+  if (DrawToggleSetting(bsi, ICON_FA_PAINT_BRUSH " Use Light Theme",
+                        "Uses a light coloured theme instead of the default dark theme.", "Main",
+                        "UseLightFullscreenUITheme", false))
+  {
+    ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
+  }
 
 #ifdef WITH_DISCORD_PRESENCE
   MenuHeading("Integration");
@@ -2198,88 +2354,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Controller Input",
                     "Shows the current controller state of the system in the bottom-left corner of the display.",
                     "Display", "ShowInputs", false);
-
-  EndMenuButtons();
-}
-
-void FullscreenUI::DrawGameListSettingsPage()
-{
-  BeginMenuButtons();
-
-  MenuHeading("Game List");
-
-  if (MenuButton(ICON_FA_FOLDER_PLUS " Add Search Directory", "Adds a new directory to the game search list."))
-  {
-    OpenFileSelector(ICON_FA_FOLDER_PLUS " Add Search Directory", true, [](const std::string& dir) {
-      if (!dir.empty())
-      {
-        auto lock = Host::GetSettingsLock();
-        SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
-
-        bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
-        bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
-        bsi->Save();
-        PopulateGameListDirectoryCache(bsi);
-        Host::RefreshGameListAsync(false);
-      }
-
-      CloseFileSelector();
-    });
-  }
-
-  if (MenuButton(ICON_FA_FOLDER_OPEN " Change Recursive Directories",
-                 "Sets whether subdirectories are searched for each game directory"))
-  {
-    OpenChoiceDialog(ICON_FA_FOLDER_OPEN " Change Recursive Directories", true, GetGameListDirectoryOptions(true),
-                     [](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
-
-                       auto lock = Host::GetSettingsLock();
-                       SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
-                       if (checked)
-                       {
-                         bsi->RemoveFromStringList("GameList", "Paths", title.c_str());
-                         bsi->AddToStringList("GameList", "RecursivePaths", title.c_str());
-                       }
-                       else
-                       {
-                         bsi->RemoveFromStringList("GameList", "RecursivePaths", title.c_str());
-                         bsi->AddToStringList("GameList", "Paths", title.c_str());
-                       }
-
-                       bsi->Save();
-                       PopulateGameListDirectoryCache(bsi);
-                       Host::RefreshGameListAsync(false);
-                     });
-  }
-
-  if (MenuButton(ICON_FA_FOLDER_MINUS " Remove Search Directory", "Removes a directory from the game search list."))
-  {
-    OpenChoiceDialog(ICON_FA_FOLDER_MINUS " Remove Search Directory", false, GetGameListDirectoryOptions(false),
-                     [](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
-
-                       auto lock = Host::GetSettingsLock();
-                       SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
-                       bsi->RemoveFromStringList("GameList", "Paths", title.c_str());
-                       bsi->RemoveFromStringList("GameList", "RecursivePaths", title.c_str());
-                       bsi->Save();
-                       PopulateGameListDirectoryCache(bsi);
-                       Host::RefreshGameListAsync(false);
-                       CloseChoiceDialog();
-                     });
-  }
-
-  if (MenuButton(ICON_FA_SEARCH " Scan For New Games", "Identifies any new files added to the game directories."))
-    Host::RefreshGameListAsync(false);
-  if (MenuButton(ICON_FA_SEARCH_PLUS " Rescan All Games", "Forces a full rescan of all games previously identified."))
-    Host::RefreshGameListAsync(true);
-
-  MenuHeading("Search Directories");
-  for (const auto& it : s_game_list_directories_cache)
-    MenuButton(it.first.c_str(), it.second ? "Scanning Subdirectories" : "Not Scanning Subdirectories", false);
 
   EndMenuButtons();
 }
@@ -3737,7 +3811,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
     SmallString subtitle;
     if (!code.empty())
       subtitle.Format("%s - ", code.c_str());
-    subtitle.AppendString(Path::GetFileTitle(System::GetRunningPath()));
+    subtitle.AppendString(Path::GetFileName(System::GetRunningPath()));
 
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
@@ -3943,6 +4017,7 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
   li->title = fmt::format("{0} {1} Slot {2}##{1}_slot_{2}", title, global ? "Global" : "Game", slot);
   li->summary = "No Save State";
   li->path = {};
+  li->timestamp = 0;
   li->slot = slot;
   li->preview_texture = {};
 }
@@ -3969,6 +4044,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(SaveStateListEntry* li, const st
   }
 
   li->summary = fmt::format("{} - Saved {:%c}", ssi->game_code.c_str(), fmt::localtime(ssi->timestamp));
+  li->timestamp = ssi->timestamp;
   li->slot = slot;
   li->path = std::move(filename);
 
@@ -4053,6 +4129,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
     if (PopulateSaveStateListEntries(entry->title.c_str(), entry->serial.c_str()) > 0)
     {
       s_save_state_selector_open = true;
+      s_save_state_selector_resuming = false;
       s_save_state_selector_game_path = game_path;
       return true;
     }
@@ -4066,6 +4143,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
 {
   s_save_state_selector_game_path = {};
   s_save_state_selector_loading = is_loading;
+  s_save_state_selector_resuming = false;
   if (PopulateSaveStateListEntries(System::GetRunningTitle().c_str(), System::GetRunningCode().c_str()) > 0)
   {
     s_save_state_selector_open = true;
@@ -4081,8 +4159,10 @@ void FullscreenUI::CloseSaveStateSelector()
   ClearSaveStateEntryList();
   s_save_state_selector_open = false;
   s_save_state_selector_loading = false;
+  s_save_state_selector_resuming = false;
   s_save_state_selector_game_path = {};
-  ReturnToMainWindow();
+  if (s_current_main_window != MainWindowType::GameList)
+    ReturnToMainWindow();
 }
 
 void FullscreenUI::DrawSaveStateSelector(bool is_loading, bool fullscreen)
@@ -4128,10 +4208,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading, bool fullscreen)
 
   BeginMenuButtons();
 
-  constexpr float padding = 10.0f;
-  constexpr float button_height = 96.0f;
-  constexpr float max_image_width = 96.0f;
-  constexpr float max_image_height = 96.0f;
+  static constexpr float padding = 10.0f;
+  static constexpr float button_height = 96.0f;
+  static constexpr float max_image_width = 96.0f;
+  static constexpr float max_image_height = 96.0f;
 
   for (const SaveStateListEntry& entry : s_save_state_selector_slots)
   {
@@ -4208,6 +4288,106 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading, bool fullscreen)
   }
 }
 
+bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
+{
+  SaveStateListEntry slentry;
+  if (!InitializeSaveStateListEntry(&slentry, entry->title, entry->serial, -1, false))
+    return false;
+
+  CloseSaveStateSelector();
+  s_save_state_selector_slots.push_back(std::move(slentry));
+  s_save_state_selector_game_path = entry->path;
+  s_save_state_selector_loading = true;
+  s_save_state_selector_open = true;
+  s_save_state_selector_resuming = true;
+  return true;
+}
+
+void FullscreenUI::DrawResumeStateSelector()
+{
+  ImGui::SetNextWindowSize(LayoutScale(800.0f, 600.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::OpenPopup("Load Resume State");
+
+  ImGui::PushFont(g_large_font);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal("Load Resume State", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  {
+    static constexpr float max_image_width = 96.0f;
+    static constexpr float max_image_height = 96.0f;
+
+    const SaveStateListEntry& entry = s_save_state_selector_slots.front();
+    ImGui::TextWrapped("A resume save state created at %s was found.\n\nDo you want to load this save and continue?",
+                       TimeToPrintableString(entry.timestamp).c_str());
+
+    const HostDisplayTexture* image =
+      entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+    const float image_height = LayoutScale(250.0f);
+    const float image_width =
+      image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+    const ImVec2 pos(ImGui::GetCursorScreenPos() +
+                     ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
+    const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
+    ImGui::GetWindowDrawList()->AddImage(static_cast<ImTextureID>(entry.preview_texture ?
+                                                                    entry.preview_texture->GetHandle() :
+                                                                    GetPlaceholderTexture()->GetHandle()),
+                                         image_bb.Min, image_bb.Max);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
+
+    BeginMenuButtons();
+
+    if (ActiveButton(ICON_FA_PLAY " Load State", false))
+    {
+      DoStartPath(s_save_state_selector_game_path, std::move(entry.path));
+      is_open = false;
+    }
+
+    if (ActiveButton(ICON_FA_LIGHTBULB " Clean Boot", false))
+    {
+      DoStartPath(s_save_state_selector_game_path);
+      is_open = false;
+    }
+
+    if (ActiveButton(ICON_FA_FOLDER_MINUS " Delete State", false))
+    {
+      if (FileSystem::DeleteFile(entry.path.c_str()))
+      {
+        DoStartPath(s_save_state_selector_game_path);
+        is_open = false;
+      }
+      else
+      {
+        ShowToast(std::string(), "Failed to delete save state.");
+      }
+    }
+
+    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Cancel", false))
+    {
+      ImGui::CloseCurrentPopup();
+      is_open = false;
+    }
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopStyleVar(2);
+  ImGui::PopFont();
+
+  if (!is_open)
+  {
+    ClearSaveStateEntryList();
+    s_save_state_selector_open = false;
+    s_save_state_selector_loading = false;
+    s_save_state_selector_resuming = false;
+    s_save_state_selector_game_path = {};
+  }
+}
+
 void FullscreenUI::DoLoadState(std::string path)
 {
   Host::RunOnCPUThread([boot_path = s_save_state_selector_game_path, path = std::move(path)]() {
@@ -4249,12 +4429,83 @@ void FullscreenUI::PopulateGameListEntryList()
 
   // TODO: Custom sort types
   std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
-            [](const GameList::Entry* lhs, const GameList::Entry* rhs) { return lhs->title < rhs->title; });
+            [](const GameList::Entry* lhs, const GameList::Entry* rhs) {
+              return StringUtil::Strcasecmp(lhs->title.c_str(), rhs->title.c_str()) < 0;
+            });
 }
 
 void FullscreenUI::DrawGameListWindow()
 {
-  if (!BeginFullscreenColumns())
+  auto game_list_lock = GameList::GetLock();
+  PopulateGameListEntryList();
+
+  ImGuiIO& io = ImGui::GetIO();
+  ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+
+  const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
+
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view", MulAlpha(UIPrimaryColor, bg_alpha)))
+  {
+    static constexpr float ITEM_WIDTH = 25.0f;
+    static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST, ICON_FA_COG};
+    static constexpr const char* titles[] = {"Game Grid", "Game List", "Game List Settings"};
+    static constexpr u32 count = static_cast<u32>(std::size(titles));
+
+    BeginNavBar();
+
+    if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+    {
+      if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
+      {
+        s_game_list_page = static_cast<GameListPage>(
+          (s_game_list_page == static_cast<GameListPage>(0)) ? (count - 1) : (static_cast<u32>(s_game_list_page) - 1));
+      }
+      else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
+      {
+        s_game_list_page = static_cast<GameListPage>((static_cast<u32>(s_game_list_page) + 1) % count);
+      }
+    }
+
+    if (NavButton(ICON_FA_BACKWARD, true, true))
+      ReturnToMainWindow();
+
+    NavTitle(titles[static_cast<u32>(s_game_list_page)]);
+    RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+    for (u32 i = 0; i < count; i++)
+    {
+      if (NavButton(icons[i], static_cast<GameListPage>(i) == s_game_list_page, true, ITEM_WIDTH,
+                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      {
+        s_game_list_page = static_cast<GameListPage>(i);
+      }
+    }
+
+    EndNavBar();
+  }
+
+  EndFullscreenWindow();
+
+  switch (s_game_list_page)
+  {
+    case GameListPage::Grid:
+      DrawGameGrid(heading_size);
+      break;
+    case GameListPage::List:
+      DrawGameList(heading_size);
+      break;
+    case GameListPage::Settings:
+      DrawGameListSettingsPage(heading_size);
+      break;
+    default:
+      break;
+  }
+}
+
+void FullscreenUI::DrawGameList(const ImVec2& heading_size)
+{
+  if (!BeginFullscreenColumns(nullptr, heading_size.y, true))
   {
     EndFullscreenColumns();
     return;
@@ -4264,15 +4515,14 @@ void FullscreenUI::DrawGameListWindow()
   const GameList::Entry* selected_entry = nullptr;
   PopulateGameListEntryList();
 
-  if (BeginFullscreenColumnWindow(0.0f, 750.0f, "game_list_entries"))
+  if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries"))
   {
-    const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT * 0.68f, LAYOUT_MENU_BUTTON_HEIGHT));
+    const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
 
     ResetFocusHere();
 
     BeginMenuButtons();
 
-    // TODO: replace with something not heap alllocating
     SmallString summary;
 
     for (const GameList::Entry* entry : s_game_list_sorted_entries)
@@ -4325,10 +4575,7 @@ void FullscreenUI::DrawGameListWindow()
       }
 
       if (pressed)
-      {
-        // launch game
-        DoStartPath(entry->path);
-      }
+        HandleGameListActivate(entry);
 
       if (hovered)
         selected_entry = entry;
@@ -4336,41 +4583,7 @@ void FullscreenUI::DrawGameListWindow()
       if (selected_entry && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
                              ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
       {
-        ImGuiFullscreen::ChoiceDialogOptions options = {
-          {"Open Game Properties", false}, {"Resume Game", false}, {"Load State", false},
-          {"Default Boot", false},         {"Fast Boot", false},   {"Slow Boot", false},
-          {"Close Menu", false},
-        };
-
-        OpenChoiceDialog(selected_entry->title.c_str(), false, std::move(options),
-                         [entry_path = selected_entry->path,
-                          entry_serial = selected_entry->serial](s32 index, const std::string& title, bool checked) {
-                           switch (index)
-                           {
-                             case 0: // Open Game Properties
-                               SwitchToGameSettingsForPath(entry_path);
-                               break;
-                             case 1: // Resume Game
-                               DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
-                               break;
-                             case 2: // Load State
-                               OpenLoadStateSelectorForGame(entry_path);
-                               break;
-                             case 3: // Default Boot
-                               DoStartPath(entry_path);
-                               break;
-                             case 4: // Fast Boot
-                               DoStartPath(entry_path, {}, true);
-                               break;
-                             case 5: // Slow Boot
-                               DoStartPath(entry_path, {}, false);
-                               break;
-                             default:
-                               break;
-                           }
-
-                           CloseChoiceDialog();
-                         });
+        HandleGameListOptions(selected_entry);
       }
     }
 
@@ -4378,17 +4591,17 @@ void FullscreenUI::DrawGameListWindow()
   }
   EndFullscreenColumnWindow();
 
-  if (BeginFullscreenColumnWindow(750.0f, LAYOUT_SCREEN_WIDTH, "game_list_info", UIPrimaryDarkColor))
+  if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIPrimaryDarkColor))
   {
     const HostDisplayTexture* cover_texture =
       selected_entry ? GetGameListCover(selected_entry) : GetTextureForGameListEntryType(GameList::EntryType::Count);
     if (cover_texture)
     {
       const ImRect image_rect(
-        CenterImage(LayoutScale(ImVec2(240.0f, 350.0f)), ImVec2(static_cast<float>(cover_texture->GetWidth()),
+        CenterImage(LayoutScale(ImVec2(350.0f, 350.0f)), ImVec2(static_cast<float>(cover_texture->GetWidth()),
                                                                 static_cast<float>(cover_texture->GetHeight()))));
 
-      ImGui::SetCursorPos(LayoutScale(ImVec2(145.0f, 50.0f)) + image_rect.Min);
+      ImGui::SetCursorPos(LayoutScale(ImVec2(90.0f, 50.0f)) + image_rect.Min);
       ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetHandle() :
                                     GetTextureForGameListEntryType(GameList::EntryType::Count)->GetHandle(),
                    image_rect.GetSize());
@@ -4400,6 +4613,7 @@ void FullscreenUI::DrawGameListWindow()
     float text_y = 425.0f;
     float text_width;
 
+    PushPrimaryColor();
     ImGui::SetCursorPos(LayoutScale(start_x, text_y));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, field_margin_y));
     ImGui::BeginGroup();
@@ -4481,21 +4695,389 @@ void FullscreenUI::DrawGameListWindow()
 
     ImGui::EndGroup();
     ImGui::PopStyleVar();
-
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - LayoutScale(50.0f));
-    BeginMenuButtons();
-    if (ActiveButton(ICON_FA_BACKWARD " Back", false))
-      ReturnToMainWindow();
-    EndMenuButtons();
+    PopPrimaryColor();
   }
   EndFullscreenColumnWindow();
 
   EndFullscreenColumns();
 }
 
+void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
+{
+  ImGuiIO& io = ImGui::GetIO();
+  if (!BeginFullscreenWindow(ImVec2(0.0f, heading_size.y), ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y),
+                             "game_grid", UIBackgroundColor))
+  {
+    EndFullscreenWindow();
+    return;
+  }
+
+  if (WantsToCloseMenu())
+  {
+    if (ImGui::IsWindowFocused())
+      ReturnToMainWindow();
+  }
+
+  ResetFocusHere();
+  BeginMenuButtons();
+
+  const ImGuiStyle& style = ImGui::GetStyle();
+
+  const float title_spacing = LayoutScale(10.0f);
+  const float item_spacing = LayoutScale(20.0f);
+  const float item_width_with_spacing = std::floor(LayoutScale(LAYOUT_SCREEN_WIDTH / 5.0f));
+  const float item_width = item_width_with_spacing - item_spacing;
+  const float image_width = item_width - (style.FramePadding.x * 2.0f);
+  const float image_height = image_width;
+  const ImVec2 image_size(image_width, image_height);
+  const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_medium_font->FontSize;
+  const ImVec2 item_size(item_width, item_height);
+  const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
+  const float start_x =
+    (static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
+
+  SmallString draw_title;
+
+  u32 grid_x = 0;
+  u32 grid_y = 0;
+  ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
+  for (const GameList::Entry* entry : s_game_list_sorted_entries)
+  {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+      continue;
+
+    const ImGuiID id = window->GetID(entry->path.c_str(), entry->path.c_str() + entry->path.length());
+    const ImVec2 pos(window->DC.CursorPos);
+    ImRect bb(pos, pos + item_size);
+    ImGui::ItemSize(item_size);
+    if (ImGui::ItemAdd(bb, id))
+    {
+      bool held;
+      bool hovered;
+      bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+      if (hovered)
+      {
+        const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+
+        const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
+
+        ImGui::RenderFrame(bb.Min, bb.Max, col, true, 0.0f);
+
+        ImGui::PopStyleColor();
+      }
+
+      bb.Min += style.FramePadding;
+      bb.Max -= style.FramePadding;
+
+      const HostDisplayTexture* const cover_texture = GetGameListCover(entry);
+      const ImRect image_rect(
+        CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
+                                                                static_cast<float>(cover_texture->GetHeight()))));
+
+      ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), image_rect.Min, image_rect.Max,
+                                           ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+
+      const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
+      const std::string_view title(
+        std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
+      draw_title.Fmt("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
+      ImGui::PushFont(g_medium_font);
+      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.GetCharArray(),
+                               draw_title.GetCharArray() + draw_title.GetLength(), nullptr, ImVec2(0.5f, 0.0f),
+                               &title_bb);
+      ImGui::PopFont();
+
+      if (pressed)
+        HandleGameListActivate(entry);
+
+      if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
+                      ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
+      {
+        HandleGameListOptions(entry);
+      }
+    }
+
+    grid_x++;
+    if (grid_x == grid_count_x)
+    {
+      grid_x = 0;
+      grid_y++;
+      ImGui::SetCursorPosX(start_x);
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
+    }
+    else
+    {
+      ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
+    }
+  }
+
+  EndMenuButtons();
+  EndFullscreenWindow();
+}
+
+void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
+{
+  // launch game
+  if (!OpenLoadStateSelectorForGameResume(entry))
+    DoStartPath(entry->path);
+}
+
+void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
+{
+  ImGuiFullscreen::ChoiceDialogOptions options = {
+    {ICON_FA_WRENCH " Game Properties", false},  {ICON_FA_PLAY " Resume Game", false},
+    {ICON_FA_UNDO " Load State", false},         {ICON_FA_COMPACT_DISC " Default Boot", false},
+    {ICON_FA_LIGHTBULB " Fast Boot", false},     {ICON_FA_MAGIC " Slow Boot", false},
+    {ICON_FA_WINDOW_CLOSE " Close Menu", false},
+  };
+
+  OpenChoiceDialog(
+    entry->title.c_str(), false, std::move(options),
+    [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
+      switch (index)
+      {
+        case 0: // Open Game Properties
+          SwitchToGameSettingsForPath(entry_path);
+          break;
+        case 1: // Resume Game
+          DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
+          break;
+        case 2: // Load State
+          OpenLoadStateSelectorForGame(entry_path);
+          break;
+        case 3: // Default Boot
+          DoStartPath(entry_path);
+          break;
+        case 4: // Fast Boot
+          DoStartPath(entry_path, {}, true);
+          break;
+        case 5: // Slow Boot
+          DoStartPath(entry_path, {}, false);
+          break;
+        default:
+          break;
+      }
+
+      CloseChoiceDialog();
+    });
+}
+
+void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
+{
+  const ImGuiIO& io = ImGui::GetIO();
+  if (!BeginFullscreenWindow(ImVec2(0.0f, heading_size.y), ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y),
+                             "settings_parent", UIBackgroundColor))
+  {
+    EndFullscreenWindow();
+    return;
+  }
+
+  if (WantsToCloseMenu())
+  {
+    if (ImGui::IsWindowFocused())
+      ReturnToMainWindow();
+  }
+
+  auto lock = Host::GetSettingsLock();
+  SettingsInterface* bsi = GetEditingSettingsInterface(false);
+
+  BeginMenuButtons();
+
+  MenuHeading("Search Directories");
+  if (MenuButton(ICON_FA_FOLDER_PLUS " Add Search Directory", "Adds a new directory to the game search list."))
+  {
+    OpenFileSelector(ICON_FA_FOLDER_PLUS " Add Search Directory", true, [](const std::string& dir) {
+      if (!dir.empty())
+      {
+        auto lock = Host::GetSettingsLock();
+        SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+
+        bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
+        bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
+        SetSettingsChanged(bsi);
+        PopulateGameListDirectoryCache(bsi);
+        Host::RefreshGameListAsync(false);
+      }
+
+      CloseFileSelector();
+    });
+  }
+
+  for (const auto& it : s_game_list_directories_cache)
+  {
+    if (MenuButton(SmallString::FromFmt(ICON_FA_FOLDER " {}", it.first),
+                   it.second ? "Scanning Subdirectories" : "Not Scanning Subdirectories"))
+    {
+      ImGuiFullscreen::ChoiceDialogOptions options = {
+        {ICON_FA_FOLDER_OPEN " Open in File Browser", false},
+        {it.second ? (ICON_FA_FOLDER_MINUS " Disable Subdirectory Scanning") :
+                     (ICON_FA_FOLDER_PLUS " Enable Subdirectory Scanning"),
+         false},
+        {ICON_FA_TIMES " Remove From List", false},
+        {ICON_FA_WINDOW_CLOSE " Close Menu", false},
+      };
+
+      OpenChoiceDialog(it.first.c_str(), false, std::move(options),
+                       [dir = it.first, recursive = it.second](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
+                           return;
+
+                         if (index == 0)
+                         {
+                           // Open in file browser... todo
+                           Host::ReportErrorAsync("Error", "Not implemented");
+                         }
+                         else if (index == 1)
+                         {
+                           // toggle subdirectory scanning
+                           {
+                             auto lock = Host::GetSettingsLock();
+                             SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+                             if (!recursive)
+                             {
+                               bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
+                               bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
+                             }
+                             else
+                             {
+                               bsi->RemoveFromStringList("GameList", "RecursivePaths", dir.c_str());
+                               bsi->AddToStringList("GameList", "Paths", dir.c_str());
+                             }
+
+                             SetSettingsChanged(bsi);
+                             PopulateGameListDirectoryCache(bsi);
+                           }
+
+                           Host::RefreshGameListAsync(false);
+                         }
+                         else if (index == 2)
+                         {
+                           // remove from list
+                           auto lock = Host::GetSettingsLock();
+                           SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+                           bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
+                           bsi->RemoveFromStringList("GameList", "RecursivePaths", dir.c_str());
+                           SetSettingsChanged(bsi);
+                           PopulateGameListDirectoryCache(bsi);
+                           Host::RefreshGameListAsync(false);
+                         }
+
+                         CloseChoiceDialog();
+                       });
+    }
+  }
+
+  static constexpr const char* view_types[] = {"Game Grid", "Game List"};
+
+  MenuHeading("Cover Settings");
+  DrawFolderSetting(bsi, ICON_FA_FOLDER " Covers Directory", "Folders", "Covers", EmuFolders::Covers);
+  if (MenuButton(ICON_FA_DOWNLOAD " Download Covers", "Downloads covers from a user-specified URL template."))
+    ImGui::OpenPopup("Download Covers");
+  DrawIntListSetting(bsi, ICON_FA_BORDER_ALL " Default View", "Sets which view the game list will open to.", "Main",
+                     "DefaultFullscreenUIGameView", 0, view_types, std::size(view_types));
+
+  MenuHeading("Operations");
+  if (MenuButton(ICON_FA_SEARCH " Scan For New Games", "Identifies any new files added to the game directories."))
+    Host::RefreshGameListAsync(false);
+  if (MenuButton(ICON_FA_SEARCH_PLUS " Rescan All Games", "Forces a full rescan of all games previously identified."))
+    Host::RefreshGameListAsync(true);
+
+  EndMenuButtons();
+
+  DrawCoverDownloaderWindow();
+  EndFullscreenWindow();
+}
+
+void FullscreenUI::DrawCoverDownloaderWindow()
+{
+  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 0.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushFont(g_large_font);
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  {
+    ImGui::TextWrapped(
+      "PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any "
+      "cover images, the user must provide their own source for images.");
+    ImGui::NewLine();
+    ImGui::TextWrapped(
+      "In the form below, specify the URLs to download covers from, with one template URL per line. The following "
+      "variables are available:");
+    ImGui::NewLine();
+    ImGui::TextWrapped("${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: "
+                       "Serial of the game.");
+    ImGui::NewLine();
+    ImGui::TextWrapped("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
+    ImGui::NewLine();
+
+    BeginMenuButtons();
+
+    static char template_urls[512];
+    ImGui::InputTextMultiline("##templates", template_urls, sizeof(template_urls),
+                              ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
+
+    static bool use_serial_names;
+    ImGui::PushFont(g_medium_font);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
+    ImGui::Checkbox("Use Serial File Names", &use_serial_names);
+    ImGui::PopStyleVar(1);
+    ImGui::PopFont();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+    const bool download_enabled = (std::strlen(template_urls) > 0);
+
+    if (ActiveButton(ICON_FA_DOWNLOAD " Start Download", false, download_enabled))
+    {
+      StartAsyncOp(
+        [urls = StringUtil::SplitNewString(template_urls, '\n'),
+         use_serial_names = use_serial_names](::ProgressCallback* progress) {
+          GameList::DownloadCovers(urls, use_serial_names, progress,
+                                   [](const GameList::Entry* entry, std::string save_path) {
+                                     // cache the cover path on our side once it's saved
+                                     Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() {
+                                       s_cover_image_map[std::move(path)] = std::move(save_path);
+                                     });
+                                   });
+        },
+        "Download Covers");
+      std::memset(template_urls, 0, sizeof(template_urls));
+      use_serial_names = false;
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (ActiveButton(ICON_FA_TIMES " Cancel", false))
+    {
+      std::memset(template_urls, 0, sizeof(template_urls));
+      use_serial_names = false;
+      ImGui::CloseCurrentPopup();
+    }
+
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+}
+
 void FullscreenUI::SwitchToGameList()
 {
   s_current_main_window = MainWindowType::GameList;
+  s_game_list_page = static_cast<GameListPage>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
+  {
+    auto lock = Host::GetSettingsLock();
+    PopulateGameListDirectoryCache(Host::Internal::GetBaseSettingsLayer());
+  }
   QueueResetFocus();
 }
 

@@ -33,6 +33,8 @@ public:
   ProgressCallback(std::string name);
   ~ProgressCallback() override;
 
+  ALWAYS_INLINE const std::string& GetName() const { return m_name; }
+
   void PushState() override;
   void PopState() override;
 

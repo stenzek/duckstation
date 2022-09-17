@@ -647,7 +647,7 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
   return {};
 }
 
-std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename)
+std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial)
 {
   const char* extension = std::strrchr(new_filename, '.');
   if (!extension)
@@ -665,12 +665,12 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   const std::string sanitized_name(Path::SanitizeFileName(entry->title));
 
   std::string name;
-  if (sanitized_name != entry->title)
+  if (sanitized_name != entry->title || use_serial)
     name = fmt::format("{}{}", entry->serial, extension);
   else
     name = fmt::format("{}{}", entry->title, extension);
 
-  return Path::Combine(EmuFolders::Covers, name);
+  return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(name));
 }
 
 size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) const
@@ -690,7 +690,8 @@ size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) c
   return std::strftime(buffer, buffer_size, "%d %B %Y", &date_tm);
 }
 
-bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, ProgressCallback* progress /*= nullptr*/)
+bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial,
+                              ProgressCallback* progress, std::function<void(const Entry*, std::string)> save_callback)
 {
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;
@@ -776,23 +777,25 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, Pro
 
     // we could actually do a few in parallel here...
     std::string filename(Common::HTTPDownloader::URLDecode(url));
-    downloader->CreateRequest(std::move(url), [entry_path = std::move(entry_path), filename = std::move(filename)](
-                                                s32 status_code, Common::HTTPDownloader::Request::Data data) {
-      if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
-        return;
+    downloader->CreateRequest(
+      std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
+                       filename = std::move(filename)](s32 status_code, Common::HTTPDownloader::Request::Data data) {
+        if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
+          return;
 
-      std::unique_lock lock(s_mutex);
-      const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
-      if (!entry || !GetCoverImagePathForEntry(entry).empty())
-        return;
+        std::unique_lock lock(s_mutex);
+        const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+        if (!entry || !GetCoverImagePathForEntry(entry).empty())
+          return;
 
-      std::string write_path(GetNewCoverImagePathForEntry(entry, filename.c_str()));
-      if (write_path.empty())
-        return;
+        std::string write_path(GetNewCoverImagePathForEntry(entry, filename.c_str(), use_serial));
+        if (write_path.empty())
+          return;
 
-      FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size());
-      Host::CoversChanged();
-    });
+        FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size());
+        if (save_callback)
+          save_callback(entry, std::move(write_path));
+      });
     downloader->WaitForAllRequests();
     progress->IncrementProgressValue();
   }

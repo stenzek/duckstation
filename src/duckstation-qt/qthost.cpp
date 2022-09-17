@@ -1078,21 +1078,6 @@ void Host::CancelGameListRefresh()
   QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
-void Host::DownloadCoversAsync(std::vector<std::string> url_templates)
-{
-  //
-}
-
-void Host::CancelCoversDownload()
-{
-  //
-}
-
-void Host::CoversChanged()
-{
-  //
-}
-
 void EmuThread::loadState(const QString& filename)
 {
   if (!isOnThread())
@@ -1577,68 +1562,6 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
   }
 
   return sd.ModificationTime;
-}
-
-void Host::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetBoolValue(section, key, value);
-  QtHost::QueueSettingsSave();
-}
-
-void Host::SetBaseIntSettingValue(const char* section, const char* key, int value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetIntValue(section, key, value);
-  QtHost::QueueSettingsSave();
-}
-
-void Host::SetBaseFloatSettingValue(const char* section, const char* key, float value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetFloatValue(section, key, value);
-  QtHost::QueueSettingsSave();
-}
-
-void Host::SetBaseStringSettingValue(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetStringValue(section, key, value);
-  QtHost::QueueSettingsSave();
-}
-
-void Host::SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetStringList(section, key, values);
-  QtHost::QueueSettingsSave();
-}
-
-bool Host::AddValueToBaseStringListSetting(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  if (!s_base_settings_interface->AddToStringList(section, key, value))
-    return false;
-
-  QtHost::QueueSettingsSave();
-  return true;
-}
-
-bool Host::RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  if (!s_base_settings_interface->RemoveFromStringList(section, key, value))
-    return false;
-
-  QtHost::QueueSettingsSave();
-  return true;
-}
-
-void Host::DeleteBaseSettingValue(const char* section, const char* key)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->DeleteValue(section, key);
-  QtHost::QueueSettingsSave();
 }
 
 void Host::CommitBaseSettingChanges()

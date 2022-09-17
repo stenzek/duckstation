@@ -407,6 +407,7 @@ void SettingsDialog::setBoolSettingValue(const char* section, const char* key, s
   {
     value.has_value() ? Host::SetBaseBoolSettingValue(section, key, value.value()) :
                         Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -423,6 +424,7 @@ void SettingsDialog::setIntSettingValue(const char* section, const char* key, st
   {
     value.has_value() ? Host::SetBaseIntSettingValue(section, key, value.value()) :
                         Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -439,6 +441,7 @@ void SettingsDialog::setFloatSettingValue(const char* section, const char* key, 
   {
     value.has_value() ? Host::SetBaseFloatSettingValue(section, key, value.value()) :
                         Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -455,6 +458,7 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
   {
     value.has_value() ? Host::SetBaseStringSettingValue(section, key, value.value()) :
                         Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -470,6 +474,7 @@ void SettingsDialog::removeSettingValue(const char* section, const char* key)
   else
   {
     Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }

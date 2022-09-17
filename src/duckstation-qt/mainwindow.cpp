@@ -1119,18 +1119,21 @@ void MainWindow::onRemoveDiscActionTriggered()
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
   Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
+  Host::CommitBaseSettingChanges();
   m_ui.toolBar->setVisible(checked);
 }
 
 void MainWindow::onViewLockToolbarActionToggled(bool checked)
 {
   Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
+  Host::CommitBaseSettingChanges();
   m_ui.toolBar->setMovable(!checked);
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
 {
   Host::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
+  Host::CommitBaseSettingChanges();
   m_ui.statusBar->setVisible(checked);
 }
 
@@ -1343,7 +1346,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
   }
 
   QString new_filename =
-    QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toStdString().c_str()));
+    QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toStdString().c_str(), false));
   if (new_filename.isEmpty())
     return;
 
@@ -1427,6 +1430,7 @@ void MainWindow::setupAdditionalUi()
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, mode]() {
       Host::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
       updateDebugMenuCPUExecutionMode();
     });
@@ -1441,6 +1445,7 @@ void MainWindow::setupAdditionalUi()
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, renderer]() {
       Host::SetBaseStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer));
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
       updateDebugMenuGPURenderer();
     });
@@ -1455,6 +1460,7 @@ void MainWindow::setupAdditionalUi()
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, crop_mode]() {
       Host::SetBaseStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
+      Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
       updateDebugMenuCropMode();
     });
@@ -1484,6 +1490,7 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
       Host::SetBaseStringSettingValue("Main", "Language", new_language.toUtf8().constData());
+      Host::CommitBaseSettingChanges();
       QtHost::InstallTranslator();
       recreate();
     });
@@ -1950,6 +1957,7 @@ void MainWindow::addThemeToMenu(const QString& name, const QString& key)
 void MainWindow::setTheme(const QString& theme)
 {
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
+  Host::CommitBaseSettingChanges();
   updateApplicationTheme();
   updateMenuSelectedTheme();
   m_game_list_widget->reloadCommonImages();
@@ -2097,7 +2105,10 @@ void MainWindow::saveGeometryToConfig()
   const QByteArray geometry_b64 = geometry.toBase64();
   const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
   if (old_geometry_b64 != geometry_b64.constData())
+  {
     Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+    Host::CommitBaseSettingChanges();
+  }
 }
 
 void MainWindow::restoreGeometryFromConfig()
@@ -2114,7 +2125,10 @@ void MainWindow::saveDisplayWindowGeometryToConfig()
   const QByteArray geometry_b64 = geometry.toBase64();
   const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
   if (old_geometry_b64 != geometry_b64.constData())
+  {
     Host::SetBaseStringSettingValue("UI", "DisplayWindowGeometry", geometry_b64.constData());
+    Host::CommitBaseSettingChanges();
+  }
 }
 
 void MainWindow::restoreDisplayWindowGeometryFromConfig()
@@ -2443,6 +2457,7 @@ void MainWindow::onCheckForUpdatesActionTriggered()
 {
   // Wipe out the last version, that way it displays the update if we've previously skipped it.
   Host::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
+  Host::CommitBaseSettingChanges();
   checkForUpdates(true);
 }
 
@@ -2553,6 +2568,7 @@ void MainWindow::onToolsCheatManagerTriggered()
 
       connect(cb, &QCheckBox::stateChanged, [](int state) {
         Host::SetBaseBoolSettingValue("UI", "DisplayCheatWarning", (state != Qt::CheckState::Checked));
+        Host::CommitBaseSettingChanges();
       });
 
       if (mb.exec() == QMessageBox::No)

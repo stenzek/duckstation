@@ -215,6 +215,7 @@ void InputBindingWidget::setNewBinding()
     else
     {
       Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
+      Host::CommitBaseSettingChanges();
       g_emu_thread->reloadInputBindings();
     }
   }
@@ -235,6 +236,7 @@ void InputBindingWidget::clearBinding()
   else
   {
     Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+    Host::CommitBaseSettingChanges();
     g_emu_thread->reloadInputBindings();
   }
   reloadBinding();
@@ -391,6 +393,7 @@ void InputVibrationBindingWidget::clearBinding()
 {
   m_binding = {};
   Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+  Host::CommitBaseSettingChanges();
   g_emu_thread->reloadInputBindings();
   setText(QString());
 }
@@ -428,6 +431,7 @@ void InputVibrationBindingWidget::onClicked()
   const QString new_value(input_dialog.textValue());
   m_binding = new_value.toStdString();
   Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_binding.c_str());
+  Host::CommitBaseSettingChanges();
   setText(new_value);
 }
 

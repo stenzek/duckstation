@@ -156,6 +156,7 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
     }
 
     Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
+    Host::CommitBaseSettingChanges();
   }
 
   m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));

@@ -149,6 +149,7 @@ void StripWhitespace(std::string* str);
 
 /// Splits a string based on a single character delimiter.
 std::vector<std::string_view> SplitString(const std::string_view& str, char delimiter, bool skip_empty = true);
+std::vector<std::string> SplitNewString(const std::string_view& str, char delimiter, bool skip_empty = true);
 
 /// Joins a string together using the specified delimiter.
 template<typename T>

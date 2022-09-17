@@ -376,68 +376,6 @@ void Host::CheckForSettingsChanges(const Settings& old_settings)
   CommonHost::CheckForSettingsChanges(old_settings);
 }
 
-void Host::SetBaseBoolSettingValue(const char* section, const char* key, bool value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetBoolValue(section, key, value);
-  NoGUIHost::SaveSettings();
-}
-
-void Host::SetBaseIntSettingValue(const char* section, const char* key, int value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetIntValue(section, key, value);
-  NoGUIHost::SaveSettings();
-}
-
-void Host::SetBaseFloatSettingValue(const char* section, const char* key, float value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetFloatValue(section, key, value);
-  NoGUIHost::SaveSettings();
-}
-
-void Host::SetBaseStringSettingValue(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetStringValue(section, key, value);
-  NoGUIHost::SaveSettings();
-}
-
-void Host::SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->SetStringList(section, key, values);
-  NoGUIHost::SaveSettings();
-}
-
-bool Host::AddValueToBaseStringListSetting(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  if (!s_base_settings_interface->AddToStringList(section, key, value))
-    return false;
-
-  NoGUIHost::SaveSettings();
-  return true;
-}
-
-bool Host::RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value)
-{
-  auto lock = Host::GetSettingsLock();
-  if (!s_base_settings_interface->RemoveFromStringList(section, key, value))
-    return false;
-
-  NoGUIHost::SaveSettings();
-  return true;
-}
-
-void Host::DeleteBaseSettingValue(const char* section, const char* key)
-{
-  auto lock = Host::GetSettingsLock();
-  s_base_settings_interface->DeleteValue(section, key);
-  NoGUIHost::SaveSettings();
-}
-
 void Host::CommitBaseSettingChanges()
 {
   NoGUIHost::SaveSettings();
@@ -1006,23 +944,6 @@ void Host::RefreshGameListAsync(bool invalidate_cache)
 void Host::CancelGameListRefresh()
 {
   NoGUIHost::CancelAsyncOp();
-}
-
-void Host::DownloadCoversAsync(std::vector<std::string> url_templates)
-{
-  NoGUIHost::StartAsyncOp([url_templates = std::move(url_templates)](ProgressCallback* progress) {
-    GameList::DownloadCovers(url_templates, progress);
-  });
-}
-
-void Host::CancelCoversDownload()
-{
-  NoGUIHost::CancelAsyncOp();
-}
-
-void Host::CoversChanged()
-{
-  Host::RunOnCPUThread([]() { FullscreenUI::InvalidateCoverCache(); });
 }
 
 bool Host::IsFullscreen()

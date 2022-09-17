@@ -55,6 +55,7 @@ bool GameListSettingsWidget::addExcludedPath(const std::string& path)
   if (!Host::AddValueToBaseStringListSetting("GameList", "ExcludedPaths", path.c_str()))
     return false;
 
+  Host::CommitBaseSettingChanges();
   m_ui.excludedPaths->addItem(QString::fromStdString(path));
   g_main_window->refreshGameList(false);
   return true;
@@ -158,7 +159,8 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
   if (!item)
     return;
 
-  Host::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData());
+  if (Host::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData()))
+    Host::CommitBaseSettingChanges();
   delete item;
 
   g_main_window->refreshGameList(false);

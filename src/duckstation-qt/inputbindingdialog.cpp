@@ -238,6 +238,7 @@ void InputBindingDialog::saveListToSettings()
       Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     else
       Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+    Host::CommitBaseSettingChanges();
     g_emu_thread->reloadInputBindings();
   }
 }

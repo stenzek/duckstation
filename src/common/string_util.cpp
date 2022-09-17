@@ -255,6 +255,31 @@ std::vector<std::string_view> StringUtil::SplitString(const std::string_view& st
   return res;
 }
 
+std::vector<std::string> StringUtil::SplitNewString(const std::string_view& str, char delimiter,
+                                                    bool skip_empty /*= true*/)
+{
+  std::vector<std::string> res;
+  std::string_view::size_type last_pos = 0;
+  std::string_view::size_type pos;
+  while (last_pos < str.size() && (pos = str.find(delimiter, last_pos)) != std::string_view::npos)
+  {
+    std::string_view part(StripWhitespace(str.substr(last_pos, pos - last_pos)));
+    if (!skip_empty || !part.empty())
+      res.emplace_back(part);
+
+    last_pos = pos + 1;
+  }
+
+  if (last_pos < str.size())
+  {
+    std::string_view part(StripWhitespace(str.substr(last_pos)));
+    if (!skip_empty || !part.empty())
+      res.emplace_back(part);
+  }
+
+  return res;
+}
+
 std::string StringUtil::ReplaceAll(const std::string_view& subject, const std::string_view& search,
                                    const std::string_view& replacement)
 {
