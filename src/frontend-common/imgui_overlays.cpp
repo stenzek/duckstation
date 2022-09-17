@@ -161,10 +161,45 @@ void ImGuiManager::DrawPerformanceOverlay()
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       text.Clear();
-      if (g_settings.cpu_overclock_active)
-        text.Fmt("CPU[{}]: ", g_settings.GetCPUOverclockPercent());
+      if (g_settings.cpu_overclock_active || (!g_settings.IsUsingRecompiler() || g_settings.cpu_recompiler_icache || g_settings.cpu_recompiler_memory_exceptions))
+      {
+        first = true;
+        text.AppendString("CPU[");
+        if (g_settings.cpu_overclock_active)
+        {
+          text.AppendFmtString("{}", g_settings.GetCPUOverclockPercent());
+          first = false;
+        }
+        if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
+        {
+          text.AppendFmtString("{}{}", first ? "" : "/", "I");
+          first = false;
+        }
+        else if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
+        {
+          text.AppendFmtString("{}{}", first ? "" : "/", "CI");
+          first = false;
+        }
+        else
+        {
+          if (g_settings.cpu_recompiler_icache)
+          {
+            text.AppendFmtString("{}{}", first ? "" : "/", "IC");
+            first = false;
+          }
+          if (g_settings.cpu_recompiler_memory_exceptions)
+          {
+            text.AppendFmtString("{}{}", first ? "" : "/", "ME");
+            first = false;
+          }
+        }
+
+        text.AppendString("]: ");
+      }
       else
+      {
         text.Assign("CPU: ");
+      }
       FormatProcessorStat(text, System::GetCPUThreadUsage(), System::GetCPUThreadAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
