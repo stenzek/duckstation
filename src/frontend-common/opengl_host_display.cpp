@@ -993,8 +993,6 @@ void OpenGLHostDisplay::PopTimestampQuery()
 
     GLint available = 0;
     GetQueryObjectiv(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT_AVAILABLE, &available);
-    DebugAssert(m_read_timestamp_query != m_write_timestamp_query);
-
     if (!available)
       break;
 
