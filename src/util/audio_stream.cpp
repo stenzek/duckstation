@@ -116,9 +116,10 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
       Log_VerbosePrintf("Underrun compensation done (%d frames buffered)", toFill);
     }
   }
-  else if (available_frames < nFrames)
+
+  if (available_frames < frames_to_read)
   {
-    silence_frames = nFrames - available_frames;
+    silence_frames = frames_to_read - available_frames;
     frames_to_read = available_frames;
     m_filling = true;
 
