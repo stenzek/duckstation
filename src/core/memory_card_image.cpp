@@ -523,6 +523,48 @@ static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8>
   return true;
 }
 
+static bool ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data)
+{
+  constexpr u32 HEADER_SIZE = 64;
+
+  if (file_data.size() != (HEADER_SIZE + DATA_SIZE))
+  {
+    Log_ErrorPrintf("Failed to import memory card from '%s': file is incorrect size.", filename);
+    return false;
+  }
+
+  // Connectix Virtual Game Station format (.MEM): "VgsM", 64 bytes
+  if (file_data[0] != 'V' || file_data[1] != 'g' || file_data[2] != 's' || file_data[3] != 'M')
+  {
+    Log_ErrorPrintf("Failed to import memory card from '%s': incorrect header.", filename);
+    return false;
+  }
+
+  std::memcpy(data->data(), &file_data[HEADER_SIZE], DATA_SIZE);
+  return true;
+}
+
+static bool ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data)
+{
+  constexpr u32 HEADER_SIZE = 256;
+
+  if (file_data.size() != (HEADER_SIZE + DATA_SIZE))
+  {
+    Log_ErrorPrintf("Failed to import memory card from '%s': file is incorrect size.", filename);
+    return false;
+  }
+
+  // Connectix Virtual Game Station format (.MEM): "VgsM", 64 bytes
+  if (file_data[0] != 'P' || file_data[1] != 'S' || file_data[2] != 'V')
+  {
+    Log_ErrorPrintf("Failed to import memory card from '%s': incorrect header.", filename);
+    return false;
+  }
+
+  std::memcpy(data->data(), &file_data[HEADER_SIZE], DATA_SIZE);
+  return true;
+}
+
 bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   const char* extension = std::strrchr(filename, '.');
@@ -533,13 +575,23 @@ bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data
   }
 
   if (StringUtil::Strcasecmp(extension, ".mcd") == 0 || StringUtil::Strcasecmp(extension, ".mcr") == 0 ||
-      StringUtil::Strcasecmp(extension, ".mc") == 0 || StringUtil::Strcasecmp(extension, ".srm") == 0)
+      StringUtil::Strcasecmp(extension, ".mc") == 0 || StringUtil::Strcasecmp(extension, ".srm") == 0 ||
+      StringUtil::Strcasecmp(extension, ".psm") == 0 || StringUtil::Strcasecmp(extension, ".ps") == 0 ||
+      StringUtil::Strcasecmp(extension, ".ddf") == 0)
   {
     return ImportCardMCD(data, filename, std::move(file_data));
   }
   else if (StringUtil::Strcasecmp(extension, ".gme") == 0)
   {
     return ImportCardGME(data, filename, std::move(file_data));
+  }
+  else if (StringUtil::Strcasecmp(extension, ".mem") == 0 || StringUtil::Strcasecmp(extension, ".vgs") == 0)
+  {
+    return ImportCardVGS(data, filename, std::move(file_data));
+  }
+  else if (StringUtil::Strcasecmp(extension, ".psx") == 0)
+  {
+    return ImportCardPSX(data, filename, std::move(file_data));
   }
   else
   {

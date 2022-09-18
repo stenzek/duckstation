@@ -9,8 +9,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
-  QT_TRANSLATE_NOOP("MemoryCardEditorDialog", "All Memory Card Types (*.mcd *.mcr *.mc)");
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
+  "MemoryCardEditorDialog", "All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)");
 static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorDialog", "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)");
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
