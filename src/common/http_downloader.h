@@ -64,6 +64,8 @@ public:
 
   void CreateRequest(std::string url, Request::Callback callback);
   void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback);
+
+  bool HasAnyRequests();
   void PollRequests();
   void WaitForAllRequests();
 

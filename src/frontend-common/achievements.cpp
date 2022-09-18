@@ -707,6 +707,14 @@ bool Achievements::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
+    // if we're active, make sure we've downloaded and activated all the achievements
+    // before deserializing, otherwise that state's going to get lost.
+    if (s_http_downloader->HasAnyRequests())
+    {
+      Host::DisplayLoadingScreen("Downloading achievements data...");
+      s_http_downloader->WaitForAllRequests();
+    }
+
     u32 data_size = 0;
     sw.Do(&data_size);
     if (data_size == 0)
@@ -1321,6 +1329,7 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     if (!temp_image)
     {
       Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
+      s_http_downloader->WaitForAllRequests();
       std::unique_lock lock(s_achievements_mutex);
       DisableChallengeMode();
       ClearGameInfo();
@@ -1341,7 +1350,11 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     }
   }
 
-  s_http_downloader->WaitForAllRequests();
+  if (s_http_downloader->HasAnyRequests())
+  {
+    Host::DisplayLoadingScreen("Downloading achievements data...");
+    s_http_downloader->WaitForAllRequests();
+  }
 
   if (image && image->HasSubImages() && image->GetCurrentSubImage() != 0)
   {

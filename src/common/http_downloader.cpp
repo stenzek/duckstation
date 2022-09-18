@@ -70,6 +70,12 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   LockedAddRequest(req);
 }
 
+bool HTTPDownloader::HasAnyRequests()
+{
+  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  return !m_pending_http_requests.empty();
+}
+
 void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 {
   if (m_pending_http_requests.empty())
