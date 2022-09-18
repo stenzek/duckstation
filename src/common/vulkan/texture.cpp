@@ -385,7 +385,7 @@ VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
 }
 
 void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-                               VkBuffer buffer, u32 buffer_offset)
+                               VkBuffer buffer, u32 buffer_offset, u32 row_length)
 {
   const VkImageLayout old_layout = m_layout;
   const Vulkan::Util::DebugScope debugScope(cmdbuf, "Texture::UpdateFromBuffer: Lvl:%u Lyr:%u {%u,%u} %ux%u", level,
@@ -393,7 +393,7 @@ void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32
   TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
-                                 width,
+                                 row_length,
                                  height,
                                  {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
                                  {static_cast<int32_t>(x), static_cast<int32_t>(y), 0},

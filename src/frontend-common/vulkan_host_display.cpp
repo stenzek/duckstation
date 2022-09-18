@@ -75,7 +75,8 @@ public:
     buffer.CommitMemory(required_size);
 
     m_texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height,
-                               buffer.GetBuffer(), buffer_offset);
+                               buffer.GetBuffer(), buffer_offset,
+                               HostDisplay::GetDisplayPixelFormatSize(m_format) / width);
   }
 
   const Vulkan::Texture& GetTexture() const { return m_texture; }
@@ -240,11 +241,13 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
       const u32 buffer_offset = buffer.GetCurrentOffset();
       buffer.CommitMemory(data_size);
       texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, 0, 0, width, height,
-                               buffer.GetBuffer(), buffer_offset);
+                               buffer.GetBuffer(), buffer_offset,
+                               data_upload_pitch / GetDisplayPixelFormatSize(format));
     }
     else
     {
     use_staging:
+      // TODO: Drop this thing completely. It's not using the buffer copy row pitch alignment.
       Vulkan::StagingTexture staging_texture;
       if (!staging_texture.Create(Vulkan::StagingBuffer::Type::Upload, vk_format, width, height))
         return {};

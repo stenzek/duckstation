@@ -1878,7 +1878,8 @@ bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
 
   // buffer -> texture
   m_vram_write_replacement_texture.UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, tex->GetWidth(), tex->GetHeight(),
-                                                    m_texture_replacment_stream_buffer.GetBuffer(), buffer_offset);
+                                                    m_texture_replacment_stream_buffer.GetBuffer(), buffer_offset,
+                                                    tex->GetWidth());
 
   // texture -> vram
   const VkImageBlit blit = {
