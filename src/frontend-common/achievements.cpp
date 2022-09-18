@@ -67,26 +67,29 @@ static Achievement* GetMutableAchievementByID(u32 id);
 static void ClearGameInfo(bool clear_achievements = true, bool clear_leaderboards = true);
 static void ClearGameHash();
 static std::string GetUserAgent();
-static void LoginCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
-static void LoginASyncCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
+static void LoginCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
+static void LoginASyncCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
 static void SendLogin(const char* username, const char* password, Common::HTTPDownloader* http_downloader,
                       Common::HTTPDownloader::Request::Callback callback);
 static void DownloadImage(std::string url, std::string cache_filename);
 static void DisplayAchievementSummary();
-static void GetUserUnlocksCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
+static void GetUserUnlocksCallback(s32 status_code, std::string content_type,
+                                   Common::HTTPDownloader::Request::Data data);
 static void GetUserUnlocks();
-static void GetPatchesCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
-static void GetLbInfoCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
+static void GetPatchesCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
+static void GetLbInfoCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
 static void GetPatches(u32 game_id);
 static std::string GetGameHash(CDImage* image);
 static void SetChallengeMode(bool enabled);
 static void SendGetGameId();
-static void GetGameIdCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
-static void SendPlayingCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
+static void GetGameIdCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
+static void SendPlayingCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
 static void UpdateRichPresence();
-static void SendPingCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
-static void UnlockAchievementCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
-static void SubmitLeaderboardCallback(s32 status_code, Common::HTTPDownloader::Request::Data data);
+static void SendPingCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data);
+static void UnlockAchievementCallback(s32 status_code, std::string content_type,
+                                      Common::HTTPDownloader::Request::Data data);
+static void SubmitLeaderboardCallback(s32 status_code, std::string content_type,
+                                      Common::HTTPDownloader::Request::Data data);
 
 static bool s_active = false;
 static bool s_logged_in = false;
@@ -177,7 +180,7 @@ public:
     if (error != RC_OK)
     {
       FormattedError("%s failed: error %d (%s)", RAPIStructName<T>(), error, rc_error_str(error));
-      callback(-1, Common::HTTPDownloader::Request::Data());
+      callback(-1, std::string(), Common::HTTPDownloader::Request::Data());
       return;
     }
 
@@ -825,7 +828,7 @@ void Achievements::EnsureCacheDirectoriesExist()
   }
 }
 
-void Achievements::LoginCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::LoginCallback(s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data)
 {
   std::unique_lock lock(s_achievements_mutex);
 
@@ -858,11 +861,12 @@ void Achievements::LoginCallback(s32 status_code, Common::HTTPDownloader::Reques
   }
 }
 
-void Achievements::LoginASyncCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::LoginASyncCallback(s32 status_code, std::string content_type,
+                                      Common::HTTPDownloader::Request::Data data)
 {
   ImGuiFullscreen::CloseBackgroundProgressDialog("cheevos_async_login");
 
-  LoginCallback(status_code, std::move(data));
+  LoginCallback(status_code, std::move(content_type), std::move(data));
 }
 
 void Achievements::SendLogin(const char* username, const char* password, Common::HTTPDownloader* http_downloader,
@@ -943,7 +947,8 @@ void Achievements::Logout()
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-  auto callback = [cache_filename](s32 status_code, Common::HTTPDownloader::Request::Data data) {
+  auto callback = [cache_filename](s32 status_code, std::string content_type,
+                                   Common::HTTPDownloader::Request::Data data) {
     if (status_code != HTTP_OK)
       return;
 
@@ -998,7 +1003,8 @@ void Achievements::DisplayAchievementSummary()
   });
 }
 
-void Achievements::GetUserUnlocksCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::GetUserUnlocksCallback(s32 status_code, std::string content_type,
+                                          Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1046,7 +1052,8 @@ void Achievements::GetUserUnlocks()
   request.Send(GetUserUnlocksCallback);
 }
 
-void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
+                                      Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1185,7 +1192,8 @@ void Achievements::GetPatchesCallback(s32 status_code, Common::HTTPDownloader::R
   }
 }
 
-void Achievements::GetLbInfoCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::GetLbInfoCallback(s32 status_code, std::string content_type,
+                                     Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1275,7 +1283,8 @@ std::string Achievements::GetGameHash(CDImage* image)
   return hash_str;
 }
 
-void Achievements::GetGameIdCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::GetGameIdCallback(s32 status_code, std::string content_type,
+                                     Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1393,7 +1402,8 @@ void Achievements::SendGetGameId()
   request.Send(GetGameIdCallback);
 }
 
-void Achievements::SendPlayingCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::SendPlayingCallback(s32 status_code, std::string content_type,
+                                       Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1445,7 +1455,8 @@ void Achievements::UpdateRichPresence()
   Host::OnAchievementsRefreshed();
 }
 
-void Achievements::SendPingCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::SendPingCallback(s32 status_code, std::string content_type,
+                                    Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1634,7 +1645,8 @@ void Achievements::DeactivateAchievement(Achievement* achievement)
   Log_DevPrintf("Deactivated achievement %s (%u)", achievement->title.c_str(), achievement->id);
 }
 
-void Achievements::UnlockAchievementCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::UnlockAchievementCallback(s32 status_code, std::string content_type,
+                                             Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;
@@ -1649,7 +1661,8 @@ void Achievements::UnlockAchievementCallback(s32 status_code, Common::HTTPDownlo
                  response.new_player_score);
 }
 
-void Achievements::SubmitLeaderboardCallback(s32 status_code, Common::HTTPDownloader::Request::Data data)
+void Achievements::SubmitLeaderboardCallback(s32 status_code, std::string content_type,
+                                             Common::HTTPDownloader::Request::Data data)
 {
   if (!System::IsValid())
     return;

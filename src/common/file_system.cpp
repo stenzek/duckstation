@@ -69,7 +69,7 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
   if (c == '*')
     return false;
 
-  // macos doesn't allow colons, apparently
+    // macos doesn't allow colons, apparently
 #ifdef __APPLE__
   if (c == U':')
     return false;
@@ -143,6 +143,37 @@ std::string Path::SanitizeFileName(const std::string_view& str, bool strip_slash
 #endif
 
   return ret;
+}
+
+void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
+{
+  const size_t len = str->length();
+
+  char small_buf[128];
+  std::unique_ptr<char[]> large_buf;
+  char* str_copy = small_buf;
+  if (len >= std::size(small_buf))
+  {
+    large_buf = std::make_unique<char[]>(len + 1);
+    str_copy = large_buf.get();
+  }
+  std::memcpy(str_copy, str->c_str(), sizeof(char) * (len + 1));
+  str->clear();
+
+  size_t pos = 0;
+  while (pos < len)
+  {
+    char32_t ch;
+    pos += StringUtil::DecodeUTF8(str_copy + pos, pos - len, &ch);
+    ch = FileSystemCharacterIsSane(ch, strip_slashes) ? ch : U'_';
+    StringUtil::EncodeAndAppendUTF8(*str, ch);
+  }
+
+#ifdef _WIN32
+  // Windows: Can't end filename with a period.
+  if (str->length() > 0 && str->back() == '.')
+    str->back() = '_';
+#endif
 }
 
 bool Path::IsAbsolute(const std::string_view& path)

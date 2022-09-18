@@ -130,6 +130,20 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
         req->content_length = 0;
       }
 
+      DWORD content_type_length = 0;
+      if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_TYPE, WINHTTP_HEADER_NAME_BY_INDEX,
+                               WINHTTP_NO_OUTPUT_BUFFER, &content_type_length, WINHTTP_NO_HEADER_INDEX) &&
+          GetLastError() == ERROR_INSUFFICIENT_BUFFER && content_type_length >= sizeof(content_type_length))
+      {
+        std::wstring content_type_wstring;
+        content_type_wstring.resize((content_type_length / sizeof(wchar_t)) - 1);
+        if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_TYPE, WINHTTP_HEADER_NAME_BY_INDEX,
+                                content_type_wstring.data(), &content_type_length, WINHTTP_NO_HEADER_INDEX))
+        {
+          req->content_type = StringUtil::WideStringToUTF8String(content_type_wstring);
+        }
+      }
+
       Log_DevPrintf("Status code %d, content-length is %u", req->status_code, req->content_length);
       req->data.reserve(req->content_length);
       req->state = Request::State::Receiving;
@@ -224,7 +238,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
   if (!WinHttpCrackUrl(url_wide.c_str(), static_cast<DWORD>(url_wide.size()), 0, &uc))
   {
     Log_ErrorPrintf("WinHttpCrackUrl() failed: %u", GetLastError());
-    req->callback(-1, req->data);
+    req->callback(-1, std::string(), req->data);
     delete req;
     return false;
   }
@@ -236,7 +250,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
   if (!req->hConnection)
   {
     Log_ErrorPrintf("Failed to start HTTP request for '%s': %u", req->url.c_str(), GetLastError());
-    req->callback(-1, req->data);
+    req->callback(-1, std::string(), req->data);
     delete req;
     return false;
   }
@@ -297,4 +311,4 @@ void HTTPDownloaderWinHttp::CloseRequest(HTTPDownloader::Request* request)
   delete req;
 }
 
-} // namespace FrontendCommon
+} // namespace Common

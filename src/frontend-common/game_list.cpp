@@ -779,7 +779,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     std::string filename(Common::HTTPDownloader::URLDecode(url));
     downloader->CreateRequest(
       std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
-                       filename = std::move(filename)](s32 status_code, Common::HTTPDownloader::Request::Data data) {
+                       filename = std::move(filename)](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
         if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
           return;
 
@@ -788,12 +788,26 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
         if (!entry || !GetCoverImagePathForEntry(entry).empty())
           return;
 
-        std::string write_path(GetNewCoverImagePathForEntry(entry, filename.c_str(), use_serial));
+        // prefer the content type from the response for the extension
+        // otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
+        std::string template_filename;
+        std::string content_type_extension(Common::HTTPDownloader::GetExtensionForContentType(content_type));
+
+        // don't treat the domain name as an extension..
+        const std::string::size_type last_slash = filename.find('/');
+        const std::string::size_type last_dot = filename.find('.');
+        if (!content_type_extension.empty())
+          template_filename = fmt::format("cover.{}", content_type_extension);
+        else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
+          template_filename = Path::GetFileName(filename);
+        else
+          template_filename = "cover.jpg";
+
+        std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
         if (write_path.empty())
           return;
 
-        FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size());
-        if (save_callback)
+        if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
           save_callback(entry, std::move(write_path));
       });
     downloader->WaitForAllRequests();

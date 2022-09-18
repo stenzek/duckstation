@@ -23,6 +23,7 @@ void Canonicalize(std::string* path);
 
 /// Sanitizes a filename for use in a filesystem.
 std::string SanitizeFileName(const std::string_view& str, bool strip_slashes = true);
+void SanitizeFileName(std::string* str, bool strip_slashes = true);
 
 /// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 bool IsAbsolute(const std::string_view& path);

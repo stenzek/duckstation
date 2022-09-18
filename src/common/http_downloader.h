@@ -21,7 +21,7 @@ public:
   struct Request
   {
     using Data = std::vector<u8>;
-    using Callback = std::function<void(s32 status_code, const Data& data)>;
+    using Callback = std::function<void(s32 status_code, std::string content_type, Data data)>;
 
     enum class Type
     {
@@ -42,6 +42,7 @@ public:
     Callback callback;
     std::string url;
     std::string post_data;
+    std::string content_type;
     Data data;
     u64 start_time;
     s32 status_code = 0;
@@ -56,6 +57,7 @@ public:
   static std::unique_ptr<HTTPDownloader> Create(const char* user_agent = DEFAULT_USER_AGENT);
   static std::string URLEncode(const std::string_view& str);
   static std::string URLDecode(const std::string_view& str);
+  static std::string GetExtensionForContentType(const std::string& content_type);
 
   void SetTimeout(float timeout);
   void SetMaxActiveRequests(u32 max_active_requests);

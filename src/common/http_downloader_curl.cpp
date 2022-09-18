@@ -88,6 +88,11 @@ void HTTPDownloaderCurl::ProcessRequest(Request* req)
     long response_code = 0;
     curl_easy_getinfo(req->handle, CURLINFO_RESPONSE_CODE, &response_code);
     req->status_code = static_cast<s32>(response_code);
+
+    char* content_type = nullptr;
+    if (!curl_easy_getinfo(req->handle, CURLINFO_CONTENT_TYPE, &content_type) && content_type)
+      req->content_type = content_type;
+
     Log_DevPrintf("Request for '%s' returned status code %d and %zu bytes", req->url.c_str(), req->status_code,
                   req->data.size());
   }
@@ -159,4 +164,4 @@ void HTTPDownloaderCurl::CloseRequest(HTTPDownloader::Request* request)
     req->closed.store(true);
 }
 
-} // namespace FrontendCommon
+} // namespace Common

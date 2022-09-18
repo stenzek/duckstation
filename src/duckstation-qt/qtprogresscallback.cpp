@@ -115,7 +115,8 @@ void QtModalProgressCallback::checkForDelayedShow()
   }
 }
 
-QtAsyncProgressThread::QtAsyncProgressThread(QWidget* parent) : QThread(parent) {}
+// NOTE: We deliberately don't set the thread parent, because otherwise we can't move it.
+QtAsyncProgressThread::QtAsyncProgressThread(QWidget* parent) : QThread() {}
 
 QtAsyncProgressThread::~QtAsyncProgressThread() = default;
 
