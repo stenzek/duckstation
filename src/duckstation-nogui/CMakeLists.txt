@@ -34,10 +34,13 @@ endif()
 
 if(USE_WAYLAND)
   message(STATUS "Building Wayland NoGUI Platform.")
-	find_package(Wayland REQUIRED Client)
-	find_package(WaylandScanner REQUIRED)
-	find_package(WaylandProtocols 1.15 REQUIRED)
-	find_package(XKBCommon REQUIRED)
+  find_package(ECM REQUIRED NO_MODULE)
+  list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
+
+  find_package(Wayland REQUIRED Client)
+  find_package(WaylandScanner REQUIRED)
+  find_package(WaylandProtocols 1.15 REQUIRED)
+  find_package(XKBCommon REQUIRED)
 
   target_compile_definitions(duckstation-nogui PRIVATE "NOGUI_PLATFORM_WAYLAND=1")
   target_sources(duckstation-nogui PRIVATE
