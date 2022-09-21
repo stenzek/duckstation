@@ -3572,6 +3572,9 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   DrawToggleSetting(bsi, ICON_FA_LIST_OL " Leaderboards",
                     "Enables tracking and submission of leaderboards in supported games.", "Cheevos", "Leaderboards",
                     true, enabled && challenge);
+  DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Sound Effects",
+                    "Plays sound effects for events such as achievement unlocks and leaderboard submissions.",
+                    "Cheevos", "SoundEffects", true, enabled);
   DrawToggleSetting(bsi, ICON_FA_MEDAL " Test Unofficial Achievements",
                     "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "
                     "tracked by RetroAchievements.",

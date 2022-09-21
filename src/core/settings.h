@@ -173,6 +173,7 @@ struct Settings
   bool achievements_use_first_disc_from_playlist : 1;
   bool achievements_rich_presence : 1;
   bool achievements_challenge_mode : 1;
+  bool achievements_leaderboards : 1;
   bool achievements_sound_effects : 1;
 #endif
 

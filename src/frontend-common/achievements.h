@@ -72,6 +72,7 @@ static ALWAYS_INLINE bool IsUsingRAIntegration()
 bool IsActive();
 bool IsLoggedIn();
 bool ChallengeModeActive();
+bool LeaderboardsActive();
 bool IsTestModeActive();
 bool IsUnofficialTestModeActive();
 bool IsRichPresenceEnabled();

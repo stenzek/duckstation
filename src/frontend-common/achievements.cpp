@@ -404,6 +404,11 @@ bool Achievements::ChallengeModeActive()
   return s_challenge_mode;
 }
 
+bool Achievements::LeaderboardsActive()
+{
+  return ChallengeModeActive() && g_settings.achievements_leaderboards;
+}
+
 bool Achievements::IsTestModeActive()
 {
   return g_settings.achievements_test_mode;
@@ -485,11 +490,11 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (g_settings.achievements_challenge_mode != old_config.achievements_challenge_mode)
   {
     // Hardcore mode can only be enabled through reset (ResetChallengeMode()).
-    if (s_challenge_mode && !old_config.achievements_challenge_mode)
+    if (s_challenge_mode && !g_settings.achievements_challenge_mode)
     {
       ResetChallengeMode();
     }
-    else if (g_settings.achievements_challenge_mode)
+    else if (!s_challenge_mode && g_settings.achievements_challenge_mode)
     {
       Host::AddKeyedOSDMessage(
         "challenge_mode_reset",
@@ -1013,14 +1018,8 @@ void Achievements::DisplayAchievementSummary()
   if (GetLeaderboardCount() > 0)
   {
     summary.push_back('\n');
-    if (ChallengeModeActive())
-    {
-      summary.append(Host::TranslateString("Achievements", "Leaderboards are enabled."));
-    }
-    else
-    {
-      summary.append(Host::TranslateString("Achievements", "Leaderboards are disabled because hardcore mode is off."));
-    }
+    if (LeaderboardsActive())
+      summary.append("Leaderboard submission is enabled.");
   }
 
   Host::RunOnCPUThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
@@ -1818,6 +1817,13 @@ void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)
   if (!ChallengeModeActive())
   {
     Log_WarningPrintf("Skipping sending leaderboard %u result to server because Challenge mode is off.",
+                      leaderboard_id);
+    return;
+  }
+
+  if (!LeaderboardsActive())
+  {
+    Log_WarningPrintf("Skipping sending leaderboard %u result to server because leaderboards are disabled.",
                       leaderboard_id);
     return;
   }

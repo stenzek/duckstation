@@ -39,27 +39,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="challengeMode">
-        <property name="text">
-         <string>Enable Hardcore Mode</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="useFirstDiscFromPlaylist">
-        <property name="text">
-         <string>Use First Disc From Playlist</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="testMode">
-        <property name="text">
-         <string>Enable Test Mode</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QCheckBox" name="unofficialTestMode">
         <property name="text">
@@ -74,10 +53,38 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="testMode">
+        <property name="text">
+         <string>Enable Test Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="challengeMode">
+        <property name="text">
+         <string>Enable Hardcore Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QCheckBox" name="soundEffects">
         <property name="text">
          <string>Enable Sound Effects</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="useFirstDiscFromPlaylist">
+        <property name="text">
+         <string>Use First Disc From Playlist</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="leaderboards">
+        <property name="text">
+         <string>Enable Leaderboards</string>
         </property>
        </widget>
       </item>
