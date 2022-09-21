@@ -6,10 +6,13 @@
 
 class HostDisplayTexture;
 
+struct Settings;
+
 namespace FullscreenUI {
 bool Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
+void CheckForConfigChanges(const Settings& old_settings);
 void OnSystemStarted();
 void OnSystemPaused();
 void OnSystemResumed();

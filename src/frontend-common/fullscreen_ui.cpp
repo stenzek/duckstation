@@ -578,6 +578,19 @@ bool FullscreenUI::HasActiveWindow()
                            ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen());
 }
 
+void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
+{
+  if (!IsInitialized())
+    return;
+
+#ifdef WITH_CHEEVOS
+  // If achievements got disabled, we might have the menu open...
+  // That means we're going to be reading achievement state.
+  if (old_settings.achievements_enabled && !g_settings.achievements_enabled)
+    ReturnToMainWindow();
+#endif
+}
+
 void FullscreenUI::OnSystemStarted()
 {
   if (!IsInitialized())

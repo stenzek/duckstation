@@ -372,6 +372,8 @@ void CommonHost::CheckForSettingsChanges(const Settings& old_settings)
   Achievements::UpdateSettings(old_settings);
 #endif
 
+  FullscreenUI::CheckForConfigChanges(old_settings);
+
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_to_console != old_settings.log_to_console ||
       g_settings.log_to_debug != old_settings.log_to_debug || g_settings.log_to_window != old_settings.log_to_window ||
