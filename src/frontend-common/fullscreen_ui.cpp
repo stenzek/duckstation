@@ -430,6 +430,7 @@ static GameListPage s_game_list_page = GameListPage::Grid;
 //////////////////////////////////////////////////////////////////////////
 static void DrawAchievementsWindow();
 static void DrawAchievement(const Achievements::Achievement& cheevo);
+static void DrawPrimedAchievements();
 static void DrawLeaderboardsWindow();
 static void DrawLeaderboardListEntry(const Achievements::Leaderboard& lboard);
 static void DrawLeaderboardEntry(const Achievements::LeaderboardEntry& lbEntry, float rank_column_width,
@@ -709,6 +710,12 @@ void FullscreenUI::Render()
   ImGuiFullscreen::UploadAsyncTextures();
 
   ImGuiFullscreen::BeginLayout();
+
+#ifdef WITH_CHEEVOS
+  // Primed achievements must come first, because we don't want the pause screen to be behind them.
+  if (Achievements::GetPrimedAchievementCount() > 0)
+    DrawPrimedAchievements();
+#endif
 
   switch (s_current_main_window)
   {
@@ -5554,6 +5561,37 @@ void FullscreenUI::DrawAchievementsWindow()
     EndMenuButtons();
   }
   EndFullscreenWindow();
+}
+
+void FullscreenUI::DrawPrimedAchievements()
+{
+  const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
+  const float spacing = LayoutScale(10.0f);
+  const float padding = LayoutScale(10.0f);
+
+  const ImGuiIO& io = ImGui::GetIO();
+  const float x_advance = image_size.x + spacing;
+  ImVec2 position(io.DisplaySize.x - padding - image_size.x, io.DisplaySize.y - padding - image_size.y);
+
+  auto lock = Achievements::GetLock();
+  Achievements::EnumerateAchievements(
+    [&image_size, &x_advance, &position](const Achievements::Achievement& achievement) {
+      if (!achievement.primed)
+        return true;
+
+      const std::string& badge_path = Achievements::GetAchievementBadgePath(achievement);
+      if (badge_path.empty())
+        return true;
+
+      HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+      if (!badge)
+        return true;
+
+      ImDrawList* dl = ImGui::GetBackgroundDrawList();
+      dl->AddImage(badge->GetHandle(), position, position + image_size);
+      position.x -= x_advance;
+      return true;
+    });
 }
 
 bool FullscreenUI::OpenLeaderboardsWindow()

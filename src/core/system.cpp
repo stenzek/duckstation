@@ -898,6 +898,11 @@ void System::ResetSystem()
   if (!IsValid())
     return;
 
+#ifdef WITH_CHEEVOS
+  if (!Achievements::ConfirmSystemReset())
+    return;
+#endif
+
   InternalReset();
   ResetPerformanceCounters();
   ResetThrottler();
@@ -1650,7 +1655,7 @@ bool System::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool u
     {
 #ifdef WITH_CHEEVOS
       // loading an old state without cheevos, so reset the runtime
-      Achievements::Reset();
+      Achievements::ResetRuntime();
 #endif
     }
   }
@@ -1686,7 +1691,7 @@ void System::InternalReset()
   ResetPerformanceCounters();
 
 #ifdef WITH_CHEEVOS
-  Achievements::Reset();
+  Achievements::ResetRuntime();
 #endif
 
   g_gpu->ResetGraphicsAPIState();

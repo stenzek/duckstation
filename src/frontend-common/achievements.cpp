@@ -27,6 +27,7 @@
 #include "util/cd_image.h"
 #include "util/state_wrapper.h"
 #include <algorithm>
+#include <atomic>
 #include <cstdarg>
 #include <cstdlib>
 #include <ctime>
@@ -60,6 +61,10 @@ static unsigned PeekMemory(unsigned address, unsigned num_bytes, void* ud);
 static void ActivateLockedAchievements();
 static bool ActivateAchievement(Achievement* achievement);
 static void DeactivateAchievement(Achievement* achievement);
+static void UnlockAchievement(u32 achievement_id, bool add_notification = true);
+static void AchievementPrimed(u32 achievement_id);
+static void AchievementUnprimed(u32 achievement_id);
+static void SubmitLeaderboard(u32 leaderboard_id, int value);
 static void SendPing();
 static void SendPlaying();
 static void UpdateRichPresence();
@@ -115,6 +120,7 @@ static std::string s_game_title;
 static std::string s_game_icon;
 static std::vector<Achievements::Achievement> s_achievements;
 static std::vector<Achievements::Leaderboard> s_leaderboards;
+static std::atomic<u32> s_primed_achievement_count{0};
 
 static bool s_has_rich_presence = false;
 static std::string s_rich_presence_string;
@@ -328,6 +334,7 @@ void Achievements::ClearGameInfo(bool clear_achievements, bool clear_leaderboard
       DeactivateAchievement(&ach);
       s_achievements.pop_back();
     }
+    s_primed_achievement_count.store(0, std::memory_order_release);
   }
   if (clear_leaderboards)
   {
@@ -459,7 +466,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (!g_settings.achievements_enabled)
   {
     // we're done here
-    Shutdown();
+    OnSystemShutdown();
     return;
   }
 
@@ -491,7 +498,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
       g_settings.achievements_use_first_disc_from_playlist != old_config.achievements_use_first_disc_from_playlist ||
       g_settings.achievements_rich_presence != old_config.achievements_rich_presence)
   {
-    Shutdown();
+    OnSystemShutdown();
     Initialize();
     return;
   }
@@ -584,7 +591,7 @@ void Achievements::SetChallengeMode(bool enabled)
     GetUserUnlocks();
 }
 
-bool Achievements::Shutdown()
+bool Achievements::OnSystemShutdown()
 {
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -619,29 +626,35 @@ bool Achievements::Shutdown()
   return true;
 }
 
-bool Achievements::Reset()
+bool Achievements::ConfirmSystemReset()
+{
+#ifdef WITH_RAINTEGRATION
+  if (IsUsingRAIntegration())
+    return RA_ConfirmLoadNewRom(false);
+#endif
+
+  return true;
+}
+
+void Achievements::ResetRuntime()
 {
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
-    if (!RA_ConfirmLoadNewRom(false))
-      return false;
-
     RA_OnReset();
-    return true;
+    return;
   }
 #endif
 
   if (!s_active)
-    return true;
+    return;
 
   std::unique_lock lock(s_achievements_mutex);
   Log_DevPrint("Resetting rcheevos state...");
   rc_runtime_reset(&s_rcheevos_runtime);
-  return true;
 }
 
-void Achievements::OnPaused(bool paused)
+void Achievements::OnSystemPaused(bool paused)
 {
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -1131,6 +1144,7 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
     cheevo.badge_name = defn.badge_name;
     cheevo.locked = true;
     cheevo.active = false;
+    cheevo.primed = false;
     cheevo.points = defn.points;
     cheevo.category = static_cast<AchievementCategory>(defn.category);
     s_achievements.push_back(std::move(cheevo));
@@ -1352,7 +1366,9 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
 
   if (s_http_downloader->HasAnyRequests())
   {
-    Host::DisplayLoadingScreen("Downloading achievements data...");
+    if (image && System::IsValid())
+      Host::DisplayLoadingScreen("Downloading achievements data...");
+
     s_http_downloader->WaitForAllRequests();
   }
 
@@ -1655,6 +1671,12 @@ void Achievements::DeactivateAchievement(Achievement* achievement)
   rc_runtime_deactivate_achievement(&s_rcheevos_runtime, achievement->id);
   achievement->active = false;
 
+  if (achievement->primed)
+  {
+    achievement->primed = false;
+    s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
+  }
+
   Log_DevPrintf("Deactivated achievement %s (%u)", achievement->title.c_str(), achievement->id);
 }
 
@@ -1711,6 +1733,8 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, std::string conten
 
 void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
 {
+  std::unique_lock lock(s_achievements_mutex);
+
   Achievement* achievement = GetMutableAchievementByID(achievement_id);
   if (!achievement)
   {
@@ -1783,6 +1807,8 @@ void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)
     return;
   }
 
+  std::unique_lock lock(s_achievements_mutex);
+
   s_submitting_lboard_id = leaderboard_id;
 
   RAPIRequest<rc_api_submit_lboard_entry_request_t, rc_api_init_submit_lboard_entry_request> request;
@@ -1792,6 +1818,28 @@ void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)
   request.leaderboard_id = leaderboard_id;
   request.score = value;
   request.Send(SubmitLeaderboardCallback);
+}
+
+void Achievements::AchievementPrimed(u32 achievement_id)
+{
+  std::unique_lock lock(s_achievements_mutex);
+  Achievement* achievement = GetMutableAchievementByID(achievement_id);
+  if (!achievement || achievement->primed)
+    return;
+
+  achievement->primed = true;
+  s_primed_achievement_count.fetch_add(std::memory_order_acq_rel);
+}
+
+void Achievements::AchievementUnprimed(u32 achievement_id)
+{
+  std::unique_lock lock(s_achievements_mutex);
+  Achievement* achievement = GetMutableAchievementByID(achievement_id);
+  if (!achievement || !achievement->primed)
+    return;
+
+  achievement->primed = false;
+  s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
 }
 
 std::pair<u32, u32> Achievements::GetAchievementProgress(const Achievement& achievement)
@@ -1841,6 +1889,12 @@ std::string Achievements::GetAchievementBadgeURL(const Achievement& achievement)
   return request.GetURL();
 }
 
+u32 Achievements::GetPrimedAchievementCount()
+{
+  // Relaxed is fine here, worst that happens is we draw the triggers one frame late.
+  return s_primed_achievement_count.load(std::memory_order_relaxed);
+}
+
 void Achievements::CheevosEventHandler(const rc_runtime_event_t* runtime_event)
 {
   static const char* events[] = {"RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED", "RC_RUNTIME_EVENT_ACHIEVEMENT_PAUSED",
@@ -1853,10 +1907,27 @@ void Achievements::CheevosEventHandler(const rc_runtime_event_t* runtime_event)
     ((unsigned)runtime_event->type >= countof(events)) ? "unknown" : events[(unsigned)runtime_event->type];
   Log_DevPrintf("Cheevos Event %s for %u", event_text, runtime_event->id);
 
-  if (runtime_event->type == RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED)
-    UnlockAchievement(runtime_event->id);
-  else if (runtime_event->type == RC_RUNTIME_EVENT_LBOARD_TRIGGERED)
-    SubmitLeaderboard(runtime_event->id, runtime_event->value);
+  switch (runtime_event->type)
+  {
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_TRIGGERED:
+      UnlockAchievement(runtime_event->id);
+      break;
+
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_PRIMED:
+      AchievementPrimed(runtime_event->id);
+      break;
+
+    case RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED:
+      AchievementUnprimed(runtime_event->id);
+      break;
+
+    case RC_RUNTIME_EVENT_LBOARD_TRIGGERED:
+      SubmitLeaderboard(runtime_event->id, runtime_event->value);
+      break;
+
+    default:
+      break;
+  }
 }
 
 unsigned Achievements::PeekMemory(unsigned address, unsigned num_bytes, void* ud)

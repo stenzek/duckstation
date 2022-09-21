@@ -110,7 +110,7 @@ void CommonHost::Shutdown()
 #endif
 
 #ifdef WITH_CHEEVOS
-  Achievements::Shutdown();
+  Achievements::OnSystemShutdown();
 #endif
 
   InputManager::CloseSources();

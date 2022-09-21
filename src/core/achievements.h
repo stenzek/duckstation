@@ -9,7 +9,8 @@ namespace Achievements {
 #ifdef WITH_CHEEVOS
 
 // Implemented in Host.
-extern bool Reset();
+extern bool ConfirmSystemReset();
+extern void ResetRuntime();
 extern bool DoState(StateWrapper& sw);
 extern void GameChanged(const std::string& path, CDImage* image);
 
@@ -28,10 +29,11 @@ extern bool ChallengeModeActive();
 #else
 
 // Make noops when compiling without cheevos.
-static inline bool Reset()
+static inline bool ConfirmSystemReset()
 {
   return true;
 }
+static inline void ResetRuntime() {}
 static inline bool DoState(StateWrapper& sw)
 {
   return true;
