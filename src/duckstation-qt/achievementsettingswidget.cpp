@@ -24,6 +24,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialTestMode, "Cheevos", "UnofficialTestMode", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFirstDiscFromPlaylist, "Cheevos",
                                                "UseFirstDiscFromPlaylist", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
 
   dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
                              tr("When enabled and logged in, DuckStation will scan for achievements on startup."));
@@ -44,6 +45,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
   dialog->registerWidgetHelp(m_ui.challengeMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
                              tr("\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown "
                                 "functions, but you receive double the achievement points."));
+  dialog->registerWidgetHelp(
+    m_ui.challengeMode, tr("Enable Sound Effects"), tr("Checked"),
+    tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
 
   connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 

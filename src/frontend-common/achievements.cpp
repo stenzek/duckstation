@@ -16,6 +16,7 @@
 #include "core/system.h"
 #include "fullscreen_ui.h"
 #include "imgui_fullscreen.h"
+#include "platform_misc.h"
 #include "rapidjson/document.h"
 #include "rc_api_info.h"
 #include "rc_api_request.h"
@@ -52,6 +53,10 @@ enum : s32
   RICH_PRESENCE_PING_FREQUENCY = 2 * 60,
   NO_RICH_PRESENCE_PING_FREQUENCY = RICH_PRESENCE_PING_FREQUENCY * 2,
 };
+
+static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
+static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
+static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 
 static void FormattedError(const char* format, ...);
 static void LogFailedResponseJSON(const Common::HTTPDownloader::Request::Data& data);
@@ -1021,6 +1026,10 @@ void Achievements::DisplayAchievementSummary()
   Host::RunOnCPUThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
     if (FullscreenUI::IsInitialized())
       ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+
+    // Technically not going through the resource API, but since we're passing this to something else, we can't.
+    if (g_settings.achievements_sound_effects)
+      FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
   });
 }
 
@@ -1729,6 +1738,10 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, std::string conten
     submitted_score, best_score, response.new_rank, response.num_entries);
 
   ImGuiFullscreen::AddNotification(10.0f, lb->title, std::move(summary), s_game_icon);
+
+  // Technically not going through the resource API, but since we're passing this to something else, we can't.
+  if (g_settings.achievements_sound_effects)
+    FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, LBSUBMIT_SOUND_NAME).c_str());
 }
 
 void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
@@ -1769,6 +1782,8 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 
   ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description,
                                    GetAchievementBadgePath(*achievement));
+  if (g_settings.achievements_sound_effects)
+    FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
 
   if (IsTestModeActive())
   {
