@@ -1,53 +1,8 @@
-#include "inhibit_screensaver.h"
 #include "common/log.h"
 #include "common/string.h"
+#include "platform_misc.h"
 #include <cinttypes>
 Log_SetChannel(FrontendCommon);
-
-#if defined(_WIN32)
-#include "common/windows_headers.h"
-
-static bool SetScreensaverInhibitWin32(bool inhibit, const WindowInfo& wi)
-{
-  if (SetThreadExecutionState(ES_CONTINUOUS | (inhibit ? (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED) : 0)) == NULL)
-  {
-    Log_ErrorPrintf("SetThreadExecutionState() failed: %d", GetLastError());
-    return false;
-  }
-
-  return true;
-}
-
-#endif // _WIN32
-
-#ifdef __APPLE__
-#include <IOKit/pwr_mgt/IOPMLib.h>
-
-static IOPMAssertionID s_prevent_idle_assertion = kIOPMNullAssertionID;
-
-static bool SetScreensaverInhibitMacOS(bool inhibit, const WindowInfo& wi)
-{
-  if (inhibit)
-  {
-    const CFStringRef reason = CFSTR("System Running");
-    if (IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
-                                    &s_prevent_idle_assertion) != kIOReturnSuccess)
-    {
-      Log_ErrorPrintf("IOPMAssertionCreateWithName() failed");
-      return false;
-    }
-
-    return true;
-  }
-  else
-  {
-    IOPMAssertionRelease(s_prevent_idle_assertion);
-    s_prevent_idle_assertion = kIOPMNullAssertionID;
-    return true;
-  }
-}
-
-#endif // __APPLE__
 
 #ifdef USE_X11
 #include <cstdio>
@@ -76,15 +31,7 @@ static bool SetScreensaverInhibitX11(bool inhibit, const WindowInfo& wi)
     return false;
   }
 
-  int status = 0;
-  while (waitpid(pid, &status, 0) == -1)
-    ;
-
-  if (WEXITSTATUS(status) == 0)
-    return true;
-
-  Log_ErrorPrintf("xdg-screensaver returned error %d", WEXITSTATUS(status));
-  return false;
+  return true;
 }
 
 #endif // USE_X11
@@ -93,16 +40,6 @@ static bool SetScreensaverInhibit(bool inhibit, const WindowInfo& wi)
 {
   switch (wi.type)
   {
-#if defined(_WIN32)
-    case WindowInfo::Type::Win32:
-      return SetScreensaverInhibitWin32(inhibit, wi);
-#endif
-
-#ifdef __APPLE__
-    case WindowInfo::Type::MacOS:
-      return SetScreensaverInhibitMacOS(inhibit, wi);
-#endif
-
 #ifdef USE_X11
     case WindowInfo::Type::X11:
       return SetScreensaverInhibitX11(inhibit, wi);
@@ -114,12 +51,10 @@ static bool SetScreensaverInhibit(bool inhibit, const WindowInfo& wi)
   }
 }
 
-namespace FrontendCommon {
-
 static bool s_screensaver_suspended;
 static WindowInfo s_screensaver_suspender;
 
-void SuspendScreensaver(const WindowInfo& wi)
+void FrontendCommon::SuspendScreensaver(const WindowInfo& wi)
 {
   if (s_screensaver_suspended &&
       (s_screensaver_suspender.type != wi.type || s_screensaver_suspender.window_handle != wi.window_handle))
@@ -137,7 +72,7 @@ void SuspendScreensaver(const WindowInfo& wi)
   s_screensaver_suspender = wi;
 }
 
-void ResumeScreensaver()
+void FrontendCommon::ResumeScreensaver()
 {
   if (!s_screensaver_suspended)
     return;
@@ -151,4 +86,18 @@ void ResumeScreensaver()
   s_screensaver_suspender = {};
 }
 
-} // namespace FrontendCommon
+bool FrontendCommon::PlaySoundAsync(const char* path)
+{
+#ifdef __linux__
+  // This is... pretty awful. But I can't think of a better way without linking to e.g. gstreamer.
+  const char* cmdname = "aplay";
+  const char* argv[] = {cmdname, path, nullptr};
+  pid_t pid;
+
+  // Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
+  int res = posix_spawnp(&pid, cmdname, nullptr, nullptr, const_cast<char**>(argv), environ);
+  return (res == 0);
+#else
+  return false;
+#endif
+}

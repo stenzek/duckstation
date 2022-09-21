@@ -32,7 +32,7 @@
 #include "imgui_fullscreen.h"
 #include "imgui_manager.h"
 #include "imgui_overlays.h"
-#include "inhibit_screensaver.h"
+#include "platform_misc.h"
 #include "input_manager.h"
 #include "scmversion/scmversion.h"
 #include "util/audio_stream.h"

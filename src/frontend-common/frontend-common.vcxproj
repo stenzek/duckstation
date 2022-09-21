@@ -23,12 +23,12 @@
     </ClCompile>
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
-    <ClCompile Include="inhibit_screensaver.cpp" />
     <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="input_source.cpp" />
     <ClCompile Include="opengl_host_display.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shadergen.cpp" />
@@ -61,7 +61,7 @@
     </ClInclude>
     <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="imgui_overlays.h" />
-    <ClInclude Include="inhibit_screensaver.h" />
+    <ClInclude Include="platform_misc.h" />
     <ClInclude Include="input_manager.h" />
     <ClInclude Include="input_source.h" />
     <ClInclude Include="opengl_host_display.h">

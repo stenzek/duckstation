@@ -15,7 +15,6 @@
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
-    <ClCompile Include="inhibit_screensaver.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="imgui_impl_dx12.cpp" />
@@ -30,6 +29,7 @@
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="dinput_source.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
+    <ClCompile Include="platform_misc_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />
@@ -46,7 +46,7 @@
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="fullscreen_ui.h" />
-    <ClInclude Include="inhibit_screensaver.h" />
+    <ClInclude Include="platform_misc.h" />
     <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="imgui_impl_dx12.h" />

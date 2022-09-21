@@ -10,8 +10,6 @@ add_library(frontend-common
   host_settings.cpp
   icon.cpp
   icon.h
-  inhibit_screensaver.cpp
-  inhibit_screensaver.h
   input_manager.cpp
   input_manager.h
   input_source.cpp
@@ -22,6 +20,7 @@ add_library(frontend-common
   imgui_manager.h
   imgui_overlays.cpp
   imgui_overlays.h
+  platform_misc.h
   postprocessing_chain.cpp
   postprocessing_chain.h
   postprocessing_shader.cpp
@@ -81,9 +80,21 @@ if(ENABLE_VULKAN)
   )
 endif()
 
-if(APPLE)
+if(WIN32)
+  target_sources(frontend-common PRIVATE
+    platform_misc_win32.cpp
+  )
+  target_link_libraries(frontend-common PRIVATE winmm.lib)
+elseif(APPLE)
   find_library(IOK_LIBRARY IOKit REQUIRED)
   target_link_libraries(frontend-common PRIVATE "${IOK_LIBRARY}")
+  target_sources(frontend-common PRIVATE
+    platform_misc_mac.mm
+  )
+elseif(NOT ANDROID)
+  target_sources(frontend-common PRIVATE
+    platform_misc_unix.cpp
+  )
 endif()
 
 if(SDL2_FOUND)

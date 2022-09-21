@@ -1809,6 +1809,14 @@ void QtHost::HookSignals()
 {
   std::signal(SIGINT, SignalHandler);
   std::signal(SIGTERM, SignalHandler);
+
+#ifdef __linux__
+  // Ignore SIGCHLD by default on Linux, since we kick off aplay asynchronously.
+  struct sigaction sa_chld = {};
+  sigemptyset(&sa_chld.sa_mask);
+  sa_chld.sa_flags = SA_SIGINFO | SA_RESTART | SA_NOCLDSTOP | SA_NOCLDWAIT;
+  sigaction(SIGCHLD, &sa_chld, nullptr);
+#endif
 }
 
 void QtHost::InitializeEarlyConsole()
