@@ -37,14 +37,6 @@ enum : u32
 };
 
 // ------------------------------------------------------------------------
-// Event Handler Type
-// ------------------------------------------------------------------------
-// This class acts as an adapter to convert from normalized values to
-// binary values when the callback is a binary/button handler. That way
-// you don't need to convert float->bool in your callbacks.
-using InputEventHandler = std::variant<InputAxisEventHandler, InputButtonEventHandler>;
-
-// ------------------------------------------------------------------------
 // Binding Type
 // ------------------------------------------------------------------------
 // This class tracks both the keys which make it up (for chords), as well
@@ -107,7 +99,6 @@ static std::optional<InputBindingKey> ParseSensorKey(const std::string_view& sou
 static std::vector<std::string_view> SplitChord(const std::string_view& binding);
 static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
 static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
-static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
 
 static bool IsAxisHandler(const InputEventHandler& handler);
 
@@ -341,45 +332,68 @@ std::string InputManager::ConvertInputBindingKeysToString(const InputBindingKey*
 void InputManager::AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler)
 {
   for (const std::string& binding : bindings)
+    AddBinding(binding, handler);
+}
+
+void InputManager::AddBinding(const std::string_view& binding, const InputEventHandler& handler)
+{
+  std::shared_ptr<InputBinding> ibinding;
+  const std::vector<std::string_view> chord_bindings(SplitChord(binding));
+
+  for (const std::string_view& chord_binding : chord_bindings)
   {
-    std::shared_ptr<InputBinding> ibinding;
-    const std::vector<std::string_view> chord_bindings(SplitChord(binding));
-
-    for (const std::string_view& chord_binding : chord_bindings)
+    std::optional<InputBindingKey> key = ParseInputBindingKey(chord_binding);
+    if (!key.has_value())
     {
-      std::optional<InputBindingKey> key = ParseInputBindingKey(chord_binding);
-      if (!key.has_value())
-      {
-        Log_ErrorPrintf("Invalid binding: '%s'", binding.c_str());
-        ibinding.reset();
-        break;
-      }
-
-      if (!ibinding)
-      {
-        ibinding = std::make_shared<InputBinding>();
-        ibinding->handler = handler;
-      }
-
-      if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
-      {
-        Log_ErrorPrintf("Too many chord parts, max is %u (%s)", MAX_KEYS_PER_BINDING, binding.c_str());
-        ibinding.reset();
-        break;
-      }
-
-      ibinding->keys[ibinding->num_keys] = key.value();
-      ibinding->full_mask |= (static_cast<u8>(1) << ibinding->num_keys);
-      ibinding->num_keys++;
+      Log_ErrorPrintf("Invalid binding: '%.*s'", static_cast<int>(binding.size()), binding.data());
+      ibinding.reset();
+      break;
     }
 
     if (!ibinding)
-      continue;
+    {
+      ibinding = std::make_shared<InputBinding>();
+      ibinding->handler = handler;
+    }
 
-    // plop it in the input map for all the keys
-    for (u32 i = 0; i < ibinding->num_keys; i++)
-      s_binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
+    if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
+    {
+      Log_ErrorPrintf("Too many chord parts, max is %u (%.*s)", MAX_KEYS_PER_BINDING, static_cast<int>(binding.size()),
+                      binding.data());
+      ibinding.reset();
+      break;
+    }
+
+    ibinding->keys[ibinding->num_keys] = key.value();
+    ibinding->full_mask |= (static_cast<u8>(1) << ibinding->num_keys);
+    ibinding->num_keys++;
   }
+
+  if (!ibinding)
+    return;
+
+  // plop it in the input map for all the keys
+  for (u32 i = 0; i < ibinding->num_keys; i++)
+    s_binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
+}
+
+void InputManager::AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding,
+                                       InputSource* motor_0_source, const InputBindingKey* motor_1_binding,
+                                       InputSource* motor_1_source)
+{
+  PadVibrationBinding vib;
+  vib.pad_index = pad_index;
+  if (motor_0_binding)
+  {
+    vib.motors[0].binding = *motor_0_binding;
+    vib.motors[0].source = motor_0_source;
+  }
+  if (motor_1_binding)
+  {
+    vib.motors[1].binding = *motor_1_binding;
+    vib.motors[1].source = motor_1_source;
+  }
+  s_pad_vibration_array.push_back(std::move(vib));
 }
 
 // ------------------------------------------------------------------------
@@ -1356,10 +1370,9 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
     if (!cinfo || cinfo->type == ControllerType::None)
       continue;
 
-    // NOTE: Macros can be overridden per-game.
     const std::string section(Controller::GetSettingsSection(pad));
     AddPadBindings(binding_si, section, pad, cinfo);
-    LoadMacroButtonConfig(si, section, pad, cinfo);
+    LoadMacroButtonConfig(binding_si, section, pad, cinfo);
   }
 
   for (u32 axis = 0; axis < static_cast<u32>(InputPointerAxis::Count); axis++)
