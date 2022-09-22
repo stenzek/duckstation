@@ -962,12 +962,28 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
     if (copy_pad_config)
     {
-      dest_si->CopyFloatValue(src_si, section.c_str(), "AxisScale");
-
-      if (info->vibration_caps != Controller::VibrationCapabilities::NoVibration)
+      for (u32 i = 0; i < info->num_settings; i++)
       {
-        dest_si->CopyFloatValue(src_si, section.c_str(), "LargeMotorScale");
-        dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
+        const SettingInfo& csi = info->settings[i];
+        switch (csi.type)
+        {
+          case SettingInfo::Type::Boolean:
+            dest_si->CopyBoolValue(src_si, section.c_str(), csi.name);
+            break;
+          case SettingInfo::Type::Integer:
+          case SettingInfo::Type::IntegerList:
+            dest_si->CopyIntValue(src_si, section.c_str(), csi.name);
+            break;
+          case SettingInfo::Type::Float:
+            dest_si->CopyFloatValue(src_si, section.c_str(), csi.name);
+            break;
+          case SettingInfo::Type::String:
+          case SettingInfo::Type::Path:
+            dest_si->CopyStringValue(src_si, section.c_str(), csi.name);
+            break;
+          default:
+            break;
+        }
       }
     }
   }
@@ -1350,12 +1366,10 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
   {
     // From lilypad: 1 mouse pixel = 1/8th way down.
     const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
-    const float invert =
-      si.GetBoolValue("Pad", fmt::format("Pointer{}Invert", s_pointer_axis_names[axis]).c_str(), false) ? -1.0f : 1.0f;
     s_pointer_axis_scale[axis] =
-      invert / std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(),
-                                         default_scale),
-                        1.0f);
+      1.0f / std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(),
+                                       default_scale),
+                      1.0f);
   }
 }
 

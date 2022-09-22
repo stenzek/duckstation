@@ -3018,6 +3018,10 @@ void FullscreenUI::DrawControllerSettingsPage()
             DrawIntRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
                                 si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
             break;
+          case SettingInfo::Type::IntegerList:
+            DrawIntListSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
+                               si.options, 0, si.IntegerMinValue(), true);
+            break;
           case SettingInfo::Type::Float:
             DrawFloatRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
                                   si.FloatMinValue(), si.FloatMaxValue(), si.format, si.multiplier, true);

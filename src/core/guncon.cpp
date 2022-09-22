@@ -220,10 +220,11 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATABLE("GunCon", "Crosshair Image Path"),
    TRANSLATABLE("GunCon", "Path to an image to use as a crosshair/cursor.")},
   {SettingInfo::Type::Float, "CrosshairScale", TRANSLATABLE("GunCon", "Crosshair Image Scale"),
-   TRANSLATABLE("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", 100.0f},
+   TRANSLATABLE("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
+   100.0f},
   {SettingInfo::Type::Float, "XScale", TRANSLATABLE("GunCon", "X Scale"),
-   TRANSLATABLE("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0",
-   "0.01", "%.0f%%", 100.0f}};
+   TRANSLATABLE("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
+   "%.0f%%", nullptr, 100.0f}};
 
 const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
                                                  "GunCon",
