@@ -171,7 +171,7 @@
       <item row="2" column="1">
        <widget class="QComboBox" name="gpuDownsampleMode"/>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="3" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QCheckBox" name="displayIntegerScaling">
@@ -195,6 +195,13 @@
          </widget>
         </item>
         <item row="1" column="1">
+         <widget class="QCheckBox" name="displayCRTPillarboxing">
+          <property name="text">
+           <string>CRT Pillarboxing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
          <widget class="QCheckBox" name="internalResolutionScreenshots">
           <property name="text">
            <string>Internal Resolution Screenshots</string>

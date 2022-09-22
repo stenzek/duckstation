@@ -123,6 +123,7 @@ struct Settings
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_stretch = false;
+  bool display_crt_pillarboxing = true;
   bool display_post_processing = false;
   bool display_show_osd_messages = true;
   bool display_show_fps = false;

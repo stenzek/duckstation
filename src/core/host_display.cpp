@@ -228,9 +228,12 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
 {
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
   const float display_aspect_ratio = g_settings.display_stretch ? window_ratio : m_display_aspect_ratio;
+  const float no_pillarbox_scale = static_cast<float>(m_display_full_width) / static_cast<float>(m_display_active_width);
   const float x_scale =
     apply_aspect_ratio ?
-      (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
+      (g_settings.display_crt_pillarboxing ?
+        (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
+        (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) * no_pillarbox_scale) :
       1.0f;
   const float display_width = static_cast<float>(m_display_width) * x_scale;
   const float display_height = static_cast<float>(m_display_height);
@@ -589,7 +592,11 @@ bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_reso
     const float ss_width_scale = static_cast<float>(m_display_active_width) / static_cast<float>(m_display_width);
     const float ss_height_scale = static_cast<float>(m_display_active_height) / static_cast<float>(m_display_height);
     const float ss_aspect_ratio = m_display_aspect_ratio * ss_width_scale / ss_height_scale;
-    resize_width = static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
+    const float ss_no_pillarbox_scale = static_cast<float>(m_display_full_width) / static_cast<float>(m_display_active_width);
+    resize_width =
+      g_settings.display_crt_pillarboxing ?
+        static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio) :
+        static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio * ss_no_pillarbox_scale);
   }
   else
   {

@@ -185,7 +185,7 @@ public:
   }
 
   void SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
-                            s32 active_height, float display_aspect_ratio)
+                            s32 active_height, s32 display_full_width, s32 display_full_height, float display_aspect_ratio)
   {
     m_display_width = display_width;
     m_display_height = display_height;
@@ -193,6 +193,8 @@ public:
     m_display_active_top = active_top;
     m_display_active_width = active_width;
     m_display_active_height = active_height;
+    m_display_full_width = display_full_width;
+    m_display_full_height = display_full_height;
     m_display_aspect_ratio = display_aspect_ratio;
     m_display_changed = true;
   }
@@ -278,6 +280,8 @@ protected:
   s32 m_display_active_top = 0;
   s32 m_display_active_width = 0;
   s32 m_display_active_height = 0;
+  s32 m_display_full_width = 0;
+  s32 m_display_full_height = 0;
   float m_display_aspect_ratio = 1.0f;
   float m_display_frame_interval = 0.0f;
 

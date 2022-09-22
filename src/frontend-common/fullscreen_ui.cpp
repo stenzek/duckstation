@@ -3412,6 +3412,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     "Fills the window with the active display area, regardless of the aspect ratio.", "Display",
                     "Stretch", false);
 
+  DrawToggleSetting(bsi, "CRT Pillarboxing",
+                    "", "Display",
+                    "CRTPillarboxing", true);
+
   DrawToggleSetting(bsi, "Internal Resolution Screenshots",
                     "Saves screenshots at internal render resolution and without postprocessing.", "Display",
                     "InternalResolutionScreenshots", false);

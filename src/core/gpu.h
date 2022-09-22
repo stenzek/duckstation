@@ -482,6 +482,8 @@ protected:
     // Size of the simulated screen in pixels. Depending on crop mode, this may include overscan area.
     u16 display_width;
     u16 display_height;
+    u16 display_full_width;
+    u16 display_full_height;
 
     // Top-left corner in screen coordinates where the outputted portion of VRAM is first visible.
     u16 display_origin_left;

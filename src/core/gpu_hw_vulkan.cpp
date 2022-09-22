@@ -1444,7 +1444,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
                                         m_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
                                         m_vram_texture.GetHeight());
     }
-    g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+    g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
@@ -1452,6 +1452,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
     g_host_display->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
                                          m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                                          m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
+                                         m_crtc_state.display_full_width, m_crtc_state.display_full_height,
                                          GetDisplayAspectRatio());
 
     const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;

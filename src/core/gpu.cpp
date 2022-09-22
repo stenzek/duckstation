@@ -526,6 +526,9 @@ float GPU::GetDisplayAspectRatio() const
     if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
       return 4.0f / 3.0f;
 
+    if (g_settings.display_crt_pillarboxing)
+      return static_cast<float>(m_crtc_state.display_vram_width) / static_cast<float>(m_crtc_state.display_height);
+
     return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
   }
   else
@@ -611,9 +614,14 @@ void GPU::UpdateCRTCDisplayParameters()
     (std::min<u16>(cs.regs.X2, horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
   const u16 vertical_display_start = std::min<u16>(cs.regs.Y1, vertical_total);
   const u16 vertical_display_end = std::min<u16>(cs.regs.Y2, vertical_total);
+  u16 horizontal_visible_area;
+  u16 vertical_visible_area;
 
   if (m_GPUSTAT.pal_mode)
   {
+    horizontal_visible_area = PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START;
+    vertical_visible_area = PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START;
+
     // TODO: Verify PAL numbers.
     switch (crop_mode)
     {
@@ -652,6 +660,9 @@ void GPU::UpdateCRTCDisplayParameters()
   }
   else
   {
+    horizontal_visible_area = NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START;
+    vertical_visible_area = NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START;
+
     switch (crop_mode)
     {
       case DisplayCropMode::None:
@@ -696,6 +707,8 @@ void GPU::UpdateCRTCDisplayParameters()
   // Determine screen size.
   cs.display_width = (cs.horizontal_visible_end - cs.horizontal_visible_start) / cs.dot_clock_divider;
   cs.display_height = (cs.vertical_visible_end - cs.vertical_visible_start) << height_shift;
+  cs.display_full_width = horizontal_visible_area / cs.dot_clock_divider;
+  cs.display_full_height = vertical_visible_area << height_shift;
 
   // Determine number of pixels outputted from VRAM (in general, round to 4-pixel multiple).
   // TODO: Verify behavior if values are outside of the active video portion of scanline.
