@@ -526,9 +526,6 @@ float GPU::GetDisplayAspectRatio() const
     if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
       return 4.0f / 3.0f;
 
-    if (g_settings.display_crt_pillarboxing)
-      return static_cast<float>(m_crtc_state.display_vram_width) / static_cast<float>(m_crtc_state.display_height);
-
     return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
   }
   else
