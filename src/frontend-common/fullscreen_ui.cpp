@@ -6123,7 +6123,7 @@ bool FullscreenUI::Initialize()
   if (s_tried_to_initialize)
     return false;
 
-  ImGuiFullscreen::SetTheme();
+  ImGuiFullscreen::SetTheme(false);
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png"))
@@ -6145,6 +6145,11 @@ bool FullscreenUI::IsInitialized()
 bool FullscreenUI::HasActiveWindow()
 {
   return false;
+}
+
+void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
+{
+  // noop
 }
 
 void FullscreenUI::OnSystemStarted()
