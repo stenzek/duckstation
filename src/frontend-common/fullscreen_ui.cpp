@@ -2364,7 +2364,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     "corner of the display.",
                     "Display", "ShowFPS", false);
   DrawToggleSetting(bsi, ICON_FA_BATTERY_HALF " Show CPU Usage",
-                    "Shows the CPU usage based on threads in the top-right corner of the display.", "Display",
+                    "Shows the host's CPU usage based on threads in the top-right corner of the display.", "Display",
                     "ShowCPU", false);
   DrawToggleSetting(bsi, ICON_FA_SPINNER " Show GPU Usage",
                     "Shows the host's GPU usage in the top-right corner of the display.", "Display", "ShowGPU", false);
