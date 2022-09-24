@@ -5347,11 +5347,10 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
 
   ImRect bb;
   bool visible, hovered;
-  bool pressed =
-    MenuButtonFrame(id_str.c_str(), true,
-                    !is_measured ? LAYOUT_MENU_BUTTON_HEIGHT :
-                                   LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
-                    &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+  MenuButtonFrame(id_str.c_str(), true,
+                  !is_measured ? LAYOUT_MENU_BUTTON_HEIGHT :
+                                 LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+                  &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
 
@@ -5368,23 +5367,40 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
   }
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+  const auto points_text = TinyString::FromFmt("{} point{}", cheevo.points, cheevo.points != 1 ? "s" : "");
+  const ImVec2 points_template_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, "XXX points"));
+  const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f,
+                                                        points_text.GetCharArray(),
+                                                        points_text.GetCharArray() + points_text.GetLength()));
+  const float points_template_start = bb.Max.x - points_template_size.x;
+  const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
+  const char* lock_text = cheevo.locked ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN;
+  const ImVec2 lock_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, FLT_MAX, 0.0f, lock_text));
+
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
-  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
+  const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, bb.Max.y));
+  const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
+  const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - lock_size.x) * 0.5f), bb.Min.y),
+                       ImVec2(bb.Max.x, midpoint));
 
   ImGui::PushFont(g_large_font);
   ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo.title.c_str(), cheevo.title.c_str() + cheevo.title.size(),
                            nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+  ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, lock_text, nullptr, &lock_size, ImVec2(0.0f, 0.0f), &lock_bb);
   ImGui::PopFont();
 
+  ImGui::PushFont(g_medium_font);
   if (!cheevo.description.empty())
   {
-    ImGui::PushFont(g_medium_font);
     ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, cheevo.description.c_str(),
                              cheevo.description.c_str() + cheevo.description.size(), nullptr, ImVec2(0.0f, 0.0f),
                              &summary_bb);
-    ImGui::PopFont();
   }
+  ImGui::RenderTextClipped(points_bb.Min, points_bb.Max, points_text.GetCharArray(),
+                           points_text.GetCharArray() + points_text.GetLength(), &points_size, ImVec2(0.0f, 0.0f),
+                           &points_bb);
+  ImGui::PopFont();
 
   if (is_measured)
   {
@@ -5398,33 +5414,13 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
                       ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
-    const std::string text(Achievements::GetAchievementProgressText(cheevo));
-    const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+    const auto text = Achievements::GetAchievementProgressText(cheevo);
+    const ImVec2 text_size = ImGui::CalcTextSize(text.GetCharArray(), text.GetCharArray() + text.GetLength());
     const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos,
-                ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), text.c_str(), text.c_str() + text.size());
-  }
-
-#if 0
-  // The API doesn't seem to send us this :(
-  if (!cheevo.locked)
-  {
-    ImGui::PushFont(g_medium_font);
-
-    const ImRect time_bb(ImVec2(text_start_x, bb.Min.y),
-      ImVec2(bb.Max.x, bb.Min.y + g_medium_font->FontSize + LayoutScale(4.0f)));
-    text.Format("Unlocked 21 Feb, 2019 @ 3:14am");
-    ImGui::RenderTextClipped(time_bb.Min, time_bb.Max, text.GetCharArray(), text.GetCharArray() + text.GetLength(),
-      nullptr, ImVec2(1.0f, 0.0f), &time_bb);
-    ImGui::PopFont();
-  }
-#endif
-
-  if (pressed)
-  {
-    // TODO: What should we do here?
-    // Display information or something..
+                ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), text.GetCharArray(),
+                text.GetCharArray() + text.GetLength());
   }
 }
 

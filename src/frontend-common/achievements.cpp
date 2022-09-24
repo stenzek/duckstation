@@ -1897,7 +1897,7 @@ std::pair<u32, u32> Achievements::GetAchievementProgress(const Achievement& achi
   return result;
 }
 
-std::string Achievements::GetAchievementProgressText(const Achievement& achievement)
+TinyString Achievements::GetAchievementProgressText(const Achievement& achievement)
 {
   char buf[256];
   rc_runtime_format_achievement_measured(&s_rcheevos_runtime, achievement.id, buf, std::size(buf));
