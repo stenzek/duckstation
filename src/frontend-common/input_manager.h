@@ -91,6 +91,14 @@ using InputButtonEventHandler = std::function<void(s32 value)>;
 /// Callback types for a normalized event. Usually used for pads.
 using InputAxisEventHandler = std::function<void(float value)>;
 
+/// ------------------------------------------------------------------------
+/// Event Handler Type
+/// ------------------------------------------------------------------------
+/// This class acts as an adapter to convert from normalized values to
+/// binary values when the callback is a binary/button handler. That way
+/// you don't need to convert float->bool in your callbacks.
+using InputEventHandler = std::variant<InputAxisEventHandler, InputButtonEventHandler>;
+
 /// Input monitoring for external access.
 struct InputInterceptHook
 {
@@ -225,6 +233,16 @@ bool HasAnyBindingsForKey(InputBindingKey key);
 /// Returns true if any bindings exist for the specified source + index.
 /// Can be safely called on another thread.
 bool HasAnyBindingsForSource(InputBindingKey key);
+
+/// Parses a string binding into its components. Use with external AddBinding().
+bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
+
+/// Externally adds a fixed binding. Be sure to call *after* ReloadBindings() otherwise it will be lost.
+void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
+
+/// Adds an external vibration binding.
+void AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding, InputSource* motor_0_source,
+                         const InputBindingKey* motor_1_binding, InputSource* motor_1_source);
 
 /// Updates internal state for any binds for this key, and fires callbacks as needed.
 /// Returns true if anything was bound to this key, otherwise false.

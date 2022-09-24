@@ -231,6 +231,18 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addMSAATweakOption(m_dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
+  if (m_dialog->isPerGameSettings())
+  {
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"), "Display",
+                           "ActiveStartOffset", -5000, 5000, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active End Offset"), "Display",
+                           "ActiveEndOffset", -5000, 5000, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line Start Offset"), "Display",
+                           "LineStartOffset", -128, 127, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line End Offset"), "Display", "LineEndOffset",
+                           -128, 127, 0);
+  }
+
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PGXP Vertex Cache"), "GPU", "PGXPVertexCache", false);
   addFloatRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PGXP Geometry Tolerance"), "GPU", "PGXPTolerance",
                            -1.0f, 100.0f, 0.25f, -1.0f);
@@ -332,6 +344,10 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Display", "ShowStatusIndicators");
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Display", "MaxFPS");
+  sif->DeleteValue("Display", "ActiveStartOffset");
+  sif->DeleteValue("Display", "ActiveEndOffset");
+  sif->DeleteValue("Display", "LineStartOffset");
+  sif->DeleteValue("Display", "LineEndOffset");
   sif->DeleteValue("GPU", "Multisamples");
   sif->DeleteValue("GPU", "PerSampleShading");
   sif->DeleteValue("GPU", "PGXPVertexCache");

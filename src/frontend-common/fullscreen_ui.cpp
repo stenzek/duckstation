@@ -2364,7 +2364,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     "corner of the display.",
                     "Display", "ShowFPS", false);
   DrawToggleSetting(bsi, ICON_FA_BATTERY_HALF " Show CPU Usage",
-                    "Shows the CPU usage based on threads in the top-right corner of the display.", "Display",
+                    "Shows the host's CPU usage based on threads in the top-right corner of the display.", "Display",
                     "ShowCPU", false);
   DrawToggleSetting(bsi, ICON_FA_SPINNER " Show GPU Usage",
                     "Shows the host's GPU usage in the top-right corner of the display.", "Display", "ShowGPU", false);
@@ -3018,6 +3018,10 @@ void FullscreenUI::DrawControllerSettingsPage()
             DrawIntRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
                                 si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
             break;
+          case SettingInfo::Type::IntegerList:
+            DrawIntListSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
+                               si.options, 0, si.IntegerMinValue(), true);
+            break;
           case SettingInfo::Type::Float:
             DrawFloatRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
                                   si.FloatMinValue(), si.FloatMaxValue(), si.format, si.multiplier, true);
@@ -3362,8 +3366,9 @@ void FullscreenUI::DrawDisplaySettingsPage()
     "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
 
   DrawEnumSetting(bsi, "Texture Filtering",
-                  "Smooths out the blockyness of magnified textures on 3D objects. Will have a greater effect "
-                  "on higher resolution scales.",
+                  "Smooths out the blockiness of magnified textures on 3D objects. Will have a greater effect "
+                  "on higher resolution scales. The JINC2 and especially xBR filtering modes are very demanding,"
+                  "and may not be worth the speed penalty.",
                   "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
                   &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
                   is_hardware);
@@ -5342,11 +5347,10 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
 
   ImRect bb;
   bool visible, hovered;
-  bool pressed =
-    MenuButtonFrame(id_str.c_str(), true,
-                    !is_measured ? LAYOUT_MENU_BUTTON_HEIGHT :
-                                   LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
-                    &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+  MenuButtonFrame(id_str.c_str(), true,
+                  !is_measured ? LAYOUT_MENU_BUTTON_HEIGHT :
+                                 LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+                  &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
 
@@ -5363,23 +5367,40 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
   }
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+  const auto points_text = TinyString::FromFmt("{} point{}", cheevo.points, cheevo.points != 1 ? "s" : "");
+  const ImVec2 points_template_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, "XXX points"));
+  const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f,
+                                                        points_text.GetCharArray(),
+                                                        points_text.GetCharArray() + points_text.GetLength()));
+  const float points_template_start = bb.Max.x - points_template_size.x;
+  const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
+  const char* lock_text = cheevo.locked ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN;
+  const ImVec2 lock_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, FLT_MAX, 0.0f, lock_text));
+
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
-  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
+  const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, bb.Max.y));
+  const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
+  const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - lock_size.x) * 0.5f), bb.Min.y),
+                       ImVec2(bb.Max.x, midpoint));
 
   ImGui::PushFont(g_large_font);
   ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo.title.c_str(), cheevo.title.c_str() + cheevo.title.size(),
                            nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+  ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, lock_text, nullptr, &lock_size, ImVec2(0.0f, 0.0f), &lock_bb);
   ImGui::PopFont();
 
+  ImGui::PushFont(g_medium_font);
   if (!cheevo.description.empty())
   {
-    ImGui::PushFont(g_medium_font);
     ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, cheevo.description.c_str(),
                              cheevo.description.c_str() + cheevo.description.size(), nullptr, ImVec2(0.0f, 0.0f),
                              &summary_bb);
-    ImGui::PopFont();
   }
+  ImGui::RenderTextClipped(points_bb.Min, points_bb.Max, points_text.GetCharArray(),
+                           points_text.GetCharArray() + points_text.GetLength(), &points_size, ImVec2(0.0f, 0.0f),
+                           &points_bb);
+  ImGui::PopFont();
 
   if (is_measured)
   {
@@ -5393,33 +5414,13 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
                       ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
-    const std::string text(Achievements::GetAchievementProgressText(cheevo));
-    const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+    const auto text = Achievements::GetAchievementProgressText(cheevo);
+    const ImVec2 text_size = ImGui::CalcTextSize(text.GetCharArray(), text.GetCharArray() + text.GetLength());
     const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos,
-                ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), text.c_str(), text.c_str() + text.size());
-  }
-
-#if 0
-  // The API doesn't seem to send us this :(
-  if (!cheevo.locked)
-  {
-    ImGui::PushFont(g_medium_font);
-
-    const ImRect time_bb(ImVec2(text_start_x, bb.Min.y),
-      ImVec2(bb.Max.x, bb.Min.y + g_medium_font->FontSize + LayoutScale(4.0f)));
-    text.Format("Unlocked 21 Feb, 2019 @ 3:14am");
-    ImGui::RenderTextClipped(time_bb.Min, time_bb.Max, text.GetCharArray(), text.GetCharArray() + text.GetLength(),
-      nullptr, ImVec2(1.0f, 0.0f), &time_bb);
-    ImGui::PopFont();
-  }
-#endif
-
-  if (pressed)
-  {
-    // TODO: What should we do here?
-    // Display information or something..
+                ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), text.GetCharArray(),
+                text.GetCharArray() + text.GetLength());
   }
 }
 
@@ -6118,7 +6119,7 @@ bool FullscreenUI::Initialize()
   if (s_tried_to_initialize)
     return false;
 
-  ImGuiFullscreen::SetTheme();
+  ImGuiFullscreen::SetTheme(false);
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png"))
@@ -6140,6 +6141,11 @@ bool FullscreenUI::IsInitialized()
 bool FullscreenUI::HasActiveWindow()
 {
   return false;
+}
+
+void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
+{
+  // noop
 }
 
 void FullscreenUI::OnSystemStarted()

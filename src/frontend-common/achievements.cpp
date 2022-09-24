@@ -63,6 +63,7 @@ static void LogFailedResponseJSON(const Common::HTTPDownloader::Request::Data& d
 static void EnsureCacheDirectoriesExist();
 static void CheevosEventHandler(const rc_runtime_event_t* runtime_event);
 static unsigned PeekMemory(unsigned address, unsigned num_bytes, void* ud);
+static bool IsMastered();
 static void ActivateLockedAchievements();
 static bool ActivateAchievement(Achievement* achievement);
 static void DeactivateAchievement(Achievement* achievement);
@@ -83,6 +84,7 @@ static void SendLogin(const char* username, const char* password, Common::HTTPDo
                       Common::HTTPDownloader::Request::Callback callback);
 static void DownloadImage(std::string url, std::string cache_filename);
 static void DisplayAchievementSummary();
+static void DisplayMasteredNotification();
 static void GetUserUnlocksCallback(s32 status_code, std::string content_type,
                                    Common::HTTPDownloader::Request::Data data);
 static void GetUserUnlocks();
@@ -1032,6 +1034,17 @@ void Achievements::DisplayAchievementSummary()
   });
 }
 
+void Achievements::DisplayMasteredNotification()
+{
+  if (!FullscreenUI::IsInitialized())
+    return;
+
+  std::string title(fmt::format("Mastered {}", s_game_title));
+  std::string message(fmt::format("{} achievements, {} points", GetAchievementCount(), GetCurrentPointsForGame()));
+
+  ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), s_game_icon);
+}
+
 void Achievements::GetUserUnlocksCallback(s32 status_code, std::string content_type,
                                           Common::HTTPDownloader::Request::Data data)
 {
@@ -1643,6 +1656,17 @@ bool Achievements::IsLeaderboardTimeType(const Leaderboard& leaderboard)
   return leaderboard.format != RC_FORMAT_SCORE && leaderboard.format != RC_FORMAT_VALUE;
 }
 
+bool Achievements::IsMastered()
+{
+  for (const Achievement& cheevo : s_achievements)
+  {
+    if (cheevo.locked)
+      return false;
+  }
+
+  return true;
+}
+
 void Achievements::ActivateLockedAchievements()
 {
   for (Achievement& cheevo : s_achievements)
@@ -1784,6 +1808,9 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
   if (g_settings.achievements_sound_effects)
     FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
 
+  if (IsMastered())
+    DisplayMasteredNotification();
+
   if (IsTestModeActive())
   {
     Log_WarningPrintf("Skipping sending achievement %u unlock to server because of test mode.", achievement_id);
@@ -1870,7 +1897,7 @@ std::pair<u32, u32> Achievements::GetAchievementProgress(const Achievement& achi
   return result;
 }
 
-std::string Achievements::GetAchievementProgressText(const Achievement& achievement)
+TinyString Achievements::GetAchievementProgressText(const Achievement& achievement)
 {
   char buf[256];
   rc_runtime_format_achievement_measured(&s_rcheevos_runtime, achievement.id, buf, std::size(buf));

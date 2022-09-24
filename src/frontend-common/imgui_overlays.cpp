@@ -270,7 +270,7 @@ void ImGuiManager::DrawEnhancementsOverlay()
   if (g_settings.gpu_multisamples != 1)
   {
     text.AppendFormattedString(" %ux%s", g_settings.gpu_multisamples,
-                               g_settings.gpu_per_sample_shading ? "MSAA" : "SSAA");
+                               g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
   if (g_settings.gpu_true_color)
     text.AppendString(" TrueCol");

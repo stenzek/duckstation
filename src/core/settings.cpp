@@ -886,9 +886,9 @@ static constexpr auto s_texture_filter_names =
   make_array("Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha");
 static constexpr auto s_texture_filter_display_names =
   make_array(TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
-             TRANSLATABLE("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "JINC2"),
-             TRANSLATABLE("GPUTextureFilter", "JINC2 (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "xBR"),
-             TRANSLATABLE("GPUTextureFilter", "xBR (No Edge Blending)"));
+             TRANSLATABLE("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow)"),
+             TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow, No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow)"),
+             TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)"));
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {

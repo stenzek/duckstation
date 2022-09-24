@@ -27,10 +27,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
                                                &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
                                                Settings::DEFAULT_MULTITAP_MODE);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.pointerXInvert, "ControllerPorts",
-                                                              "PointerXInvert", false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.pointerYInvert, "ControllerPorts",
-                                                              "PointerYInvert", false);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "ControllerPorts",
                                                                "PointerXScale", 8.0f);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "ControllerPorts",

@@ -147,6 +147,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(
+    m_ui.showCPU, tr("Show CPU Usage"), tr("Unchecked"),
+    tr("Shows the host's CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU's usage. If a value close to 100% is being displayed, this means your host's CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking."));
+  dialog->registerWidgetHelp(
     m_ui.showInput, tr("Show Controller Input"), tr("Unchecked"),
     tr("Shows the current controller state of the system in the bottom-left corner of the display."));
 

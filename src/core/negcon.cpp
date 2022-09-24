@@ -249,9 +249,10 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
-   TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%", 100.0f}};
+static const SettingInfo s_settings[] = {{SettingInfo::Type::Float, "SteeringDeadzone",
+                                          TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
+                                          TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f",
+                                          "0.00f", "0.99f", "0.01f", "%.0f%%", nullptr, 100.0f}};
 
 const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
                                                  "NeGcon",
