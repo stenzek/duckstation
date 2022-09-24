@@ -85,8 +85,8 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"),
     qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),
-    tr("Smooths out the blockyness of magnified textures on 3D object by using filtering. <br>Will have a "
-       "greater effect on higher resolution scales. Only applies to the hardware renderers."));
+    tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
+       "greater effect on higher resolution scales. Only applies to the hardware renderers. <br>The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "

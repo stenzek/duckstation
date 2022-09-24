@@ -3362,8 +3362,9 @@ void FullscreenUI::DrawDisplaySettingsPage()
     "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
 
   DrawEnumSetting(bsi, "Texture Filtering",
-                  "Smooths out the blockyness of magnified textures on 3D objects. Will have a greater effect "
-                  "on higher resolution scales.",
+                  "Smooths out the blockiness of magnified textures on 3D objects. Will have a greater effect "
+                  "on higher resolution scales. The JINC2 and especially xBR filtering modes are very demanding,"
+                  "and may not be worth the speed penalty.",
                   "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
                   &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
                   is_hardware);
