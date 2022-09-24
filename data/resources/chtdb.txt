@@ -12981,37 +12981,72 @@ D0069922 FDFF
 ; [ Crash Bandicoot - Warped (USA) (1998) (Sony Computer Entertainment America) {SCUS-94244, SCUS-94244CE} <crash3> ]
 :SCUS-94244
 :SCUS-94244CE
+
+#Bazooka hits anywhere "Hold L1 + L2
+A701DF0A 24000C00
+D7200000 00000005
+A701DF0A 0C002400
+
+#Flat Wumpa Fruit
+A703F47E 0C012400
+
+#Most things are backwards
+A70422C2 04801000
+
+#Break boxes from anywhere "Hold L3"
+A701DD4C 00040004
+A701DD4E 24020000
+A701D1CE 10001062
+A702C842 24000C00
+D7200000 00000200
+A702C842 0C002400
+A701D1CE 10621000
+A701DD4C 00000004
+A701DD4E 00002402
+
+#Telekenetic Box Breaking as Crash
+A702C842 0C002400
+
 #Infinite Time
 D303AE8D 0030
 8003AE8D 0000
+
 #99 Lives
 C005BEEC F64C
 800B5D4C 6300
 80068F58 6300
 00000000 FFFF
+
 #Enable All Powers
 80069178 003F
+
 #Have All Gems
 90068FB0 FFFFFFFF
 90068FB4 FF00FFFF
+
 #Have All Sapphires
 900691B4 FFFFFFFF
 800691B8 FFFF
+
 #Have All Crystals
 9006912C FFFFFFFF
 80069130 FFFF
+
 #Time Trial Timer
 80068EEC 0973
+
 #Select+Up Enable Invincibility. Select+Down Disable Invincibility (Version 2)
 D0065BCE FFEE
 80038016 2400
 D0065BCE FFBE
 80038016 0C00
+
 #Select+Up for Invincibility Enabled, Select+Down for Invincibility Disabled
 D0065BCE FFEE
 8001DDAA 2400
 D0065BCE FFBE
 8001DDAA 0C00
+
 #Walk/Drive Through Walls (Hold L2+R2)
 A718F866 10061000
 80044D46 00001000
@@ -13019,12 +13054,90 @@ A718F866 10061000
 D7100000 00000003
 8002EDDE 00001060
 80044D46 000011C0
+
 #Widescreen 16-9
 80018A90 0C00
 80018A92 2402
 80018A94 1000
 80018A96 2413
 80018AB2 A633
+
+#Crash speed (Default)
+9001EED8 0C002C00
+9001EEDC 00000000
+9000B000 8E030004
+9000B004 27BDFFE8
+9000B008 AFA80010
+9000B00C AFA90014
+9000B010 00000000
+9000B014 24080001
+9000B018 00004812
+9000B01C 00680018
+9000B020 00001812
+9000B024 01200013
+9000B028 8FA80010
+9000B02C 8FA90014
+9000B030 27BD0018
+9000B034 03E00008
+9000B038 00000000
+
+#Crash speed multiplier x2
+9001EED8 0C002C00
+9001EEDC 00000000
+9000B000 8E030004
+9000B004 27BDFFE8
+9000B008 AFA80010
+9000B00C AFA90014
+9000B010 00000000
+9000B014 24080002
+9000B018 00004812
+9000B01C 00680018
+9000B020 00001812
+9000B024 01200013
+9000B028 8FA80010
+9000B02C 8FA90014
+9000B030 27BD0018
+9000B034 03E00008
+9000B038 00000000
+
+#Crash speed multiplier x3
+9001EED8 0C002C00
+9001EEDC 00000000
+9000B000 8E030004
+9000B004 27BDFFE8
+9000B008 AFA80010
+9000B00C AFA90014
+9000B010 00000000
+9000B014 24080003
+9000B018 00004812
+9000B01C 00680018
+9000B020 00001812
+9000B024 01200013
+9000B028 8FA80010
+9000B02C 8FA90014
+9000B030 27BD0018
+9000B034 03E00008
+9000B038 00000000
+
+#Crash speed multiplier x4
+9001EED8 0C002C00
+9001EEDC 00000000
+9000B000 8E030004
+9000B004 27BDFFE8
+9000B008 AFA80010
+9000B00C AFA90014
+9000B010 00000000
+9000B014 24080004
+9000B018 00004812
+9000B01C 00680018
+9000B020 00001812
+9000B024 01200013
+9000B028 8FA80010
+9000B02C 8FA90014
+9000B030 27BD0018
+9000B034 03E00008
+9000B038 00000000
+
 #Enable 60 FPS (Play with Overclock to get preferred speed)
 A704B40E 10401000
 #Enable 60 FPS Alternative (Play with Overclock to get preferred speed)
@@ -17184,16 +17297,22 @@ A7061A28 10000C00
 ; [ Digimon World 3 (USA) (2002) (Bandai America) {SLUS-01436GH} <digiwld3> ]
 :SLUS-01436
 :SLUS-01436GH
+
 #Max/Infinite Bit
 90048554 05F5E0FF
+
 #Kotemon Max Health
 90048C70 270F270F
+
 #Kotemon Max MP
 90048C74 270F270F
+
 #Kotemon Max Level
 80048C6C 0063
+
 #Kotemon Max Exp
 90048C68 05F5E0FF
+
 #Kotemon Max Stats
 90048C78 03E703E7
 90048C7C 03E703E7
@@ -17202,14 +17321,18 @@ A7061A28 10000C00
 90048C88 03E703E7
 90048C8C 03E703E7
 80048C90 03E7
+
 #Kumamaon Max Health
 9004904C 270F270F
+
 #Kumamaon Max MP
 90049050 270F270F
+
 #Kumamaon Max Level
 80049048 0063
 #Kumamaon Max Exp
 90049044 05F5E0FF
+
 #Kumamaon Max Stats
 90049054 03E703E7
 90049058 03E703E7
@@ -17218,12 +17341,16 @@ A7061A28 10000C00
 90049064 03E703E7
 90049068 03E703E7
 8004906C 03E7
+
 #Monmon Max Health
 90049428 270F270F
+
 #Monmon Max MP
 9004942C 270F270F
+
 #Monmon Max Level
 80049424 0063
+
 #Monmon Max Exp
 90049420 05F5E0FF
 #Monmon Max Stats
@@ -17234,6 +17361,7 @@ A7061A28 10000C00
 90049440 03E703E7
 90049444 03E703E7
 80049448 03E7
+
 #Agumon Max Health
 90049804 270F270F
 #Agumon Max MP
@@ -17242,6 +17370,7 @@ A7061A28 10000C00
 80049800 0063
 #Agumon Max Exp
 900497FC 05F5E0FF
+
 #Agumon Max Stats
 8004980C 03E7
 90049810 03E703E7
@@ -17250,14 +17379,19 @@ A7061A28 10000C00
 9004981C 03E703E7
 90049820 03E703E7
 80049824 03E7
+
 #Guilmon Max Health
 90049FBC 270F270F
+
 #Guilmon Max MP
 90049FC0 270F270F
+
 #Guilmon Max Level
 80049FB8 0063
+
 #Guilmon Max Exp
 90049FB4 05F5E0FF
+
 #Guilmon Max Stats
 90049FC4 03E703E7
 90049FC8 03E703E7
@@ -17266,14 +17400,18 @@ A7061A28 10000C00
 90049FD4 03E703E7
 90049FD8 03E703E7
 80049FDC 03E7
+
 #Renamon Max Health
 9004A398 270F270F
+
 #Renamon Max MP
 9004A39C 270F270F
+
 #Renamon Max Level
 8004A394 0063
 #Renamon Max Exp
 9004A390 05F5E0FF
+
 #Renamon Max Stats
 9004A3A0 03E703E7
 9004A3A4 03E703E7
@@ -17282,14 +17420,19 @@ A7061A28 10000C00
 9004A3B0 03E703E7
 9004A3B4 03E703E7
 8004A3B8 03E7
+
 #Patamon Max Health
 9004A774 270F270F
+
 #Patamon Max MP
 9004A778 270F270F
+
 #Patamon Max Level
 8004A770 0063
+
 #Patamon Max Exp
 9004A76C 05F5E0FF
+
 #Patamon Max Stats
 9004A77C 03E703E7
 9004A780 03E703E7
@@ -17298,8 +17441,17 @@ A7061A28 10000C00
 9004A78C 03E703E7
 9004A790 03E703E7
 8004A794 03E7
+
 #Widescreen 16-9
 A7080B10 10000C00
+
+#Disable Reverb
+A70367EE 10401000
+
+#Maximize Reverb
+A70367EE 10402400
+
+
 
 ; [ Dino Crisis (USA, v1.1) (1999) (Capcom Entertainment) {SLUS-00922} <dinocris> ]
 :SLUS-00922
@@ -17463,6 +17615,59 @@ D20B7D40 3500
 100B7D40 0010
 
 ; [Dino Crisis NTSC-U][SLUS-00922][PS1][Duckstation format]
+
+#Walk through NPC's
+A707FE32 1A001000
+
+#Camera angle side
+A7026456 0C022400
+
+#Camera angle upside down
+A7026436 0C022400
+
+#Camera angle straight
+A70263FA 0C022400
+
+#Camera angle from above
+A70263EE 0C012400
+
+#Camera angle far away
+A7026ADE 0C002400
+
+#Screen shake effect
+A704A5E6 0C012400
+
+#60 FPS (Doubles game speed)
+A7087972 0C021400
+
+#Matrix mode "Hold L2"
+A704A556 24000C01
+A70836AA 24001440
+A70556CA 24001440
+A704A2FE 24001440
+A704A4D6 24001653
+A70218DE 24001040
+A7060716 10001040
+A70EBBAA 10001440
+A702FAFE 10001440
+A70EBB0A 10001440
+A70EE3A2 10001440
+A70EBAFE 10001440
+A70EA576 10001440
+D7200000 00000001
+A704A556 0C012400
+A70836AA 14402400
+A70556CA 14402400
+A704A2FE 14402400
+A704A4D6 16532400
+A70218DE 10402400
+A7060716 10401000
+A70EBBAA 14401000
+A702FAFE 14401000
+A70EBB0A 14401000
+A70EE3A2 14401000
+A70EBAFE 14401000
+A70EA576 14401000
 
 #Walk through NPC's
 A707FE32 1A001000
@@ -24641,8 +24846,10 @@ A60A0038 17C8184C
 :SLUS-00909GH
 :SLUS-00910
 :SLUS-00910GH
+
 #Save Anywhere
 80070652 0100
+
 #Teleport (Press L3 to store location, R3 to warp)
 C0082DEE 00000200
 C20C9868 00000004
@@ -24663,184 +24870,273 @@ C200C008 00000004
 900C9870 00000000
 C200C00C 00000004
 900C977B 00000000
+
 #Max Gil
 90077E84 0098967F
+
 #No Random Battles
 80078DF8 000C
+
 #In-Battle 1st Position Infinite Health
 80078892 270F
+
 #In-Battle 2nd Position Infinite Health
 80078A62 270F
+
 #In-Battle 3rd Position Infinite Health
 80078C32 270F
+
 #In-Battle Infinite Magic (All Characters)
 800AF486 2400
+
 #In-Battle 1st Position Infinite Health Gf
 80078738 270F
+
 #In-Battle 2nd Position Infinite Health Gf
 80078908 270F
+
 #In-Battle 3rd Position Infinite Health Gf
 80078AD8 270F
+
 #Guardian Forces\Alexander\Unlock It
 30077681 0001
+
 #Guardian Forces\Alexander\Infinite HP
 80078DB0 270F
+
 #Guardian Forces\Alexander\Max HP
 80078DB2 270F
+
 #Guardian Forces\Alexander\Max Exp
 90078DB4 05F5E0FF
+
 #Guardian Forces\Alexander\Level 99
 80078DB8 0063
+
 #Guardian Forces\Bahamut\Unlock It
 30077709 0001
+
 #Guardian Forces\Bahamut\Infinite HP
 80078DC8 270F
+
 #Guardian Forces\Bahamut\Max HP
 80078DCA 270F
+
 #Guardian Forces\Bahamut\Max Exp
 90078DCC 05F5E0FF
+
 #Guardian Forces\Bahamut\Level 99
 80078DD0 0063
+
 #Guardian Forces\Brothers\Unlock It
 300774E9 0001
+
 #Guardian Forces\Brothers\Infinite HP
 80078D68 270F
+
 #Guardian Forces\Brothers\Max HP
 80078D6A 270F
+
 #Guardian Forces\Brothers\Max Exp
 90078D6C 05F5E0FF
+
 #Guardian Forces\Brothers\Level 99
 80078D70 0063
+
 #Guardian Forces\Cactuar\Unlock It
 3007774D 0001
+
 #Guardian Forces\Cactuar\Infinite HP
 80078DD4 270F
+
 #Guardian Forces\Cactuar\Max HP
 80078DD6 270F
+
 #Guardian Forces\Cactuar\Max Exp
 90078DD8 05F5E0FF
+
 #Guardian Forces\Cactuar\Level 99
 80078DDC 0063
+
 #Guardian Forces\Carbuncle\Unlock It
 30077571 0001
+
 #Guardian Forces\Carbuncle\Infinite HP
 80078D80 270F
+
 #Guardian Forces\Carbuncle\Max HP
 80078D82 270F
+
 #Guardian Forces\Carbuncle\Max Exp
 90078D84 05F5E0FF
+
 #Guardian Forces\Carbuncle\Level 99
 80078D88 0063
+
 #Guardian Forces\Cerberus\Unlock It
 3007763D 0001
+
 #Guardian Forces\Cerberus\Infinite HP
 80078DA4 270F
+
 #Guardian Forces\Cerberus\Max HP
 80078DA6 270F
+
 #Guardian Forces\Cerberus\Max Exp
 90078DA8 05F5E0FF
+
 #Guardian Forces\Cerberus\Level 99
 80078DAC 0063
+
 #Guardian Forces\Diablos\Unlock It
 3007752D 0001
+
 #Guardian Forces\Diablos\Infinite HP
 80078D74 270F
+
 #Guardian Forces\Diablos\Max HP
 80078D76 270F
+
 #Guardian Forces\Diablos\Max Exp
 90078D78 05F5E0FF
+
 #Guardian Forces\Diablos\Level 99
 80078D7C 0063
+
 #Guardian Forces\Doomtrain\Unlock It
 300776C5 0001
+
 #Guardian Forces\Doomtrain\Infinite HP
 80078DBC 270F
+
 #Guardian Forces\Doomtrain\Max HP
 80078DBE 270F
+
 #Guardian Forces\Doomtrain\Max Exp
 90078DC0 05F5E0FF
+
 #Guardian Forces\Doomtrain\Level 99
 80078DC4 0063
+
 #Guardian Forces\Eden\Unlock It
 300777D5 0001
+
 #Guardian Forces\Eden\Infinite HP
 80078DEC 270F
+
 #Guardian Forces\Eden\Max HP
 80078DEE 270F
+
 #Guardian Forces\Eden\Max Exp
 90078DF0 05F5E0FF
+
 #Guardian Forces\Eden\Level 99
 80078DF4 0063
+
 #Guardian Forces\Ifrit\Unlock It
 30077461 0001
+
 #Guardian Forces\Ifrit\Infinite HP
 80078D50 270F
+
 #Guardian Forces\Ifrit\Max HP
 80078D52 270F
+
 #Guardian Forces\Ifrit\Mgx Exp
 90078D54 05F5E0FF
+
 #Guardian Forces\Ifrit\Level 99
 80078D58 0063
+
 #Guardian Forces\Leviathan\Unlock It
 300775B5 0001
+
 #Guardian Forces\Leviathan\Infinite HP
 80078D8C 270F
+
 #Guardian Forces\Leviathan\Max HP
 80078D8E 270F
 #Guardian Forces\Leviathan\Max Exp
+
 90078D90 05F5E0FF
 #Guardian Forces\Leviathan\Level 99
+
 80078D94 0063
 #Guardian Forces\Pandemona\Unlock It
+
 300775F9 0001
 #Guardian Forces\Pandemona\Infinite HP
 80078D98 270F
+
 #Guardian Forces\Pandemona\Max HP
 80078D9A 270F
+
 #Guardian Forces\Pandemona\Max Exp
 90078D9C 05F5E0FF
+
 #Guardian Forces\Pandemona\Level 99
 80078DA0 0063
+
 #Guardian Forces\Quezacotl\Unlock It
 300773D9 0001
+
 #Guardian Forces\Quezacotl\Infinite HP
 80078D38 270F
+
 #Guardian Forces\Quezacotl\Max HP
 80078D3A 270F
+
 #Guardian Forces\Quezacotl\Max Exp
 90078D3C 05F5E0FF
+
 #Guardian Forces\Quezacotl\Level 99
 80078D40 0063
+
 #Guardian Forces\Shiva\Unlock It
 3007741D 0001
+
 #Guardian Forces\Shiva\Infinite HP
 80078D44 270F
+
 #Guardian Forces\Shiva\Max HP
 80078D46 270F
+
 #Guardian Forces\Shiva\Max Exp
 90078D48 05F5E0FF
+
 #Guardian Forces\Shiva\Level 99
 80078D4C 0063
+
 #Guardian Forces\Siren\Unlock It
 300774A5 0001
+
 #Guardian Forces\Siren\Infinite HP
 80078D5C 270F
+
 #Guardian Forces\Siren\Max HP
 80078D5E 270F
+
 #Guardian Forces\Siren\Max Exp
 90078D60 05F5E0FF
+
 #Guardian Forces\Siren\Level 99
 80078D64 0063
+
 #Guardian Forces\Tonberry\Unlock It
 30077791 0001
+
 #Guardian Forces\Tonberry\Infinite HP
 80078DE0 270F
+
 #Guardian Forces\Tonberry\Max HP
 80078DE2 270F
+
 #Guardian Forces\Tonberry\Max Exp
 90078DE4 05F5E0FF
+
 #Guardian Forces\Tonberry\Level 99
 80078DE8 0063
+
 #All Level 1-7 Cards
 300786A0 FFFF
 300786A1 FFFF
@@ -24919,6 +25215,7 @@ C200C00C 00000004
 3007869D FFFF
 3007869E FFFF
 3007869F FFFF
+
 #All Level 8-10 Cards
 800786C6 FFFF
 800786C8 FFFF
@@ -24933,6 +25230,7 @@ C200C00C 00000004
 900786BC F0F0F0F0
 900786C0 F0F0F0F0
 800786C4 F0F0
+
 #Easier escapes from battles
 D005F146 0003
 800AE9E6 2400
@@ -25028,6 +25326,25 @@ E0082DEE 0000
 80078DF8 0000
 D005F146 0003
 800A44E4 0018
+
+#Unlimited card usage
+A709F2EA 18402400
+
+#Peek at teams cards before starting "Hold select"
+A709AF56 24000440
+A70A444A 24000C00
+D7200000 00000100
+A709AF56 04402400
+A70A444A 0C002400
+
+#Force card spin animation on
+A709FFE2 10401000
+
+#Force card spin animation off
+A709FFE2 10402400
+
+#Skip FMV's
+A70B15A2 14602400
 
 ; [ Final Fantasy IX (USA, v1.1) (2000) (Square Electronic Arts) {SLUS-01251GH / SLUS-01295GH / SLUS-01296GH / SLUS-01297GH} <ffant9> ]
 :SLUS-01251
@@ -28954,6 +29271,29 @@ D0010000 FFE0
 ;This game currently has no cheats
 
 ; [Grand Theft Auto][PS1][NTSC-U][Duckstation format]
+
+#Push game cap to 30 fps
+A7122906 0C042400
+
+#Walk off ledges and through fences
+A705673E 14621000
+
+#Walk off/up ledges and through fences, bounce of buildings
+A7096402 10401000
+
+#Zoom in x1
+A70D6AD6 0C032400
+
+#Zoom in x2
+A70D6AD6 0C032400
+A70D6A96 0C032400
+
+#Hide yellow pointer arrow
+A70B894E 0C012400
+
+#Stop traffic "Press L3 to turn on/off"
+D7010001 01000200
+F509DA7E 14402400
 
 #Push game cap to 30 fps
 A7122906 0C042400
@@ -36369,25 +36709,32 @@ C00AC760 0010
 :SLUS-00974
 :SLUS-00974CE
 :SLUS-00974GH
+
 #Enable + Unlock All Secret Codes
 800386A0 00FF
 800386A4 00FF
+
 #Have All Medals
 8003869C FFFF
+
 #Infinite Ammo on Pickup (All Levels)
 A70461AA A4622400
 A707DC26 A4622400
+
 #Infinite Health (All Levels)
 A704ACC2 A7A22400
 D0055F5C 00F4
 80055F5E 2400
+
 #Infinite Health Everyone (All Levels)
 8004ACC2 2400
+
 #Invinciblity (All Levels)
 D004ACB8 1023
 8004ACBA 2400
 D0055F5C 00F4
 80055F5E 2400
+
 #Objectives Always Accomplished
 800988DC 0001
 800988E0 0001
@@ -36395,34 +36742,48 @@ D0055F5C 00F4
 800988E8 0001
 800988EC 0001
 800988F0 0001
+
 #One-Hit Death Everyone (All Levels)
 8004ACBE 2400
+
 #Super Turbo Mode
 80097FCC 1276
+
 #P1 Easy Aim = On
 300386AC 0001
+
 #P1 Fast Aim = On
 300386B4 0001
+
 #P1 Invert Y-axis = Off
 300386A8 0000
+
 #P1 Vibration = On
 300386B0 0001
+
 8007BDF8 7300
 #P1 Zoom Aim = On
+
 300386B8 0001
 #P2 Easy Aim = On
+
 300386C0 0001
 #P2 Fast Aim = On
 300386C8 0001
+
 #P2 Invert Y-axis = Off
 300386BC 0000
+
 #P2 Vibration = On
 300386C4 0001
 8007BE20 7300
+
 #P2 Zoom Aim = On
 300386CC 0001
+
 #BGM/BackGround-Music = Ambience Only
 30038658 0001
+
 #Widescreen 16-9
 80048FEC B892
 80048FEE 0C00
@@ -36455,6 +36816,24 @@ D0055F5C 00F4
 8002E278 2180
 8002E27A 0004
 8007B590 0A00
+
+#Right analog turn option 1
+80060106 00001040
+D7000000 00020000
+80060106 00002400
+800D0C86 0000FFDF
+00000000 0000FFFF
+D7000000 00080000
+80060106 00002400
+800D0C86 0000FF7F
+
+#Right analog turn option 2
+80060106 00001040
+D7000000 00020000
+800D0C86 0000FFDF
+00000000 0000FFFF
+D7000000 00080000
+800D0C86 0000FF7F
 
 ; [ Medal of Honor - Underground (USA) (2000) (Electronic Arts) {SLUS-01270} <mhonrund> ]
 :SLUS-01270
@@ -37498,24 +37877,32 @@ A60B34D0 00000001
 
 ; [ Mega Man Legends 2 (USA) (2000) (Capcom Entertainment) {SLUS-01140} <mmleg2> ]
 :SLUS-01140
+
 #Infinite Health
 8008C120 0200
+
 #Invincibility
 3008C19C 00FF
+
 #Max Zenny
 9009C820 0098967F
+
 #Time 0:00:00
 9009C818 00000000
+
 #Max Upgrade-All Special Weapons
 50006E01 0000
 3008C2BC 0003
+
 #Have All Items
 900985C8 FFF07F1F
 900985CC F03FFFFF
 800985D0 FFFF
+
 #Have All Key Items
 800985C2 07FF
 900985C4 0F8FFFF2
+
 #Unlock All Extra Modes
 8009C814 0003
 
@@ -37546,6 +37933,10 @@ A70CD6AE 14402400
 
 #Disable FPS lock
 A7010F62 14402400
+
+#Force 30 FPS
+A7010F4E 90632403
+A7010F4C 00050002
 
 ; [ Master of Monsters - Disciples of Gaia (USA) (1998) (ASCII Entertainment Software) {SLUS-00595} <mmonster> ]
 :SLUS-00595
@@ -45574,49 +45965,66 @@ A7109412 0C002400
 
 ; [ Resident Evil (USA) (1996) (Capcom Entertainment) {SLUS-00170} <revil> ]
 :SLUS-00170
+
 #Infinite Health Chris
 800C51AC 008C
+
 #Infinite Health Jill
 800C51AC 008C
+
 #Infinite Health Rebecca
 800C51AC 0058
+
 #Playing Time 0
 800C867C 0000
+
 #Triangle Button Restores Health
 D00CF844 0010
 800C51AC 00C8
+
 #L1 + X Button For Save Anywhere
 D00CF844 0044
 800C8456 0002
 800343F2 2400
 8003446E 2400
+
 #Infinite Ammo All Weapons (Except FlameThrower) Chris
 A60418F8 FFFF0000
+
 #Infinite Ammo All Weapons (Except FlameThrower)
 8003F574 2400
+
 #Infinite Ammo All Weapons (Except FlameThrower) dual shock version ?
 800418FC 2400
+
 #Infinity flamethrower
 800407BC 0100
+
 #Number of belongings and ammunition is bigger
 8003FD30 0001
+
 #Have All Maps and Files
 300C8714 003F
 900C871C FFFF0FFF
 300C8721 00CF
 800C8722 FFFF
+
 #Most Doors Open
 900C86B4 CF7EBFDF
+
 #Stop 3 Minute Timer In Lab (This one starts after you put the battery in the elevator)
 800C867A 117A
 800C867C 0000
+
 #Double Ammo For Clips (Advanced Mode Only-Resident Evil-Directors Cut)
 800E16CA 0000
+
 #Press L2+Circle For Quick Chest Access
 C00CF844 0021
 800C8456 0300
 300C8459 0001
 00000000 FFFF
+
 #All Weapons, Key Items, Keys, F.-Aid Spray In Chest
 50000902 0001
 800C8724 FF02
@@ -45628,19 +46036,31 @@ C00CF844 0021
 800C8752 0F2C
 50001302 0001
 800C8758 0F30
+
 #Select Character\Chris
 A7044822 90A43404
 A7044832 90A33403
+
 #Select Character\Jill
 A7044820 00000001
 A7044830 00000001
 A7044822 90A43404
 A7044832 90A33403
+
 #Select Character\Rebecca
 A7044820 00000003
 A7044830 00000003
 A7044822 90A43404
 A7044832 90A33403
+
+#Take control over demo mode (Activate when demo is running)
+A7031EAA 04401000
+A702B2DA 10401000
+A702A73A 14401000
+A703AEC2 10401000
+A702B2C6 14602400
+A702A1A2 10622400
+
 #Character Alternative Costume:You will need to restart the game after turning this cheat off
 A704483A 30622400
 
@@ -50817,38 +51237,53 @@ A60AFD44 00000001
 
 ; [ Castlevania - Symphony of the Night (USA) (1997) (Konami of America) {SLUS-00067} <sotn> ]
 :SLUS-00067
+
 #Player Level V99
 80097BEE 0FFF
+
 #Infinite MP
 80097BB0 00FF
+
 #Infinite Gold
 80097BF2 0FFF
+
 #Infinite Hearts
 80097BA8 00FF
+
 #Infinite Health
 80097BA0 270F
 80097BA4 270F
+
 #Max Attack
 800F4BF6 1400
+
 #Max Guard
 800F504E 1400
+
 #Max Str
 80097BB8 03E7
+
 #Max Con
 80097BBC 03E7
+
 #Max Int
 80097BC0 03E7
+
 #Max Lck
 80097BC4 03E7
+
 #Max Exp
 90097BEC 000F423F
+
 #Walk/Jump through Walls+Doors etc:Use it with a hotkey and only enable with caution as you can get stuck by falling through the floor as some objects have no floor underneath them
 A710D1CA 10401400
 A710CAA6 12021400
 A710D482 10401400
+
 #Hit Anywhere
 A71C1F82 14401400
 A71C1FB6 14401400
+
 #All Special Item (Set One)
 80097982 8180
 90097984 85848382
@@ -50858,94 +51293,138 @@ A71C1FB6 14401400
 9009796C 03030303
 90097970 03030303
 90097974 03030303
+
 #All Special Items (Set Two)
 90097978 03030303
 9009797C 03030303
 80097980 0303
+
 #Have Knight Shield
 30097990 0010
+
 #Have Iron Shield
 30097991 0010
+
 #Have Axelord Shield
 30097992 0010
+
 #Have Dark Shield
 30097994 0010
+
 #Have Shaman Shield
 30097996 0010
+
 #Have Skull Shield
 30097998 0010
+
 #Have Alucard Shield
 3009799A 0010
+
 #Have Basilard
 3009799C 0010
+
 #Have Short Sword
 3009799D 0010
+
 #Have Combat Knife
 3009799E 0010
+
 #Have Nunchaku
 3009799F 0010
+
 #Have Were Bane
 300979A0 0010
+
 #Have Rapier
 300979A1 0010
+
 #Have Karma Coin
 300979A2 0010
+
 #Have Magic Missile
 300979A3 0010
+
 #Have Takemitsu
 300979A5 0010
+
 #Have Shotel
 300979A6 0010
+
 #Have Orange
 300979A7 0010
+
 #Have Banana
 300979A9 0010
+
 #Have Shiitake
 300979AF 0010
+
 #Have Parfait
 300979B3 0010
+
 #Have Spaghetti
 300979C1 0010
+
 #Have Meal Ticket
 300979D0 0010
+
 #Have Power Of Sire
 300979D2 0010
+
 #Have Pentagram
 300979D3 0010
+
 #Have Bat Pentagram
 300979D4 0010
+
 #Have Shuriken
 300979D5 0010
+
 #Have Cross Shuriken
 300979D6 0010
+
 #Have Buffalo Star
 300979D7 0010
+
 #Have Flame Star
 300979D8 0010
+
 #Have Tnt
 300979D9 0010
+
 #Have Bwaka Knife
 300979DA 0010
+
 #Have Boomerang
 300979DB 0010
+
 #Have Javelin
 300979DC 0010
+
 #Have Tyrfing
 300979DD 0010
+
 #Have Namakura
 300979DE 0010
+
 #Have Knuckle Duster
 300979DF 0010
+
 #Have Sword Of Hador
 300979F0 0010
+
 #Have Zwei Hander
 300979F1 0010
+
 #Have Luminus
 300979F3 0010
+
 #Have Harper
 300979F4 0010
+
 #Have Obsidian Sword
 300979F5 0010
+
 #Have Gram
 300979F6 0010
 #Have Jewel Sword
@@ -51217,6 +51696,12 @@ A71C1FB6 14401400
 #Save Almost Anywhere (Press And Hold Triangle)
 D0097490 0010
 3003C708 0020
+
+#Skip Konami intro FMV (As if button pressed it)
+A71BA036 10541000
+
+#Skip Konami intro FMV (Direct skip)
+A70E48FA 14622400
 
 #Moon jump (Alucard)
 A710FE46 10001040
@@ -52420,83 +52905,120 @@ D0077380 0018
 :SCUS-94425CE
 #Infinite Health
 8006A248 0003
+
 #Infinite Lives
 8006712C 0004
+
 #Have Swim/Dive Learned
 80064682 0001
+
 #Have Climb Learned
 80064686 0001
+
 #Have Headbash Learned
 8006468A 0001
+
 #Max Gems
 800670CC FFFF
+
 #Max Orbs
 3006702C 00FF
+
 #Flying Spyro .Press Up+X
 D00683A0 1040
 3006A08D 000F
+
 #Have Spit Fire Breath
 D00683A0 0020
 3006A1C9 000F
+
 #Enable Summer Forest
 3006B084 0001
+
 #Enable Glimmer
 3006B085 0001
+
 #Enable Idol Springs
 3006B086 0001
+
 #Enable Clossus
 3006B087 0001
+
 #Enable Hurricos
 3006B088 0001
+
 #Enable Aquaria Towers
 3006B089 0001
+
 #Enable Sunny Beach
 3006B08A 0001
+
 #Enable Ocean Speedway
 3006B08B 0001
+
 #Enable Crush's Dungeon
 3006B08C 0001
+
 #Enable Autumn Plains
 3006B08D 0001
+
 #Enable Skelos Badlands
 3006B08E 0001
+
 #Enable Crystal Glacier
 3006B08F 0001
+
 #Enable Breeze Harbor
 3006B090 0001
+
 #Enable Zephyr
 3006B091 0001
+
 #Enable Metro Speedway
 3006B092 0001
+
 #Enable Scorch
 3006B093 0001
+
 #Enable Shaddy Oasis
 3006B094 0001
+
 #Enable Magma Cone
 3006B095 0001
+
 #Enable Fracture Hills
 3006B096 0001
+
 #Enable Icy Speedway
 3006B097 0001
+
 #Enable Gulp's Overlook
 3006B098 0001
+
 #Enable Winter Tundra
 3006B099 0001
+
 #Enable Mystic Marsh
 3006B09A 0001
+
 #Enable Cloud Temples
 3006B09B 0001
+
 #Enable Canyon Speedway
 3006B09C 0001
+
 #Enable Robotica Farms
 3006B09D 0001
+
 #Enable Metropolis
 3006B09E 0001
+
 #Enable Riptor's Arena
 3006B0A0 0001
 #Unlock All Levels
 50000F02 0000
 8006B084 0101
+
 #Teleport (L3 to store location, R3 to warp)
 C00683A0 0200
 C2069FF0 0002
@@ -52534,176 +53056,258 @@ C2067444 0002
 C2067446 0002
 8006A05E 0000
 00000000 FFFF
+
 #World 1-Have All Gems
 50000804 0000
 8006AC04 0190
+
 #World 1-Have All Orbs
 50000402 0000
 80069FD0 0F0F
+
 #World 1-Have All Tailsman
 50000402 0000
 8006B264 0101
+
 #World 2-Have All Gems
 50000B04 0000
 8006AC28 0190
+
 #World 2-Have All Orbs
 50000602 0000
 80069FD8 0F0F
+
 #World 2-Have All Tailsman
 50000502 0000
 8006B26E 0101
+
 #World 3-Have All Gems
 50000604 0000
 8006AC58 0190
+
 #World 3-Have All Orbs
 50000402 0000
 80069FE4 0F0F
+
 #World 1\Summer Forest\Have All Gems
 8006AC04 0190
+
 #World 1\Summer Forest\Have All Orbs
 30069FD0 000F
+
 #World 1\Glimmer\Have All Gems
 8006AC08 0190
+
 #World 1\Glimmer\Have All Orbs
 30069FD1 000F
+
 #World 1\Glimmer\Have Magic Pick Tailsman
 3006B265 0001
+
 #World 1\Idol Springs\Have All Gems
 3006AC0C 0190
+
 #World 1\Idol Springs\Have All Orbs
 30069FD2 000F
+
 #World 1\Idol Springs\Have Jade Idol Tailsman
 3006B266 0001
+
 #World 1\Colossus\Have All Gems
 8006AC10 0190
+
 #World 1\Colossus\Have All Orbs
 30069FD3 000F
+
 #World 1\Colossus\Have Golden Statue Tailsman
 3006B267 0001
+
 #World 1\Hurricos\Have All Gems
 8006AC14 0190
+
 #World 1\Hurricos\Have All Orbs
 30069FD4 000F
+
 #World 1\Hurricos\Have Gear Of Power Tailsman
 3006B268 0001
+
 #World 1\Aquaria Towers\Have All Gems
 8006AC18 0190
+
 #World 1\Aquaria Towers\Have All Orbs
 30069FD5 000F
+
 #World 1\Aquaria Towers\Have Enchanted Shell Tailsman
 3006B269 0001
+
 #World 1\Sunny Beach\Have All Gems
 8006AC1C 0190
+
 #World 1\Sunny Beach\Have All Orbs
 30069FD6 000F
+
 #World 1\Sunny Beach\Have Turtle Medallion Tailsman
 3006B26A 0001
+
 #World 1\Ocean Speedway\Have All Gems
 8006AC20 0190
+
 #World 1\Ocean Speedway\Have All Orbs
 30069FD7 000F
+
 #World 2\Autumn Plains\Have All Gems
 8006AC28 0190
+
 #World 2\Autumn Plains\Have All Orbs
 30069FD9 000F
+
 #World 2\Skelos Badlands\Have All Gems
 8006AC2C 0190
+
 #World 2\Skelos Badlands\Have All Orbs
 30069FDA 000F
+
 #World 2\Skelos Badlands\Have Ancient Bone Tailsman
 3006B26E 0001
+
 #World 2\Crystal Glacier\Have All Gems
 8006AC30 0190
+
 #World 2\Crystal Glacier\Have All Orbs
 30069FDB 000F
+
 #World 2\Crystal Glacier\Have Ice Crystal Tailsman
 3006B26F 0001
+
 #World 2\Breeze Harbor\Have All Gems
 8006AC34 0190
+
 #World 2\Breeze Harbor\Have All Orbs
 30069FDC 000F
+
 #World 2\Breeze Harbor\Have Glass Anchor Tailsman
 3006B270 0001
+
 #World 2\Zephyr\Have All Gems
 8006AC38 0190
+
 #World 2\Zephyr\Have All Orbs
 30069FDD 000F
+
 #World 2\Zephyr\Have Bomb Tailsman
 3006B271 0001
+
 #World 2\Metro Speedway\Have All Gems
 8006AC3C 0190
+
 #World 2\Metro Speedway\Have All Orbs
 30069FDE 000F
+
 #World 2\Scorch\Have All Gems
 8006AC40 0190
+
 #World 2\Scorch\Have All Orbs
 30069FDF 000F
+
 #World 2\Scorch\Have Emerald Scarab Tailsman
 30069273 0001
+
 #World 2\Shaddy Oasis\Have All Gems
 8006AC44 0190
+
 #World 2\Shaddy Oasis\Have All Orbs
 30069FE0 000F
+
 #World 2\Shaddy Oasis\Have Mystic Lamp Tailsman
 3006B274 0001
+
 #World 2\Magma Cone\Have All Gems
 8006AC48 0190
+
 #World 2\Magma Cone\Have All Orbs
 30069FE1 000F
+
 #World 2\Magma Cone\Have Volcano Idol Tailsman
 3006B275 0001
+
 #World 2\Fracture Hills\Have All Gems
 8006AC4C 0190
+
 #World 2\Fracture Hills\Have All Orbs
 30069FE2 000F
+
 #World 2\Fracture Hills\Have Bronze Flute Tailsman
 3006B276 0001
+
 #World 2\Icy Speedway\Have All Gems
 8006AC50 0190
+
 #World 2\Icy Speedway\Have All Orbs
 30069FE3 000F
+
 #World 3\Winter Tundra\Have All Gems
 8006AC58 0190
+
 #World 3\Winter Tundra\Have All Orbs
 30069FE5 000F
+
 #World 3\Mystic Marsh\Have All Gems
 8006AC5C 0190
+
 #World 3\Mystic Marsh\Have All Orbs
 30069FE6 000F
+
 #World 3\Cloud Temples\Have All Gems
 8006AC60 0190
+
 #World 3\Cloud Temples\Have All Orbs
 30069FE7 000F
+
 #World 3\Canyon Speedway\Have All Gems
 8006AC64 0190
+
 #World 3\Canyon Speedway\Have All Orbs
 30069FE8 000F
+
 #World 3\Robotica Farms\Have All Gems
 8006AC68 0190
+
 #World 3\Robotica Farms\Have All Orbs
 30069FE9 000F
+
 #World 3\Metropolis\Have All Gems
 8006AC6C 0190
+
 #World 3\Metropolis\Have All Orbs
 30069FEA 000F
+
 #World 3\More Misc.\Big Head
 300698BE 0001
+
 #World 3\More Misc.\Flat Mode
 300698BF 0001
+
 #World 3\More Misc.\All Abilities
 300698B0 0001
+
 #Floating Water
 A7023E32 10601000
+
 #Halve Animation Speed Spyro
 A70423A2 11A01000
+
 #Spyro Alternative Wing Tips
 A7042E2E 1A402400
+
 #See Items Through Walls
 A70474F2 04212400
+
 #See Organisms Through walls
 A7043FBA 05412400
+
 #Make Spirit Collection Icon Color Lilac
 A70520FA 14402400
+
 #Widescreen 16-9
 8001C354 2081
 8001C356 0800
@@ -52726,17 +53330,197 @@ A70520FA 14402400
 80008224 000A
 80008226 A5C2
 
+#Gem colors show in pickup value objects + Spyro
+9000C000 90274428
+9000C004 8C820000
+9000C008 00000000
+9000C00C 27BDFFE0
+9000C010 AFA80010
+9000C014 AFA90014
+9000C018 AFAA0018
+9000C01C 3C088006
+9000C020 00000000
+9000C024 38E90001
+9000C028 15200005
+9000C02C 00000000
+9000C030 3C0A0008
+9000C034 354A0094
+9000C038 AD0A4468
+9000C03C 00000000
+9000C040 38E90002
+9000C044 15200005
+9000C048 00000000
+9000C04C 3C0A0018
+9000C050 354AA408
+9000C054 AD0A4468
+9000C058 00000000
+9000C05C 38E90005
+9000C060 15200005
+9000C064 00000000
+9000C068 3C0A0088
+9000C06C 354A0041
+9000C070 AD0A4468
+9000C074 00000000
+9000C078 38E9000A
+9000C07C 15200005
+9000C080 00000000
+9000C084 3C0A0041
+9000C088 354AF6FF
+9000C08C AD0A4468
+9000C090 00000000
+9000C094 38E90019
+9000C098 15200005
+9000C09C 00000000
+9000C0A0 3C0A6200
+9000C0A4 354A0800
+9000C0A8 AD0A4468
+9000C0AC 00000000
+9000C0B0 3C088006
+9000C0B4 95084468
+9000C0B8 3C098006
+9000C0BC 3529A010
+9000C0C0 00000000
+9000C0C4 A5280000
+9000C0C8 00000000
+9000C0CC 3C088006
+9000C0D0 9108446A
+9000C0D4 00000000
+9000C0D8 A1280002
+9000C0DC 00000000
+9000C0E0 34080080
+9000C0E4 A1280003
+9000C0E8 00000000
+9000C0EC 8FA80010
+9000C0F0 8FA90014
+9000C0F4 8FAA0018
+9000C0F8 27BD0020
+9000C0FC 03E00008
+9000C100 00000000
+900396AC 0C003000
+900396B0 00000000
+9003263C 00000000
+
+#Gem colors show in pickup value objects
+8000C000 4428
+8000C002 9027
+8000C004 0000
+8000C006 8C82
+8000C008 0000
+8000C00A 0000
+8000C00C FFE0
+8000C00E 27BD
+8000C010 0010
+8000C012 AFA8
+8000C014 0014
+8000C016 AFA9
+8000C018 0018
+8000C01A AFAA
+8000C01C 8006
+8000C01E 3C08
+8000C020 0000
+8000C022 0000
+8000C024 0001
+8000C026 38E9
+8000C028 0005
+8000C02A 1520
+8000C02C 0000
+8000C02E 0000
+8000C030 0008
+8000C032 3C0A
+8000C034 0094
+8000C036 354A
+8000C038 4468
+8000C03A AD0A
+8000C03C 0000
+8000C03E 0000
+8000C040 0002
+8000C042 38E9
+8000C044 0005
+8000C046 1520
+8000C048 0000
+8000C04A 0000
+8000C04C 0018
+8000C04E 3C0A
+8000C050 A408
+8000C052 354A
+8000C054 4468
+8000C056 AD0A
+8000C058 0000
+8000C05A 0000
+8000C05C 0005
+8000C05E 38E9
+8000C060 0005
+8000C062 1520
+8000C064 0000
+8000C066 0000
+8000C068 0088
+8000C06A 3C0A
+8000C06C 0041
+8000C06E 354A
+8000C070 4468
+8000C072 AD0A
+8000C074 0000
+8000C076 0000
+8000C078 000A
+8000C07A 38E9
+8000C07C 0005
+8000C07E 1520
+8000C080 0000
+8000C082 0000
+8000C084 0041
+8000C086 3C0A
+8000C088 F6FF
+8000C08A 354A
+8000C08C 4468
+8000C08E AD0A
+8000C090 0000
+8000C092 0000
+8000C094 0019
+8000C096 38E9
+8000C098 0005
+8000C09A 1520
+8000C09C 0000
+8000C09E 0000
+8000C0A0 008B
+8000C0A2 3C0A
+8000C0A4 005A
+8000C0A6 354A
+8000C0A8 4468
+8000C0AA AD0A
+8000C0AC 0000
+8000C0AE 0000
+8000C0B0 0010
+8000C0B2 8FA8
+8000C0B4 0014
+8000C0B6 8FA9
+8000C0B8 0018
+8000C0BA 8FAA
+8000C0BC 0020
+8000C0BE 27BD
+8000C0C0 0008
+8000C0C2 03E0
+8000C0C4 0000
+8000C0C6 0000
+800396AC 3000
+800396AE 0C00
+800396B0 0000
+800396B2 0000
+
 ; [ Spyro - Year of the Dragon (USA, v1.1) (2000) (Sony Computer Entertainment America) {SCUS-94467} <spyro3> ]
 :SCUS-94467
+
 #Infinite Health
 800705A8 0003
+
 #Infinite Lives
 8006C784 0004
+
 #Gem's Worth Max
 C0036EC0 C71C
 90036EB4 244200FF
 90036EB8 246300FF
 00000000 FFFF
+
 #Get Gems from Anywhere
 C006E424 00000000
 F40756CC 00AA0800
@@ -52744,6 +53528,7 @@ F40756CC 00AA0800
 0000AAAA AAAAAAAA
 00000000 05004010
 0000AAAA AAAAAAAA
+
 #Destroy All Barrels Instantly
 C006E424 00000000
 F4076000 00AA2000
@@ -52751,11 +53536,14 @@ F4076000 00AA2000
 21280000 AAAAAAAA
 50000014 21202002
 21280000 AAAAAAAA
+
 #Press L1 For Moon Jump
 D007143A FBFF
 11070330 0100
+
 #Have All Eggs\Sunrise Spring Home
 30070300 001F
+
 #Have All Eggs\Sunny Villa
 30070301 003F
 #Have All Eggs\Cloud Spires
@@ -53418,21 +54206,29 @@ A71D8628 10000C00
 
 ; [ Star Ocean - The Second Story (USA) (1999) (Sony Computer Entertainment America) {SCUS-94421 / SCUS-94421} <starocn2> ]
 :SCUS-94421
+
 #Infinite MP (In Battle-All Characters/Positions)
 8003737A 2400
+
 #Infinite SP Usage All
 8007EA96 2400
+
 #Save Anywhere
 80074628 0001
+
 #No Random Battles
 D002B54C 0001
 9009C440 00000000
+
 #Max Fol
 9009BFB0 3B9AC9FF
+
 #Infinite Fol
 8009BFB0 FFFF
+
 #Fol Never Decreases
 8003C64E 2400
+
 #Misc.\Have All Voices Enabled
 9009C138 FFFFFFFF
 9009C13C FFFFFFFF
@@ -53474,9 +54270,11 @@ D002B54C 0001
 9009C1CC FFFFFFFF
 9009C1D0 FFFFFFFF
 9009C1D4 FFFFFFFF
+
 #Misc.\Have All Voices Enabled
 50004F02 0000
 8009C138 FFFF
+
 #Misc.\Have All Items
 5000FF02 0001
 8009ACD0 5001
@@ -53488,9 +54286,58 @@ D002B54C 0001
 8009B2CA 52FE
 50000302 0001
 8009B4C8 53FD
+
 #Misc.\Extra Menu Options/Debug With this code, when you got into your menus and such, you will be able to move past the end of the lists. If you highlight the very top option and press up, it will take you to the very bottom, which is a Debug type of menu. Press X on it, and then it will take y ou to a blank screen, Press X one more time, and the options will popup.
 D00D3898 FFE8
 900D38AC 240C000C
+
+#No clip (Field & Overworld) "Press L3 to toggle on/off" 
+D7010001 01000200
+F50834B6 10401000
+F5082EBA 04611000
+F508309A 12221000
+F5082F36 10401000
+F50869C2 04411000
+F50869EA 10401000
+F50868A2 04411000
+F50868CA 10401000
+F5040216 14401000
+F5087A1A 15F92400
+F508CDCA 108C1000
+F5086BEA 10511000
+F508CED6 108C1000
+
+#Disable text frames
+A705A842 10401000
+
+#Re-open chests infinitely (Can farm infinite items)
+A706CD56 14401000
+
+#Disable text frames
+A705A842 10401000
+
+#Sequence break code (Ignores if you're allowed to go somewhere or not)
+A706D44E 10401000
+
+#Skip dialogue (Can break sequences and lock up game)
+A70585D2 14452400
+
+#Skip dialogue naturally
+A705983A 14401000
+
+#Turbo mode (Game drops fps but becomes faster)
+A70561FE 14522400
+
+#Enemies don't attack
+A703D382 14401000
+
+#Hide batle overlays
+A70230D2 00402400
+
+#Seppuku
+A703B05A 00402400
+
+
 
 ; [ Starwinder - The Ultimate Space Race (USA) (1996) (Mindscape) {SLUS-00094} <starwndr> ]
 :SLUS-00094
@@ -61705,13 +62552,21 @@ A709EE4C 10000C00
 
 ; [ Disney Presents Tigger's Honey Hunt (USA, v1.0) (2000) (Take-Two Interactive Software) {SLUS-01210} <tiggerhha> ]
 :SLUS-01210
+
 #Infinite Life
 300C7094 0003
+
 #Have Hella Honey Pots
 800C7098 03E7
+
 #Have All Pictures
 900C7074 FFFFFFFF
 800C7078 FFFF
+
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F508452E 10401000
+F50721A6 10401000
 
 ; [ Time Commando (USA) (1996) (Activision) {SLUS-00342} <timecomm> ]
 :SLUS-00342
@@ -66093,29 +66948,178 @@ D005E1C0 0020
 ; [ Valkyrie Profile (USA) (2000) (Enix America) {SLUS-01156 / SLUS-01179} <valkyrpf> ]
 :SLUS-01156
 :SLUS-01179
+
+#Boot new game into debug
+A703F674 001E0000
+
+#FPS uncap
+A701FF9A 14402400
+
+#Valyrie Mirrors dark Valkyrie colors (Dark Valkyrie battle)
+A7060B12 14401000
+
+#Valyrie Mirrors dark attack colors (Dark Valkyrie battle)
+A70623F6 10621000
+
+#Valyrie Mirrors Dark Valkyrie colors experimental (Dark Valkyrie battle,"needs to be toggled on and off during load") 
+A7068192 06412400
+A706815E 14531000
+
+#Black and white characters in-battle
+A7060CAE 10602400
+
+#One hit kills, hold L2 + R2 during attack
+A703BBEA 24000441
+A705C10A 24000441
+D7200000 00000003
+A703BBEA 04412400
+A705C10A 04412400
+
+#Walk through walls "Press R3 to toggle on/off"
+D7010001 01000400
+F503363A 10401000
+F5033612 10401000
+F5033C12 10401000
+F503102E 10401000
+F503228E 10401000
+
+#Uncap weapon + ice speed "Hold R1 during
+A7067366 24001082
+A706736E 24001082
+A7067376 24001082
+A70672AA 10001060
+D7200000 00000008
+A7067366 10822400
+A706736E 10822400
+A7067376 10822400
+A70672AA 10601000
+F50323DA 10401000
+
+#No random battles "Hold select to temporarily disable"
+A7030602 10001040
+D7100000 00000100
+A7030602 10401000
+
+#In-battle debug menu v1 "Press select in-battle, scroll left/right"
+A709D36A 10402400
+A709D128 00060007
+A709D0D0 00050006
+
+#In-battle debug menu v2 "Hold L1+R1 in-battle" 
+A709CE1A 24001040
+A709D19E 24001040
+A709D36A 24001040
+D7200000 0000000C
+A709D36A 10402400
+A709CE1A 10402400
+A709D19E 10402400
+A70A9762 00000006
+
+#Enable attacking guarded enemies in-battle 
+A7030186 14402400
+
+#Enemy will not attack
+A7066452 17C02400
+
+#Jump in mid-air "Hold L3 to clip through ground/ceiling"
+A7030DF2 14401000
+00000000 0000FFFF
+A7031182 24001440
+D7200000 00000200
+A7031182 14402400
+
+#Maximize volume
+A7017AEA 10401000
+
+#Be able to open menus from the start
+A703608E 14402400
+
+#Create ice blocks from anywhere
+A703E4FE 10402400
+
+#Ice can carry you without breaking
+A7030BB6 14431000
+
+#Add extra counter digit to huds in-battle
+A707B262 10402400
+
+#Enable use of right analog stick on the world map
+A703051A 24001040
+D7200000 00010000
+A703051A 10402400
+
+#Hit anywhere "Works on enemies on the same level"
+A7030BB6 14431000
+
+#Valkyrie has afterimage effect
+A705D422 10402400
+
+#Walk on spikes
+A7089A12 10622400
+
+#Unlock more songs in sound mode "Scroll beyond 61 or below 0"
+A7040C2A 14401000
+A7040B8E 04411000
+
+#Turbo controls
+3002B698 00000000
+
+#Re-open chests (Will be useful for item farming)
+A7044ABA 14402400
+
+#Show way pointers on map from anywhere
+A7043572 10411000
+
+#Hide clouds on world map
+A7031A1E 10401000
+
+#Disable LOD
+A703B522 19801000
+A703AB1E 19E01000
+
+#Blue skybox
+A7039C16 0C002400
+
+#Fly on ground world map
+A7030CDE 0C002400
+
+#Descend to word map "Hold R3 and press left analog stick up"
+A7030D02 24000C00
+D7200000 00000400
+A7030D02 0C002400
+
 #In Battle Infinite HP (Position 1-Front)
 D00EDD70 FE9C
 900EDD74 05F5E0FF
+
 #In Battle Infinite HP (Position 2-Top)
 D00EE42C 09AC
 900EE430 05F5E0FF
+
 #In Battle Infinite HP (Position 3-Bottom)
 D00EEAE8 0074
 900EEAEC 05F5E0FF
+
 #In Battle Infinite HP (Position 4-Back)
 D00EF1A4 0160
 900EF1A8 05F5E0FF
+
 #Save Anywhere
 301F6274 0011
+
 #Max Evaluation Points
 801F6264 270F
+
 #Max Materialize Points
 901F5F80 7FFFFFFF
+
 #Voice Collection 100%
 50005F02 0000
 80060A04 FFFF
+
 #Open Seraphic Gate (Main Menu)
 8005E422 0011
+
 #Infinite Time (Brahm Castle)
 801E5C4C 3B03
 
@@ -99943,24 +100947,36 @@ D00B45E4 001E
 
 ; [ Crash Bandicoot Racing (Japan) {SCPS-10118} ]
 :SCPS-10118
+
+#Ultra hard arcade mode (CPU's are a lot faster)
+8009BE9C 0280
+
+#Hard Mode CTR Japan
+80099FE2 0020
+
 #Always 1st Place
 801F5ACA 0000
+
 #Infinite Items
 801F5674 000A
+
 #Unlock All Extras
 50000702 0000
 80091B98 FFFF
 50000F01 0000
 30093058 00FF
+
 #Open all stages
 90093058 FFFFFFFF
 9009305C FFFFFFFF
 90093060 FFFFFFFF
 80093064 FFFF
 30093066 00FF
+
 #All character appearance
 90091B98 FFFFFFFF
 90091B9C FFFFFFFF
+
 #Play time
 80036ECE 2400
 
@@ -124219,6 +125235,14 @@ A70F8C9C 19991333
 
 ; [ MediEvil 2 (Europe) {SCES-02545} ]
 :SCES-02545
+
+#Widescreen 16:9 "Duckstation"
+A712932C 19991333
+
+#Widescreen 16:9 "All inferior emulators and PS1"
+D012932C 1999
+8012932C 1333
+
 #Infinite Energy
 800F1124 012C
 #Unlock Cheat Menu (Enable All Levels,Invencibility)
@@ -124452,6 +125476,14 @@ D0155464 0080
 D00D51FA FFEE
 80035360 0004
 ; [ Megaman X5 ][SLUS-01334]
+
+#Matrix mode "Pres L3 to toggle on/off
+D7010001 01000200
+F5021FFA 10402400
+F5022106 10401000
+F5022226 10401000
+F5022432 14401000
+
 #Matrix mode "Pres L3 to toggle on/off
 D7010001 01000200
 F5021FFA 10402400
@@ -145821,16 +146853,49 @@ F5024C2E 05601000
 
 ; [ Spyro x Sparx: Tondemo Tours (Japan) {SCPS-10128} ]
 :SCPS-10128
+
 #Infinite Health
 8006CE04 0003
+
 #Score Gem Max
 800697F0 FFFF
+
 #Infinite Lives
 80069850 0004
+
 #Bonus Screen Infinite time
 8006C464 070A
+
 #And (rising gradually to jump) airborne
 8006CC44 05FF
+
+#Collect gems from anywhere
+C006A900 00000000
+F4070000 00AAFFFF
+AAAAAA14 00000000
+0C00AA86 00000000
+AAAA0024 AAAAAAAA
+AAAAAAAA AAAAAAAA
+
+#Talk to NPC's from anywhere
+A703CA0E 0C002400
+
+#Matrix mode "Press L3 to toggle on/off"
+D7010001 01000200
+F504304A 04401000
+
+#No swim interval cap 
+F4076000 00AAFFFF
+AAAA4014 28000424
+AAAA0108 00000000
+AAAA0010 AAAAAAAA
+AAAAAAAA AAAAAAAA
+D7100000 00000080
+F4076000 00AAFFFF
+AAAA0010 28000424
+AAAA0108 00000000
+AAAA4014 AAAAAAAA
+AAAAAAAA AAAAAAAA
 
 #Collect gems from anywhere
 C006A900 00000000
@@ -164625,5 +165690,3 @@ A70FA626 1C401400
 A7063F0C 10000C00
 #Dither Off
 A70F13C4 02000000
-
-
