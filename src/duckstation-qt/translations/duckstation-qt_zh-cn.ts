@@ -343,42 +343,42 @@ Login token generated on %2.</source>
         <translation>档开关禁用硬核模式。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="501"/>
+        <location filename="../../frontend-common/achievements.cpp" line="503"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>硬核模式将在系统重启时启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="529"/>
+        <location filename="../../frontend-common/achievements.cpp" line="531"/>
         <source>Confirm Hardcore Mode</source>
         <translation>确认硬核模式</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="530"/>
+        <location filename="../../frontend-common/achievements.cpp" line="532"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>当硬核模式激活时，无法执行{0}。您想禁用硬核模式吗？如何您选择No，{0}将会被取消。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="581"/>
+        <location filename="../../frontend-common/achievements.cpp" line="583"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>硬核模式已启用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="582"/>
+        <location filename="../../frontend-common/achievements.cpp" line="584"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>硬核模式已禁用。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1002"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1004"/>
         <source>{} (Hardcore Mode)</source>
         <translation>{} (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1010"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1012"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
         <translation>你获得了{}之{}成就，以及{}之{}点。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1016"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1018"/>
         <source>This game has no achievements.</source>
         <translation>这个游戏没有成就。</translation>
     </message>
@@ -391,34 +391,34 @@ Login token generated on %2.</source>
         <translation type="vanished">排行榜禁用，因为硬核模式已关闭。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1736"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1760"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
         <translation>你的分数: {} (最佳成绩: {})
 排行榜位置: {}之{}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5853"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5854"/>
         <source>This game has {} leaderboards.</source>
         <translation>此游戏有{}排行榜。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5871"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5872"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>由于硬核模式关闭，提交分数被禁用。排行榜是只读的。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5906"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5907"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5907"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5908"/>
         <source>Score</source>
         <translation>分数</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5963"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5964"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>下载排行榜数据中，请稍候…</translation>
     </message>
@@ -505,7 +505,7 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">GPU最大优先级:</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="234"/>
+        <location filename="../advancedsettingswidget.cpp" line="246"/>
         <source>PGXP Vertex Cache</source>
         <translation>PGXP顶点缓存</translation>
     </message>
@@ -542,22 +542,42 @@ Leaderboard Position: {} of {}</source>
         <translation>多重采样反锯齿</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="235"/>
+        <location filename="../advancedsettingswidget.cpp" line="236"/>
+        <source>Display Active Start Offset</source>
+        <translation>显示活动起始偏移</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="238"/>
+        <source>Display Active End Offset</source>
+        <translation>显示活动结束偏移</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="240"/>
+        <source>Display Line Start Offset</source>
+        <translation>显示线起始偏移</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="242"/>
+        <source>Display Line End Offset</source>
+        <translation>显示线结束偏移</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="247"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXP几何公差</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="237"/>
+        <location filename="../advancedsettingswidget.cpp" line="249"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP深度清除阈值</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="242"/>
+        <location filename="../advancedsettingswidget.cpp" line="254"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>启用块链接重编译器</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="244"/>
+        <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>启用快速内存访问重编译器</translation>
     </message>
@@ -566,62 +586,62 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">启用ICache重编译器</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="249"/>
+        <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>启用显存写入纹理替换</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="251"/>
+        <location filename="../advancedsettingswidget.cpp" line="263"/>
         <source>Preload Texture Replacements</source>
         <translation>预加载纹理替换</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="253"/>
+        <location filename="../advancedsettingswidget.cpp" line="265"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>转储可替换的显存写入</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="255"/>
+        <location filename="../advancedsettingswidget.cpp" line="267"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
         <translation>设置转储的显存写入Alpha通道</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="257"/>
+        <location filename="../advancedsettingswidget.cpp" line="269"/>
         <source>Minimum Dumped VRAM Write Width</source>
         <translation>最小转储显存写入宽度</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="260"/>
+        <location filename="../advancedsettingswidget.cpp" line="272"/>
         <source>Minimum Dumped VRAM Write Height</source>
         <translation>最小转储显存写入高度</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="264"/>
+        <location filename="../advancedsettingswidget.cpp" line="276"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA最大片段时数</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="266"/>
+        <location filename="../advancedsettingswidget.cpp" line="278"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA停顿时数</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="268"/>
+        <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>GPU FIFO Size</source>
         <translation>GPU的FIFO大小</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="270"/>
+        <location filename="../advancedsettingswidget.cpp" line="282"/>
         <source>GPU Max Run-Ahead</source>
         <translation>GPU最大预运行</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="278"/>
+        <location filename="../advancedsettingswidget.cpp" line="290"/>
         <source>Allow Booting Without SBI File</source>
         <translation>没有SBI文件情况下允许启动</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="281"/>
+        <location filename="../advancedsettingswidget.cpp" line="293"/>
         <source>Create Save State Backups</source>
         <translation>创建存档备份</translation>
     </message>
@@ -688,7 +708,7 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">显示全屏状态指示器</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="275"/>
+        <location filename="../advancedsettingswidget.cpp" line="287"/>
         <source>Increase Timer Resolution</source>
         <translation>提高计时器分辨率</translation>
     </message>
@@ -702,7 +722,7 @@ Leaderboard Position: {} of {}</source>
         <translation>重置为默认值</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="240"/>
+        <location filename="../advancedsettingswidget.cpp" line="252"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>启用内存异常重编译器</translation>
     </message>
@@ -718,7 +738,7 @@ Leaderboard Position: {} of {}</source>
         <translation>显示调试菜单</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="272"/>
+        <location filename="../advancedsettingswidget.cpp" line="284"/>
         <source>Use Debug Host GPU Device</source>
         <translation>使用调试本机GPU设备</translation>
     </message>
@@ -748,43 +768,63 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="104"/>
-        <location filename="../../core/analog_controller.cpp" line="250"/>
+        <location filename="../../core/analog_controller.cpp" line="258"/>
         <source>Controller {} switched to analog mode.</source>
         <translation>控制器{}切换为模拟模式。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="105"/>
-        <location filename="../../core/analog_controller.cpp" line="251"/>
+        <location filename="../../core/analog_controller.cpp" line="259"/>
         <source>Controller {} switched to digital mode.</source>
         <translation>控制器{}切换为数字模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="266"/>
+        <location filename="../../core/analog_controller.cpp" line="274"/>
         <source>Controller %u is locked to analog mode by the game.</source>
         <translation>控制器%u被游戏锁定为模拟模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="267"/>
+        <location filename="../../core/analog_controller.cpp" line="275"/>
         <source>Controller %u is locked to digital mode by the game.</source>
         <translation>控制器%u被游戏锁定为数字模式。</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="790"/>
+        <source>Not Inverted</source>
+        <translation>不反向</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="791"/>
+        <source>Invert Left/Right</source>
+        <translation>左右反向</translation>
+    </message>
+    <message>
         <location filename="../../core/analog_controller.cpp" line="792"/>
+        <source>Invert Up/Down</source>
+        <translation>上下反向</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="793"/>
+        <source>Invert Left/Right + Up/Down</source>
+        <translation>左右反向+上下反向</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="805"/>
         <source>Analog Deadzone</source>
         <translation>模拟死区</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="793"/>
+        <location filename="../../core/analog_controller.cpp" line="806"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>设置模拟摇杆死区，也就是少量将会被忽略的摇杆移动区。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="796"/>
+        <location filename="../../core/analog_controller.cpp" line="809"/>
         <source>Analog Sensitivity</source>
         <translation>模拟灵敏度</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="797"/>
+        <location filename="../../core/analog_controller.cpp" line="810"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用130%到140%之间的值。</translation>
     </message>
@@ -873,12 +913,12 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">模拟量</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="783"/>
+        <location filename="../../core/analog_controller.cpp" line="796"/>
         <source>Force Analog Mode on Reset</source>
         <translation>重启时强制进入模拟模式</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="784"/>
+        <location filename="../../core/analog_controller.cpp" line="797"/>
         <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
         <translation>当游戏主机重启/开机时，强制控制器进入模拟模式。可能会导致游戏问题，所以建议关闭此选项。</translation>
     </message>
@@ -891,12 +931,12 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">当主机复位/开机时，自动启用模拟模式。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="788"/>
+        <location filename="../../core/analog_controller.cpp" line="801"/>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>D-Pad在数字模式下使用模拟摇杆</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="789"/>
+        <location filename="../../core/analog_controller.cpp" line="802"/>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
         <translation>允许您在数字模式下使用模拟摇杆去控制d-pad，同样还有按键。</translation>
     </message>
@@ -909,12 +949,12 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用1.30到1.40之间的值。</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="802"/>
+        <location filename="../../core/analog_controller.cpp" line="818"/>
         <source>Vibration Bias</source>
         <translation>震动力</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="803"/>
+        <location filename="../../core/analog_controller.cpp" line="819"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
         <translation>设置震动力的值。如果震动在某些游戏中太弱或不起作用，尝试增大这个值。</translation>
     </message>
@@ -3069,8 +3109,8 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_Base</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="739"/>
-        <location filename="../controllerbindingwidgets.cpp" line="755"/>
+        <location filename="../controllerbindingwidgets.cpp" line="761"/>
+        <location filename="../controllerbindingwidgets.cpp" line="777"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -3353,7 +3393,7 @@ This warning will only be shown once.</source>
         <translation>转向/扭曲</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="844"/>
+        <location filename="../controllerbindingwidgets.cpp" line="866"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -3386,12 +3426,12 @@ This warning will only be shown once.</source>
         <translation>恢复默认设置</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="586"/>
+        <location filename="../controllerbindingwidgets.cpp" line="600"/>
         <source>Browse...</source>
         <translation>浏览...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="589"/>
+        <location filename="../controllerbindingwidgets.cpp" line="603"/>
         <source>Select File</source>
         <translation>选择文件</translation>
     </message>
@@ -3404,149 +3444,147 @@ This warning will only be shown once.</source>
         <translation>Form</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="32"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="83"/>
         <source>Controller Multitap</source>
         <translation>多接头控制器</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="38"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="89"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
         <translation>多接头能够使最多8个控制器连接到游戏主机。每个多接头提供4个接口。并不是全部游戏都支持多接头。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="48"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="99"/>
         <source>Multitap Mode:</source>
         <translation>多接头模式:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="56"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="107"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="61"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="112"/>
         <source>Enable on Port 1 Only</source>
         <translation>仅启用接口1</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="66"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="117"/>
         <source>Enable on Port 2 Only</source>
         <translation>仅启用接口2</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="71"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="122"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>启用接口1和接口2</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="82"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="32"/>
         <source>DInput Source</source>
         <translation>DInput源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="88"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="38"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
         <translation>DInput源提供了对某些不支持XInput的旧式控制器的支持。建议改为通过SDL访问这些控制器。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="98"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="48"/>
         <source>Enable DInput Input Source</source>
         <translation>启用DInput输入源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="108"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="133"/>
         <source>SDL Input Source</source>
         <translation>SDL输入源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="114"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="139"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation>SDL输入源支持大多数控制器，并为蓝牙模式下的DualShock-4/DualSense-pad (振动/LED控制) 提供高级功能。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="124"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="149"/>
         <source>Enable SDL Input Source</source>
         <translation>启用SDL输入源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="131"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="156"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation>DualShock-4/DualSense增强模式</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="141"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="58"/>
         <source>Detected Devices</source>
         <translation>检测设备</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="166"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="218"/>
         <source>Mouse/Pointer Source</source>
         <translation>鼠标/指针源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="184"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="260"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="280"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="335"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="216"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="267"/>
         <source>Invert</source>
-        <translation>反转</translation>
+        <translation type="vanished">反转</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="274"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>当您将控制器摇杆绑定到鼠标指针时，使用原生输入可以提高精度。还可以使用多个鼠标。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="284"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="289"/>
         <source>Vertical Sensitivity:</source>
         <translation>垂直灵敏度:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="291"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
         <source>Horizontal Sensitivity:</source>
         <translation>水平灵敏度:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="298"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="346"/>
         <source>Enable Mouse Mapping</source>
         <translation>启用鼠标映射</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="353"/>
         <source>Use Raw Input</source>
         <translation>使用原生输入</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="315"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="166"/>
         <source>XInput Source</source>
         <translation>XInput源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="321"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="172"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>XInput源提供了对XBox-360/XBox-One/XBox系列控制器以及遵守XInput协议的第三方控制器的支持。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="331"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
         <source>Enable XInput Input Source</source>
         <translation>启用XInput输入源</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="341"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="192"/>
         <source>Profile Settings</source>
         <translation>控制档设置</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="347"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>当启用此选项时，热键可以在此输入控制档中进行设置，并将用于替代全局热键。默认情况下，热键总是在全部控制档之间共享。</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="357"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>每个控制档使用独立热键</translation>
     </message>
@@ -3967,18 +4005,18 @@ You cannot undo this action.</source>
         <translation>PlayStation鼠标</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="258"/>
+        <location filename="../../core/negcon.cpp" line="259"/>
         <location filename="../../core/settings.cpp" line="1083"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="809"/>
+        <location filename="../../core/analog_controller.cpp" line="831"/>
         <source>Analog Controller</source>
         <translation>模拟控制器</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="230"/>
+        <location filename="../../core/guncon.cpp" line="231"/>
         <location filename="../../core/settings.cpp" line="1082"/>
         <source>GunCon</source>
         <translation>光枪</translation>
@@ -4665,6 +4703,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="246"/>
+        <location filename="../displaysettingswidget.cpp" line="150"/>
         <source>Show CPU Usage</source>
         <translation>显示CPU使用</translation>
     </message>
@@ -4719,7 +4758,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="253"/>
-        <location filename="../displaysettingswidget.cpp" line="150"/>
+        <location filename="../displaysettingswidget.cpp" line="153"/>
         <source>Show Controller Input</source>
         <translation>显示控制器输入</translation>
     </message>
@@ -4789,7 +4828,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="80"/>
-        <location filename="../displaysettingswidget.cpp" line="232"/>
+        <location filename="../displaysettingswidget.cpp" line="235"/>
         <source>(Default)</source>
         <translation>(默认)</translation>
     </message>
@@ -4875,7 +4914,8 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="145"/>
         <location filename="../displaysettingswidget.cpp" line="147"/>
         <location filename="../displaysettingswidget.cpp" line="150"/>
-        <location filename="../displaysettingswidget.cpp" line="158"/>
+        <location filename="../displaysettingswidget.cpp" line="153"/>
+        <location filename="../displaysettingswidget.cpp" line="161"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
@@ -4959,23 +4999,28 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="151"/>
+        <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
+        <translation>在显示右上角根据线程显示本机的CPU使用情况。这不会显示模拟系统CPU的使用情况。如果显示接近100%的值，这意味着您本机的CPU很可能是瓶颈。在这种情况下，您应该降低诸如超频……与增强相关的那些设置。</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="154"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>在显示左下角显示系统当前控制器状态。</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="155"/>
         <location filename="../displaysettingswidget.cpp" line="158"/>
+        <location filename="../displaysettingswidget.cpp" line="161"/>
         <source>Use Blit Swap Chain</source>
         <translation>使用位块传输交换链</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="159"/>
+        <location filename="../displaysettingswidget.cpp" line="162"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>当Direct3D 11渲染器运行时使用一个位块展示模型进行替代翻转。这通常会导致性能下降，但可能需要一些流应用程序，或者在某些系统上打开帧速率上限。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="84"/>
-        <location filename="../displaysettingswidget.cpp" line="252"/>
+        <location filename="../displaysettingswidget.cpp" line="255"/>
         <source>Borderless Fullscreen</source>
         <translation>无边界全屏</translation>
     </message>
@@ -5519,9 +5564,8 @@ Achievements: %5 (%6)
         <translation>24位色内容下，平滑颜色转变过渡中的块状，通常用于动画播放。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在高分辨率比率下将有更好的效果。仅适用于硬件渲染器。</translation>
+        <translation type="vanished">使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在高分辨率比率下将有更好的效果。仅适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="91"/>
@@ -5565,6 +5609,11 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.cpp" line="64"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>对于输出到游戏主机的帧缓冲，强制其颜色精度的每个通道使用全部8位精度。这会产生更好看的渐变，但代价是使某些颜色看起来稍有不同。禁用该选项也会启用色彩抖动，这会通过在这些像素周围应用图案来减少颜色之间的过渡。大多数游戏都与此选项兼容，但也有一部分游戏不支持此选项，并且在启用该选项后会产生碎裂效果。仅适用于硬件渲染器。</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="88"/>
+        <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
+        <translation>通过使用过滤来平滑3D物体上放大纹理的块状。&lt;br&gt;在较高的分辨率比率下会有更好的效果。仅适用于硬件渲染器。&lt;br&gt;JINC2，尤其xBR过滤模式的要求都非常高，付出速度降低的代价可能不值得。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="92"/>
@@ -5872,8 +5921,27 @@ Achievements: %5 (%6)
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="889"/>
+        <source>JINC2 (Slow)</source>
+        <translation>JINC2 (慢)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="890"/>
+        <source>JINC2 (Slow, No Edge Blending)</source>
+        <translation>JINC2 (慢，无边缘混合)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="890"/>
+        <source>xBR (Very Slow)</source>
+        <translation>xBR (非常慢)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="891"/>
+        <source>xBR (Very Slow, No Edge Blending)</source>
+        <translation>xBR (非常慢，无边缘混合)</translation>
+    </message>
+    <message>
         <source>JINC2</source>
-        <translation>JINC2</translation>
+        <translation type="vanished">JINC2</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="889"/>
@@ -5881,19 +5949,16 @@ Achievements: %5 (%6)
         <translation>双线性 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="890"/>
         <source>xBR</source>
-        <translation>xBR</translation>
+        <translation type="vanished">xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="890"/>
         <source>JINC2 (No Edge Blending)</source>
-        <translation>JINC2 (无边缘混合)</translation>
+        <translation type="vanished">JINC2 (无边缘混合)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="891"/>
         <source>xBR (No Edge Blending)</source>
-        <translation>xBR (无边缘混合)</translation>
+        <translation type="vanished">xBR (无边缘混合)</translation>
     </message>
 </context>
 <context>
@@ -7329,12 +7394,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>屏幕内十字准星图像缩放。</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="224"/>
+        <location filename="../../core/guncon.cpp" line="225"/>
         <source>X Scale</source>
         <translation>X缩放</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="225"/>
+        <location filename="../../core/guncon.cpp" line="226"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
         <translation>缩放X坐标相对于屏幕中心。</translation>
     </message>
