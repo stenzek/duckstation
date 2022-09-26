@@ -11,8 +11,6 @@
 #include <tuple>
 Log_SetChannel(OpenGLHostDisplay);
 
-namespace FrontendCommon {
-
 enum : u32
 {
   TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024,
@@ -48,7 +46,13 @@ OpenGLHostDisplay::OpenGLHostDisplay() = default;
 
 OpenGLHostDisplay::~OpenGLHostDisplay()
 {
-  AssertMsg(!m_gl_context, "Context should have been destroyed by now");
+  if (!m_gl_context)
+    return;
+
+  DestroyResources();
+
+  m_gl_context->DoneCurrent();
+  m_gl_context.reset();
 }
 
 RenderAPI OpenGLHostDisplay::GetRenderAPI() const
@@ -293,17 +297,6 @@ bool OpenGLHostDisplay::MakeRenderContextCurrent()
 bool OpenGLHostDisplay::DoneRenderContextCurrent()
 {
   return m_gl_context->DoneCurrent();
-}
-
-void OpenGLHostDisplay::DestroyRenderDevice()
-{
-  if (!m_gl_context)
-    return;
-
-  DestroyResources();
-
-  m_gl_context->DoneCurrent();
-  m_gl_context.reset();
 }
 
 bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
@@ -789,7 +782,7 @@ bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
   {
-    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const FrontendCommon::PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
     const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
     const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
 
@@ -1230,5 +1223,3 @@ bool OpenGLHostDisplayTexture::Update(u32 x, u32 y, u32 width, u32 height, const
 
   return true;
 }
-
-} // namespace FrontendCommon

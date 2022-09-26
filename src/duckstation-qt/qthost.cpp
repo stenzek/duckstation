@@ -739,9 +739,8 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
   {
     ImGuiManager::Shutdown();
     CommonHost::ReleaseHostDisplayResources();
-    g_host_display->DestroyRenderDevice();
-    emit destroyDisplayRequested();
     g_host_display.reset();
+    emit destroyDisplayRequested();
     return false;
   }
 
@@ -811,9 +810,8 @@ void EmuThread::releaseHostDisplay()
 
   CommonHost::ReleaseHostDisplayResources();
   ImGuiManager::Shutdown();
-  g_host_display->DestroyRenderDevice();
-  emit destroyDisplayRequested();
   g_host_display.reset();
+  emit destroyDisplayRequested();
   m_is_fullscreen = false;
 }
 

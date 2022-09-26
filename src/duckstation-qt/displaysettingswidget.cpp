@@ -204,11 +204,11 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
   {
 #ifdef _WIN32
     case GPURenderer::HardwareD3D11:
-      aml = FrontendCommon::D3D11HostDisplay::StaticGetAdapterAndModeList();
+      aml = D3D11HostDisplay::StaticGetAdapterAndModeList();
       break;
 
     case GPURenderer::HardwareD3D12:
-      aml = FrontendCommon::D3D12HostDisplay::StaticGetAdapterAndModeList();
+      aml = D3D12HostDisplay::StaticGetAdapterAndModeList();
       break;
 #endif
 #ifdef WITH_VULKAN

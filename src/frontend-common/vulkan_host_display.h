@@ -30,8 +30,7 @@ public:
                           bool threaded_presentation) override;
   bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                               bool threaded_presentation) override;
-  void DestroyRenderDevice() override;
-
+                                      
   bool MakeRenderContextCurrent() override;
   bool DoneRenderContextCurrent() override;
 

@@ -142,26 +142,26 @@ std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(RenderAPI api)
 #ifdef WITH_OPENGL
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
-      return std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+      return std::make_unique<OpenGLHostDisplay>();
 #endif
 
 #ifdef _WIN32
     case RenderAPI::D3D12:
-      return std::make_unique<FrontendCommon::D3D12HostDisplay>();
+      return std::make_unique<D3D12HostDisplay>();
 
     case RenderAPI::D3D11:
-      return std::make_unique<FrontendCommon::D3D11HostDisplay>();
+      return std::make_unique<D3D11HostDisplay>();
 #endif
 
     default:
 #if defined(_WIN32) && defined(_M_ARM64)
-      return std::make_unique<FrontendCommon::D3D12HostDisplay>();
+      return std::make_unique<D3D12HostDisplay>();
 #elif defined(_WIN32)
-      return std::make_unique<FrontendCommon::D3D11HostDisplay>();
+      return std::make_unique<D3D11HostDisplay>();
 #elif defined(WITH_OPENGL)
-      return std::make_unique<FrontendCommon::OpenGLHostDisplay>();
+      return std::make_unique<OpenGLHostDisplay>();
 #elif defined(WITH_VULKAN)
-      return std::make_unique<FrontendCommon::VulkanHostDisplay>();
+      return std::make_unique<VulkanHostDisplay>();
 #else
       return {};
 #endif

@@ -683,8 +683,8 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
   {
     ImGuiManager::Shutdown();
     CommonHost::ReleaseHostDisplayResources();
-    g_host_display->DestroyRenderDevice();
     g_host_display.reset();
+    g_nogui_window->DestroyPlatformWindow();
     return false;
   }
 
@@ -718,7 +718,6 @@ void NoGUIHost::ReleaseHostDisplay()
 
   CommonHost::ReleaseHostDisplayResources();
   ImGuiManager::Shutdown();
-  g_host_display->DestroyRenderDevice();
   g_host_display.reset();
   g_nogui_window->ExecuteInMessageLoop([]() {
     g_nogui_window->DestroyPlatformWindow();

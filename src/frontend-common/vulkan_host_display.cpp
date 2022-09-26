@@ -583,8 +583,6 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
   return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-void VulkanHostDisplay::DestroyRenderDevice() {}
-
 bool VulkanHostDisplay::MakeRenderContextCurrent()
 {
   return true;

@@ -109,7 +109,6 @@ public:
                                       bool threaded_presentation) = 0;
   virtual bool MakeRenderContextCurrent() = 0;
   virtual bool DoneRenderContextCurrent() = 0;
-  virtual void DestroyRenderDevice() = 0;
   virtual void DestroyRenderSurface() = 0;
   virtual bool ChangeRenderWindow(const WindowInfo& wi) = 0;
   virtual bool SupportsFullscreen() const = 0;

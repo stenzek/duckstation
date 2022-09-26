@@ -14,8 +14,6 @@
 #include <vector>
 #include <wrl/client.h>
 
-namespace FrontendCommon {
-
 class D3D11HostDisplay final : public HostDisplay
 {
 public:
@@ -36,7 +34,6 @@ public:
                           bool threaded_presentation) override;
   bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                               bool threaded_presentation) override;
-  void DestroyRenderDevice() override;
 
   bool MakeRenderContextCurrent() override;
   bool DoneRenderContextCurrent() override;
@@ -140,7 +137,7 @@ protected:
   bool m_using_allow_tearing = false;
   bool m_vsync = true;
 
-  PostProcessingChain m_post_processing_chain;
+  FrontendCommon::PostProcessingChain m_post_processing_chain;
   D3D11::Texture m_post_processing_input_texture;
   std::vector<PostProcessingStage> m_post_processing_stages;
 
@@ -151,5 +148,3 @@ protected:
   bool m_timestamp_query_started = false;
   float m_accumulated_gpu_time = 0.0f;
 };
-
-} // namespace FrontendCommon

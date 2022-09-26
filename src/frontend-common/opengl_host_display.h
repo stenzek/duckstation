@@ -9,8 +9,6 @@
 #include "postprocessing_chain.h"
 #include <memory>
 
-namespace FrontendCommon {
-
 class OpenGLHostDisplay final : public HostDisplay
 {
 public:
@@ -28,7 +26,6 @@ public:
                           bool threaded_presentation) override;
   bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                               bool threaded_presentation) override;
-  void DestroyRenderDevice() override;
 
   bool MakeRenderContextCurrent() override;
   bool DoneRenderContextCurrent() override;
@@ -118,7 +115,7 @@ protected:
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;
   std::vector<u8> m_texture_repack_buffer;
 
-  PostProcessingChain m_post_processing_chain;
+  FrontendCommon::PostProcessingChain m_post_processing_chain;
   GL::Texture m_post_processing_input_texture;
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
@@ -133,5 +130,3 @@ protected:
   bool m_use_gles2_draw_path = false;
   bool m_use_pbo_for_pixels = false;
 };
-
-} // namespace FrontendCommon

@@ -21,8 +21,6 @@ Log_SetChannel(D3D11HostDisplay);
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 
-namespace FrontendCommon {
-
 class D3D11HostDisplayTexture final : public HostDisplayTexture
 {
 public:
@@ -90,8 +88,10 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
 {
-  AssertMsg(!m_context, "Context should have been destroyed by now");
-  AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+  DestroyResources();
+  DestroyRenderSurface();
+  m_context.Reset();
+  m_device.Reset();
 }
 
 RenderAPI D3D11HostDisplay::GetRenderAPI() const
@@ -335,14 +335,6 @@ bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_dire
     return false;
 
   return true;
-}
-
-void D3D11HostDisplay::DestroyRenderDevice()
-{
-  DestroyResources();
-  DestroyRenderSurface();
-  m_context.Reset();
-  m_device.Reset();
 }
 
 bool D3D11HostDisplay::MakeRenderContextCurrent()
@@ -1006,7 +998,7 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
   {
-    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const FrontendCommon::PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
     const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
     const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
 
@@ -1255,5 +1247,3 @@ float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()
   m_accumulated_gpu_time = 0.0f;
   return value;
 }
-
-} // namespace FrontendCommon

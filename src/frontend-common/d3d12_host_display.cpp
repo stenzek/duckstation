@@ -15,8 +15,6 @@
 #include <dxgi1_5.h>
 Log_SetChannel(D3D12HostDisplay);
 
-namespace FrontendCommon {
-
 static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat::Count)>
   s_display_pixel_format_mapping = {{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
                                      DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM}};
@@ -66,8 +64,13 @@ D3D12HostDisplay::D3D12HostDisplay() = default;
 
 D3D12HostDisplay::~D3D12HostDisplay()
 {
-  AssertMsg(!g_d3d12_context, "Context should have been destroyed by now");
-  AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
+  if (!g_d3d12_context)
+    return;
+
+  // DestroyRenderSurface() will exec the command list.
+  DestroyRenderSurface();
+  DestroyResources();
+  g_d3d12_context->Destroy();
 }
 
 RenderAPI D3D12HostDisplay::GetRenderAPI() const
@@ -245,16 +248,6 @@ bool D3D12HostDisplay::InitializeRenderDevice(std::string_view shader_cache_dire
     return false;
 
   return true;
-}
-
-void D3D12HostDisplay::DestroyRenderDevice()
-{
-  g_d3d12_context->ExecuteCommandList(true);
-
-  DestroyResources();
-  DestroyRenderSurface();
-  if (g_d3d12_context)
-    g_d3d12_context->Destroy();
 }
 
 bool D3D12HostDisplay::MakeRenderContextCurrent()
@@ -889,5 +882,3 @@ bool D3D12HostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
   return false;
 }
-
-} // namespace FrontendCommon
