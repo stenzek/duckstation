@@ -752,7 +752,7 @@ bool GPU_HW_D3D11::BlitVRAMReplacementTexture(const TextureReplacementTexture* t
   {
     if (!m_vram_replacement_texture.Create(m_device.Get(), tex->GetWidth(), tex->GetHeight(), 1, 1, 1,
                                            DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE, tex->GetPixels(),
-                                           tex->GetByteStride(), true))
+                                           tex->GetPitch(), true))
     {
       return false;
     }
@@ -767,13 +767,13 @@ bool GPU_HW_D3D11::BlitVRAMReplacementTexture(const TextureReplacementTexture* t
       return false;
     }
 
-    const u32 copy_size = std::min(tex->GetByteStride(), sr.RowPitch);
+    const u32 copy_size = std::min(tex->GetPitch(), sr.RowPitch);
     const u8* src_ptr = reinterpret_cast<const u8*>(tex->GetPixels());
     u8* dst_ptr = static_cast<u8*>(sr.pData);
     for (u32 i = 0; i < tex->GetHeight(); i++)
     {
       std::memcpy(dst_ptr, src_ptr, copy_size);
-      src_ptr += tex->GetByteStride();
+      src_ptr += tex->GetPitch();
       dst_ptr += sr.RowPitch;
     }
 

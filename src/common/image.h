@@ -49,7 +49,7 @@ public:
   ALWAYS_INLINE bool IsValid() const { return (m_width > 0 && m_height > 0); }
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
-  ALWAYS_INLINE u32 GetByteStride() const { return (sizeof(PixelType) * m_width); }
+  ALWAYS_INLINE u32 GetPitch() const { return (sizeof(PixelType) * m_width); }
   ALWAYS_INLINE const PixelType* GetPixels() const { return m_pixels.data(); }
   ALWAYS_INLINE PixelType* GetPixels() { return m_pixels.data(); }
   ALWAYS_INLINE const PixelType* GetRowPixels(u32 y) const { return &m_pixels[y * m_width]; }
@@ -125,6 +125,9 @@ public:
   bool SaveToFile(const char* filename, int quality = DEFAULT_SAVE_QUALITY) const;
   bool SaveToFile(const char* filename, std::FILE* fp, int quality = DEFAULT_SAVE_QUALITY) const;
   std::optional<std::vector<u8>> SaveToBuffer(const char* filename, int quality = DEFAULT_SAVE_QUALITY) const;
+
+  void Resize(u32 new_width, u32 new_height);
+  void Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height);
 };
 
 } // namespace Common

@@ -5,6 +5,7 @@
 #include "path.h"
 #include "scoped_guard.h"
 #include "stb_image.h"
+#include "stb_image_resize.h"
 #include "stb_image_write.h"
 #include "string_util.h"
 Log_SetChannel(Image);
@@ -165,6 +166,42 @@ std::optional<std::vector<u8>> RGBA8Image::SaveToBuffer(const char* filename, in
     ret.reset();
 
   return ret;
+}
+
+void RGBA8Image::Resize(u32 new_width, u32 new_height)
+{
+  if (m_width == new_width && m_height == new_height)
+    return;
+
+  std::vector<u32> resized_texture_data(new_width * new_height);
+  u32 resized_texture_stride = sizeof(u32) * new_width;
+  if (!stbir_resize_uint8(reinterpret_cast<u8*>(m_pixels.data()), m_width, m_height, GetPitch(),
+                          reinterpret_cast<u8*>(resized_texture_data.data()), new_width, new_height,
+                          resized_texture_stride, 4))
+  {
+    Panic("stbir_resize_uint8 failed");
+    return;
+  }
+
+  SetPixels(new_width, new_height, std::move(resized_texture_data));
+}
+
+void RGBA8Image::Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height)
+{
+  if (src_image->m_width == new_width && src_image->m_height == new_height)
+  {
+    SetPixels(src_image->m_width, src_image->m_height, src_image->m_pixels.data());
+    return;
+  }
+
+  SetSize(new_width, new_height);
+  if (!stbir_resize_uint8(reinterpret_cast<const u8*>(src_image->m_pixels.data()), src_image->m_width,
+                          src_image->m_height, src_image->GetPitch(), reinterpret_cast<u8*>(m_pixels.data()), new_width,
+                          new_height, GetPitch(), 4))
+  {
+    Panic("stbir_resize_uint8 failed");
+    return;
+  }
 }
 
 #if 0
@@ -567,7 +604,7 @@ bool STBBufferSaverPNG(const RGBA8Image& image, std::vector<u8>* buffer, int qua
   };
 
   return (stbi_write_png_to_func(write_func, buffer, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
-                                 image.GetByteStride()) != 0);
+                                 image.GetPitch()) != 0);
 }
 
 bool STBBufferSaverJPEG(const RGBA8Image& image, std::vector<u8>* buffer, int quality)
@@ -590,7 +627,7 @@ bool STBFileSaverPNG(const RGBA8Image& image, const char* filename, std::FILE* f
   };
 
   return (stbi_write_png_to_func(write_func, fp, image.GetWidth(), image.GetHeight(), 4, image.GetPixels(),
-                                 image.GetByteStride()) != 0);
+                                 image.GetPitch()) != 0);
 }
 
 bool STBFileSaverJPEG(const RGBA8Image& image, const char* filename, std::FILE* fp, int quality)

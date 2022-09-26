@@ -266,7 +266,7 @@ std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* p
 {
   std::unique_ptr<HostDisplayTexture> texture =
     g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, HostDisplayPixelFormat::RGBA8,
-                                  image.GetPixels(), image.GetByteStride());
+                                  image.GetPixels(), image.GetPitch());
   if (!texture)
   {
     Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());

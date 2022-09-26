@@ -4217,7 +4217,7 @@ void System::UpdateSoftwareCursor()
 
   if (image && image->IsValid())
   {
-    g_host_display->SetSoftwareCursor(image->GetPixels(), image->GetWidth(), image->GetHeight(), image->GetByteStride(),
+    g_host_display->SetSoftwareCursor(image->GetPixels(), image->GetWidth(), image->GetHeight(), image->GetPitch(),
                                       image_scale);
   }
   else
