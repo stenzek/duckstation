@@ -559,7 +559,8 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                              VK_IMAGE_TILING_OPTIMAL,
                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                               VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, true) ||
+                               VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                             true) ||
       !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, depth_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                                    VK_IMAGE_TILING_OPTIMAL,
                                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
@@ -571,7 +572,8 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
         GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-          VK_IMAGE_USAGE_TRANSFER_DST_BIT, true) ||
+          VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        true) ||
       !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
                                       VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
                                       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, true))
@@ -1810,34 +1812,12 @@ void GPU_HW_Vulkan::ClearDepthBuffer()
   m_last_depth_z = 1.0f;
 }
 
-bool GPU_HW_Vulkan::CreateTextureReplacementStreamBuffer()
-{
-  if (m_texture_replacment_stream_buffer.IsValid())
-    return true;
-
-  if (!m_texture_replacment_stream_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, TEXTURE_REPLACEMENT_BUFFER_SIZE))
-  {
-    Log_ErrorPrint("Failed to allocate texture replacement streaming buffer");
-    return false;
-  }
-
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacment_stream_buffer.GetBuffer(),
-                              "Texture Replacement Stream Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacment_stream_buffer.GetAllocation(),
-                              "Texture Replacement Stream Buffer Memory");
-
-  return true;
-}
-
 bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width,
                                                u32 height)
 {
   VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
   const Vulkan::Util::DebugScope debugScope(cmdbuf, "GPU_HW_Vulkan::BlitVRAMReplacementTexture: {%u,%u} %ux%u", dst_x,
                                             dst_y, width, height);
-  if (!CreateTextureReplacementStreamBuffer())
-    return false;
-
   if (m_vram_write_replacement_texture.GetWidth() < tex->GetWidth() ||
       m_vram_write_replacement_texture.GetHeight() < tex->GetHeight())
   {
@@ -1850,28 +1830,8 @@ bool GPU_HW_Vulkan::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
     }
   }
 
-  const u32 required_size = tex->GetWidth() * tex->GetHeight() * sizeof(u32);
-  const u32 alignment = static_cast<u32>(g_vulkan_context->GetBufferImageGranularity());
-  if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
-  {
-    Log_PerfPrint("Executing command buffer while waiting for texture replacement buffer space");
-    ExecuteCommandBuffer(false, true);
-    if (!m_texture_replacment_stream_buffer.ReserveMemory(required_size, alignment))
-    {
-      Log_ErrorPrintf("Failed to allocate %u bytes from texture replacement streaming buffer", required_size);
-      return false;
-    }
-  }
-
-  // upload to buffer
-  const u32 buffer_offset = m_texture_replacment_stream_buffer.GetCurrentOffset();
-  std::memcpy(m_texture_replacment_stream_buffer.GetCurrentHostPointer(), tex->GetPixels(), required_size);
-  m_texture_replacment_stream_buffer.CommitMemory(required_size);
-
-  // buffer -> texture
-  m_vram_write_replacement_texture.UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, tex->GetWidth(), tex->GetHeight(),
-                                                    m_texture_replacment_stream_buffer.GetBuffer(), buffer_offset,
-                                                    tex->GetWidth());
+  m_vram_write_replacement_texture.Update(0, 0, tex->GetWidth(), tex->GetHeight(), 0, 0, tex->GetPixels(),
+                                          tex->GetByteStride());
 
   // texture -> vram
   const VkImageBlit blit = {

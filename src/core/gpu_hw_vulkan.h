@@ -44,7 +44,6 @@ private:
   enum : u32
   {
     MAX_PUSH_CONSTANTS_SIZE = 64,
-    TEXTURE_REPLACEMENT_BUFFER_SIZE = 64 * 1024 * 1024
   };
   void SetCapabilities();
   void DestroyResources();
@@ -69,8 +68,6 @@ private:
 
   bool CompilePipelines();
   void DestroyPipelines();
-
-  bool CreateTextureReplacementStreamBuffer();
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
@@ -142,7 +139,6 @@ private:
 
   // texture replacements
   Vulkan::Texture m_vram_write_replacement_texture;
-  Vulkan::StreamBuffer m_texture_replacment_stream_buffer;
 
   // downsampling
   Vulkan::Texture m_downsample_texture;
