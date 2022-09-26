@@ -40,11 +40,11 @@ public:
     return m_texture.BeginUpdate(width, height, out_buffer, out_pitch);
   }
 
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override { m_texture.EndUpdate(x, y, width, height); }
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override { m_texture.EndUpdate(x, y, width, height, 0, 0); }
 
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override
   {
-    return m_texture.Update(x, y, width, height, data, pitch);
+    return m_texture.Update(x, y, width, height, 0, 0, data, pitch);
   }
 
   const Vulkan::Texture& GetTexture() const { return m_texture; }
@@ -203,7 +203,7 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
 
   if (data)
   {
-    texture.Update(0, 0, width, height, data, data_stride);
+    texture.Update(0, 0, width, height, 0, 0, data, data_stride);
   }
   else
   {

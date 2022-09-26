@@ -422,7 +422,7 @@ bool Vulkan::Texture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32*
   return true;
 }
 
-void Vulkan::Texture::EndUpdate(u32 x, u32 y, u32 width, u32 height)
+void Vulkan::Texture::EndUpdate(u32 x, u32 y, u32 width, u32 height, u32 level, u32 layer)
 {
   const u32 pitch = CalcUpdatePitch(width);
   const u32 required_size = pitch * height;
@@ -431,11 +431,12 @@ void Vulkan::Texture::EndUpdate(u32 x, u32 y, u32 width, u32 height)
   const u32 buffer_offset = buffer.GetCurrentOffset();
   buffer.CommitMemory(required_size);
 
-  UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, buffer.GetBuffer(),
+  UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), level, layer, x, y, width, height, buffer.GetBuffer(),
                    buffer_offset, CalcUpdateRowLength(pitch));
 }
 
-bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch)
+bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, u32 level, u32 layer, const void* data,
+                             u32 data_pitch)
 {
   const u32 pitch = CalcUpdatePitch(width);
   const u32 row_length = CalcUpdateRowLength(pitch);
@@ -479,7 +480,8 @@ bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* da
     StringUtil::StrideMemCpy(ai.pMappedData, pitch, data, data_pitch, std::min(data_pitch, pitch), height);
     vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
 
-    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, buffer, 0, row_length);
+    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), level, layer, x, y, width, height, buffer, 0,
+                     row_length);
     return true;
   }
   else
@@ -499,8 +501,8 @@ bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* da
                              height);
     sbuffer.CommitMemory(required_size);
 
-    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, sbuffer.GetBuffer(),
-                     buffer_offset, row_length);
+    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), level, layer, x, y, width, height,
+                     sbuffer.GetBuffer(), buffer_offset, row_length);
     return true;
   }
 }

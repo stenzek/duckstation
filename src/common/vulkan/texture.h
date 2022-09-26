@@ -61,8 +61,8 @@ public:
   u32 CalcUpdatePitch(u32 width) const;
   u32 CalcUpdateRowLength(u32 pitch) const;
   bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch);
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height);
-  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch);
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height, u32 level, u32 layer);
+  bool Update(u32 x, u32 y, u32 width, u32 height, u32 level, u32 layer, const void* data, u32 data_pitch);
 
 private:
   u32 m_width = 0;

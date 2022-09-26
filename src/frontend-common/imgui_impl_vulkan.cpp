@@ -412,7 +412,7 @@ bool ImGui_ImplVulkan_CreateFontsTexture()
     }
 
     // Store our identifier
-    bd->FontTexture.Update(0, 0, width, height, pixels, sizeof(u32) * width);
+    bd->FontTexture.Update(0, 0, width, height, 0, 0, pixels, sizeof(u32) * width);
     io.Fonts->SetTexID((ImTextureID)&bd->FontTexture);
     return true;
 }
