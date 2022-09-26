@@ -57,6 +57,11 @@ public:
   ALWAYS_INLINE void SetPixel(u32 x, u32 y, PixelType pixel) { m_pixels[y * m_width + x] = pixel; }
   ALWAYS_INLINE PixelType GetPixel(u32 x, u32 y) const { return m_pixels[y * m_width + x]; }
 
+  ALWAYS_INLINE typename std::vector<PixelType>::const_iterator begin() const { return m_pixels.begin(); }
+  ALWAYS_INLINE typename std::vector<PixelType>::const_iterator end() const { return m_pixels.end(); }
+  ALWAYS_INLINE typename std::vector<PixelType>::iterator begin() { return m_pixels.begin(); }
+  ALWAYS_INLINE typename std::vector<PixelType>::iterator end() { return m_pixels.end(); }
+
   void Clear(PixelType fill_value = static_cast<PixelType>(0))
   {
     std::fill(m_pixels.begin(), m_pixels.end(), fill_value);
@@ -127,7 +132,7 @@ public:
   std::optional<std::vector<u8>> SaveToBuffer(const char* filename, int quality = DEFAULT_SAVE_QUALITY) const;
 
   void Resize(u32 new_width, u32 new_height);
-  void Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height);
+  void ResizeFrom(const RGBA8Image* src_image, u32 new_width, u32 new_height);
 };
 
 } // namespace Common
