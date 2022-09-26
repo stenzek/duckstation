@@ -1,6 +1,5 @@
 #pragma once
 #include "common/dimensional_array.h"
-#include "common/vulkan/staging_texture.h"
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/texture.h"
 #include "gpu_hw.h"
@@ -100,7 +99,6 @@ private:
   Vulkan::Texture m_vram_depth_texture;
   Vulkan::Texture m_vram_read_texture;
   Vulkan::Texture m_vram_readback_texture;
-  Vulkan::StagingTexture m_vram_readback_staging_texture;
   Vulkan::Texture m_display_texture;
   bool m_use_ssbos_for_vram_writes = false;
 

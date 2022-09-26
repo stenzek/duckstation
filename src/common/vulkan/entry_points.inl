@@ -1,8 +1,3 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 // Expands the VULKAN_ENTRY_POINT macro for each function when this file is included.
 // Parameters: Function name, is required
 // VULKAN_MODULE_ENTRY_POINT is for functions in vulkan-1.dll
@@ -16,13 +11,13 @@ VULKAN_MODULE_ENTRY_POINT(vkGetInstanceProcAddr, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceExtensionProperties, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceLayerProperties, true)
 VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceVersion, false)
+VULKAN_MODULE_ENTRY_POINT(vkDestroyInstance, true)
 
-#endif  // VULKAN_MODULE_ENTRY_POINT
+#endif // VULKAN_MODULE_ENTRY_POINT
 
 #ifdef VULKAN_INSTANCE_ENTRY_POINT
 
 VULKAN_INSTANCE_ENTRY_POINT(vkGetDeviceProcAddr, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkDestroyInstance, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumeratePhysicalDevices, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFormatProperties, true)
@@ -79,7 +74,6 @@ VULKAN_INSTANCE_ENTRY_POINT(vkSetDebugUtilsObjectNameEXT, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkSetDebugUtilsObjectTagEXT, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkSubmitDebugUtilsMessageEXT, false)
 
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilities2KHR, false)
 
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceDisplayPropertiesKHR, false)
@@ -90,7 +84,12 @@ VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayModeKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayPlaneCapabilitiesKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
 
-#endif  // VULKAN_INSTANCE_ENTRY_POINT
+// Vulkan 1.1 functions.
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, true)
+
+#endif // VULKAN_INSTANCE_ENTRY_POINT
 
 #ifdef VULKAN_DEVICE_ENTRY_POINT
 
@@ -220,9 +219,15 @@ VULKAN_DEVICE_ENTRY_POINT(vkGetSwapchainImagesKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireNextImageKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkQueuePresentKHR, false)
 
+// Vulkan 1.1 functions.
+VULKAN_DEVICE_ENTRY_POINT(vkGetBufferMemoryRequirements2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, true)
+
 #ifdef SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 #endif
 
-#endif  // VULKAN_DEVICE_ENTRY_POINT
+#endif // VULKAN_DEVICE_ENTRY_POINT

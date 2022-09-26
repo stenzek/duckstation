@@ -1,6 +1,5 @@
 #pragma once
 #include "common/vulkan/loader.h"
-#include "common/vulkan/staging_texture.h"
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/window_info.h"
@@ -13,8 +12,6 @@ namespace Vulkan {
 class StreamBuffer;
 class SwapChain;
 } // namespace Vulkan
-
-namespace FrontendCommon {
 
 class VulkanHostDisplay final : public HostDisplay
 {
@@ -93,8 +90,10 @@ protected:
                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
                                 u32 target_width, u32 target_height);
 
-  // Can be overridden by frontends.
   VkRenderPass GetRenderPassForDisplay() const;
+
+  bool CheckStagingBufferSize(u32 required_size);
+  void DestroyStagingBuffer();
 
   bool CreateResources() override;
   void DestroyResources() override;
@@ -122,18 +121,19 @@ protected:
   VkSampler m_point_sampler = VK_NULL_HANDLE;
   VkSampler m_linear_sampler = VK_NULL_HANDLE;
 
-  Vulkan::StagingTexture m_readback_staging_texture;
+  VmaAllocation m_readback_staging_allocation = VK_NULL_HANDLE;
+  VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;
+  u8* m_readback_staging_buffer_map = nullptr;
+  u32 m_readback_staging_buffer_size = 0;
 
   VkDescriptorSetLayout m_post_process_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_post_process_ubo_descriptor_set_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_post_process_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_post_process_ubo_pipeline_layout = VK_NULL_HANDLE;
 
-  PostProcessingChain m_post_processing_chain;
+  FrontendCommon::PostProcessingChain m_post_processing_chain;
   Vulkan::Texture m_post_processing_input_texture;
   VkFramebuffer m_post_processing_input_framebuffer = VK_NULL_HANDLE;
   Vulkan::StreamBuffer m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
 };
-
-} // namespace FrontendCommon

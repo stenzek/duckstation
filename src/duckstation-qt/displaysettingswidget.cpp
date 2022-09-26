@@ -213,7 +213,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 #endif
 #ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
-      aml = FrontendCommon::VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
+      aml = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
       threaded_presentation_supported = true;
       break;
 #endif

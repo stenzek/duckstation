@@ -1,8 +1,3 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #include "context.h"
 #include "../assert.h"
 #include "../log.h"
@@ -21,7 +16,7 @@ namespace Vulkan {
 
 enum : u32
 {
-  TEXTURE_BUFFER_SIZE = 16 * 1024 * 1024,
+  TEXTURE_BUFFER_SIZE = 32 * 1024 * 1024,
 };
 
 Context::Context(VkInstance instance, VkPhysicalDevice physical_device, bool owns_device)
@@ -351,8 +346,8 @@ bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::uniqu
 
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
-      !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers() ||
-      !g_vulkan_context->CreateTextureStreamBuffer() ||
+      !g_vulkan_context->CreateAllocator() || !g_vulkan_context->CreateGlobalDescriptorPool() ||
+      !g_vulkan_context->CreateCommandBuffers() || !g_vulkan_context->CreateTextureStreamBuffer() ||
       (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, true)) == nullptr))
   {
     // Since we are destroying the instance, we're also responsible for destroying the surface.
@@ -410,6 +405,7 @@ void Context::Destroy()
   g_vulkan_context->DestroyRenderPassCache();
   g_vulkan_context->DestroyGlobalDescriptorPool();
   g_vulkan_context->DestroyCommandBuffers();
+  g_vulkan_context->DestroyAllocator();
 
   if (g_vulkan_context->m_device != VK_NULL_HANDLE)
     vkDestroyDevice(g_vulkan_context->m_device, nullptr);
@@ -473,6 +469,9 @@ bool Context::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_
 
   if (enable_surface && !SupportsExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true))
     return false;
+
+  m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 
   return true;
 }
@@ -641,6 +640,37 @@ bool Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, c
                     m_device_properties.limits.timestampPeriod);
 
   return true;
+}
+
+bool Context::CreateAllocator()
+{
+  VmaAllocatorCreateInfo ci = {};
+  ci.vulkanApiVersion = VK_API_VERSION_1_1;
+  ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+  ci.physicalDevice = m_physical_device;
+  ci.device = m_device;
+  ci.instance = m_instance;
+
+  if (m_optional_extensions.vk_ext_memory_budget)
+    ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+
+  VkResult res = vmaCreateAllocator(&ci, &m_allocator);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vmaCreateAllocator failed: ");
+    return false;
+  }
+
+  return true;
+}
+
+void Context::DestroyAllocator()
+{
+  if (m_allocator == VK_NULL_HANDLE)
+    return;
+
+  vmaDestroyAllocator(m_allocator);
+  m_allocator = VK_NULL_HANDLE;
 }
 
 bool Context::CreateCommandBuffers()
@@ -1143,6 +1173,9 @@ void Context::ActivateCommandBuffer(u32 index)
 
   m_current_frame = index;
   m_current_command_buffer = resources.command_buffer;
+
+  // using the lower 32 bits of the fence index should be sufficient here, I hope...
+  vmaSetCurrentFrameIndex(m_allocator, static_cast<u32>(m_next_fence_counter));
 }
 
 void Context::ExecuteCommandBuffer(bool wait_for_completion)
@@ -1169,6 +1202,13 @@ void Context::DeferBufferDestruction(VkBuffer object)
   resources.cleanup_resources.push_back([this, object]() { vkDestroyBuffer(m_device, object, nullptr); });
 }
 
+void Context::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
+{
+  FrameResources& resources = m_frame_resources[m_current_frame];
+  resources.cleanup_resources.push_back(
+    [this, object, allocation]() { vmaDestroyBuffer(m_allocator, object, allocation); });
+}
+
 void Context::DeferBufferViewDestruction(VkBufferView object)
 {
   FrameResources& resources = m_frame_resources[m_current_frame];
@@ -1191,6 +1231,13 @@ void Context::DeferImageDestruction(VkImage object)
 {
   FrameResources& resources = m_frame_resources[m_current_frame];
   resources.cleanup_resources.push_back([this, object]() { vkDestroyImage(m_device, object, nullptr); });
+}
+
+void Context::DeferImageDestruction(VkImage object, VmaAllocation allocation)
+{
+  FrameResources& resources = m_frame_resources[m_current_frame];
+  resources.cleanup_resources.push_back(
+    [this, object, allocation]() { vmaDestroyImage(m_allocator, object, allocation); });
 }
 
 void Context::DeferImageViewDestruction(VkImageView object)
@@ -1265,97 +1312,6 @@ void Context::DisableDebugUtils()
     vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger_callback, nullptr);
     m_debug_messenger_callback = VK_NULL_HANDLE;
   }
-}
-
-bool Context::GetMemoryType(u32 bits, VkMemoryPropertyFlags properties, u32* out_type_index)
-{
-  for (u32 i = 0; i < VK_MAX_MEMORY_TYPES; i++)
-  {
-    if ((bits & (1 << i)) != 0)
-    {
-      u32 supported = m_device_memory_properties.memoryTypes[i].propertyFlags & properties;
-      if (supported == properties)
-      {
-        *out_type_index = i;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-u32 Context::GetMemoryType(u32 bits, VkMemoryPropertyFlags properties)
-{
-  u32 type_index = VK_MAX_MEMORY_TYPES;
-  if (!GetMemoryType(bits, properties, &type_index))
-  {
-    Log_ErrorPrintf("Unable to find memory type for %x:%x", bits, properties);
-    Panic("Unable to find memory type");
-  }
-
-  return type_index;
-}
-
-u32 Context::GetUploadMemoryType(u32 bits, bool* is_coherent)
-{
-  // Try for coherent memory first.
-  VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-  u32 type_index;
-  if (!GetMemoryType(bits, flags, &type_index))
-  {
-    Log_WarningPrintf("Vulkan: Failed to find a coherent memory type for uploads, this will affect performance.");
-
-    // Try non-coherent memory.
-    flags &= ~VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    if (!GetMemoryType(bits, flags, &type_index))
-    {
-      // We shouldn't have any memory types that aren't host-visible.
-      Panic("Unable to get memory type for upload.");
-      type_index = 0;
-    }
-  }
-
-  if (is_coherent)
-    *is_coherent = ((flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0);
-
-  return type_index;
-}
-
-u32 Context::GetReadbackMemoryType(u32 bits, bool* is_coherent, bool* is_cached)
-{
-  // Try for cached and coherent memory first.
-  VkMemoryPropertyFlags flags =
-    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-  u32 type_index;
-  if (!GetMemoryType(bits, flags, &type_index))
-  {
-    // For readbacks, caching is more important than coherency.
-    flags &= ~VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    if (!GetMemoryType(bits, flags, &type_index))
-    {
-      Log_WarningPrintf("Vulkan: Failed to find a cached memory type for readbacks, this will affect "
-                        "performance.");
-
-      // Remove the cached bit as well.
-      flags &= ~VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-      if (!GetMemoryType(bits, flags, &type_index))
-      {
-        // We shouldn't have any memory types that aren't host-visible.
-        Panic("Unable to get memory type for upload.");
-        type_index = 0;
-      }
-    }
-  }
-
-  if (is_coherent)
-    *is_coherent = ((flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0);
-  if (is_cached)
-    *is_cached = ((flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) != 0);
-
-  return type_index;
 }
 
 VkRenderPass Context::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkSampleCountFlagBits samples,

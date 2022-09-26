@@ -234,10 +234,6 @@ if(ENABLE_VULKAN)
     vulkan/shader_cache.h
     vulkan/shader_compiler.cpp
     vulkan/shader_compiler.h
-    vulkan/staging_buffer.cpp
-    vulkan/staging_buffer.h
-    vulkan/staging_texture.cpp
-    vulkan/staging_texture.h
     vulkan/stream_buffer.cpp
     vulkan/stream_buffer.h
     vulkan/swap_chain.cpp

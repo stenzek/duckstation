@@ -1,12 +1,8 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #pragma once
 
 #include "../string.h"
 #include "../types.h"
+#include "context.h"
 #include "loader.h"
 #include <algorithm>
 #include <array>
@@ -160,6 +156,20 @@ inline void SetObjectName(VkDevice device, T object_handle, const char* format, 
   SetObjectName(device, reinterpret_cast<void*>((typename VkObjectTypeMap<T>::type)object_handle),
                 VkObjectTypeMap<T>::value, format, ap);
   va_end(ap);
+#endif
+}
+
+template<>
+inline void SetObjectName(VkDevice device, VmaAllocation object_handle, const char* format, ...)
+{
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
+  std::va_list ap;
+  SmallString str;
+  va_start(ap, format);
+  str.FormatVA(format, ap);
+  va_end(ap);
+
+  vmaSetAllocationName(g_vulkan_context->GetAllocator(), object_handle, str);
 #endif
 }
 

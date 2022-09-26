@@ -1,21 +1,22 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #include "texture.h"
+#include "../align.h"
 #include "../assert.h"
+#include "../log.h"
+#include "../string_util.h"
 #include "context.h"
 #include "util.h"
 #include <algorithm>
+Log_SetChannel(Texture);
 
-namespace Vulkan {
-Texture::Texture() = default;
+static constexpr VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
-Texture::Texture(Texture&& move)
+Vulkan::Texture::Texture() = default;
+
+Vulkan::Texture::Texture(Texture&& move)
   : m_width(move.m_width), m_height(move.m_height), m_levels(move.m_levels), m_layers(move.m_layers),
     m_format(move.m_format), m_samples(move.m_samples), m_view_type(move.m_view_type), m_layout(move.m_layout),
-    m_image(move.m_image), m_device_memory(move.m_device_memory), m_view(move.m_view)
+    m_image(move.m_image), m_allocation(move.m_allocation), m_view(move.m_view)
 {
   move.m_width = 0;
   move.m_height = 0;
@@ -26,17 +27,17 @@ Texture::Texture(Texture&& move)
   move.m_view_type = VK_IMAGE_VIEW_TYPE_2D;
   move.m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
   move.m_image = VK_NULL_HANDLE;
-  move.m_device_memory = VK_NULL_HANDLE;
+  move.m_allocation = VK_NULL_HANDLE;
   move.m_view = VK_NULL_HANDLE;
 }
 
-Texture::~Texture()
+Vulkan::Texture::~Texture()
 {
   if (IsValid())
     Destroy(true);
 }
 
-Vulkan::Texture& Texture::operator=(Texture&& move)
+Vulkan::Texture& Vulkan::Texture::operator=(Texture&& move)
 {
   if (IsValid())
     Destroy(true);
@@ -50,85 +51,78 @@ Vulkan::Texture& Texture::operator=(Texture&& move)
   std::swap(m_view_type, move.m_view_type);
   std::swap(m_layout, move.m_layout);
   std::swap(m_image, move.m_image);
-  std::swap(m_device_memory, move.m_device_memory);
+  std::swap(m_allocation, move.m_allocation);
   std::swap(m_view, move.m_view);
 
   return *this;
 }
 
-bool Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFormat format, VkSampleCountFlagBits samples,
-                     VkImageViewType view_type, VkImageTiling tiling, VkImageUsageFlags usage)
+bool Vulkan::Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFormat format,
+                             VkSampleCountFlagBits samples, VkImageViewType view_type, VkImageTiling tiling,
+                             VkImageUsageFlags usage, bool dedicated_memory /* = false */,
+                             const VkComponentMapping* swizzle /* = nullptr */)
 {
-  VkImageCreateInfo image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                                  nullptr,
-                                  0,
-                                  VK_IMAGE_TYPE_2D,
-                                  format,
-                                  {width, height, 1},
-                                  levels,
-                                  layers,
-                                  samples,
-                                  tiling,
-                                  usage,
-                                  VK_SHARING_MODE_EXCLUSIVE,
-                                  0,
-                                  nullptr,
-                                  VK_IMAGE_LAYOUT_UNDEFINED};
+  const VkImageCreateInfo image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                        nullptr,
+                                        0,
+                                        VK_IMAGE_TYPE_2D,
+                                        format,
+                                        {width, height, 1},
+                                        levels,
+                                        layers,
+                                        samples,
+                                        tiling,
+                                        usage,
+                                        VK_SHARING_MODE_EXCLUSIVE,
+                                        0,
+                                        nullptr,
+                                        VK_IMAGE_LAYOUT_UNDEFINED};
+
+  VmaAllocationCreateInfo aci = {};
+  aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+  aci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+  aci.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+  if (dedicated_memory)
+    aci.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
   VkImage image = VK_NULL_HANDLE;
-  VkResult res = vkCreateImage(g_vulkan_context->GetDevice(), &image_info, nullptr, &image);
-  if (res != VK_SUCCESS)
+  VmaAllocation allocation = VK_NULL_HANDLE;
+  VkResult res = vmaCreateImage(g_vulkan_context->GetAllocator(), &image_info, &aci, &image, &allocation, nullptr);
+  if (res != VK_SUCCESS && dedicated_memory)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateImage failed: ");
+    // try without dedicated memory
+    aci.flags &= ~VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+    res = vmaCreateImage(g_vulkan_context->GetAllocator(), &image_info, &aci, &image, &allocation, nullptr);
+  }
+  if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+  {
+    Log_WarningPrintf("Failed to allocate device memory for %ux%u texture", width, height);
+    return false;
+  }
+  else if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vmaCreateImage failed: ");
     return false;
   }
 
-  // Allocate memory to back this texture, we want device local memory in this case
-  VkMemoryRequirements memory_requirements;
-  vkGetImageMemoryRequirements(g_vulkan_context->GetDevice(), image, &memory_requirements);
-
-  VkMemoryAllocateInfo memory_info = {
-    VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, memory_requirements.size,
-    g_vulkan_context->GetMemoryType(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)};
-
-  VkDeviceMemory device_memory;
-  res = vkAllocateMemory(g_vulkan_context->GetDevice(), &memory_info, nullptr, &device_memory);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkAllocateMemory failed: ");
-    vkDestroyImage(g_vulkan_context->GetDevice(), image, nullptr);
-    return false;
-  }
-
-  res = vkBindImageMemory(g_vulkan_context->GetDevice(), image, device_memory, 0);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkBindImageMemory failed: ");
-    vkDestroyImage(g_vulkan_context->GetDevice(), image, nullptr);
-    vkFreeMemory(g_vulkan_context->GetDevice(), device_memory, nullptr);
-    return false;
-  }
-
-  VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                                     nullptr,
-                                     0,
-                                     image,
-                                     view_type,
-                                     format,
-                                     {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                                      VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
-                                     {Util::IsDepthFormat(format) ?
-                                        static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
-                                        static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
-                                      0, levels, 0, layers}};
+  const VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                           nullptr,
+                                           0,
+                                           image,
+                                           view_type,
+                                           format,
+                                           swizzle ? *swizzle : s_identity_swizzle,
+                                           {Util::IsDepthFormat(format) ?
+                                              static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
+                                              static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
+                                            0, levels, 0, layers}};
 
   VkImageView view = VK_NULL_HANDLE;
   res = vkCreateImageView(g_vulkan_context->GetDevice(), &view_info, nullptr, &view);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateImageView failed: ");
-    vkDestroyImage(g_vulkan_context->GetDevice(), image, nullptr);
-    vkFreeMemory(g_vulkan_context->GetDevice(), device_memory, nullptr);
+    vmaDestroyImage(g_vulkan_context->GetAllocator(), image, allocation);
     return false;
   }
 
@@ -143,27 +137,27 @@ bool Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFormat for
   m_samples = samples;
   m_view_type = view_type;
   m_image = image;
-  m_device_memory = device_memory;
+  m_allocation = allocation;
   m_view = view;
   return true;
 }
 
-bool Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u32 width, u32 height, u32 levels, u32 layers,
-                    VkFormat format, VkSampleCountFlagBits samples)
+bool Vulkan::Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u32 width, u32 height, u32 levels,
+                            u32 layers, VkFormat format, VkSampleCountFlagBits samples,
+                            const VkComponentMapping* swizzle /* = nullptr */)
 {
   // Only need to create the image view, this is mainly for swap chains.
-  VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                                     nullptr,
-                                     0,
-                                     existing_image,
-                                     view_type,
-                                     format,
-                                     {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                                      VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
-                                     {Util::IsDepthFormat(format) ?
-                                        static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
-                                        static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
-                                      0, levels, 0, layers}};
+  const VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                           nullptr,
+                                           0,
+                                           existing_image,
+                                           view_type,
+                                           format,
+                                           swizzle ? *swizzle : s_identity_swizzle,
+                                           {Util::IsDepthFormat(format) ?
+                                              static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
+                                              static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
+                                            0, levels, 0, layers}};
 
   // Memory is managed by the owner of the image.
   VkImageView view = VK_NULL_HANDLE;
@@ -189,7 +183,7 @@ bool Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u32 width
   return true;
 }
 
-void Texture::Destroy(bool defer /* = true */)
+void Vulkan::Texture::Destroy(bool defer /* = true */)
 {
   if (m_view != VK_NULL_HANDLE)
   {
@@ -201,20 +195,15 @@ void Texture::Destroy(bool defer /* = true */)
   }
 
   // If we don't have device memory allocated, the image is not owned by us (e.g. swapchain)
-  if (m_device_memory != VK_NULL_HANDLE)
+  if (m_allocation != VK_NULL_HANDLE)
   {
-    DebugAssert(m_image != VK_NULL_HANDLE);
+    Assert(m_image != VK_NULL_HANDLE);
     if (defer)
-      g_vulkan_context->DeferImageDestruction(m_image);
+      g_vulkan_context->DeferImageDestruction(m_image, m_allocation);
     else
-      vkDestroyImage(g_vulkan_context->GetDevice(), m_image, nullptr);
+      vmaDestroyImage(g_vulkan_context->GetAllocator(), m_image, m_allocation);
     m_image = VK_NULL_HANDLE;
-
-    if (defer)
-      g_vulkan_context->DeferDeviceMemoryDestruction(m_device_memory);
-    else
-      vkFreeMemory(g_vulkan_context->GetDevice(), m_device_memory, nullptr);
-    m_device_memory = VK_NULL_HANDLE;
+    m_allocation = VK_NULL_HANDLE;
   }
 
   m_width = 0;
@@ -225,17 +214,14 @@ void Texture::Destroy(bool defer /* = true */)
   m_samples = VK_SAMPLE_COUNT_1_BIT;
   m_view_type = VK_IMAGE_VIEW_TYPE_2D;
   m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  m_image = VK_NULL_HANDLE;
-  m_device_memory = VK_NULL_HANDLE;
-  m_view = VK_NULL_HANDLE;
 }
 
-void Texture::OverrideImageLayout(VkImageLayout new_layout)
+void Vulkan::Texture::OverrideImageLayout(VkImageLayout new_layout)
 {
   m_layout = new_layout;
 }
 
-void Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout new_layout)
+void Vulkan::Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout new_layout)
 {
   if (m_layout == new_layout)
     return;
@@ -247,9 +233,9 @@ void Texture::TransitionToLayout(VkCommandBuffer command_buffer, VkImageLayout n
   m_layout = new_layout;
 }
 
-void Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32 start_level, u32 num_levels,
-                                             u32 start_layer, u32 num_layers, VkImageLayout old_layout,
-                                             VkImageLayout new_layout)
+void Vulkan::Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32 start_level, u32 num_levels,
+                                                     u32 start_layer, u32 num_layers, VkImageLayout old_layout,
+                                                     VkImageLayout new_layout)
 {
   const Vulkan::Util::DebugScope debugScope(
     command_buffer, "Texture::TransitionSubresourcesToLayout: Lvl:[%u,%u) Lyr:[%u,%u) %s -> %s", start_level,
@@ -369,7 +355,7 @@ void Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32
   vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
+VkFramebuffer Vulkan::Texture::CreateFramebuffer(VkRenderPass render_pass)
 {
   const VkFramebufferCreateInfo ci = {
     VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0u, render_pass, 1, &m_view, m_width, m_height, m_layers};
@@ -384,8 +370,8 @@ VkFramebuffer Texture::CreateFramebuffer(VkRenderPass render_pass)
   return fb;
 }
 
-void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-                               VkBuffer buffer, u32 buffer_offset, u32 row_length)
+void Vulkan::Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width,
+                                       u32 height, VkBuffer buffer, u32 buffer_offset, u32 row_length)
 {
   const VkImageLayout old_layout = m_layout;
   const Vulkan::Util::DebugScope debugScope(cmdbuf, "Texture::UpdateFromBuffer: Lvl:%u Lyr:%u {%u,%u} %ux%u", level,
@@ -404,4 +390,117 @@ void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32
   TransitionToLayout(cmdbuf, old_layout);
 }
 
-} // namespace Vulkan
+u32 Vulkan::Texture::CalcUpdatePitch(u32 width) const
+{
+  return Common::AlignUp(width * Vulkan::Util::GetTexelSize(m_format),
+                         g_vulkan_context->GetBufferCopyRowPitchAlignment());
+}
+
+u32 Vulkan::Texture::CalcUpdateRowLength(u32 pitch) const
+{
+  return pitch / Vulkan::Util::GetTexelSize(m_format);
+}
+
+bool Vulkan::Texture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)
+{
+  const u32 pitch = CalcUpdatePitch(width);
+  const u32 required_size = pitch * height;
+  StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+  if (required_size > buffer.GetCurrentSize())
+    return false;
+
+  // TODO: allocate temporary buffer if this fails...
+  if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+  {
+    g_vulkan_context->ExecuteCommandBuffer(false);
+    if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+      return false;
+  }
+
+  *out_buffer = buffer.GetCurrentHostPointer();
+  *out_pitch = pitch;
+  return true;
+}
+
+void Vulkan::Texture::EndUpdate(u32 x, u32 y, u32 width, u32 height)
+{
+  const u32 pitch = CalcUpdatePitch(width);
+  const u32 required_size = pitch * height;
+
+  StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+  const u32 buffer_offset = buffer.GetCurrentOffset();
+  buffer.CommitMemory(required_size);
+
+  UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, buffer.GetBuffer(),
+                   buffer_offset, CalcUpdateRowLength(pitch));
+}
+
+bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch)
+{
+  const u32 pitch = CalcUpdatePitch(width);
+  const u32 row_length = CalcUpdateRowLength(pitch);
+  const u32 required_size = pitch * height;
+  StreamBuffer& sbuffer = g_vulkan_context->GetTextureUploadBuffer();
+
+  // If the texture is larger than half our streaming buffer size, use a separate buffer.
+  // Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
+  if (required_size > (g_vulkan_context->GetTextureUploadBuffer().GetCurrentSize() / 2))
+  {
+    const u32 size = data_pitch * height;
+    const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                    nullptr,
+                                    0,
+                                    static_cast<VkDeviceSize>(size),
+                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                    VK_SHARING_MODE_EXCLUSIVE,
+                                    0,
+                                    nullptr};
+
+    // Don't worry about setting the coherent bit for this upload, the main reason we had
+    // that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
+    // smaller uploads, but we're writing to the whole thing anyway.
+    VmaAllocationCreateInfo aci = {};
+    aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    VmaAllocationInfo ai;
+    VkBuffer buffer;
+    VmaAllocation allocation;
+    VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
+      return VK_NULL_HANDLE;
+    }
+
+    // Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
+    g_vulkan_context->DeferBufferDestruction(buffer, allocation);
+
+    StringUtil::StrideMemCpy(ai.pMappedData, pitch, data, data_pitch, std::min(data_pitch, pitch), height);
+    vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
+
+    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, buffer, 0, row_length);
+    return true;
+  }
+  else
+  {
+    if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+    {
+      g_vulkan_context->ExecuteCommandBuffer(false);
+      if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+      {
+        Log_ErrorPrintf("Failed to reserve texture upload memory (%u bytes).", required_size);
+        return false;
+      }
+    }
+
+    const u32 buffer_offset = sbuffer.GetCurrentOffset();
+    StringUtil::StrideMemCpy(sbuffer.GetCurrentHostPointer(), pitch, data, data_pitch, std::min(data_pitch, pitch),
+                             height);
+    sbuffer.CommitMemory(required_size);
+
+    UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height, sbuffer.GetBuffer(),
+                     buffer_offset, row_length);
+    return true;
+  }
+}

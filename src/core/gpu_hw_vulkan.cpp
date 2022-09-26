@@ -254,7 +254,7 @@ void GPU_HW_Vulkan::MapBatchVertexPointer(u32 required_vertices)
       Panic("Failed to reserve vertex stream buffer memory");
   }
 
-  m_batch_start_vertex_ptr = static_cast<BatchVertex*>(m_vertex_stream_buffer.GetCurrentHostPointer());
+  m_batch_start_vertex_ptr = reinterpret_cast<BatchVertex*>(m_vertex_stream_buffer.GetCurrentHostPointer());
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
   m_batch_end_vertex_ptr = m_batch_start_vertex_ptr + (m_vertex_stream_buffer.GetCurrentSpace() / sizeof(BatchVertex));
   m_batch_base_vertex = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(BatchVertex);
@@ -559,52 +559,50 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, texture_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                              VK_IMAGE_TILING_OPTIMAL,
                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                               VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
+                               VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, true) ||
       !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, depth_format, samples, VK_IMAGE_VIEW_TYPE_2D,
                                    VK_IMAGE_TILING_OPTIMAL,
                                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
       !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
                                   VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
-                                  VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
+                                  VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, true) ||
       !m_display_texture.Create(
         ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) * m_resolution_scale,
         GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-          VK_IMAGE_USAGE_TRANSFER_DST_BIT) ||
+          VK_IMAGE_USAGE_TRANSFER_DST_BIT, true) ||
       !m_vram_readback_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, texture_format, VK_SAMPLE_COUNT_1_BIT,
                                       VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
-                                      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT) ||
-      !m_vram_readback_staging_texture.Create(Vulkan::StagingBuffer::Type::Readback, texture_format, VRAM_WIDTH / 2,
-                                              VRAM_HEIGHT))
+                                      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, true))
   {
     return false;
   }
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_texture.GetImage(), "VRAM Texture");
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_texture.GetView(), "VRAM Texture View");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_texture.GetDeviceMemory(), "VRAM Texture Memory");
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_texture.GetAllocation(), "VRAM Texture Memory");
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_depth_texture.GetImage(), "VRAM Depth Texture");
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_depth_texture.GetView(), "VRAM Depth Texture View");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_depth_texture.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_depth_texture.GetAllocation(),
                               "VRAM Depth Texture Memory");
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_read_texture.GetImage(), "VRAM Read Texture");
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_read_texture.GetView(), "VRAM Read Texture View");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_read_texture.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_read_texture.GetAllocation(),
                               "VRAM Read Texture Memory");
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_display_texture.GetImage(), "Display Texture");
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_display_texture.GetView(), "Display Texture View");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_display_texture.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_display_texture.GetAllocation(),
                               "Display Texture Memory");
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_readback_texture.GetImage(),
                               "VRAM Readback Texture");
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_readback_texture.GetView(),
                               "VRAM Readback Texture View");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_readback_texture.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_readback_texture.GetAllocation(),
                               "VRAM Readback Texture Memory");
 
   m_vram_render_pass =
@@ -842,7 +840,6 @@ void GPU_HW_Vulkan::DestroyFramebuffer()
   m_vram_texture.Destroy(false);
   m_vram_readback_texture.Destroy(false);
   m_display_texture.Destroy(false);
-  m_vram_readback_staging_texture.Destroy(false);
 }
 
 bool GPU_HW_Vulkan::CreateVertexBuffer()
@@ -852,7 +849,7 @@ bool GPU_HW_Vulkan::CreateVertexBuffer()
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vertex_stream_buffer.GetBuffer(),
                               "Vertex Stream Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vertex_stream_buffer.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vertex_stream_buffer.GetAllocation(),
                               "Vertex Stream Buffer Memory");
   return true;
 }
@@ -864,7 +861,7 @@ bool GPU_HW_Vulkan::CreateUniformBuffer()
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_uniform_stream_buffer.GetBuffer(),
                               "Uniform Stream Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_uniform_stream_buffer.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_uniform_stream_buffer.GetAllocation(),
                               "Uniform Stream Buffer Memory");
   return true;
 }
@@ -909,7 +906,7 @@ bool GPU_HW_Vulkan::CreateTextureBuffer()
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_stream_buffer.GetBuffer(),
                               "Texture Stream Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_stream_buffer.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_stream_buffer.GetAllocation(),
                               "Texture Stream Buffer Memory");
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_vram_write_descriptor_set, "VRAM Write Descriptor Set");
@@ -1577,15 +1574,10 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   m_vram_readback_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  // Stage the readback.
-  m_vram_readback_staging_texture.CopyFromTexture(m_vram_readback_texture, 0, 0, 0, 0, 0, 0, encoded_width,
-                                                  encoded_height);
-
-  // And copy it into our shadow buffer (will execute command buffer and stall).
-  ExecuteCommandBuffer(true, true);
-  m_vram_readback_staging_texture.ReadTexels(0, 0, encoded_width, encoded_height,
-                                             &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
-                                             VRAM_WIDTH * sizeof(u16));
+  // Stage the readback and copy it into our shadow buffer (will execute command buffer and stall).
+  g_host_display->DownloadTexture(&m_vram_readback_texture, HostDisplayPixelFormat::RGBA8, 0, 0, encoded_width,
+                                  encoded_height, &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
+                                  VRAM_WIDTH * sizeof(u16));
 }
 
 void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
@@ -1831,7 +1823,7 @@ bool GPU_HW_Vulkan::CreateTextureReplacementStreamBuffer()
 
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacment_stream_buffer.GetBuffer(),
                               "Texture Replacement Stream Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacment_stream_buffer.GetDeviceMemory(),
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacment_stream_buffer.GetAllocation(),
                               "Texture Replacement Stream Buffer Memory");
 
   return true;

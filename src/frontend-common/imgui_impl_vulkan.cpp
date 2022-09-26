@@ -67,7 +67,6 @@
 #include "common/vulkan/context.h"
 #include "common/vulkan/texture.h"
 #include "common/vulkan/stream_buffer.h"
-#include "common/vulkan/staging_texture.h"
 #include "common/vulkan/util.h"
 
 #include <cstdio>
@@ -412,41 +411,8 @@ bool ImGui_ImplVulkan_CreateFontsTexture()
         }
     }
 
-#if 0
-    const size_t upload_size = width * height * 4 * sizeof(unsigned char);
-    const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0,
-      static_cast<VkDeviceSize>(upload_size), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
-    VmaAllocationCreateInfo aci = {};
-    aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-    aci.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-    VmaAllocationInfo ai;
-    VkBuffer buffer;
-    VmaAllocation allocation;
-    VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
-    if (res != VK_SUCCESS)
-      return false;
-
-    std::memcpy(ai.pMappedData, pixels, upload_size);
-    vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, upload_size);
-    bd->FontTexture.TransitionToLayout(g_vulkan_context->GetCurrentInitCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    bd->FontTexture.UpdateFromBuffer(g_vulkan_context->GetCurrentInitCommandBuffer(), 0, 0, 0, 0, width, height, width, buffer, 0);
-    bd->FontTexture.TransitionToLayout(g_vulkan_context->GetCurrentInitCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    // Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
-    g_vulkan_context->DeferBufferDestruction(buffer, allocation);
-#else
-    Vulkan::StagingTexture stex;
-    if (!stex.Create(Vulkan::StagingBuffer::Type::Upload, VK_FORMAT_R8G8B8A8_UNORM, static_cast<u32>(width), static_cast<u32>(height)))
-      return false;
-
-    const u32 stride = static_cast<u32>(width) * static_cast<u32>(sizeof(u32));
-    stex.WriteTexels(0, 0, static_cast<u32>(width), static_cast<u32>(height), pixels, stride);
-    stex.CopyToTexture(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, bd->FontTexture, 0, 0, 0, 0, width, height);
-    stex.Destroy(true);
-#endif
-
     // Store our identifier
+    bd->FontTexture.Update(0, 0, width, height, pixels, sizeof(u32) * width);
     io.Fonts->SetTexID((ImTextureID)&bd->FontTexture);
     return true;
 }

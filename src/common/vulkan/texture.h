@@ -1,8 +1,3 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #pragma once
 #include "../types.h"
 #include "loader.h"
@@ -24,7 +19,7 @@ public:
   ALWAYS_INLINE bool IsValid() const { return (m_image != VK_NULL_HANDLE); }
 
   /// An image is considered owned/managed if we control the memory.
-  ALWAYS_INLINE bool IsOwned() const { return (m_device_memory != VK_NULL_HANDLE); }
+  ALWAYS_INLINE bool IsOwned() const { return (m_allocation != VK_NULL_HANDLE); }
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
@@ -37,14 +32,15 @@ public:
   ALWAYS_INLINE VkImageLayout GetLayout() const { return m_layout; }
   ALWAYS_INLINE VkImageViewType GetViewType() const { return m_view_type; }
   ALWAYS_INLINE VkImage GetImage() const { return m_image; }
-  ALWAYS_INLINE VkDeviceMemory GetDeviceMemory() const { return m_device_memory; }
+  ALWAYS_INLINE VmaAllocation GetAllocation() const { return m_allocation; }
   ALWAYS_INLINE VkImageView GetView() const { return m_view; }
 
   bool Create(u32 width, u32 height, u32 levels, u32 layers, VkFormat format, VkSampleCountFlagBits samples,
-              VkImageViewType view_type, VkImageTiling tiling, VkImageUsageFlags usage);
+              VkImageViewType view_type, VkImageTiling tiling, VkImageUsageFlags usage, bool dedicated_memory = false,
+              const VkComponentMapping* swizzle = nullptr);
 
   bool Adopt(VkImage existing_image, VkImageViewType view_type, u32 width, u32 height, u32 levels, u32 layers,
-             VkFormat format, VkSampleCountFlagBits samples);
+             VkFormat format, VkSampleCountFlagBits samples, const VkComponentMapping* swizzle = nullptr);
 
   void Destroy(bool defer = true);
 
@@ -62,6 +58,12 @@ public:
   void UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
                         VkBuffer buffer, u32 buffer_offset, u32 row_length);
 
+  u32 CalcUpdatePitch(u32 width) const;
+  u32 CalcUpdateRowLength(u32 pitch) const;
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch);
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height);
+  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch);
+
 private:
   u32 m_width = 0;
   u32 m_height = 0;
@@ -73,7 +75,7 @@ private:
   VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   VkImage m_image = VK_NULL_HANDLE;
-  VkDeviceMemory m_device_memory = VK_NULL_HANDLE;
+  VmaAllocation m_allocation = VK_NULL_HANDLE;
   VkImageView m_view = VK_NULL_HANDLE;
 };
 

@@ -1,14 +1,11 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #include <atomic>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
+
+#define VMA_IMPLEMENTATION 1
 
 #include "loader.h"
 
@@ -20,6 +17,8 @@
 #include <mach-o/dyld.h>
 #endif
 
+extern "C" {
+
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name ds_##name;
 #define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name ds_##name;
 #define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name ds_##name;
@@ -27,9 +26,9 @@
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
+}
 
 namespace Vulkan {
-
 void ResetVulkanLibraryFunctionPointers()
 {
 #define VULKAN_MODULE_ENTRY_POINT(name, required) ds_##name = nullptr;
@@ -55,11 +54,7 @@ bool LoadVulkanLibrary()
     return true;
   }
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_GAMES)
   vulkan_module = LoadLibraryA("vulkan-1.dll");
-#else
-  vulkan_module = NULL;
-#endif
   if (!vulkan_module)
   {
     std::fprintf(stderr, "Failed to load vulkan-1.dll\n");
@@ -118,14 +113,9 @@ bool LoadVulkanLibrary()
 
 #if defined(__APPLE__)
   // Check if a path to a specific Vulkan library has been specified.
-  // Otherwise, try for a system-wide libvulkan.
   char* libvulkan_env = getenv("LIBVULKAN_PATH");
   if (libvulkan_env)
     vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
-  else
-    vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
-
-  // Fall back to the packaged MoltenVK.
   if (!vulkan_module)
   {
     unsigned path_size = 0;
@@ -140,10 +130,22 @@ bool LoadVulkanLibrary()
       if (pos != std::string::npos)
       {
         path.erase(pos);
-        path += "/../Frameworks/libMoltenVK.dylib";
+        path += "/../Frameworks/libvulkan.dylib";
         vulkan_module = dlopen(path.c_str(), RTLD_NOW);
+        if (!vulkan_module)
+        {
+          path.erase(pos);
+          path += "/../Frameworks/libMoltenVK.dylib";
+          vulkan_module = dlopen(path.c_str(), RTLD_NOW);
+        }
       }
     }
+  }
+  if (!vulkan_module)
+  {
+    vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
+    if (!vulkan_module)
+      vulkan_module = dlopen("libMoltenVK.dylib", RTLD_NOW);
   }
 #else
   // Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.

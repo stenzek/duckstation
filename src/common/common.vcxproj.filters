@@ -55,9 +55,6 @@
     <ClInclude Include="vulkan\texture.h">
       <Filter>vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="vulkan\staging_buffer.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="vulkan\stream_buffer.h">
       <Filter>vulkan</Filter>
     </ClInclude>
@@ -68,9 +65,6 @@
       <Filter>vulkan</Filter>
     </ClInclude>
     <ClInclude Include="vulkan\swap_chain.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\staging_texture.h">
       <Filter>vulkan</Filter>
     </ClInclude>
     <ClInclude Include="dimensional_array.h" />
@@ -188,9 +182,6 @@
     <ClCompile Include="vulkan\context.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="vulkan\staging_buffer.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="vulkan\stream_buffer.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
@@ -201,9 +192,6 @@
       <Filter>vulkan</Filter>
     </ClCompile>
     <ClCompile Include="vulkan\swap_chain.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\staging_texture.cpp">
       <Filter>vulkan</Filter>
     </ClCompile>
     <ClCompile Include="vulkan\builders.cpp">

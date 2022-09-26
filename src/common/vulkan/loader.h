@@ -1,8 +1,3 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #pragma once
 
 #define VK_NO_PROTOTYPES
@@ -80,6 +75,25 @@
 #endif
 
 #include "entry_points.h"
+
+// We include vk_mem_alloc globally, so we don't accidentally include it before the vulkan header somewhere.
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+#elif defined(_MSC_VER)
+#pragma warning(push, 0)
+#endif
+
+#define VMA_STATIC_VULKAN_FUNCTIONS 1
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_STATS_STRING_ENABLED 0
+#include "vulkan/vk_mem_alloc.h"
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 namespace Vulkan {
 

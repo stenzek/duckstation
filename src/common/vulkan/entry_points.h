@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // We abuse the preprocessor here to only need to specify function names once.
 // Function names are prefixed so to not conflict with system symbols at runtime.
 #define VULKAN_MODULE_ENTRY_POINT(name, required) extern PFN_##name ds_##name;
@@ -11,6 +15,10 @@
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
 #undef VULKAN_MODULE_ENTRY_POINT
+
+#ifdef __cplusplus
+}
+#endif
 
 #define vkCreateInstance ds_vkCreateInstance
 #define vkGetInstanceProcAddr ds_vkGetInstanceProcAddr
@@ -58,7 +66,6 @@
 #define vkSetDebugUtilsObjectTagEXT ds_vkSetDebugUtilsObjectTagEXT
 #define vkSubmitDebugUtilsMessageEXT ds_vkSubmitDebugUtilsMessageEXT
 
-#define vkGetPhysicalDeviceProperties2 ds_vkGetPhysicalDeviceProperties2
 #define vkGetPhysicalDeviceSurfaceCapabilities2KHR ds_vkGetPhysicalDeviceSurfaceCapabilities2KHR
 #define vkGetPhysicalDeviceDisplayPropertiesKHR ds_vkGetPhysicalDeviceDisplayPropertiesKHR
 #define vkGetPhysicalDeviceDisplayPlanePropertiesKHR ds_vkGetPhysicalDeviceDisplayPlanePropertiesKHR
@@ -67,6 +74,11 @@
 #define vkCreateDisplayModeKHR ds_vkCreateDisplayModeKHR
 #define vkGetDisplayPlaneCapabilitiesKHR ds_vkGetDisplayPlaneCapabilitiesKHR
 #define vkCreateDisplayPlaneSurfaceKHR ds_vkCreateDisplayPlaneSurfaceKHR
+
+// Vulkan 1.1 functions.
+#define vkGetPhysicalDeviceFeatures2 ds_vkGetPhysicalDeviceFeatures2
+#define vkGetPhysicalDeviceProperties2 ds_vkGetPhysicalDeviceProperties2
+#define vkGetPhysicalDeviceMemoryProperties2 ds_vkGetPhysicalDeviceMemoryProperties2
 
 #define vkDestroyDevice ds_vkDestroyDevice
 #define vkGetDeviceQueue ds_vkGetDeviceQueue
@@ -193,6 +205,12 @@
 #define vkGetSwapchainImagesKHR ds_vkGetSwapchainImagesKHR
 #define vkAcquireNextImageKHR ds_vkAcquireNextImageKHR
 #define vkQueuePresentKHR ds_vkQueuePresentKHR
+
+// Vulkan 1.1 functions.
+#define vkGetBufferMemoryRequirements2 ds_vkGetBufferMemoryRequirements2
+#define vkGetImageMemoryRequirements2 ds_vkGetImageMemoryRequirements2
+#define vkBindBufferMemory2 ds_vkBindBufferMemory2
+#define vkBindImageMemory2 ds_vkBindImageMemory2
 
 #ifdef SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN
 #define vkAcquireFullScreenExclusiveModeEXT ds_vkAcquireFullScreenExclusiveModeEXT

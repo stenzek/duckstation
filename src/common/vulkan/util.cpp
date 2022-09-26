@@ -1,8 +1,3 @@
-// Copyright 2016 Dolphin Emulator Project
-// Copyright 2020 DuckStation Emulator Project
-// Licensed under GPLv2+
-// Refer to the LICENSE file included.
-
 #include "util.h"
 #include "../assert.h"
 #include "../log.h"
@@ -552,8 +547,9 @@ DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queu
     va_end(ap);
 
     const float depth_phase = depth / static_cast<float>(max_depth);
-    BeginDebugScope(queue, str,
-                    Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {2.0f, 1.0f, 0.0f}, {0.5f, 0.20f, 0.25f}));
+    BeginDebugScope(
+      queue, str,
+      Palette(depth_phase, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {2.0f, 1.0f, 0.0f}, {0.5f, 0.20f, 0.25f}));
     ++depth;
   }
 }

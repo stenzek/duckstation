@@ -7,7 +7,6 @@
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
 #include "common/vulkan/shader_cache.h"
-#include "common/vulkan/staging_texture.h"
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
 #include "common/vulkan/util.h"
@@ -18,8 +17,6 @@
 #include "postprocessing_shadergen.h"
 #include <array>
 Log_SetChannel(VulkanHostDisplay);
-
-namespace FrontendCommon {
 
 class VulkanHostDisplayTexture : public HostDisplayTexture
 {
@@ -38,45 +35,16 @@ public:
   u32 GetSamples() const override { return m_texture.GetSamples(); }
   HostDisplayPixelFormat GetFormat() const override { return m_format; }
 
-  u32 CalcUpdatePitch(u32 width) const
+  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override
   {
-    return Common::AlignUp(width * HostDisplay::GetDisplayPixelFormatSize(m_format),
-                           g_vulkan_context->GetBufferCopyRowPitchAlignment());
+    return m_texture.BeginUpdate(width, height, out_buffer, out_pitch);
   }
 
-  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)
+  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override { m_texture.EndUpdate(x, y, width, height); }
+
+  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override
   {
-    const u32 pitch = CalcUpdatePitch(width);
-    const u32 required_size = pitch * height;
-    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-    if (required_size > buffer.GetCurrentSize())
-      return false;
-
-    // TODO: allocate temporary buffer if this fails...
-    if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
-    {
-      g_vulkan_context->ExecuteCommandBuffer(false);
-      if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
-        return false;
-    }
-
-    *out_buffer = buffer.GetCurrentHostPointer();
-    *out_pitch = pitch;
-    return true;
-  }
-
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height)
-  {
-    const u32 pitch = CalcUpdatePitch(width);
-    const u32 required_size = pitch * height;
-
-    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-    const u32 buffer_offset = buffer.GetCurrentOffset();
-    buffer.CommitMemory(required_size);
-
-    m_texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, x, y, width, height,
-                               buffer.GetBuffer(), buffer_offset,
-                               HostDisplay::GetDisplayPixelFormatSize(m_format) / width);
+    return m_texture.Update(x, y, width, height, data, pitch);
   }
 
   const Vulkan::Texture& GetTexture() const { return m_texture; }
@@ -91,6 +59,18 @@ VulkanHostDisplay::VulkanHostDisplay() = default;
 
 VulkanHostDisplay::~VulkanHostDisplay()
 {
+  if (!g_vulkan_context)
+    return;
+
+  g_vulkan_context->WaitForGPUIdle();
+
+  DestroyStagingBuffer();
+  DestroyResources();
+
+  Vulkan::ShaderCache::Destroy();
+  m_swap_chain.reset();
+  Vulkan::Context::Destroy();
+
   AssertMsg(!g_vulkan_context, "Context should have been destroyed by now");
   AssertMsg(!m_swap_chain, "Swap chain should have been destroyed by now");
 }
@@ -223,39 +203,7 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
 
   if (data)
   {
-    const u32 row_size = width * GetDisplayPixelFormatSize(format);
-    const u32 data_upload_pitch = Common::AlignUp(row_size, g_vulkan_context->GetBufferCopyRowPitchAlignment());
-    const u32 data_size = data_upload_pitch * height;
-    Vulkan::StreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
-
-    if (data_size < buffer.GetCurrentSize())
-    {
-      if (!buffer.ReserveMemory(data_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
-      {
-        g_vulkan_context->ExecuteCommandBuffer(false);
-        if (!buffer.ReserveMemory(data_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
-          goto use_staging;
-      }
-
-      StringUtil::StrideMemCpy(buffer.GetCurrentHostPointer(), data_upload_pitch, data, data_stride, row_size, height);
-      const u32 buffer_offset = buffer.GetCurrentOffset();
-      buffer.CommitMemory(data_size);
-      texture.UpdateFromBuffer(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, 0, 0, width, height,
-                               buffer.GetBuffer(), buffer_offset,
-                               data_upload_pitch / GetDisplayPixelFormatSize(format));
-    }
-    else
-    {
-    use_staging:
-      // TODO: Drop this thing completely. It's not using the buffer copy row pitch alignment.
-      Vulkan::StagingTexture staging_texture;
-      if (!staging_texture.Create(Vulkan::StagingBuffer::Type::Upload, vk_format, width, height))
-        return {};
-
-      staging_texture.WriteTexels(0, 0, width, height, data, data_stride);
-      staging_texture.CopyToTexture(g_vulkan_context->GetCurrentCommandBuffer(), 0, 0, texture, 0, 0, 0, 0, width,
-                                    height);
-    }
+    texture.Update(0, 0, width, height, data, data_stride);
   }
   else
   {
@@ -269,22 +217,6 @@ std::unique_ptr<HostDisplayTexture> VulkanHostDisplay::CreateTexture(u32 width, 
   texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
   return std::make_unique<VulkanHostDisplayTexture>(std::move(texture), format);
-}
-
-bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
-                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
-{
-  Vulkan::Texture* texture = static_cast<Vulkan::Texture*>(const_cast<void*>(texture_handle));
-
-  if ((m_readback_staging_texture.GetWidth() < width || m_readback_staging_texture.GetHeight() < height) &&
-      !m_readback_staging_texture.Create(Vulkan::StagingBuffer::Type::Readback, texture->GetFormat(), width, height))
-  {
-    return false;
-  }
-
-  m_readback_staging_texture.CopyFromTexture(*texture, x, y, 0, 0, 0, 0, width, height);
-  m_readback_staging_texture.ReadTexels(0, 0, width, height, out_data, out_data_stride);
-  return true;
 }
 
 bool VulkanHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
@@ -360,6 +292,121 @@ VkRenderPass VulkanHostDisplay::GetRenderPassForDisplay() const
   }
 }
 
+bool VulkanHostDisplay::CheckStagingBufferSize(u32 required_size)
+{
+  if (m_readback_staging_buffer_size >= required_size)
+    return true;
+
+  DestroyStagingBuffer();
+
+  const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                  nullptr,
+                                  0u,
+                                  required_size,
+                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                  VK_SHARING_MODE_EXCLUSIVE,
+                                  0u,
+                                  nullptr};
+
+  VmaAllocationCreateInfo aci = {};
+  aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+  aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+
+  VmaAllocationInfo ai = {};
+  VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &m_readback_staging_buffer,
+                                 &m_readback_staging_allocation, &ai);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
+    return false;
+  }
+
+  m_readback_staging_buffer_map = static_cast<u8*>(ai.pMappedData);
+  return true;
+}
+
+void VulkanHostDisplay::DestroyStagingBuffer()
+{
+  // unmapped as part of the buffer destroy
+  m_readback_staging_buffer_map = nullptr;
+  m_readback_staging_buffer_size = 0;
+
+  if (m_readback_staging_buffer != VK_NULL_HANDLE)
+  {
+    vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_readback_staging_buffer, m_readback_staging_allocation);
+    m_readback_staging_buffer = VK_NULL_HANDLE;
+    m_readback_staging_allocation = VK_NULL_HANDLE;
+    m_readback_staging_buffer_size = 0;
+  }
+}
+
+bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
+                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
+{
+  Vulkan::Texture* texture = static_cast<Vulkan::Texture*>(const_cast<void*>(texture_handle));
+
+  const u32 pitch = texture->CalcUpdatePitch(width);
+  const u32 size = pitch * height;
+  const u32 level = 0;
+  if (!CheckStagingBufferSize(size))
+  {
+    Log_ErrorPrintf("Can't read back %ux%u", width, height);
+    return false;
+  }
+
+  {
+    const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+    const Vulkan::Util::DebugScope debugScope(cmdbuf, "VulkanHostDisplay::DownloadTexture(%u,%u)", width, height);
+
+    VkImageLayout old_layout = texture->GetLayout();
+    if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+      texture->TransitionSubresourcesToLayout(cmdbuf, level, 1, 0, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+    VkBufferImageCopy image_copy = {};
+    const VkImageAspectFlags aspect = Vulkan::Util::IsDepthFormat(static_cast<VkFormat>(texture->GetFormat())) ?
+                                        VK_IMAGE_ASPECT_DEPTH_BIT :
+                                        VK_IMAGE_ASPECT_COLOR_BIT;
+    image_copy.bufferOffset = 0;
+    image_copy.bufferRowLength = texture->CalcUpdateRowLength(pitch);
+    image_copy.bufferImageHeight = 0;
+    image_copy.imageSubresource = {aspect, level, 0u, 1u};
+    image_copy.imageOffset = {static_cast<s32>(x), static_cast<s32>(y), 0};
+    image_copy.imageExtent = {width, height, 1u};
+
+    // invalidate gpu cache
+    // TODO: Needed?
+    Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, 0, VK_ACCESS_TRANSFER_WRITE_BIT, 0, size,
+                                      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    // do the copy
+    vkCmdCopyImageToBuffer(cmdbuf, texture->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_readback_staging_buffer,
+                           1, &image_copy);
+
+    // flush gpu cache
+    Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, VK_ACCESS_TRANSFER_WRITE_BIT,
+                                      VK_ACCESS_HOST_READ_BIT, 0, size, VK_ACCESS_TRANSFER_WRITE_BIT,
+                                      VK_PIPELINE_STAGE_HOST_BIT);
+
+    if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+      texture->TransitionSubresourcesToLayout(cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, old_layout);
+    }
+  }
+
+  g_vulkan_context->ExecuteCommandBuffer(true);
+
+  // invalidate cpu cache before reading
+  VkResult res = vmaInvalidateAllocation(g_vulkan_context->GetAllocator(), m_readback_staging_allocation, 0, size);
+  if (res != VK_SUCCESS)
+    LOG_VULKAN_ERROR(res, "vmaInvalidateAllocation() failed, readback may be incorrect: ");
+
+  StringUtil::StrideMemCpy(out_data, out_data_stride, m_readback_staging_buffer_map, pitch,
+                           std::min(pitch, out_data_stride), height);
+
+  return true;
+}
+
 bool VulkanHostDisplay::CreateResources()
 {
   static constexpr char fullscreen_quad_vertex_shader[] = R"(
@@ -431,7 +478,7 @@ void main()
 
   plbuilder.AddDescriptorSet(m_post_process_descriptor_set_layout);
   plbuilder.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                             PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD);
+                             FrontendCommon::PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD);
   m_post_process_pipeline_layout = plbuilder.Create(device);
   if (m_post_process_pipeline_layout == VK_NULL_HANDLE)
     return false;
@@ -510,8 +557,6 @@ void VulkanHostDisplay::DestroyResources()
   m_post_processing_ubo.Destroy(true);
   m_post_processing_chain.ClearStages();
 
-  m_readback_staging_texture.Destroy(false);
-
   Vulkan::Util::SafeDestroyPipeline(m_display_pipeline);
   Vulkan::Util::SafeDestroyPipeline(m_cursor_pipeline);
   Vulkan::Util::SafeDestroyPipelineLayout(m_pipeline_layout);
@@ -538,19 +583,7 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
   return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-void VulkanHostDisplay::DestroyRenderDevice()
-{
-  if (!g_vulkan_context)
-    return;
-
-  g_vulkan_context->WaitForGPUIdle();
-
-  DestroyResources();
-
-  Vulkan::ShaderCache::Destroy();
-  DestroyRenderSurface();
-  Vulkan::Context::Destroy();
-}
+void VulkanHostDisplay::DestroyRenderDevice() {}
 
 bool VulkanHostDisplay::MakeRenderContextCurrent()
 {
@@ -687,10 +720,8 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   }
 
   Vulkan::Texture tex;
-  Vulkan::StagingTexture staging_tex;
   if (!tex.Create(width, height, 1, 1, format, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
-                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT) ||
-      !staging_tex.Create(Vulkan::StagingBuffer::Type::Readback, format, width, height))
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
   {
     return false;
   }
@@ -728,13 +759,11 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
   Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-  staging_tex.CopyFromTexture(tex, 0, 0, 0, 0, 0, 0, width, height);
-  staging_tex.ReadTexels(0, 0, width, height, out_pixels->data(), *out_stride);
+  DownloadTexture(&tex, *out_format, 0, 0, width, height, out_pixels->data(), *out_stride);
 
   // destroying these immediately should be safe since nothing's going to access them, and it's not part of the command
   // stream
   vkDestroyFramebuffer(g_vulkan_context->GetDevice(), fb, nullptr);
-  staging_tex.Destroy(false);
   tex.Destroy(false);
   return true;
 }
@@ -960,7 +989,7 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
   {
-    const PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const FrontendCommon::PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
     const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
     const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
     const bool use_push_constants = shader.UsePushConstants();
@@ -1023,8 +1052,6 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
   }
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_ubo.GetBuffer(),
                               "Post Processing Uniform Buffer");
-  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_ubo.GetDeviceMemory(),
-                              "Post Processing Uniform Buffer Memory");
   return true;
 }
 
@@ -1053,7 +1080,7 @@ bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
                                 "Post Processing Input Texture");
     Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetView(),
                                 "Post Processing Input Texture View");
-    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetDeviceMemory(),
+    Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_input_texture.GetAllocation(),
                                 "Post Processing Input Texture Memory");
   }
 
@@ -1078,7 +1105,7 @@ bool VulkanHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
       }
       Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetImage(),
                                   "Post Processing Output Texture %u", i);
-      Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetDeviceMemory(),
+      Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetAllocation(),
                                   "Post Processing Output Texture Memory %u", i);
       Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), pps.output_texture.GetView(),
                                   "Post Processing Output Texture View %u", i);
@@ -1154,7 +1181,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
 
     if (use_push_constants)
     {
-      u8 buffer[PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD];
+      u8 buffer[FrontendCommon::PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD];
       Assert(pps.uniforms_size <= sizeof(buffer));
       m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
         buffer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
@@ -1201,5 +1228,3 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
     }
   }
 }
-
-} // namespace FrontendCommon

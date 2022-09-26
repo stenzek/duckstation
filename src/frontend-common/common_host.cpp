@@ -136,7 +136,7 @@ std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(RenderAPI api)
   {
 #ifdef WITH_VULKAN
     case RenderAPI::Vulkan:
-      return std::make_unique<FrontendCommon::VulkanHostDisplay>();
+      return std::make_unique<VulkanHostDisplay>();
 #endif
 
 #ifdef WITH_OPENGL
