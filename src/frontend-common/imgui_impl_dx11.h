@@ -14,4 +14,4 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data);
 // Use if you want to reset your rendering device without losing Dear ImGui state.
 void ImGui_ImplDX11_InvalidateDeviceObjects();
 bool ImGui_ImplDX11_CreateDeviceObjects();
-void ImGui_ImplDX11_CreateFontsTexture();
+bool ImGui_ImplDX11_CreateFontsTexture();

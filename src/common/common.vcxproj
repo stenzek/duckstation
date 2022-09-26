@@ -11,7 +11,6 @@
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="d3d11\shader_cache.h" />
     <ClInclude Include="d3d11\shader_compiler.h" />
-    <ClInclude Include="d3d11\staging_texture.h" />
     <ClInclude Include="d3d11\stream_buffer.h" />
     <ClInclude Include="d3d11\texture.h" />
     <ClInclude Include="d3d12\context.h" />
@@ -114,7 +113,6 @@
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="d3d11\shader_cache.cpp" />
     <ClCompile Include="d3d11\shader_compiler.cpp" />
-    <ClCompile Include="d3d11\staging_texture.cpp" />
     <ClCompile Include="d3d11\stream_buffer.cpp" />
     <ClCompile Include="d3d11\texture.cpp" />
     <ClCompile Include="error.cpp" />

@@ -82,8 +82,6 @@ if(WIN32)
     d3d11/shader_cache.h
     d3d11/shader_compiler.cpp
     d3d11/shader_compiler.h
-    d3d11/staging_texture.cpp
-    d3d11/staging_texture.h
     d3d11/stream_buffer.cpp
     d3d11/stream_buffer.h
     d3d11/texture.cpp

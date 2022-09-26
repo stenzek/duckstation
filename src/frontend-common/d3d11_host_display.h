@@ -1,5 +1,4 @@
 #pragma once
-#include "common/d3d11/staging_texture.h"
 #include "common/d3d11/stream_buffer.h"
 #include "common/d3d11/texture.h"
 #include "common/window_info.h"
@@ -74,6 +73,9 @@ protected:
 
   static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
 
+  bool CheckStagingBufferSize(u32 width, u32 height, DXGI_FORMAT format);
+  void DestroyStagingBuffer();
+
   bool CreateResources() override;
   void DestroyResources() override;
 
@@ -130,7 +132,10 @@ protected:
   ComPtr<ID3D11SamplerState> m_linear_sampler;
 
   D3D11::StreamBuffer m_display_uniform_buffer;
-  D3D11::AutoStagingTexture m_readback_staging_texture;
+  ComPtr<ID3D11Texture2D> m_readback_staging_texture;
+  DXGI_FORMAT m_readback_staging_texture_format = DXGI_FORMAT_UNKNOWN;
+  u32 m_readback_staging_texture_width = 0;
+  u32 m_readback_staging_texture_height = 0;
 
   bool m_allow_tearing_supported = false;
   bool m_using_flip_model_swap_chain = true;

@@ -20,9 +20,6 @@
     <ClInclude Include="d3d11\texture.h">
       <Filter>d3d11</Filter>
     </ClInclude>
-    <ClInclude Include="d3d11\staging_texture.h">
-      <Filter>d3d11</Filter>
-    </ClInclude>
     <ClInclude Include="d3d11\shader_compiler.h">
       <Filter>d3d11</Filter>
     </ClInclude>
@@ -144,9 +141,6 @@
       <Filter>gl</Filter>
     </ClCompile>
     <ClCompile Include="d3d11\texture.cpp">
-      <Filter>d3d11</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d11\staging_texture.cpp">
       <Filter>d3d11</Filter>
     </ClCompile>
     <ClCompile Include="d3d11\stream_buffer.cpp">

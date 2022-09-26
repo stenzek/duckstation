@@ -30,7 +30,7 @@ public:
   }
   ~D3D11HostDisplayTexture() override = default;
 
-  void* GetHandle() const override { return m_texture.GetD3DSRV(); }
+  void* GetHandle() const override { return const_cast<D3D11::Texture*>(&m_texture); }
   u32 GetWidth() const override { return m_texture.GetWidth(); }
   u32 GetHeight() const override { return m_texture.GetHeight(); }
   u32 GetLayers() const override { return 1; }
@@ -88,6 +88,7 @@ D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
 {
+  DestroyStagingBuffer();
   DestroyResources();
   DestroyRenderSurface();
   m_context.Reset();
@@ -145,28 +146,53 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
 bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
-  ID3D11ShaderResourceView* srv =
-    const_cast<ID3D11ShaderResourceView*>(static_cast<const ID3D11ShaderResourceView*>(texture_handle));
-  ComPtr<ID3D11Resource> srv_resource;
-  D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
-  srv->GetResource(srv_resource.GetAddressOf());
-  srv->GetDesc(&srv_desc);
-
-  if (!m_readback_staging_texture.EnsureSize(m_context.Get(), width, height, srv_desc.Format, false))
+  const D3D11::Texture* tex = static_cast<const D3D11::Texture*>(texture_handle);
+  if (!CheckStagingBufferSize(width, height, tex->GetFormat()))
     return false;
 
-  m_readback_staging_texture.CopyFromTexture(m_context.Get(), srv_resource.Get(), 0, x, y, 0, 0, width, height);
+  const CD3D11_BOX box(static_cast<LONG>(x), static_cast<LONG>(y), 0, static_cast<LONG>(x + width),
+                       static_cast<LONG>(y + height), 1);
+  m_context->CopySubresourceRegion(m_readback_staging_texture.Get(), 0, 0, 0, 0, tex->GetD3DTexture(), 0, &box);
 
-  if (srv_desc.Format == DXGI_FORMAT_B5G6R5_UNORM || srv_desc.Format == DXGI_FORMAT_B5G5R5A1_UNORM)
+  D3D11_MAPPED_SUBRESOURCE sr;
+  HRESULT hr = m_context->Map(m_readback_staging_texture.Get(), 0, D3D11_MAP_READ, 0, &sr);
+  if (FAILED(hr))
   {
-    return m_readback_staging_texture.ReadPixels<u16>(m_context.Get(), 0, 0, width, height, out_data_stride,
-                                                      static_cast<u16*>(out_data));
+    Log_ErrorPrintf("Map() failed with HRESULT %08X", hr);
+    return false;
   }
-  else
+
+  const u32 copy_size = GetDisplayPixelFormatSize(texture_format) * width;
+  StringUtil::StrideMemCpy(out_data, out_data_stride, sr.pData, sr.RowPitch, copy_size, height);
+  m_context->Unmap(m_readback_staging_texture.Get(), 0);
+  return true;
+}
+
+bool D3D11HostDisplay::CheckStagingBufferSize(u32 width, u32 height, DXGI_FORMAT format)
+{
+  if (m_readback_staging_texture_width >= width && m_readback_staging_texture_width >= height &&
+      m_readback_staging_texture_format == format)
+    return true;
+
+  DestroyStagingBuffer();
+
+  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, 0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ);
+  HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, m_readback_staging_texture.ReleaseAndGetAddressOf());
+  if (FAILED(hr))
   {
-    return m_readback_staging_texture.ReadPixels<u32>(m_context.Get(), 0, 0, width, height, out_data_stride,
-                                                      static_cast<u32*>(out_data));
+    Log_ErrorPrintf("CreateTexture2D() failed with HRESULT %08X", hr);
+    return false;
   }
+
+  return true;
+}
+
+void D3D11HostDisplay::DestroyStagingBuffer()
+{
+  m_readback_staging_texture.Reset();
+  m_readback_staging_texture_width = 0;
+  m_readback_staging_texture_height = 0;
+  m_readback_staging_texture_format = DXGI_FORMAT_UNKNOWN;
 }
 
 bool D3D11HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
@@ -747,11 +773,8 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
   static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
 
   D3D11::Texture render_texture;
-  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, 1, format, D3D11_BIND_RENDER_TARGET) ||
-      !m_readback_staging_texture.EnsureSize(m_context.Get(), width, height, format, false))
-  {
+  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, 1, format, D3D11_BIND_RENDER_TARGET))
     return false;
-  }
 
   static constexpr std::array<float, 4> clear_color = {};
   m_context->ClearRenderTargetView(render_texture.GetD3DRTV(), clear_color.data());
@@ -778,18 +801,13 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
 
   m_context->OMSetRenderTargets(0, nullptr, nullptr);
 
-  m_readback_staging_texture.CopyFromTexture(m_context.Get(), render_texture, 0, 0, 0, 0, 0, width, height);
-
-  if (!m_readback_staging_texture.Map(m_context.Get(), false))
+  const u32 stride = GetDisplayPixelFormatSize(hdformat) * width;
+  out_pixels->resize(width * height);
+  if (!DownloadTexture(&render_texture, hdformat, 0, 0, width, height, out_pixels->data(), stride))
     return false;
 
-  const u32 stride = sizeof(u32) * width;
-  out_pixels->resize(width * height);
   *out_stride = stride;
   *out_format = hdformat;
-
-  m_readback_staging_texture.ReadPixels<u32>(0, 0, width, height, stride, out_pixels->data());
-  m_readback_staging_texture.Unmap(m_context.Get());
   return true;
 }
 
@@ -827,7 +845,7 @@ void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, v
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
   m_context->PSSetShader(m_display_pixel_shader.Get(), nullptr, 0);
-  m_context->PSSetShaderResources(0, 1, reinterpret_cast<ID3D11ShaderResourceView**>(&texture_handle));
+  m_context->PSSetShaderResources(0, 1, static_cast<D3D11::Texture*>(texture_handle)->GetD3DSRVArray());
   m_context->PSSetSamplers(0, 1, linear_filter ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
   const bool linear = IsUsingLinearFiltering();
@@ -1082,7 +1100,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
                 texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
-  texture_handle = m_post_processing_input_texture.GetD3DSRV();
+  texture_handle = &m_post_processing_input_texture;
   texture_width = m_post_processing_input_texture.GetWidth();
   texture_height = m_post_processing_input_texture.GetHeight();
   texture_view_x = final_left;
@@ -1107,7 +1125,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->VSSetShader(pps.vertex_shader.Get(), nullptr, 0);
     m_context->PSSetShader(pps.pixel_shader.Get(), nullptr, 0);
-    m_context->PSSetShaderResources(0, 1, reinterpret_cast<ID3D11ShaderResourceView**>(&texture_handle));
+    m_context->PSSetShaderResources(0, 1, static_cast<D3D11::Texture*>(texture_handle)->GetD3DSRVArray());
     m_context->PSSetSamplers(0, 1, m_point_sampler.GetAddressOf());
 
     const auto map =
@@ -1122,7 +1140,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
     m_context->Draw(3, 0);
 
     if (i != final_stage)
-      texture_handle = pps.output_texture.GetD3DSRV();
+      texture_handle = &pps.output_texture;
   }
 
   ID3D11ShaderResourceView* null_srv = nullptr;
