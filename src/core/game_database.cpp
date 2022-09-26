@@ -829,7 +829,7 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
         if (!ctype.has_value())
         {
           Log_WarningPrintf("Invalid controller type '%s'", controller.GetString());
-          return false;
+          continue;
         }
 
         if (first)
