@@ -708,7 +708,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="790"/>
         <source>Not Inverted</source>
-        <translation type="unfinished">Не инвертирован</translation>
+        <translation type="unfinished">Не инвертировать</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="791"/>
