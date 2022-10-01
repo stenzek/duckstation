@@ -3566,9 +3566,8 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                     "When enabled, rich presence information will be collected and sent to the server where supported.",
                     "Cheevos", "RichPresence", true, enabled);
   if (DrawToggleSetting(bsi, ICON_FA_HARD_HAT " Hardcore Mode",
-                        "\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown functions, but "
-                        "you receive double the "
-                        "achievement points.",
+                        "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, "
+                        "cheats, and slowdown functions.",
                         "Cheevos", "ChallengeMode", false, enabled))
   {
     if (System::IsValid() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))

@@ -44,8 +44,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
     tr(
       "When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active."));
   dialog->registerWidgetHelp(m_ui.challengeMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
-                             tr("\"Challenge\" mode for achievements. Disables save state, cheats, and slowdown "
-                                "functions, but you receive double the achievement points."));
+                             tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save "
+                                "state, cheats, and slowdown functions."));
   dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
