@@ -3909,7 +3909,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::None:
       {
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
-        const bool can_load_or_save_state = System::IsValid();
+        const bool has_game = System::IsValid() && !System::GetRunningCode().empty();
 
         if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
           ClosePauseMenu();
@@ -3920,13 +3920,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
           DoToggleFastForward();
         }
 
-        if (ActiveButton(ICON_FA_UNDO " Load State", false, can_load_or_save_state))
+        if (ActiveButton(ICON_FA_UNDO " Load State", false, has_game))
         {
           if (OpenSaveStateSelector(true))
             s_current_main_window = MainWindowType::None;
         }
 
-        if (ActiveButton(ICON_FA_DOWNLOAD " Save State", false, can_load_or_save_state))
+        if (ActiveButton(ICON_FA_DOWNLOAD " Save State", false, has_game))
         {
           if (OpenSaveStateSelector(false))
             s_current_main_window = MainWindowType::None;
@@ -3945,7 +3945,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
           DoToggleAnalogMode();
         }
 
-        if (ActiveButton(ICON_FA_WRENCH " Game Properties", false, !System::GetRunningCode().empty()))
+        if (ActiveButton(ICON_FA_WRENCH " Game Properties", false, has_game))
         {
           SwitchToGameSettings();
         }
@@ -3984,7 +3984,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         if (ActiveButton(ICON_FA_POWER_OFF " Close Game", false))
         {
           // skip submenu when we can't save anyway
-          if (!can_load_or_save_state)
+          if (!has_game)
             DoShutdown(false);
           else
             OpenPauseSubMenu(PauseSubMenu::Exit);

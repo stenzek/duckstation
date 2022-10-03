@@ -975,12 +975,12 @@ void Host::RequestExit(bool save_state_if_running)
   s_running.store(false, std::memory_order_release);
 }
 
-void Host::RequestSystemShutdown(bool allow_confirm, bool allow_save_state)
+void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
 {
   // TODO: Confirm
   if (System::IsValid())
   {
-    Host::RunOnCPUThread([allow_save_state]() { System::ShutdownSystem(allow_save_state); });
+    Host::RunOnCPUThread([save_state]() { System::ShutdownSystem(save_state); });
   }
 }
 

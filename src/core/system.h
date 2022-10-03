@@ -473,7 +473,7 @@ void RequestResizeHostDisplay(s32 width, s32 height);
 void RequestExit(bool save_state_if_running);
 
 /// Requests shut down of the current virtual machine.
-void RequestSystemShutdown(bool allow_confirm, bool allow_save_state);
+void RequestSystemShutdown(bool allow_confirm, bool save_state);
 
 /// Returns true if the hosting application is currently fullscreen.
 bool IsFullscreen();

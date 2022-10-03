@@ -1714,13 +1714,13 @@ void QtHost::QueueSettingsSave()
   s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
 }
 
-void Host::RequestSystemShutdown(bool allow_confirm, bool allow_save_state)
+void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
 {
   if (!System::IsValid())
     return;
 
   QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-                            Q_ARG(bool, allow_save_state), Q_ARG(bool, false));
+                            Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, false));
 }
 
 void Host::RequestExit(bool save_state_if_running)

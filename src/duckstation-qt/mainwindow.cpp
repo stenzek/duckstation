@@ -1793,8 +1793,10 @@ void MainWindow::connectSignals()
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
-  connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true); });
-  connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false); });
+  connect(m_ui.actionPowerOff, &QAction::triggered, this,
+          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit); });
+  connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
+          [this]() { requestShutdown(false, false, false); });
   connect(m_ui.actionReset, &QAction::triggered, g_emu_thread, &EmuThread::resetSystem);
   connect(m_ui.actionPause, &QAction::toggled, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
@@ -2367,14 +2369,14 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 }
 
 bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */,
-                                 bool block_until_done /* = false */)
+                                 bool save_state /* = true */, bool block_until_done /* = false */)
 {
   if (!s_system_valid)
     return true;
 
   // If we don't have a serial, we can't save state.
   allow_save_to_state &= !m_current_game_code.empty();
-  bool save_state = allow_save_to_state && g_settings.save_state_on_exit;
+  save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
   if (!m_is_closing && allow_confirm && g_settings.confim_power_off)
@@ -2387,7 +2389,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     msgbox.setText("Are you sure you want to shut down the virtual machine?");
 
     QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
-    save_cb->setChecked(save_state);
+    save_cb->setChecked(allow_save_to_state && save_state);
     save_cb->setEnabled(allow_save_to_state);
     msgbox.setCheckBox(save_cb);
     msgbox.addButton(QMessageBox::Yes);
@@ -2434,7 +2436,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 void MainWindow::requestExit(bool allow_save_to_state /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  if (!requestShutdown(true, allow_save_to_state, true))
+  if (!requestShutdown(true, allow_save_to_state, g_settings.save_state_on_exit))
     return;
 
   // We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
