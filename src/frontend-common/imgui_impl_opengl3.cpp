@@ -106,6 +106,8 @@
 // GL includes
 #include "common/gl/loader.h"
 #include "common/gl/texture.h"
+#include "common/log.h"
+Log_SetChannel(ImGui_ImplOpenGL3);
 
 // OpenGL Data
 struct ImGui_ImplOpenGL3_Data
@@ -168,6 +170,13 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(bd->GlslVersionString));
     strcpy(bd->GlslVersionString, glsl_version);
     strcat(bd->GlslVersionString, "\n");
+
+    if (!glDrawElementsBaseVertex)
+    {
+      Log_ErrorPrintf("Missing glDrawElementsBaseVertex()");
+      return false;
+    }
+
     return ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
 

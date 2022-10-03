@@ -77,6 +77,14 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
       GLAD_GL_EXT_disjoint_timer_query = 0;
     }
   }
+
+  // If we're missing GLES 3.2, but have OES_draw_elements_base_vertex, redirect the function pointers.
+  if (!glad_glDrawElementsBaseVertex && GLAD_GL_OES_draw_elements_base_vertex && !GLAD_GL_ES_VERSION_3_2)
+  {
+    glad_glDrawElementsBaseVertex = glad_glDrawElementsBaseVertexOES;
+    glad_glDrawRangeElementsBaseVertex = glad_glDrawRangeElementsBaseVertexOES;
+    glad_glDrawElementsInstancedBaseVertex = glad_glDrawElementsInstancedBaseVertexOES;
+  }
 }
 
 Context::Context(const WindowInfo& wi) : m_wi(wi) {}
