@@ -920,9 +920,7 @@ bool Achievements::LoginAsync(const char* username, const char* password)
     return false;
 
   if (FullscreenUI::IsInitialized())
-  {
-    ImGuiFullscreen::OpenBackgroundProgressDialog("cheevos_async_login", "Logging in to RetroAchivements...", 0, 1, 0);
-  }
+    ImGuiFullscreen::OpenBackgroundProgressDialog("cheevos_async_login", "Logging in to RetroAchivements...", 0, 0, 0);
 
   SendLogin(username, password, s_http_downloader.get(), LoginASyncCallback);
   return true;
