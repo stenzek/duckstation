@@ -49,14 +49,15 @@ static bool s_save_state_selector_ui_open = false;
 
 void ImGuiManager::RenderOverlays()
 {
-  if (System::IsValid())
+  const System::State state = System::GetState();
+  if (state != System::State::Shutdown)
   {
     DrawPerformanceOverlay();
 
-    if (g_settings.display_show_enhancements)
+    if (g_settings.display_show_enhancements && state != System::State::Paused)
       DrawEnhancementsOverlay();
 
-    if (g_settings.display_show_inputs)
+    if (g_settings.display_show_inputs && state != System::State::Paused)
       DrawInputsOverlay();
 
     if (s_save_state_selector_ui_open)
