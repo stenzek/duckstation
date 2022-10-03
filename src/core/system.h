@@ -170,6 +170,7 @@ void IncrementInternalFrameNumber();
 const std::string& GetRunningPath();
 const std::string& GetRunningCode();
 const std::string& GetRunningTitle();
+bool IsRunningBIOS();
 
 // TODO: Move to PerformanceMetrics
 float GetFPS();

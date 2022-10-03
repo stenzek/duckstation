@@ -45,7 +45,7 @@ void AnalogController::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (g_settings.controller_disable_analog_mode_forcing)
+    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningBIOS())
     {
       Host::AddIconOSDMessage(
         fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,

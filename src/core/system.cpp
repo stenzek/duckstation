@@ -137,6 +137,7 @@ static u32 s_internal_frame_number = 1;
 static std::string s_running_game_path;
 static std::string s_running_game_code;
 static std::string s_running_game_title;
+static bool s_running_bios;
 
 static float s_throttle_frequency = 60.0f;
 static float s_target_speed = 1.0f;
@@ -312,6 +313,11 @@ const std::string& System::GetRunningCode()
 const std::string& System::GetRunningTitle()
 {
   return s_running_game_title;
+}
+
+bool System::IsRunningBIOS()
+{
+  return s_running_bios;
 }
 
 float System::GetFPS()
@@ -912,6 +918,9 @@ void System::ResetSystem()
 #ifdef WITH_CHEEVOS
   Achievements::ResetChallengeMode();
 #endif
+
+  // need to clear this here, because of eject disc -> reset.
+  s_running_bios = !s_running_game_path.empty();
 }
 
 void System::PauseSystem(bool paused)
@@ -1173,6 +1182,9 @@ bool System::BootSystem(SystemBootParameters parameters)
     return false;
   }
 
+  // Allow controller analog mode for EXEs and PSFs.
+  s_running_bios = s_running_game_path.empty() && !exe_boot && !psf_boot;
+
   Bus::SetBIOS(*bios_image);
   UpdateControllers();
   UpdateMemoryCardTypes();
@@ -1421,6 +1433,7 @@ void System::ClearRunningGame()
   s_running_game_code.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
+  s_running_bios = false;
   s_cheat_list.reset();
   s_state = State::Shutdown;
 
