@@ -253,6 +253,9 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
     return false;
   }
 
+  m_is_adreno = (g_vulkan_context->GetDeviceProperties().vendorID == 0x5143 ||
+                 g_vulkan_context->GetDeviceDriverProperties().driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY);
+
   m_window_info = m_swap_chain ? m_swap_chain->GetWindowInfo() : local_wi;
   return true;
 }
@@ -290,40 +293,6 @@ VkRenderPass VulkanHostDisplay::GetRenderPassForDisplay() const
     return g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT,
                                            VK_ATTACHMENT_LOAD_OP_CLEAR);
   }
-}
-
-bool VulkanHostDisplay::CheckStagingBufferSize(u32 required_size)
-{
-  if (m_readback_staging_buffer_size >= required_size)
-    return true;
-
-  DestroyStagingBuffer();
-
-  const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                                  nullptr,
-                                  0u,
-                                  required_size,
-                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                  VK_SHARING_MODE_EXCLUSIVE,
-                                  0u,
-                                  nullptr};
-
-  VmaAllocationCreateInfo aci = {};
-  aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-  aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-  aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-
-  VmaAllocationInfo ai = {};
-  VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &m_readback_staging_buffer,
-                                 &m_readback_staging_allocation, &ai);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
-    return false;
-  }
-
-  m_readback_staging_buffer_map = static_cast<u8*>(ai.pMappedData);
-  return true;
 }
 
 void VulkanHostDisplay::DestroyStagingBuffer()
@@ -404,6 +373,41 @@ bool VulkanHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   StringUtil::StrideMemCpy(out_data, out_data_stride, m_readback_staging_buffer_map, pitch,
                            std::min(pitch, out_data_stride), height);
 
+  return true;
+}
+
+bool VulkanHostDisplay::CheckStagingBufferSize(u32 required_size)
+{
+  if (m_readback_staging_buffer_size >= required_size)
+    return true;
+
+  DestroyStagingBuffer();
+
+  const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                  nullptr,
+                                  0u,
+                                  required_size,
+                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                  VK_SHARING_MODE_EXCLUSIVE,
+                                  0u,
+                                  nullptr};
+
+  VmaAllocationCreateInfo aci = {};
+  aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+  aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  aci.preferredFlags = m_is_adreno ? (VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) :
+                                     VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+
+  VmaAllocationInfo ai = {};
+  VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &m_readback_staging_buffer,
+                                 &m_readback_staging_allocation, &ai);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
+    return false;
+  }
+
+  m_readback_staging_buffer_map = static_cast<u8*>(ai.pMappedData);
   return true;
 }
 

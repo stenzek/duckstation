@@ -124,6 +124,7 @@ protected:
   VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;
   u8* m_readback_staging_buffer_map = nullptr;
   u32 m_readback_staging_buffer_size = 0;
+  bool m_is_adreno = false;
 
   VkDescriptorSetLayout m_post_process_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_post_process_ubo_descriptor_set_layout = VK_NULL_HANDLE;
