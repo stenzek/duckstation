@@ -96,6 +96,15 @@ bool Texture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
         glTexStorage3D(target, levels, internal_format, width, height, layers);
       else
         glTexStorage2D(target, levels, internal_format, width, height);
+
+      if (data)
+      {
+        // TODO: Fix data for mipmaps here.
+        if (layers > 1)
+          glTexSubImage3D(target, 0, 0, 0, 0, width, height, layers, format, type, data);
+        else
+          glTexSubImage2D(target, 0, 0, 0, width, height, format, type, data);
+      }
     }
     else
     {
@@ -200,7 +209,7 @@ void Texture::ReplaceSubImage(u32 layer, u32 level, u32 x, u32 y, u32 width, u32
     glTexSubImage2D(target, level, x, y, width, height, format, type, data);
 }
 
-void Texture::SetLinearFilter(bool enabled)
+void Texture::SetLinearFilter(bool enabled) const
 {
   Assert(!IsMultisampled());
 
@@ -255,18 +264,18 @@ void Texture::Destroy()
   m_samples = 0;
 }
 
-void Texture::Bind()
+void Texture::Bind() const
 {
   glBindTexture(GetGLTarget(), m_id);
 }
 
-void Texture::BindFramebuffer(GLenum target /*= GL_DRAW_FRAMEBUFFER*/)
+void Texture::BindFramebuffer(GLenum target /*= GL_DRAW_FRAMEBUFFER*/) const
 {
   DebugAssert(m_fbo_id != 0);
   glBindFramebuffer(target, m_fbo_id);
 }
 
-void Texture::Unbind()
+void Texture::Unbind() const
 {
   glBindTexture(GetGLTarget(), 0);
 }

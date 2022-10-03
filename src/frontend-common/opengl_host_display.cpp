@@ -19,18 +19,22 @@ enum : u32
 class OpenGLHostDisplayTexture final : public HostDisplayTexture
 {
 public:
-  OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format);
-  ~OpenGLHostDisplayTexture() override;
+  OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format)
+    : m_texture(std::move(texture)), m_format(format)
+  {
+  }
 
-  void* GetHandle() const override;
-  u32 GetWidth() const override;
-  u32 GetHeight() const override;
-  u32 GetLayers() const override;
-  u32 GetLevels() const override;
-  u32 GetSamples() const override;
-  HostDisplayPixelFormat GetFormat() const override;
+  ~OpenGLHostDisplayTexture() = default;
 
-  GLuint GetGLID() const;
+  void* GetHandle() const override { return const_cast<GL::Texture*>(&m_texture); }
+
+  u32 GetWidth() const override { return m_texture.GetWidth(); }
+  u32 GetHeight() const override { return m_texture.GetHeight(); }
+  u32 GetLayers() const override { return m_texture.GetLayers(); }
+  u32 GetLevels() const override { return m_texture.GetLevels(); }
+  u32 GetSamples() const override { return m_texture.GetSamples(); }
+  HostDisplayPixelFormat GetFormat() const override { return m_format; }
+  GLuint GetGLID() const { return m_texture.GetGLId(); }
 
   bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override;
   void EndUpdate(u32 x, u32 y, u32 width, u32 height) override;
@@ -136,11 +140,11 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
     glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / GetDisplayPixelFormatSize(texture_format));
   }
 
-  const GLuint texture = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle));
+  const GL::Texture* texture = static_cast<const GL::Texture*>(texture_handle);
   const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), texture_format);
 
-  GL::Texture::GetTextureSubImage(texture, 0, x, y, 0, width, height, 1, gl_format, gl_type, height * out_data_stride,
-                                  out_data);
+  GL::Texture::GetTextureSubImage(texture->GetGLId(), 0, x, y, 0, width, height, 1, gl_format, gl_type,
+                                  height * out_data_stride, out_data);
 
   glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
   if (!m_use_gles2_draw_path)
@@ -689,13 +693,15 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
                                       u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                                       s32 texture_view_width, s32 texture_view_height, bool linear_filter)
 {
+  const GL::Texture* texture = static_cast<const GL::Texture*>(texture_handle);
+
   glViewport(left, bottom, width, height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
-  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
   m_display_program.Bind();
+  texture->Bind();
 
   const bool linear = IsUsingLinearFiltering();
 
@@ -716,9 +722,7 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
   }
   else
   {
-    // TODO: This sucks.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    texture->SetLinearFilter(linear_filter);
 
     DrawFullscreenQuadES2(m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
                           m_display_texture_view_height, m_display_texture_width, m_display_texture_height);
@@ -884,7 +888,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
                 texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
                 IsUsingLinearFiltering());
 
-  texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(m_post_processing_input_texture.GetGLId()));
+  texture_handle = &m_post_processing_input_texture;
   texture_width = m_post_processing_input_texture.GetWidth();
   texture_height = m_post_processing_input_texture.GetHeight();
   texture_view_x = final_left;
@@ -909,8 +913,8 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
     }
 
     pps.program.Bind();
-    glBindSampler(0, m_display_linear_sampler);
-    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(texture_handle)));
+
+    static_cast<const GL::Texture*>(texture_handle)->Bind();
     glBindSampler(0, m_display_nearest_sampler);
 
     const auto map_result = m_post_processing_ubo->Map(m_uniform_buffer_alignment, pps.uniforms_size);
@@ -924,7 +928,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     if (i != final_stage)
-      texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(pps.output_texture.GetGLId()));
+      texture_handle = &pps.output_texture;
   }
 
   glBindSampler(0, 0);
@@ -1057,53 +1061,6 @@ GL::StreamBuffer* OpenGLHostDisplay::GetTextureStreamBuffer()
 
   m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE);
   return m_texture_stream_buffer.get();
-}
-
-OpenGLHostDisplayTexture::OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format)
-  : m_texture(std::move(texture)), m_format(format)
-{
-}
-
-OpenGLHostDisplayTexture::~OpenGLHostDisplayTexture() = default;
-
-void* OpenGLHostDisplayTexture::GetHandle() const
-{
-  return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture.GetGLId()));
-}
-
-u32 OpenGLHostDisplayTexture::GetWidth() const
-{
-  return m_texture.GetWidth();
-}
-
-u32 OpenGLHostDisplayTexture::GetHeight() const
-{
-  return m_texture.GetHeight();
-}
-
-u32 OpenGLHostDisplayTexture::GetLayers() const
-{
-  return 1;
-}
-
-u32 OpenGLHostDisplayTexture::GetLevels() const
-{
-  return 1;
-}
-
-u32 OpenGLHostDisplayTexture::GetSamples() const
-{
-  return m_texture.GetSamples();
-}
-
-HostDisplayPixelFormat OpenGLHostDisplayTexture::GetFormat() const
-{
-  return m_format;
-}
-
-GLuint OpenGLHostDisplayTexture::GetGLID() const
-{
-  return m_texture.GetGLId();
 }
 
 bool OpenGLHostDisplayTexture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)

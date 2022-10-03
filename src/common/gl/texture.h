@@ -23,7 +23,7 @@ public:
   void Destroy();
 
   bool UseTextureStorage() const;
-  void SetLinearFilter(bool enabled);
+  void SetLinearFilter(bool enabled) const;
 
   ALWAYS_INLINE bool IsValid() const { return m_id != 0; }
   ALWAYS_INLINE bool IsTextureArray() const { return m_layers > 1; }
@@ -42,9 +42,9 @@ public:
                                (IsTextureArray() ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D));
   }
 
-  void Bind();
-  void BindFramebuffer(GLenum target = GL_DRAW_FRAMEBUFFER);
-  void Unbind();
+  void Bind() const;
+  void BindFramebuffer(GLenum target = GL_DRAW_FRAMEBUFFER) const;
+  void Unbind() const;
 
   Texture& operator=(const Texture& copy) = delete;
   Texture& operator=(Texture&& moved);

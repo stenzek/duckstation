@@ -867,16 +867,14 @@ void GPU_HW_OpenGL::UpdateDisplay()
     {
       UpdateVRAMReadTexture();
 
-      g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_read_texture.GetGLId())),
-                                        HostDisplayPixelFormat::RGBA8, m_vram_read_texture.GetWidth(),
-                                        static_cast<s32>(m_vram_read_texture.GetHeight()), 0,
-                                        m_vram_read_texture.GetHeight(), m_vram_read_texture.GetWidth(),
-                                        -static_cast<s32>(m_vram_read_texture.GetHeight()));
+      g_host_display->SetDisplayTexture(
+        &m_vram_read_texture, HostDisplayPixelFormat::RGBA8, m_vram_read_texture.GetWidth(),
+        static_cast<s32>(m_vram_read_texture.GetHeight()), 0, m_vram_read_texture.GetHeight(),
+        m_vram_read_texture.GetWidth(), -static_cast<s32>(m_vram_read_texture.GetHeight()));
     }
     else
     {
-      g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
-                                        HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+      g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                         static_cast<s32>(m_vram_texture.GetHeight()), 0, m_vram_texture.GetHeight(),
                                         m_vram_texture.GetWidth(), -static_cast<s32>(m_vram_texture.GetHeight()));
     }
@@ -916,8 +914,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_vram_texture.GetGLId())),
-                                          HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
+        g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
                                           m_vram_texture.GetHeight(), scaled_vram_offset_x,
                                           m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
                                           -static_cast<s32>(scaled_display_height));
@@ -963,9 +960,9 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_display_texture.GetGLId())),
-                                          HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
-                                          m_display_texture.GetHeight(), 0, scaled_display_height, scaled_display_width,
+        g_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8,
+                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
+                                          scaled_display_height, scaled_display_width,
                                           -static_cast<s32>(scaled_display_height));
       }
 
@@ -1356,9 +1353,8 @@ void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left
 
   RestoreGraphicsAPIState();
 
-  g_host_display->SetDisplayTexture(reinterpret_cast<void*>(static_cast<uintptr_t>(m_downsample_texture.GetGLId())),
-                                    HostDisplayPixelFormat::RGBA8, m_downsample_texture.GetWidth(),
-                                    m_downsample_texture.GetHeight(), ds_left,
+  g_host_display->SetDisplayTexture(&m_downsample_texture, HostDisplayPixelFormat::RGBA8,
+                                    m_downsample_texture.GetWidth(), m_downsample_texture.GetHeight(), ds_left,
                                     m_downsample_texture.GetHeight() - ds_top, ds_width, -static_cast<s32>(ds_height));
 }
 
