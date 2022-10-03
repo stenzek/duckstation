@@ -43,7 +43,10 @@ GPURenderer GPU_HW_OpenGL::GetRendererType() const
 
 bool GPU_HW_OpenGL::Initialize()
 {
-  if (!Host::AcquireHostDisplay(RenderAPI::OpenGL))
+  // Don't re-request GL when we already have GLES here...
+  const RenderAPI current_api = g_host_display ? g_host_display->GetRenderAPI() : RenderAPI::None;
+  if (current_api != RenderAPI::OpenGL && current_api != RenderAPI::OpenGLES &&
+      !Host::AcquireHostDisplay(RenderAPI::OpenGL))
   {
     Log_ErrorPrintf("Host render API type is incompatible");
     return false;
