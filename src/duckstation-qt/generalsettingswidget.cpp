@@ -105,7 +105,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* pa
                                                    AutoUpdaterDialog::getDefaultTag());
 
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_tag_str).arg(g_scm_date_str));
-    connect(m_ui.checkForUpdates, &QPushButton::clicked, [this]() { g_main_window->checkForUpdates(true); });
+    connect(m_ui.checkForUpdates, &QPushButton::clicked, []() { g_main_window->checkForUpdates(true); });
   }
   else
   {

@@ -44,8 +44,6 @@ Log_SetChannel(FullscreenUI);
 #ifdef WITH_CHEEVOS
 #include "achievements.h"
 #endif
-static constexpr float LAYOUT_MAIN_MENU_BAR_SIZE = 20.0f; // Should be DPI scaled, not layout scaled!
-static constexpr s32 MAX_SAVE_STATE_SLOTS = 10;
 
 using ImGuiFullscreen::g_large_font;
 using ImGuiFullscreen::g_layout_padding_left;
@@ -252,7 +250,6 @@ static void DoToggleAnalogMode();
 //////////////////////////////////////////////////////////////////////////
 
 static constexpr double INPUT_BINDING_TIMEOUT_SECONDS = 5.0;
-static constexpr u32 NUM_MEMORY_CARD_PORTS = 2;
 
 static void SwitchToSettings();
 static void SwitchToGameSettings();
@@ -1154,7 +1151,7 @@ void FullscreenUI::DrawLandingWindow()
     ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - rev_size.x - LayoutScale(20.0f),
                                ImGui::GetWindowHeight() - rev_size.y - LayoutScale(20.0f)));
     ImGui::PushFont(g_medium_font);
-    ImGui::Text(g_scm_tag_str);
+    ImGui::TextUnformatted(g_scm_tag_str);
     ImGui::PopFont();
   }
 
@@ -4344,9 +4341,6 @@ void FullscreenUI::DrawResumeStateSelector()
   bool is_open = true;
   if (ImGui::BeginPopupModal("Load Resume State", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    static constexpr float max_image_width = 96.0f;
-    static constexpr float max_image_height = 96.0f;
-
     const SaveStateListEntry& entry = s_save_state_selector_slots.front();
     ImGui::TextWrapped("A resume save state created at %s was found.\n\nDo you want to load this save and continue?",
                        TimeToPrintableString(entry.timestamp).c_str());
@@ -5794,7 +5788,6 @@ void FullscreenUI::DrawLeaderboardsWindow()
       float right = bb.Max.x - padding;
       float top = bb.Min.y + padding;
       SmallString text;
-      ImVec2 text_size;
 
       const u32 leaderboard_count = Achievements::GetLeaderboardCount();
 

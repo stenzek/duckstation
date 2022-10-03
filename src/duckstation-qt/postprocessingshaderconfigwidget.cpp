@@ -76,7 +76,7 @@ void PostProcessingShaderConfigWidget::createUi()
           slider->setSingleStep(1);
           slider->setTickInterval(step_value);
           slider->setValue((option.value[i].int_value - option.min_value[i].int_value) / step_value);
-          connect(slider, &QSlider::valueChanged, [this, &option, i, slider_label, step_value](int value) {
+          connect(slider, &QSlider::valueChanged, [this, &option, i, slider_label](int value) {
             const int new_value = std::clamp(option.min_value[i].int_value + (value * option.step_value[i].int_value),
                                              option.min_value[i].int_value, option.max_value[i].int_value);
             option.value[i].int_value = new_value;
@@ -105,7 +105,7 @@ void PostProcessingShaderConfigWidget::createUi()
           slider->setTickInterval(step_value);
           slider->setValue(
             static_cast<int>((option.value[i].float_value - option.min_value[i].float_value) / step_value));
-          connect(slider, &QSlider::valueChanged, [this, &option, i, slider_label, step_value](int value) {
+          connect(slider, &QSlider::valueChanged, [this, &option, i, slider_label](int value) {
             const float new_value = std::clamp(option.min_value[i].float_value +
                                                  (static_cast<float>(value) * option.step_value[i].float_value),
                                                option.min_value[i].float_value, option.max_value[i].float_value);

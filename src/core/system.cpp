@@ -2288,7 +2288,7 @@ void System::UpdateDisplaySync()
   const bool video_sync_enabled = ShouldUseVSync();
   const bool syncing_to_host_vsync = (s_syncing_to_host && video_sync_enabled && s_display_all_frames);
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  Log_VerbosePrintf("Using vsync: %s", video_sync_enabled ? "YES" : "NO",
+  Log_VerbosePrintf("Using vsync: %s%s", video_sync_enabled ? "YES" : "NO",
                     syncing_to_host_vsync ? " (for throttling)" : "");
   Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
                     s_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
