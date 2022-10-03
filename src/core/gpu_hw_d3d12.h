@@ -27,6 +27,10 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
+  void UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                const void* data, u32 data_stride) override;
+  void InvalidateTextureReplacements() override;
+
 protected:
   void ClearDisplay() override;
   void UpdateDisplay() override;
@@ -42,13 +46,18 @@ protected:
   void UnmapBatchVertexPointer(u32 used_vertices) override;
   void UploadUniformBuffer(const void* data, u32 data_size) override;
   void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) override;
+  bool SetupTextureReplacementTexture() override;
 
 private:
   enum : u32
   {
     MAX_PUSH_CONSTANTS_SIZE = 64,
     TEXTURE_REPLACEMENT_BUFFER_SIZE = 64 * 1024 * 1024,
+    TEXTURE_REPLACEMENT_BATCH_TEXTURE_COUNT = 2,
   };
+
+  static constexpr DXGI_FORMAT REPLACEMENT_TEXTURE_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+
   void SetCapabilities();
   void DestroyResources();
 
@@ -68,8 +77,10 @@ private:
 
   bool CreateTextureReplacementStreamBuffer();
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+  void UpdateTextureReplacementSRV();
 
   ComPtr<ID3D12RootSignature> m_batch_root_signature;
+  ComPtr<ID3D12RootSignature> m_texture_replacement_root_signature;
   ComPtr<ID3D12RootSignature> m_single_sampler_root_signature;
 
   D3D12::Texture m_vram_texture;
@@ -107,5 +118,8 @@ private:
 
   ComPtr<ID3D12PipelineState> m_copy_pipeline;
   D3D12::Texture m_vram_write_replacement_texture;
+  D3D12::Texture m_texture_replacement_texture;
   D3D12::StreamBuffer m_texture_replacment_stream_buffer;
+  D3D12::DescriptorHandle m_texture_replacement_srv_handle;
+  D3D12::DescriptorHandle m_texture_replacement_sampler_handle;
 };

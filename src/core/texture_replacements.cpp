@@ -6,8 +6,10 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 #include "fmt/format.h"
+#include "gpu_hw.h"
 #include "host.h"
 #include "settings.h"
+#include "system.h"
 #include "xxhash.h"
 #if defined(CPU_X86) || defined(CPU_X64)
 #include "xxh_x86dispatch.h"
@@ -17,25 +19,24 @@ Log_SetChannel(TextureReplacements);
 
 TextureReplacements g_texture_replacements;
 
-static constexpr u32 VRAMRGBA5551ToRGBA8888(u16 color)
+static GPU_HW* GetHWGPU()
 {
-  u8 r = Truncate8(color & 31);
-  u8 g = Truncate8((color >> 5) & 31);
-  u8 b = Truncate8((color >> 10) & 31);
-  u8 a = Truncate8((color >> 15) & 1);
+  return static_cast<GPU_HW*>(g_gpu.get());
+}
 
-  // 00012345 -> 1234545
-  b = (b << 3) | (b & 0b111);
-  g = (g << 3) | (g & 0b111);
-  r = (r << 3) | (r & 0b111);
-  a = a ? 255 : 0;
+u32 TextureReplacements::GetScaledReplacementTextureWidth()
+{
+  return TEXTURE_REPLACEMENT_PAGE_WIDTH * g_settings.texture_replacements.replacement_texture_scale;
+}
 
-  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
+u32 TextureReplacements::GetScaledReplacementTextureHeight()
+{
+  return TEXTURE_REPLACEMENT_PAGE_HEIGHT * g_settings.texture_replacements.replacement_texture_scale;
 }
 
 std::string TextureReplacementHash::ToString() const
 {
-  return StringUtil::StdStringFromFormat("%" PRIx64 "%" PRIx64, high, low);
+  return StringUtil::StdStringFromFormat("%016" PRIx64 "%016" PRIx64, high, low);
 }
 
 bool TextureReplacementHash::ParseString(const std::string_view& sv)
@@ -57,13 +58,25 @@ TextureReplacements::TextureReplacements() = default;
 
 TextureReplacements::~TextureReplacements() = default;
 
-void TextureReplacements::SetGameID(std::string game_id)
+void TextureReplacements::InvalidateReplacementTextures()
 {
-  if (m_game_id == game_id)
-    return;
+  Assert(g_settings.texture_replacements.enable_texture_replacements);
 
-  m_game_id = game_id;
-  Reload();
+  // TODO: Clear cached textures.
+
+  if (GetHWGPU()->IsTextureReplacementEnabled())
+    GetHWGPU()->InvalidateTextureReplacements();
+}
+
+void TextureReplacements::ReuploadReplacementTextures()
+{
+  Assert(g_settings.texture_replacements.enable_texture_replacements);
+}
+
+void TextureReplacements::OnSystemReset()
+{
+  if (g_settings.texture_replacements.enable_texture_replacements)
+    InvalidateReplacementTextures();
 }
 
 const TextureReplacementTexture* TextureReplacements::GetVRAMWriteReplacement(u32 width, u32 height, const void* pixels)
@@ -77,84 +90,213 @@ const TextureReplacementTexture* TextureReplacements::GetVRAMWriteReplacement(u3
   return LoadTexture(it->second);
 }
 
-void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
+static constexpr std::array<u32, 4> s_texture_mode_shifts = {{2, 1, 0}};
+static constexpr std::array<u32, 4> s_texture_mode_revshifts = {{0, 1, 2}};
+static constexpr std::array<u32, 4> s_texture_mode_masks = {{3, 1, 0}};
+
+void TextureReplacements::TransformTextureCoordinates(GPUTextureMode mode, u32 vram_x, u32 vram_y, u32 vram_width,
+                                                      u32 vram_height, u32* out_vram_width, u32* out_vram_height,
+                                                      u32* page_index, u32* page_offset_x, u32* page_offset_y,
+                                                      u32* page_width, u32* page_height)
 {
-  std::string filename = GetVRAMWriteDumpFilename(width, height, pixels);
-  if (filename.empty())
+  const u32 shift = s_texture_mode_shifts[static_cast<u32>(mode)];
+  const u32 revshift = s_texture_mode_revshifts[static_cast<u32>(mode)];
+  const u32 page_x = vram_x / TEXTURE_REPLACEMENT_PAGE_VRAM_WIDTH;
+  const u32 page_y = vram_y / TEXTURE_REPLACEMENT_PAGE_VRAM_HEIGHT;
+
+  *page_index = GetTextureReplacementPageIndex(page_x, page_y);
+
+  *page_offset_x = (vram_x % TEXTURE_REPLACEMENT_PAGE_VRAM_WIDTH) << shift;
+  *page_offset_y = (vram_y % TEXTURE_REPLACEMENT_PAGE_VRAM_HEIGHT);
+
+  *page_width = std::min<u32>(vram_width << shift, (TEXTURE_REPLACEMENT_PAGE_WIDTH >> revshift) - *page_offset_x);
+  *page_height = std::min<u32>(vram_height, TEXTURE_REPLACEMENT_PAGE_HEIGHT - *page_offset_y);
+
+  *out_vram_width = *page_width >> shift;
+  *out_vram_height = *page_height;
+}
+
+void TextureReplacements::UntransformTextureCoordinates(GPUTextureMode mode, u32 texture_width, u32 texture_height,
+                                                        u32 vram_x, u32 vram_y, u32* out_vram_width,
+                                                        u32* out_vram_height, u32* page_index, u32* page_offset_x,
+                                                        u32* page_offset_y, u32* page_width, u32* page_height)
+{
+  const u32 shift = s_texture_mode_shifts[static_cast<u32>(mode)];
+  const u32 revshift = s_texture_mode_revshifts[static_cast<u32>(mode)];
+  const u32 page_x = vram_x / TEXTURE_REPLACEMENT_PAGE_VRAM_WIDTH;
+  const u32 page_y = vram_y / TEXTURE_REPLACEMENT_PAGE_VRAM_HEIGHT;
+
+  *page_index = GetTextureReplacementPageIndex(page_x, page_y);
+
+  *page_offset_x = (vram_x % TEXTURE_REPLACEMENT_PAGE_VRAM_WIDTH) << shift;
+  *page_offset_y = (vram_y % TEXTURE_REPLACEMENT_PAGE_VRAM_HEIGHT);
+
+  *page_width = std::min<u32>(texture_width, (TEXTURE_REPLACEMENT_PAGE_WIDTH >> revshift) - *page_offset_x);
+  *page_height = std::min<u32>(texture_height, TEXTURE_REPLACEMENT_PAGE_HEIGHT - *page_offset_y);
+
+  *out_vram_width = (*page_width + s_texture_mode_masks[static_cast<u32>(mode)]) >> shift;
+  *out_vram_height = *page_height;
+}
+
+void TextureReplacements::InvalidateReplacementTexture(GPUTextureMode mode, u32 vram_x, u32 vram_y, u32 width,
+                                                       u32 height)
+{
+  const u32 scale = g_settings.texture_replacements.replacement_texture_scale;
+
+  while (height > 0)
+  {
+    u32 current_x = vram_x;
+    u32 remaining_width = width;
+    u32 consume_height = height;
+
+    while (remaining_width > 0)
+    {
+      u32 consume_width, page_index, page_offset_x, page_offset_y, page_width, page_height;
+      TransformTextureCoordinates(mode, current_x, vram_y, remaining_width, height, &consume_width, &consume_height,
+                                  &page_index, &page_offset_x, &page_offset_y, &page_width, &page_height);
+
+      const u32 dummy_data_size = (page_width * scale) * (page_height * scale);
+      if (m_texture_replacement_invalidate_buffer.size() < dummy_data_size)
+        m_texture_replacement_invalidate_buffer.resize(dummy_data_size);
+
+      GetHWGPU()->UploadTextureReplacement(page_index, page_offset_x * scale, page_offset_y * scale, page_width * scale,
+                                           page_height * scale, m_texture_replacement_invalidate_buffer.data(),
+                                           page_width * scale * sizeof(u32));
+
+      current_x += consume_width;
+      remaining_width -= consume_width;
+    }
+
+    vram_y += consume_height;
+    height -= consume_height;
+  }
+}
+
+void TextureReplacements::UploadReplacementTexture(const TextureReplacementTexture* texture,
+                                                   const ReplacementEntry& entry, u32 vram_x, u32 vram_y)
+{
+  const u32 scale = g_settings.texture_replacements.replacement_texture_scale;
+  const u32 unscaled_width = (entry.width << s_texture_mode_shifts[static_cast<u32>(entry.mode)]);
+  const u32 scaled_width = unscaled_width * scale;
+  const u32 scaled_height = entry.height * scale;
+
+  if (texture->GetWidth() != scaled_width || texture->GetHeight() != scaled_height)
+  {
+    Log_VerbosePrintf("Resizing replacement texture from %ux%u to %ux%u", texture->GetWidth(), texture->GetHeight(),
+                      scaled_width, scaled_height);
+
+    TextureReplacementTexture resized_texture;
+    resized_texture.ResizeFrom(texture, scaled_width, scaled_height);
+    UploadReplacementTexture(&resized_texture, entry, vram_x, vram_y);
     return;
-
-  Common::RGBA8Image image;
-  image.SetSize(width, height);
-
-  const u16* src_pixels = reinterpret_cast<const u16*>(pixels);
-
-  for (u32 y = 0; y < height; y++)
-  {
-    for (u32 x = 0; x < width; x++)
-    {
-      image.SetPixel(x, y, VRAMRGBA5551ToRGBA8888(*src_pixels));
-      src_pixels++;
-    }
   }
 
-  if (g_settings.texture_replacements.dump_vram_write_force_alpha_channel)
+  // this is the tricky part
+  u32 current_y = vram_y + entry.offset_y;
+  u32 remaining_height = entry.height;
+  u32 texture_y = 0;
+
+  while (remaining_height > 0)
   {
-    for (u32 y = 0; y < height; y++)
+    u32 current_x = vram_x + entry.offset_x;
+    u32 remaining_width = unscaled_width;
+    u32 consume_height = remaining_height;
+
+    u32 texture_x = 0;
+
+    while (remaining_width > 0)
     {
-      for (u32 x = 0; x < width; x++)
-        image.SetPixel(x, y, image.GetPixel(x, y) | 0xFF000000u);
+      u32 consume_width, page_index, page_offset_x, page_offset_y, page_width, page_height;
+      UntransformTextureCoordinates(entry.mode, remaining_width, remaining_height, current_x, current_y, &consume_width,
+                                    &consume_height, &page_index, &page_offset_x, &page_offset_y, &page_width,
+                                    &page_height);
+
+      const u32 upload_width = std::min(page_width, remaining_width);
+      const u32 upload_height = std::min(page_height, remaining_height);
+      const u32 scaled_upload_width = upload_width * scale;
+      const u32 scaled_upload_height = upload_height * scale;
+      const u32 scaled_page_offset_x = page_offset_x * scale;
+      const u32 scaled_page_offset_y = page_offset_y * scale;
+
+      Log_InfoPrintf("Uploading %ux%u to replacement page %u @ %u,%u", scaled_upload_width, scaled_upload_height,
+                     page_index, scaled_page_offset_x, scaled_page_offset_y);
+
+      GetHWGPU()->UploadTextureReplacement(page_index, scaled_page_offset_x, scaled_page_offset_y, scaled_upload_width,
+                                           scaled_upload_height, texture->GetRowPixels(texture_y) + texture_x,
+                                           texture->GetPitch());
+
+      texture_x += scaled_upload_width;
+      remaining_width -= upload_width;
+      current_x += consume_width;
+      consume_height = upload_height;
     }
+
+    remaining_height -= consume_height;
+    texture_y += consume_height;
+    vram_y += consume_height;
+  }
+}
+
+void TextureReplacements::UploadReplacementTextures(u32 vram_x, u32 vram_y, u32 width, u32 height, const void* pixels)
+{
+  const TextureReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
+
+  const auto [lower, upper] = m_texture_replacements.equal_range(hash);
+  if (lower == upper)
+  {
+    InvalidateReplacementTexture(GPUTextureMode::Palette4Bit, vram_x, vram_y, width, height);
+    return;
   }
 
-  Log_InfoPrintf("Dumping %ux%u VRAM write to '%s'", width, height, filename.c_str());
-  if (!image.SaveToFile(filename.c_str()))
-    Log_ErrorPrintf("Failed to dump %ux%u VRAM write to '%s'", width, height, filename.c_str());
+  for (auto iter = lower; iter != upper; ++iter)
+  {
+    const ReplacementEntry& entry = iter->second;
+
+    const TextureReplacementTexture* texture = LoadTexture(entry.filename);
+    if (!texture)
+    {
+      InvalidateReplacementTexture(entry.mode, vram_x + entry.offset_x, vram_y + entry.offset_y, entry.width,
+                                   entry.height);
+      continue;
+    }
+
+    UploadReplacementTexture(texture, entry, vram_x, vram_y);
+  }
 }
 
 void TextureReplacements::Shutdown()
 {
   m_texture_cache.clear();
   m_vram_write_replacements.clear();
-  m_game_id.clear();
+  m_texture_replacements.clear();
+  decltype(m_texture_replacement_invalidate_buffer)().swap(m_texture_replacement_invalidate_buffer);
 }
 
 std::string TextureReplacements::GetSourceDirectory() const
 {
-  return Path::Combine(EmuFolders::Textures, m_game_id);
+  const std::string& code = System::GetRunningCode();
+  if (code.empty())
+    return EmuFolders::Textures;
+  else
+    return Path::Combine(EmuFolders::Textures, code);
 }
 
-std::string TextureReplacements::GetDumpDirectory() const
-{
-  return Path::Combine(EmuFolders::Dumps, Path::Combine("textures", m_game_id));
-}
-
-TextureReplacementHash TextureReplacements::GetVRAMWriteHash(u32 width, u32 height, const void* pixels) const
+TextureReplacementHash TextureReplacements::GetVRAMWriteHash(u32 width, u32 height, const void* pixels)
 {
   XXH128_hash_t hash = XXH3_128bits(pixels, width * height * sizeof(u16));
   return {hash.low64, hash.high64};
 }
 
-std::string TextureReplacements::GetVRAMWriteDumpFilename(u32 width, u32 height, const void* pixels) const
-{
-  if (m_game_id.empty())
-    return {};
-
-  const TextureReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
-  const std::string dump_directory(GetDumpDirectory());
-  std::string filename(Path::Combine(dump_directory, fmt::format("vram-write-{}.png", hash.ToString())));
-
-  if (FileSystem::FileExists(filename.c_str()))
-    return {};
-
-  if (!FileSystem::EnsureDirectoryExists(dump_directory.c_str(), false))
-    return {};
-
-  return filename;
-}
-
 void TextureReplacements::Reload()
 {
   m_vram_write_replacements.clear();
+  m_texture_replacements.clear();
+
+  if (!g_gpu || !g_gpu->IsHardwareRenderer())
+  {
+    m_texture_cache.clear();
+    return;
+  }
 
   if (g_settings.texture_replacements.AnyReplacementsEnabled())
     FindTextures(GetSourceDirectory());
@@ -163,6 +305,9 @@ void TextureReplacements::Reload()
     PreloadTextures();
 
   PurgeUnreferencedTexturesFromCache();
+
+  if (g_settings.texture_replacements.enable_texture_replacements)
+    ReuploadReplacementTextures();
 }
 
 void TextureReplacements::PurgeUnreferencedTexturesFromCache()
@@ -177,13 +322,24 @@ void TextureReplacements::PurgeUnreferencedTexturesFromCache()
       old_map.erase(it2);
     }
   }
+
+  for (const auto& it : m_texture_replacements)
+  {
+    auto it2 = old_map.find(it.second.filename);
+    if (it2 != old_map.end())
+    {
+      m_texture_cache[it.second.filename] = std::move(it2->second);
+      old_map.erase(it2);
+    }
+  }
 }
 
 bool TextureReplacements::ParseReplacementFilename(const std::string& filename,
                                                    TextureReplacementHash* replacement_hash,
-                                                   ReplacmentType* replacement_type)
+                                                   ReplacmentType* replacement_type, GPUTextureMode* out_mode,
+                                                   u16* out_offset_x, u16* out_offset_y, u16* out_width,
+                                                   u16* out_height)
 {
-  const char* extension = std::strrchr(filename.c_str(), '.');
   const char* title = std::strrchr(filename.c_str(), '/');
 #ifdef _WIN32
   const char* title2 = std::strrchr(filename.c_str(), '\\');
@@ -191,24 +347,72 @@ bool TextureReplacements::ParseReplacementFilename(const std::string& filename,
     title = title2;
 #endif
 
-  if (!title || !extension)
+  if (!title)
     return false;
 
   title++;
 
   const char* hashpart;
+  const char* extension;
 
   if (StringUtil::Strncasecmp(title, "vram-write-", 11) == 0)
   {
     hashpart = title + 11;
+    if (std::strlen(hashpart) < 32)
+      return false;
+
+    if (!replacement_hash->ParseString(std::string_view(hashpart, 32)))
+      return false;
+
     *replacement_type = ReplacmentType::VRAMWrite;
+    *out_mode = GPUTextureMode::Direct16Bit;
+    *out_offset_x = 0;
+    *out_offset_y = 0;
+    *out_width = 0;
+    *out_height = 0;
+
+    extension = hashpart + 32;
+  }
+  else if (StringUtil::Strncasecmp(title, "texture-", 8) == 0)
+  {
+    // TODO: Make this much better...
+    hashpart = title + 8;
+    if (std::strlen(hashpart) < 42)
+      return false;
+
+    if (!replacement_hash->ParseString(std::string_view(hashpart, 32)))
+      return false;
+
+    const char* datapart = hashpart + 33;
+    unsigned file_mode, file_offset_x, file_offset_y, file_width, file_height;
+    if (std::sscanf(datapart, "%u-%u-%u-%u-%u", &file_mode, &file_offset_x, &file_offset_y, &file_width,
+                    &file_height) != 5)
+    {
+      return false;
+    }
+
+    if (file_mode > static_cast<unsigned>(GPUTextureMode::Reserved_Direct16Bit) || file_offset_x >= VRAM_WIDTH ||
+        (file_offset_x + file_width) > VRAM_WIDTH || file_offset_y >= VRAM_HEIGHT ||
+        (file_offset_y + file_height) > VRAM_HEIGHT)
+    {
+      return false;
+    }
+
+    *replacement_type = ReplacmentType::Texture;
+    *out_mode = static_cast<GPUTextureMode>(file_mode);
+    *out_offset_x = static_cast<u16>(file_offset_x);
+    *out_offset_y = static_cast<u16>(file_offset_y);
+    *out_width = static_cast<u16>(file_width);
+    *out_height = static_cast<u16>(file_height);
+
+    extension = std::strchr(datapart, '.');
   }
   else
   {
     return false;
   }
 
-  if (!replacement_hash->ParseString(std::string_view(hashpart, static_cast<size_t>(extension - hashpart))))
+  if (!extension || *extension == '\0')
     return false;
 
   extension++;
@@ -228,8 +432,12 @@ bool TextureReplacements::ParseReplacementFilename(const std::string& filename,
 
 void TextureReplacements::FindTextures(const std::string& dir)
 {
+  const bool recursive = !System::GetRunningCode().empty();
+
   FileSystem::FindResultsArray files;
-  FileSystem::FindFiles(dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE, &files);
+  FileSystem::FindFiles(dir.c_str(), "*",
+                        recursive ? (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE) : (FILESYSTEM_FIND_FILES),
+                        &files);
 
   for (FILESYSTEM_FIND_DATA& fd : files)
   {
@@ -238,13 +446,22 @@ void TextureReplacements::FindTextures(const std::string& dir)
 
     TextureReplacementHash hash;
     ReplacmentType type;
-    if (!ParseReplacementFilename(fd.FileName, &hash, &type))
+    GPUTextureMode texture_mode;
+    u16 texture_offset_x, texture_offset_y;
+    u16 texture_width, texture_height;
+    if (!ParseReplacementFilename(fd.FileName, &hash, &type, &texture_mode, &texture_offset_x, &texture_offset_y,
+                                  &texture_width, &texture_height))
+    {
       continue;
+    }
 
     switch (type)
     {
       case ReplacmentType::VRAMWrite:
       {
+        if (!g_settings.texture_replacements.enable_vram_write_replacements)
+          continue;
+
         auto it = m_vram_write_replacements.find(hash);
         if (it != m_vram_write_replacements.end())
         {
@@ -255,10 +472,30 @@ void TextureReplacements::FindTextures(const std::string& dir)
         m_vram_write_replacements.emplace(hash, std::move(fd.FileName));
       }
       break;
+
+      case ReplacmentType::Texture:
+      {
+        if (!g_settings.texture_replacements.enable_texture_replacements)
+          continue;
+
+        ReplacementEntry entry;
+        entry.filename = std::move(fd.FileName);
+        entry.mode = texture_mode;
+        entry.offset_x = texture_offset_x;
+        entry.offset_y = texture_offset_y;
+        entry.width = texture_width;
+        entry.height = texture_height;
+        m_texture_replacements.emplace(hash, std::move(entry));
+      }
+      break;
     }
   }
 
-  Log_InfoPrintf("Found %zu replacement VRAM writes for '%s'", m_vram_write_replacements.size(), m_game_id.c_str());
+  if (g_settings.texture_replacements.enable_vram_write_replacements)
+    Log_InfoPrintf("Found %zu replacement VRAM writes", m_vram_write_replacements.size());
+
+  if (g_settings.texture_replacements.enable_texture_replacements)
+    Log_InfoPrintf("Found %zu replacement textures", m_texture_replacements.size());
 }
 
 const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::string& filename)

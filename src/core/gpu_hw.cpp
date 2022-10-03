@@ -9,6 +9,8 @@
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
+#include "texture_dumper.h"
+#include "texture_replacements.h"
 #include "util/state_wrapper.h"
 #include <cmath>
 #include <sstream>
@@ -63,6 +65,7 @@ bool GPU_HW::Initialize()
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
+  m_texture_replacements = g_settings.texture_replacements.enable_texture_replacements;
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
 
   if (m_multisamples != g_settings.gpu_multisamples)
@@ -88,6 +91,12 @@ bool GPU_HW::Initialize()
     Host::AddOSDMessage(
       Host::TranslateStdString(
         "OSDMessage", "Adaptive downsampling is not supported with the current renderer, using box filter instead."),
+      20.0f);
+  }
+  if (m_texture_replacements && !SetupTextureReplacementTexture())
+  {
+    Host::AddOSDMessage(
+      Host::TranslateStdString("OSDMessage", "Failed to setup texture replacements, original textures will be used."),
       20.0f);
   }
 
@@ -148,7 +157,8 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
      m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
-     m_downsample_mode != downsample_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
+     m_downsample_mode != downsample_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer()) ||
+    m_texture_replacements != g_settings.texture_replacements.enable_texture_replacements;
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -183,6 +193,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = use_uv_limits;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
+  m_texture_replacements = g_settings.texture_replacements.enable_texture_replacements;
   m_downsample_mode = downsample_mode;
 
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
@@ -194,6 +205,16 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
     m_batch.use_depth_buffer = false;
     if (m_pgxp_depth_buffer)
       ClearDepthBuffer();
+  }
+
+  if (!SetupTextureReplacementTexture() && m_texture_replacements)
+  {
+    Host::AddOSDMessage(
+      Host::TranslateStdString("OSDMessage", "Failed to setup texture replacements, original textures will be used."),
+      20.0f);
+
+    m_texture_replacements = false;
+    *shaders_changed = true;
   }
 
   UpdateSoftwareRenderer(true);
@@ -627,8 +648,20 @@ void GPU_HW::LoadVertices()
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
-      if (m_using_uv_limits && textured)
-        ComputePolygonUVLimits(vertices.data(), num_vertices);
+      if (textured)
+      {
+        if (m_using_uv_limits)
+          ComputePolygonUVLimits(vertices.data(), num_vertices);
+        if (g_settings.texture_replacements.dump_textures)
+        {
+          if (!m_using_uv_limits)
+            ComputePolygonUVLimits(vertices.data(), num_vertices);
+
+          TextureDumper::AddDraw(m_draw_mode.mode_reg.bits, m_draw_mode.palette_reg, vertices[0].uv_limits & 0xFF,
+                                 (vertices[0].uv_limits >> 8) & 0xFF, (vertices[0].uv_limits >> 16) & 0xFF,
+                                 (vertices[0].uv_limits >> 24), rc.transparency_enable);
+        }
+      }
 
       if (!IsDrawingAreaIsValid())
         return;
@@ -764,6 +797,35 @@ void GPU_HW::LoadVertices()
 
       if (!IsDrawingAreaIsValid())
         return;
+
+      if (rc.texture_enable && g_settings.texture_replacements.dump_textures)
+      {
+#if 0
+        const s32 offset_x =
+          (pos_x < static_cast<s32>(m_drawing_area.left)) ? (static_cast<s32>(m_drawing_area.left) - pos_x) : 0;
+        const s32 offset_y =
+          (pos_y < static_cast<s32>(m_drawing_area.top)) ? (static_cast<s32>(m_drawing_area.top) - pos_y) : 0;
+        const s32 end_x = pos_x + rectangle_width;
+        const s32 end_y = pos_y + rectangle_height;
+        const s32 reduce_x =
+          (end_x > static_cast<s32>(m_drawing_area.right)) ? (end_x - static_cast<s32>(m_drawing_area.right)) : 0;
+        const s32 reduce_y =
+          (end_y > static_cast<s32>(m_drawing_area.bottom)) ? (end_y - static_cast<s32>(m_drawing_area.bottom)) : 0;
+
+        if ((offset_x + reduce_x) <= rectangle_width && (offset_y + reduce_y) <= rectangle_height)
+        {
+          TextureDumper::AddDraw(m_draw_mode.mode_reg.bits, m_draw_mode.palette_reg,
+                                 static_cast<s32>(orig_tex_left) + offset_x, static_cast<s32>(orig_tex_top) + offset_y,
+                                 static_cast<s32>(orig_tex_left) + offset_x + (rectangle_width - offset_x - reduce_x),
+                                 static_cast<s32>(orig_tex_top) + offset_y + (rectangle_height - offset_y - reduce_y),
+                                 rc.transparency_enable);
+        }
+#else
+        TextureDumper::AddDraw(m_draw_mode.mode_reg.bits, m_draw_mode.palette_reg, orig_tex_left, orig_tex_top,
+                               orig_tex_left + rectangle_width, orig_tex_top + rectangle_height,
+                               rc.transparency_enable);
+#endif
+      }
 
       // we can split the rectangle up into potentially 8 quads
       SetBatchDepthBuffer(false);

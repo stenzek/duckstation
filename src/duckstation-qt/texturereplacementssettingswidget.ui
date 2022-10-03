@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TextureReplacementSettingsWidget</class>
+ <widget class="QWidget" name="TextureReplacementSettingsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>442</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Texture Replacement</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="enableTextureReplacement">
+        <property name="text">
+         <string>Enable Texture Replacement</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="enableVRAMWriteReplacement">
+        <property name="text">
+         <string>Enable VRAM Write Replacements (backgrounds in supported games)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Texture Replacement Resolution:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="textureReplacementScale">
+        <item>
+         <property name="text">
+          <string>Auto (Match Rendering Resolution)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>1x (256x256)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2x (512x512)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3x (768x768)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4x (1024x1024)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5x (1280x1280)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6x (1536x1536)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7x (1792x1792)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8x (2048x2048)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9x (2304x2304)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10x (2560x2560)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QLabel" name="vramUsage">
+        <property name="text">
+         <string>Texture replacements will be up to 1024x1024, and use 8MB of video memory.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="preloadTextureReplacements">
+        <property name="text">
+         <string>Preload Texture Replacements</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>VRAM Write Dumping</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="enableVRAMWriteDumping">
+        <property name="text">
+         <string>Enable VRAM Write Dumping</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="VRAMWriteDumpingClearMaskBit">
+        <property name="text">
+         <string>Clear Mask Bit (make opaque)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="dumpingThreshold">
+        <property name="text">
+         <string>Dumping Threshold:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,1">
+        <item>
+         <widget class="QSpinBox" name="VRAMWriteDumpingWidthThreshold">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>x</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="VRAMWriteDumpingHeightThreshold">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>512</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Texture Dumping</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="textureDumpForceOpaque">
+        <property name="text">
+         <string>Clear Transparency (make opaque)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="textureDumpCLUTGroups">
+        <property name="text">
+         <string>Dump Textures By Palette/CLUT</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>&lt;b&gt;WARNING: &lt;/b&gt;Texture dumping can create a large number of files on your disk, slowing down emulation and increasing wear on SSDs.</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="maxMergeeSize">
+        <property name="text">
+         <string>Maximum VRAM Write Mergee Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="maxMergeSize">
+        <property name="text">
+         <string>Maximum VRAM Write Merge Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,1">
+        <item>
+         <widget class="QSpinBox" name="textureDumpMaxMergeWidth">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>x</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="textureDumpMaxMergeHeight">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>512</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,1">
+        <item>
+         <widget class="QSpinBox" name="textureDumpMaxMergeeWidth">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1024</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>x</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="textureDumpMaxMergeeHeight">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>512</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="openDumpDirectory">
+          <property name="text">
+           <string>Open Dump Directory</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resetToDefaults">
+          <property name="text">
+           <string>Reset to Defaults</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="textureDumpVRAMWriteGroups">
+        <property name="text">
+         <string>Dump Merged Textures</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

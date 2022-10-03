@@ -49,6 +49,7 @@
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="settingsdialog.cpp" />
+    <ClCompile Include="texturereplacementssettingswidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="aboutdialog.h" />
@@ -99,6 +100,7 @@
     <QtMoc Include="foldersettingswidget.h" />
     <ClInclude Include="qtutils.h" />
     <QtMoc Include="settingsdialog.h" />
+    <QtMoc Include="texturereplacementssettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="aboutdialog.ui">
@@ -215,6 +217,9 @@
     <QtUi Include="coverdownloaddialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="texturereplacementssettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -266,6 +271,7 @@
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_texturereplacementssettingswidget.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>

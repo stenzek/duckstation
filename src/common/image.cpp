@@ -186,7 +186,7 @@ void RGBA8Image::Resize(u32 new_width, u32 new_height)
   SetPixels(new_width, new_height, std::move(resized_texture_data));
 }
 
-void RGBA8Image::Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height)
+void RGBA8Image::ResizeFrom(const RGBA8Image* src_image, u32 new_width, u32 new_height)
 {
   if (src_image->m_width == new_width && src_image->m_height == new_height)
   {

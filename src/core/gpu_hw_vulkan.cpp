@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
+#include "common/string_util.h"
 #include "common/timer.h"
 #include "common/vulkan/builders.h"
 #include "common/vulkan/context.h"
@@ -197,8 +198,10 @@ void GPU_HW_Vulkan::RestoreGraphicsAPIState()
   VkDeviceSize vertex_buffer_offset = 0;
   vkCmdBindVertexBuffers(cmdbuf, 0, 1, m_vertex_stream_buffer.GetBufferPointer(), &vertex_buffer_offset);
   Vulkan::Util::SetViewport(cmdbuf, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
-  vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_batch_pipeline_layout, 0, 1,
-                          &m_batch_descriptor_set, 1, &m_current_uniform_buffer_offset);
+  vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          m_texture_replacements ? m_texture_replacement_batch_pipeline_layout :
+                                                   m_batch_pipeline_layout,
+                          0, 1, &m_batch_descriptor_set, 1, &m_current_uniform_buffer_offset);
   SetScissorFromDrawingArea();
 }
 
@@ -239,6 +242,83 @@ void GPU_HW_Vulkan::UpdateSettings()
     UpdateDisplay();
     ResetGraphicsAPIState();
   }
+}
+
+bool GPU_HW_Vulkan::SetupTextureReplacementTexture()
+{
+  const bool is_enabled = m_texture_replacement_texture.IsValid();
+  if (is_enabled == m_texture_replacements)
+  {
+    if (!is_enabled ||
+        (m_texture_replacement_texture.GetWidth() == g_texture_replacements.GetScaledReplacementTextureWidth() &&
+         m_texture_replacement_texture.GetHeight() == g_texture_replacements.GetScaledReplacementTextureHeight()))
+    {
+      // no changes
+      return true;
+    }
+  }
+
+  g_vulkan_context->ExecuteCommandBuffer(true);
+  m_texture_replacement_texture.Destroy(false);
+
+  if (m_texture_replacements)
+  {
+    const u32 width = g_texture_replacements.GetScaledReplacementTextureWidth();
+    const u32 height = g_texture_replacements.GetScaledReplacementTextureHeight();
+    if (!m_texture_replacement_texture.Create(width, height, 1, TextureReplacements::TEXTURE_REPLACEMENT_PAGE_COUNT,
+                                              VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT,
+                                              VK_IMAGE_VIEW_TYPE_2D_ARRAY, VK_IMAGE_TILING_OPTIMAL,
+                                              VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+    {
+      return false;
+    }
+
+    const VkClearColorValue cv = {};
+    const VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0,
+                                           m_texture_replacement_texture.GetLayers()};
+    m_texture_replacement_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkCmdClearColorImage(g_vulkan_context->GetCurrentCommandBuffer(), m_texture_replacement_texture.GetImage(),
+                         m_texture_replacement_texture.GetLayout(), &cv, 1, &range);
+    m_texture_replacement_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  if (m_batch_descriptor_set != VK_NULL_HANDLE && !CreateBatchDesciptorSet(m_texture_replacements))
+  {
+    if (!CreateBatchDesciptorSet(false))
+      Panic("Failed to create non-texture-replacement descriptor set");
+
+    return false;
+  }
+
+  if (m_texture_replacements)
+    g_texture_replacements.ReuploadReplacementTextures();
+
+  return true;
+}
+
+void GPU_HW_Vulkan::UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                             const void* data, u32 data_stride)
+{
+  // buffer -> texture
+  EndRenderPass();
+  m_texture_replacement_texture.Update(page_x, page_y, data_width, data_height, 0, page_index, data, data_stride);
+}
+
+void GPU_HW_Vulkan::InvalidateTextureReplacements()
+{
+  if (!m_texture_replacement_texture.IsValid())
+    return;
+
+  const VkClearColorValue cv = {};
+  const VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, m_texture_replacement_texture.GetLayers()};
+  m_texture_replacement_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  vkCmdClearColorImage(g_vulkan_context->GetCurrentCommandBuffer(), m_texture_replacement_texture.GetImage(),
+                       m_texture_replacement_texture.GetLayout(), &cv, 1, &range);
+  m_texture_replacement_texture.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(),
+                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void GPU_HW_Vulkan::MapBatchVertexPointer(u32 required_vertices)
@@ -287,7 +367,9 @@ void GPU_HW_Vulkan::UploadUniformBuffer(const void* data, u32 data_size)
   m_uniform_stream_buffer.CommitMemory(data_size);
 
   vkCmdBindDescriptorSets(g_vulkan_context->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          m_batch_pipeline_layout, 0, 1, &m_batch_descriptor_set, 1, &m_current_uniform_buffer_offset);
+                          m_texture_replacements ? m_texture_replacement_batch_pipeline_layout :
+                                                   m_batch_pipeline_layout,
+                          0, 1, &m_batch_descriptor_set, 1, &m_current_uniform_buffer_offset);
 }
 
 void GPU_HW_Vulkan::SetCapabilities()
@@ -369,9 +451,11 @@ void GPU_HW_Vulkan::DestroyResources()
   Vulkan::Util::SafeDestroyPipelineLayout(m_vram_write_pipeline_layout);
   Vulkan::Util::SafeDestroyPipelineLayout(m_single_sampler_pipeline_layout);
   Vulkan::Util::SafeDestroyPipelineLayout(m_no_samplers_pipeline_layout);
+  Vulkan::Util::SafeDestroyPipelineLayout(m_texture_replacement_batch_pipeline_layout);
   Vulkan::Util::SafeDestroyPipelineLayout(m_batch_pipeline_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_vram_write_descriptor_set_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_single_sampler_descriptor_set_layout);
+  Vulkan::Util::SafeDestroyDescriptorSetLayout(m_texture_replacement_batch_descriptor_set_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_batch_descriptor_set_layout);
   Vulkan::Util::SafeDestroySampler(m_point_sampler);
   Vulkan::Util::SafeDestroySampler(m_linear_sampler);
@@ -438,6 +522,17 @@ bool GPU_HW_Vulkan::CreatePipelineLayouts()
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_batch_descriptor_set_layout,
                               "Batch Descriptor Set Layout");
 
+  dslbuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
+                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+  dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  dslbuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+  m_texture_replacement_batch_descriptor_set_layout = dslbuilder.Create(device);
+  if (m_texture_replacement_batch_descriptor_set_layout == VK_NULL_HANDLE)
+    return false;
+
+  Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_texture_replacement_batch_descriptor_set_layout,
+                              "Batch Replacement Descriptor Set Layout");
+
   // textures start at 1
   dslbuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
   m_single_sampler_descriptor_set_layout = dslbuilder.Create(device);
@@ -462,6 +557,11 @@ bool GPU_HW_Vulkan::CreatePipelineLayouts()
   if (m_batch_pipeline_layout == VK_NULL_HANDLE)
     return false;
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_batch_pipeline_layout, "Batch Pipeline Layout");
+
+  plbuilder.AddDescriptorSet(m_texture_replacement_batch_descriptor_set_layout);
+  m_texture_replacement_batch_pipeline_layout = plbuilder.Create(device);
+  if (m_texture_replacement_batch_pipeline_layout == VK_NULL_HANDLE)
+    return false;
 
   plbuilder.AddDescriptorSet(m_single_sampler_descriptor_set_layout);
   plbuilder.AddPushConstants(VK_SHADER_STAGE_FRAGMENT_BIT, 0, MAX_PUSH_CONSTANTS_SIZE);
@@ -663,22 +763,20 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   m_vram_depth_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   m_vram_read_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+  if (!CreateBatchDesciptorSet(m_texture_replacements))
+    return false;
+
   Vulkan::DescriptorSetUpdateBuilder dsubuilder;
 
-  m_batch_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_batch_descriptor_set_layout);
   m_vram_copy_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
   m_vram_read_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
   m_display_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(m_single_sampler_descriptor_set_layout);
-  if (m_batch_descriptor_set == VK_NULL_HANDLE || m_vram_copy_descriptor_set == VK_NULL_HANDLE ||
-      m_vram_read_descriptor_set == VK_NULL_HANDLE || m_display_descriptor_set == VK_NULL_HANDLE)
+  if (m_vram_copy_descriptor_set == VK_NULL_HANDLE || m_vram_read_descriptor_set == VK_NULL_HANDLE ||
+      m_display_descriptor_set == VK_NULL_HANDLE)
   {
     return false;
   }
 
-  dsubuilder.AddBufferDescriptorWrite(m_batch_descriptor_set, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-                                      m_uniform_stream_buffer.GetBuffer(), 0, sizeof(BatchUBOData));
-  dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_batch_descriptor_set, 1, m_vram_read_texture.GetView(),
-                                                    m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_vram_copy_descriptor_set, 1, m_vram_read_texture.GetView(),
                                                     m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_vram_read_descriptor_set, 1, m_vram_texture.GetView(),
@@ -787,6 +885,33 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
 
   ClearDisplay();
   SetFullVRAMDirtyRectangle();
+  return true;
+}
+
+bool GPU_HW_Vulkan::CreateBatchDesciptorSet(bool texture_replacements)
+{
+  if (m_batch_descriptor_set != VK_NULL_HANDLE)
+    g_vulkan_context->FreeGlobalDescriptorSet(m_batch_descriptor_set);
+
+  m_batch_descriptor_set = g_vulkan_context->AllocateGlobalDescriptorSet(
+    texture_replacements ? m_texture_replacement_batch_descriptor_set_layout : m_batch_descriptor_set_layout);
+  if (m_batch_descriptor_set == VK_NULL_HANDLE)
+    return false;
+
+  Vulkan::DescriptorSetUpdateBuilder dsubuilder;
+  dsubuilder.AddBufferDescriptorWrite(m_batch_descriptor_set, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+                                      m_uniform_stream_buffer.GetBuffer(), 0, sizeof(BatchUBOData));
+  dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_batch_descriptor_set, 1, m_vram_read_texture.GetView(),
+                                                    m_point_sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  if (texture_replacements)
+  {
+    Assert(m_texture_replacement_texture.IsValid());
+    dsubuilder.AddCombinedImageSamplerDescriptorWrite(m_batch_descriptor_set, 2,
+                                                      m_texture_replacement_texture.GetView(), m_point_sampler,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  dsubuilder.Update(g_vulkan_context->GetDevice());
   return true;
 }
 
@@ -958,7 +1083,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
         {
           const std::string fs = shadergen.GenerateBatchFragmentShader(
             static_cast<BatchRenderMode>(render_mode), static_cast<GPUTextureMode>(texture_mode),
-            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing));
+            ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing), m_texture_replacements);
 
           VkShaderModule shader = g_vulkan_shader_cache->GetFragmentShader(fs);
           if (shader == VK_NULL_HANDLE)
@@ -990,7 +1115,8 @@ bool GPU_HW_Vulkan::CompilePipelines()
                 VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_LESS_OR_EQUAL};
               const bool textured = (static_cast<GPUTextureMode>(texture_mode) != GPUTextureMode::Disabled);
 
-              gpbuilder.SetPipelineLayout(m_batch_pipeline_layout);
+              gpbuilder.SetPipelineLayout(m_texture_replacements ? m_texture_replacement_batch_pipeline_layout :
+                                                                   m_batch_pipeline_layout);
               gpbuilder.SetRenderPass(m_vram_render_pass, 0);
 
               gpbuilder.AddVertexBuffer(0, sizeof(BatchVertex), VK_VERTEX_INPUT_RATE_VERTEX);
@@ -1618,7 +1744,7 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
   GPU_HW::UpdateVRAM(bounds.left, bounds.top, bounds.GetWidth(), bounds.GetHeight(), data, set_mask, check_mask);
 
-  if (!check_mask)
+  if (!check_mask && !IsFullVRAMUpload(x, y, width, height))
   {
     const TextureReplacementTexture* rtex = g_texture_replacements.GetVRAMWriteReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
@@ -1626,6 +1752,9 @@ void GPU_HW_Vulkan::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     {
       return;
     }
+
+    if (m_texture_replacements)
+      g_texture_replacements.UploadReplacementTextures(x, y, width, height, data);
   }
 
   const u32 data_size = width * height * sizeof(u16);

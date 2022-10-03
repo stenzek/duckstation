@@ -18,6 +18,7 @@
 #include "memorycardsettingswidget.h"
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
+#include "texturereplacementssettingswidget.h"
 #include "util/ini_settings_interface.h"
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
@@ -103,6 +104,11 @@ void SettingsDialog::addPages()
     QStringLiteral("paint-fill"),
     tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
        "to the original console. Mouse over each option for additional information."));
+  addWidget(
+    m_texture_replacement_settings = new TextureReplacementSettingsWidget(this, m_ui.settingsContainer),
+    tr("Texture Replacements"), QStringLiteral("pantone-line"),
+    tr(
+      "<strong>Texture Replacement Settings</strong><hr>WRITE ME! Mouse over each option for additional information."));
   if (!isPerGameSettings())
   {
     addWidget(

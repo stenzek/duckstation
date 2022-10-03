@@ -258,21 +258,6 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
                        static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
 
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
-                        "TextureReplacements", "EnableVRAMWriteReplacements", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Preload Texture Replacements"), "TextureReplacements",
-                        "PreloadTextures", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Dump Replaceable VRAM Writes"), "TextureReplacements",
-                        "DumpVRAMWrites", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Set Dumped VRAM Write Alpha Channel"),
-                        "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Width"), "TextureReplacements",
-                         "DumpVRAMWriteWidthThreshold", 1, VRAM_WIDTH,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Minimum Dumped VRAM Write Height"), "TextureReplacements",
-                         "DumpVRAMWriteHeightThreshold", 1, VRAM_HEIGHT,
-                         Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
-
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 100,
                          10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100, 10000,
@@ -313,14 +298,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);             // Recompiler memory exceptions
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);              // Recompiler block linking
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Set dumped VRAM write alpha channel
-    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
-    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
@@ -356,12 +333,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "RecompilerMemoryExceptions");
   sif->DeleteValue("CPU", "RecompilerBlockLinking");
   sif->DeleteValue("CPU", "FastmemMode");
-  sif->DeleteValue("TextureReplacements", "EnableVRAMWriteReplacements");
-  sif->DeleteValue("TextureReplacements", "PreloadTextures");
-  sif->DeleteValue("TextureReplacements", "DumpVRAMWrites");
-  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel");
-  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteWidthThreshold");
-  sif->DeleteValue("TextureReplacements", "DumpVRAMWriteHeightThreshold");
   sif->DeleteValue("Hacks", "DMAMaxSliceTicks");
   sif->DeleteValue("Hacks", "DMAHaltTicks");
   sif->DeleteValue("Hacks", "GPUFIFOSize");

@@ -24,6 +24,10 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
+  void UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                const void* data, u32 data_stride) override;
+  void InvalidateTextureReplacements() override;
+
 protected:
   void ClearDisplay() override;
   void UpdateDisplay() override;
@@ -39,6 +43,7 @@ protected:
   void UnmapBatchVertexPointer(u32 used_vertices) override;
   void UploadUniformBuffer(const void* data, u32 data_size) override;
   void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) override;
+  bool SetupTextureReplacementTexture() override;
 
 private:
   enum : u32
@@ -59,6 +64,7 @@ private:
   bool CreateSamplers();
 
   bool CreateFramebuffer();
+  bool CreateBatchDesciptorSet(bool texture_replacements);
   void ClearFramebuffer();
   void DestroyFramebuffer();
 
@@ -84,10 +90,12 @@ private:
   VkRenderPass m_vram_readback_render_pass = VK_NULL_HANDLE;
 
   VkDescriptorSetLayout m_batch_descriptor_set_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout m_texture_replacement_batch_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_sampler_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_vram_write_descriptor_set_layout = VK_NULL_HANDLE;
 
   VkPipelineLayout m_batch_pipeline_layout = VK_NULL_HANDLE;
+  VkPipelineLayout m_texture_replacement_batch_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_no_samplers_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_single_sampler_pipeline_layout = VK_NULL_HANDLE;
   VkPipelineLayout m_vram_write_pipeline_layout = VK_NULL_HANDLE;
@@ -139,6 +147,7 @@ private:
 
   // texture replacements
   Vulkan::Texture m_vram_write_replacement_texture;
+  Vulkan::Texture m_texture_replacement_texture;
 
   // downsampling
   Vulkan::Texture m_downsample_texture;

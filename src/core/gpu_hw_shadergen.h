@@ -12,7 +12,7 @@ public:
 
   std::string GenerateBatchVertexShader(bool textured);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPUTextureMode texture_mode,
-                                          bool dithering, bool interlacing);
+                                          bool dithering, bool interlacing, bool texture_replacement);
   std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode,
                                             bool smooth_chroma);
   std::string GenerateVRAMReadFragmentShader();

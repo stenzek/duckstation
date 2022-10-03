@@ -36,6 +36,7 @@
 #include "save_state_version.h"
 #include "sio.h"
 #include "spu.h"
+#include "texture_dumper.h"
 #include "texture_replacements.h"
 #include "timers.h"
 #include "util/audio_stream.h"
@@ -1372,6 +1373,9 @@ bool System::Initialize(bool force_software_renderer)
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
+
+  g_texture_replacements.Reload();
+
   return true;
 }
 
@@ -1386,6 +1390,7 @@ void System::DestroySystem()
 
   ClearMemorySaveStates();
 
+  TextureDumper::Shutdown();
   g_texture_replacements.Shutdown();
 
   g_sio.Shutdown();
@@ -1660,6 +1665,15 @@ bool System::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool u
     }
   }
 
+  // TODO: What do we want to do with runahead here?
+  if (sw.IsReading())
+  {
+    g_texture_replacements.OnSystemReset();
+
+    if (g_settings.texture_replacements.IsAnyDumpingEnabled())
+      TextureDumper::ClearState();
+  }
+
   return !sw.HasError();
 }
 
@@ -1688,13 +1702,19 @@ void System::InternalReset()
   s_frame_number = 1;
   s_internal_frame_number = 0;
   TimingEvents::Reset();
-  ResetPerformanceCounters();
+
+  g_texture_replacements.OnSystemReset();
+
+  if (g_settings.texture_replacements.IsAnyDumpingEnabled())
+    TextureDumper::ClearState();
 
 #ifdef WITH_CHEEVOS
   Achievements::ResetRuntime();
 #endif
 
   g_gpu->ResetGraphicsAPIState();
+
+  ResetPerformanceCounters();
 }
 
 std::string System::GetMediaPathFromSaveState(const char* path)
@@ -2910,7 +2930,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     }
   }
 
-  g_texture_replacements.SetGameID(s_running_game_code);
+  g_texture_replacements.Reload();
 
   s_cheat_list.reset();
   if (g_settings.auto_load_cheats && !Achievements::ChallengeModeActive())
@@ -3165,7 +3185,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
         g_settings.rewind_enable != old_settings.rewind_enable ||
-        g_settings.runahead_frames != old_settings.runahead_frames)
+        g_settings.runahead_frames != old_settings.runahead_frames ||
+        g_settings.texture_replacements.enable_texture_replacements !=
+          old_settings.texture_replacements.enable_texture_replacements ||
+        (g_settings.texture_replacements.enable_texture_replacements &&
+         g_settings.texture_replacements.replacement_texture_scale !=
+           old_settings.texture_replacements.replacement_texture_scale))
     {
       g_gpu->UpdateSettings();
       Host::InvalidateDisplay();
@@ -3223,9 +3248,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.texture_replacements.enable_vram_write_replacements !=
           old_settings.texture_replacements.enable_vram_write_replacements ||
+        g_settings.texture_replacements.enable_texture_replacements !=
+          old_settings.texture_replacements.enable_texture_replacements ||
         g_settings.texture_replacements.preload_textures != old_settings.texture_replacements.preload_textures)
     {
       g_texture_replacements.Reload();
+    }
+
+    if (g_settings.texture_replacements.IsAnyDumpingEnabled() !=
+        old_settings.texture_replacements.IsAnyDumpingEnabled())
+    {
+      TextureDumper::ClearState();
     }
 
     g_dma.SetMaxSliceTicks(g_settings.dma_max_slice_ticks);

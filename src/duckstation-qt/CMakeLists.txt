@@ -131,6 +131,9 @@ set(SRCS
   settingsdialog.h
   settingsdialog.ui
   settingwidgetbinder.h
+  texturereplacementssettingswidget.cpp
+  texturereplacementssettingswidget.h
+  texturereplacementssettingswidget.ui
 )
 
 if(ENABLE_CHEEVOS)

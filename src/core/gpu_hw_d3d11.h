@@ -29,6 +29,10 @@ public:
   void RestoreGraphicsAPIState() override;
   void UpdateSettings() override;
 
+  void UploadTextureReplacement(u32 page_index, u32 page_x, u32 page_y, u32 data_width, u32 data_height,
+                                const void* data, u32 data_stride) override;
+  void InvalidateTextureReplacements() override;
+
 protected:
   void ClearDisplay() override;
   void UpdateDisplay() override;
@@ -44,6 +48,7 @@ protected:
   void UnmapBatchVertexPointer(u32 used_vertices) override;
   void UploadUniformBuffer(const void* data, u32 data_size) override;
   void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices) override;
+  bool SetupTextureReplacementTexture() override;
 
 private:
   enum : u32
@@ -51,6 +56,8 @@ private:
     // Currently we don't stream uniforms, instead just re-map the buffer every time and let the driver take care of it.
     MAX_UNIFORM_BUFFER_SIZE = 64
   };
+
+  static constexpr DXGI_FORMAT REPLACEMENT_TEXTURE_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
   void SetCapabilities();
   bool CreateFramebuffer();
@@ -128,6 +135,7 @@ private:
   std::array<std::array<ComPtr<ID3D11PixelShader>, 3>, 2> m_display_pixel_shaders; // [depth_24][interlaced]
 
   D3D11::Texture m_vram_replacement_texture;
+  D3D11::Texture m_texture_replacement_texture;
 
   // downsampling
   ComPtr<ID3D11PixelShader> m_downsample_first_pass_pixel_shader;
