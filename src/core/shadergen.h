@@ -39,11 +39,12 @@ protected:
                                u32 num_color_outputs, u32 num_texcoord_outputs,
                                const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
                                bool declare_vertex_id = false, const char* output_block_suffix = "", bool msaa = false,
-                               bool ssaa = false);
+                               bool ssaa = false, bool noperspective_color = false);
   void DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
                                  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
                                  bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false,
-                                 bool msaa = false, bool ssaa = false, bool declare_sample_id = false);
+                                 bool msaa = false, bool ssaa = false, bool declare_sample_id = false,
+                                 bool noperspective_color = false);
 
   RenderAPI m_render_api;
   bool m_glsl;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>448</width>
-    <height>720</height>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,7 +76,7 @@
       <item row="6" column="0" colspan="2">
        <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
         <property name="text">
-          <string>Software Renderer Readbacks (run in parallel for VRAM->CPU transfers)</string>
+         <string>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</string>
         </property>
        </widget>
       </item>
@@ -126,13 +126,6 @@
       <string>PGXP (Precision Geometry Transform Pipeline)</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="pgxpEnable">
-        <property name="text">
-         <string>Geometry Correction</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QCheckBox" name="pgxpCulling">
         <property name="text">
@@ -143,28 +136,42 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="pgxpTextureCorrection">
         <property name="text">
-         <string>Texture Correction</string>
+         <string>Perspective Correct Textures</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="pgxpPreserveProjPrecision">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="pgxpEnable">
         <property name="text">
-         <string>Preserve Projection Precision</string>
+         <string>Geometry Correction</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="pgxpCPU">
+        <property name="text">
+         <string>CPU Mode (Very Slow)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
        <widget class="QCheckBox" name="pgxpDepthBuffer">
         <property name="text">
          <string>Depth Buffer (Low Compatibility)</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="pgxpCPU">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="pgxpPreserveProjPrecision">
         <property name="text">
-         <string>CPU Mode (Very Slow)</string>
+         <string>Preserve Projection Precision</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="pgxpColorCorrection">
+        <property name="text">
+         <string>Perspective Correct Colors</string>
         </property>
        </widget>
       </item>

@@ -3448,21 +3448,24 @@ void FullscreenUI::DrawDisplaySettingsPage()
   const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
   const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
 
-  DrawToggleSetting(bsi, "PGXP Texture Correction",
-                    "Uses perspective-correct interpolation for texture coordinates and colors, straightening out "
-                    "warped textures.",
-                    "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
-  DrawToggleSetting(bsi, "PGXP Culling Correction",
+  DrawToggleSetting(
+    bsi, "Perspective Correct Textures",
+    "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.", "GPU",
+    "PGXPTextureCorrection", true, pgxp_enabled);
+  DrawToggleSetting(bsi, "Perspective Correct Colors",
+                    "Uses perspective-correct interpolation for colors, which can improve visuals in some games.",
+                    "GPU", "PGXPColorCorrection", false, pgxp_enabled);
+  DrawToggleSetting(bsi, "Culling Correction",
                     "Increases the precision of polygon culling, reducing the number of holes in geometry.", "GPU",
                     "PGXPCulling", true, pgxp_enabled);
-  DrawToggleSetting(bsi, "PGXP Preserve Projection Precision",
+  DrawToggleSetting(bsi, "Preserve Projection Precision",
                     "Adds additional precision to PGXP data post-projection. May improve visuals in some games.", "GPU",
                     "PGXPPreserveProjFP", false, pgxp_enabled);
-  DrawToggleSetting(bsi, "PGXP Depth Buffer",
+  DrawToggleSetting(bsi, "Depth Buffer",
                     "Reduces polygon Z-fighting through depth testing. Low compatibility with games.", "GPU",
                     "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
-  DrawToggleSetting(bsi, "PGXP CPU Mode", "Uses PGXP for all instructions, not just memory operations.", "GPU",
-                    "PGXPCPU", false, pgxp_enabled);
+  DrawToggleSetting(bsi, "CPU Mode", "Uses PGXP for all instructions, not just memory operations.", "GPU", "PGXPCPU",
+                    false, pgxp_enabled);
 
   MenuHeading("Texture Replacements");
 

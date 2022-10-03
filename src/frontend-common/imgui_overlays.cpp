@@ -292,6 +292,8 @@ void ImGuiManager::DrawEnhancementsOverlay()
       text.AppendString("/Cull");
     if (g_settings.gpu_pgxp_texture_correction)
       text.AppendString("/Tex");
+    if (g_settings.gpu_pgxp_color_correction)
+      text.AppendString("/Col");
     if (g_settings.gpu_pgxp_vertex_cache)
       text.AppendString("/VC");
     if (g_settings.gpu_pgxp_cpu)

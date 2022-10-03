@@ -28,7 +28,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 1
+  GAME_DATABASE_CACHE_VERSION = 2,
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
@@ -56,7 +56,8 @@ std::array<std::pair<const char*, const char*>, static_cast<u32>(GameDatabase::T
   {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
   {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
   {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
-  {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Texture Correction")},
+  {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Perspective Correct Textures")},
+  {"DisablePGXPColorCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Perspective Correct Colors")},
   {"DisablePGXPDepthBuffer", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Depth Buffer")},
   {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
   {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
@@ -364,10 +365,23 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp_texture",
-        Host::TranslateStdString("OSDMessage", "PGXP texture correction disabled by game settings."), osd_duration);
+        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected textures disabled by game settings."), osd_duration);
     }
 
     settings.gpu_pgxp_texture_correction = false;
+  }
+
+  if (HasTrait(Trait::DisablePGXPColorCorrection))
+  {
+    if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_texture_correction &&
+        settings.gpu_pgxp_color_correction)
+    {
+      Host::AddKeyedOSDMessage(
+        "gamedb_disable_pgxp_texture",
+        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected colors disabled by game settings."), osd_duration);
+    }
+
+    settings.gpu_pgxp_color_correction = false;
   }
 
   if (HasTrait(Trait::ForcePGXPVertexCache))

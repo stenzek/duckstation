@@ -108,6 +108,7 @@ struct Settings
   bool gpu_pgxp_enable = false;
   bool gpu_pgxp_culling = true;
   bool gpu_pgxp_texture_correction = true;
+  bool gpu_pgxp_color_correction = false;
   bool gpu_pgxp_vertex_cache = false;
   bool gpu_pgxp_cpu = false;
   bool gpu_pgxp_preserve_proj_fp = false;

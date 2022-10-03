@@ -5,11 +5,11 @@
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool pgxp_depth,
-                                   bool supports_dual_source_blend)
+                                   bool disable_color_perspective, bool supports_dual_source_blend)
   : ShaderGen(render_api, supports_dual_source_blend), m_resolution_scale(resolution_scale),
     m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
-    m_pgxp_depth(pgxp_depth)
+    m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective)
 {
 }
 
@@ -109,19 +109,19 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
         {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}}, false, "", UsingMSAA(),
-        UsingPerSampleShading());
+        UsingPerSampleShading(), m_disable_color_perspective);
     }
     else
     {
       DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                              {{"nointerpolation", "uint4 v_texpage"}}, false, "", UsingMSAA(),
-                              UsingPerSampleShading());
+                              {{"nointerpolation", "uint4 v_texpage"}}, false, "", UsingMSAA(), UsingPerSampleShading(),
+                              m_disable_color_perspective);
     }
   }
   else
   {
     DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0"}, 1, 0, {}, false, "", UsingMSAA(),
-                            UsingPerSampleShading());
+                            UsingPerSampleShading(), m_disable_color_perspective);
   }
 
   ss << R"(
@@ -805,18 +805,20 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
-                                true, use_dual_source ? 2 : 1, !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading());
+                                true, use_dual_source ? 2 : 1, !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading(),
+                                false, m_disable_color_perspective);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
-                                !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading());
+                                !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading(), false,
+                                m_disable_color_perspective);
     }
   }
   else
   {
     DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, !m_pgxp_depth, UsingMSAA(),
-                              UsingPerSampleShading());
+                              UsingPerSampleShading(), false, m_disable_color_perspective);
   }
 
   ss << R"(

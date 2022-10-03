@@ -3159,6 +3159,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
+        g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
+        g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction ||
         g_settings.gpu_pgxp_depth_buffer != old_settings.gpu_pgxp_depth_buffer ||
         g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
         g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
