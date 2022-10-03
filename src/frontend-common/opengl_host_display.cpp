@@ -827,7 +827,7 @@ bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
   m_post_processing_stages.clear();
 
-  FrontendCommon::PostProcessingShaderGen shadergen(RenderAPI::OpenGL, false);
+  FrontendCommon::PostProcessingShaderGen shadergen(GetRenderAPI(), false);
 
   for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
   {
