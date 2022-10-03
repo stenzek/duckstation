@@ -123,7 +123,7 @@ void GPU_HW::Reset(bool clear_vram)
   SetFullVRAMDirtyRectangle();
 }
 
-bool GPU_HW::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
   if (!GPU::DoState(sw, host_texture, update_display))
     return false;

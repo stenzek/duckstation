@@ -72,7 +72,7 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 struct MemorySaveState
 {
-  std::unique_ptr<HostDisplayTexture> vram_texture;
+  std::unique_ptr<GPUTexture> vram_texture;
   std::unique_ptr<GrowableMemoryByteStream> state_stream;
 };
 
@@ -97,7 +97,7 @@ static void ClearRunningGame();
 static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
-static bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display, bool is_memory_state);
+static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 static void DoRunFrame();
 static bool CreateGPU(GPURenderer renderer);
 static bool SaveUndoLoadState();
@@ -880,7 +880,8 @@ bool System::UpdateGameSettingsLayer()
       }
     }
 
-    Host::Internal::SetInputSettingsLayer(input_interface ? input_interface.get() : Host::Internal::GetBaseSettingsLayer());
+    Host::Internal::SetInputSettingsLayer(input_interface ? input_interface.get() :
+                                                            Host::Internal::GetBaseSettingsLayer());
   }
   else
   {
@@ -1549,7 +1550,7 @@ bool System::CreateGPU(GPURenderer renderer)
   return true;
 }
 
-bool System::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display, bool is_memory_state)
+bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state)
 {
   if (!sw.DoMarker("System"))
     return false;
@@ -1917,11 +1918,11 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
 
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
-    HostDisplayPixelFormat screenshot_format;
+    GPUTexture::Format screenshot_format;
     if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height, &screenshot_buffer, &screenshot_stride,
                                          &screenshot_format) &&
-        g_host_display->ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer,
-                                                  screenshot_stride, screenshot_format))
+        GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
+                                              screenshot_format))
     {
       if (screenshot_stride != (screenshot_width * sizeof(u32)))
       {
@@ -1932,8 +1933,7 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
       {
         if (g_host_display->UsesLowerLeftOrigin())
         {
-          g_host_display->FlipTextureDataRGBA8(screenshot_width, screenshot_height, screenshot_buffer,
-                                               screenshot_stride);
+          GPUTexture::FlipTextureDataRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride);
         }
 
         header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
@@ -3336,7 +3336,7 @@ bool System::LoadMemoryState(const MemorySaveState& mss)
   mss.state_stream->SeekAbsolute(0);
 
   StateWrapper sw(mss.state_stream.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
-  HostDisplayTexture* host_texture = mss.vram_texture.get();
+  GPUTexture* host_texture = mss.vram_texture.get();
   if (!DoState(sw, &host_texture, true, true))
   {
     Host::ReportErrorAsync("Error", "Failed to load memory save state, resetting.");
@@ -3354,7 +3354,7 @@ bool System::SaveMemoryState(MemorySaveState* mss)
   else
     mss->state_stream->SeekAbsolute(0);
 
-  HostDisplayTexture* host_texture = mss->vram_texture.release();
+  GPUTexture* host_texture = mss->vram_texture.release();
   StateWrapper sw(mss->state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   if (!DoState(sw, &host_texture, false, true))
   {

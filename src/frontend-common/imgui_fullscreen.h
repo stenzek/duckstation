@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-class HostDisplayTexture;
+class GPUTexture;
 
 namespace ImGuiFullscreen {
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
@@ -121,10 +121,10 @@ bool UpdateLayoutScale();
 void Shutdown();
 
 /// Texture cache.
-const std::shared_ptr<HostDisplayTexture>& GetPlaceholderTexture();
-std::shared_ptr<HostDisplayTexture> LoadTexture(const std::string_view& path);
-HostDisplayTexture* GetCachedTexture(const std::string_view& name);
-HostDisplayTexture* GetCachedTextureAsync(const std::string_view& name);
+const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
+std::shared_ptr<GPUTexture> LoadTexture(const std::string_view& path);
+GPUTexture* GetCachedTexture(const std::string_view& name);
+GPUTexture* GetCachedTextureAsync(const std::string_view& name);
 bool InvalidateCachedTexture(const std::string& path);
 void UploadAsyncTextures();
 

@@ -15,6 +15,8 @@ add_library(common
   fifo_queue.h
   file_system.cpp
   file_system.h
+  gpu_texture.cpp
+  gpu_texture.h
   image.cpp
   image.h
   hash_combine.h

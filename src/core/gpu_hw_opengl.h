@@ -20,7 +20,7 @@ public:
 
   bool Initialize() override;
   void Reset(bool clear_vram) override;
-  bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
+  bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
 
   void ResetGraphicsAPIState() override;
   void RestoreGraphicsAPIState() override;
@@ -54,8 +54,6 @@ private:
   };
 
   ALWAYS_INLINE bool IsGLES() const { return (m_render_api == RenderAPI::OpenGLES); }
-
-  std::tuple<s32, s32> ConvertToFramebufferCoordinates(s32 x, s32 y);
 
   void SetCapabilities();
   bool CreateFramebuffer();

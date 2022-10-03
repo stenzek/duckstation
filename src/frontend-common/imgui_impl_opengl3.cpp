@@ -110,20 +110,20 @@
 // OpenGL Data
 struct ImGui_ImplOpenGL3_Data
 {
-    GLuint          GlVersion;               // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
-    char            GlslVersionString[32];   // Specified by user or detected based on compile time GL settings.
+    GLuint          GlVersion = 0;               // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
+    char            GlslVersionString[32] = {};   // Specified by user or detected based on compile time GL settings.
     GL::Texture     FontTexture;
-    GLuint          ShaderHandle;
-    GLint           AttribLocationTex;       // Uniforms location
-    GLint           AttribLocationProjMtx;
-    GLuint          AttribLocationVtxPos;    // Vertex attributes location
-    GLuint          AttribLocationVtxUV;
-    GLuint          AttribLocationVtxColor;
-    unsigned int    VboHandle, ElementsHandle, VaoHandle;
-    GLsizeiptr      VertexBufferSize;
-    GLsizeiptr      IndexBufferSize;
+    GLuint          ShaderHandle = 0;
+    GLint           AttribLocationTex = 0;       // Uniforms location
+    GLint           AttribLocationProjMtx = 0;
+    GLuint          AttribLocationVtxPos = 0;    // Vertex attributes location
+    GLuint          AttribLocationVtxUV = 0;
+    GLuint          AttribLocationVtxColor = 0;
+    unsigned int    VboHandle = 0, ElementsHandle = 0, VaoHandle = 0;
+    GLsizeiptr      VertexBufferSize = 0;
+    GLsizeiptr      IndexBufferSize = 0;
 
-    ImGui_ImplOpenGL3_Data() { memset((void*)this, 0, sizeof(*this)); }
+    ImGui_ImplOpenGL3_Data() = default;
 };
 
 // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
@@ -316,7 +316,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
 
     // Upload texture to graphics system
     // (Bilinear sampling is required by default. Set 'io.Fonts->Flags |= ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex = false' to allow point/nearest sampling)
-    bd->FontTexture.Create(width, height, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    bd->FontTexture.Create(width, height, 1, 1, 1, GPUTexture::Format::RGBA8, pixels);
     bd->FontTexture.SetLinearFilter(true);
 
     // Store our identifier
@@ -326,7 +326,6 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
 
 void ImGui_ImplOpenGL3_DestroyFontsTexture()
 {
-    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
     if (bd->FontTexture.IsValid())
       bd->FontTexture.Destroy();

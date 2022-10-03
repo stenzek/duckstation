@@ -32,7 +32,7 @@ namespace ImGuiFullscreen {
 using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
 
 static std::optional<Common::RGBA8Image> LoadTextureImage(const char* path);
-static std::shared_ptr<HostDisplayTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
+static std::shared_ptr<GPUTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
 static void TextureLoaderThread();
 
 static void DrawFileSelector();
@@ -78,8 +78,8 @@ static u32 s_menu_button_index = 0;
 static u32 s_close_button_state = 0;
 static bool s_focus_reset_queued = false;
 
-static LRUCache<std::string, std::shared_ptr<HostDisplayTexture>> s_texture_cache(128, true);
-static std::shared_ptr<HostDisplayTexture> s_placeholder_texture;
+static LRUCache<std::string, std::shared_ptr<GPUTexture>> s_texture_cache(128, true);
+static std::shared_ptr<GPUTexture> s_placeholder_texture;
 static std::atomic_bool s_texture_load_thread_quit{false};
 static std::mutex s_texture_load_mutex;
 static std::condition_variable s_texture_load_cv;
@@ -231,7 +231,7 @@ void ImGuiFullscreen::Shutdown()
   s_file_selector_items.clear();
 }
 
-const std::shared_ptr<HostDisplayTexture>& ImGuiFullscreen::GetPlaceholderTexture()
+const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
 {
   return s_placeholder_texture;
 }
@@ -262,10 +262,10 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
   return image;
 }
 
-std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
-  std::unique_ptr<HostDisplayTexture> texture =
-    g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, HostDisplayPixelFormat::RGBA8,
+  std::unique_ptr<GPUTexture> texture =
+    g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Format::RGBA8,
                                   image.GetPixels(), image.GetPitch());
   if (!texture)
   {
@@ -274,16 +274,16 @@ std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* p
   }
 
   Log_DevPrintf("Uploaded texture resource '%s' (%ux%u)", path, image.GetWidth(), image.GetHeight());
-  return std::shared_ptr<HostDisplayTexture>(std::move(texture));
+  return std::shared_ptr<GPUTexture>(std::move(texture));
 }
 
-std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::LoadTexture(const std::string_view& path)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(const std::string_view& path)
 {
   std::string path_str(path);
   std::optional<Common::RGBA8Image> image(LoadTextureImage(path_str.c_str()));
   if (image.has_value())
   {
-    std::shared_ptr<HostDisplayTexture> ret(UploadTexture(path_str.c_str(), image.value()));
+    std::shared_ptr<GPUTexture> ret(UploadTexture(path_str.c_str(), image.value()));
     if (ret)
       return ret;
   }
@@ -291,21 +291,21 @@ std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::LoadTexture(const std::stri
   return s_placeholder_texture;
 }
 
-HostDisplayTexture* ImGuiFullscreen::GetCachedTexture(const std::string_view& name)
+GPUTexture* ImGuiFullscreen::GetCachedTexture(const std::string_view& name)
 {
-  std::shared_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(name);
   if (!tex_ptr)
   {
-    std::shared_ptr<HostDisplayTexture> tex(LoadTexture(name));
+    std::shared_ptr<GPUTexture> tex(LoadTexture(name));
     tex_ptr = s_texture_cache.Insert(std::string(name), std::move(tex));
   }
 
   return tex_ptr->get();
 }
 
-HostDisplayTexture* ImGuiFullscreen::GetCachedTextureAsync(const std::string_view& name)
+GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(const std::string_view& name)
 {
-  std::shared_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(name);
   if (!tex_ptr)
   {
     // insert the placeholder
@@ -334,7 +334,7 @@ void ImGuiFullscreen::UploadAsyncTextures()
     s_texture_upload_queue.pop_front();
     lock.unlock();
 
-    std::shared_ptr<HostDisplayTexture> tex = UploadTexture(it.first.c_str(), it.second);
+    std::shared_ptr<GPUTexture> tex = UploadTexture(it.first.c_str(), it.second);
     if (tex)
       s_texture_cache.Insert(std::move(it.first), std::move(tex));
 
@@ -2389,9 +2389,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
     if (!notif.badge_path.empty())
     {
-      HostDisplayTexture* tex = GetCachedTexture(notif.badge_path.c_str());
+      GPUTexture* tex = GetCachedTexture(notif.badge_path.c_str());
       if (tex)
-        dl->AddImage(static_cast<ImTextureID>(tex->GetHandle()), badge_min, badge_max);
+        dl->AddImage(tex, badge_min, badge_max);
     }
 
     const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);

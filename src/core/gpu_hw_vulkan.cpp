@@ -102,7 +102,7 @@ void GPU_HW_Vulkan::Reset(bool clear_vram)
     ClearFramebuffer();
 }
 
-bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+bool GPU_HW_Vulkan::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
   if (host_texture)
   {
@@ -119,7 +119,7 @@ bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
 
     if (sw.IsReading())
     {
-      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>((*host_texture)->GetHandle());
+      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(*host_texture);
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
           tex->GetSamples() != m_vram_texture.GetSamples())
       {
@@ -137,22 +137,22 @@ bool GPU_HW_Vulkan::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
     }
     else
     {
-      HostDisplayTexture* htex = *host_texture;
-      if (!htex || htex->GetWidth() != m_vram_texture.GetWidth() || htex->GetHeight() != m_vram_texture.GetHeight() ||
-          htex->GetSamples() != static_cast<u32>(m_vram_texture.GetSamples()))
+      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(*host_texture);
+      if (!tex || tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
+          tex->GetSamples() != static_cast<u32>(m_vram_texture.GetSamples()))
       {
-        delete htex;
+        delete tex;
 
-        htex = g_host_display
-                 ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
-                                 m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
-                 .release();
-        *host_texture = htex;
-        if (!htex)
+        tex = static_cast<Vulkan::Texture*>(g_host_display
+                                              ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1,
+                                                              1, m_vram_texture.GetSamples(), GPUTexture::Format::RGBA8,
+                                                              nullptr, 0, false)
+                                              .release());
+        *host_texture = tex;
+        if (!tex)
           return false;
       }
 
-      Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(htex->GetHandle());
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
           tex->GetSamples() != m_vram_texture.GetSamples())
       {
@@ -612,13 +612,13 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
   m_vram_update_depth_render_pass =
     g_vulkan_context->GetRenderPass(VK_FORMAT_UNDEFINED, depth_format, samples, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
   m_display_load_render_pass = g_vulkan_context->GetRenderPass(
-    m_display_texture.GetFormat(), VK_FORMAT_UNDEFINED, m_display_texture.GetSamples(), VK_ATTACHMENT_LOAD_OP_LOAD);
+    m_display_texture.GetVkFormat(), VK_FORMAT_UNDEFINED, m_display_texture.GetVkSamples(), VK_ATTACHMENT_LOAD_OP_LOAD);
   m_display_discard_render_pass =
-    g_vulkan_context->GetRenderPass(m_display_texture.GetFormat(), VK_FORMAT_UNDEFINED, m_display_texture.GetSamples(),
-                                    VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+    g_vulkan_context->GetRenderPass(m_display_texture.GetVkFormat(), VK_FORMAT_UNDEFINED,
+                                    m_display_texture.GetVkSamples(), VK_ATTACHMENT_LOAD_OP_DONT_CARE);
   m_vram_readback_render_pass =
-    g_vulkan_context->GetRenderPass(m_vram_readback_texture.GetFormat(), VK_FORMAT_UNDEFINED,
-                                    m_vram_readback_texture.GetSamples(), VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+    g_vulkan_context->GetRenderPass(m_vram_readback_texture.GetVkFormat(), VK_FORMAT_UNDEFINED,
+                                    m_vram_readback_texture.GetVkSamples(), VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 
   if (m_vram_render_pass == VK_NULL_HANDLE || m_vram_update_depth_render_pass == VK_NULL_HANDLE ||
       m_display_load_render_pass == VK_NULL_HANDLE || m_vram_readback_render_pass == VK_NULL_HANDLE)
@@ -704,10 +704,11 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
 
     m_downsample_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
+    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetVkFormat(), VK_FORMAT_UNDEFINED,
                                                                VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
-    m_downsample_weight_render_pass = g_vulkan_context->GetRenderPass(
-      m_downsample_weight_texture.GetFormat(), VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
+    m_downsample_weight_render_pass =
+      g_vulkan_context->GetRenderPass(m_downsample_weight_texture.GetVkFormat(), VK_FORMAT_UNDEFINED,
+                                      VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
     if (m_downsample_render_pass == VK_NULL_HANDLE || m_downsample_weight_render_pass == VK_NULL_HANDLE)
       return false;
 
@@ -725,7 +726,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
                                          0,
                                          m_downsample_texture.GetImage(),
                                          VK_IMAGE_VIEW_TYPE_2D,
-                                         m_downsample_texture.GetFormat(),
+                                         m_downsample_texture.GetVkFormat(),
                                          {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
                                           VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
                                          {VK_IMAGE_ASPECT_COLOR_BIT, i, 1u, 0u, 1u}};
@@ -776,7 +777,7 @@ bool GPU_HW_Vulkan::CreateFramebuffer()
       return false;
     }
 
-    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetFormat(), VK_FORMAT_UNDEFINED,
+    m_downsample_render_pass = g_vulkan_context->GetRenderPass(m_downsample_texture.GetVkFormat(), VK_FORMAT_UNDEFINED,
                                                                VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
 
     m_downsample_mip_views.resize(1);
@@ -1433,15 +1434,12 @@ void GPU_HW_Vulkan::UpdateDisplay()
         UpdateVRAMReadTexture();
       }
 
-      g_host_display->SetDisplayTexture(&m_vram_read_texture, HostDisplayPixelFormat::RGBA8,
-                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight(), 0, 0,
-                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
+      g_host_display->SetDisplayTexture(&m_vram_read_texture, 0, 0, m_vram_read_texture.GetWidth(),
+                                        m_vram_read_texture.GetHeight());
     }
     else
     {
-      g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight(), 0, 0, m_vram_texture.GetWidth(),
-                                        m_vram_texture.GetHeight());
+      g_host_display->SetDisplayTexture(&m_vram_texture, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
     }
     g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
@@ -1479,8 +1477,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                          m_vram_texture.GetHeight(), scaled_vram_offset_x, scaled_vram_offset_y,
+        g_host_display->SetDisplayTexture(&m_vram_texture, scaled_vram_offset_x, scaled_vram_offset_y,
                                           scaled_display_width, scaled_display_height);
       }
     }
@@ -1526,9 +1523,7 @@ void GPU_HW_Vulkan::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8,
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0, 0,
-                                          scaled_display_width, scaled_display_height);
+        g_host_display->SetDisplayTexture(&m_display_texture, 0, 0, scaled_display_width, scaled_display_height);
         RestoreGraphicsAPIState();
       }
     }
@@ -1577,8 +1572,8 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   m_vram_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
   // Stage the readback and copy it into our shadow buffer (will execute command buffer and stall).
-  g_host_display->DownloadTexture(&m_vram_readback_texture, HostDisplayPixelFormat::RGBA8, 0, 0, encoded_width,
-                                  encoded_height, &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
+  g_host_display->DownloadTexture(&m_vram_readback_texture, 0, 0, encoded_width, encoded_height,
+                                  &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
                                   VRAM_WIDTH * sizeof(u16));
 }
 
@@ -1890,9 +1885,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferBoxFilter(Vulkan::Texture& source, u32 
 
   RestoreGraphicsAPIState();
 
-  g_host_display->SetDisplayTexture(&m_downsample_texture, HostDisplayPixelFormat::RGBA8,
-                                    m_downsample_texture.GetWidth(), m_downsample_texture.GetHeight(), ds_left, ds_top,
-                                    ds_width, ds_height);
+  g_host_display->SetDisplayTexture(&m_downsample_texture, ds_left, ds_top, ds_width, ds_height);
 }
 
 void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 left, u32 top, u32 width, u32 height)
@@ -1989,8 +1982,7 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
   }
   RestoreGraphicsAPIState();
 
-  g_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8, m_display_texture.GetWidth(),
-                                    m_display_texture.GetHeight(), left, top, width, height);
+  g_host_display->SetDisplayTexture(&m_display_texture, left, top, width, height);
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareVulkanRenderer()

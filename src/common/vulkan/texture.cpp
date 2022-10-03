@@ -8,22 +8,26 @@
 #include <algorithm>
 Log_SetChannel(Texture);
 
+static constexpr std::array<VkFormat, static_cast<u32>(GPUTexture::Format::Count)> s_vk_mapping = {
+  {VK_FORMAT_UNDEFINED, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R5G6B5_UNORM_PACK16,
+   VK_FORMAT_A1R5G5B5_UNORM_PACK16, VK_FORMAT_R8_UNORM, VK_FORMAT_D16_UNORM}};
+
 static constexpr VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
                                                        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
 Vulkan::Texture::Texture() = default;
 
 Vulkan::Texture::Texture(Texture&& move)
-  : m_width(move.m_width), m_height(move.m_height), m_levels(move.m_levels), m_layers(move.m_layers),
-    m_format(move.m_format), m_samples(move.m_samples), m_view_type(move.m_view_type), m_layout(move.m_layout),
-    m_image(move.m_image), m_allocation(move.m_allocation), m_view(move.m_view)
+  : m_view_type(move.m_view_type), m_layout(move.m_layout), m_image(move.m_image), m_allocation(move.m_allocation),
+    m_view(move.m_view)
 {
-  move.m_width = 0;
-  move.m_height = 0;
-  move.m_levels = 0;
-  move.m_layers = 0;
-  move.m_format = VK_FORMAT_UNDEFINED;
-  move.m_samples = VK_SAMPLE_COUNT_1_BIT;
+  m_width = move.m_width;
+  m_height = move.m_height;
+  m_layers = move.m_layers;
+  m_levels = move.m_levels;
+  m_samples = move.m_samples;
+
+  move.ClearBaseProperties();
   move.m_view_type = VK_IMAGE_VIEW_TYPE_2D;
   move.m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
   move.m_image = VK_NULL_HANDLE;
@@ -35,6 +39,26 @@ Vulkan::Texture::~Texture()
 {
   if (IsValid())
     Destroy(true);
+}
+
+VkFormat Vulkan::Texture::GetVkFormat(Format format)
+{
+  return s_vk_mapping[static_cast<u8>(format)];
+}
+
+GPUTexture::Format Vulkan::Texture::LookupBaseFormat(VkFormat vformat)
+{
+  for (u32 i = 0; i < static_cast<u32>(s_vk_mapping.size()); i++)
+  {
+    if (s_vk_mapping[i] == vformat)
+      return static_cast<Format>(i);
+  }
+  return GPUTexture::Format::Unknown;
+}
+
+bool Vulkan::Texture::IsValid() const
+{
+  return (m_image != VK_NULL_HANDLE);
 }
 
 Vulkan::Texture& Vulkan::Texture::operator=(Texture&& move)
@@ -129,12 +153,12 @@ bool Vulkan::Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFo
   if (IsValid())
     Destroy(true);
 
-  m_width = width;
-  m_height = height;
-  m_levels = levels;
-  m_layers = layers;
-  m_format = format;
-  m_samples = samples;
+  m_width = static_cast<u16>(width);
+  m_height = static_cast<u16>(height);
+  m_levels = static_cast<u8>(levels);
+  m_layers = static_cast<u8>(layers);
+  m_samples = static_cast<u8>(samples);
+  m_format = LookupBaseFormat(format);
   m_view_type = view_type;
   m_image = image;
   m_allocation = allocation;
@@ -171,12 +195,12 @@ bool Vulkan::Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u
   if (IsValid())
     Destroy(true);
 
-  m_width = width;
-  m_height = height;
-  m_levels = levels;
-  m_layers = layers;
-  m_format = format;
-  m_samples = samples;
+  m_width = static_cast<u16>(width);
+  m_height = static_cast<u16>(height);
+  m_levels = static_cast<u8>(levels);
+  m_layers = static_cast<u8>(layers);
+  m_format = LookupBaseFormat(format);
+  m_samples = static_cast<u8>(samples);
   m_view_type = view_type;
   m_image = existing_image;
   m_view = view;
@@ -206,11 +230,7 @@ void Vulkan::Texture::Destroy(bool defer /* = true */)
     m_allocation = VK_NULL_HANDLE;
   }
 
-  m_width = 0;
-  m_height = 0;
-  m_levels = 0;
-  m_layers = 0;
-  m_format = VK_FORMAT_UNDEFINED;
+  ClearBaseProperties();
   m_samples = VK_SAMPLE_COUNT_1_BIT;
   m_view_type = VK_IMAGE_VIEW_TYPE_2D;
   m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -252,8 +272,7 @@ void Vulkan::Texture::TransitionSubresourcesToLayout(VkCommandBuffer command_buf
     VK_QUEUE_FAMILY_IGNORED,                // uint32_t                   srcQueueFamilyIndex
     VK_QUEUE_FAMILY_IGNORED,                // uint32_t                   dstQueueFamilyIndex
     m_image,                                // VkImage                    image
-    {static_cast<VkImageAspectFlags>(Util::IsDepthFormat(m_format) ? VK_IMAGE_ASPECT_DEPTH_BIT :
-                                                                     VK_IMAGE_ASPECT_COLOR_BIT),
+    {static_cast<VkImageAspectFlags>(IsDepthFormat(m_format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT),
      start_level, num_levels, start_layer, num_layers} // VkImageSubresourceRange    subresourceRange
   };
 
@@ -392,13 +411,12 @@ void Vulkan::Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 la
 
 u32 Vulkan::Texture::CalcUpdatePitch(u32 width) const
 {
-  return Common::AlignUp(width * Vulkan::Util::GetTexelSize(m_format),
-                         g_vulkan_context->GetBufferCopyRowPitchAlignment());
+  return Common::AlignUp(width * GetPixelSize(), g_vulkan_context->GetBufferCopyRowPitchAlignment());
 }
 
 u32 Vulkan::Texture::CalcUpdateRowLength(u32 pitch) const
 {
-  return pitch / Vulkan::Util::GetTexelSize(m_format);
+  return pitch / GetPixelSize();
 }
 
 bool Vulkan::Texture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)

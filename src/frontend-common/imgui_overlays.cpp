@@ -409,7 +409,7 @@ struct ListEntry
   std::string game_code;
   std::string title;
   std::string formatted_timestamp;
-  std::unique_ptr<HostDisplayTexture> preview_texture;
+  std::unique_ptr<GPUTexture> preview_texture;
   s32 slot;
   bool global;
 };
@@ -564,13 +564,13 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
     if (ssi && !ssi->screenshot_data.empty())
     {
       li->preview_texture = g_host_display->CreateTexture(ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1,
-                                                          HostDisplayPixelFormat::RGBA8, ssi->screenshot_data.data(),
+                                                          GPUTexture::Format::RGBA8, ssi->screenshot_data.data(),
                                                           sizeof(u32) * ssi->screenshot_width, false);
     }
     else
     {
       li->preview_texture = g_host_display->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
-                                                          HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
+                                                          GPUTexture::Format::RGBA8, PLACEHOLDER_ICON_DATA,
                                                           sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
     }
 
@@ -591,7 +591,7 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::str
   if (g_host_display)
   {
     li->preview_texture = g_host_display->CreateTexture(PLACEHOLDER_ICON_WIDTH, PLACEHOLDER_ICON_HEIGHT, 1, 1, 1,
-                                                        HostDisplayPixelFormat::RGBA8, PLACEHOLDER_ICON_DATA,
+                                                        GPUTexture::Format::RGBA8, PLACEHOLDER_ICON_DATA,
                                                         sizeof(u32) * PLACEHOLDER_ICON_WIDTH, false);
     if (!li->preview_texture)
       Log_ErrorPrintf("Failed to upload save state image to GPU");
@@ -645,7 +645,7 @@ void SaveStateSelectorUI::Draw()
         {
           ImGui::SetCursorPosY(y_start + padding);
           ImGui::SetCursorPosX(padding);
-          ImGui::Image(reinterpret_cast<ImTextureID>(entry.preview_texture->GetHandle()), image_size);
+          ImGui::Image(entry.preview_texture.get(), image_size);
         }
 
         ImGui::SetCursorPosY(y_start + padding);

@@ -128,38 +128,38 @@ bool RegTestHostDisplay::SetPostProcessingChain(const std::string_view& config)
   return false;
 }
 
-std::unique_ptr<HostDisplayTexture> RegTestHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-                                                                      u32 samples, HostDisplayPixelFormat format,
+std::unique_ptr<GPUTexture> RegTestHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
+                                                                      u32 samples, GPUTexture::Format format,
                                                                       const void* data, u32 data_stride,
                                                                       bool dynamic /* = false */)
 {
   return nullptr;
 }
 
-void RegTestHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height,
+void RegTestHostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height,
                                        const void* data, u32 data_stride)
 {
 }
 
-bool RegTestHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x,
+bool RegTestHostDisplay::DownloadTexture(const void* texture_handle, GPUTexture::Format texture_format, u32 x,
                                          u32 y, u32 width, u32 height, void* out_data, u32 out_data_stride)
 {
-  const u32 pixel_size = GetDisplayPixelFormatSize(texture_format);
+  const u32 pixel_size = GPUTexture::GetPixelSize(texture_format);
   const u32 input_stride = Common::AlignUpPow2(width * pixel_size, 4);
   const u8* input_start = static_cast<const u8*>(texture_handle) + (x * pixel_size);
   StringUtil::StrideMemCpy(out_data, out_data_stride, input_start, input_stride, width * pixel_size, height);
   return true;
 }
 
-bool RegTestHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
+bool RegTestHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  return (format == HostDisplayPixelFormat::RGBA8);
+  return (format == GPUTexture::Format::RGBA8);
 }
 
-bool RegTestHostDisplay::BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+bool RegTestHostDisplay::BeginSetDisplayPixels(GPUTexture::Format format, u32 width, u32 height, void** out_buffer,
                                                u32* out_pitch)
 {
-  const u32 pitch = Common::AlignUpPow2(width * GetDisplayPixelFormatSize(format), 4);
+  const u32 pitch = Common::AlignUpPow2(width * GPUTexture::GetPixelSize(format), 4);
   const u32 required_size = height * pitch;
   if (m_frame_buffer.size() != (required_size / 4))
   {
@@ -191,7 +191,7 @@ void RegTestHostDisplay::DumpFrame(const std::string& filename)
   }
 
   Common::RGBA8Image image(m_display_texture_width, m_display_texture_height,
-                           static_cast<const u32*>(m_display_texture_handle));
+                           static_cast<const u32*>(m_display_texture));
 
   // set alpha channel on all pixels
   u32* pixels = image.GetPixels();
@@ -214,7 +214,7 @@ bool RegTestHostDisplay::Render()
 }
 
 bool RegTestHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                          HostDisplayPixelFormat* out_format)
+                                          GPUTexture::Format* out_format)
 {
   return false;
 }

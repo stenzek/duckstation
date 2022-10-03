@@ -251,7 +251,7 @@ bool ImGui_ImplDX11_CreateFontsTexture()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     const u32 stride = sizeof(u32) * width;
-    if (!bd->FontTexture.Create(bd->pd3dDevice, width, height, 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_BIND_SHADER_RESOURCE, pixels, stride))
+    if (!bd->FontTexture.Create(bd->pd3dDevice, width, height, 1, 1, 1, GPUTexture::Format::RGBA8, D3D11_BIND_SHADER_RESOURCE, pixels, stride))
         return false;
 
     // Store our identifier

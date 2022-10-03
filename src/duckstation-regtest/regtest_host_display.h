@@ -43,28 +43,28 @@ public:
   void DestroyImGuiContext() override;
   bool UpdateImGuiFontTexture() override;
 
-  std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                    HostDisplayPixelFormat format, const void* data, u32 data_stride,
+  std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                    GPUTexture::Format format, const void* data, u32 data_stride,
                                                     bool dynamic = false) override;
-  void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
+  void UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
                      u32 data_stride) override;
-  bool DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y, u32 width,
+  bool DownloadTexture(const void* texture_handle, GPUTexture::Format texture_format, u32 x, u32 y, u32 width,
                        u32 height, void* out_data, u32 out_data_stride) override;
 
   void SetVSync(bool enabled) override;
 
   bool Render() override;
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                        HostDisplayPixelFormat* out_format) override;
+                        GPUTexture::Format* out_format) override;
 
-  bool SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const override;
+  bool SupportsTextureFormat(GPUTexture::Format format) const override;
 
-  bool BeginSetDisplayPixels(HostDisplayPixelFormat format, u32 width, u32 height, void** out_buffer,
+  bool BeginSetDisplayPixels(GPUTexture::Format format, u32 width, u32 height, void** out_buffer,
                              u32* out_pitch) override;
   void EndSetDisplayPixels() override;
 
 private:
   std::vector<u32> m_frame_buffer;
-  HostDisplayPixelFormat m_frame_buffer_format = HostDisplayPixelFormat::Unknown;
+  GPUTexture::Format m_frame_buffer_format = GPUTexture::Format::Unknown;
   u32 m_frame_buffer_pitch = 0;
 };

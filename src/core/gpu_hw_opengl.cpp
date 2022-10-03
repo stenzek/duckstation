@@ -108,11 +108,11 @@ void GPU_HW_OpenGL::Reset(bool clear_vram)
     ClearFramebuffer();
 }
 
-bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+bool GPU_HW_OpenGL::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
   if (host_texture)
   {
-    HostDisplayTexture* tex = *host_texture;
+    GPUTexture* tex = *host_texture;
     if (sw.IsReading())
     {
       if (tex->GetWidth() != m_vram_texture.GetWidth() || tex->GetHeight() != m_vram_texture.GetHeight() ||
@@ -121,9 +121,9 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
         return false;
       }
 
-      CopyFramebufferForState(
-        m_vram_texture.GetGLTarget(), static_cast<GLuint>(reinterpret_cast<uintptr_t>(tex->GetHandle())), 0, 0, 0,
-        m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0, m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+      CopyFramebufferForState(m_vram_texture.GetGLTarget(), static_cast<GL::Texture*>(tex)->GetGLId(), 0, 0, 0,
+                              m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0, m_vram_texture.GetWidth(),
+                              m_vram_texture.GetHeight());
     }
     else
     {
@@ -134,7 +134,7 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
 
         tex = g_host_display
                 ->CreateTexture(m_vram_texture.GetWidth(), m_vram_texture.GetHeight(), 1, 1,
-                                m_vram_texture.GetSamples(), HostDisplayPixelFormat::RGBA8, nullptr, 0, false)
+                                m_vram_texture.GetSamples(), GPUTexture::Format::RGBA8, nullptr, 0, false)
                 .release();
         *host_texture = tex;
         if (!tex)
@@ -142,8 +142,8 @@ bool GPU_HW_OpenGL::DoState(StateWrapper& sw, HostDisplayTexture** host_texture,
       }
 
       CopyFramebufferForState(m_vram_texture.GetGLTarget(), m_vram_texture.GetGLId(), m_vram_fbo_id, 0, 0,
-                              static_cast<GLuint>(reinterpret_cast<uintptr_t>(tex->GetHandle())), 0, 0, 0,
-                              m_vram_texture.GetWidth(), m_vram_texture.GetHeight());
+                              static_cast<GL::Texture*>(tex)->GetGLId(), 0, 0, 0, m_vram_texture.GetWidth(),
+                              m_vram_texture.GetHeight());
     }
   }
 
@@ -285,15 +285,9 @@ void GPU_HW_OpenGL::UnmapBatchVertexPointer(u32 used_vertices)
   DebugAssert(m_batch_start_vertex_ptr);
 
   m_vertex_stream_buffer->Unmap(used_vertices * sizeof(BatchVertex));
-  m_vertex_stream_buffer->Bind();
   m_batch_start_vertex_ptr = nullptr;
   m_batch_end_vertex_ptr = nullptr;
   m_batch_current_vertex_ptr = nullptr;
-}
-
-std::tuple<s32, s32> GPU_HW_OpenGL::ConvertToFramebufferCoordinates(s32 x, s32 y)
-{
-  return std::make_tuple(x, static_cast<s32>(static_cast<s32>(VRAM_HEIGHT) - y));
 }
 
 void GPU_HW_OpenGL::SetCapabilities()
@@ -396,18 +390,18 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
   const u32 multisamples = m_multisamples;
 
-  if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, multisamples, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE,
-                             nullptr, false, true) ||
-      !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, multisamples, GL_DEPTH_COMPONENT16,
-                                   GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr, false) ||
-      !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
-                                  false, true) ||
+  if (!m_vram_texture.Create(texture_width, texture_height, 1, 1, multisamples, GPUTexture::Format::RGBA8, nullptr, 0,
+                             true, true) ||
+      !m_vram_depth_texture.Create(texture_width, texture_height, 1, 1, multisamples, GPUTexture::Format::D16, nullptr,
+                                   0, false, true) ||
+      !m_vram_read_texture.Create(texture_width, texture_height, 1, 1, 1, GPUTexture::Format::RGBA8, nullptr, 0, false,
+                                  true) ||
       !m_vram_read_texture.CreateFramebuffer() ||
-      !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr,
-                                      false) ||
+      !m_vram_encoding_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Format::RGBA8, nullptr, 0, false,
+                                      true) ||
       !m_vram_encoding_texture.CreateFramebuffer() ||
       !m_display_texture.Create(GPU_MAX_DISPLAY_WIDTH * m_resolution_scale, GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale,
-                                1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr, false) ||
+                                1, 1, 1, GPUTexture::Format::RGBA8, nullptr, 0, true, true) ||
       !m_display_texture.CreateFramebuffer())
   {
     return false;
@@ -425,7 +419,7 @@ bool GPU_HW_OpenGL::CreateFramebuffer()
 
   if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+    if (!m_downsample_texture.Create(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Format::RGBA8) ||
         !m_downsample_texture.CreateFramebuffer())
     {
       return false;
@@ -778,8 +772,8 @@ bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
 {
   if (!m_vram_write_replacement_texture.IsValid())
   {
-    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GL_RGBA8, GL_RGBA,
-                                                 GL_UNSIGNED_BYTE, tex->GetPixels(), true) ||
+    if (!m_vram_write_replacement_texture.Create(tex->GetWidth(), tex->GetHeight(), 1, 1, 1,
+                                                 GPUTexture::Format::RGBA8) ||
         !m_vram_write_replacement_texture.CreateFramebuffer())
     {
       m_vram_write_replacement_texture.Destroy();
@@ -795,7 +789,6 @@ bool GPU_HW_OpenGL::BlitVRAMReplacementTexture(const TextureReplacementTexture* 
   glDisable(GL_SCISSOR_TEST);
   m_vram_write_replacement_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
 
-  dst_y = m_vram_texture.GetHeight() - dst_y - height;
   glBlitFramebuffer(0, tex->GetHeight(), tex->GetWidth(), 0, dst_x, dst_y, dst_x + width, dst_y + height,
                     GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
@@ -826,7 +819,7 @@ void GPU_HW_OpenGL::SetScissorFromDrawingArea()
   const int width = right - left;
   const int height = bottom - top;
   const int x = left;
-  const int y = m_vram_texture.GetHeight() - bottom;
+  const int y = top;
 
   Log_DebugPrintf("SetScissor: (%d-%d, %d-%d)", x, x + width, y, y + height);
   glScissor(x, y, width, height);
@@ -867,16 +860,13 @@ void GPU_HW_OpenGL::UpdateDisplay()
     {
       UpdateVRAMReadTexture();
 
-      g_host_display->SetDisplayTexture(
-        &m_vram_read_texture, HostDisplayPixelFormat::RGBA8, m_vram_read_texture.GetWidth(),
-        static_cast<s32>(m_vram_read_texture.GetHeight()), 0, m_vram_read_texture.GetHeight(),
-        m_vram_read_texture.GetWidth(), -static_cast<s32>(m_vram_read_texture.GetHeight()));
+      g_host_display->SetDisplayTexture(&m_vram_read_texture, 0, m_vram_read_texture.GetHeight(),
+                                        m_vram_read_texture.GetWidth(), m_vram_read_texture.GetHeight());
     }
     else
     {
-      g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                        static_cast<s32>(m_vram_texture.GetHeight()), 0, m_vram_texture.GetHeight(),
-                                        m_vram_texture.GetWidth(), -static_cast<s32>(m_vram_texture.GetHeight()));
+      g_host_display->SetDisplayTexture(&m_vram_texture, 0, m_vram_texture.GetHeight(), m_vram_texture.GetWidth(),
+                                        m_vram_texture.GetHeight());
     }
     g_host_display->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
                                          static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
@@ -914,10 +904,8 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(&m_vram_texture, HostDisplayPixelFormat::RGBA8, m_vram_texture.GetWidth(),
-                                          m_vram_texture.GetHeight(), scaled_vram_offset_x,
-                                          m_vram_texture.GetHeight() - scaled_vram_offset_y, scaled_display_width,
-                                          -static_cast<s32>(scaled_display_height));
+        g_host_display->SetDisplayTexture(&m_vram_texture, scaled_vram_offset_x, scaled_vram_offset_y,
+                                          scaled_display_width, scaled_display_height);
       }
     }
     else
@@ -936,14 +924,11 @@ void GPU_HW_OpenGL::UpdateDisplay()
         glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLsizei>(attachments.size()), attachments.data());
       }
 
-      const u8 height_div2 = BoolToUInt8(interlaced == GPU_HW::InterlacedRenderMode::SeparateFields);
       const u32 reinterpret_field_offset = (interlaced != InterlacedRenderMode::None) ? GetInterlacedDisplayField() : 0;
-      const u32 scaled_flipped_vram_offset_y = m_vram_texture.GetHeight() - scaled_vram_offset_y -
-                                               reinterpret_field_offset - (scaled_display_height >> height_div2);
       const u32 reinterpret_start_x = m_crtc_state.regs.X * resolution_scale;
       const u32 reinterpret_crop_left = (m_crtc_state.display_vram_left - m_crtc_state.regs.X) * resolution_scale;
-      const u32 uniforms[4] = {reinterpret_start_x, scaled_flipped_vram_offset_y, reinterpret_crop_left,
-                               reinterpret_field_offset};
+      const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y + reinterpret_field_offset,
+                               reinterpret_crop_left, reinterpret_field_offset};
       UploadUniformBuffer(uniforms, sizeof(uniforms));
       m_batch_ubo_dirty = true;
 
@@ -960,10 +945,7 @@ void GPU_HW_OpenGL::UpdateDisplay()
       }
       else
       {
-        g_host_display->SetDisplayTexture(&m_display_texture, HostDisplayPixelFormat::RGBA8,
-                                          m_display_texture.GetWidth(), m_display_texture.GetHeight(), 0,
-                                          scaled_display_height, scaled_display_width,
-                                          -static_cast<s32>(scaled_display_height));
+        g_host_display->SetDisplayTexture(&m_display_texture, 0, 0, scaled_display_width, scaled_display_height);
       }
 
       // restore state
@@ -993,8 +975,7 @@ void GPU_HW_OpenGL::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   const u32 encoded_height = copy_rect.GetHeight();
 
   // Encode the 24-bit texture as 16-bit.
-  const u32 uniforms[4] = {copy_rect.left, VRAM_HEIGHT - copy_rect.top - copy_rect.GetHeight(), copy_rect.GetWidth(),
-                           copy_rect.GetHeight()};
+  const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
   m_vram_encoding_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   m_vram_texture.Bind();
   m_vram_read_program.Bind();
@@ -1024,9 +1005,8 @@ void GPU_HW_OpenGL::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   GPU_HW::FillVRAM(x, y, width, height, color);
 
   const Common::Rectangle<u32> bounds(GetVRAMTransferBounds(x, y, width, height));
-  glScissor(bounds.left * m_resolution_scale,
-            m_vram_texture.GetHeight() - (bounds.top * m_resolution_scale) - (height * m_resolution_scale),
-            width * m_resolution_scale, height * m_resolution_scale);
+  glScissor(bounds.left * m_resolution_scale, bounds.top * m_resolution_scale, width * m_resolution_scale,
+            height * m_resolution_scale);
 
   // fast path when not using interlaced rendering
   const bool wrapped = IsVRAMFillOversized(x, y, width, height);
@@ -1096,9 +1076,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
     // the viewport should already be set to the full vram, so just adjust the scissor
     const Common::Rectangle<u32> scaled_bounds = bounds * m_resolution_scale;
-    glScissor(scaled_bounds.left, m_vram_texture.GetHeight() - scaled_bounds.top - scaled_bounds.GetHeight(),
-              scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
-
+    glScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
     glBindVertexArray(m_attributeless_vao_id);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -1120,9 +1098,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
 
     const auto map_result = m_texture_stream_buffer->Map(sizeof(u32), num_pixels * sizeof(u32));
 
-    // reverse copy the rows so it matches opengl's lower-left origin
     const u32 source_stride = width * sizeof(u16);
-    const u8* source_ptr = static_cast<const u8*>(data) + (source_stride * (height - 1));
+    const u8* source_ptr = static_cast<const u8*>(data);
     const u16 mask_or = set_mask ? 0x8000 : 0x0000;
     u32* dest_ptr = static_cast<u32*>(map_result.pointer);
     for (u32 row = 0; row < height; row++)
@@ -1137,7 +1114,7 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
         *(dest_ptr++) = VRAMRGBA5551ToRGBA8888(src_col | mask_or);
       }
 
-      source_ptr -= source_stride;
+      source_ptr += source_stride;
     }
 
     m_texture_stream_buffer->Unmap(num_pixels * sizeof(u32));
@@ -1149,11 +1126,8 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
     else
       m_vram_texture.Bind();
 
-    // lower-left origin flip happens here
-    const u32 flipped_y = VRAM_HEIGHT - y - height;
-
     // update texture data
-    glTexSubImage2D(m_vram_texture.GetGLTarget(), 0, x, flipped_y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexSubImage2D(m_vram_texture.GetGLTarget(), 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
                     reinterpret_cast<void*>(static_cast<uintptr_t>(map_result.buffer_offset)));
     m_texture_stream_buffer->Unbind();
 
@@ -1164,11 +1138,10 @@ void GPU_HW_OpenGL::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* 
       const u32 scaled_height = height * m_resolution_scale;
       const u32 scaled_x = x * m_resolution_scale;
       const u32 scaled_y = y * m_resolution_scale;
-      const u32 scaled_flipped_y = m_vram_texture.GetHeight() - scaled_y - scaled_height;
       glDisable(GL_SCISSOR_TEST);
       m_vram_encoding_texture.BindFramebuffer(GL_READ_FRAMEBUFFER);
-      glBlitFramebuffer(x, flipped_y, x + width, flipped_y + height, scaled_x, scaled_flipped_y,
-                        scaled_x + scaled_width, scaled_flipped_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+      glBlitFramebuffer(x, y, x + width, y + height, scaled_x, scaled_y, scaled_x + scaled_width,
+                        scaled_y + scaled_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
       glEnable(GL_SCISSOR_TEST);
     }
   }
@@ -1189,9 +1162,7 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
       UpdateVRAMReadTexture();
     IncludeVRAMDirtyRectangle(dst_bounds);
 
-    VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
-    uniforms.u_src_y = m_vram_texture.GetHeight() - uniforms.u_src_y - uniforms.u_height;
-    uniforms.u_dst_y = m_vram_texture.GetHeight() - uniforms.u_dst_y - uniforms.u_height;
+    const VRAMCopyUBOData uniforms = GetVRAMCopyUBOData(src_x, src_y, dst_x, dst_y, width, height);
     UploadUniformBuffer(&uniforms, sizeof(uniforms));
 
     glDisable(GL_SCISSOR_TEST);
@@ -1199,9 +1170,8 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
     SetDepthFunc((m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer) ? GL_GEQUAL : GL_ALWAYS);
 
     const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
-    glViewport(dst_bounds_scaled.left,
-               m_vram_texture.GetHeight() - dst_bounds_scaled.top - dst_bounds_scaled.GetHeight(),
-               dst_bounds_scaled.GetWidth(), dst_bounds_scaled.GetHeight());
+    glViewport(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),
+               dst_bounds_scaled.GetHeight());
     m_vram_read_texture.Bind();
     m_vram_copy_program.Bind();
     glBindVertexArray(m_attributeless_vao_id);
@@ -1223,10 +1193,6 @@ void GPU_HW_OpenGL::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wid
   dst_y *= m_resolution_scale;
   width *= m_resolution_scale;
   height *= m_resolution_scale;
-
-  // lower-left origin flip
-  src_y = m_vram_texture.GetHeight() - src_y - height;
-  dst_y = m_vram_texture.GetHeight() - dst_y - height;
 
   if (GLAD_GL_VERSION_4_3)
   {
@@ -1266,7 +1232,7 @@ void GPU_HW_OpenGL::UpdateVRAMReadTexture()
   const u32 width = scaled_rect.GetWidth();
   const u32 height = scaled_rect.GetHeight();
   const u32 x = scaled_rect.left;
-  const u32 y = m_vram_texture.GetHeight() - scaled_rect.top - height;
+  const u32 y = scaled_rect.top;
   const bool multisampled = m_vram_texture.IsMultisampled();
 
   if (!multisampled && GLAD_GL_VERSION_4_3)
@@ -1344,7 +1310,7 @@ void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left
   glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);
-  glViewport(ds_left, m_downsample_texture.GetHeight() - ds_top - ds_height, ds_width, ds_height);
+  glViewport(ds_left, ds_top, ds_width, ds_height);
   glBindVertexArray(m_attributeless_vao_id);
   source.Bind();
   m_downsample_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
@@ -1353,9 +1319,7 @@ void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left
 
   RestoreGraphicsAPIState();
 
-  g_host_display->SetDisplayTexture(&m_downsample_texture, HostDisplayPixelFormat::RGBA8,
-                                    m_downsample_texture.GetWidth(), m_downsample_texture.GetHeight(), ds_left,
-                                    m_downsample_texture.GetHeight() - ds_top, ds_width, -static_cast<s32>(ds_height));
+  g_host_display->SetDisplayTexture(&m_downsample_texture, ds_left, ds_top, ds_width, ds_height);
 }
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()

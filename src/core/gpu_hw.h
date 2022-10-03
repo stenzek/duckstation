@@ -37,7 +37,7 @@ public:
 
   virtual bool Initialize() override;
   virtual void Reset(bool clear_vram) override;
-  virtual bool DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display) override;
+  virtual bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
 
   void UpdateResolutionScale() override final;
   std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override final;

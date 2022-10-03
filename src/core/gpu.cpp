@@ -163,7 +163,7 @@ void GPU::SoftReset()
   UpdateGPUIdle();
 }
 
-bool GPU::DoState(StateWrapper& sw, HostDisplayTexture** host_texture, bool update_display)
+bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
   if (sw.IsReading())
   {

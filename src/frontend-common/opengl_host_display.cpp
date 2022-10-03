@@ -16,36 +16,6 @@ enum : u32
   TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024,
 };
 
-class OpenGLHostDisplayTexture final : public HostDisplayTexture
-{
-public:
-  OpenGLHostDisplayTexture(GL::Texture texture, HostDisplayPixelFormat format)
-    : m_texture(std::move(texture)), m_format(format)
-  {
-  }
-
-  ~OpenGLHostDisplayTexture() = default;
-
-  void* GetHandle() const override { return const_cast<GL::Texture*>(&m_texture); }
-
-  u32 GetWidth() const override { return m_texture.GetWidth(); }
-  u32 GetHeight() const override { return m_texture.GetHeight(); }
-  u32 GetLayers() const override { return m_texture.GetLayers(); }
-  u32 GetLevels() const override { return m_texture.GetLevels(); }
-  u32 GetSamples() const override { return m_texture.GetSamples(); }
-  HostDisplayPixelFormat GetFormat() const override { return m_format; }
-  GLuint GetGLID() const { return m_texture.GetGLId(); }
-
-  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override;
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override;
-  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override;
-
-private:
-  GL::Texture m_texture;
-  HostDisplayPixelFormat m_format;
-  u32 m_map_offset = 0;
-};
-
 OpenGLHostDisplay::OpenGLHostDisplay() = default;
 
 OpenGLHostDisplay::~OpenGLHostDisplay()
@@ -74,54 +44,134 @@ void* OpenGLHostDisplay::GetRenderContext() const
   return m_gl_context.get();
 }
 
-static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(bool is_gles, HostDisplayPixelFormat format)
+std::unique_ptr<GPUTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                             GPUTexture::Format format, const void* data,
+                                                             u32 data_stride, bool dynamic /* = false */)
 {
-  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
-    mapping = {{
-      {},                                                  // Unknown
-      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},               // RGBA8
-      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},               // BGRA8
-      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},        // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV} // RGBA5551
-    }};
+  std::unique_ptr<GL::Texture> tex(std::make_unique<GL::Texture>());
+  if (!tex->Create(width, height, layers, levels, samples, format, data, data_stride))
+    tex.reset();
 
-  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(HostDisplayPixelFormat::Count)>
-    mapping_gles2 = {{
-      {},                                        // Unknown
-      {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE},      // RGBA8
-      {},                                        // BGRA8
-      {GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5}, // RGB565
-      {}                                         // RGBA5551
-    }};
+  return tex;
+}
 
-  if (is_gles && !GLAD_GL_ES_VERSION_3_0)
-    return mapping_gles2[static_cast<u32>(format)];
+bool OpenGLHostDisplay::BeginTextureUpdate(GPUTexture* texture, u32 width, u32 height, void** out_buffer,
+                                           u32* out_pitch)
+{
+  const u32 pixel_size = texture->GetPixelSize();
+  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
+  const u32 size_required = stride * height;
+  GL::StreamBuffer* buffer = UsePBOForUploads() ? GetTextureStreamBuffer() : nullptr;
+
+  if (buffer && size_required < buffer->GetSize())
+  {
+    auto map = buffer->Map(4096, size_required);
+    m_texture_stream_buffer_offset = map.buffer_offset;
+    *out_buffer = map.pointer;
+    *out_pitch = stride;
+  }
   else
-    return mapping[static_cast<u32>(format)];
+  {
+    std::vector<u8>& repack_buffer = GetTextureRepackBuffer();
+    if (repack_buffer.size() < size_required)
+      repack_buffer.resize(size_required);
+
+    *out_buffer = repack_buffer.data();
+    *out_pitch = stride;
+  }
+
+  return true;
 }
 
-std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-                                                                     u32 samples, HostDisplayPixelFormat format,
-                                                                     const void* data, u32 data_stride,
-                                                                     bool dynamic /* = false */)
+void OpenGLHostDisplay::EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height)
 {
-  if (layers != 1 || levels != 1)
-    return {};
+  const u32 pixel_size = texture->GetPixelSize();
+  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
+  const u32 size_required = stride * height;
+  GL::Texture* gl_texture = static_cast<GL::Texture*>(texture);
+  GL::StreamBuffer* buffer = UsePBOForUploads() ? GetTextureStreamBuffer() : nullptr;
 
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
+  const auto [gl_internal_format, gl_format, gl_type] = GL::Texture::GetPixelFormatMapping(gl_texture->GetFormat());
+  const bool whole_texture = (!gl_texture->UseTextureStorage() && x == 0 && y == 0 && width == gl_texture->GetWidth() &&
+                              height == gl_texture->GetHeight());
 
-  // TODO: Set pack width
-  Assert(!data || data_stride == (width * sizeof(u32)));
+  gl_texture->Bind();
+  if (buffer && size_required < buffer->GetSize())
+  {
+    buffer->Unmap(size_required);
+    buffer->Bind();
 
-  GL::Texture tex;
-  if (!tex.Create(width, height, layers, levels, samples, gl_internal_format, gl_format, gl_type, data, data_stride))
-    return {};
+    if (whole_texture)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
+                   reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture_stream_buffer_offset)));
+    }
+    else
+    {
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type,
+                      reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture_stream_buffer_offset)));
+    }
 
-  return std::make_unique<OpenGLHostDisplayTexture>(std::move(tex), format);
+    buffer->Unbind();
+  }
+  else
+  {
+    std::vector<u8>& repack_buffer = GetTextureRepackBuffer();
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
+  }
 }
 
-bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
-                                        u32 width, u32 height, void* out_data, u32 out_data_stride)
+bool OpenGLHostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
+                                      u32 pitch)
+{
+  GL::Texture* gl_texture = static_cast<GL::Texture*>(texture);
+  const auto [gl_internal_format, gl_format, gl_type] = GL::Texture::GetPixelFormatMapping(gl_texture->GetFormat());
+  const u32 pixel_size = gl_texture->GetPixelSize();
+  const bool is_packed_tightly = (pitch == (pixel_size * width));
+
+  const bool whole_texture = (!gl_texture->UseTextureStorage() && x == 0 && y == 0 && width == gl_texture->GetWidth() &&
+                              height == gl_texture->GetHeight());
+  gl_texture->Bind();
+
+  // If we have GLES3, we can set row_length.
+  if (UseGLES3DrawPath() || is_packed_tightly)
+  {
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
+
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, data);
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, data);
+
+    if (!is_packed_tightly)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  }
+  else
+  {
+    // Otherwise, we need to repack the image.
+    std::vector<u8>& repack_buffer = GetTextureRepackBuffer();
+    const u32 packed_pitch = width * pixel_size;
+    const u32 repack_size = packed_pitch * height;
+    if (repack_buffer.size() < repack_size)
+      repack_buffer.resize(repack_size);
+
+    StringUtil::StrideMemCpy(repack_buffer.data(), packed_pitch, data, pitch, packed_pitch, height);
+
+    if (whole_texture)
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
+    else
+      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
+  }
+
+  return true;
+}
+
+bool OpenGLHostDisplay::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                        u32 out_data_stride)
 {
   GLint alignment;
   if (out_data_stride & 1)
@@ -137,14 +187,13 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   if (!m_use_gles2_draw_path)
   {
     glGetIntegerv(GL_PACK_ROW_LENGTH, &old_row_length);
-    glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / GetDisplayPixelFormatSize(texture_format));
+    glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / texture->GetPixelSize());
   }
 
-  const GL::Texture* texture = static_cast<const GL::Texture*>(texture_handle);
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), texture_format);
+  const auto [gl_internal_format, gl_format, gl_type] = GL::Texture::GetPixelFormatMapping(texture->GetFormat());
 
-  GL::Texture::GetTextureSubImage(texture->GetGLId(), 0, x, y, 0, width, height, 1, gl_format, gl_type,
-                                  height * out_data_stride, out_data);
+  GL::Texture::GetTextureSubImage(static_cast<const GL::Texture*>(texture)->GetGLId(), 0, x, y, 0, width, height, 1,
+                                  gl_format, gl_type, height * out_data_stride, out_data);
 
   glPixelStorei(GL_PACK_ALIGNMENT, old_alignment);
   if (!m_use_gles2_draw_path)
@@ -152,9 +201,9 @@ bool OpenGLHostDisplay::DownloadTexture(const void* texture_handle, HostDisplayP
   return true;
 }
 
-bool OpenGLHostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
+bool OpenGLHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_gl_context->IsGLES(), format);
+  const auto [gl_internal_format, gl_format, gl_type] = GL::Texture::GetPixelFormatMapping(format);
   return (gl_internal_format != static_cast<GLenum>(0));
 }
 
@@ -594,11 +643,10 @@ bool OpenGLHostDisplay::Render(bool skip_present)
 }
 
 bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                         HostDisplayPixelFormat* out_format)
+                                         GPUTexture::Format* out_format)
 {
   GL::Texture texture;
-  if (!texture.Create(width, height, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, nullptr) ||
-      !texture.CreateFramebuffer())
+  if (!texture.Create(width, height, 1, 1, 1, GPUTexture::Format::RGBA8, nullptr, 0) || !texture.CreateFramebuffer())
   {
     return false;
   }
@@ -615,22 +663,21 @@ bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
     if (!m_post_processing_chain.IsEmpty())
     {
       ApplyPostProcessingChain(texture.GetGLFramebufferID(), left, height - top - draw_height, draw_width, draw_height,
-                               m_display_texture_handle, m_display_texture_width, m_display_texture_height,
-                               m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                               m_display_texture_view_height, width, height);
+                               static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
+                               m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                               width, height);
     }
     else
     {
-      RenderDisplay(left, height - top - draw_height, draw_width, draw_height, m_display_texture_handle,
-                    m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
-                    m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
-                    IsUsingLinearFiltering());
+      RenderDisplay(left, height - top - draw_height, draw_width, draw_height,
+                    static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x, m_display_texture_view_y,
+                    m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
     }
   }
 
   out_pixels->resize(width * height);
   *out_stride = sizeof(u32) * width;
-  *out_format = HostDisplayPixelFormat::RGBA8;
+  *out_format = GPUTexture::Format::RGBA8;
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, out_pixels->data());
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -653,16 +700,16 @@ void OpenGLHostDisplay::RenderDisplay()
 
   if (!m_post_processing_chain.IsEmpty())
   {
-    ApplyPostProcessingChain(0, left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
-                             m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+    ApplyPostProcessingChain(0, left, GetWindowHeight() - top - height, width, height,
+                             static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
                              GetWindowWidth(), GetWindowHeight());
     return;
   }
 
-  RenderDisplay(left, GetWindowHeight() - top - height, width, height, m_display_texture_handle,
-                m_display_texture_width, m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
+  RenderDisplay(left, GetWindowHeight() - top - height, width, height, static_cast<GL::Texture*>(m_display_texture),
+                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 static void DrawFullscreenQuadES2(s32 tex_view_x, s32 tex_view_y, s32 tex_view_width, s32 tex_view_height,
@@ -689,12 +736,10 @@ static void DrawFullscreenQuadES2(s32 tex_view_x, s32 tex_view_y, s32 tex_view_w
   glDisableVertexAttribArray(0);
 }
 
-void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, void* texture_handle,
-                                      u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
-                                      s32 texture_view_width, s32 texture_view_height, bool linear_filter)
+void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 height, GL::Texture* texture,
+                                      s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                      s32 texture_view_height, bool linear_filter)
 {
-  const GL::Texture* texture = static_cast<const GL::Texture*>(texture_handle);
-
   glViewport(left, bottom, width, height);
   glDisable(GL_BLEND);
   glDisable(GL_CULL_FACE);
@@ -711,10 +756,11 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
     const float size_adjust = linear ? 1.0f : 0.0f;
     const float flip_adjust = (texture_view_height < 0) ? -1.0f : 1.0f;
     m_display_program.Uniform4f(
-      0, (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
-      (static_cast<float>(texture_view_y) + (position_adjust * flip_adjust)) / static_cast<float>(texture_height),
-      (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
-      (static_cast<float>(texture_view_height) - (size_adjust * flip_adjust)) / static_cast<float>(texture_height));
+      0, (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture->GetWidth()),
+      (static_cast<float>(texture_view_y) + (position_adjust * flip_adjust)) / static_cast<float>(texture->GetHeight()),
+      (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture->GetWidth()),
+      (static_cast<float>(texture_view_height) - (size_adjust * flip_adjust)) /
+        static_cast<float>(texture->GetHeight()));
     glBindSampler(0, linear_filter ? m_display_linear_sampler : m_display_nearest_sampler);
     glBindVertexArray(m_display_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -725,7 +771,7 @@ void OpenGLHostDisplay::RenderDisplay(s32 left, s32 bottom, s32 width, s32 heigh
     texture->SetLinearFilter(linear_filter);
 
     DrawFullscreenQuadES2(m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                          m_display_texture_view_height, m_display_texture_width, m_display_texture_height);
+                          m_display_texture_view_height, texture->GetWidth(), texture->GetHeight());
   }
 }
 
@@ -738,8 +784,7 @@ void OpenGLHostDisplay::RenderSoftwareCursor()
   RenderSoftwareCursor(left, GetWindowHeight() - top - height, width, height, m_cursor_texture.get());
 }
 
-void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height,
-                                             HostDisplayTexture* texture_handle)
+void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s32 height, GPUTexture* texture_handle)
 {
   glViewport(left, bottom, width, height);
   glEnable(GL_BLEND);
@@ -749,7 +794,7 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
   m_cursor_program.Bind();
-  glBindTexture(GL_TEXTURE_2D, static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetGLID());
+  static_cast<GL::Texture*>(texture_handle)->Bind();
 
   if (!m_use_gles2_draw_path)
   {
@@ -761,8 +806,8 @@ void OpenGLHostDisplay::RenderSoftwareCursor(s32 left, s32 bottom, s32 width, s3
   }
   else
   {
-    const s32 tex_width = static_cast<s32>(static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetWidth());
-    const s32 tex_height = static_cast<s32>(static_cast<OpenGLHostDisplayTexture*>(texture_handle)->GetHeight());
+    const s32 tex_width = static_cast<s32>(texture_handle->GetWidth());
+    const s32 tex_height = static_cast<s32>(texture_handle->GetHeight());
     DrawFullscreenQuadES2(0, 0, tex_width, tex_height, tex_width, tex_height);
   }
 }
@@ -842,8 +887,7 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
   if (m_post_processing_input_texture.GetWidth() != target_width ||
       m_post_processing_input_texture.GetHeight() != target_height)
   {
-    if (!m_post_processing_input_texture.Create(target_width, target_height, 1, 1, 1, GL_RGBA8, GL_RGBA,
-                                                GL_UNSIGNED_BYTE) ||
+    if (!m_post_processing_input_texture.Create(target_width, target_height, 1, 1, 1, GPUTexture::Format::RGBA8) ||
         !m_post_processing_input_texture.CreateFramebuffer())
     {
       return false;
@@ -856,7 +900,7 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
     PostProcessingStage& pps = m_post_processing_stages[i];
     if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
     {
-      if (!pps.output_texture.Create(target_width, target_height, 1, 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE) ||
+      if (!pps.output_texture.Create(target_width, target_height, 1, 1, 1, GPUTexture::Format::RGBA8) ||
           !pps.output_texture.CreateFramebuffer())
       {
         return false;
@@ -868,29 +912,24 @@ bool OpenGLHostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 t
 }
 
 void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_left, s32 final_top, s32 final_width,
-                                                 s32 final_height, void* texture_handle, u32 texture_width,
-                                                 s32 texture_height, s32 texture_view_x, s32 texture_view_y,
-                                                 s32 texture_view_width, s32 texture_view_height, u32 target_width,
-                                                 u32 target_height)
+                                                 s32 final_height, GL::Texture* texture, s32 texture_view_x,
+                                                 s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
+                                                 u32 target_width, u32 target_height)
 {
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
-    RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
-                  texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
-                  texture_view_height, IsUsingLinearFiltering());
+    RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture,
+                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
     return;
   }
 
   // downsample/upsample - use same viewport for remainder
   m_post_processing_input_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
-  RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture_handle,
-                texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width, texture_view_height,
-                IsUsingLinearFiltering());
+  RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture,
+                texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
-  texture_handle = &m_post_processing_input_texture;
-  texture_width = m_post_processing_input_texture.GetWidth();
-  texture_height = m_post_processing_input_texture.GetHeight();
+  texture = &m_post_processing_input_texture;
   texture_view_x = final_left;
   texture_view_y = final_top;
   texture_view_width = final_width;
@@ -914,12 +953,12 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
 
     pps.program.Bind();
 
-    static_cast<const GL::Texture*>(texture_handle)->Bind();
+    static_cast<const GL::Texture*>(texture)->Bind();
     glBindSampler(0, m_display_nearest_sampler);
 
     const auto map_result = m_post_processing_ubo->Map(m_uniform_buffer_alignment, pps.uniforms_size);
     m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
-      map_result.pointer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
+      map_result.pointer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
       texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
     m_post_processing_ubo->Unmap(pps.uniforms_size);
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_post_processing_ubo->GetGLBufferId(), map_result.buffer_offset,
@@ -928,7 +967,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     if (i != final_stage)
-      texture_handle = &pps.output_texture;
+      texture = &pps.output_texture;
   }
 
   glBindSampler(0, 0);
@@ -955,7 +994,7 @@ void OpenGLHostDisplay::DestroyTimestampQueries()
   if (m_timestamp_query_started)
   {
     const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
-    EndQuery(m_timestamp_queries[m_write_timestamp_query]);
+    EndQuery(GL_TIME_ELAPSED);
   }
 
   DeleteQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
@@ -1061,122 +1100,4 @@ GL::StreamBuffer* OpenGLHostDisplay::GetTextureStreamBuffer()
 
   m_texture_stream_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE);
   return m_texture_stream_buffer.get();
-}
-
-bool OpenGLHostDisplayTexture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch)
-{
-  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
-  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
-  const u32 size_required = stride * height;
-  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
-  GL::StreamBuffer* buffer = display->UsePBOForUploads() ? display->GetTextureStreamBuffer() : nullptr;
-
-  if (buffer && size_required < buffer->GetSize())
-  {
-    auto map = buffer->Map(4096, size_required);
-    m_map_offset = map.buffer_offset;
-    *out_buffer = map.pointer;
-    *out_pitch = stride;
-  }
-  else
-  {
-    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
-    if (repack_buffer.size() < size_required)
-      repack_buffer.resize(size_required);
-
-    *out_buffer = repack_buffer.data();
-    *out_pitch = stride;
-  }
-
-  return true;
-}
-
-void OpenGLHostDisplayTexture::EndUpdate(u32 x, u32 y, u32 width, u32 height)
-{
-  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
-  const u32 stride = Common::AlignUpPow2(width * pixel_size, 4);
-  const u32 size_required = stride * height;
-  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
-  GL::StreamBuffer* buffer = display->UsePBOForUploads() ? display->GetTextureStreamBuffer() : nullptr;
-
-  const auto [gl_internal_format, gl_format, gl_type] =
-    GetPixelFormatMapping(display->GetGLContext()->IsGLES(), m_format);
-  const bool whole_texture = (!m_texture.UseTextureStorage() && x == 0 && y == 0 && width == m_texture.GetWidth() &&
-                              height == m_texture.GetHeight());
-
-  m_texture.Create(width, height, 1, 1, 1, gl_internal_format, gl_format, gl_type, nullptr, false, false);
-  m_texture.Bind();
-  if (buffer && size_required < buffer->GetSize())
-  {
-    buffer->Unmap(size_required);
-    buffer->Bind();
-
-    if (whole_texture)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type,
-                   reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
-    }
-    else
-    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type,
-                      reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
-    }
-
-    buffer->Unbind();
-  }
-  else
-  {
-    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
-
-    if (whole_texture)
-      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
-    else
-      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
-  }
-}
-
-bool OpenGLHostDisplayTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
-{
-  OpenGLHostDisplay* display = static_cast<OpenGLHostDisplay*>(g_host_display.get());
-  const auto [gl_internal_format, gl_format, gl_type] =
-    GetPixelFormatMapping(display->GetGLContext()->IsGLES(), m_format);
-  const u32 pixel_size = HostDisplay::GetDisplayPixelFormatSize(m_format);
-  const bool is_packed_tightly = (pitch == (pixel_size * width));
-
-  const bool whole_texture = (!m_texture.UseTextureStorage() && x == 0 && y == 0 && width == m_texture.GetWidth() &&
-                              height == m_texture.GetHeight());
-  m_texture.Bind();
-
-  // If we have GLES3, we can set row_length.
-  if (!display->UseGLES3DrawPath() || is_packed_tightly)
-  {
-    if (!is_packed_tightly)
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
-
-    if (whole_texture)
-      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, data);
-    else
-      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, data);
-
-    if (!is_packed_tightly)
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  }
-  else
-  {
-    // Otherwise, we need to repack the image.
-    std::vector<u8>& repack_buffer = display->GetTextureRepackBuffer();
-    const u32 packed_pitch = width * pixel_size;
-    const u32 repack_size = packed_pitch * height;
-    if (repack_buffer.size() < repack_size)
-      repack_buffer.resize(repack_size);
-
-    StringUtil::StrideMemCpy(repack_buffer.data(), packed_pitch, data, pitch, packed_pitch, height);
-
-    if (whole_texture)
-      glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, repack_buffer.data());
-    else
-      glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, gl_format, gl_type, repack_buffer.data());
-  }
-
-  return true;
 }

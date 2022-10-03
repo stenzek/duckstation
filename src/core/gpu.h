@@ -15,7 +15,7 @@
 class StateWrapper;
 
 class HostDisplay;
-class HostDisplayTexture;
+class GPUTexture;
 
 class TimingEvent;
 class Timers;
@@ -83,7 +83,7 @@ public:
 
   virtual bool Initialize();
   virtual void Reset(bool clear_vram);
-  virtual bool DoState(StateWrapper& sw, HostDisplayTexture** save_to_texture, bool update_display);
+  virtual bool DoState(StateWrapper& sw, GPUTexture** save_to_texture, bool update_display);
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   virtual void ResetGraphicsAPIState();

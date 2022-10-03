@@ -266,7 +266,7 @@ bool ImGui_ImplDX12_CreateFontsTexture()
     // Upload texture to graphics system
     if (bd->FontTexture.GetWidth() != static_cast<u32>(width) || bd->FontTexture.GetHeight() != static_cast<u32>(height))
     {
-        if (!bd->FontTexture.Create(width, height, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+        if (!bd->FontTexture.Create(width, height, 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
           DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
           D3D12_RESOURCE_FLAG_NONE))
         {

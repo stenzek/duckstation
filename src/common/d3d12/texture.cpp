@@ -8,79 +8,111 @@
 #include "util.h"
 Log_SetChannel(D3D12);
 
-namespace D3D12 {
+static constexpr std::array<DXGI_FORMAT, static_cast<u32>(GPUTexture::Format::Count)> s_dxgi_mapping = {
+  {DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_B5G6R5_UNORM,
+   DXGI_FORMAT_B5G5R5A1_UNORM, DXGI_FORMAT_R8_UNORM, DXGI_FORMAT_D16_UNORM}};
 
-Texture::Texture() = default;
+D3D12::Texture::Texture() = default;
 
-Texture::Texture(ID3D12Resource* resource, D3D12_RESOURCE_STATES state) : m_resource(std::move(resource))
+D3D12::Texture::Texture(ID3D12Resource* resource, D3D12_RESOURCE_STATES state) : m_resource(std::move(resource))
 {
   const D3D12_RESOURCE_DESC desc = GetDesc();
-  m_width = static_cast<u32>(desc.Width);
-  m_height = desc.Height;
-  m_samples = desc.SampleDesc.Count;
-  m_format = desc.Format;
+  m_width = static_cast<u16>(desc.Width);
+  m_height = static_cast<u16>(desc.Height);
+  m_layers = static_cast<u8>(desc.DepthOrArraySize);
+  m_levels = static_cast<u8>(desc.MipLevels);
+  m_samples = static_cast<u8>(desc.SampleDesc.Count);
+  m_format = LookupBaseFormat(desc.Format);
 }
 
-Texture::Texture(Texture&& texture)
+D3D12::Texture::Texture(Texture&& texture)
   : m_resource(std::move(texture.m_resource)), m_srv_descriptor(texture.m_srv_descriptor),
-    m_rtv_or_dsv_descriptor(texture.m_rtv_or_dsv_descriptor), m_width(texture.m_width), m_height(texture.m_height),
-    m_samples(texture.m_samples), m_format(texture.m_format), m_state(texture.m_state),
-    m_is_depth_view(texture.m_is_depth_view)
+    m_rtv_or_dsv_descriptor(texture.m_rtv_or_dsv_descriptor), m_is_depth_view(texture.m_is_depth_view)
 {
+  m_width = texture.m_width;
+  m_height = texture.m_height;
+  m_layers = texture.m_layers;
+  m_levels = texture.m_levels;
+  m_samples = texture.m_samples;
   texture.m_srv_descriptor = {};
   texture.m_rtv_or_dsv_descriptor = {};
-  texture.m_width = 0;
-  texture.m_height = 0;
-  texture.m_samples = 0;
-  texture.m_format = DXGI_FORMAT_UNKNOWN;
   texture.m_state = D3D12_RESOURCE_STATE_COMMON;
   texture.m_is_depth_view = false;
+  texture.ClearBaseProperties();
 }
 
-Texture::~Texture()
+DXGI_FORMAT D3D12::Texture::GetDXGIFormat(Format format)
+{
+  return s_dxgi_mapping[static_cast<u8>(format)];
+}
+
+GPUTexture::Format D3D12::Texture::LookupBaseFormat(DXGI_FORMAT dformat)
+{
+  for (u32 i = 0; i < static_cast<u32>(s_dxgi_mapping.size()); i++)
+  {
+    if (s_dxgi_mapping[i] == dformat)
+      return static_cast<Format>(i);
+  }
+  return GPUTexture::Format::Unknown;
+}
+
+D3D12::Texture::~Texture()
 {
   Destroy();
 }
 
-Texture& Texture::operator=(Texture&& texture)
+D3D12::Texture& D3D12::Texture::operator=(Texture&& texture)
 {
   Destroy();
+
+  m_width = texture.m_width;
+  m_height = texture.m_height;
+  m_layers = texture.m_layers;
+  m_levels = texture.m_levels;
+  m_samples = texture.m_samples;
+
   m_resource = std::move(texture.m_resource);
   m_srv_descriptor = texture.m_srv_descriptor;
   m_rtv_or_dsv_descriptor = texture.m_rtv_or_dsv_descriptor;
-  m_width = texture.m_width;
-  m_height = texture.m_height;
-  m_samples = texture.m_samples;
-  m_format = texture.m_format;
   m_state = texture.m_state;
   m_is_depth_view = texture.m_is_depth_view;
+
+  texture.ClearBaseProperties();
   texture.m_srv_descriptor = {};
   texture.m_rtv_or_dsv_descriptor = {};
-  texture.m_width = 0;
-  texture.m_height = 0;
-  texture.m_samples = 0;
-  texture.m_format = DXGI_FORMAT_UNKNOWN;
   texture.m_state = D3D12_RESOURCE_STATE_COMMON;
   texture.m_is_depth_view = false;
   return *this;
 }
 
-D3D12_RESOURCE_DESC Texture::GetDesc() const
+D3D12_RESOURCE_DESC D3D12::Texture::GetDesc() const
 {
   return m_resource->GetDesc();
 }
 
-bool Texture::Create(u32 width, u32 height, u32 samples, DXGI_FORMAT format, DXGI_FORMAT srv_format,
-                     DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format, D3D12_RESOURCE_FLAGS flags)
+bool D3D12::Texture::IsValid() const
+{
+  return static_cast<bool>(m_resource);
+}
+
+bool D3D12::Texture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format,
+                            DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
+                            D3D12_RESOURCE_FLAGS flags)
 {
   constexpr D3D12_HEAP_PROPERTIES heap_properties = {D3D12_HEAP_TYPE_DEFAULT};
+
+  if (width > MAX_WIDTH || height > MAX_HEIGHT || layers > MAX_LAYERS || levels > MAX_LEVELS || samples > MAX_SAMPLES)
+  {
+    Log_ErrorPrintf("Invalid dimensions: %ux%ux%u %u %u", width, height, layers, levels, samples);
+    return false;
+  }
 
   D3D12_RESOURCE_DESC desc = {};
   desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
   desc.Width = width;
-  desc.Height = height;
-  desc.DepthOrArraySize = 1;
-  desc.MipLevels = 1;
+  desc.Height = static_cast<u16>(height);
+  desc.DepthOrArraySize = static_cast<u16>(layers);
+  desc.MipLevels = static_cast<u16>(levels);
   desc.Format = format;
   desc.SampleDesc.Count = samples;
   desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -147,17 +179,19 @@ bool Texture::Create(u32 width, u32 height, u32 samples, DXGI_FORMAT format, DXG
   m_resource = std::move(resource);
   m_srv_descriptor = std::move(srv_descriptor);
   m_rtv_or_dsv_descriptor = std::move(rtv_descriptor);
-  m_width = width;
-  m_height = height;
-  m_samples = samples;
-  m_format = format;
+  m_width = static_cast<u16>(width);
+  m_height = static_cast<u16>(height);
+  m_layers = static_cast<u8>(layers);
+  m_levels = static_cast<u8>(levels);
+  m_samples = static_cast<u8>(samples);
+  m_format = LookupBaseFormat(format);
   m_state = state;
   m_is_depth_view = is_depth_view;
   return true;
 }
 
-bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
-                    DXGI_FORMAT dsv_format, D3D12_RESOURCE_STATES state)
+bool D3D12::Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
+                           DXGI_FORMAT dsv_format, D3D12_RESOURCE_STATES state)
 {
   const D3D12_RESOURCE_DESC desc(texture->GetDesc());
 
@@ -167,6 +201,8 @@ bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI
     if (!CreateSRVDescriptor(texture.Get(), srv_format, desc.SampleDesc.Count > 1, &srv_descriptor))
       return false;
   }
+
+  m_is_depth_view = false;
 
   if (rtv_format != DXGI_FORMAT_UNKNOWN)
   {
@@ -184,20 +220,24 @@ bool Texture::Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI
       g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
       return false;
     }
+
+    m_is_depth_view = true;
   }
 
   m_resource = std::move(texture);
   m_srv_descriptor = std::move(srv_descriptor);
   m_rtv_or_dsv_descriptor = std::move(rtv_descriptor);
-  m_width = static_cast<u32>(desc.Width);
-  m_height = desc.Height;
-  m_samples = desc.SampleDesc.Count;
-  m_format = desc.Format;
+  m_width = static_cast<u16>(desc.Width);
+  m_height = static_cast<u16>(desc.Height);
+  m_layers = static_cast<u8>(desc.DepthOrArraySize);
+  m_levels = static_cast<u8>(desc.MipLevels);
+  m_samples = static_cast<u8>(desc.SampleDesc.Count);
+  m_format = LookupBaseFormat(desc.Format);
   m_state = state;
   return true;
 }
 
-void Texture::Destroy(bool defer /* = true */)
+void D3D12::Texture::Destroy(bool defer /* = true */)
 {
   if (defer)
   {
@@ -220,14 +260,11 @@ void Texture::Destroy(bool defer /* = true */)
     m_resource.Reset();
   }
 
-  m_width = 0;
-  m_height = 0;
-  m_samples = 0;
-  m_format = DXGI_FORMAT_UNKNOWN;
+  ClearBaseProperties();
   m_is_depth_view = false;
 }
 
-void Texture::TransitionToState(D3D12_RESOURCE_STATES state) const
+void D3D12::Texture::TransitionToState(D3D12_RESOURCE_STATES state) const
 {
   if (m_state == state)
     return;
@@ -236,9 +273,9 @@ void Texture::TransitionToState(D3D12_RESOURCE_STATES state) const
   m_state = state;
 }
 
-bool Texture::BeginStreamUpdate(u32 x, u32 y, u32 width, u32 height, void** out_data, u32* out_data_pitch)
+bool D3D12::Texture::BeginStreamUpdate(u32 x, u32 y, u32 width, u32 height, void** out_data, u32* out_data_pitch)
 {
-  const u32 copy_pitch = Common::AlignUpPow2(width * GetTexelSize(m_format), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 copy_pitch = Common::AlignUpPow2(width * GetPixelSize(), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
   const u32 upload_size = copy_pitch * height;
 
   if (!g_d3d12_context->GetTextureStreamBuffer().ReserveMemory(upload_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
@@ -258,9 +295,9 @@ bool Texture::BeginStreamUpdate(u32 x, u32 y, u32 width, u32 height, void** out_
   return true;
 }
 
-void Texture::EndStreamUpdate(u32 x, u32 y, u32 width, u32 height)
+void D3D12::Texture::EndStreamUpdate(u32 x, u32 y, u32 width, u32 height)
 {
-  const u32 copy_pitch = Common::AlignUpPow2(width * GetTexelSize(m_format), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 copy_pitch = Common::AlignUpPow2(width * GetPixelSize(), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
   const u32 upload_size = copy_pitch * height;
 
   StreamBuffer& sb = g_d3d12_context->GetTextureStreamBuffer();
@@ -270,7 +307,8 @@ void Texture::EndStreamUpdate(u32 x, u32 y, u32 width, u32 height)
   CopyFromBuffer(x, y, width, height, copy_pitch, sb.GetBuffer(), sb_offset);
 }
 
-void Texture::CopyFromBuffer(u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3D12Resource* buffer, u32 buffer_offset)
+void D3D12::Texture::CopyFromBuffer(u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3D12Resource* buffer,
+                                    u32 buffer_offset)
 {
   D3D12_TEXTURE_COPY_LOCATION src;
   src.pResource = buffer;
@@ -281,7 +319,7 @@ void Texture::CopyFromBuffer(u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3
   src.PlacedFootprint.Footprint.Height = height;
   src.PlacedFootprint.Footprint.Depth = 1;
   src.PlacedFootprint.Footprint.RowPitch = pitch;
-  src.PlacedFootprint.Footprint.Format = m_format;
+  src.PlacedFootprint.Footprint.Format = GetDXGIFormat();
 
   D3D12_TEXTURE_COPY_LOCATION dst;
   dst.pResource = m_resource.Get();
@@ -295,15 +333,15 @@ void Texture::CopyFromBuffer(u32 x, u32 y, u32 width, u32 height, u32 pitch, ID3
   TransitionToState(old_state);
 }
 
-bool Texture::LoadData(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+bool D3D12::Texture::LoadData(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
 {
-  const u32 texel_size = GetTexelSize(m_format);
+  const u32 texel_size = GetPixelSize();
   const u32 upload_pitch = Common::AlignUpPow2(width * texel_size, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
   const u32 upload_size = upload_pitch * height;
   if (upload_size >= g_d3d12_context->GetTextureStreamBuffer().GetSize())
   {
     StagingTexture st;
-    if (!st.Create(width, height, m_format, true) || !st.WritePixels(0, 0, width, height, data, pitch))
+    if (!st.Create(width, height, GetDXGIFormat(), true) || !st.WritePixels(0, 0, width, height, data, pitch))
       return false;
 
     D3D12_RESOURCE_STATES old_state = m_state;
@@ -324,7 +362,7 @@ bool Texture::LoadData(u32 x, u32 y, u32 width, u32 height, const void* data, u3
   return true;
 }
 
-void Texture::CopyToUploadBuffer(const void* src_data, u32 src_pitch, u32 height, void* dst_data, u32 dst_pitch)
+void D3D12::Texture::CopyToUploadBuffer(const void* src_data, u32 src_pitch, u32 height, void* dst_data, u32 dst_pitch)
 {
   const u8* src_ptr = static_cast<const u8*>(src_data);
   u8* dst_ptr = static_cast<u8*>(dst_data);
@@ -344,7 +382,8 @@ void Texture::CopyToUploadBuffer(const void* src_data, u32 src_pitch, u32 height
   }
 }
 
-bool Texture::CreateSRVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled, DescriptorHandle* dh)
+bool D3D12::Texture::CreateSRVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled,
+                                         DescriptorHandle* dh)
 {
   if (!g_d3d12_context->GetDescriptorHeapManager().Allocate(dh))
   {
@@ -362,7 +401,8 @@ bool Texture::CreateSRVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, 
   return true;
 }
 
-bool Texture::CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled, DescriptorHandle* dh)
+bool D3D12::Texture::CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled,
+                                         DescriptorHandle* dh)
 {
   if (!g_d3d12_context->GetRTVHeapManager().Allocate(dh))
   {
@@ -377,7 +417,8 @@ bool Texture::CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, 
   return true;
 }
 
-bool Texture::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled, DescriptorHandle* dh)
+bool D3D12::Texture::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, bool multisampled,
+                                         DescriptorHandle* dh)
 {
   if (!g_d3d12_context->GetDSVHeapManager().Allocate(dh))
   {
@@ -391,5 +432,3 @@ bool Texture::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, 
   g_d3d12_context->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
   return true;
 }
-
-} // namespace D3D12

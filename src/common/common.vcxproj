@@ -46,6 +46,7 @@
     <ClInclude Include="gl\texture.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="http_downloader.h" />
@@ -142,6 +143,7 @@
     <ClCompile Include="gl\texture.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="gpu_texture.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="image.cpp" />

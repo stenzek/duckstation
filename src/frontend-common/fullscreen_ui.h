@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-class HostDisplayTexture;
+class GPUTexture;
 
 struct Settings;
 

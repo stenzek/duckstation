@@ -1,5 +1,5 @@
 #pragma once
-#include "../types.h"
+#include "../gpu_texture.h"
 #include "../windows_headers.h"
 #include "descriptor_heap_manager.h"
 #include <d3d12.h>
@@ -9,7 +9,7 @@ namespace D3D12 {
 
 class StreamBuffer;
 
-class Texture final
+class Texture final : public GPUTexture
 {
 public:
   template<typename T>
@@ -21,21 +21,21 @@ public:
   Texture(const Texture&) = delete;
   ~Texture();
 
+  static DXGI_FORMAT GetDXGIFormat(Format format);
+  static Format LookupBaseFormat(DXGI_FORMAT dformat);
+
   ALWAYS_INLINE ID3D12Resource* GetResource() const { return m_resource.Get(); }
   ALWAYS_INLINE const DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
   ALWAYS_INLINE const DescriptorHandle& GetRTVOrDSVDescriptor() const { return m_rtv_or_dsv_descriptor; }
   ALWAYS_INLINE D3D12_RESOURCE_STATES GetState() const { return m_state; }
-
-  ALWAYS_INLINE u32 GetWidth() const { return m_width; }
-  ALWAYS_INLINE u32 GetHeight() const { return m_height; }
-  ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
-  ALWAYS_INLINE DXGI_FORMAT GetFormat() const { return m_format; }
-  ALWAYS_INLINE bool IsMultisampled() const { return m_samples > 1; }
+  ALWAYS_INLINE DXGI_FORMAT GetDXGIFormat() const { return GetDXGIFormat(m_format); }
 
   ALWAYS_INLINE operator ID3D12Resource*() const { return m_resource.Get(); }
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_resource); }
 
-  bool Create(u32 width, u32 height, u32 samples, DXGI_FORMAT format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
+  bool IsValid() const override;
+
+  bool Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
               DXGI_FORMAT dsv_format, D3D12_RESOURCE_FLAGS flags);
   bool Adopt(ComPtr<ID3D12Resource> texture, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
              D3D12_RESOURCE_STATES state);
@@ -68,10 +68,6 @@ private:
   ComPtr<ID3D12Resource> m_resource;
   DescriptorHandle m_srv_descriptor = {};
   DescriptorHandle m_rtv_or_dsv_descriptor = {};
-  u32 m_width = 0;
-  u32 m_height = 0;
-  u32 m_samples = 0;
-  DXGI_FORMAT m_format = DXGI_FORMAT_UNKNOWN;
 
   mutable D3D12_RESOURCE_STATES m_state = D3D12_RESOURCE_STATE_COMMON;
 

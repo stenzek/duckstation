@@ -25,25 +25,6 @@ void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
   ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
   ss << "CONSTANT bool PER_SAMPLE_SHADING = " << (m_per_sample_shading ? "true" : "false") << ";\n";
   ss << R"(
-
-float fixYCoord(float y)
-{
-#if API_OPENGL || API_OPENGL_ES
-  return 1.0 - RCP_VRAM_SIZE.y - y;
-#else
-  return y;
-#endif
-}
-
-uint fixYCoord(uint y)
-{
-#if API_OPENGL || API_OPENGL_ES
-  return VRAM_SIZE.y - y - 1u;
-#else
-  return y;
-#endif
-}
-
 uint RGBA8ToRGBA5551(float4 v)
 {
   uint r = uint(roundEven(v.r * 31.0));
@@ -84,23 +65,6 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
-
-  ss << R"(
-
-// OpenGL seems to be off by one pixel in the Y direction due to lower-left origin, but only on
-// Intel and NVIDIA drivers. AMD is fine. V3D requires coordinates to be slightly offset even further.
-#if API_OPENGL || API_OPENGL_ES
-  #ifdef DRIVER_V3D
-    CONSTANT float POS_EPSILON = 0.0001;
-  #else
-    #ifdef DRIVER_POWERVR
-      CONSTANT float POS_EPSILON = 0.001;
-    #else
-      CONSTANT float POS_EPSILON = 0.00001;
-    #endif
-  #endif
-#endif
-)";
 
   if (textured)
   {
@@ -145,14 +109,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
 #endif
 
 #if API_OPENGL || API_OPENGL_ES
-  pos_y += POS_EPSILON;
-
   // 0..1 to -1..1 depth range.
   pos_z = (pos_z * 2.0) - 1.0;
 #endif
 
   // NDC space Y flip in Vulkan.
-#if API_VULKAN
+#if API_OPENGL || API_OPENGL_ES || API_VULKAN
   pos_y = -pos_y;
 #endif
 
@@ -767,7 +729,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     #endif
 
     // fixup coords
-    uint2 vicoord = uint2(texpage.x + index_coord.x * RESOLUTION_SCALE, fixYCoord(texpage.y + index_coord.y * RESOLUTION_SCALE));
+    uint2 vicoord = texpage.xy + (index_coord * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE));
 
     // load colour/palette
     float4 texel = SAMPLE_TEXTURE(samp0, float2(vicoord) * RCP_VRAM_SIZE);
@@ -783,12 +745,12 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     #endif
 
     // sample palette
-    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), fixYCoord(texpage.w));
+    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), texpage.w);
     return SAMPLE_TEXTURE(samp0, float2(palette_icoord) * RCP_VRAM_SIZE);
   #else
     // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
     uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));    
-    uint2 direct_icoord = uint2(texpage.x + icoord.x, fixYCoord(texpage.y + icoord.y));
+    uint2 direct_icoord = texpage.xy + icoord;
     return SAMPLE_TEXTURE(samp0, float2(direct_icoord) * RCP_VRAM_SIZE);
   #endif
 }
@@ -831,7 +793,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
   float oalpha;
 
   #if INTERLACING
-    if ((fixYCoord(uint(v_pos.y)) & 1u) == u_interlaced_displayed_field)
+    if ((uint(v_pos.y) & 1u) == u_interlaced_displayed_field)
       discard;
   #endif
 
@@ -1097,7 +1059,7 @@ float3 SampleVRAM24Smoothed(uint2 icoords)
   uint2 icoords = uint2(v_pos.xy) + uint2(u_crop_left, 0u);
 
   #if INTERLACED
-    if ((fixYCoord(icoords.y) & 1u) != u_field_offset)
+    if ((icoords.y & 1u) != u_field_offset)
       discard;
 
     #if !INTERLEAVED
@@ -1167,13 +1129,6 @@ uint SampleVRAM(uint2 coords)
   ss << R"(
 {
   uint2 sample_coords = uint2(uint(v_pos.x) * 2u, uint(v_pos.y));
-
-  #if API_OPENGL || API_OPENGL_ES
-    // Lower-left origin flip for OpenGL.
-    // We want to write the image out upside-down so we can read it top-to-bottom.
-    sample_coords.y = u_size.y - sample_coords.y - 1u;
-  #endif
-
   sample_coords += u_base_coords;
 
   // We're encoding as 32-bit, so the output width is halved and we pack two 16-bit pixels in one 32-bit pixel.
@@ -1222,7 +1177,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
-  uint2 coords = uint2(uint(v_pos.x) / RESOLUTION_SCALE, fixYCoord(uint(v_pos.y)) / RESOLUTION_SCALE);
+  uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
 
   // make sure it's not oversized and out of range
   if ((coords.x < u_base_coords.x && coords.x >= u_end_coords.x) ||
@@ -1320,7 +1275,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   ss << R"(
 {
 #if INTERLACED || WRAPPED
-  uint2 dst_coords = uint2(uint(v_pos.x), fixYCoord(uint(v_pos.y)));
+  uint2 dst_coords = uint2(v_pos.xy);
 #endif
 
 #if INTERLACED

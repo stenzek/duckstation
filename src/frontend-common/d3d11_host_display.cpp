@@ -21,69 +21,6 @@ Log_SetChannel(D3D11HostDisplay);
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 
-class D3D11HostDisplayTexture final : public HostDisplayTexture
-{
-public:
-  D3D11HostDisplayTexture(D3D11::Texture texture, HostDisplayPixelFormat format, bool dynamic)
-    : m_texture(std::move(texture)), m_format(format), m_dynamic(dynamic)
-  {
-  }
-  ~D3D11HostDisplayTexture() override = default;
-
-  void* GetHandle() const override { return const_cast<D3D11::Texture*>(&m_texture); }
-  u32 GetWidth() const override { return m_texture.GetWidth(); }
-  u32 GetHeight() const override { return m_texture.GetHeight(); }
-  u32 GetLayers() const override { return 1; }
-  u32 GetLevels() const override { return m_texture.GetLevels(); }
-  u32 GetSamples() const override { return m_texture.GetSamples(); }
-  HostDisplayPixelFormat GetFormat() const override { return m_format; }
-
-  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override
-  {
-    if (!m_dynamic || m_texture.GetWidth() != width || m_texture.GetHeight() != height)
-      return false;
-
-    D3D11_MAPPED_SUBRESOURCE sr;
-    HRESULT hr = static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())
-                   ->Map(m_texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
-    if (FAILED(hr))
-    {
-      Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
-      return false;
-    }
-
-    *out_buffer = sr.pData;
-    *out_pitch = sr.RowPitch;
-    return true;
-  }
-
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height)
-  {
-    static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())->Unmap(m_texture, 0);
-  }
-
-  bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch) override
-  {
-    if (m_dynamic)
-      return HostDisplayTexture::Update(x, y, width, height, data, pitch);
-
-    const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
-    static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext())
-      ->UpdateSubresource(m_texture, 0, &dst_box, data, pitch, pitch * height);
-    return true;
-  }
-
-  ALWAYS_INLINE ID3D11Texture2D* GetD3DTexture() const { return m_texture.GetD3DTexture(); }
-  ALWAYS_INLINE ID3D11ShaderResourceView* GetD3DSRV() const { return m_texture.GetD3DSRV(); }
-  ALWAYS_INLINE ID3D11ShaderResourceView* const* GetD3DSRVArray() const { return m_texture.GetD3DSRVArray(); }
-  ALWAYS_INLINE bool IsDynamic() const { return m_dynamic; }
-
-private:
-  D3D11::Texture m_texture;
-  HostDisplayPixelFormat m_format;
-  bool m_dynamic;
-};
-
 D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
@@ -120,34 +57,61 @@ bool D3D11HostDisplay::HasRenderSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat::Count)>
-  s_display_pixel_format_mapping = {{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
-                                     DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM}};
-
-std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-                                                                    u32 samples, HostDisplayPixelFormat format,
-                                                                    const void* data, u32 data_stride,
-                                                                    bool dynamic /* = false */)
+std::unique_ptr<GPUTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                            GPUTexture::Format format, const void* data,
+                                                            u32 data_stride, bool dynamic /* = false */)
 {
-  if (layers != 1)
-    return {};
-
-  D3D11::Texture tex;
-  if (!tex.Create(m_device.Get(), width, height, layers, levels, samples,
-                  s_display_pixel_format_mapping[static_cast<u32>(format)], D3D11_BIND_SHADER_RESOURCE, data,
-                  data_stride, dynamic))
+  std::unique_ptr<D3D11::Texture> tex(std::make_unique<D3D11::Texture>());
+  if (!tex->Create(m_device.Get(), width, height, layers, levels, samples, format, D3D11_BIND_SHADER_RESOURCE, data,
+                   data_stride, dynamic))
   {
-    return {};
+    tex.reset();
   }
 
-  return std::make_unique<D3D11HostDisplayTexture>(std::move(tex), format, dynamic);
+  return tex;
 }
 
-bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
-                                       u32 width, u32 height, void* out_data, u32 out_data_stride)
+bool D3D11HostDisplay::BeginTextureUpdate(GPUTexture* texture, u32 width, u32 height, void** out_buffer, u32* out_pitch)
 {
-  const D3D11::Texture* tex = static_cast<const D3D11::Texture*>(texture_handle);
-  if (!CheckStagingBufferSize(width, height, tex->GetFormat()))
+  D3D11::Texture* tex = static_cast<D3D11::Texture*>(texture);
+  if (!tex->IsDynamic() || tex->GetWidth() != width || tex->GetHeight() != height)
+    return false;
+
+  D3D11_MAPPED_SUBRESOURCE sr;
+  HRESULT hr = m_context->Map(tex->GetD3DTexture(), 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
+  if (FAILED(hr))
+  {
+    Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
+    return false;
+  }
+
+  *out_buffer = sr.pData;
+  *out_pitch = sr.RowPitch;
+  return true;
+}
+
+void D3D11HostDisplay::EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height)
+{
+  D3D11::Texture* tex = static_cast<D3D11::Texture*>(texture);
+  m_context->Unmap(tex->GetD3DTexture(), 0);
+}
+
+bool D3D11HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+{
+  D3D11::Texture* tex = static_cast<D3D11::Texture*>(texture);
+  if (tex->IsDynamic())
+    return HostDisplay::UpdateTexture(texture, x, y, width, height, data, pitch);
+
+  const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
+  m_context->UpdateSubresource(tex->GetD3DTexture(), 0, &dst_box, data, pitch, pitch * height);
+  return true;
+}
+
+bool D3D11HostDisplay::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                       u32 out_data_stride)
+{
+  const D3D11::Texture* tex = static_cast<const D3D11::Texture*>(texture);
+  if (!CheckStagingBufferSize(width, height, tex->GetDXGIFormat()))
     return false;
 
   const CD3D11_BOX box(static_cast<LONG>(x), static_cast<LONG>(y), 0, static_cast<LONG>(x + width),
@@ -162,7 +126,7 @@ bool D3D11HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPi
     return false;
   }
 
-  const u32 copy_size = GetDisplayPixelFormatSize(texture_format) * width;
+  const u32 copy_size = tex->GetPixelSize() * width;
   StringUtil::StrideMemCpy(out_data, out_data_stride, sr.pData, sr.RowPitch, copy_size, height);
   m_context->Unmap(m_readback_staging_texture.Get(), 0);
   return true;
@@ -195,9 +159,9 @@ void D3D11HostDisplay::DestroyStagingBuffer()
   m_readback_staging_texture_format = DXGI_FORMAT_UNKNOWN;
 }
 
-bool D3D11HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
+bool D3D11HostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  const DXGI_FORMAT dfmt = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  const DXGI_FORMAT dfmt = D3D11::Texture::GetDXGIFormat(format);
   if (dfmt == DXGI_FORMAT_UNKNOWN)
     return false;
 
@@ -767,13 +731,12 @@ bool D3D11HostDisplay::Render(bool skip_present)
 }
 
 bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                        HostDisplayPixelFormat* out_format)
+                                        GPUTexture::Format* out_format)
 {
-  static constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
-  static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
+  static constexpr GPUTexture::Format hdformat = GPUTexture::Format::RGBA8;
 
   D3D11::Texture render_texture;
-  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, 1, format, D3D11_BIND_RENDER_TARGET))
+  if (!render_texture.Create(m_device.Get(), width, height, 1, 1, 1, hdformat, D3D11_BIND_RENDER_TARGET))
     return false;
 
   static constexpr std::array<float, 4> clear_color = {};
@@ -786,24 +749,24 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
 
     if (!m_post_processing_chain.IsEmpty())
     {
-      ApplyPostProcessingChain(render_texture.GetD3DRTV(), left, top, draw_width, draw_height, m_display_texture_handle,
-                               m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+      ApplyPostProcessingChain(render_texture.GetD3DRTV(), left, top, draw_width, draw_height,
+                               static_cast<D3D11::Texture*>(m_display_texture), m_display_texture_view_x,
                                m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
                                width, height);
     }
     else
     {
-      RenderDisplay(left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
-                    m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                    m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
+      RenderDisplay(left, top, draw_width, draw_height, static_cast<D3D11::Texture*>(m_display_texture),
+                    m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                    m_display_texture_view_height, IsUsingLinearFiltering());
     }
   }
 
   m_context->OMSetRenderTargets(0, nullptr, nullptr);
 
-  const u32 stride = GetDisplayPixelFormatSize(hdformat) * width;
+  const u32 stride = GPUTexture::GetPixelSize(hdformat) * width;
   out_pixels->resize(width * height);
-  if (!DownloadTexture(&render_texture, hdformat, 0, 0, width, height, out_pixels->data(), stride))
+  if (!DownloadTexture(&render_texture, 0, 0, width, height, out_pixels->data(), stride))
     return false;
 
   *out_stride = stride;
@@ -826,36 +789,36 @@ void D3D11HostDisplay::RenderDisplay()
 
   if (!m_post_processing_chain.IsEmpty())
   {
-    ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
-                             m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
+    ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height,
+                             static_cast<D3D11::Texture*>(m_display_texture), m_display_texture_view_x,
                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
                              GetWindowWidth(), GetWindowHeight());
     return;
   }
 
-  RenderDisplay(left, top, width, height, m_display_texture_handle, m_display_texture_width, m_display_texture_height,
-                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                m_display_texture_view_height, IsUsingLinearFiltering());
+  RenderDisplay(left, top, width, height, static_cast<D3D11::Texture*>(m_display_texture), m_display_texture_view_x,
+                m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                IsUsingLinearFiltering());
 }
 
-void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, void* texture_handle, u32 texture_width,
-                                     s32 texture_height, s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+void D3D11HostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, D3D11::Texture* texture,
+                                     s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                                      s32 texture_view_height, bool linear_filter)
 {
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
   m_context->PSSetShader(m_display_pixel_shader.Get(), nullptr, 0);
-  m_context->PSSetShaderResources(0, 1, static_cast<D3D11::Texture*>(texture_handle)->GetD3DSRVArray());
+  m_context->PSSetShaderResources(0, 1, texture->GetD3DSRVArray());
   m_context->PSSetSamplers(0, 1, linear_filter ? m_linear_sampler.GetAddressOf() : m_point_sampler.GetAddressOf());
 
   const bool linear = IsUsingLinearFiltering();
   const float position_adjust = linear ? 0.5f : 0.0f;
   const float size_adjust = linear ? 1.0f : 0.0f;
   const float uniforms[4] = {
-    (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
-    (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
-    (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
-    (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture_height)};
+    (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture->GetWidth()),
+    (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture->GetHeight()),
+    (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture->GetWidth()),
+    (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture->GetHeight())};
   const auto map = m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), sizeof(uniforms));
   std::memcpy(map.pointer, uniforms, sizeof(uniforms));
   m_display_uniform_buffer.Unmap(m_context.Get(), sizeof(uniforms));
@@ -880,13 +843,12 @@ void D3D11HostDisplay::RenderSoftwareCursor()
   RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
 }
 
-void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height,
-                                            HostDisplayTexture* texture_handle)
+void D3D11HostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, GPUTexture* texture_handle)
 {
   m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   m_context->VSSetShader(m_display_vertex_shader.Get(), nullptr, 0);
   m_context->PSSetShader(m_display_alpha_pixel_shader.Get(), nullptr, 0);
-  m_context->PSSetShaderResources(0, 1, static_cast<D3D11HostDisplayTexture*>(texture_handle)->GetD3DSRVArray());
+  m_context->PSSetShaderResources(0, 1, static_cast<D3D11::Texture*>(texture_handle)->GetD3DSRVArray());
   m_context->PSSetSamplers(0, 1, m_linear_sampler.GetAddressOf());
 
   const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
@@ -1052,7 +1014,7 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
 {
   DebugAssert(!m_post_processing_stages.empty());
 
-  const DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  const GPUTexture::Format format = GPUTexture::Format::RGBA8;
   const u32 bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 
   if (m_post_processing_input_texture.GetWidth() != target_width ||
@@ -1080,29 +1042,26 @@ bool D3D11HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 ta
 }
 
 void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_target, s32 final_left, s32 final_top,
-                                                s32 final_width, s32 final_height, void* texture_handle,
-                                                u32 texture_width, s32 texture_height, s32 texture_view_x,
-                                                s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
-                                                u32 target_width, u32 target_height)
+                                                s32 final_width, s32 final_height, D3D11::Texture* texture,
+                                                s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                                s32 texture_view_height, u32 target_width, u32 target_height)
 {
   static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
 
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
-    RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                  texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
+    RenderDisplay(final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
+                  texture_view_width, texture_view_height, IsUsingLinearFiltering());
     return;
   }
 
   // downsample/upsample - use same viewport for remainder
   m_context->ClearRenderTargetView(m_post_processing_input_texture.GetD3DRTV(), clear_color.data());
   m_context->OMSetRenderTargets(1, m_post_processing_input_texture.GetD3DRTVArray(), nullptr);
-  RenderDisplay(final_left, final_top, final_width, final_height, texture_handle, texture_width, texture_height,
-                texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
+  RenderDisplay(final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
+                texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
-  texture_handle = &m_post_processing_input_texture;
-  texture_width = m_post_processing_input_texture.GetWidth();
-  texture_height = m_post_processing_input_texture.GetHeight();
+  texture = &m_post_processing_input_texture;
   texture_view_x = final_left;
   texture_view_y = final_top;
   texture_view_width = final_width;
@@ -1125,13 +1084,13 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->VSSetShader(pps.vertex_shader.Get(), nullptr, 0);
     m_context->PSSetShader(pps.pixel_shader.Get(), nullptr, 0);
-    m_context->PSSetShaderResources(0, 1, static_cast<D3D11::Texture*>(texture_handle)->GetD3DSRVArray());
+    m_context->PSSetShaderResources(0, 1, texture->GetD3DSRVArray());
     m_context->PSSetSamplers(0, 1, m_point_sampler.GetAddressOf());
 
     const auto map =
       m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), pps.uniforms_size);
     m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
-      map.pointer, texture_width, texture_height, texture_view_x, texture_view_y, texture_view_width,
+      map.pointer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
       texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
     m_display_uniform_buffer.Unmap(m_context.Get(), pps.uniforms_size);
     m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
@@ -1140,7 +1099,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
     m_context->Draw(3, 0);
 
     if (i != final_stage)
-      texture_handle = &pps.output_texture;
+      texture = &pps.output_texture;
   }
 
   ID3D11ShaderResourceView* null_srv = nullptr;

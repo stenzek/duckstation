@@ -1,38 +1,63 @@
 #include "texture.h"
 #include "../log.h"
+#include <array>
 Log_SetChannel(D3D11);
 
-namespace D3D11 {
+static constexpr std::array<DXGI_FORMAT, static_cast<u32>(GPUTexture::Format::Count)> s_dxgi_mapping = {
+  {DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_B5G6R5_UNORM,
+   DXGI_FORMAT_B5G5R5A1_UNORM, DXGI_FORMAT_R8_UNORM, DXGI_FORMAT_D16_UNORM}};
 
-Texture::Texture() : m_width(0), m_height(0), m_samples(0) {}
+D3D11::Texture::Texture() = default;
 
-Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
-                 ComPtr<ID3D11RenderTargetView> rtv)
+D3D11::Texture::Texture(ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
+                        ComPtr<ID3D11RenderTargetView> rtv)
   : m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv(std::move(rtv))
 {
   const D3D11_TEXTURE2D_DESC desc = GetDesc();
   m_width = static_cast<u16>(desc.Width);
   m_height = static_cast<u16>(desc.Height);
-  m_layers = static_cast<u16>(desc.ArraySize);
+  m_layers = static_cast<u8>(desc.ArraySize);
   m_levels = static_cast<u8>(desc.MipLevels);
   m_samples = static_cast<u8>(desc.SampleDesc.Count);
+  m_format = LookupBaseFormat(desc.Format);
+  m_dynamic = (desc.Usage == D3D11_USAGE_DYNAMIC);
 }
 
-Texture::~Texture()
+D3D11::Texture::~Texture()
 {
   Destroy();
 }
 
-D3D11_TEXTURE2D_DESC Texture::GetDesc() const
+DXGI_FORMAT D3D11::Texture::GetDXGIFormat(Format format)
+{
+  return s_dxgi_mapping[static_cast<u8>(format)];
+}
+
+GPUTexture::Format D3D11::Texture::LookupBaseFormat(DXGI_FORMAT dformat)
+{
+  for (u32 i = 0; i < static_cast<u32>(s_dxgi_mapping.size()); i++)
+  {
+    if (s_dxgi_mapping[i] == dformat)
+      return static_cast<Format>(i);
+  }
+  return GPUTexture::Format::Unknown;
+}
+
+D3D11_TEXTURE2D_DESC D3D11::Texture::GetDesc() const
 {
   D3D11_TEXTURE2D_DESC desc;
   m_texture->GetDesc(&desc);
   return desc;
 }
 
-bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                     DXGI_FORMAT format, u32 bind_flags, const void* initial_data /* = nullptr */,
-                     u32 initial_data_stride /* = 0 */, bool dynamic /* = false */)
+bool D3D11::Texture::IsValid() const
+{
+  return static_cast<bool>(m_texture);
+}
+
+bool D3D11::Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                            Format format, u32 bind_flags, const void* initial_data /* = nullptr */,
+                            u32 initial_data_stride /* = 0 */, bool dynamic /* = false */)
 {
   if (width > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION || height > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION ||
       layers > D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION || (layers > 1 && samples > 1))
@@ -42,7 +67,7 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u3
     return false;
   }
 
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, layers, levels, bind_flags,
+  CD3D11_TEXTURE2D_DESC desc(GetDXGIFormat(format), width, height, layers, levels, bind_flags,
                              dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT, dynamic ? D3D11_CPU_ACCESS_WRITE : 0,
                              samples, 0, 0);
 
@@ -96,13 +121,15 @@ bool Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u3
   m_rtv = std::move(rtv);
   m_width = static_cast<u16>(width);
   m_height = static_cast<u16>(height);
-  m_layers = static_cast<u16>(layers);
+  m_layers = static_cast<u8>(layers);
   m_levels = static_cast<u8>(levels);
   m_samples = static_cast<u8>(samples);
+  m_format = format;
+  m_dynamic = dynamic;
   return true;
 }
 
-bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
+bool D3D11::Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
 {
   D3D11_TEXTURE2D_DESC desc;
   texture->GetDesc(&desc);
@@ -140,22 +167,18 @@ bool Texture::Adopt(ID3D11Device* device, ComPtr<ID3D11Texture2D> texture)
   m_rtv = std::move(rtv);
   m_width = static_cast<u16>(desc.Width);
   m_height = static_cast<u16>(desc.Height);
-  m_layers = static_cast<u16>(desc.ArraySize);
+  m_layers = static_cast<u8>(desc.ArraySize);
   m_levels = static_cast<u8>(desc.MipLevels);
   m_samples = static_cast<u8>(desc.SampleDesc.Count);
+  m_dynamic = (desc.Usage == D3D11_USAGE_DYNAMIC);
   return true;
 }
 
-void Texture::Destroy()
+void D3D11::Texture::Destroy()
 {
   m_rtv.Reset();
   m_srv.Reset();
   m_texture.Reset();
-  m_width = 0;
-  m_height = 0;
-  m_layers = 0;
-  m_levels = 0;
-  m_samples = 0;
+  m_dynamic = false;
+  ClearBaseProperties();
 }
-
-} // namespace D3D11

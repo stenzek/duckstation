@@ -18,27 +18,6 @@ Log_SetChannel(HostDisplay);
 
 std::unique_ptr<HostDisplay> g_host_display;
 
-HostDisplayTexture::~HostDisplayTexture() = default;
-
-bool HostDisplayTexture::BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) /* = 0*/
-{
-  return false;
-}
-
-void HostDisplayTexture::EndUpdate(u32 x, u32 y, u32 width, u32 height) /* = 0*/ {}
-
-bool HostDisplayTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
-{
-  void* map_ptr;
-  u32 map_pitch;
-  if (!BeginUpdate(width, height, &map_ptr, &map_pitch))
-    return false;
-
-  StringUtil::StrideMemCpy(map_ptr, map_pitch, data, pitch, std::min(pitch, map_pitch), height);
-  EndUpdate(x, y, width, height);
-  return true;
-}
-
 HostDisplay::~HostDisplay() = default;
 
 RenderAPI HostDisplay::GetPreferredAPI()
@@ -48,6 +27,18 @@ RenderAPI HostDisplay::GetPreferredAPI()
 #else
   return RenderAPI::OpenGL;
 #endif
+}
+
+bool HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+{
+  void* map_ptr;
+  u32 map_pitch;
+  if (!BeginTextureUpdate(texture, width, height, &map_ptr, &map_pitch))
+    return false;
+
+  StringUtil::StrideMemCpy(map_ptr, map_pitch, data, pitch, std::min(pitch, map_pitch), height);
+  EndTextureUpdate(texture, x, y, width, height);
+  return true;
 }
 
 bool HostDisplay::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
@@ -126,23 +117,6 @@ bool HostDisplay::ShouldSkipDisplayingFrame()
   return false;
 }
 
-u32 HostDisplay::GetDisplayPixelFormatSize(HostDisplayPixelFormat format)
-{
-  switch (format)
-  {
-    case HostDisplayPixelFormat::RGBA8:
-    case HostDisplayPixelFormat::BGRA8:
-      return 4;
-
-    case HostDisplayPixelFormat::RGBA5551:
-    case HostDisplayPixelFormat::RGB565:
-      return 2;
-
-    default:
-      return 0;
-  }
-}
-
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 {
   if (m_window_info.surface_refresh_rate > 0.0f)
@@ -164,7 +138,7 @@ float HostDisplay::GetAndResetAccumulatedGPUTime()
   return 0.0f;
 }
 
-void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture, float scale /*= 1.0f*/)
+void HostDisplay::SetSoftwareCursor(std::unique_ptr<GPUTexture> texture, float scale /*= 1.0f*/)
 {
   m_cursor_texture = std::move(texture);
   m_cursor_texture_scale = scale;
@@ -172,8 +146,8 @@ void HostDisplay::SetSoftwareCursor(std::unique_ptr<HostDisplayTexture> texture,
 
 bool HostDisplay::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale /*= 1.0f*/)
 {
-  std::unique_ptr<HostDisplayTexture> tex =
-    CreateTexture(width, height, 1, 1, 1, HostDisplayPixelFormat::RGBA8, pixels, stride, false);
+  std::unique_ptr<GPUTexture> tex =
+    CreateTexture(width, height, 1, 1, 1, GPUTexture::Format::RGBA8, pixels, stride, false);
   if (!tex)
     return false;
 
@@ -198,8 +172,8 @@ bool HostDisplay::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
     return false;
   }
 
-  std::unique_ptr<HostDisplayTexture> tex =
-    CreateTexture(static_cast<u32>(width), static_cast<u32>(height), 1, 1, 1, HostDisplayPixelFormat::RGBA8, pixel_data,
+  std::unique_ptr<GPUTexture> tex =
+    CreateTexture(static_cast<u32>(width), static_cast<u32>(height), 1, 1, 1, GPUTexture::Format::RGBA8, pixel_data,
                   sizeof(u32) * static_cast<u32>(width), false);
   stbi_image_free(pixel_data);
   if (!tex)
@@ -371,106 +345,10 @@ std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinat
   return std::make_tuple(display_x, display_y);
 }
 
-bool HostDisplay::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data,
-                                            u32& texture_data_stride, HostDisplayPixelFormat format)
-{
-  switch (format)
-  {
-    case HostDisplayPixelFormat::BGRA8:
-    {
-      for (u32 y = 0; y < height; y++)
-      {
-        u32* pixels = reinterpret_cast<u32*>(reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride));
-        for (u32 x = 0; x < width; x++)
-          pixels[x] = (pixels[x] & 0xFF00FF00) | ((pixels[x] & 0xFF) << 16) | ((pixels[x] >> 16) & 0xFF);
-      }
-
-      return true;
-    }
-
-    case HostDisplayPixelFormat::RGBA8:
-      return true;
-
-    case HostDisplayPixelFormat::RGB565:
-    {
-      std::vector<u32> temp(width * height);
-
-      for (u32 y = 0; y < height; y++)
-      {
-        const u8* pixels_in = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
-        u32* pixels_out = &temp[y * width];
-
-        for (u32 x = 0; x < width; x++)
-        {
-          // RGB565 -> RGBA8
-          u16 pixel_in;
-          std::memcpy(&pixel_in, pixels_in, sizeof(u16));
-          pixels_in += sizeof(u16);
-          const u8 r5 = Truncate8(pixel_in >> 11);
-          const u8 g6 = Truncate8((pixel_in >> 5) & 0x3F);
-          const u8 b5 = Truncate8(pixel_in & 0x1F);
-          *(pixels_out++) = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 2) | (g6 & 3)) << 8) |
-                            (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (0xFF000000u);
-        }
-      }
-
-      texture_data = std::move(temp);
-      texture_data_stride = sizeof(u32) * width;
-      return true;
-    }
-
-    case HostDisplayPixelFormat::RGBA5551:
-    {
-      std::vector<u32> temp(width * height);
-
-      for (u32 y = 0; y < height; y++)
-      {
-        const u8* pixels_in = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
-        u32* pixels_out = &temp[y * width];
-
-        for (u32 x = 0; x < width; x++)
-        {
-          // RGBA5551 -> RGBA8
-          u16 pixel_in;
-          std::memcpy(&pixel_in, pixels_in, sizeof(u16));
-          pixels_in += sizeof(u16);
-          const u8 a1 = Truncate8(pixel_in >> 15);
-          const u8 r5 = Truncate8((pixel_in >> 10) & 0x1F);
-          const u8 g6 = Truncate8((pixel_in >> 5) & 0x1F);
-          const u8 b5 = Truncate8(pixel_in & 0x1F);
-          *(pixels_out++) = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
-                            (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
-        }
-      }
-
-      texture_data = std::move(temp);
-      texture_data_stride = sizeof(u32) * width;
-      return true;
-    }
-
-    default:
-      Log_ErrorPrintf("Unknown pixel format %u", static_cast<u32>(format));
-      return false;
-  }
-}
-
-void HostDisplay::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride)
-{
-  std::vector<u32> temp(width);
-  for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
-  {
-    u32* top_ptr = &texture_data[flip_row * width];
-    u32* bottom_ptr = &texture_data[((height - 1) - flip_row) * width];
-    std::memcpy(temp.data(), top_ptr, texture_data_stride);
-    std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
-    std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
-  }
-}
-
 static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
                                           bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
                                           std::vector<u32> texture_data, u32 texture_data_stride,
-                                          HostDisplayPixelFormat texture_format)
+                                          GPUTexture::Format texture_format)
 {
 
   const char* extension = std::strrchr(filename.c_str(), '.');
@@ -480,7 +358,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
     return false;
   }
 
-  if (!HostDisplay::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
+  if (!GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
     return false;
 
   if (clear_alpha)
@@ -490,7 +368,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
   }
 
   if (flip_y)
-    HostDisplay::FlipTextureDataRGBA8(width, height, texture_data, texture_data_stride);
+    GPUTexture::FlipTextureDataRGBA8(width, height, texture_data, texture_data_stride);
 
   if (resize_width > 0 && resize_height > 0 && (resize_width != width || resize_height != height))
   {
@@ -542,14 +420,14 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
   return true;
 }
 
-bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u32 width, u32 height,
-                                     HostDisplayPixelFormat format, std::string filename, bool clear_alpha /* = true */,
-                                     bool flip_y /* = false */, u32 resize_width /* = 0 */, u32 resize_height /* = 0 */,
+bool HostDisplay::WriteTextureToFile(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, std::string filename,
+                                     bool clear_alpha /* = true */, bool flip_y /* = false */,
+                                     u32 resize_width /* = 0 */, u32 resize_height /* = 0 */,
                                      bool compress_on_thread /* = false */)
 {
   std::vector<u32> texture_data(width * height);
-  u32 texture_data_stride = Common::AlignUpPow2(GetDisplayPixelFormatSize(format) * width, 4);
-  if (!DownloadTexture(texture_handle, format, x, y, width, height, texture_data.data(), texture_data_stride))
+  u32 texture_data_stride = Common::AlignUpPow2(GPUTexture::GetPixelSize(texture->GetFormat()) * width, 4);
+  if (!DownloadTexture(texture, x, y, width, height, texture_data.data(), texture_data_stride))
   {
     Log_ErrorPrintf("Texture download failed");
     return false;
@@ -566,12 +444,12 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
   {
     return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), clear_alpha, flip_y,
                                          resize_width, resize_height, std::move(texture_data), texture_data_stride,
-                                         format);
+                                         texture->GetFormat());
   }
 
   std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp),
                               clear_alpha, flip_y, resize_width, resize_height, std::move(texture_data),
-                              texture_data_stride, format);
+                              texture_data_stride, texture->GetFormat());
   compress_thread.detach();
   return true;
 }
@@ -579,7 +457,7 @@ bool HostDisplay::WriteTextureToFile(const void* texture_handle, u32 x, u32 y, u
 bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_resolution /* = true */,
                                             bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = false */)
 {
-  if (!m_display_texture_handle)
+  if (!m_display_texture)
     return false;
 
   s32 resize_width = 0;
@@ -612,18 +490,19 @@ bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_reso
   if (flip_y)
   {
     read_height = -m_display_texture_view_height;
-    read_y = (m_display_texture_height - read_height) - (m_display_texture_height - m_display_texture_view_y);
+    read_y =
+      (m_display_texture->GetHeight() - read_height) - (m_display_texture->GetHeight() - m_display_texture_view_y);
   }
 
-  return WriteTextureToFile(m_display_texture_handle, m_display_texture_view_x, read_y, m_display_texture_view_width,
-                            read_height, m_display_texture_format, std::move(filename), true, flip_y,
-                            static_cast<u32>(resize_width), static_cast<u32>(resize_height), compress_on_thread);
+  return WriteTextureToFile(m_display_texture, m_display_texture_view_x, read_y, m_display_texture_view_width,
+                            read_height, std::move(filename), true, flip_y, static_cast<u32>(resize_width),
+                            static_cast<u32>(resize_height), compress_on_thread);
 }
 
 bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width /* = 0 */,
                                               u32 resize_height /* = 0 */, bool clear_alpha /* = true */)
 {
-  if (!m_display_texture_handle)
+  if (!m_display_texture)
     return false;
 
   const bool flip_y = (m_display_texture_view_height < 0);
@@ -634,22 +513,25 @@ bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resi
   if (flip_y)
   {
     read_height = -m_display_texture_view_height;
-    read_y = (m_display_texture_height - read_height) - (m_display_texture_height - m_display_texture_view_y);
+    read_y =
+      (m_display_texture->GetHeight() - read_height) - (m_display_texture->GetHeight() - m_display_texture_view_y);
   }
 
   u32 width = static_cast<u32>(read_width);
   u32 height = static_cast<u32>(read_height);
   std::vector<u32> texture_data(width * height);
-  u32 texture_data_stride = Common::AlignUpPow2(GetDisplayPixelFormatSize(m_display_texture_format) * width, 4);
-  if (!DownloadTexture(m_display_texture_handle, m_display_texture_format, read_x, read_y, width, height,
-                       texture_data.data(), texture_data_stride))
+  u32 texture_data_stride = Common::AlignUpPow2(m_display_texture->GetPixelSize() * width, 4);
+  if (!DownloadTexture(m_display_texture, read_x, read_y, width, height, texture_data.data(), texture_data_stride))
   {
     Log_ErrorPrintf("Failed to download texture from GPU.");
     return false;
   }
 
-  if (!ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, m_display_texture_format))
+  if (!GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride,
+                                             m_display_texture->GetFormat()))
+  {
     return false;
+  }
 
   if (clear_alpha)
   {
@@ -704,7 +586,7 @@ bool HostDisplay::WriteScreenshotToFile(std::string filename, bool compress_on_t
 
   std::vector<u32> pixels;
   u32 pixels_stride;
-  HostDisplayPixelFormat pixels_format;
+  GPUTexture::Format pixels_format;
   if (!RenderScreenshot(width, height, &pixels, &pixels_stride, &pixels_format))
   {
     Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);

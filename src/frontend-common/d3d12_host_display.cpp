@@ -15,51 +15,6 @@
 #include <dxgi1_5.h>
 Log_SetChannel(D3D12HostDisplay);
 
-static constexpr std::array<DXGI_FORMAT, static_cast<u32>(HostDisplayPixelFormat::Count)>
-  s_display_pixel_format_mapping = {{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
-                                     DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM}};
-
-class D3D12HostDisplayTexture final : public HostDisplayTexture
-{
-public:
-  D3D12HostDisplayTexture(D3D12::Texture texture) : m_texture(std::move(texture)) {}
-  ~D3D12HostDisplayTexture() override = default;
-
-  void* GetHandle() const override { return const_cast<D3D12::Texture*>(&m_texture); }
-  u32 GetWidth() const override { return m_texture.GetWidth(); }
-  u32 GetHeight() const override { return m_texture.GetHeight(); }
-  u32 GetLayers() const override { return 1; }
-  u32 GetLevels() const override { return 1; }
-  u32 GetSamples() const override { return m_texture.GetSamples(); }
-
-  HostDisplayPixelFormat GetFormat() const override
-  {
-    for (u32 i = 0; i < static_cast<u32>(s_display_pixel_format_mapping.size()); i++)
-    {
-      if (m_texture.GetFormat() == s_display_pixel_format_mapping[i])
-        return static_cast<HostDisplayPixelFormat>(i);
-    }
-
-    return HostDisplayPixelFormat::Count;
-  }
-
-  bool BeginUpdate(u32 width, u32 height, void** out_buffer, u32* out_pitch) override
-  {
-    return m_texture.BeginStreamUpdate(0, 0, width, height, out_buffer, out_pitch);
-  }
-
-  void EndUpdate(u32 x, u32 y, u32 width, u32 height) override
-  {
-    m_texture.EndStreamUpdate(x, y, width, height);
-  }
-
-  const D3D12::Texture& GetTexture() const { return m_texture; }
-  D3D12::Texture& GetTexture() { return m_texture; }
-
-private:
-  D3D12::Texture m_texture;
-};
-
 D3D12HostDisplay::D3D12HostDisplay() = default;
 
 D3D12HostDisplay::~D3D12HostDisplay()
@@ -98,47 +53,62 @@ bool D3D12HostDisplay::HasRenderSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-std::unique_ptr<HostDisplayTexture> D3D12HostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-                                                                    u32 samples, HostDisplayPixelFormat format,
-                                                                    const void* data, u32 data_stride,
-                                                                    bool dynamic /* = false */)
+std::unique_ptr<GPUTexture> D3D12HostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                            GPUTexture::Format format, const void* data,
+                                                            u32 data_stride, bool dynamic /* = false */)
 {
-  if (layers != 1)
+  const DXGI_FORMAT dformat = D3D12::Texture::GetDXGIFormat(format);
+  if (dformat == DXGI_FORMAT_UNKNOWN)
     return {};
 
-  const DXGI_FORMAT dxgi_format = s_display_pixel_format_mapping[static_cast<u32>(format)];
-  D3D12::Texture tex;
-  if (!tex.Create(width, height, samples, dxgi_format, dxgi_format, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
-                  D3D12_RESOURCE_FLAG_NONE))
+  std::unique_ptr<D3D12::Texture> tex(std::make_unique<D3D12::Texture>());
+  if (!tex->Create(width, height, layers, levels, samples, dformat, dformat, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
+                   D3D12_RESOURCE_FLAG_NONE))
   {
     return {};
   }
 
-  if (data && !tex.LoadData(0, 0, width, height, data, data_stride))
+  if (data && !tex->LoadData(0, 0, width, height, data, data_stride))
     return {};
 
-  return std::make_unique<D3D12HostDisplayTexture>(std::move(tex));
+  return tex;
 }
 
-bool D3D12HostDisplay::DownloadTexture(const void* texture_handle, HostDisplayPixelFormat texture_format, u32 x, u32 y,
-                                       u32 width, u32 height, void* out_data, u32 out_data_stride)
+bool D3D12HostDisplay::BeginTextureUpdate(GPUTexture* texture, u32 width, u32 height, void** out_buffer, u32* out_pitch)
 {
-  const D3D12::Texture* texture = static_cast<const D3D12::Texture*>(texture_handle);
+  return static_cast<D3D12::Texture*>(texture)->BeginStreamUpdate(0, 0, width, height, out_buffer, out_pitch);
+}
 
-  if (!m_readback_staging_texture.EnsureSize(width, height, texture->GetFormat(), false))
+void D3D12HostDisplay::EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height)
+{
+  static_cast<D3D12::Texture*>(texture)->EndStreamUpdate(x, y, width, height);
+}
+
+bool D3D12HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
+                                     u32 pitch)
+{
+  return HostDisplay::UpdateTexture(texture, x, y, width, height, data, pitch);
+}
+
+bool D3D12HostDisplay::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                       u32 out_data_stride)
+{
+  const D3D12::Texture* tex = static_cast<const D3D12::Texture*>(texture);
+
+  if (!m_readback_staging_texture.EnsureSize(width, height, tex->GetDXGIFormat(), false))
     return false;
 
-  const D3D12_RESOURCE_STATES old_state = texture->GetState();
-  texture->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
-  m_readback_staging_texture.CopyFromTexture(texture->GetResource(), 0, x, y, 0, 0, width, height);
-  texture->TransitionToState(old_state);
+  const D3D12_RESOURCE_STATES old_state = tex->GetState();
+  tex->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
+  m_readback_staging_texture.CopyFromTexture(tex->GetResource(), 0, x, y, 0, 0, width, height);
+  tex->TransitionToState(old_state);
 
   return m_readback_staging_texture.ReadPixels(0, 0, width, height, out_data, out_data_stride);
 }
 
-bool D3D12HostDisplay::SupportsDisplayPixelFormat(HostDisplayPixelFormat format) const
+bool D3D12HostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  const DXGI_FORMAT dfmt = s_display_pixel_format_mapping[static_cast<u32>(format)];
+  const DXGI_FORMAT dfmt = D3D12::Texture::GetDXGIFormat(format);
   if (dfmt == DXGI_FORMAT_UNKNOWN)
     return false;
 
@@ -654,13 +624,13 @@ bool D3D12HostDisplay::Render(bool skip_present)
 }
 
 bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                        HostDisplayPixelFormat* out_format)
+                                        GPUTexture::Format* out_format)
 {
   static constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
-  static constexpr HostDisplayPixelFormat hdformat = HostDisplayPixelFormat::RGBA8;
+  static constexpr GPUTexture::Format hdformat = GPUTexture::Format::RGBA8;
 
   D3D12::Texture render_texture;
-  if (!render_texture.Create(width, height, 1, format, DXGI_FORMAT_UNKNOWN, format, DXGI_FORMAT_UNKNOWN,
+  if (!render_texture.Create(width, height, 1, 1, 1, format, DXGI_FORMAT_UNKNOWN, format, DXGI_FORMAT_UNKNOWN,
                              D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ||
       !m_readback_staging_texture.EnsureSize(width, height, format, false))
   {
@@ -676,9 +646,9 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
   if (HasDisplayTexture())
   {
     const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
-    RenderDisplay(cmdlist, left, top, draw_width, draw_height, m_display_texture_handle, m_display_texture_width,
-                  m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                  m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
+    RenderDisplay(cmdlist, left, top, draw_width, draw_height, static_cast<D3D12::Texture*>(m_display_texture),
+                  m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                  m_display_texture_view_height, IsUsingLinearFiltering());
   }
 
   cmdlist->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
@@ -728,23 +698,22 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist)
   //     return;
   //   }
 
-  RenderDisplay(cmdlist, left, top, width, height, m_display_texture_handle, m_display_texture_width,
-                m_display_texture_height, m_display_texture_view_x, m_display_texture_view_y,
-                m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
+  RenderDisplay(cmdlist, left, top, width, height, static_cast<D3D12::Texture*>(m_display_texture),
+                m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                m_display_texture_view_height, IsUsingLinearFiltering());
 }
 
 void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 left, s32 top, s32 width, s32 height,
-                                     void* texture_handle, u32 texture_width, s32 texture_height, s32 texture_view_x,
-                                     s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
-                                     bool linear_filter)
+                                     D3D12::Texture* texture, s32 texture_view_x, s32 texture_view_y,
+                                     s32 texture_view_width, s32 texture_view_height, bool linear_filter)
 {
   const float position_adjust = linear_filter ? 0.5f : 0.0f;
   const float size_adjust = linear_filter ? 1.0f : 0.0f;
   const float uniforms[4] = {
-    (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture_width),
-    (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture_height),
-    (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture_width),
-    (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture_height)};
+    (static_cast<float>(texture_view_x) + position_adjust) / static_cast<float>(texture->GetWidth()),
+    (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture->GetHeight()),
+    (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture->GetWidth()),
+    (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture->GetHeight())};
   if (!m_display_uniform_buffer.ReserveMemory(sizeof(uniforms), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
     Panic("Failed to reserve UBO space");
 
@@ -755,7 +724,7 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 lef
   cmdlist->SetGraphicsRootSignature(m_display_root_signature.Get());
   cmdlist->SetPipelineState(m_display_pipeline.Get());
   cmdlist->SetGraphicsRootConstantBufferView(0, m_display_uniform_buffer.GetGPUPointer() + ubo_offset);
-  cmdlist->SetGraphicsRootDescriptorTable(1, reinterpret_cast<D3D12::Texture*>(texture_handle)->GetSRVDescriptor());
+  cmdlist->SetGraphicsRootDescriptorTable(1, texture->GetSRVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, linear_filter ? m_linear_sampler : m_point_sampler);
 
   D3D12::SetViewportAndScissor(cmdlist, left, top, width, height);
@@ -774,7 +743,7 @@ void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist)
 }
 
 void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist, s32 left, s32 top, s32 width,
-                                            s32 height, HostDisplayTexture* texture_handle)
+                                            s32 height, GPUTexture* texture_handle)
 {
   const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
   if (!m_display_uniform_buffer.ReserveMemory(sizeof(uniforms), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
@@ -786,8 +755,7 @@ void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist, 
 
   cmdlist->SetPipelineState(m_display_pipeline.Get());
   cmdlist->SetGraphicsRootConstantBufferView(0, m_display_uniform_buffer.GetGPUPointer() + ubo_offset);
-  cmdlist->SetGraphicsRootDescriptorTable(
-    1, static_cast<D3D12HostDisplayTexture*>(texture_handle)->GetTexture().GetRTVOrDSVDescriptor());
+  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12::Texture*>(texture_handle)->GetRTVOrDSVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, m_linear_sampler);
 
   D3D12::SetViewportAndScissor(cmdlist, left, top, width, height);
