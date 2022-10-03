@@ -131,7 +131,7 @@
         <location filename="../achievementsettingswidget.ui" line="38"/>
         <location filename="../achievementsettingswidget.cpp" line="30"/>
         <source>Enable Achievements</source>
-        <translation>启用成就</translation>
+        <translation>启用成绩</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="52"/>
@@ -161,7 +161,7 @@
         <location filename="../achievementsettingswidget.ui" line="45"/>
         <location filename="../achievementsettingswidget.cpp" line="36"/>
         <source>Test Unofficial Achievements</source>
-        <translation>测试非正式成就</translation>
+        <translation>测试非正式成绩</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="87"/>
@@ -188,7 +188,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="153"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开暂停菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成绩数据库并以此来追踪进展。要使用成绩，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成绩列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开暂停菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成绩&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -234,17 +234,17 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="31"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
-        <translation>当启用并登录后，DuckStation将在启动时扫描成就。</translation>
+        <translation>当启用并登录后，DuckStation将在启动时扫描成绩。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="33"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
-        <translation>当启用时，DuckStation将假设全部成就被锁定并且不会向服务器发送任何解锁通知。</translation>
+        <translation>当启用时，DuckStation将假设全部成绩被锁定并且不会向服务器发送任何解锁通知。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="37"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>当启用时，DuckStation将列出非正式的成就。请注意这些成就并没有被RetroAchievements追踪，所以它们每次都会解锁。</translation>
+        <translation>当启用时，DuckStation将列出非正式的成绩。请注意这些成绩并没有被RetroAchievements追踪，所以它们每次都会解锁。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="41"/>
@@ -254,12 +254,16 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="44"/>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
-        <translation>当启用时，游戏列表中的第一张光盘将用于成就，无论该张光盘是否激活。</translation>
+        <translation>当启用时，游戏列表中的第一张光盘将用于成绩，无论该张光盘是否激活。</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
+        <translation type="vanished">成就的“挑战”模式。禁用存档，金手指，和减速功能，但您可以获得双倍的成就点数。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="47"/>
-        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation>成就的“挑战”模式。禁用存档，金手指，和减速功能，但您可以获得双倍的成就点数。</translation>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <translation>成绩的“挑战”模式，包括排行榜追踪。禁用存档，金手指，和减速功能。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="50"/>
@@ -270,12 +274,12 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="51"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>为诸如成就解锁，排行榜提交，……事件播放声音效果。</translation>
+        <translation>为诸如成绩解锁，排行榜提交，……事件播放声音效果。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="54"/>
         <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-        <translation>启用跟踪和提交那些支持排行榜的游戏。如果排行榜被禁用，你仍然可以查看排行榜和分数，但分数不会被上传。</translation>
+        <translation>启用追踪和提交那些支持排行榜的游戏。如果排行榜被禁用，您仍然可以查看排行榜和分数，但分数不会被上传。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="116"/>
@@ -285,7 +289,7 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="117"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation>硬核模式要在系统重启后才会启用。你想现在重启系统吗？</translation>
+        <translation>硬核模式要在系统重启后才会启用。您想现在重启系统吗？</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="136"/>
@@ -375,12 +379,12 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1012"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation>你获得了{}之{}成就，以及{}之{}点。</translation>
+        <translation>您获得了{}之{}成绩，以及{}之{}点。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1018"/>
         <source>This game has no achievements.</source>
-        <translation>这个游戏没有成就。</translation>
+        <translation>这个游戏没有成绩。</translation>
     </message>
     <message>
         <source>Leaderboards are enabled.</source>
@@ -394,31 +398,31 @@ Login token generated on %2.</source>
         <location filename="../../frontend-common/achievements.cpp" line="1760"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
-        <translation>你的分数: {} (最佳成绩: {})
+        <translation>您的分数: {} (最佳成绩: {})
 排行榜位置: {}之{}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5854"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5853"/>
         <source>This game has {} leaderboards.</source>
         <translation>此游戏有{}排行榜。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5872"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5871"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation>由于硬核模式关闭，提交分数被禁用。排行榜是只读的。</translation>
+        <translation>由于硬核模式关闭，提交分数被禁用。排行榜只能读取。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5907"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5906"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5908"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5907"/>
         <source>Score</source>
         <translation>分数</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5964"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5963"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>下载排行榜数据中，请稍候…</translation>
     </message>
@@ -3650,7 +3654,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="60"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>选择一个触发器来激活此宏。这可以是单个按键，也可以是组合键 (和弦) 。按住Shift后点击，可绑多个触发器。</translation>
+        <translation>选择一个触发器来激活此宏。这可以是单个按键，也可以是组合键 (和弦)。按住Shift后点击，可绑多个触发器。</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="73"/>
@@ -4036,12 +4040,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../coverdownloaddialog.ui" line="38"/>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation>DuckStation可以为当前还没有封面集的游戏去自动下载封面。我们不提供任何封面图片，图片来源必须得由用户他们自己来提供。</translation>
+        <translation>DuckStation可以为当前还没有封面集的游戏去自动下载封面。我们不提供任何封面图片，用户必须自己提供图片来源。</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;在下面的框中，指定要从中下载封面的URL，每行一个模板URL。可用变量如下:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 含游戏文件名的组合名称。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏序号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;范例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;在下面的框中，指定URL以供下载封面，每行一个模板URL。可用变量如下:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏标题。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 含游戏文件名的组合名称。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏序号。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;范例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="63"/>
@@ -4489,7 +4493,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="206"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation>无法添加跳出断点，您处于有效指令中吗?</translation>
+        <translation>无法添加跳出断点，您处于有效指令中吗？</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="285"/>
@@ -5066,7 +5070,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>没有找到可继续存档。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1288"/>
+        <location filename="../qthost.cpp" line="1286"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -5074,39 +5078,39 @@ Achievements: %5 (%6)
 </source>
         <translation>游戏ID: %1
 游戏标题: %2
-成就: %5 (%6)
+成绩: %5 (%6)
 
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1294"/>
+        <location filename="../qthost.cpp" line="1292"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n点</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1300"/>
+        <location filename="../qthost.cpp" line="1298"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1304"/>
+        <location filename="../qthost.cpp" line="1302"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1612"/>
+        <location filename="../qthost.cpp" line="1610"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1621"/>
+        <location filename="../qthost.cpp" line="1619"/>
         <source>Game: %1 FPS</source>
         <translation>游戏: %1帧/秒</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1631"/>
+        <location filename="../qthost.cpp" line="1629"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>视频: %1帧/秒 (%2%)</translation>
     </message>
@@ -5308,7 +5312,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;启用倒回：&lt;/b&gt;周期地存档可以使您在游戏时倒回任何错误。&lt;br&gt; &lt;b&gt;倒回保存频率：&lt;/b&gt;倒回档的创建频率。频率越高对系统的要求就越大。&lt;br&gt; &lt;b&gt;倒回缓冲大小：&lt;/b&gt;倒回档的保留数量。数值越大对内存的需求就越大。</translation>
+        <translation>&lt;b&gt;启用倒回：&lt;/b&gt;周期地自动存档以使您可以在游戏时倒回任何错误。&lt;br&gt; &lt;b&gt;倒回保存频率：&lt;/b&gt;倒回档的创建频率。频率越高对系统的要求就越大。&lt;br&gt; &lt;b&gt;倒回缓冲大小：&lt;/b&gt;倒回档的保留数量。数值越大对内存的需求就越大。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="95"/>
@@ -6166,16 +6170,16 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="118"/>
         <source>Scan Recursively?</source>
-        <translation>深度扫描?</translation>
+        <translation>深度扫描？</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="119"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>是否要深度扫描&quot;%1&quot;目录?
+        <translation>是否要深度扫描&quot;%1&quot;目录？
 
-深度扫描需要更多时间，但会识别子目录中的文件。</translation>
+深度扫描需要更多时间，但会识别子目录中文件。</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="148"/>
@@ -7407,12 +7411,12 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>HostInterface</name>
     <message>
-        <location filename="../../core/bios.cpp" line="310"/>
+        <location filename="../../core/bios.cpp" line="311"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
         <translation>无法加载配置的BIOS文件&apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/bios.cpp" line="371"/>
+        <location filename="../../core/bios.cpp" line="372"/>
         <source>No BIOS image found for %s region</source>
         <translation>没有找到适用%s区域的BIOS文件</translation>
     </message>
@@ -7555,7 +7559,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="700"/>
         <source>Open Achievement List</source>
-        <translation>打开成就列表</translation>
+        <translation>打开成绩列表</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="713"/>
@@ -8184,7 +8188,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="559"/>
         <source>Achievements</source>
-        <translation>成就</translation>
+        <translation>成绩</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="568"/>
@@ -8347,7 +8351,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <message>
         <location filename="../mainwindow.ui" line="487"/>
         <source>&amp;Issue Tracker...</source>
-        <translation>问题追踪(&amp;I)...</translation>
+        <translation>问题追踪器(&amp;I)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="496"/>
@@ -8895,7 +8899,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1226"/>
         <source>You must select a disc to change discs.</source>
-        <translation>你必须选择一张光盘用以更换光盘。</translation>
+        <translation>您必须选择一张光盘用以更换光盘。</translation>
     </message>
     <message>
         <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
@@ -9823,7 +9827,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="615"/>
         <source>No save state found in slot {}.</source>
-        <translation>没有找到存档在{}档。</translation>
+        <translation>没有找到存档在档位{}。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="629"/>
@@ -9833,7 +9837,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="707"/>
         <source>Achievements are disabled or unavailable for  game.</source>
-        <translation>成就禁用或在  游戏中不可用。</translation>
+        <translation>成绩禁用或在  游戏中不可用。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="720"/>
@@ -9910,7 +9914,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="3758"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
-        <translation>无法保存截图到&apos;%s&apos;</translation>
+        <translation>无法保存截图到&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3763"/>
@@ -10006,7 +10010,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="3993"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
-        <translation>无法保存金手指列表到&apos;%s&apos;</translation>
+        <translation>无法保存金手指列表到&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2383"/>
@@ -10224,7 +10228,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/cdrom.cpp" line="414"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
-        <translation>光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;</translation>
+        <translation>光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
         <location filename="../../core/cdrom.cpp" line="422"/>
@@ -10340,7 +10344,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="157"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
-        <translation>分辨率比率设置为%ux (显示%ux%u，显存%ux%u)</translation>
+        <translation>分辨率比率设置为%ux (显示%ux%u，显存%ux%u)。</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="167"/>
@@ -10396,7 +10400,7 @@ Please configure a supported controller from the list above.</source>
         <translation>丢失独占式全屏。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw_opengl.cpp" line="58"/>
+        <location filename="../../core/gpu_hw_opengl.cpp" line="57"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
         <translation>OpenGL渲染器不可用，您的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.0。</translation>
     </message>
@@ -10640,29 +10644,29 @@ URL: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2038"/>
-        <location filename="../qthost.cpp" line="2064"/>
-        <location filename="../qthost.cpp" line="2080"/>
+        <location filename="../qthost.cpp" line="2036"/>
+        <location filename="../qthost.cpp" line="2062"/>
+        <location filename="../qthost.cpp" line="2078"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2039"/>
+        <location filename="../qthost.cpp" line="2037"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>文件&apos;%1&apos;不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2065"/>
+        <location filename="../qthost.cpp" line="2063"/>
         <source>The specified save state does not exist.</source>
         <translation>指定的存档不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2081"/>
+        <location filename="../qthost.cpp" line="2079"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>无法使用no-gui模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2082"/>
+        <location filename="../qthost.cpp" line="2080"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>无法使用批处理模式，因为没有指定的启动文件名。</translation>
     </message>
@@ -10920,12 +10924,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="655"/>
         <source>Global Slot %d</source>
-        <translation>全局档%d</translation>
+        <translation>全局档位%d</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="659"/>
         <source>Game Slot %d</source>
-        <translation>游戏档%d</translation>
+        <translation>游戏档位%d</translation>
     </message>
     <message>
         <source>Gane Slot %d</source>
@@ -10934,7 +10938,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="663"/>
         <source>%s Slot %d</source>
-        <translation>%s档%d</translation>
+        <translation>%s档位%d</translation>
     </message>
 </context>
 <context>
@@ -11171,12 +11175,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../settingsdialog.cpp" line="120"/>
         <source>Achievements</source>
-        <translation>成就</translation>
+        <translation>成绩</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="122"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;这些选项控制RetroAchievements。将鼠标悬停在某个选项上以获取其他信息。</translation>
+        <translation>&lt;strong&gt;成绩设置&lt;/strong&gt;&lt;hr&gt;这些选项控制RetroAchievements。将鼠标悬停在某个选项上以获取其他信息。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="152"/>
