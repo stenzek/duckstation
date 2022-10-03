@@ -7,9 +7,7 @@
 
 #include <cmath>
 
-namespace Vulkan {
-namespace Util {
-bool IsDepthFormat(VkFormat format)
+bool Vulkan::Util::IsDepthFormat(VkFormat format)
 {
   switch (format)
   {
@@ -24,7 +22,7 @@ bool IsDepthFormat(VkFormat format)
   }
 }
 
-bool IsCompressedFormat(VkFormat format)
+bool Vulkan::Util::IsCompressedFormat(VkFormat format)
 {
   switch (format)
   {
@@ -39,7 +37,7 @@ bool IsCompressedFormat(VkFormat format)
   }
 }
 
-VkFormat GetLinearFormat(VkFormat format)
+VkFormat Vulkan::Util::GetLinearFormat(VkFormat format)
 {
   switch (format)
   {
@@ -60,7 +58,7 @@ VkFormat GetLinearFormat(VkFormat format)
   }
 }
 
-u32 GetTexelSize(VkFormat format)
+u32 Vulkan::Util::GetTexelSize(VkFormat format)
 {
   // Only contains pixel formats we use.
   switch (format)
@@ -97,7 +95,7 @@ u32 GetTexelSize(VkFormat format)
   }
 }
 
-u32 GetBlockSize(VkFormat format)
+u32 Vulkan::Util::GetBlockSize(VkFormat format)
 {
   switch (format)
   {
@@ -112,7 +110,7 @@ u32 GetBlockSize(VkFormat format)
   }
 }
 
-VkRect2D ClampRect2D(const VkRect2D& rect, u32 width, u32 height)
+VkRect2D Vulkan::Util::ClampRect2D(const VkRect2D& rect, u32 width, u32 height)
 {
   VkRect2D out;
   out.offset.x = std::clamp(rect.offset.x, 0, static_cast<int>(width - 1));
@@ -122,7 +120,7 @@ VkRect2D ClampRect2D(const VkRect2D& rect, u32 width, u32 height)
   return out;
 }
 
-VkBlendFactor GetAlphaBlendFactor(VkBlendFactor factor)
+VkBlendFactor Vulkan::Util::GetAlphaBlendFactor(VkBlendFactor factor)
 {
   switch (factor)
   {
@@ -139,8 +137,8 @@ VkBlendFactor GetAlphaBlendFactor(VkBlendFactor factor)
   }
 }
 
-void SetViewport(VkCommandBuffer command_buffer, int x, int y, int width, int height, float min_depth /*= 0.0f*/,
-                 float max_depth /*= 1.0f*/)
+void Vulkan::Util::SetViewport(VkCommandBuffer command_buffer, int x, int y, int width, int height,
+                               float min_depth /*= 0.0f*/, float max_depth /*= 1.0f*/)
 {
   const VkViewport vp{static_cast<float>(x),
                       static_cast<float>(y),
@@ -151,14 +149,14 @@ void SetViewport(VkCommandBuffer command_buffer, int x, int y, int width, int he
   vkCmdSetViewport(command_buffer, 0, 1, &vp);
 }
 
-void SetScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height)
+void Vulkan::Util::SetScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height)
 {
   const VkRect2D scissor{{x, y}, {static_cast<u32>(width), static_cast<u32>(height)}};
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
-void SetViewportAndScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height,
-                           float min_depth /* = 0.0f */, float max_depth /* = 1.0f */)
+void Vulkan::Util::SetViewportAndScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height,
+                                         float min_depth /* = 0.0f */, float max_depth /* = 1.0f */)
 {
   const VkViewport vp{static_cast<float>(x),
                       static_cast<float>(y),
@@ -171,7 +169,7 @@ void SetViewportAndScissor(VkCommandBuffer command_buffer, int x, int y, int wid
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
-void SafeDestroyFramebuffer(VkFramebuffer& fb)
+void Vulkan::Util::SafeDestroyFramebuffer(VkFramebuffer& fb)
 {
   if (fb != VK_NULL_HANDLE)
   {
@@ -180,7 +178,7 @@ void SafeDestroyFramebuffer(VkFramebuffer& fb)
   }
 }
 
-void SafeDestroyShaderModule(VkShaderModule& sm)
+void Vulkan::Util::SafeDestroyShaderModule(VkShaderModule& sm)
 {
   if (sm != VK_NULL_HANDLE)
   {
@@ -189,7 +187,7 @@ void SafeDestroyShaderModule(VkShaderModule& sm)
   }
 }
 
-void SafeDestroyPipeline(VkPipeline& p)
+void Vulkan::Util::SafeDestroyPipeline(VkPipeline& p)
 {
   if (p != VK_NULL_HANDLE)
   {
@@ -198,7 +196,7 @@ void SafeDestroyPipeline(VkPipeline& p)
   }
 }
 
-void SafeDestroyPipelineLayout(VkPipelineLayout& pl)
+void Vulkan::Util::SafeDestroyPipelineLayout(VkPipelineLayout& pl)
 {
   if (pl != VK_NULL_HANDLE)
   {
@@ -207,7 +205,7 @@ void SafeDestroyPipelineLayout(VkPipelineLayout& pl)
   }
 }
 
-void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl)
+void Vulkan::Util::SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl)
 {
   if (dsl != VK_NULL_HANDLE)
   {
@@ -216,7 +214,7 @@ void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl)
   }
 }
 
-void SafeDestroyBufferView(VkBufferView& bv)
+void Vulkan::Util::SafeDestroyBufferView(VkBufferView& bv)
 {
   if (bv != VK_NULL_HANDLE)
   {
@@ -225,7 +223,7 @@ void SafeDestroyBufferView(VkBufferView& bv)
   }
 }
 
-void SafeDestroyImageView(VkImageView& iv)
+void Vulkan::Util::SafeDestroyImageView(VkImageView& iv)
 {
   if (iv != VK_NULL_HANDLE)
   {
@@ -234,7 +232,7 @@ void SafeDestroyImageView(VkImageView& iv)
   }
 }
 
-void SafeDestroySampler(VkSampler& samp)
+void Vulkan::Util::SafeDestroySampler(VkSampler& samp)
 {
   if (samp != VK_NULL_HANDLE)
   {
@@ -243,7 +241,7 @@ void SafeDestroySampler(VkSampler& samp)
   }
 }
 
-void SafeDestroySemaphore(VkSemaphore& sem)
+void Vulkan::Util::SafeDestroySemaphore(VkSemaphore& sem)
 {
   if (sem != VK_NULL_HANDLE)
   {
@@ -252,7 +250,7 @@ void SafeDestroySemaphore(VkSemaphore& sem)
   }
 }
 
-void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds)
+void Vulkan::Util::SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds)
 {
   if (ds != VK_NULL_HANDLE)
   {
@@ -261,9 +259,9 @@ void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds)
   }
 }
 
-void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,
-                         VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size,
-                         VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask)
+void Vulkan::Util::BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,
+                                       VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size,
+                                       VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask)
 {
   VkBufferMemoryBarrier buffer_info = {
     VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER, // VkStructureType    sType
@@ -280,7 +278,21 @@ void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAcce
   vkCmdPipelineBarrier(command_buffer, src_stage_mask, dst_stage_mask, 0, 0, nullptr, 1, &buffer_info, 0, nullptr);
 }
 
-VkShaderModule CreateShaderModule(const u32* spv, size_t spv_word_count)
+void Vulkan::Util::AddPointerToChain(void* head, const void* ptr)
+{
+  VkBaseInStructure* last_st = static_cast<VkBaseInStructure*>(head);
+  while (last_st->pNext)
+  {
+    if (last_st->pNext == ptr)
+      return;
+
+    last_st = const_cast<VkBaseInStructure*>(last_st->pNext);
+  }
+
+  last_st->pNext = static_cast<const VkBaseInStructure*>(ptr);
+}
+
+VkShaderModule Vulkan::Util::CreateShaderModule(const u32* spv, size_t spv_word_count)
 {
   VkShaderModuleCreateInfo info = {};
   info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -298,7 +310,7 @@ VkShaderModule CreateShaderModule(const u32* spv, size_t spv_word_count)
   return module;
 }
 
-VkShaderModule CompileAndCreateVertexShader(std::string_view source_code)
+VkShaderModule Vulkan::Util::CompileAndCreateVertexShader(std::string_view source_code)
 {
   std::optional<ShaderCompiler::SPIRVCodeVector> code = ShaderCompiler::CompileVertexShader(source_code);
   if (!code)
@@ -307,7 +319,7 @@ VkShaderModule CompileAndCreateVertexShader(std::string_view source_code)
   return CreateShaderModule(code->data(), code->size());
 }
 
-VkShaderModule CompileAndCreateGeometryShader(std::string_view source_code)
+VkShaderModule Vulkan::Util::CompileAndCreateGeometryShader(std::string_view source_code)
 {
   std::optional<ShaderCompiler::SPIRVCodeVector> code = ShaderCompiler::CompileGeometryShader(source_code);
   if (!code)
@@ -316,7 +328,7 @@ VkShaderModule CompileAndCreateGeometryShader(std::string_view source_code)
   return CreateShaderModule(code->data(), code->size());
 }
 
-VkShaderModule CompileAndCreateFragmentShader(std::string_view source_code)
+VkShaderModule Vulkan::Util::CompileAndCreateFragmentShader(std::string_view source_code)
 {
   std::optional<ShaderCompiler::SPIRVCodeVector> code = ShaderCompiler::CompileFragmentShader(source_code);
   if (!code)
@@ -325,7 +337,7 @@ VkShaderModule CompileAndCreateFragmentShader(std::string_view source_code)
   return CreateShaderModule(code->data(), code->size());
 }
 
-VkShaderModule CompileAndCreateComputeShader(std::string_view source_code)
+VkShaderModule Vulkan::Util::CompileAndCreateComputeShader(std::string_view source_code)
 {
   std::optional<ShaderCompiler::SPIRVCodeVector> code = ShaderCompiler::CompileComputeShader(source_code);
   if (!code)
@@ -334,7 +346,7 @@ VkShaderModule CompileAndCreateComputeShader(std::string_view source_code)
   return CreateShaderModule(code->data(), code->size());
 }
 
-const char* VkResultToString(VkResult res)
+const char* Vulkan::Util::VkResultToString(VkResult res)
 {
   switch (res)
   {
@@ -414,7 +426,8 @@ const char* VkResultToString(VkResult res)
       return "UNKNOWN_VK_RESULT";
   }
 }
-const char* VkImageLayoutToString(VkImageLayout layout)
+
+const char* Vulkan::Util::VkImageLayoutToString(VkImageLayout layout)
 {
   switch (layout)
   {
@@ -480,7 +493,7 @@ const char* VkImageLayoutToString(VkImageLayout layout)
   }
 }
 
-void LogVulkanResult(int level, const char* func_name, VkResult res, const char* msg, ...)
+void Vulkan::Util::LogVulkanResult(int level, const char* func_name, VkResult res, const char* msg, ...)
 {
   std::va_list ap;
   va_start(ap, msg);
@@ -493,8 +506,8 @@ void LogVulkanResult(int level, const char* func_name, VkResult res, const char*
 
 #ifdef ENABLE_VULKAN_DEBUG_OBJECTS
 
-u8 DebugScope<VkCommandBuffer>::depth = 0;
-u8 DebugScope<VkQueue>::depth = 0;
+u8 Vulkan::Util::DebugScope<VkCommandBuffer>::depth = 0;
+u8 Vulkan::Util::DebugScope<VkQueue>::depth = 0;
 
 static std::array<float, 4> Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
                                     const std::array<float, 3>& c, const std::array<float, 3>& d)
@@ -507,7 +520,8 @@ static std::array<float, 4> Palette(float phase, const std::array<float, 3>& a, 
   return result;
 }
 
-DebugScope<VkCommandBuffer>::DebugScope(VkCommandBuffer context, const char* format, ...) : command_buffer(context)
+Vulkan::Util::DebugScope<VkCommandBuffer>::DebugScope(VkCommandBuffer context, const char* format, ...)
+  : command_buffer(context)
 {
   if (command_buffer)
   {
@@ -526,7 +540,7 @@ DebugScope<VkCommandBuffer>::DebugScope(VkCommandBuffer context, const char* for
   }
 }
 
-DebugScope<VkCommandBuffer>::~DebugScope()
+Vulkan::Util::DebugScope<VkCommandBuffer>::~DebugScope()
 {
   if (command_buffer)
   {
@@ -535,7 +549,7 @@ DebugScope<VkCommandBuffer>::~DebugScope()
   }
 }
 
-DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queue(context)
+Vulkan::Util::DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queue(context)
 {
   if (queue)
   {
@@ -554,7 +568,7 @@ DebugScope<VkQueue>::DebugScope(VkQueue context, const char* format, ...) : queu
   }
 }
 
-DebugScope<VkQueue>::~DebugScope()
+Vulkan::Util::DebugScope<VkQueue>::~DebugScope()
 {
   if (queue)
   {
@@ -564,7 +578,3 @@ DebugScope<VkQueue>::~DebugScope()
 }
 
 #endif
-
-} // namespace Util
-
-} // namespace Vulkan

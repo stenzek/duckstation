@@ -88,6 +88,10 @@ public:
   ALWAYS_INLINE const VkPhysicalDeviceProperties& GetDeviceProperties() const { return m_device_properties; }
   ALWAYS_INLINE const VkPhysicalDeviceFeatures& GetDeviceFeatures() const { return m_device_features; }
   ALWAYS_INLINE const VkPhysicalDeviceLimits& GetDeviceLimits() const { return m_device_properties.limits; }
+  ALWAYS_INLINE const VkPhysicalDeviceDriverProperties& GetDeviceDriverProperties() const
+  {
+    return m_device_driver_properties;
+  }
 
   // Support bits
   ALWAYS_INLINE bool SupportsGeometryShaders() const { return m_device_features.geometryShader == VK_TRUE; }
@@ -199,6 +203,7 @@ private:
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,
                     u32 num_required_device_extensions, const char** required_device_layers,
                     u32 num_required_device_layers, const VkPhysicalDeviceFeatures* required_features);
+  void ProcessDeviceExtensions();
 
   bool CreateAllocator();
   void DestroyAllocator();

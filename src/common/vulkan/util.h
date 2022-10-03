@@ -8,8 +8,7 @@
 #include <array>
 #include <cstdarg>
 #include <string_view>
-namespace Vulkan {
-namespace Util {
+namespace Vulkan::Util {
 
 inline constexpr u32 MakeRGBA8Color(float r, float g, float b, float a)
 {
@@ -55,6 +54,9 @@ void SetViewportAndScissor(VkCommandBuffer command_buffer, int x, int y, int wid
 void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,
                          VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size,
                          VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask);
+
+// Adds a structure to a chain.
+void AddPointerToChain(void* head, const void* ptr);
 
 // Create a shader module from the specified SPIR-V.
 VkShaderModule CreateShaderModule(const u32* spv, size_t spv_word_count);
@@ -296,6 +298,4 @@ private:
 };
 #endif
 
-} // namespace Util
-
-} // namespace Vulkan
+} // namespace Vulkan::Util
