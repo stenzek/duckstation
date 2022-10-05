@@ -232,6 +232,7 @@ void GPU_HW_D3D11::SetCapabilities()
   m_supports_dual_source_blend = true;
   m_supports_per_sample_shading = (m_device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_1);
   m_supports_adaptive_downsampling = true;
+  m_supports_disable_color_perspective = true;
 
   m_max_multisamples = 1;
   for (u32 multisamples = 2; multisamples < D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)

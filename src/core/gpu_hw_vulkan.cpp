@@ -327,6 +327,7 @@ void GPU_HW_Vulkan::SetCapabilities()
   m_supports_dual_source_blend = g_vulkan_context->GetDeviceFeatures().dualSrcBlend;
   m_supports_per_sample_shading = g_vulkan_context->GetDeviceFeatures().sampleRateShading;
   m_supports_adaptive_downsampling = true;
+  m_supports_disable_color_perspective = true;
 
   Log_InfoPrintf("Dual-source blend: %s", m_supports_dual_source_blend ? "supported" : "not supported");
   Log_InfoPrintf("Per-sample shading: %s", m_supports_per_sample_shading ? "supported" : "not supported");
@@ -1575,6 +1576,8 @@ void GPU_HW_Vulkan::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   g_host_display->DownloadTexture(&m_vram_readback_texture, 0, 0, encoded_width, encoded_height,
                                   &m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left],
                                   VRAM_WIDTH * sizeof(u16));
+
+  RestoreGraphicsAPIState();
 }
 
 void GPU_HW_Vulkan::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)

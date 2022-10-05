@@ -269,17 +269,16 @@ VkRenderPass VulkanHostDisplay::GetRenderPassForDisplay() const
 
 void VulkanHostDisplay::DestroyStagingBuffer()
 {
+  if (m_readback_staging_buffer == VK_NULL_HANDLE)
+    return;
+
+  vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_readback_staging_buffer, m_readback_staging_allocation);
+
   // unmapped as part of the buffer destroy
+  m_readback_staging_buffer = VK_NULL_HANDLE;
+  m_readback_staging_allocation = VK_NULL_HANDLE;
   m_readback_staging_buffer_map = nullptr;
   m_readback_staging_buffer_size = 0;
-
-  if (m_readback_staging_buffer != VK_NULL_HANDLE)
-  {
-    vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_readback_staging_buffer, m_readback_staging_allocation);
-    m_readback_staging_buffer = VK_NULL_HANDLE;
-    m_readback_staging_allocation = VK_NULL_HANDLE;
-    m_readback_staging_buffer_size = 0;
-  }
 }
 
 bool VulkanHostDisplay::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,

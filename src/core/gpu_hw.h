@@ -374,10 +374,11 @@ protected:
     BitField<u8, bool, 0, 1> m_supports_per_sample_shading;
     BitField<u8, bool, 1, 1> m_supports_dual_source_blend;
     BitField<u8, bool, 2, 1> m_supports_adaptive_downsampling;
-    BitField<u8, bool, 3, 1> m_per_sample_shading;
-    BitField<u8, bool, 4, 1> m_scaled_dithering;
-    BitField<u8, bool, 5, 1> m_chroma_smoothing;
-    BitField<u8, bool, 6, 1> m_disable_color_perspective;
+    BitField<u8, bool, 3, 1> m_supports_disable_color_perspective;
+    BitField<u8, bool, 4, 1> m_per_sample_shading;
+    BitField<u8, bool, 5, 1> m_scaled_dithering;
+    BitField<u8, bool, 6, 1> m_chroma_smoothing;
+    BitField<u8, bool, 7, 1> m_disable_color_perspective;
 
     u8 bits = 0;
   };

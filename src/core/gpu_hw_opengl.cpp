@@ -384,6 +384,9 @@ void GPU_HW_OpenGL::SetCapabilities()
 
   // adaptive smoothing would require texture views, which aren't in GLES.
   m_supports_adaptive_downsampling = false;
+
+  // noperspective is not supported in GLSL ES.
+  m_supports_disable_color_perspective = (g_host_display->GetRenderAPI() == RenderAPI::OpenGL);
 }
 
 bool GPU_HW_OpenGL::CreateFramebuffer()

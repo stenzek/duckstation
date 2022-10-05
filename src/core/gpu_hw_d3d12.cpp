@@ -240,6 +240,7 @@ void GPU_HW_D3D12::SetCapabilities()
 
   m_supports_dual_source_blend = true;
   m_supports_per_sample_shading = true;
+  m_supports_disable_color_perspective = true;
   Log_InfoPrintf("Dual-source blend: %s", m_supports_dual_source_blend ? "supported" : "not supported");
   Log_InfoPrintf("Per-sample shading: %s", m_supports_per_sample_shading ? "supported" : "not supported");
   Log_InfoPrintf("Max multisamples: %u", m_max_multisamples);
