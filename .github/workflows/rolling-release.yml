@@ -312,7 +312,7 @@ jobs:
 
 
   macos-build:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v2.3.1
       with:

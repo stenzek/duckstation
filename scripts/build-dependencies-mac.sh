@@ -6,7 +6,7 @@ export MACOSX_DEPLOYMENT_TARGET=10.14
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.0.22
-QT=6.3.1
+QT=6.4.0
 MOLTENVK=1.1.10
 CURL=7.84.0
 
@@ -22,10 +22,10 @@ cat > SHASUMS <<EOF
 fe7cbf3127882e3fc7259a75a0cb585620272c51745d3852ab9dd87960697f2e  $SDL.tar.gz
 fac11c2501195c9ce042103685c7778e35484562e6c084963a22072dd0a602e0  v$MOLTENVK.tar.gz
 3c6893d38d054d4e378267166858698899e9d87258e8ff1419d020c395384535  curl-$CURL.tar.gz
-0a64421d9c2469c2c48490a032ab91d547017c9cc171f3f8070bc31888f24e03  qtbase-everywhere-src-$QT.tar.xz
-7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
-c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
-d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations-everywhere-src-$QT.tar.xz
+cb6475a0bd8567c49f7ffbb072a05516ee6671171bed55db75b22b94ead9b37d  qtbase-everywhere-src-$QT.tar.xz
+03fdae9437d074dcfa387dc1f2c6e7e14fea0f989bf7e1aa265fd35ffc2c5b25  qtsvg-everywhere-src-$QT.tar.xz
+97f3d5f88c458be7a8f7b7b08efc06c4ebad39ca51669476b18bf9e4c11afba2  qttools-everywhere-src-$QT.tar.xz
+7ab93a930b693eeb53ab97b038b4e6e057d06374e6f49a3814d99145a276925f  qttranslations-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
