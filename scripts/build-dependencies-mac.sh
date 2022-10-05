@@ -104,7 +104,7 @@ cd ..
 # Build arm64, but don't install it, instead just add the arm64 binary into the existing x64 dylib.
 mkdir build-arm64
 cd build-arm64
-CFLAGS="-arch arm64" ../configure --host x86_64-apple-darwin --prefix "$INSTALLDIR" --with-secure-transport
+CFLAGS="-arch arm64" ../configure --host x86_64-apple-darwin --prefix "$INSTALLDIR" --with-secure-transport --without-brotli
 make "-j$NPROCS"
 lipo -create "$INSTALLDIR/lib/libcurl.4.dylib" "lib/.libs/libcurl.4.dylib" -o "$INSTALLDIR/lib/libcurl.4.dylib"
 cd ../..
