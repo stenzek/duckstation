@@ -625,7 +625,7 @@ void FullscreenUI::OnRunningGameChanged()
     return;
 
   const std::string& path = System::GetRunningPath();
-  const std::string& serial = System::GetRunningCode();
+  const std::string& serial = System::GetRunningSerial();
   if (!serial.empty())
     s_current_game_subtitle = fmt::format("{0} - {1}", serial, Path::GetFileName(path));
   else
@@ -2006,14 +2006,14 @@ void FullscreenUI::SwitchToGameSettingsForSerial(const std::string_view& serial)
 
 void FullscreenUI::SwitchToGameSettings()
 {
-  if (System::GetRunningCode().empty())
+  if (System::GetRunningSerial().empty())
     return;
 
   auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(System::GetRunningPath().c_str());
   if (!entry)
   {
-    SwitchToGameSettingsForSerial(System::GetRunningCode());
+    SwitchToGameSettingsForSerial(System::GetRunningSerial());
     return;
   }
 
@@ -3833,11 +3833,11 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
   // title info
   {
     const std::string& title = System::GetRunningTitle();
-    const std::string& code = System::GetRunningCode();
+    const std::string& serial = System::GetRunningSerial();
 
     SmallString subtitle;
-    if (!code.empty())
-      subtitle.Format("%s - ", code.c_str());
+    if (!serial.empty())
+      subtitle.Format("%s - ", serial.c_str());
     subtitle.AppendString(Path::GetFileName(System::GetRunningPath()));
 
     const ImVec2 title_size(
@@ -3909,7 +3909,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::None:
       {
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
-        const bool has_game = System::IsValid() && !System::GetRunningCode().empty();
+        const bool has_game = System::IsValid() && !System::GetRunningSerial().empty();
 
         if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
           ClosePauseMenu();
@@ -3933,7 +3933,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         }
 
         if (ActiveButton(ICON_FA_FROWN_OPEN " Cheat List", false,
-                         !System::GetRunningCode().empty() && !Achievements::ChallengeModeActive()))
+                         !System::GetRunningSerial().empty() && !Achievements::ChallengeModeActive()))
         {
           s_current_main_window = MainWindowType::None;
           DoCheatsMenu();
@@ -4070,7 +4070,7 @@ bool FullscreenUI::InitializeSaveStateListEntry(SaveStateListEntry* li, const st
     li->title = StringUtil::StdStringFromFormat("%s Slot %d##game_slot_%d", ssi->title.c_str(), slot, slot);
   }
 
-  li->summary = fmt::format("{} - Saved {:%c}", ssi->game_code.c_str(), fmt::localtime(ssi->timestamp));
+  li->summary = fmt::format("{} - Saved {:%c}", ssi->serial.c_str(), fmt::localtime(ssi->timestamp));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
   li->path = std::move(filename);
@@ -4171,7 +4171,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
   s_save_state_selector_game_path = {};
   s_save_state_selector_loading = is_loading;
   s_save_state_selector_resuming = false;
-  if (PopulateSaveStateListEntries(System::GetRunningTitle().c_str(), System::GetRunningCode().c_str()) > 0)
+  if (PopulateSaveStateListEntries(System::GetRunningTitle().c_str(), System::GetRunningSerial().c_str()) > 0)
   {
     s_save_state_selector_open = true;
     return true;
@@ -4435,7 +4435,7 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
       return;
 
     std::string filename(global ? System::GetGlobalSaveStateFileName(slot) :
-                                  System::GetGameSaveStateFileName(System::GetRunningCode(), slot));
+                                  System::GetGameSaveStateFileName(System::GetRunningSerial(), slot));
     System::SaveState(filename.c_str(), g_settings.create_save_state_backups);
   });
 }

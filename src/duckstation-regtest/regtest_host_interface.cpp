@@ -103,7 +103,7 @@ void RegTestHostInterface::GetGameInfo(const char* path, CDImage* image, std::st
       return;
     }
 
-    *code = System::GetGameCodeForImage(image, true);
+    *code = System::GetGameIdFromImage(image, true);
   }
 
   *title = Path::GetFileTitle(path);
@@ -181,13 +181,13 @@ void RegTestHostInterface::UpdateSettings()
   SettingsInterface& si = m_settings_interface;
   HostInterface::LoadSettings(si);
 
-  const std::string& code = System::GetRunningCode();
-  if (!code.empty())
+  const std::string& serial = System::GetRunningSerial();
+  if (!serial.empty())
   {
-    const GameSettings::Entry* entry = s_game_settings_db.GetEntry(code);
+    const GameSettings::Entry* entry = s_game_settings_db.GetEntry(serial);
     if (entry)
     {
-      Log_InfoPrintf("Applying game settings for '%s'", code.c_str());
+      Log_InfoPrintf("Applying game settings for '%s'", serial.c_str());
       entry->ApplySettings(true);
     }
   }

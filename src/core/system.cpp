@@ -26,7 +26,7 @@
 #include "host_interface_progress_callback.h"
 #include "host_settings.h"
 #include "interrupt_controller.h"
-#include "libcrypt_game_codes.h"
+#include "libcrypt_serials.h"
 #include "mdec.h"
 #include "memory_card.h"
 #include "multitap.h"
@@ -135,7 +135,7 @@ static u32 s_frame_number = 1;
 static u32 s_internal_frame_number = 1;
 
 static std::string s_running_game_path;
-static std::string s_running_game_code;
+static std::string s_running_game_serial;
 static std::string s_running_game_title;
 static bool s_running_bios;
 
@@ -305,9 +305,9 @@ const std::string& System::GetRunningPath()
 {
   return s_running_game_path;
 }
-const std::string& System::GetRunningCode()
+const std::string& System::GetRunningSerial()
 {
-  return s_running_game_code;
+  return s_running_game_serial;
 }
 
 const std::string& System::GetRunningTitle()
@@ -419,16 +419,16 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
   }
 }
 
-std::string System::GetGameCodeForPath(const char* image_path, bool fallback_to_hash)
+std::string System::GetGameSerialForPath(const char* image_path, bool fallback_to_hash)
 {
   std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, false, nullptr);
   if (!cdi)
     return {};
 
-  return GetGameCodeForImage(cdi.get(), fallback_to_hash);
+  return GetGameIdFromImage(cdi.get(), fallback_to_hash);
 }
 
-std::string System::GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
+std::string System::GetGameIdFromImage(CDImage* cdi, bool fallback_to_hash)
 {
   std::string code(GetExecutableNameForImage(cdi));
   if (!code.empty())
@@ -456,10 +456,10 @@ std::string System::GetGameCodeForImage(CDImage* cdi, bool fallback_to_hash)
   if (!fallback_to_hash)
     return {};
 
-  return GetGameHashCodeForImage(cdi);
+  return GetGameHashIdFromImage(cdi);
 }
 
-std::string System::GetGameHashCodeForImage(CDImage* cdi)
+std::string System::GetGameHashIdFromImage(CDImage* cdi)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
@@ -623,12 +623,12 @@ bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_n
   return ReadExecutableFromImage(iso, out_executable_name, out_executable_data);
 }
 
-DiscRegion System::GetRegionForCode(std::string_view code)
+DiscRegion System::GetRegionForSerial(std::string_view serial)
 {
   std::string prefix;
-  for (size_t pos = 0; pos < code.length(); pos++)
+  for (size_t pos = 0; pos < serial.length(); pos++)
   {
-    const int ch = std::tolower(code[pos]);
+    const int ch = std::tolower(serial[pos]);
     if (ch < 'a' || ch > 'z')
       break;
 
@@ -673,11 +673,11 @@ DiscRegion System::GetRegionForImage(CDImage* cdi)
   if (system_area_region != DiscRegion::Other)
     return system_area_region;
 
-  std::string code = GetGameCodeForImage(cdi, false);
-  if (code.empty())
+  std::string serial = GetGameIdFromImage(cdi, false);
+  if (serial.empty())
     return DiscRegion::Other;
 
-  return GetRegionForCode(code);
+  return GetRegionForSerial(serial);
 }
 
 DiscRegion System::GetRegionForExe(const char* path)
@@ -778,9 +778,9 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
 
   // apply compatibility settings
-  if (g_settings.apply_compatibility_settings && !s_running_game_code.empty())
+  if (g_settings.apply_compatibility_settings && !s_running_game_serial.empty())
   {
-    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_code);
+    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
     if (entry)
       entry->ApplySettings(g_settings, display_osd_messages);
   }
@@ -828,9 +828,9 @@ bool System::ReloadGameSettings(bool display_osd_messages)
 bool System::UpdateGameSettingsLayer()
 {
   std::unique_ptr<INISettingsInterface> new_interface;
-  if (g_settings.apply_game_settings && !s_running_game_code.empty())
+  if (g_settings.apply_game_settings && !s_running_game_serial.empty())
   {
-    std::string filename(GetGameSettingsPath(s_running_game_code));
+    std::string filename(GetGameSettingsPath(s_running_game_serial));
     if (FileSystem::FileExists(filename.c_str()))
     {
       Log_InfoPrintf("Loading game settings from '%s'...", filename.c_str());
@@ -1039,10 +1039,10 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
 
 bool System::SaveResumeState()
 {
-  if (s_running_game_code.empty())
+  if (s_running_game_serial.empty())
     return false;
 
-  const std::string path(GetGameSaveStateFileName(s_running_game_code, -1));
+  const std::string path(GetGameSaveStateFileName(s_running_game_serial, -1));
   return SaveState(path.c_str(), false);
 }
 
@@ -1430,14 +1430,14 @@ void System::DestroySystem()
 
 void System::ClearRunningGame()
 {
-  s_running_game_code.clear();
+  s_running_game_serial.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
   s_running_bios = false;
   s_cheat_list.reset();
   s_state = State::Shutdown;
 
-  Host::OnGameChanged(s_running_game_path, s_running_game_code, s_running_game_title);
+  Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 
 #ifdef WITH_CHEEVOS
   Achievements::GameChanged(s_running_game_path, nullptr);
@@ -1906,7 +1906,7 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
   header.magic = SAVE_STATE_MAGIC;
   header.version = SAVE_STATE_VERSION;
   StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
-  StringUtil::Strlcpy(header.game_code, s_running_game_code.c_str(), sizeof(header.game_code));
+  StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
 
   if (g_cdrom.HasMedia())
   {
@@ -2634,7 +2634,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
   {
     case MemoryCardType::PerGame:
     {
-      if (s_running_game_code.empty())
+      if (s_running_game_serial.empty())
       {
         Host::AddFormattedOSDMessage(
           5.0f,
@@ -2645,7 +2645,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       }
       else
       {
-        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_running_game_code.c_str(), slot));
+        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_running_game_serial.c_str(), slot));
       }
     }
 
@@ -2857,13 +2857,13 @@ bool System::InsertMedia(const char* path)
 
   UpdateRunningGame(path, image.get(), false);
   g_cdrom.InsertMedia(std::move(image));
-  Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_code.c_str(),
+  Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_serial.c_str(),
                  s_running_game_title.c_str());
   if (g_settings.cdrom_load_image_to_ram)
     g_cdrom.PrecacheMedia();
 
   Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Inserted disc '%s' (%s)."),
-                               s_running_game_title.c_str(), s_running_game_code.c_str());
+                               s_running_game_title.c_str(), s_running_game_serial.c_str());
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
@@ -2887,7 +2887,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     return;
 
   s_running_game_path.clear();
-  s_running_game_code.clear();
+  s_running_game_serial.clear();
   s_running_game_title.clear();
 
   if (path && std::strlen(path) > 0)
@@ -2904,13 +2904,13 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForDisc(image);
       if (entry)
       {
-        s_running_game_code = entry->serial;
+        s_running_game_serial = entry->serial;
         s_running_game_title = entry->title;
       }
       else
       {
         const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-        s_running_game_code = GetGameCodeForImage(image, true);
+        s_running_game_serial = GetGameIdFromImage(image, true);
         s_running_game_title = Path::GetFileTitle(display_name);
       }
 
@@ -2923,7 +2923,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     }
   }
 
-  g_texture_replacements.SetGameID(s_running_game_code);
+  g_texture_replacements.SetGameID(s_running_game_serial);
 
   s_cheat_list.reset();
   if (g_settings.auto_load_cheats && !Achievements::ChallengeModeActive())
@@ -2932,7 +2932,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   UpdateGameSettingsLayer();
   ApplySettings(true);
 
-  Host::OnGameChanged(s_running_game_path, s_running_game_code, s_running_game_title);
+  Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 
 #ifdef WITH_CHEEVOS
   if (booting)
@@ -2944,13 +2944,13 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
 
 bool System::CheckForSBIFile(CDImage* image)
 {
-  if (s_running_game_code.empty() || !LibcryptGameList::IsLibcryptGameCode(s_running_game_code) || !image ||
+  if (s_running_game_serial.empty() || !LibcryptGameList::IsLibcryptGameCode(s_running_game_serial) || !image ||
       image->HasNonStandardSubchannel())
   {
     return true;
   }
 
-  Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_code.c_str(),
+  Log_WarningPrintf("SBI file missing but required for %s (%s)", s_running_game_serial.c_str(),
                     s_running_game_title.c_str());
 
   if (Host::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
@@ -2963,7 +2963,7 @@ bool System::CheckForSBIFile(CDImage* image)
           "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
           "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
           "you wish to continue?"),
-        s_running_game_code.c_str(), s_running_game_title.c_str())
+        s_running_game_serial.c_str(), s_running_game_title.c_str())
         .c_str());
   }
   else
@@ -2976,7 +2976,7 @@ bool System::CheckForSBIFile(CDImage* image)
           "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
           "incomplete, you must add the SBI file to run this game. \n\n"
           "The name of the SBI file must match the name of the disc image."),
-        s_running_game_code.c_str(), s_running_game_title.c_str()));
+        s_running_game_serial.c_str(), s_running_game_title.c_str()));
     return false;
   }
 }
@@ -3695,15 +3695,15 @@ bool System::StartDumpingAudio(const char* filename)
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = System::GetRunningCode();
-    if (code.empty())
+    const auto& serial = System::GetRunningSerial();
+    if (serial.empty())
     {
       auto_filename = Path::Combine(
         EmuFolders::Dumps, fmt::format("audio" FS_OSPATH_SEPARATOR_STR "{}.wav", GetTimestampStringForFileName()));
     }
     else
     {
-      auto_filename = Path::Combine(EmuFolders::Dumps, fmt::format("audio" FS_OSPATH_SEPARATOR_STR "{}_{}.wav", code,
+      auto_filename = Path::Combine(EmuFolders::Dumps, fmt::format("audio" FS_OSPATH_SEPARATOR_STR "{}_{}.wav", serial,
                                                                    GetTimestampStringForFileName()));
     }
 
@@ -3740,7 +3740,7 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = System::GetRunningCode();
+    const auto& code = System::GetRunningSerial();
     const char* extension = "png";
     if (code.empty())
     {
@@ -3779,12 +3779,12 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
   return true;
 }
 
-std::string System::GetGameSaveStateFileName(const std::string_view& game_code, s32 slot)
+std::string System::GetGameSaveStateFileName(const std::string_view& serial, s32 slot)
 {
   if (slot < 0)
-    return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_resume.sav", game_code));
+    return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_resume.sav", serial));
   else
-    return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_{}.sav", game_code, slot));
+    return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_{}.sav", serial, slot));
 }
 
 std::string System::GetGlobalSaveStateFileName(s32 slot)
@@ -3795,7 +3795,7 @@ std::string System::GetGlobalSaveStateFileName(s32 slot)
     return Path::Combine(EmuFolders::SaveStates, fmt::format("savestate_{}.sav", slot));
 }
 
-std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* game_code)
+std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* serial)
 {
   std::vector<SaveStateInfo> si;
   std::string path;
@@ -3808,11 +3808,11 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* game_code)
     si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime, static_cast<s32>(slot), global});
   };
 
-  if (game_code && std::strlen(game_code) > 0)
+  if (serial && std::strlen(serial) > 0)
   {
-    add_path(GetGameSaveStateFileName(game_code, -1), -1, false);
+    add_path(GetGameSaveStateFileName(serial, -1), -1, false);
     for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
-      add_path(GetGameSaveStateFileName(game_code, i), i, false);
+      add_path(GetGameSaveStateFileName(serial, i), i, false);
   }
 
   for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
@@ -3821,10 +3821,10 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* game_code)
   return si;
 }
 
-std::optional<SaveStateInfo> System::GetSaveStateInfo(const char* game_code, s32 slot)
+std::optional<SaveStateInfo> System::GetSaveStateInfo(const char* serial, s32 slot)
 {
-  const bool global = (!game_code || game_code[0] == 0);
-  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(game_code, slot);
+  const bool global = (!serial || serial[0] == 0);
+  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(serial, slot);
 
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
@@ -3868,8 +3868,8 @@ std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(By
 
   header.title[sizeof(header.title) - 1] = 0;
   ssi.title = header.title;
-  header.game_code[sizeof(header.game_code) - 1] = 0;
-  ssi.game_code = header.game_code;
+  header.serial[sizeof(header.serial) - 1] = 0;
+  ssi.serial = header.serial;
 
   if (header.media_filename_length > 0 &&
       (header.offset_to_media_filename + header.media_filename_length) <= stream->GetSize())
@@ -3899,9 +3899,9 @@ std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(By
   return ssi;
 }
 
-void System::DeleteSaveStates(const char* game_code, bool resume)
+void System::DeleteSaveStates(const char* serial, bool resume)
 {
-  const std::vector<SaveStateInfo> states(GetAvailableSaveStates(game_code));
+  const std::vector<SaveStateInfo> states(GetAvailableSaveStates(serial));
   for (const SaveStateInfo& si : states)
   {
     if (si.global || (!resume && si.slot < 0))
@@ -3982,11 +3982,11 @@ bool System::LoadCheatListFromGameTitle()
 
 bool System::LoadCheatListFromDatabase()
 {
-  if (IsShutdown() || s_running_game_code.empty() || Achievements::ChallengeModeActive())
+  if (IsShutdown() || s_running_game_serial.empty() || Achievements::ChallengeModeActive())
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromPackage(s_running_game_code))
+  if (!cl->LoadFromPackage(s_running_game_serial))
     return false;
 
   Log_InfoPrintf("Loaded %u cheats from database.", cl->GetCodeCount());

@@ -183,7 +183,7 @@ public:
 
   bool SaveToPCSXRFile(const char* filename);
 
-  bool LoadFromPackage(const std::string& game_code);
+  bool LoadFromPackage(const std::string& serial);
 
   void Apply();
 

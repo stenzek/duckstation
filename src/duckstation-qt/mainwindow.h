@@ -118,7 +118,7 @@ private Q_SLOTS:
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
-  void onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
+  void onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void onAchievementsChallengeModeChanged();
   void onApplicationStateChanged(Qt::ApplicationState state);
 
@@ -221,8 +221,8 @@ private:
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu);
 
-  void populateLoadStateMenu(const char* game_code, QMenu* menu);
-  void populateSaveStateMenu(const char* game_code, QMenu* menu);
+  void populateLoadStateMenu(const char* game_serial, QMenu* menu);
+  void populateSaveStateMenu(const char* game_serial, QMenu* menu);
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
   void populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group);
@@ -257,7 +257,7 @@ private:
   DebuggerWindow* m_debugger_window = nullptr;
 
   std::string m_current_game_title;
-  std::string m_current_game_code;
+  std::string m_current_game_serial;
 
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;

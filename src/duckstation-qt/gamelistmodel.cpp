@@ -566,7 +566,7 @@ void GameListModel::loadCommonImages()
 void GameListModel::setColumnDisplayNames()
 {
   m_column_display_names[Column_Type] = tr("Type");
-  m_column_display_names[Column_Serial] = tr("Code");
+  m_column_display_names[Column_Serial] = tr("Serial");
   m_column_display_names[Column_Title] = tr("Title");
   m_column_display_names[Column_FileTitle] = tr("File Title");
   m_column_display_names[Column_Developer] = tr("Developer");

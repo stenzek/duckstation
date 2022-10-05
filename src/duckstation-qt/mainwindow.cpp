@@ -556,10 +556,10 @@ void MainWindow::onSystemDestroyed()
   }
 }
 
-void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_code, const QString& game_title)
+void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
 {
   m_current_game_title = game_title.toStdString();
-  m_current_game_code = game_code.toStdString();
+  m_current_game_serial = game_serial.toStdString();
 
   updateWindowTitle();
   // updateSaveStateMenus(path, serial, crc);
@@ -770,10 +770,10 @@ static QString FormatTimestampForSaveStateMenu(u64 timestamp)
   return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
 }
 
-void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
+void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
 {
-  auto add_slot = [this, game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
-    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_code, slot);
+  auto add_slot = [this, game_serial, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
+    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_serial, slot);
 
     const QString menu_title =
       ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
@@ -802,7 +802,7 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
   connect(load_from_state, &QAction::triggered, g_emu_thread, &EmuThread::undoLoadState);
   menu->addSeparator();
 
-  if (game_code && std::strlen(game_code) > 0)
+  if (game_serial && std::strlen(game_serial) > 0)
   {
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
       add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
@@ -814,10 +814,10 @@ void MainWindow::populateLoadStateMenu(const char* game_code, QMenu* menu)
     add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
 }
 
-void MainWindow::populateSaveStateMenu(const char* game_code, QMenu* menu)
+void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
 {
-  auto add_slot = [game_code, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
-    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_code, slot);
+  auto add_slot = [game_serial, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
+    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_serial, slot);
 
     const QString menu_title =
       ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
@@ -841,7 +841,7 @@ void MainWindow::populateSaveStateMenu(const char* game_code, QMenu* menu)
   });
   menu->addSeparator();
 
-  if (game_code && std::strlen(game_code) > 0)
+  if (game_serial && std::strlen(game_serial) > 0)
   {
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
       add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
@@ -1094,12 +1094,12 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
-  populateLoadStateMenu(m_current_game_code.c_str(), m_ui.menuLoadState);
+  populateLoadStateMenu(m_current_game_serial.c_str(), m_ui.menuLoadState);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
-  populateSaveStateMenu(m_current_game_code.c_str(), m_ui.menuSaveState);
+  populateSaveStateMenu(m_current_game_serial.c_str(), m_ui.menuSaveState);
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -1161,7 +1161,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
     return;
 
   const std::string& path = System::GetRunningPath();
-  const std::string& serial = System::GetRunningCode();
+  const std::string& serial = System::GetRunningSerial();
   if (path.empty() || serial.empty())
     return;
 
@@ -2375,7 +2375,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     return true;
 
   // If we don't have a serial, we can't save state.
-  allow_save_to_state &= !m_current_game_code.empty();
+  allow_save_to_state &= !m_current_game_serial.empty();
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.

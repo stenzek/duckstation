@@ -13,7 +13,7 @@ struct SAVE_STATE_HEADER
   enum : u32
   {
     MAX_TITLE_LENGTH = 128,
-    MAX_GAME_CODE_LENGTH = 32,
+    MAX_SERIAL_LENGTH = 32,
 
     COMPRESSION_TYPE_NONE = 0,
     COMPRESSION_TYPE_ZLIB = 1,
@@ -23,7 +23,7 @@ struct SAVE_STATE_HEADER
   u32 magic;
   u32 version;
   char title[MAX_TITLE_LENGTH];
-  char game_code[MAX_GAME_CODE_LENGTH];
+  char serial[MAX_SERIAL_LENGTH];
 
   u32 media_filename_length;
   u32 offset_to_media_filename;

@@ -197,7 +197,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 
     // no game code, so use the filename title
-    entry->serial = System::GetGameCodeForImage(cdi.get(), true);
+    entry->serial = System::GetGameIdFromImage(cdi.get(), true);
     entry->title = Path::GetFileTitle(display_name);
     entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
     entry->release_date = 0;
@@ -211,7 +211,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   // region detection
   entry->region = System::GetRegionFromSystemArea(cdi.get());
   if (entry->region == DiscRegion::Other)
-    entry->region = System::GetRegionForCode(entry->serial);
+    entry->region = System::GetRegionForSerial(entry->serial);
 
   if (cdi->HasSubImages())
   {

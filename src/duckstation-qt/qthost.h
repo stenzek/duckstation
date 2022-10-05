@@ -134,7 +134,7 @@ Q_SIGNALS:
   void displaySizeRequested(qint32 width, qint32 height);
   void focusDisplayWidgetRequested();
   void destroyDisplayRequested();
-  void runningGameChanged(const QString& filename, const QString& game_code, const QString& game_title);
+  void runningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
   void achievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);

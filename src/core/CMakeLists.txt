@@ -61,8 +61,8 @@ add_library(core
     host_settings.h
     interrupt_controller.cpp
     interrupt_controller.h
-    libcrypt_game_codes.cpp
-    libcrypt_game_codes.h
+    libcrypt_serials.cpp
+    libcrypt_serials.h
     mdec.cpp
     mdec.h
     memory_card.cpp

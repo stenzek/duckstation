@@ -32,6 +32,7 @@ enum : u32
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
+static const Entry* GetEntryForId(const std::string_view& code);
 
 static bool LoadFromCache();
 static bool SaveToCache();
@@ -105,7 +106,7 @@ void GameDatabase::Unload()
   s_loaded = false;
 }
 
-const GameDatabase::Entry* GameDatabase::GetEntryForCode(const std::string_view& code)
+const GameDatabase::Entry* GameDatabase::GetEntryForId(const std::string_view& code)
 {
   EnsureLoaded();
 
@@ -140,24 +141,23 @@ std::string GameDatabase::GetSerialForPath(const char* path)
 
 const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
 {
-  std::string exe_name_code(System::GetGameCodeForImage(image, false));
-  if (!exe_name_code.empty())
+  std::string id(System::GetGameIdFromImage(image, false));
+  if (!id.empty())
   {
-    const Entry* entry = GetEntryForCode(exe_name_code);
+    const Entry* entry = GetEntryForId(id);
     if (entry)
       return entry;
   }
 
-  std::string exe_hash_code(System::GetGameHashCodeForImage(image));
-  if (!exe_hash_code.empty())
+  std::string hash_id(System::GetGameHashIdFromImage(image));
+  if (!hash_id.empty())
   {
-    const Entry* entry = GetEntryForCode(exe_hash_code);
+    const Entry* entry = GetEntryForId(hash_id);
     if (entry)
       return entry;
   }
 
-  Log_WarningPrintf("No entry found for disc (exe code: '%s', hash code: '%s')", exe_name_code.c_str(),
-                    exe_hash_code.c_str());
+  Log_WarningPrintf("No entry found for disc (exe code: '%s', hash code: '%s')", id.c_str(), hash_id.c_str());
   return nullptr;
 }
 
@@ -365,7 +365,8 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp_texture",
-        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected textures disabled by game settings."), osd_duration);
+        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected textures disabled by game settings."),
+        osd_duration);
     }
 
     settings.gpu_pgxp_texture_correction = false;
@@ -378,7 +379,8 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp_texture",
-        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected colors disabled by game settings."), osd_duration);
+        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected colors disabled by game settings."),
+        osd_duration);
     }
 
     settings.gpu_pgxp_color_correction = false;

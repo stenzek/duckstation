@@ -684,7 +684,7 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
   return (std::ferror(fp.get()) == 0);
 }
 
-bool CheatList::LoadFromPackage(const std::string& game_code)
+bool CheatList::LoadFromPackage(const std::string& serial)
 {
   const std::optional<std::string> db_string(Host::ReadResourceFileToString("chtdb.txt"));
   if (!db_string.has_value())
@@ -712,7 +712,7 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
     if (start == end)
       continue;
 
-    if (start[0] != ':' || std::strcmp(&start[1], game_code.c_str()) != 0)
+    if (start[0] != ':' || std::strcmp(&start[1], serial.c_str()) != 0)
       continue;
 
     // game code match
@@ -788,11 +788,11 @@ bool CheatList::LoadFromPackage(const std::string& game_code)
     if (current_code.Valid())
       m_codes.push_back(std::move(current_code));
 
-    Log_InfoPrintf("Loaded %zu codes from package for %s", m_codes.size(), game_code.c_str());
+    Log_InfoPrintf("Loaded %zu codes from package for %s", m_codes.size(), serial.c_str());
     return !m_codes.empty();
   }
 
-  Log_WarningPrintf("No codes found in package for %s", game_code.c_str());
+  Log_WarningPrintf("No codes found in package for %s", serial.c_str());
   return false;
 }
 

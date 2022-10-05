@@ -1,4 +1,4 @@
-#include "libcrypt_game_codes.h"
+#include "libcrypt_serials.h"
 
 namespace LibcryptGameList {
 

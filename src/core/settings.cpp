@@ -1112,8 +1112,8 @@ static std::array<const char*, 6> s_memory_card_type_names = {
   {"None", "Shared", "PerGame", "PerGameTitle", "PerGameFileTitle", "NonPersistent"}};
 static std::array<const char*, 6> s_memory_card_type_display_names = {
   {TRANSLATABLE("MemoryCardType", "No Memory Card"), TRANSLATABLE("MemoryCardType", "Shared Between All Games"),
-   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Code)"),
-   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Game Title)"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Serial)"),
+   TRANSLATABLE("MemoryCardType", "Separate Card Per Game (Title)"),
    TRANSLATABLE("MemoryCardType", "Separate Card Per Game (File Title)"),
    TRANSLATABLE("MemoryCardType", "Non-Persistent Card (Do Not Save)")}};
 
@@ -1160,9 +1160,9 @@ std::string Settings::GetSharedMemoryCardPath(u32 slot) const
   return ret;
 }
 
-std::string Settings::GetGameMemoryCardPath(const char* game_code, u32 slot)
+std::string Settings::GetGameMemoryCardPath(const char* serial, u32 slot)
 {
-  return Path::Combine(EmuFolders::MemoryCards, fmt::format("{}_{}.mcd", game_code, slot + 1));
+  return Path::Combine(EmuFolders::MemoryCards, fmt::format("{}_{}.mcd", serial, slot + 1));
 }
 
 static std::array<const char*, 4> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "Port2Only", "BothPorts"}};
