@@ -220,46 +220,47 @@ jobs:
 #        path: "build/duckstation-qt-x64.AppImage.zsync"
 
 
-  macos-build:
-    runs-on: macos-11
-    steps:
-    - uses: actions/checkout@v2.3.1
-      with:
-        fetch-depth: 0
-
-    - name: Install packages
-      shell: bash
-      run: |
-        brew install curl ninja
-
-    - name: Cache Dependencies
-      id: cache-deps-mac
-      uses: actions/cache@v3
-      with:
-        path: ~/deps
-        key: deps-mac ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
-
-    - name: Build Dependencies
-      if: steps.cache-deps-mac.outputs.cache-hit != 'true'
-      run: scripts/build-dependencies-mac.sh
-
-    - name: Compile and zip .app
-      shell: bash
-      run: |
-        mkdir build
-        cd build
-        ../scripts/make-universal-macos-binary.sh ..
-        zip -r duckstation-mac-release.zip DuckStation.app/
-
-    - name: Upload macOS .app
-      uses: actions/upload-artifact@v1
-      with:
-        name: "macos"
-        path: "build/duckstation-mac-release.zip"
+#  macos-build:
+#    runs-on: macos-11
+#    steps:
+#    - uses: actions/checkout@v2.3.1
+#      with:
+#        fetch-depth: 0
+#
+#    - name: Install packages
+#      shell: bash
+#      run: |
+#        brew install curl ninja
+#
+#    - name: Cache Dependencies
+#      id: cache-deps-mac
+#      uses: actions/cache@v3
+#      with:
+#        path: ~/deps
+#        key: deps-mac ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
+#
+#    - name: Build Dependencies
+#      if: steps.cache-deps-mac.outputs.cache-hit != 'true'
+#      run: scripts/build-dependencies-mac.sh
+#
+#    - name: Compile and zip .app
+#      shell: bash
+#      run: |
+#        mkdir build
+#        cd build
+#        ../scripts/make-universal-macos-binary.sh ..
+#        zip -r duckstation-mac-release.zip DuckStation.app/
+#
+#    - name: Upload macOS .app
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: "macos"
+#        path: "build/duckstation-mac-release.zip"
 
 
   create-release:
-    needs: [windows-build, windows-arm64-build, linux-build, macos-build]
+    #needs: [windows-build, windows-arm64-build, linux-build, macos-build]
+    needs: [windows-build, windows-arm64-build, linux-build]
     runs-on: "ubuntu-20.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -288,10 +289,10 @@ jobs:
         with:
           name: "linux-x64-appimage-qt"
 
-      - name: Download MacOS Artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: "macos"
+#      - name: Download MacOS Artifact
+#        uses: actions/download-artifact@v1
+#        with:
+#          name: "macos"
 
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
@@ -307,7 +308,7 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
-            macos/duckstation-mac-release.zip
+#            macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
@@ -327,7 +328,7 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release.zip
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
-            macos/duckstation-mac-release.zip
+#            macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
 #            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
