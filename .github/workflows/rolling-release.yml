@@ -161,97 +161,6 @@ jobs:
         path: "duckstation-windows-arm64-release.zip"
 
 
-#  windows-uwp-build:
-#    runs-on: windows-2022
-#    steps:
-#    - uses: actions/checkout@v2.3.1
-#      with:
-#        fetch-depth: 0
-#        submodules: false
-#
-#    - name: Tag as preview build
-#      if: github.ref == 'refs/heads/master'
-#      shell: cmd
-#      run: |
-#        echo #pragma once > src/scmversion/tag.h
-#        echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
-#        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
-#        echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
-#
-#
-#    - name: Tag as dev build
-#      if: github.ref == 'refs/heads/dev'
-#      shell: cmd
-#      run: |
-#        echo #pragma once > src/scmversion/tag.h
-#        echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
-#        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
-#        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
-#
-#    - name: Write signing key
-#      id: write_signing_key
-#      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-#      uses: timheuer/base64-to-file@v1
-#      with:
-#        fileName: 'duckstation-uwp.pfx'
-#        encodedString: ${{ secrets.UWP_PFX_KEY }}
-#
-#    - name: Copy signing key
-#      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-#      shell: cmd
-#      run: |
-#        copy ${{ steps.write_signing_key.outputs.filePath }} src\duckstation-uwp\duckstation-uwp.pfx
-#
-#    - name: Disable AppX signing
-#      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
-#      shell: powershell
-#      run: |
-#        (gc .\src\duckstation-uwp\duckstation-uwp.vcxproj) -replace '<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>', '<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>' | Out-File -encoding ASCII .\src\duckstation-uwp\duckstation-uwp.vcxproj
-#
-#    - name: Restore nuget packages
-#      shell: cmd
-#      run: |
-#        nuget restore duckstation-uwp.sln
-#
-#    - name: Compile x64 release build without bundle
-#      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev'
-#      shell: cmd
-#      run: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-#        msbuild duckstation-uwp.sln /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
-#
-#    - name: Compile x64 release build with bundle
-#      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-#      shell: cmd
-#      run: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-#        msbuild duckstation-uwp.sln /p:AppxBundle=Always /p:AppxPackageIsForStore=true /p:BuildAppxUploadPackageForUap=true /p:AppxBundlePlatforms="x64" /p:Configuration="ReleaseUWP" /p:Platform="x64" /t:Build
-#
-#    - name: Grab AppX package
-#      shell: cmd
-#      run: |
-#        copy build\ReleaseUWP-x64\duckstation-uwp\duckstation-uwp_1.0.0.0_Bundle\duckstation-uwp_1.0.0.0_x64_ReleaseUWP.appx duckstation-uwp.appx
-#
-#    - name: Export certificate
-#      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-#      shell: powershell
-#      run: |
-#        Get-PfxCertificate -FilePath .\src\duckstation-uwp\duckstation-uwp.pfx | Export-Certificate -FilePath duckstation-uwp.der -Type CERT
-#
-#    - name: Upload AppX package
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "windows-uwp"
-#        path: "duckstation-uwp.appx"
-#
-#    - name: Upload certificate
-#      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "windows-uwp"
-#        path: "duckstation-uwp.der"
-
-
   linux-build:
     runs-on: ubuntu-20.04
     steps:
@@ -350,7 +259,6 @@ jobs:
 
 
   create-release:
-    #needs: [windows-build, windows-arm64-build, linux-build, windows-uwp-build]
     needs: [windows-build, windows-arm64-build, linux-build, macos-build]
     runs-on: "ubuntu-20.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
@@ -365,11 +273,6 @@ jobs:
         with:
           name: "windows-arm64"
 
-#      - name: Download Windows UWP Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "windows-uwp"
-#
 #      - name: Download NoGUI AppImage Artifact
 #        uses: actions/download-artifact@v1
 #        with:
@@ -384,11 +287,6 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: "linux-x64-appimage-qt"
-
-#      - name: Download Qt AppImage zsync Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-qt-zsync"
 
       - name: Download MacOS Artifact
         uses: actions/download-artifact@v1
@@ -412,8 +310,6 @@ jobs:
             macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-#            windows-uwp/duckstation-uwp.appx
-#            windows-uwp/duckstation-uwp.der
 #            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
 #            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
 
@@ -434,7 +330,5 @@ jobs:
             macos/duckstation-mac-release.zip
 #            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
 #            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-#            windows-uwp/duckstation-uwp.appx
-#            windows-uwp/duckstation-uwp.der
 #            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
 #            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
