@@ -1270,6 +1270,7 @@ void Achievements::GetLbInfoCallback(s32 status_code, std::string content_type,
     LeaderboardEntry lbe;
     lbe.user = entry.username;
     lbe.rank = entry.rank;
+    lbe.submitted = entry.submitted;
     lbe.formatted_score = score;
     lbe.is_self = lbe.user == s_username;
 
