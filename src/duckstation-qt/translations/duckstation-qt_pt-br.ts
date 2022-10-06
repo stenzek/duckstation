@@ -266,7 +266,7 @@ função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievement
     <message>
         <location filename="../achievementsettingswidget.cpp" line="47"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Modo &quot;desafiador&quot; para conquistas. Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade.</translation>
+        <translation>Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="50"/>
@@ -335,17 +335,17 @@ Token gerado %2.</translation>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="945"/>
+        <location filename="../../core/system.cpp" line="954"/>
         <source>Loading state</source>
         <translation>Carregando estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1146"/>
+        <location filename="../../core/system.cpp" line="1155"/>
         <source>Resuming state</source>
         <translation>Retomando estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1844"/>
+        <location filename="../../core/system.cpp" line="1857"/>
         <source>Hardcore mode disabled by state switch.</source>
         <translation>Modo dificílimo desligado pelo estado salvo.</translation>
     </message>
@@ -2253,7 +2253,7 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation type="vanished">O estado atual será salvo.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3850"/>
+        <location filename="../../core/system.cpp" line="3863"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>Versão inválida %u (%s versão %u)</translation>
     </message>
@@ -5694,12 +5694,12 @@ Conquistas: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="105"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Usa interpolação de perspectiva para coordenadas de textura, endireitando texturas distorcidas. Requer correção de geometria habilitada.</translation>
+        <translation>Usa interpolação de perspectiva para coordenadas de textura, endireitando texturas distorcidas. Requer correção geométrica habilitada.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="109"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation>Usa interpolação de perspectiva para cores de vértice, pode melhorar o visual em alguns jogos, mas causar erros de renderização em outros. Requer correção de geometria habilitada.</translation>
+        <translation>Usa interpolação de perspectiva para cores de vértice, pode melhorar o visual em alguns jogos, mas causar erros de renderização em outros. Requer correção geométrica habilitada.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="113"/>
@@ -6390,9 +6390,13 @@ Conquistas: %5 (%6)
         <translation>Tipo</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="569"/>
         <source>Code</source>
-        <translation>Código</translation>
+        <translation type="vanished">Código</translation>
+    </message>
+    <message>
+        <location filename="../gamelistmodel.cpp" line="569"/>
+        <source>Serial</source>
+        <translation>Serial</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="570"/>
@@ -7115,12 +7119,12 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>GameSettingsTrait</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="48"/>
+        <location filename="../../core/game_database.cpp" line="49"/>
         <source>Force Interpreter</source>
         <translation>Forçar interpretador</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="49"/>
+        <location filename="../../core/game_database.cpp" line="50"/>
         <source>Force Software Renderer</source>
         <translation>Forçar renderização por software</translation>
     </message>
@@ -7129,57 +7133,57 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Ativar Entrelaçamento</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="50"/>
+        <location filename="../../core/game_database.cpp" line="51"/>
         <source>Force Software Renderer For Readbacks</source>
         <translation>Forçar modo software para releituras</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="51"/>
+        <location filename="../../core/game_database.cpp" line="52"/>
         <source>Force Interlacing</source>
         <translation>Forçar o entrelaçamento</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="52"/>
+        <location filename="../../core/game_database.cpp" line="53"/>
         <source>Disable True Color</source>
         <translation>Desativar cor real</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="53"/>
+        <location filename="../../core/game_database.cpp" line="54"/>
         <source>Disable Upscaling</source>
         <translation>Desativar escalonamento</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="54"/>
+        <location filename="../../core/game_database.cpp" line="55"/>
         <source>Disable Scaled Dithering</source>
         <translation>Desativar dithering escalonado</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="55"/>
+        <location filename="../../core/game_database.cpp" line="56"/>
         <source>Disallow Forcing NTSC Timings</source>
         <translation>Desativa os temporizadores em NTSC</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="56"/>
+        <location filename="../../core/game_database.cpp" line="57"/>
         <source>Disable Widescreen</source>
         <translation>Desativar ajuste de tela panorâmica</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="57"/>
+        <location filename="../../core/game_database.cpp" line="58"/>
         <source>Disable PGXP</source>
         <translation>Desativar PGXP</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="58"/>
+        <location filename="../../core/game_database.cpp" line="59"/>
         <source>Disable PGXP Culling</source>
         <translation>Desativar correção de curvas</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="59"/>
+        <location filename="../../core/game_database.cpp" line="60"/>
         <source>Disable PGXP Perspective Correct Textures</source>
         <translation>Desativar correção de texturas de perspectiva PGXP</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="60"/>
+        <location filename="../../core/game_database.cpp" line="61"/>
         <source>Disable PGXP Perspective Correct Colors</source>
         <translation>Desativar correção de cores de perspectiva PGXP</translation>
     </message>
@@ -7188,22 +7192,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Desligar correção de textura (PGXP)</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="61"/>
+        <location filename="../../core/game_database.cpp" line="62"/>
         <source>Disable PGXP Depth Buffer</source>
         <translation>Desligar PGXP modo eixo Z</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="62"/>
+        <location filename="../../core/game_database.cpp" line="63"/>
         <source>Force PGXP Vertex Cache</source>
         <translation>Forçar armazenamento em modo PGXP</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="63"/>
+        <location filename="../../core/game_database.cpp" line="64"/>
         <source>Force PGXP CPU Mode</source>
         <translation>Força o PGXP em modo CPU</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="66"/>
+        <location filename="../../core/game_database.cpp" line="67"/>
         <source>Force Recompiler LUT Fastmem</source>
         <translation>Forçar recompilador LUT fastmen</translation>
     </message>
@@ -7212,12 +7216,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">Desativar Modo Analógico Forçado ao Reiniciar</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="64"/>
+        <location filename="../../core/game_database.cpp" line="65"/>
         <source>Force Recompiler Memory Exceptions</source>
         <translation>Forçar exceções de memória do recompilador</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="65"/>
+        <location filename="../../core/game_database.cpp" line="66"/>
         <source>Force Recompiler ICache</source>
         <translation>Força recompilador em modo armazenado (ICache)</translation>
     </message>
@@ -9932,13 +9936,21 @@ Tem certeza de que deseja continuar?</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1115"/>
-        <source>Separate Card Per Game (Game Code)</source>
-        <translation>Separar cartão por jogo (código do jogo)</translation>
+        <source>Separate Card Per Game (Serial)</source>
+        <translation>Cartão separado por jogo (Serial)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1116"/>
+        <source>Separate Card Per Game (Title)</source>
+        <translation>Cartão separado por jogo (título)</translation>
+    </message>
+    <message>
+        <source>Separate Card Per Game (Game Code)</source>
+        <translation type="vanished">Separar cartão por jogo (código do jogo)</translation>
+    </message>
+    <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>Separar cartão por jogo (título do jogo)</translation>
+        <translation type="vanished">Separar cartão por jogo (título do jogo)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1117"/>
@@ -10089,7 +10101,7 @@ Tem certeza de que deseja continuar?</translation>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../../core/system.cpp" line="910"/>
+        <location filename="../../core/system.cpp" line="916"/>
         <source>System reset.</source>
         <translation>Sistema reiniciado.</translation>
     </message>
@@ -10098,12 +10110,12 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Estado carregado de &apos;%s&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="973"/>
+        <location filename="../../core/system.cpp" line="982"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Carregamento de estado &apos;%s&apos;.falhou. reiniciando.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1014"/>
+        <location filename="../../core/system.cpp" line="1023"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Falha ao salvar estado em &apos;%s&apos;.</translation>
     </message>
@@ -10122,7 +10134,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation>O retrocesso não é compatível com o a plataforma ARM de 32 bits para Android.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3130"/>
+        <location filename="../../core/system.cpp" line="3143"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
     </message>
@@ -10135,17 +10147,17 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Fastmem não disponível nesta plataforma, LUT será usado no lugar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3073"/>
+        <location filename="../../core/system.cpp" line="3086"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>Mudando renderizador de GPU para %s%s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3095"/>
+        <location filename="../../core/system.cpp" line="3108"/>
         <source>Switching to %s audio backend.</source>
         <translation>Mudando tipo de saída de som para %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3117"/>
+        <location filename="../../core/system.cpp" line="3130"/>
         <source>Switching to %s CPU execution mode.</source>
         <translation>Mudando para modo de execução %s.</translation>
     </message>
@@ -10166,24 +10178,24 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Icache desativado, limpando blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3193"/>
+        <location filename="../../core/system.cpp" line="3206"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP ativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3194"/>
+        <location filename="../../core/system.cpp" line="3207"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4187"/>
+        <location filename="../../core/system.cpp" line="4200"/>
         <source>Switching to %s renderer...</source>
         <translation>Mudando para %s...</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="51"/>
-        <location filename="../../core/system.cpp" line="3254"/>
-        <location filename="../../core/system.cpp" line="4115"/>
+        <location filename="../../core/system.cpp" line="3267"/>
+        <location filename="../../core/system.cpp" line="4128"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Falha ao carregar shader escolhido.</translation>
     </message>
@@ -10196,7 +10208,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Limitador de Velocidade Desativado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2391"/>
+        <location filename="../../core/system.cpp" line="2404"/>
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform></numerusform>
@@ -10204,7 +10216,7 @@ Tem certeza de que deseja continuar?</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2392"/>
+        <location filename="../../core/system.cpp" line="2405"/>
         <source>%n cheats are now inactive.</source>
         <translation>
             <numerusform></numerusform>
@@ -10247,12 +10259,12 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Texturas personalizadas recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3641"/>
+        <location filename="../../core/system.cpp" line="3654"/>
         <source>Failed to save undo load state.</source>
         <translation>Falha ao desfazer carregar estado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2341"/>
+        <location filename="../../core/system.cpp" line="2354"/>
         <source>Rewinding is not enabled.</source>
         <translation>O retrocesso não está habilitado.</translation>
     </message>
@@ -10337,37 +10349,37 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3702"/>
+        <location filename="../../core/system.cpp" line="3715"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3707"/>
+        <location filename="../../core/system.cpp" line="3720"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3718"/>
+        <location filename="../../core/system.cpp" line="3731"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3748"/>
+        <location filename="../../core/system.cpp" line="3761"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3760"/>
+        <location filename="../../core/system.cpp" line="3773"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura em &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3765"/>
+        <location filename="../../core/system.cpp" line="3778"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="480"/>
+        <location filename="../../core/game_database.cpp" line="482"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
@@ -10382,12 +10394,12 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Usando perfil de controle &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3941"/>
+        <location filename="../../core/system.cpp" line="3954"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3948"/>
+        <location filename="../../core/system.cpp" line="3961"/>
         <source>%n cheats are enabled. This may result in instability.</source>
         <translation>
             <numerusform>%n trapaças ativadas. Isso pode resultar em instabilidade.</numerusform>
@@ -10395,32 +10407,32 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4163"/>
+        <location filename="../../core/system.cpp" line="4176"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
         <translation>Ajuste de tela panorâmica ligado, e a proporção da imagem está definida como %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4171"/>
+        <location filename="../../core/system.cpp" line="4184"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
         <translation>Ajuste de tela panorâmica desligado, e a proporção da imagem está definida como %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2738"/>
+        <location filename="../../core/system.cpp" line="2751"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Portas de cartão de memória trocadas. ambas já contém cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2743"/>
+        <location filename="../../core/system.cpp" line="2756"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Portas de cartão de memória trocadas. porta 2 tem um cartão de memória, porta 1 vazia.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2749"/>
+        <location filename="../../core/system.cpp" line="2762"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Portas de cartão de memória trocadas. porta 1 tem um cartão de memória, porta 2 vazia.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2755"/>
+        <location filename="../../core/system.cpp" line="2768"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Portas de cartão de memória trocadas. nenhuma das portas possui cartão de memória.</translation>
     </message>
@@ -10437,27 +10449,27 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Trapaça %u.salva para &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4028"/>
+        <location filename="../../core/system.cpp" line="4041"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>Trapaça &apos;%s&apos; apagada da lista.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4071"/>
+        <location filename="../../core/system.cpp" line="4084"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4076"/>
+        <location filename="../../core/system.cpp" line="4089"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3995"/>
+        <location filename="../../core/system.cpp" line="4008"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2383"/>
+        <location filename="../../core/system.cpp" line="2396"/>
         <source>No cheats are loaded.</source>
         <translation>Nenhuma trapaça foi carregada.</translation>
     </message>
@@ -10519,7 +10531,7 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4012"/>
+        <location filename="../../core/system.cpp" line="4025"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
         <translation>
             <numerusform>Salvo %n trapaça em &apos;%s&apos;.</numerusform>
@@ -10527,32 +10539,32 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4093"/>
+        <location filename="../../core/system.cpp" line="4106"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4098"/>
+        <location filename="../../core/system.cpp" line="4111"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já está ativada</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4112"/>
+        <location filename="../../core/system.cpp" line="4125"/>
         <source>Post-processing is now enabled.</source>
         <translation>Pós-processamento ligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4121"/>
+        <location filename="../../core/system.cpp" line="4134"/>
         <source>Post-processing is now disabled.</source>
         <translation>Pós-processamento desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4132"/>
+        <location filename="../../core/system.cpp" line="4145"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Falha ao carregar texturas de pós-processamento.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4134"/>
+        <location filename="../../core/system.cpp" line="4147"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
@@ -10612,7 +10624,7 @@ Please configure a supported controller from the list above.</source>
         <translation>Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="381"/>
+        <location filename="../../core/game_database.cpp" line="382"/>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
         <translation>Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
     </message>
@@ -10621,17 +10633,17 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Correção de curvas desligada pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="392"/>
+        <location filename="../../core/game_database.cpp" line="394"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translation>Vértice armazenado forçado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="404"/>
+        <location filename="../../core/game_database.cpp" line="406"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translation>PGXP em modo CPU forçado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="416"/>
+        <location filename="../../core/game_database.cpp" line="418"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
         <translation>PGXP modo eixo Z desativado pelas configurações individuais.</translation>
     </message>
@@ -10697,67 +10709,67 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Falha ao aplicar modificação ppf &apos;%1s&apos;, usando imagem limpa.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="963"/>
+        <location filename="../../core/system.cpp" line="972"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Estado carregado de &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1013"/>
+        <location filename="../../core/system.cpp" line="1022"/>
         <source>Save State</source>
         <translation>Salvar estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1021"/>
+        <location filename="../../core/system.cpp" line="1030"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Estado salvo em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1344"/>
+        <location filename="../../core/system.cpp" line="1356"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>Velocidade do CPU foi mudada para %u%% isto resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1351"/>
+        <location filename="../../core/system.cpp" line="1363"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>Leitura do CD-rom acelerada para %ux (velocidade apropriada %u). pode resultar em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1360"/>
+        <location filename="../../core/system.cpp" line="1372"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>Aumento de velocidade de busca do CD-ROM definida para instantânea. isso pode resultar em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1367"/>
+        <location filename="../../core/system.cpp" line="1379"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>Aumento de velocidade de busca do CD-ROM definida para % ux. isso pode resultar em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1542"/>
+        <location filename="../../core/system.cpp" line="1555"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Falha ao inicializar o renderizador %s , retornando para renderizador por software.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1629"/>
+        <location filename="../../core/system.cpp" line="1642"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>ATENÇÃO: Aumento da velocidade (%u%%) era diferente do que no seu save anterior (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1783"/>
+        <location filename="../../core/system.cpp" line="1796"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>Falha ao abrir imagem do estado salvo &apos;%s&apos;: %s. usando imagem existente &apos;%s&apos;, isto, resultará em instabilidades.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2840"/>
+        <location filename="../../core/system.cpp" line="2853"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>Falha ao abrir o disco &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3026"/>
+        <location filename="../../core/system.cpp" line="3039"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Falha ao trocar para disco %u em &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3032"/>
+        <location filename="../../core/system.cpp" line="3045"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Mudado para segunda imagem %s (%u) em &apos;%s&apos;.</translation>
     </message>
@@ -10770,7 +10782,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Falha ao abrir o disco &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2852"/>
+        <location filename="../../core/system.cpp" line="2865"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>Disco inserido &apos;%s&apos; (%s).</translation>
     </message>
@@ -10800,22 +10812,22 @@ Please configure a supported controller from the list above.</source>
         <translation>Suavização Adaptativa não suportada no renderizador atual, usando outro filtro.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="165"/>
+        <location filename="../../core/gpu_hw.cpp" line="167"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>Escala de resolução configurada para %ux (vídeo %ux%u, VRAM %ux%u)</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="175"/>
+        <location filename="../../core/gpu_hw.cpp" line="177"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>Filtro anti-serrilhado configurado para %ux (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="181"/>
+        <location filename="../../core/gpu_hw.cpp" line="183"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>Filtro MSAA anti-serrilhado configurado para %ux.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="245"/>
+        <location filename="../../core/gpu_hw.cpp" line="247"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
         <translation>Escala de resolução %ux não é compatível com suavização adaptativa, usando %ux.</translation>
     </message>
@@ -11347,37 +11359,37 @@ The saves will not be recoverable.</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="522"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="524"/>
         <source>Load</source>
         <translation>Carregar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="524"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="526"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="526"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="528"/>
         <source>Select Previous</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="528"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="530"/>
         <source>Select Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="585"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="587"/>
         <source>No Save State</source>
         <translation>Sem estado salvo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="658"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="660"/>
         <source>Global Slot %d</source>
         <translation>Compartimento global %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="662"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="664"/>
         <source>Game Slot %d</source>
         <translation>Compartimento %d</translation>
     </message>
@@ -11386,7 +11398,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Compartimento %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="666"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="668"/>
         <source>%s Slot %d</source>
         <translation>%s Compartimento %d</translation>
     </message>
@@ -11695,48 +11707,48 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Estado salvo incompatível: versão do mesmo esperada %u não a versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1159"/>
+        <location filename="../../core/system.cpp" line="1168"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Falha ao carregar %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1230"/>
-        <location filename="../../core/system.cpp" line="2959"/>
+        <location filename="../../core/system.cpp" line="1242"/>
+        <location filename="../../core/system.cpp" line="2972"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1231"/>
+        <location filename="../../core/system.cpp" line="1243"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>Falha ao carregar o dado salvo no compartimento &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1742"/>
+        <location filename="../../core/system.cpp" line="1755"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: versão esperada %u não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1751"/>
+        <location filename="../../core/system.cpp" line="1764"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Estado salvo incompatível: versão esperada %u não versão %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1792"/>
+        <location filename="../../core/system.cpp" line="1805"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Falha ao abrir imagem do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1811"/>
+        <location filename="../../core/system.cpp" line="1824"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Falha ao trocar disco %u do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2665"/>
+        <location filename="../../core/system.cpp" line="2678"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>O cartão de memória individual não pôde ser usado no compartimento %u caminho não configurado. usando cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2961"/>
+        <location filename="../../core/system.cpp" line="2974"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -11769,13 +11781,13 @@ Seu despejo está incompleto, você deve adicionar o arquivo SBI para rodá-lo c
         <translation type="vanished">Falha ao abrir estado salvo: &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2628"/>
+        <location filename="../../core/system.cpp" line="2641"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado
 o jogo iniciado não possui um códido válido. Será usado um cartão compartilhado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2645"/>
+        <location filename="../../core/system.cpp" line="2658"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translation>Caminho para o cartão de memória no compartimento %u não pôde ser usado
 o jogo iniciado não possui um nome válido. Será usado um cartão compartilhado.</translation>
@@ -11785,12 +11797,12 @@ o jogo iniciado não possui um nome válido. Será usado um cartão compartilhad
         <translation type="vanished">Caminho para o Cartão de Memória %u incorreto, usando o padrão.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2857"/>
+        <location filename="../../core/system.cpp" line="2870"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Jogo trocado, recarregando cartões de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2948"/>
+        <location filename="../../core/system.cpp" line="2961"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
