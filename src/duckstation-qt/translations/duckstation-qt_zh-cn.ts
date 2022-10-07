@@ -395,7 +395,7 @@ Login token generated on %2.</source>
         <translation type="vanished">排行榜禁用，因为硬核模式已关闭。</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1758"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1759"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
         <translation>您的分数: {} (最佳成绩: {})
@@ -4906,7 +4906,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>在将游戏主机的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率越高，此选项就越不明显。</translation>
+        <translation>在将游戏主机的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率比率越高，此选项就越不明显。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="109"/>
@@ -6049,8 +6049,12 @@ Achievements: %5 (%6)
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="569"/>
         <source>Code</source>
+        <translation type="vanished">序号</translation>
+    </message>
+    <message>
+        <location filename="../gamelistmodel.cpp" line="569"/>
+        <source>Serial</source>
         <translation>序号</translation>
     </message>
     <message>
@@ -6769,22 +6773,22 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>GameSettingsTrait</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="48"/>
+        <location filename="../../core/game_database.cpp" line="49"/>
         <source>Force Interpreter</source>
         <translation>强制解释器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="49"/>
+        <location filename="../../core/game_database.cpp" line="50"/>
         <source>Force Software Renderer</source>
         <translation>强制软件渲染器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="50"/>
+        <location filename="../../core/game_database.cpp" line="51"/>
         <source>Force Software Renderer For Readbacks</source>
         <translation>强制软件渲染器进行回读</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="51"/>
+        <location filename="../../core/game_database.cpp" line="52"/>
         <source>Force Interlacing</source>
         <translation>强制交错</translation>
     </message>
@@ -6793,47 +6797,47 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">启用交错</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="52"/>
+        <location filename="../../core/game_database.cpp" line="53"/>
         <source>Disable True Color</source>
         <translation>禁用真彩色</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="53"/>
+        <location filename="../../core/game_database.cpp" line="54"/>
         <source>Disable Upscaling</source>
         <translation>禁用提升缩放</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="54"/>
+        <location filename="../../core/game_database.cpp" line="55"/>
         <source>Disable Scaled Dithering</source>
         <translation>禁用缩放色彩抖动</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="55"/>
+        <location filename="../../core/game_database.cpp" line="56"/>
         <source>Disallow Forcing NTSC Timings</source>
         <translation>不允许强制NTSC计时</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="56"/>
+        <location filename="../../core/game_database.cpp" line="57"/>
         <source>Disable Widescreen</source>
         <translation>禁用宽屏</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="57"/>
+        <location filename="../../core/game_database.cpp" line="58"/>
         <source>Disable PGXP</source>
         <translation>禁用PGXP</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="58"/>
+        <location filename="../../core/game_database.cpp" line="59"/>
         <source>Disable PGXP Culling</source>
         <translation>禁用PGXP剔除</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="59"/>
+        <location filename="../../core/game_database.cpp" line="60"/>
         <source>Disable PGXP Perspective Correct Textures</source>
         <translation>禁用PGXP透视校正纹理</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="60"/>
+        <location filename="../../core/game_database.cpp" line="61"/>
         <source>Disable PGXP Perspective Correct Colors</source>
         <translation>禁用PGXP透视校正颜色</translation>
     </message>
@@ -6842,22 +6846,22 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">禁用PGXP纹理校正</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="61"/>
+        <location filename="../../core/game_database.cpp" line="62"/>
         <source>Disable PGXP Depth Buffer</source>
         <translation>禁用PGXP深度缓冲</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="62"/>
+        <location filename="../../core/game_database.cpp" line="63"/>
         <source>Force PGXP Vertex Cache</source>
         <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="63"/>
+        <location filename="../../core/game_database.cpp" line="64"/>
         <source>Force PGXP CPU Mode</source>
         <translation>强制PGXP下CPU模式</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="66"/>
+        <location filename="../../core/game_database.cpp" line="67"/>
         <source>Force Recompiler LUT Fastmem</source>
         <translation>强制重新编译LUT快速内存</translation>
     </message>
@@ -6870,12 +6874,12 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">强制数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="64"/>
+        <location filename="../../core/game_database.cpp" line="65"/>
         <source>Force Recompiler Memory Exceptions</source>
         <translation>强制内存异常重编译器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="65"/>
+        <location filename="../../core/game_database.cpp" line="66"/>
         <source>Force Recompiler ICache</source>
         <translation>强制ICache重编译器</translation>
     </message>
@@ -9522,13 +9526,21 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1115"/>
-        <source>Separate Card Per Game (Game Code)</source>
-        <translation>每个游戏独立记忆卡 (游戏编码)</translation>
+        <source>Separate Card Per Game (Serial)</source>
+        <translation>每个游戏独立记忆卡 (序号)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1116"/>
+        <source>Separate Card Per Game (Title)</source>
+        <translation>每个游戏独立记忆卡 (标题)</translation>
+    </message>
+    <message>
+        <source>Separate Card Per Game (Game Code)</source>
+        <translation type="vanished">每个游戏独立记忆卡 (游戏编码)</translation>
+    </message>
+    <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>每个游戏独立记忆卡 (游戏标题)</translation>
+        <translation type="vanished">每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1117"/>
@@ -9951,7 +9963,7 @@ Are you sure you want to continue?</source>
         <translation>截图已保存到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="480"/>
+        <location filename="../../core/game_database.cpp" line="482"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
@@ -10193,7 +10205,7 @@ Please configure a supported controller from the list above.</source>
         <translation>通过游戏设置禁用PGXP透视校正纹理。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="381"/>
+        <location filename="../../core/game_database.cpp" line="382"/>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
         <translation>通过游戏设置禁用PGXP透视校正颜色。</translation>
     </message>
@@ -10202,17 +10214,17 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">根据游戏设置禁用PGXP纹理校正。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="392"/>
+        <location filename="../../core/game_database.cpp" line="394"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translation>通过游戏设置强制PGXP顶点缓存。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="404"/>
+        <location filename="../../core/game_database.cpp" line="406"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translation>通过游戏设置强制PGXP下CPU模式。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="416"/>
+        <location filename="../../core/game_database.cpp" line="418"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
         <translation>通过游戏设置禁用PGXP深度缓冲。</translation>
     </message>
@@ -10380,22 +10392,22 @@ Please configure a supported controller from the list above.</source>
         <translation>当前渲染器不支持自适应缩减采样，改用盒式滤波器。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="165"/>
+        <location filename="../../core/gpu_hw.cpp" line="167"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>分辨率比率设置为%ux (显示%ux%u，显存%ux%u)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="175"/>
+        <location filename="../../core/gpu_hw.cpp" line="177"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>多重采样反锯齿设置为%ux (SSAA)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="181"/>
+        <location filename="../../core/gpu_hw.cpp" line="183"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>多重采样反锯齿设置为%ux。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="245"/>
+        <location filename="../../core/gpu_hw.cpp" line="247"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
         <translation>分辨率比率%ux不支持自适应平滑，使用%ux。</translation>
     </message>
@@ -10935,37 +10947,37 @@ The saves will not be recoverable.</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="522"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="524"/>
         <source>Load</source>
         <translation>载入</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="524"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="526"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="526"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="528"/>
         <source>Select Previous</source>
         <translation>选择前一个</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="528"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="530"/>
         <source>Select Next</source>
         <translation>选择后一个</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="585"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="587"/>
         <source>No Save State</source>
         <translation>无存档</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="658"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="660"/>
         <source>Global Slot %d</source>
         <translation>全局档位%d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="662"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="664"/>
         <source>Game Slot %d</source>
         <translation>游戏档位%d</translation>
     </message>
@@ -10974,7 +10986,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">游戏档%d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="666"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="668"/>
         <source>%s Slot %d</source>
         <translation>%s档位%d</translation>
     </message>
