@@ -26,6 +26,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
                                                "UseFirstDiscFromPlaylist", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboards, "Cheevos", "Leaderboards", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Cheevos", "PrimedIndicators", true);
 
   dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
                              tr("When enabled and logged in, DuckStation will scan for achievements on startup."));
@@ -53,6 +54,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
     m_ui.leaderboards, tr("Enable Leaderboards"), tr("Checked"),
     tr("Enables tracking and submission of leaderboards in supported games. If leaderboards "
        "are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded."));
+  dialog->registerWidgetHelp(
+    m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
+    tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 
   connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
@@ -95,6 +99,7 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.leaderboards->setEnabled(enabled && challenge);
   m_ui.unofficialTestMode->setEnabled(enabled);
   m_ui.soundEffects->setEnabled(enabled);
+  m_ui.primedIndicators->setEnabled(enabled);
 }
 
 void AchievementSettingsWidget::onChallengeModeStateChanged()

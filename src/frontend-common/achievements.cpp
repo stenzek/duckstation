@@ -867,7 +867,7 @@ void Achievements::LoginCallback(s32 status_code, std::string content_type, Comm
 
   RAPIResponse<rc_api_login_response_t, rc_api_process_login_response, rc_api_destroy_login_response> response(
     status_code, data);
-  if (!response)
+  if (!response || !response.username || !response.api_token)
   {
     FormattedError("Login failed. Please check your user name and password, and try again.");
     return;
@@ -1104,7 +1104,7 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
 
   std::unique_lock lock(s_achievements_mutex);
   ClearGameInfo();
-  if (!response)
+  if (!response || !response.title)
   {
     DisableChallengeMode();
     return;
@@ -1117,7 +1117,7 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
   s_game_title = response.title;
 
   // try for a icon
-  if (std::strlen(response.image_name) > 0)
+  if (response.image_name && std::strlen(response.image_name) > 0)
   {
     s_game_icon = Path::Combine(s_game_icon_cache_directory, fmt::format("{}.png", s_game_id));
     if (!FileSystem::FileExists(s_game_icon.c_str()))
@@ -1155,6 +1155,12 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
       continue;
     }
 
+    if (!defn.definition || !defn.title || !defn.description || !defn.badge_name)
+    {
+      Log_ErrorPrintf("Incomplete achievement %u", defn.id);
+      continue;
+    }
+
     Achievement cheevo;
     cheevo.id = defn.id;
     cheevo.memaddr = defn.definition;
@@ -1172,6 +1178,11 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
   for (u32 i = 0; i < response.num_leaderboards; i++)
   {
     const rc_api_leaderboard_definition_t& defn = response.leaderboards[i];
+    if (!defn.title || !defn.description || !defn.definition)
+    {
+      Log_ErrorPrintf("Incomplete achievement %u", defn.id);
+      continue;
+    }
 
     Leaderboard lboard;
     lboard.id = defn.id;
@@ -1192,7 +1203,7 @@ void Achievements::GetPatchesCallback(s32 status_code, std::string content_type,
   }
 
   // parse rich presence
-  if (std::strlen(response.rich_presence_script) > 0)
+  if (response.rich_presence_script && std::strlen(response.rich_presence_script) > 0)
   {
     const int res = rc_runtime_activate_richpresence(&s_rcheevos_runtime, response.rich_presence_script, nullptr, 0);
     if (res == RC_OK)
@@ -1263,6 +1274,8 @@ void Achievements::GetLbInfoCallback(s32 status_code, std::string content_type,
   for (u32 i = 0; i < response.num_entries; i++)
   {
     const rc_api_lboard_info_entry_t& entry = response.entries[i];
+    if (!entry.username)
+      continue;
 
     char score[128];
     rc_runtime_format_lboard_value(score, sizeof(score), entry.score, leaderboard->format);
@@ -1903,16 +1916,18 @@ TinyString Achievements::GetAchievementProgressText(const Achievement& achieveme
   return buf;
 }
 
-const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing)
+const std::string& Achievements::GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing,
+                                                         bool force_unlocked_icon)
 {
-  std::string& badge_path = achievement.locked ? achievement.locked_badge_path : achievement.unlocked_badge_path;
+  const bool use_locked = (achievement.locked && !force_unlocked_icon);
+  std::string& badge_path = use_locked ? achievement.locked_badge_path : achievement.unlocked_badge_path;
   if (!badge_path.empty() || achievement.badge_name.empty())
     return badge_path;
 
   // well, this comes from the internet.... :)
   const std::string clean_name(Path::SanitizeFileName(achievement.badge_name));
-  badge_path = Path::Combine(s_achievement_icon_cache_directory,
-                             fmt::format("{}{}.png", clean_name, achievement.locked ? "_lock" : ""));
+  badge_path =
+    Path::Combine(s_achievement_icon_cache_directory, fmt::format("{}{}.png", clean_name, use_locked ? "_lock" : ""));
   if (FileSystem::FileExists(badge_path.c_str()))
     return badge_path;
 
@@ -1921,7 +1936,7 @@ const std::string& Achievements::GetAchievementBadgePath(const Achievement& achi
   {
     RAPIRequest<rc_api_fetch_image_request_t, rc_api_init_fetch_image_request> request;
     request.image_name = achievement.badge_name.c_str();
-    request.image_type = achievement.locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
+    request.image_type = use_locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
     request.DownloadImage(badge_path);
   }
 

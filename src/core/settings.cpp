@@ -347,6 +347,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_challenge_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
   achievements_leaderboards = si.GetBoolValue("Cheevos", "Leaderboards", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
+  achievements_primed_indicators = si.GetBoolValue("Cheevos", "PrimedIndicators", true);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -534,6 +535,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Cheevos", "ChallengeMode", achievements_challenge_mode);
   si.SetBoolValue("Cheevos", "Leaderboards", achievements_leaderboards);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
+  si.SetBoolValue("Cheevos", "PrimedIndicators", achievements_primed_indicators);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());

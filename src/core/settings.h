@@ -178,6 +178,7 @@ struct Settings
   bool achievements_challenge_mode : 1;
   bool achievements_leaderboards : 1;
   bool achievements_sound_effects : 1;
+  bool achievements_primed_indicators : 1;
 #endif
 
   struct DebugSettings

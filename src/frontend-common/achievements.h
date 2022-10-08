@@ -149,7 +149,8 @@ u32 GetPrimedAchievementCount();
 const Achievement* GetAchievementByID(u32 id);
 std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement);
 TinyString GetAchievementProgressText(const Achievement& achievement);
-const std::string& GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing = true);
+const std::string& GetAchievementBadgePath(const Achievement& achievement, bool download_if_missing = true,
+                                           bool force_unlocked_icon = false);
 std::string GetAchievementBadgeURL(const Achievement& achievement);
 
 #ifdef WITH_RAINTEGRATION
