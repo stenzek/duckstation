@@ -791,6 +791,15 @@ void System::LoadSettings(bool display_osd_messages)
 void System::SetDefaultSettings(SettingsInterface& si)
 {
   Settings temp;
+
+  // we don't want to reset some things (e.g. OSD)
+  temp.display_show_osd_messages = g_settings.display_show_osd_messages;
+  temp.display_show_fps = g_settings.display_show_fps;
+  temp.display_show_speed = g_settings.display_show_speed;
+  temp.display_show_resolution = g_settings.display_show_resolution;
+  temp.display_show_cpu = g_settings.display_show_cpu;
+  temp.display_show_gpu = g_settings.display_show_gpu;
+
   temp.Save(si);
 }
 

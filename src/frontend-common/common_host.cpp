@@ -287,17 +287,8 @@ void CommonHost::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "EnableDiscordPresence", false);
 #endif
 
-#ifdef WITH_CHEEVOS
-  si.SetBoolValue("Cheevos", "Enabled", false);
-  si.SetBoolValue("Cheevos", "TestMode", false);
-  si.SetBoolValue("Cheevos", "UnofficialTestMode", false);
-  si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
-  si.DeleteValue("Cheevos", "Username");
-  si.DeleteValue("Cheevos", "Token");
-
-#ifdef WITH_RAINTEGRATION
+#if defined(WITH_CHEEVOS) && defined(WITH_RAINTEGRATION)
   si.SetBoolValue("Cheevos", "UseRAIntegration", false);
-#endif
 #endif
 }
 
