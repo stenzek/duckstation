@@ -119,7 +119,7 @@ void Logout();
 void GameChanged(const std::string& path, CDImage* image);
 
 /// Re-enables hardcode mode if it is enabled in the settings.
-void ResetChallengeMode();
+bool ResetChallengeMode();
 
 /// Forces hardcore mode off until next reset.
 void DisableChallengeMode();

@@ -15,7 +15,7 @@ extern bool DoState(StateWrapper& sw);
 extern void GameChanged(const std::string& path, CDImage* image);
 
 /// Re-enables hardcode mode if it is enabled in the settings.
-extern void ResetChallengeMode();
+extern bool ResetChallengeMode();
 
 /// Forces hardcore mode off until next reset.
 extern void DisableChallengeMode();
@@ -43,7 +43,10 @@ static constexpr inline bool ChallengeModeActive()
   return false;
 }
 
-static inline void ResetChallengeMode() {}
+static inline bool ResetChallengeMode()
+{
+  return false;
+}
 
 static inline void DisableChallengeMode() {}
 

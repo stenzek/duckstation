@@ -908,16 +908,15 @@ void System::ResetSystem()
 #ifdef WITH_CHEEVOS
   if (!Achievements::ConfirmSystemReset())
     return;
+
+  if (Achievements::ResetChallengeMode())
+    ApplySettings(false);
 #endif
 
   InternalReset();
   ResetPerformanceCounters();
   ResetThrottler();
   Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "System reset."));
-
-#ifdef WITH_CHEEVOS
-  Achievements::ResetChallengeMode();
-#endif
 
   // need to clear this here, because of eject disc -> reset.
   s_running_bios = !s_running_game_path.empty();
@@ -2925,21 +2924,21 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
 
   g_texture_replacements.SetGameID(s_running_game_serial);
 
-  s_cheat_list.reset();
-  if (g_settings.auto_load_cheats && !Achievements::ChallengeModeActive())
-    LoadCheatListFromGameTitle();
-
-  UpdateGameSettingsLayer();
-  ApplySettings(true);
-
-  Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
-
 #ifdef WITH_CHEEVOS
   if (booting)
     Achievements::ResetChallengeMode();
 
   Achievements::GameChanged(s_running_game_path, image);
 #endif
+
+  UpdateGameSettingsLayer();
+  ApplySettings(true);
+
+  s_cheat_list.reset();
+  if (g_settings.auto_load_cheats && !Achievements::ChallengeModeActive())
+    LoadCheatListFromGameTitle();
+
+  Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 }
 
 bool System::CheckForSBIFile(CDImage* image)

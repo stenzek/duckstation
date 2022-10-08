@@ -585,7 +585,10 @@ void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
   // If achievements got disabled, we might have the menu open...
   // That means we're going to be reading achievement state.
   if (old_settings.achievements_enabled && !g_settings.achievements_enabled)
-    ReturnToMainWindow();
+  {
+    if (s_current_main_window == MainWindowType::Achievements || s_current_main_window == MainWindowType::Leaderboards)
+      ReturnToMainWindow();
+  }
 #endif
 }
 

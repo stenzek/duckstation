@@ -498,9 +498,9 @@ void Achievements::UpdateSettings(const Settings& old_config)
     }
     else if (!s_challenge_mode && g_settings.achievements_challenge_mode)
     {
-      Host::AddKeyedOSDMessage(
-        "challenge_mode_reset",
-        Host::TranslateStdString("Achievements", "Hardcore mode will be enabled on system reset."), 10.0f);
+      ImGuiFullscreen::ShowToast(
+        std::string(), Host::TranslateStdString("Achievements", "Hardcore mode will be enabled on system reset."),
+        10.0f);
     }
   }
 
@@ -560,13 +560,13 @@ void Achievements::DisableChallengeMode()
     SetChallengeMode(false);
 }
 
-void Achievements::ResetChallengeMode()
+bool Achievements::ResetChallengeMode()
 {
-  if (!s_active)
-    return;
+  if (!s_active || s_challenge_mode == g_settings.achievements_challenge_mode)
+    return false;
 
-  if (s_challenge_mode != g_settings.achievements_challenge_mode)
-    SetChallengeMode(g_settings.achievements_challenge_mode);
+  SetChallengeMode(g_settings.achievements_challenge_mode);
+  return true;
 }
 
 void Achievements::SetChallengeMode(bool enabled)
@@ -579,10 +579,10 @@ void Achievements::SetChallengeMode(bool enabled)
 
   if (HasActiveGame())
   {
-    Host::AddKeyedOSDMessage("achievements_set_challenge_mode",
-                             enabled ? Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
-                                       Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
-                             10.0f);
+    ImGuiFullscreen::ShowToast(std::string(),
+                               enabled ? Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
+                                         Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
+                               10.0f);
   }
 
   if (HasActiveGame() && !IsTestModeActive())
