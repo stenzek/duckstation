@@ -611,7 +611,8 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     {
       if (display_osd_messages)
       {
-        Host::AddOSDMessage(
+        Host::AddKeyedOSDMessage(
+          "pgxp_disabled_sw",
           Host::TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."),
           10.0f);
       }
@@ -630,11 +631,27 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 #if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
   if (g_settings.rewind_enable)
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."),
-                        30.0f);
+    Host::AddKeyedOSDMessage(
+      "rewind_disabled_android",
+      Host::TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
     g_settings.rewind_enable = false;
   }
+  if (g_settings.IsRunaheadEnabled())
+  {
+    Host::AddKeyedOSDMessage(
+      "rewind_disabled_android",
+      Host::TranslateStdString("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."), 30.0f);
+    g_settings.runahead_frames = 0;
+  }
 #endif
+
+  if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
+  {
+    Host::AddKeyedOSDMessage("rewind_disabled_android",
+                             Host::TranslateStdString("OSDMessage", "Rewind is disabled because runahead is enabled."),
+                             10.0f);
+    g_settings.rewind_enable = false;
+  }
 
   // if challenge mode is enabled, disable things like rewind since they use save states
   if (Achievements::ChallengeModeActive())
@@ -888,11 +905,12 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
 
 static constexpr auto s_texture_filter_names =
   make_array("Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha");
-static constexpr auto s_texture_filter_display_names =
-  make_array(TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
-             TRANSLATABLE("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow)"),
-             TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow, No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow)"),
-             TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)"));
+static constexpr auto s_texture_filter_display_names = make_array(
+  TRANSLATABLE("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATABLE("GPUTextureFilter", "Bilinear"),
+  TRANSLATABLE("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow)"),
+  TRANSLATABLE("GPUTextureFilter", "JINC2 (Slow, No Edge Blending)"),
+  TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow)"),
+  TRANSLATABLE("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)"));
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {
