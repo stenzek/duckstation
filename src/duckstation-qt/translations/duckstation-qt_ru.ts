@@ -230,10 +230,6 @@
         <translation>При включении первый диск в списке воспроизведения будет использоваться для достижений, независимо от того, какой диск активен.</translation>
     </message>
     <message>
-        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation type="vanished">Режим &quot;Испытание&quot; для достижений. Отключает функции сохранения состояния, читы и замедления, но вы получаете вдвое больше очков достижений.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="48"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation type="unfinished">Режим &quot;Испытаний&quot; для достижений, включая отслеживание списка лидеров. Отключает функции сохранения состояния, читов и замедления.</translation>
@@ -348,14 +344,6 @@ Login token generated on %2.</source>
         <location filename="../../frontend-common/achievements.cpp" line="1016"/>
         <source>This game has no achievements.</source>
         <translation>В этой игре нет достижений.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are enabled.</source>
-        <translation type="obsolete">Таблицы лидеров включена.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation type="obsolete">Таблицы лидеров отключены, потому что хардкорный режим выключен.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1772"/>
@@ -2986,10 +2974,6 @@ This warning will only be shown once.</source>
         <translation>10</translation>
     </message>
     <message>
-        <source>Invert</source>
-        <translation type="vanished">Инвертировать</translation>
-    </message>
-    <message>
         <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>Использование необработанного ввода повышает точность при привязке джойстиков контроллера к указателю мыши. Также позволяет использовать несколько мышей.</translation>
@@ -4656,10 +4640,6 @@ Achievements: %5 (%6)
         <translation>Корректировка отбраковки</translation>
     </message>
     <message>
-        <source>Texture Correction</source>
-        <translation type="vanished">Коррекция текстур</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.ui" line="167"/>
         <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Preserve Projection Precision</source>
@@ -4756,10 +4736,6 @@ Achievements: %5 (%6)
         <translation>Фильтрация текстур</translation>
     </message>
     <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="obsolete">Сглаживает блочность увеличенных текстур на 3D-объектах с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект на более высоких разрешениях. Применяется только к аппаратным средствам визуализации.</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="89"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation type="unfinished">Масштабирует положение вершин в пространстве экрана до широкоэкранного соотношения сторон, существенно увеличивая поле зрения с 4:3 до выбранного соотношения сторон дисплея в 3D-играх. &lt;br&gt;Для 2D-игр или игр, в которых используется предварительно обработанный фон, это улучшение не будет работать должным образом. &lt;br&gt;&lt;b&gt;&lt;u&gt; Совместимо не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
@@ -4818,10 +4794,6 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.cpp" line="102"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation type="unfinished">Повышает точность отсечения полигонов, уменьшая количество дыр в геометрии. Требует включения корректировки геометрии.</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">Использует перспективно-корректную интерполяцию для текстуры и цвета, исправляя искажение текстуры. Требует включения коррекции геометрии.</translation>
     </message>
 </context>
 <context>
@@ -5082,22 +5054,6 @@ Achievements: %5 (%6)
         <source>xBR (Very Slow, No Edge Blending)</source>
         <translation>xBR (очень медленно, без смешивания краев)</translation>
     </message>
-    <message>
-        <source>JINC2</source>
-        <translation type="vanished">JINC2</translation>
-    </message>
-    <message>
-        <source>JINC2 (No Edge Blending)</source>
-        <translation type="vanished">JINC2 (без сглаживания краев)</translation>
-    </message>
-    <message>
-        <source>xBR</source>
-        <translation type="vanished">xBR</translation>
-    </message>
-    <message>
-        <source>xBR (No Edge Blending)</source>
-        <translation type="vanished">xBR (без сглаживания краев)</translation>
-    </message>
 </context>
 <context>
     <name>GameList</name>
@@ -5161,10 +5117,6 @@ Achievements: %5 (%6)
         <location filename="../gamelistmodel.cpp" line="568"/>
         <source>Type</source>
         <translation>Тип</translation>
-    </message>
-    <message>
-        <source>Code</source>
-        <translation type="vanished">Код</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="569"/>
@@ -5402,10 +5354,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../core/game_database.cpp" line="59"/>
         <source>Disable PGXP Culling</source>
         <translation>Отключить отбраковку PGXP</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Texture Correction</source>
-        <translation type="vanished">Отключить коррекцию текстур PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="62"/>
@@ -7568,10 +7516,6 @@ Are you sure you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation type="vanished">Все типы карт памяти (*.mcd *.mcr *.mc)</translation>
-    </message>
-    <message>
         <location filename="../memorycardeditordialog.cpp" line="15"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
         <translation>Все типы импортируемых карт памяти (*.mcd *.mcr *.mc *.gme)</translation>
@@ -7831,15 +7775,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/settings.cpp" line="1118"/>
         <source>Separate Card Per Game (Title)</source>
         <translation>Отдельная карта на игру (название)</translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Code)</source>
-        <translatorcomment>*идентификатор*</translatorcomment>
-        <translation type="vanished">Отдельная карта для каждой игры (код игры)</translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Title)</source>
-        <translation type="vanished">Отдельная карта для каждой игры (название игры)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1119"/>
@@ -8499,10 +8434,6 @@ Please configure a supported controller from the list above.</source>
         <translation>Цвета с корректировкой перспективы PGXP отключены в настройках игры.</translation>
     </message>
     <message>
-        <source>PGXP texture correction disabled by game settings.</source>
-        <translation type="vanished">Коррекция текстур PGXP отключена в настройках игры.</translation>
-    </message>
-    <message>
         <location filename="../../core/game_database.cpp" line="394"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translatorcomment>*установлен</translatorcomment>
@@ -8756,25 +8687,6 @@ URL: %1</translation>
         <location filename="../qtprogresscallback.cpp" line="102"/>
         <source>Information</source>
         <translation>Информация</translation>
-    </message>
-</context>
-<context>
-    <name>QtProgressCallback</name>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Отмена</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Ошибка</translation>
-    </message>
-    <message>
-        <source>Question</source>
-        <translation type="vanished">Вопрос</translation>
-    </message>
-    <message>
-        <source>Information</source>
-        <translation type="vanished">Информация</translation>
     </message>
 </context>
 <context>
