@@ -5039,7 +5039,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
     ImGui::TextWrapped(
-      "PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any "
+      "DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any "
       "cover images, the user must provide their own source for images.");
     ImGui::NewLine();
     ImGui::TextWrapped(
