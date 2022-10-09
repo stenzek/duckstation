@@ -86,6 +86,9 @@ public:
   /// Returns a bitmask of the current button states, 1 = on.
   virtual u32 GetButtonStateBits() const;
 
+  /// Returns true if the controller supports analog mode, and it is active.
+  virtual bool InAnalogMode() const;
+
   /// Returns analog input bytes packed as a u32. Values are specific to controller type.
   virtual std::optional<u32> GetAnalogInputBytes() const;
 

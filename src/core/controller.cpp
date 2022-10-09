@@ -53,6 +53,11 @@ u32 Controller::GetButtonStateBits() const
   return 0;
 }
 
+bool Controller::InAnalogMode() const
+{
+  return false;
+}
+
 std::optional<u32> Controller::GetAnalogInputBytes() const
 {
   return std::nullopt;

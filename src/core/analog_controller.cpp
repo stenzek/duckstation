@@ -23,6 +23,11 @@ ControllerType AnalogController::GetType() const
   return ControllerType::AnalogController;
 }
 
+bool AnalogController::InAnalogMode() const
+{
+  return m_analog_mode;
+}
+
 void AnalogController::Reset()
 {
   m_command = Command::Idle;
