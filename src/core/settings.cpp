@@ -242,6 +242,10 @@ void Settings::Load(SettingsInterface& si)
     std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
   display_aspect_ratio_custom_denominator = static_cast<u16>(
     std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioDenominator", 3), 1, std::numeric_limits<u16>::max()));
+  display_alignment =
+    ParseDisplayAlignment(
+      si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
+      .value_or(DEFAULT_DISPLAY_ALIGNMENT);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -454,6 +458,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
+  si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
   si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
@@ -1044,6 +1049,35 @@ float Settings::GetDisplayAspectRatioValue() const
       return s_display_aspect_ratio_values[static_cast<int>(display_aspect_ratio)];
     }
   }
+}
+
+static std::array<const char*, 3> s_display_alignment_names = {{"LeftOrTop", "Center", "RightOrBottom"}};
+static std::array<const char*, 3> s_display_alignment_display_names = {
+  {TRANSLATABLE("DisplayAlignment", "LeftOrTop"), TRANSLATABLE("DisplayAlignment", "Center"),
+   TRANSLATABLE("DisplayAlignment", "RightOrBottom")}};
+
+std::optional<DisplayAlignment> Settings::ParseDisplayAlignment(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_alignment_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayAlignment>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayAlignmentName(DisplayAlignment alignment)
+{
+  return s_display_alignment_names[static_cast<int>(alignment)];
+}
+
+const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
+{
+  return s_display_alignment_display_names[static_cast<int>(alignment)];
 }
 
 static constexpr const char* s_audio_backend_names[] = {
