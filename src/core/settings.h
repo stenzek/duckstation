@@ -170,15 +170,15 @@ struct Settings
 
 #ifdef WITH_CHEEVOS
   // achievements
-  bool achievements_enabled : 1;
-  bool achievements_test_mode : 1;
-  bool achievements_unofficial_test_mode : 1;
-  bool achievements_use_first_disc_from_playlist : 1;
-  bool achievements_rich_presence : 1;
-  bool achievements_challenge_mode : 1;
-  bool achievements_leaderboards : 1;
-  bool achievements_sound_effects : 1;
-  bool achievements_primed_indicators : 1;
+  bool achievements_enabled = false;
+  bool achievements_test_mode = false;
+  bool achievements_unofficial_test_mode = false;
+  bool achievements_use_first_disc_from_playlist = true;
+  bool achievements_rich_presence = true;
+  bool achievements_challenge_mode = false;
+  bool achievements_leaderboards = true;
+  bool achievements_sound_effects = true;
+  bool achievements_primed_indicators = true;
 #endif
 
   struct DebugSettings
