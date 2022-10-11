@@ -13,7 +13,7 @@ RegTestHostDisplay::RegTestHostDisplay() = default;
 
 RegTestHostDisplay::~RegTestHostDisplay() = default;
 
-HostDisplay::RenderAPI RegTestHostDisplay::GetRenderAPI() const
+RenderAPI RegTestHostDisplay::GetRenderAPI() const
 {
   return RenderAPI::None;
 }
@@ -59,11 +59,6 @@ bool RegTestHostDisplay::MakeRenderContextCurrent()
 bool RegTestHostDisplay::DoneRenderContextCurrent()
 {
   return true;
-}
-
-void RegTestHostDisplay::DestroyRenderDevice()
-{
-  ClearSoftwareCursor();
 }
 
 void RegTestHostDisplay::DestroyRenderSurface() {}
@@ -129,26 +124,40 @@ bool RegTestHostDisplay::SetPostProcessingChain(const std::string_view& config)
 }
 
 std::unique_ptr<GPUTexture> RegTestHostDisplay::CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
-                                                                      u32 samples, GPUTexture::Format format,
-                                                                      const void* data, u32 data_stride,
-                                                                      bool dynamic /* = false */)
+                                                              u32 samples, GPUTexture::Format format, const void* data,
+                                                              u32 data_stride, bool dynamic /* = false */)
 {
-  return nullptr;
+  std::unique_ptr<RegTestTexture> tex = std::make_unique<RegTestTexture>();
+  if (!tex->Create(width, height, layers, levels, samples, format))
+    return {};
+
+  if (data && !tex->Upload(0, 0, width, height, data, data_stride))
+    return {};
+
+  return tex;
 }
 
-void RegTestHostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height,
-                                       const void* data, u32 data_stride)
+bool RegTestHostDisplay::BeginTextureUpdate(GPUTexture* texture, u32 width, u32 height, void** out_buffer,
+                                            u32* out_pitch)
 {
+  return static_cast<RegTestTexture*>(texture)->BeginUpload(width, height, out_buffer, out_pitch);
 }
 
-bool RegTestHostDisplay::DownloadTexture(const void* texture_handle, GPUTexture::Format texture_format, u32 x,
-                                         u32 y, u32 width, u32 height, void* out_data, u32 out_data_stride)
+void RegTestHostDisplay::EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height)
 {
-  const u32 pixel_size = GPUTexture::GetPixelSize(texture_format);
-  const u32 input_stride = Common::AlignUpPow2(width * pixel_size, 4);
-  const u8* input_start = static_cast<const u8*>(texture_handle) + (x * pixel_size);
-  StringUtil::StrideMemCpy(out_data, out_data_stride, input_start, input_stride, width * pixel_size, height);
-  return true;
+  static_cast<RegTestTexture*>(texture)->EndUpload(x, y, width, height);
+}
+
+bool RegTestHostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
+                                       u32 data_stride)
+{
+  return static_cast<RegTestTexture*>(texture)->Upload(x, y, width, height, data, data_stride);
+}
+
+bool RegTestHostDisplay::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                                         u32 out_data_stride)
+{
+  return static_cast<const RegTestTexture*>(texture)->Download(x, y, width, height, out_data, out_data_stride);
 }
 
 bool RegTestHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
@@ -156,59 +165,12 @@ bool RegTestHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
   return (format == GPUTexture::Format::RGBA8);
 }
 
-bool RegTestHostDisplay::BeginSetDisplayPixels(GPUTexture::Format format, u32 width, u32 height, void** out_buffer,
-                                               u32* out_pitch)
-{
-  const u32 pitch = Common::AlignUpPow2(width * GPUTexture::GetPixelSize(format), 4);
-  const u32 required_size = height * pitch;
-  if (m_frame_buffer.size() != (required_size / 4))
-  {
-    m_frame_buffer.clear();
-    m_frame_buffer.resize(required_size / 4);
-  }
-
-  // border is already filled here
-  m_frame_buffer_pitch = pitch;
-  SetDisplayTexture(m_frame_buffer.data(), format, width, height, 0, 0, width, height);
-  *out_buffer = reinterpret_cast<u8*>(m_frame_buffer.data());
-  *out_pitch = pitch;
-  return true;
-}
-
-void RegTestHostDisplay::EndSetDisplayPixels()
-{
-  // noop
-}
-
-void RegTestHostDisplay::DumpFrame(const std::string& filename)
-{
-  if (!HasDisplayTexture())
-  {
-    if (FileSystem::FileExists(filename.c_str()))
-      FileSystem::DeleteFile(filename.c_str());
-
-    return;
-  }
-
-  Common::RGBA8Image image(m_display_texture_width, m_display_texture_height,
-                           static_cast<const u32*>(m_display_texture));
-
-  // set alpha channel on all pixels
-  u32* pixels = image.GetPixels();
-  u32* pixels_end = pixels + (image.GetWidth() * image.GetHeight());
-  while (pixels != pixels_end)
-    *(pixels++) |= 0xFF000000u;
-
-  if (!Common::WriteImageToFile(image, filename.c_str()))
-    Log_ErrorPrintf("Failed to dump frame '%s'", filename.c_str());
-}
-
 void RegTestHostDisplay::SetVSync(bool enabled)
 {
   Log_DevPrintf("Ignoring SetVSync(%u)", BoolToUInt32(enabled));
 }
 
-bool RegTestHostDisplay::Render()
+bool RegTestHostDisplay::Render(bool skip_present)
 {
   return true;
 }
@@ -217,4 +179,76 @@ bool RegTestHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32
                                           GPUTexture::Format* out_format)
 {
   return false;
+}
+
+RegTestTexture::RegTestTexture() = default;
+
+RegTestTexture::~RegTestTexture() = default;
+
+bool RegTestTexture::IsValid() const
+{
+  return !m_frame_buffer.empty();
+}
+
+bool RegTestTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Format format)
+{
+  if (width == 0 || height == 0 || layers != 1 || levels != 1 || samples != 1 || format == GPUTexture::Format::Unknown)
+    return false;
+
+  m_width = static_cast<u16>(width);
+  m_height = static_cast<u16>(height);
+  m_layers = static_cast<u8>(layers);
+  m_levels = static_cast<u8>(levels);
+  m_samples = static_cast<u8>(samples);
+  m_format = format;
+
+  m_frame_buffer_pitch = width * GPUTexture::GetPixelSize(format);
+  m_frame_buffer.resize(m_frame_buffer_pitch * height);
+  return true;
+}
+
+bool RegTestTexture::Upload(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride)
+{
+  if ((static_cast<u64>(x) + width) > m_width || (static_cast<u64>(y) + height) > m_height)
+    return false;
+
+  const u32 ps = GetPixelSize(m_format);
+  const u32 copy_size = width * ps;
+  StringUtil::StrideMemCpy(&m_frame_buffer[y * m_frame_buffer_pitch + x * ps], m_frame_buffer_pitch, data, data_stride,
+                           copy_size, height);
+  return true;
+}
+
+bool RegTestTexture::Download(u32 x, u32 y, u32 width, u32 height, void* data, u32 data_stride) const
+{
+  if ((static_cast<u64>(x) + width) > m_width || (static_cast<u64>(y) + height) > m_height)
+    return false;
+
+  const u32 ps = GetPixelSize(m_format);
+  const u32 copy_size = width * ps;
+  StringUtil::StrideMemCpy(data, data_stride, &m_frame_buffer[y * m_frame_buffer_pitch + x * ps], m_frame_buffer_pitch,
+                           copy_size, height);
+  return true;
+}
+
+bool RegTestTexture::BeginUpload(u32 width, u32 height, void** out_buffer, u32* out_pitch)
+{
+  if (width > m_width || height > m_height)
+    return false;
+
+  const u32 pitch = GetPixelSize(m_format) * width;
+  m_staging_buffer.resize(pitch * height);
+  *out_buffer = m_staging_buffer.data();
+  *out_pitch = pitch;
+  return true;
+}
+
+void RegTestTexture::EndUpload(u32 x, u32 y, u32 width, u32 height)
+{
+  Assert((static_cast<u64>(x) + width) <= m_width && (static_cast<u64>(y) + height) <= m_height);
+
+  const u32 ps = GetPixelSize(m_format);
+  const u32 pitch = ps * width;
+  StringUtil::StrideMemCpy(&m_frame_buffer[y * m_frame_buffer_pitch + x * ps], m_frame_buffer_pitch,
+                           m_staging_buffer.data(), pitch, pitch, height);
 }

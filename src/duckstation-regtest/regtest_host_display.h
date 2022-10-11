@@ -8,8 +8,6 @@ public:
   RegTestHostDisplay();
   ~RegTestHostDisplay();
 
-  void DumpFrame(const std::string& filename);
-
   RenderAPI GetRenderAPI() const override;
   void* GetRenderDevice() const override;
   void* GetRenderContext() const override;
@@ -21,7 +19,6 @@ public:
                           bool threaded_presentation) override;
   bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
                               bool threaded_presentation) override;
-  void DestroyRenderDevice() override;
 
   bool MakeRenderContextCurrent() override;
   bool DoneRenderContextCurrent() override;
@@ -46,25 +43,46 @@ public:
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Format format, const void* data, u32 data_stride,
                                                     bool dynamic = false) override;
-  void UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
-                     u32 data_stride) override;
-  bool DownloadTexture(const void* texture_handle, GPUTexture::Format texture_format, u32 x, u32 y, u32 width,
-                       u32 height, void* out_data, u32 out_data_stride) override;
+  bool BeginTextureUpdate(GPUTexture* texture, u32 width, u32 height, void** out_buffer, u32* out_pitch) override;
+  void EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height) override;
+  bool UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride) override;
+  bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
+                       u32 out_data_stride) override;
 
   void SetVSync(bool enabled) override;
 
-  bool Render() override;
+  bool Render(bool skip_present) override;
   bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                         GPUTexture::Format* out_format) override;
 
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
 
-  bool BeginSetDisplayPixels(GPUTexture::Format format, u32 width, u32 height, void** out_buffer,
-                             u32* out_pitch) override;
-  void EndSetDisplayPixels() override;
+private:
+
+};
+
+class RegTestTexture : public GPUTexture
+{
+public:
+  RegTestTexture();
+  ~RegTestTexture() override;
+
+  ALWAYS_INLINE const std::vector<u32>& GetPixels() const { return m_frame_buffer; }
+  ALWAYS_INLINE u32 GetPitch() const { return m_frame_buffer_pitch; }
+
+  bool IsValid() const override;
+
+  bool Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Format format);
+
+  bool Upload(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride);
+  bool Download(u32 x, u32 y, u32 width, u32 height, void* data, u32 data_stride) const;
+
+  bool BeginUpload(u32 width, u32 height, void** out_buffer, u32* out_pitch);
+  void EndUpload(u32 x, u32 y, u32 width, u32 height);
 
 private:
   std::vector<u32> m_frame_buffer;
+  std::vector<u32> m_staging_buffer;
   GPUTexture::Format m_frame_buffer_format = GPUTexture::Format::Unknown;
   u32 m_frame_buffer_pitch = 0;
 };

@@ -1352,7 +1352,6 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
     case Command::Reset:
     {
       Log_DebugPrintf("CDROM reset command");
-      SendACKAndStat();
 
       if (m_command_second_response == Command::Reset)
       {
@@ -1360,6 +1359,8 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
         EndCommand();
         return;
       }
+
+      SendACKAndStat();
 
       if (IsSeeking())
         UpdatePositionWhileSeeking();

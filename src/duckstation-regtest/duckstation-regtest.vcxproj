@@ -6,11 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="regtest_host_display.cpp" />
-    <ClCompile Include="regtest_host_interface.cpp" />
+    <ClCompile Include="regtest_host.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="regtest_host_display.h" />
-    <ClInclude Include="regtest_host_interface.h" />
   </ItemGroup>
   <Import Project="..\..\dep\msvc\vsprops\ConsoleApplication.props" />
   <Import Project="..\frontend-common\frontend-common.props" />
