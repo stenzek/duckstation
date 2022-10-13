@@ -3179,6 +3179,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
+        g_settings.display_alignment != old_settings.display_alignment ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
         g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
         g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction ||

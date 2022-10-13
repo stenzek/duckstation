@@ -109,6 +109,13 @@ enum class DisplayAspectRatio : u8
   Count
 };
 
+  enum class DisplayAlignment
+{
+  LeftOrTop,
+  Center,
+  RightOrBottom
+};
+
 enum class AudioBackend : u8
 {
   Null,
