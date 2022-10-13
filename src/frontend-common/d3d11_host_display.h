@@ -132,6 +132,7 @@ protected:
   ComPtr<ID3D11PixelShader> m_display_alpha_pixel_shader;
   ComPtr<ID3D11SamplerState> m_point_sampler;
   ComPtr<ID3D11SamplerState> m_linear_sampler;
+  ComPtr<ID3D11SamplerState> m_border_sampler;
 
   D3D11::StreamBuffer m_display_uniform_buffer;
   ComPtr<ID3D11Texture2D> m_readback_staging_texture;

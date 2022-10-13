@@ -510,6 +510,20 @@ void main()
     glGenSamplers(1, &m_display_linear_sampler);
     glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glSamplerParameteri(m_display_linear_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenSamplers(1, &m_display_border_sampler);
+    glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // If we don't have border clamp.. too bad, just hope for the best.
+    if (!m_gl_context->IsGLES() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_NV_texture_border_clamp ||
+        GLAD_GL_EXT_texture_border_clamp || GLAD_GL_OES_texture_border_clamp)
+    {
+      static constexpr const float border_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+
+      glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+      glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+      glTexParameterfv(m_display_border_sampler, GL_TEXTURE_BORDER_COLOR, border_color);
+    }
   }
   else
   {
@@ -594,6 +608,11 @@ void OpenGLHostDisplay::DestroyResources()
     glDeleteVertexArrays(1, &m_display_vao);
     m_display_vao = 0;
   }
+  if (m_display_border_sampler != 0)
+  {
+    glDeleteSamplers(1, &m_display_border_sampler);
+    m_display_border_sampler = 0;
+  }
   if (m_display_linear_sampler != 0)
   {
     glDeleteSamplers(1, &m_display_linear_sampler);
@@ -657,9 +676,9 @@ bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(texture.GetGLFramebufferID(), left, height - top - draw_height, draw_width, draw_height,
-                              static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
-                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
-                              width, height);
+                             static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             width, height);
   }
   else
   {
@@ -952,7 +971,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
     pps.program.Bind();
 
     static_cast<const GL::Texture*>(texture)->Bind();
-    glBindSampler(0, m_display_nearest_sampler);
+    glBindSampler(0, m_display_border_sampler);
 
     const auto map_result = m_post_processing_ubo->Map(m_uniform_buffer_alignment, pps.uniforms_size);
     m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(

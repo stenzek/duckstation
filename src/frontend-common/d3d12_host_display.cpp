@@ -565,6 +565,18 @@ bool D3D12HostDisplay::CreateResources()
 
   g_d3d12_context->GetDevice()->CreateSampler(&desc, m_linear_sampler.cpu_handle);
 
+  if (!g_d3d12_context->GetSamplerHeapManager().Allocate(&m_border_sampler))
+    return false;
+
+  desc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+  desc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+  desc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+  desc.BorderColor[0] = 0.0f;
+  desc.BorderColor[1] = 0.0f;
+  desc.BorderColor[2] = 0.0f;
+  desc.BorderColor[3] = 1.0f;
+  g_d3d12_context->GetDevice()->CreateSampler(&desc, m_border_sampler.cpu_handle);
+
   return true;
 }
 
@@ -578,6 +590,7 @@ void D3D12HostDisplay::DestroyResources()
   m_post_processing_root_signature.Reset();
 
   m_readback_staging_texture.Destroy(false);
+  g_d3d12_context->GetSamplerHeapManager().Free(&m_border_sampler);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_linear_sampler);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_point_sampler);
   m_software_cursor_pipeline.Reset();
@@ -1074,7 +1087,7 @@ void D3D12HostDisplay::ApplyPostProcessingChain(ID3D12GraphicsCommandList* cmdli
 
     cmdlist->SetPipelineState(pps.pipeline.Get());
     cmdlist->SetGraphicsRootDescriptorTable(1, texture->GetSRVDescriptor());
-    cmdlist->SetGraphicsRootDescriptorTable(2, m_point_sampler);
+    cmdlist->SetGraphicsRootDescriptorTable(2, m_border_sampler);
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->DrawInstanced(3, 1, 0, 0);

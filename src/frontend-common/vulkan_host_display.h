@@ -121,6 +121,7 @@ protected:
   VkPipeline m_display_pipeline = VK_NULL_HANDLE;
   VkSampler m_point_sampler = VK_NULL_HANDLE;
   VkSampler m_linear_sampler = VK_NULL_HANDLE;
+  VkSampler m_border_sampler = VK_NULL_HANDLE;
 
   VmaAllocation m_readback_staging_allocation = VK_NULL_HANDLE;
   VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;

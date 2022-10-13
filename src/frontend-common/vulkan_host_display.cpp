@@ -507,14 +507,20 @@ void main()
   vkDestroyShaderModule(device, cursor_fragment_shader, nullptr);
 
   Vulkan::SamplerBuilder sbuilder;
-  sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
   m_point_sampler = sbuilder.Create(device, true);
   if (m_point_sampler == VK_NULL_HANDLE)
     return false;
 
-  sbuilder.SetLinearSampler(false, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetLinearSampler(false, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
   m_linear_sampler = sbuilder.Create(device);
   if (m_linear_sampler == VK_NULL_HANDLE)
+    return false;
+
+  sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetBorderColor(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+  m_border_sampler = sbuilder.Create(device);
+  if (m_border_sampler == VK_NULL_HANDLE)
     return false;
 
   return true;
@@ -536,6 +542,7 @@ void VulkanHostDisplay::DestroyResources()
   Vulkan::Util::SafeDestroyPipeline(m_cursor_pipeline);
   Vulkan::Util::SafeDestroyPipelineLayout(m_pipeline_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_descriptor_set_layout);
+  Vulkan::Util::SafeDestroySampler(m_border_sampler);
   Vulkan::Util::SafeDestroySampler(m_point_sampler);
   Vulkan::Util::SafeDestroySampler(m_linear_sampler);
 }
@@ -1149,7 +1156,7 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
     }
 
     Vulkan::DescriptorSetUpdateBuilder dsupdate;
-    dsupdate.AddCombinedImageSamplerDescriptorWrite(ds, 1, texture->GetView(), m_point_sampler, texture->GetLayout());
+    dsupdate.AddCombinedImageSamplerDescriptorWrite(ds, 1, texture->GetView(), m_border_sampler, texture->GetLayout());
 
     if (use_push_constants)
     {

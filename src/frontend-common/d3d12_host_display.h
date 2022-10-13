@@ -124,6 +124,7 @@ protected:
   ComPtr<ID3D12PipelineState> m_software_cursor_pipeline;
   D3D12::DescriptorHandle m_point_sampler;
   D3D12::DescriptorHandle m_linear_sampler;
+  D3D12::DescriptorHandle m_border_sampler;
 
   D3D12::Texture m_display_pixels_texture;
   D3D12::StagingTexture m_readback_staging_texture;

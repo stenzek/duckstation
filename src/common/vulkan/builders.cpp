@@ -440,6 +440,11 @@ void SamplerBuilder::SetAddressMode(VkSamplerAddressMode u, VkSamplerAddressMode
   m_ci.addressModeW = w;
 }
 
+void SamplerBuilder::SetBorderColor(VkBorderColor color)
+{
+  m_ci.borderColor = color;
+}
+
 void SamplerBuilder::SetPointSampler(VkSamplerAddressMode address_mode /* = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER */)
 {
   Clear();

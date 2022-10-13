@@ -655,6 +655,17 @@ bool D3D11HostDisplay::CreateResources()
   if (FAILED(hr))
     return false;
 
+  sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+  sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+  sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+  sampler_desc.BorderColor[0] = 0.0f;
+  sampler_desc.BorderColor[1] = 0.0f;
+  sampler_desc.BorderColor[2] = 0.0f;
+  sampler_desc.BorderColor[3] = 1.0f;
+  hr = m_device->CreateSamplerState(&sampler_desc, m_border_sampler.GetAddressOf());
+  if (FAILED(hr))
+    return false;
+
   return true;
 }
 
@@ -665,6 +676,7 @@ void D3D11HostDisplay::DestroyResources()
   m_post_processing_stages.clear();
 
   m_display_uniform_buffer.Release();
+  m_border_sampler.Reset();
   m_linear_sampler.Reset();
   m_point_sampler.Reset();
   m_display_alpha_pixel_shader.Reset();
@@ -1082,7 +1094,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
     m_context->VSSetShader(pps.vertex_shader.Get(), nullptr, 0);
     m_context->PSSetShader(pps.pixel_shader.Get(), nullptr, 0);
     m_context->PSSetShaderResources(0, 1, texture->GetD3DSRVArray());
-    m_context->PSSetSamplers(0, 1, m_point_sampler.GetAddressOf());
+    m_context->PSSetSamplers(0, 1, m_border_sampler.GetAddressOf());
 
     const auto map =
       m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), pps.uniforms_size);

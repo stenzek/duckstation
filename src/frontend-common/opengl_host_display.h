@@ -112,6 +112,7 @@ protected:
   GLuint m_display_vao = 0;
   GLuint m_display_nearest_sampler = 0;
   GLuint m_display_linear_sampler = 0;
+  GLuint m_display_border_sampler = 0;
   GLuint m_uniform_buffer_alignment = 1;
 
   std::unique_ptr<GL::StreamBuffer> m_texture_stream_buffer;

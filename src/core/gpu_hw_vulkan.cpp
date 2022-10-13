@@ -521,7 +521,7 @@ bool GPU_HW_Vulkan::CreateSamplers()
   VkDevice device = g_vulkan_context->GetDevice();
 
   Vulkan::SamplerBuilder sbuilder;
-  sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetPointSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
   sbuilder.SetAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
                           VK_SAMPLER_ADDRESS_MODE_REPEAT);
   m_point_sampler = sbuilder.Create(device);
@@ -529,7 +529,7 @@ bool GPU_HW_Vulkan::CreateSamplers()
     return false;
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Point Sampler");
 
-  sbuilder.SetLinearSampler(false, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetLinearSampler(false, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
   sbuilder.SetAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT,
                           VK_SAMPLER_ADDRESS_MODE_REPEAT);
   m_linear_sampler = sbuilder.Create(device);
@@ -537,7 +537,7 @@ bool GPU_HW_Vulkan::CreateSamplers()
     return false;
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_linear_sampler, "Linear Sampler");
 
-  sbuilder.SetLinearSampler(true, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+  sbuilder.SetLinearSampler(true, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
   m_trilinear_sampler = sbuilder.Create(device);
   if (m_trilinear_sampler == VK_NULL_HANDLE)
     return false;
