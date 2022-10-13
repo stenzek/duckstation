@@ -463,10 +463,6 @@ Leaderboard Position: {} of {}</source>
         <translation>Показать индикаторы состояния</translation>
     </message>
     <message>
-        <source>Show Enhancement Settings</source>
-        <translation type="vanished">Показать настройки улучшений</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="226"/>
         <source>Apply Compatibility Settings</source>
         <translation>Применить параметры совместимости</translation>
@@ -3967,10 +3963,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="unfinished">Потоковая презентация</translation>
     </message>
     <message>
-        <source>Optimal Frame Pacing</source>
-        <translation type="obsolete">Оптимальная частота кадров</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="103"/>
         <source>Screen Display</source>
         <translation>Отображение экрана</translation>
@@ -3989,10 +3981,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="150"/>
         <source>Crop:</source>
         <translation>Режим обрезки:</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="obsolete">Десемплинг:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="179"/>
@@ -4023,10 +4011,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="109"/>
         <source>Integer Upscaling</source>
         <translation>Целочисленное масштабирование</translation>
-    </message>
-    <message>
-        <source>Sync To Host Refresh Rate</source>
-        <translation type="obsolete">Синхронизация с частотой обновления хоста</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="193"/>
@@ -4124,18 +4108,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Определяет положение на экране, когда необходимо добавить черные границы.</translation>
     </message>
     <message>
-        <source>Downsampling</source>
-        <translation type="obsolete">Десемплинг</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Отключен</translation>
-    </message>
-    <message>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="obsolete">Уменьшает размер отрисованного изображения перед его отображением. Может улучшить общее качество изображения в смешанных 2D/3D играх, но должно быть отключено для чистых 3D-игр. Применяется только к аппаратным рендерам.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="102"/>
         <location filename="../displaysettingswidget.cpp" line="119"/>
         <location filename="../displaysettingswidget.cpp" line="122"/>
@@ -4183,10 +4155,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Включите этот параметр, чтобы частота обновления DuckStation соответствовала текущему монитору или экрану. Вертикальная синхронизация автоматически отключается, когда это невозможно (например, при работе со скоростью, отличной от 100%).</translation>
     </message>
     <message>
-        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="obsolete">Включите этот параметр, чтобы каждый кадр, отображаемый консолью, отображался на экране для оптимальной синхронизации кадров. Если у вас возникают проблемы с поддержанием полной скорости или возникают сбои звука, попробуйте отключить эту опцию.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation type="unfinished">Представляет кадры в фоновом потоке, когда быстрая перемотка вперед или vsync отключены. Это может заметно повысить производительность модуля рендеринга Vulkan.</translation>
@@ -4196,10 +4164,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translatorcomment>**рендрер**</translatorcomment>
         <translation type="unfinished">Использует второй поток для рисования графики. В настоящее время доступна только для программной отрисовки, но может обеспечить значительное улучшение скорости, и является безопасным в использовании.</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="obsolete">Настраивает скорость эмуляции таким образом, чтобы частота обновления консоли соответствовала частоте обновления хоста, когда включены параметры &quot;Вертикальная синхронизация&quot; и &quot;Передискретизация&quot;. Это приводит к максимально плавной анимации за счет потенциального увеличения скорости эмуляции менее чем на 1%. Синхронизация с частотой обновления хоста не вступит в силу, если частота обновления консоли слишком далека от частоты обновления хоста. Пользователи с дисплеями с переменной частотой обновления должны отключить эту опцию.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="225"/>
