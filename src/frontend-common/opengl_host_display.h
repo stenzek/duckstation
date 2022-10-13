@@ -4,6 +4,7 @@
 #include "common/gl/program.h"
 #include "common/gl/stream_buffer.h"
 #include "common/gl/texture.h"
+#include "common/timer.h"
 #include "common/window_info.h"
 #include "core/host_display.h"
 #include "postprocessing_chain.h"
@@ -121,6 +122,7 @@ protected:
   GL::Texture m_post_processing_input_texture;
   std::unique_ptr<GL::StreamBuffer> m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
+  Common::Timer m_post_processing_timer;
 
   std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
   float m_accumulated_gpu_time = 0.0f;

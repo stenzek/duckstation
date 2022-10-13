@@ -929,6 +929,8 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture,
                 texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
+  const s32 orig_texture_width = texture_view_width;
+  const s32 orig_texture_height = texture_view_height;
   texture = &m_post_processing_input_texture;
   texture_view_x = final_left;
   texture_view_y = final_top;
@@ -959,7 +961,8 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
     const auto map_result = m_post_processing_ubo->Map(m_uniform_buffer_alignment, pps.uniforms_size);
     m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
       map_result.pointer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
-      texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+      texture_view_height, GetWindowWidth(), GetWindowHeight(), orig_texture_width, orig_texture_height,
+      static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
     m_post_processing_ubo->Unmap(pps.uniforms_size);
     glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_post_processing_ubo->GetGLBufferId(), map_result.buffer_offset,
                       pps.uniforms_size);

@@ -106,6 +106,14 @@ float2 GetCoordinates()
 {
   return v_tex0;
 }
+float2 GetOriginalSize()
+{
+  return original_size;
+}
+float2 GetPaddedOriginalSize()
+{
+  return padded_original_size;
+}
 float GetTime()
 {
   return time;
@@ -150,6 +158,8 @@ void PostProcessingShaderGen::WriteUniformBuffer(std::stringstream& ss, const Po
   ss << "  float2 rcp_resolution;\n";
   ss << "  float2 window_resolution;\n";
   ss << "  float2 rcp_window_resolution;\n";
+  ss << "  float2 original_size;\n";
+  ss << "  float2 padded_original_size;\n";
   ss << "  float time;\n";
   ss << "  float ubo_pad" << (pad_counter++) << ";\n";
   ss << "\n";

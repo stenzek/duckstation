@@ -96,7 +96,8 @@ void D3D11HostDisplay::EndTextureUpdate(GPUTexture* texture, u32 x, u32 y, u32 w
   m_context->Unmap(tex->GetD3DTexture(), 0);
 }
 
-bool D3D11HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
+bool D3D11HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data,
+                                     u32 pitch)
 {
   D3D11::Texture* tex = static_cast<D3D11::Texture*>(texture);
   if (tex->IsDynamic())
@@ -1007,6 +1008,7 @@ bool D3D11HostDisplay::SetPostProcessingChain(const std::string_view& config)
     return false;
   }
 
+  m_post_processing_timer.Reset();
   return true;
 }
 
@@ -1061,6 +1063,8 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   RenderDisplay(final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
                 texture_view_width, texture_view_height, IsUsingLinearFiltering());
 
+  const s32 orig_texture_width = texture_view_width;
+  const s32 orig_texture_height = texture_view_height;
   texture = &m_post_processing_input_texture;
   texture_view_x = final_left;
   texture_view_y = final_top;
@@ -1091,7 +1095,8 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
       m_display_uniform_buffer.Map(m_context.Get(), m_display_uniform_buffer.GetSize(), pps.uniforms_size);
     m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
       map.pointer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
-      texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+      texture_view_height, GetWindowWidth(), GetWindowHeight(), orig_texture_width, orig_texture_height,
+      static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
     m_display_uniform_buffer.Unmap(m_context.Get(), pps.uniforms_size);
     m_context->VSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());
     m_context->PSSetConstantBuffers(0, 1, m_display_uniform_buffer.GetD3DBufferArray());

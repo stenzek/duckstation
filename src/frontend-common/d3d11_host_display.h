@@ -1,6 +1,7 @@
 #pragma once
 #include "common/d3d11/stream_buffer.h"
 #include "common/d3d11/texture.h"
+#include "common/timer.h"
 #include "common/window_info.h"
 #include "common/windows_headers.h"
 #include "core/host_display.h"
@@ -146,6 +147,7 @@ protected:
   FrontendCommon::PostProcessingChain m_post_processing_chain;
   D3D11::Texture m_post_processing_input_texture;
   std::vector<PostProcessingStage> m_post_processing_stages;
+  Common::Timer m_post_processing_timer;
 
   std::array<std::array<ComPtr<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
   u8 m_read_timestamp_query = 0;

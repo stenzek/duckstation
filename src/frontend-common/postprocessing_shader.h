@@ -83,7 +83,7 @@ public:
   u32 GetUniformsSize() const;
   void FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
                          s32 texture_view_width, s32 texture_view_height, u32 window_width, u32 window_height,
-                         float time) const;
+                         s32 original_width, s32 original_height, float time) const;
 
 private:
   struct CommonUniforms
@@ -94,8 +94,10 @@ private:
     float rcp_resolution[2];
     float window_resolution[2];
     float rcp_window_resolution[2];
+    float original_size[2];
+    float padded_original_size[2];
     float time;
-    float padding[1];
+    float padding;
   };
 
   void LoadOptions();

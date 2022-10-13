@@ -1113,6 +1113,8 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
   Vulkan::Util::EndDebugScope(g_vulkan_context->GetCurrentCommandBuffer());
   m_post_processing_input_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+  const s32 orig_texture_width = texture_view_width;
+  const s32 orig_texture_height = texture_view_height;
   texture = &m_post_processing_input_texture;
   texture_view_x = final_left;
   texture_view_y = final_top;
@@ -1154,7 +1156,8 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
       Assert(pps.uniforms_size <= sizeof(buffer));
       m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
         buffer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
-        texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+        texture_view_height, GetWindowWidth(), GetWindowHeight(), orig_texture_width, orig_texture_height,
+        static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
 
       vkCmdPushConstants(cmdbuffer, m_post_process_pipeline_layout,
                          VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, pps.uniforms_size, buffer);
@@ -1174,7 +1177,8 @@ void VulkanHostDisplay::ApplyPostProcessingChain(VkFramebuffer target_fb, s32 fi
       const u32 offset = m_post_processing_ubo.GetCurrentOffset();
       m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
         m_post_processing_ubo.GetCurrentHostPointer(), texture->GetWidth(), texture->GetHeight(), texture_view_x,
-        texture_view_y, texture_view_width, texture_view_height, GetWindowWidth(), GetWindowHeight(), 0.0f);
+        texture_view_y, texture_view_width, texture_view_height, GetWindowWidth(), GetWindowHeight(),
+        orig_texture_width, orig_texture_height, static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
       m_post_processing_ubo.CommitMemory(pps.uniforms_size);
 
       dsupdate.AddBufferDescriptorWrite(ds, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,

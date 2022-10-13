@@ -1,4 +1,5 @@
 #pragma once
+#include "common/timer.h"
 #include "common/vulkan/loader.h"
 #include "common/vulkan/stream_buffer.h"
 #include "common/vulkan/swap_chain.h"
@@ -137,4 +138,5 @@ protected:
   VkFramebuffer m_post_processing_input_framebuffer = VK_NULL_HANDLE;
   Vulkan::StreamBuffer m_post_processing_ubo;
   std::vector<PostProcessingStage> m_post_processing_stages;
+  Common::Timer m_post_processing_timer;
 };

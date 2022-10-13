@@ -248,11 +248,11 @@ u32 PostProcessingShader::GetUniformsSize() const
 
 void PostProcessingShader::FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height, s32 texture_view_x,
                                              s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
-                                             u32 window_width, u32 window_height, float time) const
+                                             u32 window_width, u32 window_height, s32 original_width,
+                                             s32 original_height, float time) const
 {
   CommonUniforms* common = static_cast<CommonUniforms*>(buffer);
 
-  // TODO: OpenGL?
   const float rcp_texture_width = 1.0f / static_cast<float>(texture_width);
   const float rcp_texture_height = 1.0f / static_cast<float>(texture_height);
   common->src_rect[0] = static_cast<float>(texture_view_x) * rcp_texture_width;
@@ -269,6 +269,17 @@ void PostProcessingShader::FillUniformBuffer(void* buffer, u32 texture_width, s3
   common->window_resolution[1] = static_cast<float>(window_height);
   common->rcp_window_resolution[0] = 1.0f / static_cast<float>(window_width);
   common->rcp_window_resolution[1] = 1.0f / static_cast<float>(window_height);
+
+  // pad the "original size" relative to the positioning on the screen
+  const float view_scale_x = static_cast<float>(original_width) / static_cast<float>(texture_view_width);
+  const float view_scale_y = static_cast<float>(original_height) / static_cast<float>(texture_view_height);
+  const s32 view_pad_x = texture_view_x + (texture_width - texture_view_width - texture_view_x);
+  const s32 view_pad_y = texture_view_y + (texture_height - texture_view_height - texture_view_y);
+  common->original_size[0] = static_cast<float>(original_width);
+  common->original_size[1] = static_cast<float>(original_height);
+  common->padded_original_size[0] = common->original_size[0] + static_cast<float>(view_pad_x) * view_scale_x;
+  common->padded_original_size[1] = common->original_size[1] + static_cast<float>(view_pad_y) * view_scale_y;
+
   common->time = time;
 
   u8* option_values = reinterpret_cast<u8*>(common + 1);
