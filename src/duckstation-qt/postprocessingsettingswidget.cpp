@@ -56,10 +56,11 @@ void PostProcessingSettingsWidget::onChainSelectedShaderChanged(qint32 index)
 
 void PostProcessingSettingsWidget::updateShaderConfigPanel(s32 index)
 {
+  m_ui.scrollArea->setWidget(nullptr);
+  m_ui.scrollArea->setVisible(false);
+
   if (m_shader_config)
   {
-    m_ui.scrollArea->setWidget(nullptr);
-    m_ui.scrollArea->setVisible(false);
     delete m_shader_config;
     m_shader_config = nullptr;
   }

@@ -93,6 +93,12 @@
        <verstretch>1</verstretch>
       </sizepolicy>
      </property>
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
@@ -101,8 +107,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>681</width>
-        <height>390</height>
+        <width>679</width>
+        <height>438</height>
        </rect>
       </property>
      </widget>
