@@ -732,9 +732,7 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeRenderContextCurrent() ||
-      !g_host_display->InitializeRenderDevice(EmuFolders::Cache, g_settings.gpu_use_debug_device,
-                                              g_settings.gpu_threaded_presentation) ||
+  if (!g_host_display->MakeRenderContextCurrent() || !g_host_display->InitializeRenderDevice() ||
       !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();

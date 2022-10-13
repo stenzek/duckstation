@@ -214,16 +214,18 @@ void VulkanHostDisplay::SetVSync(bool enabled)
   m_swap_chain->SetVSync(enabled);
 }
 
-bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                           bool threaded_presentation)
+bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi)
 {
   WindowInfo local_wi(wi);
-  if (!Vulkan::Context::Create(adapter_name, &local_wi, &m_swap_chain, threaded_presentation, debug_device, false))
+  if (!Vulkan::Context::Create(g_settings.gpu_adapter, &local_wi, &m_swap_chain, g_settings.gpu_threaded_presentation,
+                               g_settings.gpu_use_debug_device, false))
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     m_window_info = {};
     return false;
   }
+
+  Vulkan::ShaderCache::Create(EmuFolders::Cache, SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device);
 
   m_is_adreno = (g_vulkan_context->GetDeviceProperties().vendorID == 0x5143 ||
                  g_vulkan_context->GetDeviceDriverProperties().driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY);
@@ -232,11 +234,8 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
   return true;
 }
 
-bool VulkanHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                               bool threaded_presentation)
+bool VulkanHostDisplay::InitializeRenderDevice()
 {
-  Vulkan::ShaderCache::Create(shader_cache_directory, SHADER_CACHE_VERSION, debug_device);
-
   if (!CreateResources())
     return false;
 

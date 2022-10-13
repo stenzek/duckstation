@@ -38,15 +38,13 @@ bool RegTestHostDisplay::HasRenderSurface() const
   return true;
 }
 
-bool RegTestHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                            bool threaded_presentation)
+bool RegTestHostDisplay::CreateRenderDevice(const WindowInfo& wi)
 {
   m_window_info = wi;
   return true;
 }
 
-bool RegTestHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                                bool threaded_presentation)
+bool RegTestHostDisplay::InitializeRenderDevice()
 {
   return true;
 }

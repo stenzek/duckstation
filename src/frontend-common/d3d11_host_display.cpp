@@ -197,11 +197,10 @@ void D3D11HostDisplay::SetVSync(bool enabled)
   m_vsync = enabled;
 }
 
-bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                          bool threaded_presentation)
+bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi)
 {
   UINT create_flags = 0;
-  if (debug_device)
+  if (g_settings.gpu_use_debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
   ComPtr<IDXGIFactory> temp_dxgi_factory;
@@ -217,17 +216,17 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   }
 
   u32 adapter_index;
-  if (!adapter_name.empty())
+  if (!g_settings.gpu_adapter.empty())
   {
     AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.Get()));
     for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
     {
-      if (adapter_name == adapter_info.adapter_names[adapter_index])
+      if (g_settings.gpu_adapter == adapter_info.adapter_names[adapter_index])
         break;
     }
     if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
     {
-      Log_WarningPrintf("Could not find adapter '%s', using first (%s)", std::string(adapter_name).c_str(),
+      Log_WarningPrintf("Could not find adapter '%s', using first (%s)", g_settings.gpu_adapter.c_str(),
                         adapter_info.adapter_names[0].c_str());
       adapter_index = 0;
     }
@@ -261,7 +260,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     return false;
   }
 
-  if (debug_device && IsDebuggerPresent())
+  if (g_settings.gpu_use_debug_device && IsDebuggerPresent())
   {
     ComPtr<ID3D11InfoQueue> info;
     hr = m_device.As(&info);
@@ -321,8 +320,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   return true;
 }
 
-bool D3D11HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                              bool threaded_presentation)
+bool D3D11HostDisplay::InitializeRenderDevice()
 {
   if (!CreateResources())
     return false;

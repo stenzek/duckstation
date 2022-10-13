@@ -649,14 +649,8 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
       if (wi.has_value())
       {
         g_host_display = Host::CreateDisplayForAPI(api);
-        if (g_host_display)
-        {
-          if (!g_host_display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
-                                                  g_settings.gpu_threaded_presentation))
-          {
-            g_host_display.reset();
-          }
-        }
+        if (g_host_display && !g_host_display->CreateRenderDevice(wi.value()))
+          g_host_display.reset();
       }
 
       if (g_host_display)
@@ -676,9 +670,7 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeRenderContextCurrent() ||
-      !g_host_display->InitializeRenderDevice(EmuFolders::Cache, g_settings.gpu_use_debug_device,
-                                              g_settings.gpu_threaded_presentation) ||
+  if (!g_host_display->MakeRenderContextCurrent() || !g_host_display->InitializeRenderDevice() ||
       !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();

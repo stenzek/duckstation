@@ -67,10 +67,8 @@ public:
   virtual bool HasRenderDevice() const = 0;
   virtual bool HasRenderSurface() const = 0;
 
-  virtual bool CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                  bool threaded_presentation) = 0;
-  virtual bool InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                      bool threaded_presentation) = 0;
+  virtual bool CreateRenderDevice(const WindowInfo& wi) = 0;
+  virtual bool InitializeRenderDevice() = 0;
   virtual bool MakeRenderContextCurrent() = 0;
   virtual bool DoneRenderContextCurrent() = 0;
   virtual void DestroyRenderSurface() = 0;

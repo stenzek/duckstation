@@ -281,8 +281,7 @@ bool OpenGLHostDisplay::HasRenderSurface() const
   return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                           bool threaded_presentation)
+bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi)
 {
   m_gl_context = GL::Context::Create(wi);
   if (!m_gl_context)
@@ -296,8 +295,7 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_vie
   return true;
 }
 
-bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                               bool threaded_presentation)
+bool OpenGLHostDisplay::InitializeRenderDevice()
 {
   m_use_gles2_draw_path = (GetRenderAPI() == RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
@@ -316,7 +314,7 @@ bool OpenGLHostDisplay::InitializeRenderDevice(std::string_view shader_cache_dir
   Log_VerbosePrintf("Using GLES2 draw path: %s", m_use_gles2_draw_path ? "yes" : "no");
   Log_VerbosePrintf("Using PBO for streaming: %s", m_use_pbo_for_pixels ? "yes" : "no");
 
-  if (debug_device && GLAD_GL_KHR_debug)
+  if (g_settings.gpu_use_debug_device && GLAD_GL_KHR_debug)
   {
     if (GetRenderAPI() == RenderAPI::OpenGLES)
       glDebugMessageCallbackKHR(GLDebugCallback, nullptr);

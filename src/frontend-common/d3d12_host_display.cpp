@@ -142,8 +142,7 @@ void D3D12HostDisplay::SetVSync(bool enabled)
   m_vsync = enabled;
 }
 
-bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device,
-                                          bool threaded_presentation)
+bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi)
 {
   ComPtr<IDXGIFactory> temp_dxgi_factory;
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -159,18 +158,18 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   }
 
   u32 adapter_index;
-  if (!adapter_name.empty())
+  if (!g_settings.gpu_adapter.empty())
   {
     AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.Get()));
     for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
     {
-      if (adapter_name == adapter_info.adapter_names[adapter_index])
+      if (g_settings.gpu_adapter == adapter_info.adapter_names[adapter_index])
         break;
     }
     if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
     {
-      Log_WarningPrintf("Could not find adapter '%*s', using first (%s)", static_cast<int>(adapter_name.size()),
-                        adapter_name.data(), adapter_info.adapter_names[0].c_str());
+      Log_WarningPrintf("Could not find adapter '%s', using first (%s)", g_settings.gpu_adapter.c_str(),
+                        adapter_info.adapter_names[0].c_str());
       adapter_index = 0;
     }
   }
@@ -180,7 +179,7 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
     adapter_index = 0;
   }
 
-  if (!D3D12::Context::Create(temp_dxgi_factory.Get(), adapter_index, debug_device))
+  if (!D3D12::Context::Create(temp_dxgi_factory.Get(), adapter_index, g_settings.gpu_use_debug_device))
     return false;
 
   if (FAILED(hr))
@@ -214,8 +213,7 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view
   return true;
 }
 
-bool D3D12HostDisplay::InitializeRenderDevice(std::string_view shader_cache_directory, bool debug_device,
-                                              bool threaded_presentation)
+bool D3D12HostDisplay::InitializeRenderDevice()
 {
   if (!CreateResources())
     return false;

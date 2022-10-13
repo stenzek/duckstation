@@ -162,8 +162,7 @@ bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
   g_emu_thread->connectDisplaySignals(m_display_widget);
 
-  if (!g_host_display->CreateRenderDevice(wi.value(), g_settings.gpu_adapter, g_settings.gpu_use_debug_device,
-                                          g_settings.gpu_threaded_presentation))
+  if (!g_host_display->CreateRenderDevice(wi.value()))
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
     destroyDisplayWidget(true);
