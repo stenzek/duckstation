@@ -94,6 +94,8 @@ bool RegTestHost::InitializeConfig()
   si.SetStringValue("Audio", "Backend", Settings::GetAudioBackendName(AudioBackend::Null));
   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_VERBOSE));
   si.SetBoolValue("Logging", "LogToConsole", true);
+  si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
+  si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
 
   // disable all sources
   for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)

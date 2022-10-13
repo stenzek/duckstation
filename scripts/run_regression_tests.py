@@ -58,8 +58,8 @@ if __name__ == "__main__":
     parser.add_argument("-runner", action="store", required=True, help="Path to DuckStation regression test runner")
     parser.add_argument("-gamedir", action="store", required=True, help="Directory containing game images")
     parser.add_argument("-destdir", action="store", required=True, help="Base directory to dump frames to")
-    parser.add_argument("-dumpinterval", action="store", type=int, required=True, help="Interval to dump frames at")
-    parser.add_argument("-frames", action="store", type=int, default=3600, help="Number of frames to run")
+    parser.add_argument("-dumpinterval", action="store", type=int, default=600, help="Interval to dump frames at")
+    parser.add_argument("-frames", action="store", type=int, default=36000, help="Number of frames to run")
     parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of proceeses to run")
 
     args = parser.parse_args()
