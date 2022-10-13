@@ -36,6 +36,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
+                                               &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
+                                               Settings::DEFAULT_DISPLAY_ALIGNMENT);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
@@ -95,6 +98,10 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
        "Some games display content in the overscan area, or use it for screen effects. <br>May "
        "not display correctly with the \"All Borders\" setting. \"Only Overscan\" offers a good "
        "compromise between stability and hiding black borders."));
+  dialog->registerWidgetHelp(
+    m_ui.displayAlignment, tr("Position"),
+    qApp->translate("DisplayCropMode", Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
+    tr("Determines the position on the screen when black borders must be added."));
   dialog->registerWidgetHelp(
     m_ui.gpuDownsampleMode, tr("Downsampling"), tr("Disabled"),
     tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
@@ -175,6 +182,12 @@ void DisplaySettingsWidget::setupAdditionalUi()
   {
     m_ui.displayCropMode->addItem(
       qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayAlignment::Count); i++)
+  {
+    m_ui.displayAlignment->addItem(
+      qApp->translate("DisplayAlignment", Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)

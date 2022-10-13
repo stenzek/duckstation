@@ -3403,6 +3403,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
                   &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
 
+  DrawEnumSetting(bsi, "Position", "Determines the position on the screen when black borders must be added.", "Display",
+                  "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
+                  &Settings::GetDisplayAlignmentDisplayName, &Settings::GetDisplayAlignmentDisplayName,
+                  DisplayAlignment::Count);
+
   DrawEnumSetting(bsi, "Downsampling",
                   "Downsamples the rendered image prior to displaying it. Can improve "
                   "overall image quality in mixed 2D/3D games.",
@@ -5038,9 +5043,9 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   bool is_open = true;
   if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    ImGui::TextWrapped(
-      "DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any "
-      "cover images, the user must provide their own source for images.");
+    ImGui::TextWrapped("DuckStation can automatically download covers for games which do not currently have a cover "
+                       "set. We do not host any "
+                       "cover images, the user must provide their own source for images.");
     ImGui::NewLine();
     ImGui::TextWrapped(
       "In the form below, specify the URLs to download covers from, with one template URL per line. The following "
