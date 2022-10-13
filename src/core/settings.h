@@ -243,20 +243,44 @@ struct Settings
   bool log_to_window = false;
   bool log_to_file = false;
 
-  ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
-  ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
-  ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
-  ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
+  ALWAYS_INLINE bool IsUsingCodeCache() const
+  {
+    return (cpu_execution_mode != CPUExecutionMode::Interpreter);
+  }
+  ALWAYS_INLINE bool IsUsingRecompiler() const
+  {
+    return (cpu_execution_mode == CPUExecutionMode::Recompiler);
+  }
+  ALWAYS_INLINE bool IsUsingSoftwareRenderer() const
+  {
+    return (gpu_renderer == GPURenderer::Software);
+  }
+  ALWAYS_INLINE bool IsRunaheadEnabled() const
+  {
+    return (runahead_frames > 0);
+  }
 
   ALWAYS_INLINE PGXPMode GetPGXPMode()
   {
     return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
   }
 
-  ALWAYS_INLINE bool UsingPGXPDepthBuffer() const { return gpu_pgxp_enable && gpu_pgxp_depth_buffer; }
-  ALWAYS_INLINE bool UsingPGXPCPUMode() const { return gpu_pgxp_enable && gpu_pgxp_cpu; }
-  ALWAYS_INLINE float GetPGXPDepthClearThreshold() const { return gpu_pgxp_depth_clear_threshold * 4096.0f; }
-  ALWAYS_INLINE void SetPGXPDepthClearThreshold(float value) { gpu_pgxp_depth_clear_threshold = value / 4096.0f; }
+  ALWAYS_INLINE bool UsingPGXPDepthBuffer() const
+  {
+    return gpu_pgxp_enable && gpu_pgxp_depth_buffer;
+  }
+  ALWAYS_INLINE bool UsingPGXPCPUMode() const
+  {
+    return gpu_pgxp_enable && gpu_pgxp_cpu;
+  }
+  ALWAYS_INLINE float GetPGXPDepthClearThreshold() const
+  {
+    return gpu_pgxp_depth_clear_threshold * 4096.0f;
+  }
+  ALWAYS_INLINE void SetPGXPDepthClearThreshold(float value)
+  {
+    gpu_pgxp_depth_clear_threshold = value / 4096.0f;
+  }
 
   ALWAYS_INLINE bool IsUsingFastmem() const
   {

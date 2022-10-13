@@ -687,7 +687,7 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist)
   if (!HasDisplayTexture())
     return;
 
-  const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight(), m_display_top_margin);
+  const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight());
 
   //   if (!m_post_processing_chain.IsEmpty())
   //   {

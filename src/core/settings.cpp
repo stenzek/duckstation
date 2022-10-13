@@ -1033,9 +1033,8 @@ float Settings::GetDisplayAspectRatioValue() const
       if (!g_host_display)
         return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
 
-      const u32 width = g_host_display->GetWindowWidth();
-      const u32 height = g_host_display->GetWindowHeight() - g_host_display->GetDisplayTopMargin();
-      return static_cast<float>(width) / static_cast<float>(height);
+      return static_cast<float>(g_host_display->GetWindowWidth()) /
+             static_cast<float>(g_host_display->GetWindowHeight());
     }
 
     case DisplayAspectRatio::Custom:
@@ -1051,10 +1050,11 @@ float Settings::GetDisplayAspectRatioValue() const
   }
 }
 
-static std::array<const char*, 3> s_display_alignment_names = {{"LeftOrTop", "Center", "RightOrBottom"}};
-static std::array<const char*, 3> s_display_alignment_display_names = {
-  {TRANSLATABLE("DisplayAlignment", "LeftOrTop"), TRANSLATABLE("DisplayAlignment", "Center"),
-   TRANSLATABLE("DisplayAlignment", "RightOrBottom")}};
+static std::array<const char*, static_cast<size_t>(DisplayAlignment::Count)> s_display_alignment_names = {
+  {"LeftOrTop", "Center", "RightOrBottom"}};
+static std::array<const char*, static_cast<size_t>(DisplayAlignment::Count)> s_display_alignment_display_names = {
+  {TRANSLATABLE("DisplayAlignment", "Left / Top"), TRANSLATABLE("DisplayAlignment", "Center"),
+   TRANSLATABLE("DisplayAlignment", "Right / Bottom")}};
 
 std::optional<DisplayAlignment> Settings::ParseDisplayAlignment(const char* str)
 {

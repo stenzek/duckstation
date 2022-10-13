@@ -295,14 +295,14 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
     *out_scale = scale;
 }
 
-std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin,
+std::tuple<s32, s32, s32, s32> HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height,
                                                               bool apply_aspect_ratio /* = true */) const
 {
   float left, top, width, height, left_padding, top_padding;
-  CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
-                    nullptr, nullptr, apply_aspect_ratio);
+  CalculateDrawRect(window_width, window_height, &left, &top, &width, &height, &left_padding, &top_padding, nullptr,
+                    nullptr, apply_aspect_ratio);
 
-  return std::make_tuple(static_cast<s32>(left + left_padding), static_cast<s32>(top + top_padding) + top_margin,
+  return std::make_tuple(static_cast<s32>(left + left_padding), static_cast<s32>(top + top_padding),
                          static_cast<s32>(width), static_cast<s32>(height));
 }
 
@@ -326,17 +326,17 @@ std::tuple<s32, s32, s32, s32> HostDisplay::CalculateSoftwareCursorDrawRect(s32 
 }
 
 std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,
-                                                                                   s32 window_width, s32 window_height,
-                                                                                   s32 top_margin) const
+                                                                                   s32 window_width,
+                                                                                   s32 window_height) const
 {
   float left, top, width, height, left_padding, top_padding;
   float scale, x_scale;
-  CalculateDrawRect(window_width, window_height - top_margin, &left, &top, &width, &height, &left_padding, &top_padding,
-                    &scale, &x_scale);
+  CalculateDrawRect(window_width, window_height, &left, &top, &width, &height, &left_padding, &top_padding, &scale,
+                    &x_scale);
 
   // convert coordinates to active display region, then to full display region
   const float scaled_display_x = static_cast<float>(window_x) - left_padding;
-  const float scaled_display_y = static_cast<float>(window_y) - top_padding + static_cast<float>(top_margin);
+  const float scaled_display_y = static_cast<float>(window_y) - top_padding;
 
   // scale back to internal resolution
   const float display_x = scaled_display_x / scale / x_scale;

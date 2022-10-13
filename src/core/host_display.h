@@ -23,13 +23,6 @@ enum class RenderAPI : u32
 class HostDisplay
 {
 public:
-  enum class Alignment
-  {
-    LeftOrTop,
-    Center,
-    RightOrBottom
-  };
-
   struct AdapterAndModeList
   {
     std::vector<std::string> adapter_names;
@@ -62,7 +55,6 @@ public:
   }
 
   ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture; }
-  ALWAYS_INLINE s32 GetDisplayTopMargin() const { return m_display_top_margin; }
   ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
   ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
   ALWAYS_INLINE float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
@@ -177,9 +169,6 @@ public:
   /// Returns the amount of GPU time utilized since the last time this method was called.
   virtual float GetAndResetAccumulatedGPUTime();
 
-  void SetDisplayTopMargin(s32 height) { m_display_top_margin = height; }
-  void SetDisplayAlignment(Alignment alignment) { m_display_alignment = alignment; }
-
   /// Sets the software cursor to the specified texture. Ownership of the texture is transferred.
   void SetSoftwareCursor(std::unique_ptr<GPUTexture> texture, float scale = 1.0f);
 
@@ -193,12 +182,12 @@ public:
   void ClearSoftwareCursor();
 
   /// Helper function for computing the draw rectangle in a larger window.
-  std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height, s32 top_margin,
+  std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height,
                                                    bool apply_aspect_ratio = true) const;
 
   /// Helper function for converting window coordinates to display coordinates.
   std::tuple<float, float> ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y, s32 window_width,
-                                                                        s32 window_height, s32 top_margin) const;
+                                                                        s32 window_height) const;
 
   /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
   bool WriteTextureToFile(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, std::string filename,
@@ -250,9 +239,6 @@ protected:
   s32 m_display_texture_view_y = 0;
   s32 m_display_texture_view_width = 0;
   s32 m_display_texture_view_height = 0;
-
-  s32 m_display_top_margin = 0;
-  Alignment m_display_alignment = Alignment::Center;
 
   std::unique_ptr<GPUTexture> m_cursor_texture;
   float m_cursor_texture_scale = 1.0f;
