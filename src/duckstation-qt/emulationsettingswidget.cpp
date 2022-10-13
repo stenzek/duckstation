@@ -14,6 +14,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 
   m_ui.setupUi(this);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "Main", "SyncToHostRefreshRate", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayAllFrames, "Display", "DisplayAllFrames", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, "Main", "RewindEnable", false);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, "Main", "RewindFrequency", 10.0f);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
@@ -83,6 +85,17 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
     m_ui.turboSpeed, tr("Turbo Speed"), tr("User Preference"),
     tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take "
        "priority over fast forwarding if both hotkeys are pressed/toggled."));
+  dialog->registerWidgetHelp(
+    m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
+    tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
+       "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
+       "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
+       "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
+       "should disable this option."));
+  dialog->registerWidgetHelp(m_ui.displayAllFrames, tr("Optimal Frame Pacing"), tr("Unchecked"),
+                             tr("Enable this option will ensure every frame the console renders is displayed to the "
+                                "screen, for optimal frame pacing. If you are having difficulties maintaining full "
+                                "speed, or are getting audio glitches, try disabling this option."));
   dialog->registerWidgetHelp(
     m_ui.rewindEnable, tr("Rewinding"), tr("Unchecked"),
     tr("<b>Enable Rewinding:</b> Saves state periodically so you can rewind any mistakes while playing.<br> "

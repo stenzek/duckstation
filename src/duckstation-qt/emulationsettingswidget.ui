@@ -62,6 +62,24 @@
       <item row="2" column="1">
        <widget class="QComboBox" name="turboSpeed"/>
       </item>
+      <item row="3" column="0" colspan="2">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="syncToHostRefreshRate">
+          <property name="text">
+           <string>Sync To Host Refresh Rate</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QCheckBox" name="displayAllFrames">
+          <property name="text">
+           <string>Optimal Frame Pacing</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
    </item>

@@ -64,6 +64,13 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="vsync">
+          <property name="text">
+           <string>VSync</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="gpuThread">
           <property name="text">
@@ -78,24 +85,10 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="vsync">
-          <property name="text">
-           <string>VSync</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1">
-         <widget class="QCheckBox" name="syncToHostRefreshRate">
+         <widget class="QCheckBox" name="blitSwapChain">
           <property name="text">
-           <string>Sync To Host Refresh Rate</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="displayAllFrames">
-          <property name="text">
-           <string>Optimal Frame Pacing</string>
+           <string>Use Blit Swap Chain</string>
           </property>
          </widget>
         </item>
@@ -212,31 +205,10 @@
       <string>On-Screen Display</string>
      </property>
      <layout class="QGridLayout" name="formLayout_5">
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="showOSDMessages">
-        <property name="text">
-         <string>Show OSD Messages</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QCheckBox" name="showSpeed">
         <property name="text">
          <string>Show Emulation Speed</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="showFPS">
-        <property name="text">
-         <string>Show FPS</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="showResolution">
-        <property name="text">
-         <string>Show Resolution</string>
         </property>
        </widget>
       </item>
@@ -247,10 +219,45 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="showOSDMessages">
+        <property name="text">
+         <string>Show OSD Messages</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="showFPS">
+        <property name="text">
+         <string>Show FPS</string>
+        </property>
+       </widget>
+      </item>
       <item row="4" column="1">
        <widget class="QCheckBox" name="showInput">
         <property name="text">
          <string>Show Controller Input</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="showResolution">
+        <property name="text">
+         <string>Show Resolution</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="showGPU">
+        <property name="text">
+         <string>Show GPU Usage</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QCheckBox" name="showSettings">
+        <property name="text">
+         <string>Show Settings Overlay</string>
         </property>
        </widget>
       </item>
