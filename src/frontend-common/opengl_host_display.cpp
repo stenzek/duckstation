@@ -620,9 +620,7 @@ bool OpenGLHostDisplay::Render(bool skip_present)
   }
 
   glDisable(GL_SCISSOR_TEST);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
 
   RenderDisplay();
 
@@ -652,22 +650,23 @@ bool OpenGLHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
   }
 
   glDisable(GL_SCISSOR_TEST);
-  texture.BindFramebuffer(GL_FRAMEBUFFER);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
 
-  if (HasDisplayTexture())
+  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
+
+  if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
-    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+    ApplyPostProcessingChain(texture.GetGLFramebufferID(), left, height - top - draw_height, draw_width, draw_height,
+                              static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
+                              m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                              width, height);
+  }
+  else
+  {
+    texture.BindFramebuffer(GL_FRAMEBUFFER);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    if (!m_post_processing_chain.IsEmpty())
-    {
-      ApplyPostProcessingChain(texture.GetGLFramebufferID(), left, height - top - draw_height, draw_width, draw_height,
-                               static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
-                               m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
-                               width, height);
-    }
-    else
+    if (HasDisplayTexture())
     {
       RenderDisplay(left, height - top - draw_height, draw_width, draw_height,
                     static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x, m_display_texture_view_y,
@@ -693,12 +692,9 @@ void OpenGLHostDisplay::RenderImGui()
 
 void OpenGLHostDisplay::RenderDisplay()
 {
-  if (!HasDisplayTexture())
-    return;
-
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight());
 
-  if (!m_post_processing_chain.IsEmpty())
+  if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(0, left, GetWindowHeight() - top - height, width, height,
                              static_cast<GL::Texture*>(m_display_texture), m_display_texture_view_x,
@@ -706,6 +702,12 @@ void OpenGLHostDisplay::RenderDisplay()
                              GetWindowWidth(), GetWindowHeight());
     return;
   }
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  if (!HasDisplayTexture())
+    return;
 
   RenderDisplay(left, GetWindowHeight() - top - height, width, height, static_cast<GL::Texture*>(m_display_texture),
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
@@ -877,6 +879,7 @@ bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
     m_post_processing_ubo->Unbind();
   }
 
+  m_post_processing_timer.Reset();
   return true;
 }
 
@@ -924,7 +927,7 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   }
 
   // downsample/upsample - use same viewport for remainder
-  m_post_processing_input_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
+  m_post_processing_input_texture.BindFramebuffer(GL_FRAMEBUFFER);
   glClear(GL_COLOR_BUFFER_BIT);
   RenderDisplay(final_left, target_height - final_top - final_height, final_width, final_height, texture,
                 texture_view_x, texture_view_y, texture_view_width, texture_view_height, IsUsingLinearFiltering());
@@ -943,15 +946,8 @@ void OpenGLHostDisplay::ApplyPostProcessingChain(GLuint final_target, s32 final_
   for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
   {
     PostProcessingStage& pps = m_post_processing_stages[i];
-    if (i == final_stage)
-    {
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, final_target);
-    }
-    else
-    {
-      pps.output_texture.BindFramebuffer(GL_DRAW_FRAMEBUFFER);
-      glClear(GL_COLOR_BUFFER_BIT);
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, (i == final_stage) ? final_target : pps.output_texture.GetGLFramebufferID());
+    glClear(GL_COLOR_BUFFER_BIT);
 
     pps.program.Bind();
 

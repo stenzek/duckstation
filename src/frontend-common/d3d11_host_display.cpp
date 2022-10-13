@@ -21,6 +21,8 @@ Log_SetChannel(D3D11HostDisplay);
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 
+static constexpr std::array<float, 4> s_clear_color = {};
+
 D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
@@ -706,10 +708,6 @@ bool D3D11HostDisplay::Render(bool skip_present)
   if (m_vsync && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  static constexpr std::array<float, 4> clear_color = {};
-  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color.data());
-  m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
-
   RenderDisplay();
 
   if (ImGui::GetCurrentContext())
@@ -746,7 +744,7 @@ bool D3D11HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
 
   if (HasDisplayTexture())
   {
-    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
 
     if (!m_post_processing_chain.IsEmpty())
     {
@@ -783,12 +781,9 @@ void D3D11HostDisplay::RenderImGui()
 
 void D3D11HostDisplay::RenderDisplay()
 {
-  if (!HasDisplayTexture())
-    return;
-
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight());
 
-  if (!m_post_processing_chain.IsEmpty())
+  if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
     ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height,
                              static_cast<D3D11::Texture*>(m_display_texture), m_display_texture_view_x,
@@ -796,6 +791,12 @@ void D3D11HostDisplay::RenderDisplay()
                              GetWindowWidth(), GetWindowHeight());
     return;
   }
+
+  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), s_clear_color.data());
+  m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
+
+  if (!HasDisplayTexture())
+    return;
 
   RenderDisplay(left, top, width, height, static_cast<D3D11::Texture*>(m_display_texture), m_display_texture_view_x,
                 m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
@@ -1048,8 +1049,6 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
                                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                                                 s32 texture_view_height, u32 target_width, u32 target_height)
 {
-  static constexpr std::array<float, 4> clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
-
   if (!CheckPostProcessingRenderTargets(target_width, target_height))
   {
     RenderDisplay(final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
@@ -1058,7 +1057,7 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   }
 
   // downsample/upsample - use same viewport for remainder
-  m_context->ClearRenderTargetView(m_post_processing_input_texture.GetD3DRTV(), clear_color.data());
+  m_context->ClearRenderTargetView(m_post_processing_input_texture.GetD3DRTV(), s_clear_color.data());
   m_context->OMSetRenderTargets(1, m_post_processing_input_texture.GetD3DRTVArray(), nullptr);
   RenderDisplay(final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
                 texture_view_width, texture_view_height, IsUsingLinearFiltering());
@@ -1075,15 +1074,9 @@ void D3D11HostDisplay::ApplyPostProcessingChain(ID3D11RenderTargetView* final_ta
   for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
   {
     PostProcessingStage& pps = m_post_processing_stages[i];
-    if (i == final_stage)
-    {
-      m_context->OMSetRenderTargets(1, &final_target, nullptr);
-    }
-    else
-    {
-      m_context->ClearRenderTargetView(pps.output_texture.GetD3DRTV(), clear_color.data());
-      m_context->OMSetRenderTargets(1, pps.output_texture.GetD3DRTVArray(), nullptr);
-    }
+    ID3D11RenderTargetView* rtv = (i == final_stage) ? final_target : pps.output_texture.GetD3DRTV();
+    m_context->ClearRenderTargetView(rtv, s_clear_color.data());
+    m_context->OMSetRenderTargets(1, &rtv, nullptr);
 
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->VSSetShader(pps.vertex_shader.Get(), nullptr, 0);

@@ -713,7 +713,7 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
                                             "VulkanHostDisplay::RenderScreenshot: %ux%u", width, height);
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
+  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
 
   if (!m_post_processing_chain.IsEmpty())
   {
@@ -1025,6 +1025,7 @@ bool VulkanHostDisplay::SetPostProcessingChain(const std::string_view& config)
   }
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_post_processing_ubo.GetBuffer(),
                               "Post Processing Uniform Buffer");
+  m_post_processing_timer.Reset();
   return true;
 }
 
