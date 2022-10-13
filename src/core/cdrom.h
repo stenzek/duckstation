@@ -82,7 +82,7 @@ private:
     AUDIO_FIFO_SIZE = 44100 * 2,
     AUDIO_FIFO_LOW_WATERMARK = 10,
 
-    RESET_TICKS = 400000,
+    INIT_TICKS = 400000,
     ID_READ_TICKS = 33868,
     MOTOR_ON_RESPONSE_TICKS = 400000,
 
@@ -113,7 +113,7 @@ private:
     MotorOn = 0x07,
     Stop = 0x08,
     Pause = 0x09,
-    Reset = 0x0A,
+    Init = 0x0A,
     Mute = 0x0B,
     Demute = 0x0C,
     Setfilter = 0x0D,
@@ -131,7 +131,7 @@ private:
     Test = 0x19,
     GetID = 0x1A,
     ReadS = 0x1B,
-    Init = 0x1C,
+    Reset = 0x1C,
     GetQ = 0x1D,
     ReadTOC = 0x1E,
     VideoCD = 0x1F,

@@ -39,9 +39,6 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
-                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
-                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLinearFiltering, "Display", "LinearFiltering", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayIntegerScaling, "Display", "IntegerScaling", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayStretch, "Display", "Stretch", false);
@@ -102,10 +99,6 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
     m_ui.displayAlignment, tr("Position"),
     qApp->translate("DisplayCropMode", Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
     tr("Determines the position on the screen when black borders must be added."));
-  dialog->registerWidgetHelp(
-    m_ui.gpuDownsampleMode, tr("Downsampling"), tr("Disabled"),
-    tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
-       "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
                              tr("Uses bilinear texture filtering when displaying the console's framebuffer to the "
                                 "screen. <br>Disabling filtering "
@@ -188,12 +181,6 @@ void DisplaySettingsWidget::setupAdditionalUi()
   {
     m_ui.displayAlignment->addItem(
       qApp->translate("DisplayAlignment", Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
-  {
-    m_ui.gpuDownsampleMode->addItem(
-      qApp->translate("GPUDownsampleMode", Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
   }
 }
 

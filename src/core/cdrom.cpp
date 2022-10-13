@@ -764,9 +764,9 @@ bool CDROM::HasPendingDiscEvent() const
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
 {
-  if (command == Command::Init)
+  if (command == Command::Reset)
   {
-    // Init takes longer.
+    // Full reset takes longer.
     return 120000;
   }
 
@@ -1349,11 +1349,11 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
       return;
     }
 
-    case Command::Reset:
+    case Command::Init:
     {
       Log_DebugPrintf("CDROM reset command");
 
-      if (m_command_second_response == Command::Reset)
+      if (m_command_second_response == Command::Init)
       {
         // still pending
         EndCommand();
@@ -1367,7 +1367,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
 
       SoftReset(ticks_late);
 
-      QueueCommandSecondResponse(Command::Reset, RESET_TICKS);
+      QueueCommandSecondResponse(Command::Init, INIT_TICKS);
       return;
     }
     break;
@@ -1666,7 +1666,7 @@ void CDROM::ExecuteCommandSecondResponse(TickCount ticks_late)
 
     case Command::ReadTOC:
     case Command::Pause:
-    case Command::Reset:
+    case Command::Init:
     case Command::MotorOn:
     case Command::Stop:
       DoStatSecondResponse();

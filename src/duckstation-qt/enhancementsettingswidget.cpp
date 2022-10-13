@@ -14,6 +14,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
   setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
+                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
+                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
@@ -41,9 +44,14 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
   updateScaledDitheringEnabled();
 
   connect(m_ui.pgxpEnable, &QCheckBox::stateChanged, this, &EnhancementSettingsWidget::updatePGXPSettingsEnabled);
-  connect(m_ui.pgxpTextureCorrection, &QCheckBox::stateChanged, this, &EnhancementSettingsWidget::updatePGXPSettingsEnabled);
+  connect(m_ui.pgxpTextureCorrection, &QCheckBox::stateChanged, this,
+          &EnhancementSettingsWidget::updatePGXPSettingsEnabled);
   updatePGXPSettingsEnabled();
 
+  dialog->registerWidgetHelp(
+    m_ui.gpuDownsampleMode, tr("Downsampling"), tr("Disabled"),
+    tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
+       "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
     tr(
@@ -138,6 +146,12 @@ void EnhancementSettingsWidget::setupAdditionalUi()
   {
     m_ui.textureFiltering->addItem(
       qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
+  {
+    m_ui.gpuDownsampleMode->addItem(
+      qApp->translate("GPUDownsampleMode", Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
   }
 }
 
