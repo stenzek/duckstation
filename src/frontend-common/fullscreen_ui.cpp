@@ -33,6 +33,7 @@
 #include "imgui_manager.h"
 #include "imgui_stdlib.h"
 #include "input_manager.h"
+#include "postprocessing_chain.h"
 #include "scmversion/scmversion.h"
 #include "util/ini_settings_interface.h"
 #include <atomic>
@@ -108,6 +109,7 @@ using ImGuiFullscreen::MulAlpha;
 using ImGuiFullscreen::NavButton;
 using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
+using ImGuiFullscreen::OpenConfirmMessageDialog;
 using ImGuiFullscreen::OpenFileSelector;
 using ImGuiFullscreen::OpenInputStringDialog;
 using ImGuiFullscreen::PopPrimaryColor;
@@ -157,6 +159,7 @@ enum class SettingsPage
   Hotkey,
   MemoryCards,
   Display,
+  PostProcessing,
   Audio,
   Achievements,
   Advanced,
@@ -263,6 +266,7 @@ static void DrawBIOSSettingsPage();
 static void DrawConsoleSettingsPage();
 static void DrawEmulationSettingsPage();
 static void DrawDisplaySettingsPage();
+static void DrawPostProcessingSettingsPage();
 static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
 static void DrawControllerSettingsPage();
@@ -339,6 +343,8 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
+static void PopulatePostProcessingChain();
+static void SavePostProcessingChain();
 static void BeginInputBinding(SettingsInterface* bsi, Controller::ControllerBindingType type,
                               const std::string_view& section, const std::string_view& key,
                               const std::string_view& display_name);
@@ -354,6 +360,7 @@ static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 static std::vector<std::string> s_graphics_adapter_list_cache;
 static std::vector<std::string> s_fullscreen_mode_list_cache;
+static FrontendCommon::PostProcessingChain s_postprocessing_chain;
 static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 static std::atomic_bool s_settings_changed{false};
 static std::atomic_bool s_game_settings_changed{false};
@@ -562,6 +569,9 @@ bool FullscreenUI::Initialize()
   if (!System::IsValid())
     SwitchToLanding();
 
+  SwitchToSettings();
+  s_settings_page = SettingsPage::PostProcessing;
+
   return true;
 }
 
@@ -703,6 +713,7 @@ void FullscreenUI::Shutdown()
   s_cover_image_map.clear();
   s_game_list_sorted_entries = {};
   s_game_list_directories_cache = {};
+  s_postprocessing_chain.ClearStages();
   s_fullscreen_mode_list_cache = {};
   s_graphics_adapter_list_cache = {};
   s_hotkey_list_cache = {};
@@ -1996,6 +2007,7 @@ void FullscreenUI::SwitchToSettings()
   s_game_settings_interface.reset();
 
   PopulateGraphicsAdapterList();
+  PopulatePostProcessingChain();
 
   s_current_main_window = MainWindowType::Settings;
   s_settings_page = SettingsPage::Interface;
@@ -2093,7 +2105,7 @@ void FullscreenUI::DrawSettingsWindow()
   ImVec2 heading_size = ImVec2(
     io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
 
-  const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
+  const float bg_alpha = System::IsValid() ? (s_settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
                             ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
@@ -2101,25 +2113,25 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const char* global_icons[] = {
-      ICON_FA_WINDOW_MAXIMIZE,     ICON_FA_HDD,     ICON_FA_SLIDERS_H, ICON_FA_MICROCHIP, ICON_FA_MAGIC,
-      ICON_FA_HEADPHONES,          ICON_FA_GAMEPAD, ICON_FA_KEYBOARD,  ICON_FA_SD_CARD,   ICON_FA_TROPHY,
-      ICON_FA_EXCLAMATION_TRIANGLE};
+      ICON_FA_WINDOW_MAXIMIZE, ICON_FA_HDD,          ICON_FA_SLIDERS_H,  ICON_FA_MICROCHIP,
+      ICON_FA_MAGIC,           ICON_FA_PAINT_ROLLER, ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
+      ICON_FA_KEYBOARD,        ICON_FA_SD_CARD,      ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr const char* per_game_icons[] = {
       ICON_FA_PARAGRAPH, ICON_FA_HDD,        ICON_FA_SLIDERS_H,
       ICON_FA_MAGIC,     ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
       ICON_FA_SD_CARD,   ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr SettingsPage global_pages[] = {
-      SettingsPage::Interface,   SettingsPage::Console,      SettingsPage::Emulation,  SettingsPage::BIOS,
-      SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller, SettingsPage::Hotkey,
-      SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
+      SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
+      SettingsPage::Display,   SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
+      SettingsPage::Hotkey,    SettingsPage::MemoryCards,    SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr SettingsPage per_game_pages[] = {
       SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation,
       SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
       {"Summary", "Interface Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
-       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Audio Settings",
-       "Achievements Settings", "Advanced Settings"}};
+       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Post-Processing Settings",
+       "Audio Settings", "Achievements Settings", "Advanced Settings"}};
 
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
@@ -2213,6 +2225,10 @@ void FullscreenUI::DrawSettingsWindow()
 
       case SettingsPage::Display:
         DrawDisplaySettingsPage();
+        break;
+
+      case SettingsPage::PostProcessing:
+        DrawPostProcessingSettingsPage();
         break;
 
       case SettingsPage::Audio:
@@ -3484,6 +3500,351 @@ void FullscreenUI::DrawDisplaySettingsPage()
   DrawToggleSetting(bsi, "Preload Replacement Textures",
                     "Loads all replacement texture to RAM, reducing stuttering at runtime.", "TextureReplacements",
                     "PreloadTextures", false);
+
+  EndMenuButtons();
+}
+
+void FullscreenUI::PopulatePostProcessingChain()
+{
+  std::string chain_value(GetEditingSettingsInterface()->GetStringValue("Display", "PostProcessChain", ""));
+  s_postprocessing_chain.CreateFromString(chain_value);
+}
+
+void FullscreenUI::SavePostProcessingChain()
+{
+  SettingsInterface* bsi = GetEditingSettingsInterface();
+  const std::string config(s_postprocessing_chain.GetConfigString());
+  bsi->SetStringValue("Display", "PostProcessChain", config.c_str());
+  if (bsi->GetBoolValue("Display", "PostProcessing", false))
+    g_host_display->SetPostProcessingChain(config);
+  if (IsEditingGameSettings(bsi))
+    s_game_settings_interface->Save();
+  else
+    Host::CommitBaseSettingChanges();
+}
+
+void FullscreenUI::DrawPostProcessingSettingsPage()
+{
+  SettingsInterface* bsi = GetEditingSettingsInterface();
+  const bool game_settings = IsEditingGameSettings(bsi);
+
+  BeginMenuButtons();
+
+  MenuHeading("Controls");
+
+  DrawToggleSetting(bsi, ICON_FA_MAGIC " Enable Post Processing",
+                    "If not enabled, the current post processing chain will be ignored.", "Display", "PostProcessing",
+                    false);
+
+  if (MenuButton(ICON_FA_SEARCH " Reload Shaders", "Reloads the shaders from disk, applying any changes.",
+                 bsi->GetBoolValue("Display", "PostProcessing", false)))
+  {
+    const std::string chain(bsi->GetStringValue("Display", "PostProcessChain", ""));
+    g_host_display->SetPostProcessingChain(chain);
+    if (chain.empty())
+      ShowToast(std::string(), "Post-processing chain is empty.");
+    else
+      ShowToast(std::string(), "Post-processing shaders reloaded.");
+  }
+
+  MenuHeading("Operations");
+
+  if (MenuButton(ICON_FA_PLUS " Add Shader", "Adds a new shader to the chain."))
+  {
+    ImGuiFullscreen::ChoiceDialogOptions options;
+    for (std::string& name : FrontendCommon::PostProcessingChain::GetAvailableShaderNames())
+      options.emplace_back(std::move(name), false);
+
+    OpenChoiceDialog(
+      ICON_FA_PLUS " Add Shader", false, std::move(options), [](s32 index, const std::string& title, bool checked) {
+        if (index < 0)
+          return;
+
+        if (s_postprocessing_chain.AddStage(title))
+        {
+          ShowToast(std::string(),
+                    fmt::format("Shader {} added as stage {}.", title, s_postprocessing_chain.GetStageCount()));
+          SavePostProcessingChain();
+        }
+        else
+        {
+          ShowToast(std::string(), fmt::format("Failed to load shader {}. It may be invalid.", title));
+        }
+
+        CloseChoiceDialog();
+      });
+  }
+
+  if (MenuButton(ICON_FA_TIMES " Clear Shaders", "Clears a shader from the chain."))
+  {
+    OpenConfirmMessageDialog(
+      ICON_FA_TIMES " Clear Shaders",
+      "Are you sure you want to clear the current post-processing chain? All configuration will be lost.",
+      [](bool confirmed) {
+        if (!confirmed)
+          return;
+
+        s_postprocessing_chain.ClearStages();
+        ShowToast(std::string(), "Post-processing chain cleared.");
+      });
+  }
+
+  SmallString str;
+  SmallString tstr;
+  for (u32 stage_index = 0; stage_index < s_postprocessing_chain.GetStageCount();)
+  {
+    FrontendCommon::PostProcessingShader& stage = s_postprocessing_chain.GetShaderStage(stage_index);
+    str.Fmt("Stage {}: {}", stage_index + 1, stage.GetName());
+    MenuHeading(str);
+
+    if (MenuButton(ICON_FA_TIMES " Remove From Chain", "Removes this shader from the chain."))
+    {
+      ShowToast(std::string(), fmt::format("Removed stage {} ({}).", stage_index + 1, stage.GetName()));
+      s_postprocessing_chain.RemoveStage(stage_index);
+      continue;
+    }
+
+    if (MenuButton(ICON_FA_ARROW_UP " Move Up", "Moves this shader higher in the chain, applying it earlier.",
+                   (stage_index > 0)))
+    {
+      s_postprocessing_chain.MoveStageUp(stage_index);
+      continue;
+    }
+
+    if (MenuButton(ICON_FA_ARROW_DOWN " Move Down", "Moves this shader lower in the chain, applying it later.",
+                   (stage_index != (s_postprocessing_chain.GetStageCount() - 1))))
+    {
+      s_postprocessing_chain.MoveStageDown(stage_index);
+      continue;
+    }
+
+    for (FrontendCommon::PostProcessingShader::Option& opt : stage.GetOptions())
+    {
+      switch (opt.type)
+      {
+        case FrontendCommon::PostProcessingShader::Option::Type::Bool:
+        {
+          bool value = (opt.value[0].int_value != 0);
+          tstr.Fmt(ICON_FA_COGS " {}", opt.ui_name);
+          str.Fmt("Default: {}", (opt.default_value[0].int_value != 0) ? "Enabled" : "Disabled");
+          if (ToggleButton(tstr, str, &value))
+          {
+            opt.value[0].int_value = (value != 0);
+            SavePostProcessingChain();
+          }
+        }
+        break;
+
+        case FrontendCommon::PostProcessingShader::Option::Type::Float:
+        {
+          tstr.Fmt(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
+          str.Fmt("Value: {} | Default: {} | Minimum: {} | Maximum: {}", opt.value[0].float_value,
+                  opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
+          if (MenuButton(tstr, str))
+            ImGui::OpenPopup(tstr);
+
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+          ImGui::PushFont(g_large_font);
+          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+                                                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+          ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+          bool is_open = true;
+          if (ImGui::BeginPopupModal(tstr, &is_open,
+                                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+          {
+            BeginMenuButtons();
+
+            const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+
+#if 0
+            for (u32 i = 0; i < opt.vector_size; i++)
+            {
+              static constexpr const char* components[] = { "X", "Y", "Z", "W" };
+              if (opt.vector_size == 1)
+                tstr.Assign("##value");
+              else
+                tstr.Fmt("{}##value{}", components[i], i);
+
+              ImGui::SetNextItemWidth(end);
+              if (ImGui::SliderFloat(tstr, &opt.value[i].float_value, opt.min_value[i].float_value,
+                opt.max_value[i].float_value, "%f", ImGuiSliderFlags_NoInput))
+              {
+                SavePostProcessingChain();
+              }
+            }
+#else
+            ImGui::SetNextItemWidth(end);
+            switch (opt.vector_size)
+            {
+              case 1:
+              {
+                if (ImGui::SliderFloat("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                       opt.max_value[0].float_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 2:
+              {
+                if (ImGui::SliderFloat2("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                        opt.max_value[0].float_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 3:
+              {
+                if (ImGui::SliderFloat3("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                        opt.max_value[0].float_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 4:
+              {
+                if (ImGui::SliderFloat4("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                        opt.max_value[0].float_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+            }
+#endif
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+            if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                         ImVec2(0.5f, 0.0f)))
+            {
+              ImGui::CloseCurrentPopup();
+            }
+            EndMenuButtons();
+
+            ImGui::EndPopup();
+          }
+
+          ImGui::PopStyleVar(3);
+          ImGui::PopFont();
+        }
+        break;
+
+        case FrontendCommon::PostProcessingShader::Option::Type::Int:
+        {
+          tstr.Fmt(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
+          str.Fmt("Value: {} | Default: {} | Minimum: {} | Maximum: {}", opt.value[0].int_value,
+                  opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
+          if (MenuButton(tstr, str))
+            ImGui::OpenPopup(tstr);
+
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+          ImGui::PushFont(g_large_font);
+          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+                                                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+          ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+          bool is_open = true;
+          if (ImGui::BeginPopupModal(tstr, &is_open,
+                                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+          {
+            BeginMenuButtons();
+
+            const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+
+#if 0
+            for (u32 i = 0; i < opt.vector_size; i++)
+            {
+              static constexpr const char* components[] = { "X", "Y", "Z", "W" };
+              if (opt.vector_size == 1)
+                tstr.Assign("##value");
+              else
+                tstr.Fmt("{}##value{}", components[i], i);
+
+              ImGui::SetNextItemWidth(end);
+              if (ImGui::SliderInt(tstr, &opt.value[i].int_value, opt.min_value[i].int_value,
+                opt.max_value[i].int_value, "%d", ImGuiSliderFlags_NoInput))
+              {
+                SavePostProcessingChain();
+              }
+            }
+#else
+            ImGui::SetNextItemWidth(end);
+            switch (opt.vector_size)
+            {
+              case 1:
+              {
+                if (ImGui::SliderInt("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                     opt.max_value[0].int_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 2:
+              {
+                if (ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                      opt.max_value[0].int_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 3:
+              {
+                if (ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                      opt.max_value[0].int_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+
+              case 4:
+              {
+                if (ImGui::SliderInt4("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                      opt.max_value[0].int_value))
+                {
+                  SavePostProcessingChain();
+                }
+              }
+              break;
+            }
+#endif
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+            if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                         ImVec2(0.5f, 0.0f)))
+            {
+              ImGui::CloseCurrentPopup();
+            }
+            EndMenuButtons();
+
+            ImGui::EndPopup();
+          }
+
+          ImGui::PopStyleVar(3);
+          ImGui::PopFont();
+        }
+        break;
+      }
+    }
+
+    stage_index++;
+  }
 
   EndMenuButtons();
 }
