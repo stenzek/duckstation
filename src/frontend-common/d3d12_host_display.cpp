@@ -2,6 +2,7 @@
 #include "common/assert.h"
 #include "common/d3d11/shader_compiler.h"
 #include "common/d3d12/context.h"
+#include "common/d3d12/shader_cache.h"
 #include "common/d3d12/util.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -14,6 +15,8 @@
 #include <array>
 #include <dxgi1_5.h>
 Log_SetChannel(D3D12HostDisplay);
+
+static constexpr const std::array<float, 4> s_clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
 
 D3D12HostDisplay::D3D12HostDisplay() = default;
 
@@ -501,11 +504,28 @@ HostDisplay::AdapterAndModeList D3D12HostDisplay::GetAdapterAndModeList()
 bool D3D12HostDisplay::CreateResources()
 {
   D3D12::RootSignatureBuilder rsbuilder;
-  rsbuilder.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+  rsbuilder.Add32BitConstants(0, 4, D3D12_SHADER_VISIBILITY_VERTEX);
   rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
   rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
   m_display_root_signature = rsbuilder.Create();
   if (!m_display_root_signature)
+    return false;
+
+  rsbuilder.SetInputAssemblerFlag();
+  rsbuilder.Add32BitConstants(0, FrontendCommon::PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD / sizeof(u32),
+                              D3D12_SHADER_VISIBILITY_ALL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+  m_post_processing_root_signature = rsbuilder.Create();
+  if (!m_post_processing_root_signature)
+    return false;
+
+  rsbuilder.SetInputAssemblerFlag();
+  rsbuilder.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+  rsbuilder.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+  m_post_processing_cb_root_signature = rsbuilder.Create();
+  if (!m_post_processing_cb_root_signature)
     return false;
 
   D3D12::GraphicsPipelineBuilder gpbuilder;
@@ -545,20 +565,19 @@ bool D3D12HostDisplay::CreateResources()
 
   g_d3d12_context->GetDevice()->CreateSampler(&desc, m_linear_sampler.cpu_handle);
 
-  if (!m_display_uniform_buffer.Create(DISPLAY_UNIFORM_BUFFER_SIZE))
-    return false;
-
   return true;
 }
 
 void D3D12HostDisplay::DestroyResources()
 {
-  //   m_post_processing_chain.ClearStages();
-  //   m_post_processing_input_texture.Destroy();
-  //   m_post_processing_stages.clear();
+  m_post_processing_cbuffer.Destroy(false);
+  m_post_processing_chain.ClearStages();
+  m_post_processing_input_texture.Destroy();
+  m_post_processing_stages.clear();
+  m_post_processing_cb_root_signature.Reset();
+  m_post_processing_root_signature.Reset();
 
   m_readback_staging_texture.Destroy(false);
-  m_display_uniform_buffer.Destroy(false);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_linear_sampler);
   g_d3d12_context->GetSamplerHeapManager().Free(&m_point_sampler);
   m_software_cursor_pipeline.Reset();
@@ -596,16 +615,11 @@ bool D3D12HostDisplay::Render(bool skip_present)
     return false;
   }
 
-  static constexpr std::array<float, 4> clear_color = {};
   D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
   m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-  swap_chain_buf.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-  cmdlist->ClearRenderTargetView(swap_chain_buf.GetRTVOrDSVDescriptor(), clear_color.data(), 0, nullptr);
-  cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
-
-  RenderDisplay(cmdlist);
+  RenderDisplay(cmdlist, &swap_chain_buf);
 
   if (ImGui::GetCurrentContext())
     RenderImGui(cmdlist);
@@ -637,18 +651,28 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
     return false;
   }
 
-  static constexpr std::array<float, 4> clear_color = {};
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-  render_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-  cmdlist->ClearRenderTargetView(render_texture.GetRTVOrDSVDescriptor(), clear_color.data(), 0, nullptr);
-  cmdlist->OMSetRenderTargets(1, &render_texture.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
 
-  if (HasDisplayTexture())
+  if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
-    const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height, 0);
-    RenderDisplay(cmdlist, left, top, draw_width, draw_height, static_cast<D3D12::Texture*>(m_display_texture),
-                  m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                  m_display_texture_view_height, IsUsingLinearFiltering());
+    ApplyPostProcessingChain(cmdlist, &render_texture, left, top, width, height,
+                             static_cast<D3D12::Texture*>(m_display_texture), m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             width, height);
+  }
+  else
+  {
+    render_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdlist->ClearRenderTargetView(render_texture.GetRTVOrDSVDescriptor(), s_clear_color.data(), 0, nullptr);
+    cmdlist->OMSetRenderTargets(1, &render_texture.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+
+    if (HasDisplayTexture())
+    {
+      RenderDisplay(cmdlist, left, top, draw_width, draw_height, static_cast<D3D12::Texture*>(m_display_texture),
+                    m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                    m_display_texture_view_height, IsUsingLinearFiltering());
+    }
   }
 
   cmdlist->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
@@ -682,21 +706,25 @@ void D3D12HostDisplay::RenderImGui(ID3D12GraphicsCommandList* cmdlist)
   ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData());
 }
 
-void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist)
+void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, D3D12::Texture* swap_chain_buf)
 {
-  if (!HasDisplayTexture())
-    return;
-
   const auto [left, top, width, height] = CalculateDrawRect(GetWindowWidth(), GetWindowHeight());
 
-  //   if (!m_post_processing_chain.IsEmpty())
-  //   {
-  //     ApplyPostProcessingChain(m_swap_chain_rtv.Get(), left, top, width, height, m_display_texture_handle,
-  //                              m_display_texture_width, m_display_texture_height, m_display_texture_view_x,
-  //                              m_display_texture_view_y, m_display_texture_view_width,
-  //                              m_display_texture_view_height);
-  //     return;
-  //   }
+  if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
+  {
+    ApplyPostProcessingChain(cmdlist, swap_chain_buf, left, top, width, height,
+                             static_cast<D3D12::Texture*>(m_display_texture), m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             GetWindowWidth(), GetWindowHeight());
+    return;
+  }
+
+  swap_chain_buf->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+  cmdlist->ClearRenderTargetView(swap_chain_buf->GetRTVOrDSVDescriptor(), s_clear_color.data(), 0, nullptr);
+  cmdlist->OMSetRenderTargets(1, &swap_chain_buf->GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+
+  if (!HasDisplayTexture())
+    return;
 
   RenderDisplay(cmdlist, left, top, width, height, static_cast<D3D12::Texture*>(m_display_texture),
                 m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
@@ -714,16 +742,10 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 lef
     (static_cast<float>(texture_view_y) + position_adjust) / static_cast<float>(texture->GetHeight()),
     (static_cast<float>(texture_view_width) - size_adjust) / static_cast<float>(texture->GetWidth()),
     (static_cast<float>(texture_view_height) - size_adjust) / static_cast<float>(texture->GetHeight())};
-  if (!m_display_uniform_buffer.ReserveMemory(sizeof(uniforms), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
-    Panic("Failed to reserve UBO space");
-
-  const u32 ubo_offset = m_display_uniform_buffer.GetCurrentOffset();
-  std::memcpy(m_display_uniform_buffer.GetCurrentHostPointer(), uniforms, sizeof(uniforms));
-  m_display_uniform_buffer.CommitMemory(sizeof(uniforms));
 
   cmdlist->SetGraphicsRootSignature(m_display_root_signature.Get());
   cmdlist->SetPipelineState(m_display_pipeline.Get());
-  cmdlist->SetGraphicsRootConstantBufferView(0, m_display_uniform_buffer.GetGPUPointer() + ubo_offset);
+  cmdlist->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(std::size(uniforms)), uniforms, 0);
   cmdlist->SetGraphicsRootDescriptorTable(1, texture->GetSRVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, linear_filter ? m_linear_sampler : m_point_sampler);
 
@@ -746,15 +768,9 @@ void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist, 
                                             s32 height, GPUTexture* texture_handle)
 {
   const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-  if (!m_display_uniform_buffer.ReserveMemory(sizeof(uniforms), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
-    Panic("Failed to reserve UBO space");
-
-  const u32 ubo_offset = m_display_uniform_buffer.GetCurrentOffset();
-  std::memcpy(m_display_uniform_buffer.GetCurrentHostPointer(), uniforms, sizeof(uniforms));
-  m_display_uniform_buffer.CommitMemory(sizeof(uniforms));
 
   cmdlist->SetPipelineState(m_display_pipeline.Get());
-  cmdlist->SetGraphicsRootConstantBufferView(0, m_display_uniform_buffer.GetGPUPointer() + ubo_offset);
+  cmdlist->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(std::size(uniforms)), uniforms, 0);
   cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12::Texture*>(texture_handle)->GetRTVOrDSVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, m_linear_sampler);
 
@@ -846,7 +862,227 @@ HostDisplay::AdapterAndModeList D3D12HostDisplay::GetAdapterAndModeList(IDXGIFac
   return adapter_info;
 }
 
+D3D12HostDisplay::PostProcessingStage::PostProcessingStage(PostProcessingStage&& move)
+  : pipeline(std::move(move.pipeline)), output_texture(std::move(move.output_texture)),
+    uniforms_size(move.uniforms_size)
+{
+  move.uniforms_size = 0;
+}
+
+D3D12HostDisplay::PostProcessingStage::~PostProcessingStage()
+{
+  output_texture.Destroy(true);
+}
+
 bool D3D12HostDisplay::SetPostProcessingChain(const std::string_view& config)
 {
-  return false;
+  g_d3d12_context->ExecuteCommandList(true);
+
+  if (config.empty())
+  {
+    m_post_processing_stages.clear();
+    m_post_processing_chain.ClearStages();
+    return true;
+  }
+
+  if (!m_post_processing_chain.CreateFromString(config))
+    return false;
+
+  m_post_processing_stages.clear();
+
+  D3D12::ShaderCache shader_cache;
+  shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), g_settings.gpu_use_debug_device);
+
+  FrontendCommon::PostProcessingShaderGen shadergen(RenderAPI::D3D12, false);
+  bool only_use_push_constants = true;
+
+  for (u32 i = 0; i < m_post_processing_chain.GetStageCount(); i++)
+  {
+    const FrontendCommon::PostProcessingShader& shader = m_post_processing_chain.GetShaderStage(i);
+    const std::string vs = shadergen.GeneratePostProcessingVertexShader(shader);
+    const std::string ps = shadergen.GeneratePostProcessingFragmentShader(shader);
+    const bool use_push_constants = shader.UsePushConstants();
+    only_use_push_constants &= use_push_constants;
+
+    PostProcessingStage stage;
+    stage.uniforms_size = shader.GetUniformsSize();
+
+    ComPtr<ID3DBlob> vs_blob(shader_cache.GetVertexShader(vs));
+    ComPtr<ID3DBlob> ps_blob(shader_cache.GetPixelShader(ps));
+    if (!vs_blob || !ps_blob)
+    {
+      Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    D3D12::GraphicsPipelineBuilder gpbuilder;
+    gpbuilder.SetVertexShader(vs_blob.Get());
+    gpbuilder.SetPixelShader(ps_blob.Get());
+    gpbuilder.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    gpbuilder.SetNoCullRasterizationState();
+    gpbuilder.SetNoDepthTestState();
+    gpbuilder.SetNoBlendingState();
+    gpbuilder.SetRootSignature(use_push_constants ? m_post_processing_root_signature.Get() :
+                                                    m_post_processing_cb_root_signature.Get());
+    gpbuilder.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+    stage.pipeline = gpbuilder.Create(g_d3d12_context->GetDevice(), shader_cache);
+    if (!stage.pipeline)
+    {
+      Log_ErrorPrintf("Failed to compile one or more post-processing pipelines, disabling.");
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+    D3D12::SetObjectNameFormatted(stage.pipeline.Get(), "%s Pipeline", shader.GetName().c_str());
+
+    m_post_processing_stages.push_back(std::move(stage));
+  }
+
+  constexpr u32 UBO_SIZE = 1 * 1024 * 1024;
+  if (!only_use_push_constants && m_post_processing_cbuffer.GetSize() < UBO_SIZE)
+  {
+    if (!m_post_processing_cbuffer.Create(UBO_SIZE))
+    {
+      Log_ErrorPrintf("Failed to allocate %u byte constant buffer for postprocessing", UBO_SIZE);
+      m_post_processing_stages.clear();
+      m_post_processing_chain.ClearStages();
+      return false;
+    }
+
+    D3D12::SetObjectName(m_post_processing_cbuffer.GetBuffer(), "Post Processing Uniform Buffer");
+  }
+
+  m_post_processing_timer.Reset();
+  return true;
+}
+
+bool D3D12HostDisplay::CheckPostProcessingRenderTargets(u32 target_width, u32 target_height)
+{
+  DebugAssert(!m_post_processing_stages.empty());
+
+  const DXGI_FORMAT tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  const DXGI_FORMAT srv_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  const DXGI_FORMAT rtv_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+  if (m_post_processing_input_texture.GetWidth() != target_width ||
+      m_post_processing_input_texture.GetHeight() != target_height)
+  {
+    if (!m_post_processing_input_texture.Create(target_width, target_height, 1, 1, 1, tex_format, srv_format,
+                                                rtv_format, DXGI_FORMAT_UNKNOWN,
+                                                D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET))
+    {
+      return false;
+    }
+    D3D12::SetObjectName(m_post_processing_input_texture.GetResource(), "Post Processing Input Texture");
+  }
+
+  const u32 target_count = (static_cast<u32>(m_post_processing_stages.size()) - 1);
+  for (u32 i = 0; i < target_count; i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+    if (pps.output_texture.GetWidth() != target_width || pps.output_texture.GetHeight() != target_height)
+    {
+      if (!pps.output_texture.Create(target_width, target_height, 1, 1, 1, tex_format, srv_format, rtv_format,
+                                     DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET))
+      {
+        return false;
+      }
+      D3D12::SetObjectNameFormatted(pps.output_texture.GetResource(), "Post Processing Output Texture %u", i);
+    }
+  }
+
+  return true;
+}
+
+void D3D12HostDisplay::ApplyPostProcessingChain(ID3D12GraphicsCommandList* cmdlist, D3D12::Texture* final_target,
+                                                s32 final_left, s32 final_top, s32 final_width, s32 final_height,
+                                                D3D12::Texture* texture, s32 texture_view_x, s32 texture_view_y,
+                                                s32 texture_view_width, s32 texture_view_height, u32 target_width,
+                                                u32 target_height)
+{
+  if (!CheckPostProcessingRenderTargets(target_width, target_height))
+  {
+    final_target->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdlist->ClearRenderTargetView(final_target->GetRTVOrDSVDescriptor(), s_clear_color.data(), 0, nullptr);
+    cmdlist->OMSetRenderTargets(1, &final_target->GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+
+    RenderDisplay(cmdlist, final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
+                  texture_view_width, texture_view_height, IsUsingLinearFiltering());
+    return;
+  }
+
+  // downsample/upsample - use same viewport for remainder
+  m_post_processing_input_texture.TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+  cmdlist->ClearRenderTargetView(m_post_processing_input_texture.GetRTVOrDSVDescriptor(), s_clear_color.data(), 0,
+                                 nullptr);
+  cmdlist->OMSetRenderTargets(1, &m_post_processing_input_texture.GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+  RenderDisplay(cmdlist, final_left, final_top, final_width, final_height, texture, texture_view_x, texture_view_y,
+                texture_view_width, texture_view_height, IsUsingLinearFiltering());
+  m_post_processing_input_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+  const s32 orig_texture_width = texture_view_width;
+  const s32 orig_texture_height = texture_view_height;
+  texture = &m_post_processing_input_texture;
+  texture_view_x = final_left;
+  texture_view_y = final_top;
+  texture_view_width = final_width;
+  texture_view_height = final_height;
+
+  const u32 final_stage = static_cast<u32>(m_post_processing_stages.size()) - 1u;
+  for (u32 i = 0; i < static_cast<u32>(m_post_processing_stages.size()); i++)
+  {
+    PostProcessingStage& pps = m_post_processing_stages[i];
+
+    const bool use_push_constants = m_post_processing_chain.GetShaderStage(i).UsePushConstants();
+    if (use_push_constants)
+    {
+      u8 buffer[FrontendCommon::PostProcessingShader::PUSH_CONSTANT_SIZE_THRESHOLD];
+      Assert(pps.uniforms_size <= sizeof(buffer));
+      m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+        buffer, texture->GetWidth(), texture->GetHeight(), texture_view_x, texture_view_y, texture_view_width,
+        texture_view_height, GetWindowWidth(), GetWindowHeight(), orig_texture_width, orig_texture_height,
+        static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
+
+      cmdlist->SetGraphicsRootSignature(m_post_processing_root_signature.Get());
+      cmdlist->SetGraphicsRoot32BitConstants(0, sizeof(buffer) / sizeof(u32), buffer, 0);
+    }
+    else
+    {
+      if (!m_post_processing_cbuffer.ReserveMemory(pps.uniforms_size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
+      {
+        Panic("Failed to reserve space in post-processing UBO");
+      }
+
+      const u32 offset = m_post_processing_cbuffer.GetCurrentOffset();
+      m_post_processing_chain.GetShaderStage(i).FillUniformBuffer(
+        m_post_processing_cbuffer.GetCurrentHostPointer(), texture->GetWidth(), texture->GetHeight(), texture_view_x,
+        texture_view_y, texture_view_width, texture_view_height, GetWindowWidth(), GetWindowHeight(),
+        orig_texture_width, orig_texture_height, static_cast<float>(m_post_processing_timer.GetTimeSeconds()));
+      m_post_processing_cbuffer.CommitMemory(pps.uniforms_size);
+
+      cmdlist->SetGraphicsRootSignature(m_post_processing_cb_root_signature.Get());
+      cmdlist->SetGraphicsRootConstantBufferView(0, m_post_processing_cbuffer.GetGPUPointer() + offset);
+    }
+
+    D3D12::Texture* rt = (i != final_stage) ? &pps.output_texture : final_target;
+    rt->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdlist->ClearRenderTargetView(rt->GetRTVOrDSVDescriptor(), s_clear_color.data(), 0, nullptr);
+    cmdlist->OMSetRenderTargets(1, &rt->GetRTVOrDSVDescriptor().cpu_handle, FALSE, nullptr);
+
+    cmdlist->SetPipelineState(pps.pipeline.Get());
+    cmdlist->SetGraphicsRootDescriptorTable(1, texture->GetSRVDescriptor());
+    cmdlist->SetGraphicsRootDescriptorTable(2, m_point_sampler);
+
+    cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    cmdlist->DrawInstanced(3, 1, 0, 0);
+
+    if (i != final_stage)
+    {
+      pps.output_texture.TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+      texture = &pps.output_texture;
+    }
+  }
 }

@@ -213,21 +213,11 @@ void CDROM::SoftReset(TickCount ticks_late)
 
   if (HasMedia())
   {
-    const TickCount toc_read_ticks = GetTicksForTOCRead();
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (m_current_lba != 0) ? GetTicksForSeek(0) : 0;
-    const TickCount total_ticks = toc_read_ticks + speed_change_ticks + seek_ticks - ticks_late;
-
-    if (was_double_speed)
-    {
-      Log_DevPrintf("CDROM was double speed on reset, switching to single speed in %d ticks, reading TOC in %d ticks, "
-                    "seeking in %d ticks",
-                    speed_change_ticks, toc_read_ticks, seek_ticks);
-    }
-    else
-    {
-      Log_DevPrintf("CDROM reading TOC on reset in %d ticks and seeking in %d ticks", toc_read_ticks, seek_ticks);
-    }
+    const TickCount total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
+    Log_DevPrintf("CDROM init total disc ticks = %d (speed change = %d, seek = %d)", total_ticks, speed_change_ticks,
+                  seek_ticks);
 
     if (m_current_lba != 0)
     {
@@ -1351,7 +1341,7 @@ void CDROM::ExecuteCommand(TickCount ticks_late)
 
     case Command::Init:
     {
-      Log_DebugPrintf("CDROM reset command");
+      Log_DebugPrintf("CDROM init command");
 
       if (m_command_second_response == Command::Init)
       {
