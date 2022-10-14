@@ -569,9 +569,6 @@ bool FullscreenUI::Initialize()
   if (!System::IsValid())
     SwitchToLanding();
 
-  SwitchToSettings();
-  s_settings_page = SettingsPage::PostProcessing;
-
   return true;
 }
 
