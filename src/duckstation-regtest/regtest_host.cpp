@@ -86,8 +86,8 @@ bool RegTestHost::InitializeConfig()
   SettingsInterface& si = *s_base_settings_interface.get();
   g_settings.Save(si);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
-  si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
-  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
+  si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
+  si.SetStringValue("Pad2", "Type", Settings::GetControllerTypeName(ControllerType::None));
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
   si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(MultitapMode::Disabled));
