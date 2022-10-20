@@ -52,7 +52,7 @@ private:
 
   struct ControllerData
   {
-    ComPtr<IDirectInputDevice8> device;
+    ComPtr<IDirectInputDevice8W> device;
     DIJOYSTATE last_state = {};
     std::vector<u32> axis_offsets;
     u32 num_buttons = 0;
@@ -69,7 +69,7 @@ private:
   static std::string GetDeviceIdentifier(u32 index);
 
   void AddDevices(HWND toplevel_window);
-  bool AddDevice(ControllerData& cd, HWND toplevel_window, const char* name);
+  bool AddDevice(ControllerData& cd, HWND toplevel_window, const std::string& name);
 
   void CheckForStateChanges(size_t index, const DIJOYSTATE& new_state);
 
@@ -77,5 +77,5 @@ private:
 
   HMODULE m_dinput_module{};
   LPCDIDATAFORMAT m_joystick_data_format{};
-  ComPtr<IDirectInput8> m_dinput;
+  ComPtr<IDirectInput8W> m_dinput;
 };
