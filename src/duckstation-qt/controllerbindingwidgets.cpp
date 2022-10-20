@@ -261,8 +261,10 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
     InputManager::GetGenericBindingMapping(device.toStdString());
   if (mapping.empty())
   {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Automatic Mapping"),
-                          tr("No generic bindings were generated for device '%1'").arg(device));
+    QMessageBox::critical(
+      QtUtils::GetRootWidget(this), tr("Automatic Mapping"),
+      tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.")
+        .arg(device));
     return;
   }
 
