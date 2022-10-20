@@ -44,7 +44,9 @@ namespace GL {
 
 static bool ShouldPreferESContext()
 {
-#ifndef _MSC_VER
+#if defined(__ANDROID__)
+  return true;
+#elif !defined(_MSC_VER)
   const char* value = std::getenv("PREFER_GLES_CONTEXT");
   return (value && std::strcmp(value, "1") == 0);
 #else
