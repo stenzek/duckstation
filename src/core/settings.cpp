@@ -511,10 +511,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-  {
-    si.SetStringValue(TinyString::FromFormat("Controller%u", i + 1u), "Type",
-                      GetControllerTypeName(controller_types[i]));
-  }
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type", GetControllerTypeName(controller_types[i]));
 
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));

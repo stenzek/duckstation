@@ -800,6 +800,10 @@ void System::SetDefaultSettings(SettingsInterface& si)
   temp.display_show_cpu = g_settings.display_show_cpu;
   temp.display_show_gpu = g_settings.display_show_gpu;
 
+  // keep controller, we reset it elsewhere
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+    temp.controller_types[i] = g_settings.controller_types[i];
+
   temp.Save(si);
 }
 
