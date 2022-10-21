@@ -301,6 +301,17 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
         case Column_Size:
           return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
 
+        case Column_TimePlayed:
+          {
+            if (ge->total_played_time == 0)
+              return {};
+            else
+              return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time));
+          }
+
+        case Column_LastPlayed:
+          return QtUtils::StringViewToQString(GameList::FormatTimestamp(ge->last_played_time));
+
         case Column_Cover:
         {
           if (m_show_titles_for_covers)
@@ -351,6 +362,12 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
         case Column_Compatibility:
           return static_cast<int>(ge->compatibility);
+
+        case Column_TimePlayed:
+          return static_cast<qlonglong>(ge->total_played_time);
+
+        case Column_LastPlayed:
+          return static_cast<qlonglong>(ge->last_played_time);
 
         case Column_Size:
           return static_cast<qulonglong>(ge->total_size);
@@ -534,6 +551,22 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       return (left->release_date < right->release_date);
     }
 
+    case Column_TimePlayed:
+    {
+      if (left->total_played_time == right->total_played_time)
+        return titlesLessThan(left_row, right_row);
+
+      return (left->total_played_time < right->total_played_time);
+    }
+
+    case Column_LastPlayed:
+    {
+      if (left->last_played_time == right->last_played_time)
+        return titlesLessThan(left_row, right_row);
+
+      return (left->last_played_time < right->last_played_time);
+    }
+
     case Column_Players:
     {
       u8 left_players = (left->min_players << 4) + left->max_players;
@@ -558,7 +591,8 @@ void GameListModel::loadCommonImages()
     m_region_pixmaps[i] = QtUtils::GetIconForRegion(static_cast<DiscRegion>(i)).pixmap(42, 30);
 
   for (int i = 0; i < static_cast<int>(GameDatabase::CompatibilityRating::Count); i++)
-    m_compatibility_pixmaps[i] = QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
+    m_compatibility_pixmaps[i] =
+      QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
 
   m_placeholder_pixmap.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
 }
@@ -574,6 +608,8 @@ void GameListModel::setColumnDisplayNames()
   m_column_display_names[Column_Genre] = tr("Genre");
   m_column_display_names[Column_Year] = tr("Year");
   m_column_display_names[Column_Players] = tr("Players");
+  m_column_display_names[Column_TimePlayed] = tr("Time Played");
+  m_column_display_names[Column_LastPlayed] = tr("Last Played");
   m_column_display_names[Column_Size] = tr("Size");
   m_column_display_names[Column_Region] = tr("Region");
   m_column_display_names[Column_Compatibility] = tr("Compatibility");

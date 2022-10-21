@@ -542,6 +542,10 @@ void MainWindow::onSystemDestroyed()
   updateEmulationActions(false, false, Achievements::ChallengeModeActive());
   switchToGameListView();
 
+  // reload played time
+  if (m_game_list_widget->isShowingGameList())
+    m_game_list_widget->refresh(false);
+
   if (m_cheat_manager_dialog)
   {
     delete m_cheat_manager_dialog;

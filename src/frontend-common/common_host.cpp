@@ -70,6 +70,8 @@
 Log_SetChannel(CommonHostInterface);
 
 namespace CommonHost {
+static void UpdateSessionTime(const std::string& new_serial);
+
 #ifdef WITH_DISCORD_PRESENCE
 static void SetDiscordPresenceEnabled(bool enabled);
 static void InitializeDiscordPresence();
@@ -78,6 +80,10 @@ static void UpdateDiscordPresence(bool rich_presence_only);
 static void PollDiscordPresence();
 #endif
 } // namespace CommonHost
+
+// Used to track play time. We use a monotonic timer here, in case of clock changes.
+static u64 s_session_start_time = 0;
+static std::string s_session_serial;
 
 #ifdef WITH_DISCORD_PRESENCE
 // discord rich presence
@@ -278,6 +284,8 @@ void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& 
   UpdateDiscordPresence(false);
 #endif
 
+  UpdateSessionTime(game_serial);
+
   SaveStateSelectorUI::RefreshList();
 }
 
@@ -372,6 +380,24 @@ void CommonHost::CheckForSettingsChanges(const Settings& old_settings)
   {
     UpdateLogSettings();
   }
+}
+
+void CommonHost::UpdateSessionTime(const std::string& new_serial)
+{
+  if (s_session_serial == new_serial)
+    return;
+
+  const u64 ctime = Common::Timer::GetCurrentValue();
+  if (!s_session_serial.empty())
+  {
+    // round up to seconds
+    const std::time_t etime = static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+    const std::time_t wtime = std::time(nullptr);
+    GameList::AddPlayedTimeForSerial(s_session_serial, wtime, etime);
+  }
+
+  s_session_serial = new_serial;
+  s_session_start_time = ctime;
 }
 
 void Host::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity)

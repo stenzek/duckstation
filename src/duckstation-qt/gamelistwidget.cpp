@@ -457,6 +457,8 @@ void GameListWidget::resizeTableViewColumnsToFit()
                                                      200, // genre
                                                      50,  // year
                                                      100, // players
+                                                     80,  // time played
+                                                     80,  // last played
                                                      80,  // size
                                                      50,  // region
                                                      100  // compatibility
@@ -483,8 +485,10 @@ void GameListWidget::loadTableViewColumnVisibilitySettings()
     true,  // developer
     false, // publisher
     false, // genre
-    true,  // year
+    false, // year
     false, // players
+    true,  // time played
+    true,  // last played
     true,  // size
     true,  // region
     true   // compatibility

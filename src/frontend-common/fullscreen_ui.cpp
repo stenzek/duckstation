@@ -5029,7 +5029,6 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::PushFont(g_medium_font);
 
       // developer
-      const char* developer = "Unknown Developer";
       if (!selected_entry->developer.empty())
       {
         text_width =
@@ -5037,7 +5036,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
                               selected_entry->developer.c_str() + selected_entry->developer.length(), false, work_width)
             .x;
         ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-        ImGui::TextWrapped("%s", developer);
+        ImGui::TextWrapped("%s", selected_entry->developer.c_str());
       }
 
       // code
@@ -5075,6 +5074,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         ImGui::SameLine();
       }
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(selected_entry->compatibility));
+
+      // play time
+      ImGui::Text("Time Played: %s", GameList::FormatTimespan(selected_entry->total_played_time).GetCharArray());
+      ImGui::Text("Last Played: %s", GameList::FormatTimestamp(selected_entry->last_played_time).GetCharArray());
 
       // size
       ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);

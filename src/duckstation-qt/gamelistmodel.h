@@ -26,6 +26,8 @@ public:
     Column_Genre,
     Column_Year,
     Column_Players,
+    Column_TimePlayed,
+    Column_LastPlayed,
     Column_Size,
     Column_Region,
     Column_Compatibility,

@@ -108,6 +108,20 @@ enum class FileShareMode
 ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
 std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
 
+/// Abstracts a POSIX file lock.
+#ifndef _WIN32
+class POSIXLock
+{
+public:
+  POSIXLock(int fd);
+  POSIXLock(std::FILE* fp);
+  ~POSIXLock();
+
+private:
+  int m_fd;
+};
+#endif
+
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 std::optional<std::string> ReadFileToString(const char* filename);

@@ -1914,4 +1914,28 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return false;
 }
 
+FileSystem::POSIXLock::POSIXLock(int fd)
+{
+  if (lockf(fd, F_LOCK, 0) == 0)
+  {
+    m_fd = fd;
+  }
+  else
+  {
+    Log_ErrorPrintf("lockf() failed: %d", fd);
+    m_fd = -1;
+  }
+}
+
+FileSystem::POSIXLock::POSIXLock(std::FILE* fp)
+{
+  POSIXLock(fileno(fp));
+}
+
+FileSystem::POSIXLock::~POSIXLock()
+{
+  if (m_fd >= 0)
+    lockf(m_fd, F_ULOCK, m_fd);
+}
+
 #endif

@@ -1,4 +1,5 @@
 #pragma once
+#include "common/string.h"
 #include "core/game_database.h"
 #include "core/types.h"
 #include "util/cd_image.h"
@@ -35,6 +36,8 @@ struct Entry
   std::string developer;
   u64 total_size = 0;
   std::time_t last_modified_time = 0;
+  std::time_t last_played_time = 0;
+  std::time_t total_played_time = 0;
 
   u64 release_date = 0;
   u32 supported_controllers = ~static_cast<u32>(0);
@@ -72,6 +75,15 @@ bool IsGameListLoaded();
 /// If invalidate_cache is set, all files will be re-scanned.
 /// If only_cache is set, no new files will be scanned, only those present in the cache.
 void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
+
+/// Add played time for the specified serial.
+void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
+
+/// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
+TinyString FormatTimestamp(std::time_t timestamp);
+
+/// Formats a timespan to something human readable (e.g. 1h2m3s).
+TinyString FormatTimespan(std::time_t timespan);
 
 std::string GetCoverImagePathForEntry(const Entry* entry);
 std::string GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title);
