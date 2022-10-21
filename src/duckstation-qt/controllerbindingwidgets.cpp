@@ -574,10 +574,29 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       {
         QDoubleSpinBox* sb = new QDoubleSpinBox(this);
         sb->setObjectName(QString::fromUtf8(si.name));
-        sb->setMinimum(si.FloatMinValue());
-        sb->setMaximum(si.FloatMaxValue());
-        sb->setSingleStep(si.FloatStepValue());
-        SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, section, std::move(key_name), si.FloatDefaultValue());
+        if (si.multiplier != 0.0f && si.multiplier != 1.0f)
+        {
+          const float multiplier = si.multiplier;
+          sb->setMinimum(si.FloatMinValue() * multiplier);
+          sb->setMaximum(si.FloatMaxValue() * multiplier);
+          sb->setSingleStep(si.FloatStepValue() * multiplier);
+          if (std::abs(si.multiplier - 100.0f) < 0.01f)
+          {
+            sb->setDecimals(0);
+            sb->setSuffix(QStringLiteral("%"));
+          }
+
+          SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, sb, section, std::move(key_name), si.multiplier,
+                                                             si.FloatDefaultValue() * multiplier);
+        }
+        else
+        {
+          sb->setMinimum(si.FloatMinValue());
+          sb->setMaximum(si.FloatMaxValue());
+          sb->setSingleStep(si.FloatStepValue());
+
+          SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, section, std::move(key_name), si.FloatDefaultValue());
+        }
         layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
@@ -667,7 +686,12 @@ void ControllerCustomSettingsWidget::restoreDefaults()
       {
         QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
         if (widget)
-          widget->setValue(si.FloatDefaultValue());
+        {
+          if (si.multiplier != 0.0f && si.multiplier != 1.0f)
+            widget->setValue(si.FloatDefaultValue() * si.multiplier);
+          else
+            widget->setValue(si.FloatDefaultValue());
+        }
       }
       break;
 
