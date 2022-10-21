@@ -94,6 +94,8 @@ private:
 
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
+  u8 m_invert_left_stick = 0;
+  u8 m_invert_right_stick = 0;
 
   // On original hardware, the mode toggle is a switch rather than a button, so we'll enable Analog Mode by default
   bool m_analog_mode = true;

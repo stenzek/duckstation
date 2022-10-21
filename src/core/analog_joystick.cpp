@@ -99,8 +99,7 @@ void AnalogJoystick::SetBindState(u32 index, float value)
     if (sub_index >= static_cast<u32>(m_half_axis_state.size()))
       return;
 
-    value = ApplyAnalogDeadzoneSensitivity(m_analog_deadzone, m_analog_sensitivity, value);
-    const u8 u8_value = static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
+    const u8 u8_value = static_cast<u8>(std::clamp(value * m_analog_sensitivity * 255.0f, 0.0f, 255.0f));
     if (u8_value != m_half_axis_state[sub_index])
       System::SetRunaheadReplayFlag();
 
@@ -114,26 +113,69 @@ void AnalogJoystick::SetBindState(u32 index, float value)
     {
       case HalfAxis::LLeft:
       case HalfAxis::LRight:
-        m_axis_state[static_cast<u8>(Axis::LeftX)] = MERGE(HalfAxis::LRight, HalfAxis::LLeft);
+        m_axis_state[static_cast<u8>(Axis::LeftX)] = ((m_invert_left_stick & 1u) != 0u) ?
+                                                       MERGE(HalfAxis::LLeft, HalfAxis::LRight) :
+                                                       MERGE(HalfAxis::LRight, HalfAxis::LLeft);
         break;
 
       case HalfAxis::LDown:
       case HalfAxis::LUp:
-        m_axis_state[static_cast<u8>(Axis::LeftY)] = MERGE(HalfAxis::LDown, HalfAxis::LUp);
+        m_axis_state[static_cast<u8>(Axis::LeftY)] = ((m_invert_left_stick & 2u) != 0u) ?
+                                                       MERGE(HalfAxis::LUp, HalfAxis::LDown) :
+                                                       MERGE(HalfAxis::LDown, HalfAxis::LUp);
         break;
 
       case HalfAxis::RLeft:
       case HalfAxis::RRight:
-        m_axis_state[static_cast<u8>(Axis::RightX)] = MERGE(HalfAxis::RRight, HalfAxis::RLeft);
+        m_axis_state[static_cast<u8>(Axis::RightX)] = ((m_invert_right_stick & 1u) != 0u) ?
+                                                        MERGE(HalfAxis::RLeft, HalfAxis::RRight) :
+                                                        MERGE(HalfAxis::RRight, HalfAxis::RLeft);
         break;
 
       case HalfAxis::RDown:
       case HalfAxis::RUp:
-        m_axis_state[static_cast<u8>(Axis::RightY)] = MERGE(HalfAxis::RDown, HalfAxis::RUp);
+        m_axis_state[static_cast<u8>(Axis::RightY)] = ((m_invert_right_stick & 2u) != 0u) ?
+                                                        MERGE(HalfAxis::RUp, HalfAxis::RDown) :
+                                                        MERGE(HalfAxis::RDown, HalfAxis::RUp);
         break;
 
       default:
         break;
+    }
+
+    if (m_analog_deadzone > 0.0f)
+    {
+#define MERGE_F(pos, neg)                                                                                              \
+  ((m_half_axis_state[static_cast<u32>(pos)] != 0) ?                                                                   \
+     (static_cast<float>(m_half_axis_state[static_cast<u32>(pos)]) / 255.0f) :                                         \
+     (static_cast<float>(m_half_axis_state[static_cast<u32>(neg)]) / -255.0f))
+
+      float pos_x, pos_y;
+      if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
+      {
+        pos_x = ((m_invert_left_stick & 1u) != 0u) ? MERGE_F(HalfAxis::LLeft, HalfAxis::LRight) :
+                                                     MERGE_F(HalfAxis::LRight, HalfAxis::LLeft);
+        pos_y = ((m_invert_left_stick & 2u) != 0u) ? MERGE_F(HalfAxis::LUp, HalfAxis::LDown) :
+                                                     MERGE_F(HalfAxis::LDown, HalfAxis::LUp);
+      }
+      else
+      {
+        pos_x = ((m_invert_right_stick & 1u) != 0u) ? MERGE_F(HalfAxis::RLeft, HalfAxis::RRight) :
+                                                      MERGE_F(HalfAxis::RRight, HalfAxis::RLeft);
+        ;
+        pos_y = ((m_invert_right_stick & 2u) != 0u) ? MERGE_F(HalfAxis::RUp, HalfAxis::RDown) :
+                                                      MERGE_F(HalfAxis::RDown, HalfAxis::RUp);
+      }
+
+      if (InCircularDeadzone(m_analog_deadzone, pos_x, pos_y))
+      {
+        // Set to 127 (center).
+        if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
+          m_axis_state[static_cast<u8>(Axis::LeftX)] = m_axis_state[static_cast<u8>(Axis::LeftY)] = 127;
+        else
+          m_axis_state[static_cast<u8>(Axis::RightX)] = m_axis_state[static_cast<u8>(Axis::RightY)] = 127;
+      }
+#undef MERGE_F
     }
 
 #undef MERGE
@@ -329,6 +371,11 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
+static const char* s_invert_settings[] = {TRANSLATABLE("AnalogJoystick", "Not Inverted"),
+                                          TRANSLATABLE("AnalogJoystick", "Invert Left/Right"),
+                                          TRANSLATABLE("AnalogJoystick", "Invert Up/Down"),
+                                          TRANSLATABLE("AnalogJoystick", "Invert Left/Right + Up/Down"), nullptr};
+
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogJoystick", "Analog Deadzone"),
    TRANSLATABLE("AnalogJoystick",
@@ -339,7 +386,12 @@ static const SettingInfo s_settings[] = {
      "AnalogJoystick",
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
-   "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f}};
+   "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::IntegerList, "InvertLeftStick", "Invert Left Stick",
+   "Inverts the direction of the left analog stick.", "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+  {SettingInfo::Type::IntegerList, "InvertRightStick", "Invert Right Stick",
+   "Inverts the direction of the right analog stick.", "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+};
 
 const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJoystick,
                                                          "AnalogJoystick",
@@ -356,4 +408,6 @@ void AnalogJoystick::LoadSettings(SettingsInterface& si, const char* section)
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
+  m_invert_left_stick = static_cast<u8>(si.GetIntValue(section, "InvertLeftStick", 0));
+  m_invert_right_stick = static_cast<u8>(si.GetIntValue(section, "InvertRightStick", 0));
 }

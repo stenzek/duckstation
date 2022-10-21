@@ -88,5 +88,5 @@ private:
   TransferState m_transfer_state = TransferState::Idle;
 
   float m_steering_deadzone = 0.00f;
-
+  float m_steering_sensitivity = 1.00f;
 };

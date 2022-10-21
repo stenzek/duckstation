@@ -140,6 +140,9 @@ public:
     return (value < deadzone) ? 0.0f : ((value - deadzone) / (1.0f - deadzone) * sensitivity);
   }
 
+  /// Returns true if the specified coordinates are inside a circular deadzone.
+  static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
+
 protected:
   u32 m_index;
 };

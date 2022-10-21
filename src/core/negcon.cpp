@@ -71,7 +71,9 @@ void NeGcon::SetBindState(u32 index, float value)
   if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
       index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
   {
-    value = ApplyAnalogDeadzoneSensitivity(m_steering_deadzone, 1.0f, value);
+    value *= m_steering_sensitivity;
+    if (value < m_steering_deadzone)
+      value = 0.0f;
 
     m_half_axis_state[index - static_cast<u32>(Button::Count)] =
       static_cast<u8>(std::clamp(value * 255.0f, 0.0f, 255.0f));
@@ -249,10 +251,14 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const SettingInfo s_settings[] = {{SettingInfo::Type::Float, "SteeringDeadzone",
-                                          TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
-                                          TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f",
-                                          "0.00f", "0.99f", "0.01f", "%.0f%%", nullptr, 100.0f}};
+static const SettingInfo s_settings[] = {
+  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
+   TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%",
+   nullptr, 100.0f},
+  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATABLE("NeGcon", "Steering Axis Sensitivity"),
+   TRANSLATABLE("NeGcon", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
+   nullptr, 100.0f},
+};
 
 const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
                                                  "NeGcon",
@@ -267,4 +273,5 @@ void NeGcon::LoadSettings(SettingsInterface& si, const char* section)
 {
   Controller::LoadSettings(si, section);
   m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);
+  m_steering_sensitivity = si.GetFloatValue(section, "SteeringSensitivity", 1.00f);
 }
