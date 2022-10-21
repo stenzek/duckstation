@@ -15,8 +15,8 @@
 #include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Size", "Region",
-   "Compatibility", "Cover"}};
+  {"Type", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
+   "Last Played", "Size", "Region", "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -302,12 +302,12 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
 
         case Column_TimePlayed:
-          {
-            if (ge->total_played_time == 0)
-              return {};
-            else
-              return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time));
-          }
+        {
+          if (ge->total_played_time == 0)
+            return {};
+          else
+            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time));
+        }
 
         case Column_LastPlayed:
           return QtUtils::StringViewToQString(GameList::FormatTimestamp(ge->last_played_time));
