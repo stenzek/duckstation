@@ -478,7 +478,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (!g_settings.achievements_enabled)
   {
     // we're done here
-    OnSystemShutdown();
+    Shutdown();
     return;
   }
 
@@ -510,7 +510,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
       g_settings.achievements_use_first_disc_from_playlist != old_config.achievements_use_first_disc_from_playlist ||
       g_settings.achievements_rich_presence != old_config.achievements_rich_presence)
   {
-    OnSystemShutdown();
+    Shutdown();
     Initialize();
     return;
   }
@@ -603,14 +603,11 @@ void Achievements::SetChallengeMode(bool enabled)
     GetUserUnlocks();
 }
 
-bool Achievements::OnSystemShutdown()
+bool Achievements::Shutdown()
 {
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
-    if (!RA_ConfirmLoadNewRom(true))
-      return false;
-
     RA_SetPaused(false);
     RA_ActivateGame(0);
     return true;

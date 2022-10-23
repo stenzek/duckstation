@@ -48,6 +48,11 @@ bool Win32RawInputSource::Initialize(SettingsInterface& si, std::unique_lock<std
 
 void Win32RawInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) {}
 
+bool Win32RawInputSource::ReloadDevices()
+{
+  return false;
+}
+
 void Win32RawInputSource::Shutdown()
 {
   CloseDevices();

@@ -440,7 +440,31 @@ void ImGuiFullscreen::BeginLayout()
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
   s_texture_cache.ManualEvict();
+  PushResetLayout();
+}
 
+void ImGuiFullscreen::EndLayout()
+{
+  DrawFileSelector();
+  DrawChoiceDialog();
+  DrawInputDialog();
+  DrawMessageDialog();
+
+  const float notification_margin = LayoutScale(10.0f);
+  const float spacing = LayoutScale(10.0f);
+  const float notification_vertical_pos = GetNotificationVerticalPosition();
+  ImVec2 position(notification_margin,
+                  notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
+                    ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
+  DrawBackgroundProgressDialogs(position, spacing);
+  DrawNotifications(position, spacing);
+  DrawToast();
+
+  PopResetLayout();
+}
+
+void ImGuiFullscreen::PushResetLayout()
+{
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(8.0f, 8.0f));
@@ -465,23 +489,8 @@ void ImGuiFullscreen::BeginLayout()
   ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, UIPrimaryDarkColor);
 }
 
-void ImGuiFullscreen::EndLayout()
+void ImGuiFullscreen::PopResetLayout()
 {
-  DrawFileSelector();
-  DrawChoiceDialog();
-  DrawInputDialog();
-  DrawMessageDialog();
-
-  const float notification_margin = LayoutScale(10.0f);
-  const float spacing = LayoutScale(10.0f);
-  const float notification_vertical_pos = GetNotificationVerticalPosition();
-  ImVec2 position(notification_margin,
-                  notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
-                    ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
-  DrawBackgroundProgressDialogs(position, spacing);
-  DrawNotifications(position, spacing);
-  DrawToast();
-
   ImGui::PopStyleColor(10);
   ImGui::PopStyleVar(12);
 }
@@ -665,7 +674,7 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
   if (y_align != 0.0f)
@@ -993,7 +1002,8 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
 }
 
 bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float width, float height, float anchor_x,
-                                     float anchor_y, bool enabled, ImFont* font, ImVec2* out_position)
+                                     float anchor_y, bool enabled, ImFont* font, ImVec2* out_position,
+                                     bool repeat_button)
 {
   const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, text));
   const ImVec2& padding(ImGui::GetStyle().FramePadding);
@@ -1047,11 +1057,14 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
   bool pressed;
   if (enabled)
   {
-    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, repeat_button ? ImGuiButtonFlags_Repeat : 0);
     if (hovered)
     {
+      const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
+      ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
       ImGui::RenderFrame(bb.Min, bb.Max, col, true, 0.0f);
+      ImGui::PopStyleColor();
     }
   }
   else
@@ -1456,6 +1469,13 @@ bool ImGuiFullscreen::EnumChoiceButtonImpl(const char* title, const char* summar
   return changed;
 }
 
+void ImGuiFullscreen::DrawShadowedText(ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, const char* text,
+                                       const char* text_end /*= nullptr*/, float wrap_width /*= 0.0f*/)
+{
+  dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
+  dl->AddText(font, font->FontSize, pos, col, text, text_end, wrap_width);
+}
+
 void ImGuiFullscreen::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*/,
                                   float y_padding /*= LAYOUT_MENU_BUTTON_Y_PADDING*/)
 {
@@ -1711,6 +1731,7 @@ void ImGuiFullscreen::DrawFileSelector()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
@@ -1755,7 +1776,7 @@ void ImGuiFullscreen::DrawFileSelector()
   }
 
   ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
   if (selected)
@@ -1821,6 +1842,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
@@ -1893,7 +1915,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   }
 
   ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
   if (choice >= 0)
@@ -1938,6 +1960,7 @@ void ImGuiFullscreen::DrawInputDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
@@ -1995,7 +2018,7 @@ void ImGuiFullscreen::DrawInputDialog()
     CloseInputDialog();
 
   ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(3);
   ImGui::PopFont();
 }
 
@@ -2087,6 +2110,7 @@ void ImGuiFullscreen::DrawMessageDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
@@ -2120,7 +2144,7 @@ void ImGuiFullscreen::DrawMessageDialog()
   }
 
   ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   if (!is_open || result.has_value())

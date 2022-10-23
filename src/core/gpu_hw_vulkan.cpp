@@ -1067,7 +1067,7 @@ bool GPU_HW_Vulkan::CompilePipelines()
     }
   }
 
-  batch_shader_guard.Invoke();
+  batch_shader_guard.Run();
 
   VkShaderModule fullscreen_quad_vertex_shader =
     g_vulkan_shader_cache->GetVertexShader(shadergen.GenerateScreenQuadVertexShader());

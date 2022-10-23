@@ -25,7 +25,7 @@ class Context
 public:
   enum : u32
   {
-    NUM_COMMAND_BUFFERS = 2
+    NUM_COMMAND_BUFFERS = 3
   };
 
   struct OptionalExtensions

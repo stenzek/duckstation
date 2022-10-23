@@ -32,6 +32,7 @@ public:
 
   bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
   void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+  bool ReloadDevices() override;
   void Shutdown() override;
 
   void PollEvents() override;
@@ -54,6 +55,7 @@ private:
   {
     ComPtr<IDirectInputDevice8W> device;
     DIJOYSTATE last_state = {};
+    GUID guid = {};
     std::vector<u32> axis_offsets;
     u32 num_buttons = 0;
 
@@ -68,8 +70,7 @@ private:
   static std::array<bool, NUM_HAT_DIRECTIONS> GetHatButtons(DWORD hat);
   static std::string GetDeviceIdentifier(u32 index);
 
-  void AddDevices(HWND toplevel_window);
-  bool AddDevice(ControllerData& cd, HWND toplevel_window, const std::string& name);
+  bool AddDevice(ControllerData& cd, const std::string& name);
 
   void CheckForStateChanges(size_t index, const DIJOYSTATE& new_state);
 
@@ -78,4 +79,5 @@ private:
   HMODULE m_dinput_module{};
   LPCDIDATAFORMAT m_joystick_data_format{};
   ComPtr<IDirectInput8W> m_dinput;
+  HWND m_toplevel_window = NULL;
 };

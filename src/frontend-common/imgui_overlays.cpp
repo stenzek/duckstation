@@ -240,7 +240,8 @@ void ImGuiManager::DrawPerformanceOverlay()
       }
     }
   }
-  else if (g_settings.display_show_status_indicators && state == System::State::Paused)
+  else if (g_settings.display_show_status_indicators && state == System::State::Paused &&
+           !FullscreenUI::HasActiveWindow())
   {
     text.Assign(ICON_FA_PAUSE);
     DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));

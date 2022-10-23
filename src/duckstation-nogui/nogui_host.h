@@ -30,6 +30,7 @@ void ProcessPlatformKeyEvent(s32 key, bool pressed);
 void ProcessPlatformTextEvent(const char* text);
 void PlatformWindowFocusGained();
 void PlatformWindowFocusLost();
+void PlatformDevicesChanged();
 bool GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* height);
 void SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height);
 } // namespace NoGUIHost

@@ -32,8 +32,8 @@
 #include "imgui_fullscreen.h"
 #include "imgui_manager.h"
 #include "imgui_overlays.h"
-#include "platform_misc.h"
 #include "input_manager.h"
+#include "platform_misc.h"
 #include "scmversion/scmversion.h"
 #include "util/audio_stream.h"
 #include "util/ini_settings_interface.h"
@@ -116,7 +116,7 @@ void CommonHost::Shutdown()
 #endif
 
 #ifdef WITH_CHEEVOS
-  Achievements::OnSystemShutdown();
+  Achievements::Shutdown();
 #endif
 
   InputManager::CloseSources();
@@ -391,13 +391,20 @@ void CommonHost::UpdateSessionTime(const std::string& new_serial)
   if (!s_session_serial.empty())
   {
     // round up to seconds
-    const std::time_t etime = static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+    const std::time_t etime =
+      static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
     const std::time_t wtime = std::time(nullptr);
     GameList::AddPlayedTimeForSerial(s_session_serial, wtime, etime);
   }
 
   s_session_serial = new_serial;
   s_session_start_time = ctime;
+}
+
+u64 CommonHost::GetSessionPlayedTime()
+{
+  const u64 ctime = Common::Timer::GetCurrentValue();
+  return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
 }
 
 void Host::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity)

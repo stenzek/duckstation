@@ -91,7 +91,7 @@ void UpdateSettings(const Settings& old_config);
 bool ConfirmSystemReset();
 
 /// Called when the system is being shut down. If Shutdown() returns false, the shutdown should be aborted.
-bool OnSystemShutdown();
+bool Shutdown();
 
 /// Called when the system is being paused and resumed.
 void OnSystemPaused(bool paused);

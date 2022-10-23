@@ -130,6 +130,13 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
   m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 }
 
+bool SDLInputSource::ReloadDevices()
+{
+  // We'll get a GC added/removed event here.
+  PollEvents();
+  return false;
+}
+
 void SDLInputSource::SetHints()
 {
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");

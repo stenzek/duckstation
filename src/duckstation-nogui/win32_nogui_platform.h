@@ -59,4 +59,6 @@ private:
   std::atomic_bool m_fullscreen{false};
 
   DWORD m_last_mouse_buttons = 0;
+
+  HDEVNOTIFY m_dev_notify_handle = NULL;
 };

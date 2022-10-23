@@ -241,6 +241,12 @@ public:
     return m_pStringData->pBuffer;
   }
 
+  // returns a string view for this string
+  std::string_view GetStringView() const
+  {
+    return IsEmpty() ? std::string_view() : std::string_view(GetCharArray(), GetLength());
+  }
+
   // creates a new string from the specified format
   static String FromFormat(const char* FormatString, ...) printflike(1, 2);
 
@@ -250,10 +256,7 @@ public:
   // m_pStringData->pBuffer[i]; }
   operator const char*() const { return GetCharArray(); }
   operator char*() { return GetWriteableCharArray(); }
-  operator std::string_view() const
-  {
-    return IsEmpty() ? std::string_view() : std::string_view(GetCharArray(), GetLength());
-  }
+  operator std::string_view() const { return GetStringView(); }
 
   // Will use the string data provided.
   String& operator=(const String& copyString)

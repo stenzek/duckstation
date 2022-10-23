@@ -169,6 +169,10 @@ protected:
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;
 
+#ifdef _WIN32
+  bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
+#endif
+
 private:
   static void setStyleFromSettings();
   static void setIconThemeFromSettings();
@@ -217,6 +221,9 @@ private:
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void setTheme(const QString& theme);
   void recreate();
+
+  void registerForDeviceNotifications();
+  void unregisterForDeviceNotifications();
 
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu);
@@ -271,6 +278,10 @@ private:
   bool m_is_closing = false;
 
   GDBServer* m_gdb_server = nullptr;
+
+#ifdef _WIN32
+  void* m_device_notification_handle = nullptr;
+#endif
 };
 
 extern MainWindow* g_main_window;

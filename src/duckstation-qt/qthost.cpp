@@ -376,7 +376,7 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
 
 bool EmuThread::shouldRenderToMain() const
 {
-  return !Host::GetBaseBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
 }
 
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
@@ -893,6 +893,28 @@ void EmuThread::reloadInputBindings()
   SettingsInterface* si = Host::GetSettingsInterface();
   SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
   InputManager::ReloadBindings(*si, *bindings_si);
+}
+
+void EmuThread::reloadInputDevices()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::QueuedConnection);
+    return;
+  }
+
+  InputManager::ReloadDevices();
+}
+
+void EmuThread::closeInputSources()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::BlockingQueuedConnection);
+    return;
+  }
+
+  InputManager::CloseSources();
 }
 
 void EmuThread::enumerateInputDevices()

@@ -9,6 +9,7 @@
 #include "nogui_host.h"
 #include "resource.h"
 #include "win32_key_names.h"
+#include <Dbt.h>
 #include <shellapi.h>
 #include <tchar.h>
 Log_SetChannel(Win32HostInterface);
@@ -122,6 +123,11 @@ bool Win32NoGUIPlatform::CreatePlatformWindow(std::string title)
   if (m_fullscreen.load(std::memory_order_acquire))
     SetFullscreen(true);
 
+  // We use these notifications to detect when a controller is connected or disconnected.
+  DEV_BROADCAST_DEVICEINTERFACE_W filter = {sizeof(DEV_BROADCAST_DEVICEINTERFACE_W), DBT_DEVTYP_DEVICEINTERFACE};
+  m_dev_notify_handle =
+    RegisterDeviceNotificationW(hwnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+
   return true;
 }
 
@@ -129,6 +135,12 @@ void Win32NoGUIPlatform::DestroyPlatformWindow()
 {
   if (!m_hwnd)
     return;
+
+  if (m_dev_notify_handle)
+  {
+    UnregisterDeviceNotification(m_dev_notify_handle);
+    m_dev_notify_handle = NULL;
+  }
 
   RECT rc;
   if (!m_fullscreen.load(std::memory_order_acquire) && GetWindowRect(m_hwnd, &rc))
@@ -390,6 +402,13 @@ LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     case WM_QUIT:
     {
       Host::RunOnCPUThread([]() { Host::RequestExit(g_settings.save_state_on_exit); });
+    }
+    break;
+
+    case WM_DEVICECHANGE:
+    {
+      if (wParam == DBT_DEVNODES_CHANGED)
+        NoGUIHost::PlatformDevicesChanged();
     }
     break;
 

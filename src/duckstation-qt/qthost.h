@@ -148,6 +148,8 @@ public Q_SLOTS:
   void updateEmuFolders();
   void reloadInputSources();
   void reloadInputBindings();
+  void reloadInputDevices();
+  void closeInputSources();
   void enumerateInputDevices();
   void enumerateVibrationMotors();
   void startFullscreenUI();

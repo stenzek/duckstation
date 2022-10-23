@@ -12,16 +12,14 @@ class ScopedGuard final
 public:
   ALWAYS_INLINE ScopedGuard(T&& func) : m_func(std::forward<T>(func)) {}
   ALWAYS_INLINE ScopedGuard(ScopedGuard&& other) : m_func(std::move(other.m_func)) { other.m_func = nullptr; }
-  ALWAYS_INLINE ~ScopedGuard() { Invoke(); }
+
+  ALWAYS_INLINE ~ScopedGuard() { Run(); }
 
   ScopedGuard(const ScopedGuard&) = delete;
   void operator=(const ScopedGuard&) = delete;
 
-  /// Prevents the function from being invoked when we go out of scope.
-  ALWAYS_INLINE void Cancel() { m_func.reset(); }
-
-  /// Explicitly fires the function.
-  ALWAYS_INLINE void Invoke()
+  /// Runs the destructor function now instead of when we go out of scope.
+  ALWAYS_INLINE void Run()
   {
     if (!m_func.has_value())
       return;
@@ -29,6 +27,9 @@ public:
     m_func.value()();
     m_func.reset();
   }
+
+  /// Prevents the function from being invoked when we go out of scope.
+  ALWAYS_INLINE void Cancel() { m_func.reset(); }
 
 private:
   std::optional<T> m_func;

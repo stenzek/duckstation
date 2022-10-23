@@ -79,11 +79,14 @@ void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* p
 /// Add played time for the specified serial.
 void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
 
+/// Returns the total time played for a game. Requires the game to be scanned in the list.
+std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);
+
 /// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
 TinyString FormatTimestamp(std::time_t timestamp);
 
-/// Formats a timespan to something human readable (e.g. 1h2m3s).
-TinyString FormatTimespan(std::time_t timespan);
+/// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
+TinyString FormatTimespan(std::time_t timespan, bool long_format = false);
 
 std::string GetCoverImagePathForEntry(const Entry* entry);
 std::string GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title);

@@ -18,6 +18,17 @@ static void* GetProcAddressCallback(const char* name)
   return ::GetProcAddress(GetModuleHandleA("opengl32.dll"), name);
 }
 
+static bool ReloadWGL(HDC dc)
+{
+  if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, dc))
+  {
+    Log_ErrorPrint("Loading GLAD WGL functions failed");
+    return false;
+  }
+
+  return true;
+}
+
 namespace GL {
 ContextWGL::ContextWGL(const WindowInfo& wi) : Context(wi) {}
 
@@ -51,8 +62,8 @@ bool ContextWGL::Initialize(const Version* versions_to_try, size_t num_versions_
   }
   else
   {
-    Log_ErrorPrint("ContextWGL must always start with a valid surface.");
-    return false;
+    if (!CreatePBuffer())
+      return false;
   }
 
   // Everything including core/ES requires a dummy profile to load the WGL extensions.
@@ -149,8 +160,8 @@ std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi)
   }
   else
   {
-    Log_ErrorPrint("PBuffer not implemented");
-    return nullptr;
+    if (!context->CreatePBuffer())
+      return nullptr;
   }
 
   if (m_version.profile == Profile::NoProfile)
@@ -305,11 +316,37 @@ bool ContextWGL::CreatePBuffer()
 
   static constexpr const int pb_attribs[] = {0, 0};
 
+  HGLRC temp_rc = nullptr;
+  ScopedGuard temp_rc_guard([&temp_rc, hdc]() {
+    if (temp_rc)
+    {
+      wglMakeCurrent(hdc, nullptr);
+      wglDeleteContext(temp_rc);
+    }
+  });
+
+  if (!GLAD_WGL_ARB_pbuffer)
+  {
+    // we're probably running completely surfaceless... need a temporary context.
+    temp_rc = wglCreateContext(hdc);
+    if (!temp_rc || !wglMakeCurrent(hdc, temp_rc))
+    {
+      Log_ErrorPrint("Failed to create temporary context to load WGL for pbuffer.");
+      return false;
+    }
+
+    if (!ReloadWGL(hdc) || !GLAD_WGL_ARB_pbuffer)
+    {
+      Log_ErrorPrint("Missing WGL_ARB_pbuffer");
+      return false;
+    }
+  }
+
   AssertMsg(m_pixel_format.has_value(), "Has pixel format for pbuffer");
   HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
   if (!pbuffer)
   {
-    Log_ErrorPrint("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
+    Log_ErrorPrintf("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
     return false;
   }
 
@@ -318,7 +355,7 @@ bool ContextWGL::CreatePBuffer()
   m_dc = wglGetPbufferDCARB(pbuffer);
   if (!m_dc)
   {
-    Log_ErrorPrint("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
+    Log_ErrorPrintf("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
     return false;
   }
 
@@ -326,6 +363,7 @@ bool ContextWGL::CreatePBuffer()
   m_dummy_dc = hdc;
   m_pbuffer = pbuffer;
 
+  temp_rc_guard.Run();
   pbuffer_guard.Cancel();
   hdc_guard.Cancel();
   hwnd_guard.Cancel();
@@ -401,7 +439,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
     if ((version.major_version >= 2 && !GLAD_WGL_EXT_create_context_es2_profile) ||
         (version.major_version < 2 && !GLAD_WGL_EXT_create_context_es_profile))
     {
-      Log_ErrorPrint("WGL_EXT_create_context_es_profile not supported");
+      Log_ErrorPrintf("WGL_EXT_create_context_es_profile not supported");
       return false;
     }
 
@@ -437,11 +475,8 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
     }
 
     // re-init glad-wgl
-    if (make_current && !gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
-    {
-      Log_ErrorPrint("Loading GLAD WGL functions failed");
+    if (make_current && !ReloadWGL(m_dc))
       return false;
-    }
 
     wglDeleteContext(m_rc);
   }

@@ -82,8 +82,8 @@ static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& path, const std::
 
 static std::vector<GameList::Entry> s_entries;
 static std::recursive_mutex s_mutex;
-static GameList::CacheMap m_cache_map;
-static std::unique_ptr<ByteStream> m_cache_write_stream;
+static GameList::CacheMap s_cache_map;
+static std::unique_ptr<ByteStream> s_cache_write_stream;
 
 static bool m_game_list_loaded = false;
 
@@ -276,12 +276,12 @@ bool GameList::PopulateEntryFromPath(const std::string& path, Entry* entry)
 
 bool GameList::GetGameListEntryFromCache(const std::string& path, Entry* entry)
 {
-  auto iter = m_cache_map.find(path);
-  if (iter == m_cache_map.end())
+  auto iter = UnorderedStringMapFind(s_cache_map, path);
+  if (iter == s_cache_map.end())
     return false;
 
   *entry = std::move(iter->second);
-  m_cache_map.erase(iter);
+  s_cache_map.erase(iter);
   return true;
 }
 
@@ -324,11 +324,11 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.type = static_cast<EntryType>(type);
     ge.compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility_rating);
 
-    auto iter = m_cache_map.find(ge.path);
-    if (iter != m_cache_map.end())
+    auto iter = UnorderedStringMapFind(s_cache_map, ge.path);
+    if (iter != s_cache_map.end())
       iter->second = std::move(ge);
     else
-      m_cache_map.emplace(std::move(path), std::move(ge));
+      s_cache_map.emplace(std::move(path), std::move(ge));
   }
 
   return true;
@@ -337,23 +337,23 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
 bool GameList::WriteEntryToCache(const Entry* entry)
 {
   bool result = true;
-  result &= m_cache_write_stream->WriteU8(static_cast<u8>(entry->type));
-  result &= m_cache_write_stream->WriteU8(static_cast<u8>(entry->region));
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->path);
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->serial);
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->title);
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->genre);
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->publisher);
-  result &= m_cache_write_stream->WriteSizePrefixedString(entry->developer);
-  result &= m_cache_write_stream->WriteU64(entry->total_size);
-  result &= m_cache_write_stream->WriteU64(entry->last_modified_time);
-  result &= m_cache_write_stream->WriteU64(entry->release_date);
-  result &= m_cache_write_stream->WriteU32(entry->supported_controllers);
-  result &= m_cache_write_stream->WriteU8(entry->min_players);
-  result &= m_cache_write_stream->WriteU8(entry->max_players);
-  result &= m_cache_write_stream->WriteU8(entry->min_blocks);
-  result &= m_cache_write_stream->WriteU8(entry->max_blocks);
-  result &= m_cache_write_stream->WriteU8(static_cast<u8>(entry->compatibility));
+  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->type));
+  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->region));
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->path);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->serial);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->title);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->genre);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->publisher);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->developer);
+  result &= s_cache_write_stream->WriteU64(entry->total_size);
+  result &= s_cache_write_stream->WriteU64(entry->last_modified_time);
+  result &= s_cache_write_stream->WriteU64(entry->release_date);
+  result &= s_cache_write_stream->WriteU32(entry->supported_controllers);
+  result &= s_cache_write_stream->WriteU8(entry->min_players);
+  result &= s_cache_write_stream->WriteU8(entry->max_players);
+  result &= s_cache_write_stream->WriteU8(entry->min_blocks);
+  result &= s_cache_write_stream->WriteU8(entry->max_blocks);
+  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->compatibility));
   return result;
 }
 
@@ -374,7 +374,7 @@ void GameList::LoadCache()
   {
     Log_WarningPrintf("Deleting corrupted cache file '%s'", filename.c_str());
     stream.reset();
-    m_cache_map.clear();
+    s_cache_map.clear();
     DeleteCacheFile();
     return;
   }
@@ -383,37 +383,37 @@ void GameList::LoadCache()
 bool GameList::OpenCacheForWriting()
 {
   const std::string cache_filename(GetCacheFilename());
-  Assert(!m_cache_write_stream);
+  Assert(!s_cache_write_stream);
 
-  m_cache_write_stream = ByteStream::OpenFile(cache_filename.c_str(),
+  s_cache_write_stream = ByteStream::OpenFile(cache_filename.c_str(),
                                               BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_SEEKABLE);
-  if (m_cache_write_stream)
+  if (s_cache_write_stream)
   {
     // check the header
     u32 signature, version;
-    if (m_cache_write_stream->ReadU32(&signature) && signature == GAME_LIST_CACHE_SIGNATURE &&
-        m_cache_write_stream->ReadU32(&version) && version == GAME_LIST_CACHE_VERSION &&
-        m_cache_write_stream->SeekToEnd())
+    if (s_cache_write_stream->ReadU32(&signature) && signature == GAME_LIST_CACHE_SIGNATURE &&
+        s_cache_write_stream->ReadU32(&version) && version == GAME_LIST_CACHE_VERSION &&
+        s_cache_write_stream->SeekToEnd())
     {
       return true;
     }
 
-    m_cache_write_stream.reset();
+    s_cache_write_stream.reset();
   }
 
   Log_InfoPrintf("Creating new game list cache file: '%s'", cache_filename.c_str());
 
-  m_cache_write_stream = ByteStream::OpenFile(
+  s_cache_write_stream = ByteStream::OpenFile(
     cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE);
-  if (!m_cache_write_stream)
+  if (!s_cache_write_stream)
     return false;
 
   // new cache file, write header
-  if (!m_cache_write_stream->WriteU32(GAME_LIST_CACHE_SIGNATURE) ||
-      !m_cache_write_stream->WriteU32(GAME_LIST_CACHE_VERSION))
+  if (!s_cache_write_stream->WriteU32(GAME_LIST_CACHE_SIGNATURE) ||
+      !s_cache_write_stream->WriteU32(GAME_LIST_CACHE_VERSION))
   {
     Log_ErrorPrintf("Failed to write game list cache header");
-    m_cache_write_stream.reset();
+    s_cache_write_stream.reset();
     FileSystem::DeleteFile(cache_filename.c_str());
     return false;
   }
@@ -423,16 +423,16 @@ bool GameList::OpenCacheForWriting()
 
 void GameList::CloseCacheFileStream()
 {
-  if (!m_cache_write_stream)
+  if (!s_cache_write_stream)
     return;
 
-  m_cache_write_stream->Commit();
-  m_cache_write_stream.reset();
+  s_cache_write_stream->Commit();
+  s_cache_write_stream.reset();
 }
 
 void GameList::DeleteCacheFile()
 {
-  Assert(!m_cache_write_stream);
+  Assert(!s_cache_write_stream);
 
   const std::string filename(GetCacheFilename());
   if (!FileSystem::FileExists(filename.c_str()))
@@ -528,7 +528,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   entry.path = std::move(path);
   entry.last_modified_time = timestamp;
 
-  if (m_cache_write_stream || OpenCacheForWriting())
+  if (s_cache_write_stream || OpenCacheForWriting())
   {
     if (!WriteEntryToCache(&entry))
       Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
@@ -606,9 +606,9 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
     old_entries.swap(s_entries);
   }
 
-  const std::vector<std::string> excluded_paths(Host::GetStringListSetting("GameList", "ExcludedPaths"));
-  const std::vector<std::string> dirs(Host::GetStringListSetting("GameList", "Paths"));
-  const std::vector<std::string> recursive_dirs(Host::GetStringListSetting("GameList", "RecursivePaths"));
+  const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  const std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
+  const std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
   const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
 
   if (!dirs.empty() || !recursive_dirs.empty())
@@ -638,7 +638,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 
   // don't need unused cache entries
   CloseCacheFileStream();
-  m_cache_map.clear();
+  s_cache_map.clear();
 }
 
 std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
@@ -774,7 +774,8 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 {
   PlayedTimeMap ret;
 
-  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
+  // Use write mode here, even though we're not writing, so we can lock the file from other updates.
+  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
 
 #ifdef _WIN32
   // On Windows, the file is implicitly locked.
@@ -902,6 +903,21 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   }
 }
 
+std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
+{
+  if (serial.empty())
+    return 0;
+
+  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  for (GameList::Entry& entry : s_entries)
+  {
+    if (entry.serial == serial)
+      return entry.total_played_time;
+  }
+
+  return 0;
+}
+
 TinyString GameList::FormatTimestamp(std::time_t timestamp)
 {
   TinyString ret;
@@ -943,23 +959,33 @@ TinyString GameList::FormatTimestamp(std::time_t timestamp)
   return ret;
 }
 
-TinyString GameList::FormatTimespan(std::time_t timespan)
+TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
 {
   const u32 hours = static_cast<u32>(timespan / 3600);
   const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
   const u32 seconds = static_cast<u32>((timespan % 3600) % 60);
 
   TinyString ret;
-  if (hours >= 100)
-    ret.Fmt(Host::TranslateString("GameList", "{}h {}m").GetCharArray(), hours, minutes);
-  else if (hours > 0)
-    ret.Fmt(Host::TranslateString("GameList", "{}h {}m {}s").GetCharArray(), hours, minutes, seconds);
-  else if (minutes > 0)
-    ret.Fmt(Host::TranslateString("GameList", "{}m {}s").GetCharArray(), minutes, seconds);
-  else if (seconds > 0)
-    ret.Fmt(Host::TranslateString("GameList", "{}s").GetCharArray(), seconds);
+  if (!long_format)
+  {
+    if (hours >= 100)
+      ret.Fmt(Host::TranslateString("GameList", "{}h {}m").GetCharArray(), hours, minutes);
+    else if (hours > 0)
+      ret.Fmt(Host::TranslateString("GameList", "{}h {}m {}s").GetCharArray(), hours, minutes, seconds);
+    else if (minutes > 0)
+      ret.Fmt(Host::TranslateString("GameList", "{}m {}s").GetCharArray(), minutes, seconds);
+    else if (seconds > 0)
+      ret.Fmt(Host::TranslateString("GameList", "{}s").GetCharArray(), seconds);
+    else
+      ret = Host::TranslateString("GameList", "None");
+  }
   else
-    ret = Host::TranslateString("GameList", "None");
+  {
+    if (hours > 0)
+      ret = fmt::format(Host::TranslateString("GameList", "{} hours").GetCharArray(), hours);
+    else
+      ret = fmt::format(Host::TranslateString("GameList", "{} minutes").GetCharArray(), minutes);
+  }
 
   return ret;
 }

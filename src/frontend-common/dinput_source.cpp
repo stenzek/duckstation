@@ -85,10 +85,10 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
   // need to release the lock while we're enumerating, because we call winId().
   settings_lock.unlock();
-  HWND toplevel_window = static_cast<HWND>(Host::GetTopLevelWindowHandle());
-  AddDevices(toplevel_window);
+  m_toplevel_window = static_cast<HWND>(Host::GetTopLevelWindowHandle());
   settings_lock.lock();
 
+  ReloadDevices();
   return true;
 }
 
@@ -112,16 +112,29 @@ static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
   return DIENUM_CONTINUE;
 }
 
-void DInputSource::AddDevices(HWND toplevel_window)
+bool DInputSource::ReloadDevices()
 {
+  // detect any removals
+  PollEvents();
+
   std::vector<DIDEVICEINSTANCEW> devices;
   m_dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumCallback, &devices, DIEDFL_ATTACHEDONLY);
 
-  Log_InfoPrintf("Enumerated %zu devices", devices.size());
+  Log_VerbosePrintf("Enumerated %zu devices", devices.size());
 
+  bool changed = false;
   for (DIDEVICEINSTANCEW inst : devices)
   {
+    // do we already have this one?
+    if (std::any_of(m_controllers.begin(), m_controllers.end(),
+                    [&inst](const ControllerData& cd) { return inst.guidInstance == cd.guid; }))
+    {
+      // yup, so skip it
+      continue;
+    }
+
     ControllerData cd;
+    cd.guid = inst.guidInstance;
     HRESULT hr = m_dinput->CreateDevice(inst.guidInstance, cd.device.GetAddressOf(), nullptr);
     if (FAILED(hr))
     {
@@ -130,21 +143,24 @@ void DInputSource::AddDevices(HWND toplevel_window)
     }
 
     const std::string name(StringUtil::WideStringToUTF8String(inst.tszProductName));
-    if (AddDevice(cd, toplevel_window, name))
+    if (AddDevice(cd, name))
     {
       const u32 index = static_cast<u32>(m_controllers.size());
       m_controllers.push_back(std::move(cd));
       Host::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
+      changed = true;
     }
   }
+
+  return changed;
 }
 
-bool DInputSource::AddDevice(ControllerData& cd, HWND toplevel_window, const std::string& name)
+bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 {
-  HRESULT hr = cd.device->SetCooperativeLevel(toplevel_window, DISCL_BACKGROUND | DISCL_EXCLUSIVE);
+  HRESULT hr = cd.device->SetCooperativeLevel(m_toplevel_window, DISCL_BACKGROUND | DISCL_EXCLUSIVE);
   if (FAILED(hr))
   {
-    hr = cd.device->SetCooperativeLevel(toplevel_window, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+    hr = cd.device->SetCooperativeLevel(m_toplevel_window, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
     if (FAILED(hr))
     {
       Log_ErrorPrintf("Failed to set cooperative level for '%s'", name.c_str());
@@ -225,9 +241,6 @@ void DInputSource::PollEvents()
   for (size_t i = 0; i < m_controllers.size();)
   {
     ControllerData& cd = m_controllers[i];
-    if (!cd.device)
-      continue;
-
     if (cd.needs_poll)
       cd.device->Poll();
 

@@ -549,7 +549,7 @@ bool Vulkan::Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_
     Log_ErrorPrintf("Vulkan: Failed to find an acceptable graphics queue.");
     return false;
   }
-  if (surface && m_present_queue_family_index == queue_family_count)
+  if (surface != VK_NULL_HANDLE && m_present_queue_family_index == queue_family_count)
   {
     Log_ErrorPrintf("Vulkan: Failed to find an acceptable present queue.");
     return false;
@@ -583,7 +583,7 @@ bool Vulkan::Context::CreateDevice(VkSurfaceKHR surface, bool enable_validation_
   }};
 
   device_info.queueCreateInfoCount = 1;
-  if (m_graphics_queue_family_index != m_present_queue_family_index)
+  if (surface != VK_NULL_HANDLE && m_graphics_queue_family_index != m_present_queue_family_index)
   {
     device_info.queueCreateInfoCount = 2;
   }
