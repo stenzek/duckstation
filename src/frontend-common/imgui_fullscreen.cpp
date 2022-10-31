@@ -1561,7 +1561,9 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
   const ImGuiID id = window->GetID(title);
   if (enabled)
   {
-    if (!ImGui::ItemAdd(bb, id))
+    // bit contradictory - we don't want this button to be used for *gamepad* navigation, since they're usually
+    // activated with the bumpers and/or the back button.
+    if (!ImGui::ItemAdd(bb, id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_NoNavDefaultFocus))
       return false;
   }
   else
@@ -1575,7 +1577,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
   bool hovered;
   if (enabled)
   {
-    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
     if (hovered)
     {
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);

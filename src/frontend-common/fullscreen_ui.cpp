@@ -319,6 +319,11 @@ static void DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, con
                                   const char* format = "%f", float multiplier = 1.0f, bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                   ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+                                    const char* key, float default_value, float min_value, float max_value,
+                                    float step_value, float multiplier, const char* format = "%f", bool enabled = true,
+                                    float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                                    ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* left_key, int default_left, const char* top_key, int default_top,
                                const char* right_key, int default_right, const char* bottom_key, int default_bottom,
@@ -1425,6 +1430,7 @@ void FullscreenUI::DrawInputBindingWindow()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   if (ImGui::BeginPopupModal(title, nullptr,
@@ -1437,7 +1443,7 @@ void FullscreenUI::DrawInputBindingWindow()
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
 
@@ -1546,6 +1552,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
@@ -1577,7 +1584,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
 
@@ -1602,6 +1609,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
@@ -1613,7 +1621,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
     float dlg_value = value.value_or(default_value) * multiplier;
-    if (ImGui::SliderFloat("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
+    if (ImGui::SliderFloat("##value", &dlg_value, min_value * multiplier, max_value * multiplier, format,
+                           ImGuiSliderFlags_NoInput))
     {
       dlg_value /= multiplier;
 
@@ -1635,7 +1644,137 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
+  ImGui::PopFont();
+}
+
+void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
+                                           const char* section, const char* key, float default_value, float min_value,
+                                           float max_value, float step_value, float multiplier, const char* format,
+                                           bool enabled, float height, ImFont* font, ImFont* summary_font)
+{
+  const bool game_settings = IsEditingGameSettings(bsi);
+  const std::optional<float> value =
+    bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
+  const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) :
+                                                   std::string("Use Global Setting"));
+
+  static bool manual_input = false;
+  static u32 repeat_count = 0;
+
+  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
+  {
+    ImGui::OpenPopup(title);
+    manual_input = false;
+  }
+
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushFont(g_large_font);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+  bool is_open = true;
+  if (ImGui::BeginPopupModal(title, &is_open,
+                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  {
+    BeginMenuButtons();
+
+    float dlg_value = value.value_or(default_value) * multiplier;
+    bool dlg_value_changed = false;
+
+    char str_value[32];
+    std::snprintf(str_value, std::size(str_value), format, dlg_value);
+
+    if (manual_input)
+    {
+      const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+      ImGui::SetNextItemWidth(end);
+
+      // round trip to drop any suffixes (e.g. percent)
+      if (auto tmp_value = StringUtil::FromChars<float>(str_value); tmp_value.has_value())
+      {
+        std::snprintf(str_value, std::size(str_value),
+                      ((tmp_value.value() - std::floor(tmp_value.value())) < 0.01f) ? "%.0f" : "%f", tmp_value.value());
+      }
+
+      if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+      {
+        dlg_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
+        dlg_value_changed = true;
+      }
+
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+    }
+    else
+    {
+      const ImVec2& padding(ImGui::GetStyle().FramePadding);
+      ImVec2 button_pos(ImGui::GetCursorPos());
+
+      // Align value text in middle.
+      ImGui::SetCursorPosY(
+        button_pos.y +
+        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+      ImGui::TextUnformatted(str_value);
+
+      float step = 0;
+      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
+                         &button_pos, true))
+      {
+        step = step_value;
+      }
+      if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                         g_large_font, &button_pos, true))
+      {
+        step = -step_value;
+      }
+      if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                         g_large_font, &button_pos))
+      {
+        manual_input = true;
+      }
+      if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                         g_large_font, &button_pos))
+      {
+        dlg_value = default_value * multiplier;
+        dlg_value_changed = true;
+      }
+
+      if (step != 0)
+      {
+        dlg_value += step * multiplier;
+        dlg_value_changed = true;
+      }
+
+      ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) +
+                           LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+    }
+
+    if (dlg_value_changed)
+    {
+      dlg_value = std::clamp(dlg_value / multiplier, min_value, max_value);
+      if (IsEditingGameSettings(bsi) && dlg_value == default_value)
+        bsi->DeleteValue(section, key);
+      else
+        bsi->SetFloatValue(section, key, dlg_value);
+
+      SetSettingsChanged(bsi);
+    }
+
+    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    {
+      ImGui::CloseCurrentPopup();
+    }
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
 
@@ -1671,6 +1810,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
@@ -1751,7 +1891,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
 
@@ -3176,8 +3316,9 @@ void FullscreenUI::DrawControllerSettingsPage()
                                si.options, 0, si.IntegerMinValue(), true);
             break;
           case SettingInfo::Type::Float:
-            DrawFloatRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
-                                  si.FloatMinValue(), si.FloatMaxValue(), si.format, si.multiplier, true);
+            DrawFloatSpinBoxSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
+                                    si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier,
+                                    si.format, true);
             break;
           default:
             break;
@@ -3200,7 +3341,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
   const HotkeyInfo* last_category = nullptr;
   for (const HotkeyInfo* hotkey : s_hotkey_list_cache)
   {
-    if (!last_category || hotkey->category != last_category->category)
+    if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
     {
       MenuHeading(hotkey->category);
       last_category = hotkey;
@@ -4785,7 +4926,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
 
-  if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NoNav))
+  if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NavFlattened))
   {
     BeginNavBar();
     if (NavButton(ICON_FA_BACKWARD, true, true))
