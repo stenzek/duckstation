@@ -417,27 +417,27 @@ Leaderboard Position: {} of {}</source>
 Posição nos placares de lideres: {} de {}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6729"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6870"/>
         <source>This game has {} leaderboards.</source>
         <translation>Este jogo não possui {} placares de lideres.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6747"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6888"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>O envio de pontuações está desligado porque o modo dificílimo está desativado. As tabelas de classificação são somente leitura.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6782"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6923"/>
         <source>Time</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6783"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6924"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6839"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6980"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Baixando informações de placares, por favor aguarde...</translation>
     </message>
@@ -9646,6 +9646,11 @@ Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</
         <location filename="../mainwindow.cpp" line="2452"/>
         <source>Confirm Shutdown</source>
         <translation>Confirmar desligamento</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2453"/>
+        <source>Are you sure you want to shut down the virtual machine?</source>
+        <translation>Tem certeza de que deseja desligar a máquina virtual?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2455"/>
