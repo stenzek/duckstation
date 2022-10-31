@@ -127,6 +127,11 @@ void EvdevInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<st
   // noop
 }
 
+bool EvdevInputSource::ReloadDevices()
+{
+  return false;
+}
+
 void EvdevInputSource::Shutdown()
 {
   // noop
