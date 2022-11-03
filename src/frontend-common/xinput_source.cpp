@@ -115,6 +115,7 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
     return false;
   }
 
+  ReloadDevices();
   return true;
 }
 
