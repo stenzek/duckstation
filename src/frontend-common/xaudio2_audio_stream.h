@@ -51,8 +51,6 @@ private:
   u32 m_current_buffer = 0;
   bool m_buffer_enqueued = false;
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   HMODULE m_xaudio2_library = {};
   bool m_com_initialized_by_us = false;
-#endif
 };
