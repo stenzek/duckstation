@@ -6,10 +6,6 @@
 #include <xaudio2.h>
 Log_SetChannel(XAudio2AudioStream);
 
-#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#pragma comment(lib, "xaudio2.lib")
-#endif
-
 XAudio2AudioStream::XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
   : AudioStream(sample_rate, channels, buffer_ms, stretch)
 {
@@ -20,13 +16,11 @@ XAudio2AudioStream::~XAudio2AudioStream()
   if (IsOpen())
     CloseDevice();
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
   if (m_xaudio2_library)
     FreeLibrary(m_xaudio2_library);
 
   if (m_com_initialized_by_us)
     CoUninitialize();
-#endif
 }
 
 std::unique_ptr<AudioStream> CommonHost::CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms,
