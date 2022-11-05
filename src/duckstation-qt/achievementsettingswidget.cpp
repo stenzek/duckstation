@@ -25,6 +25,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFirstDiscFromPlaylist, "Cheevos",
                                                "UseFirstDiscFromPlaylist", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboards, "Cheevos", "Leaderboards", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.notifications, "Cheevos", "Notifications", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Cheevos", "PrimedIndicators", true);
 
@@ -48,6 +49,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
                              tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save "
                                 "state, cheats, and slowdown functions."));
   dialog->registerWidgetHelp(
+    m_ui.notifications, tr("Show Notifications"), tr("Checked"),
+    tr("Displays popup messages on events such as achievement unlocks and leaderboard submissions."));
+  dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
   dialog->registerWidgetHelp(
@@ -59,6 +63,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
     tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 
   connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.notifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onChallengeModeStateChanged);
 
@@ -92,13 +97,15 @@ void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
   const bool challenge = m_dialog->getEffectiveBoolValue("Cheevos", "ChallengeMode", false);
+  const bool notifications = m_dialog->getEffectiveBoolValue("Cheevos", "Notifications", true);
   m_ui.testMode->setEnabled(enabled);
   m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
   m_ui.richPresence->setEnabled(enabled);
   m_ui.challengeMode->setEnabled(enabled);
   m_ui.leaderboards->setEnabled(enabled && challenge);
   m_ui.unofficialTestMode->setEnabled(enabled);
-  m_ui.soundEffects->setEnabled(enabled);
+  m_ui.notifications->setEnabled(enabled);
+  m_ui.soundEffects->setEnabled(enabled && notifications);
   m_ui.primedIndicators->setEnabled(enabled);
 }
 

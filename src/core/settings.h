@@ -178,6 +178,7 @@ struct Settings
   bool achievements_rich_presence = true;
   bool achievements_challenge_mode = false;
   bool achievements_leaderboards = true;
+  bool achievements_notifications = true;
   bool achievements_sound_effects = true;
   bool achievements_primed_indicators = true;
 #endif

@@ -350,6 +350,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_rich_presence = si.GetBoolValue("Cheevos", "RichPresence", true);
   achievements_challenge_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
   achievements_leaderboards = si.GetBoolValue("Cheevos", "Leaderboards", true);
+  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
   achievements_primed_indicators = si.GetBoolValue("Cheevos", "PrimedIndicators", true);
 
@@ -536,6 +537,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Cheevos", "RichPresence", achievements_rich_presence);
   si.SetBoolValue("Cheevos", "ChallengeMode", achievements_challenge_mode);
   si.SetBoolValue("Cheevos", "Leaderboards", achievements_leaderboards);
+  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
   si.SetBoolValue("Cheevos", "PrimedIndicators", achievements_primed_indicators);
 
