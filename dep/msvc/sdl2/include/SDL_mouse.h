@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -75,6 +75,8 @@ typedef enum
  * Get the window which currently has mouse focus.
  *
  * \returns the window with mouse focus.
+ *
+ * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
@@ -92,6 +94,8 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * \param y the y coordinate of the mouse cursor position relative to the
  *          focus window
  * \returns a 32-bit button bitmask of the current button state.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
@@ -141,6 +145,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetGlobalMouseState(int *x, int *y);
  * \param y a pointer filled with the last recorded y coordinate of the mouse
  * \returns a 32-bit button bitmask of the relative button state.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetMouseState
  */
 extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
@@ -148,7 +154,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
 /**
  * Move the mouse cursor to the given position within the window.
  *
- * This function generates a mouse motion event.
+ * This function generates a mouse motion event if relative mode is not
+ * enabled. If relative mode is enabled, you can force mouse events for the
+ * warp by setting the SDL_HINT_MOUSE_RELATIVE_WARP_MOTION hint.
  *
  * Note that this function will appear to succeed, but not actually move the
  * mouse when used over Microsoft Remote Desktop.
@@ -157,6 +165,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
  *               mouse focus
  * \param x the x coordinate within the window
  * \param y the y coordinate within the window
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_WarpMouseGlobal
  */
@@ -204,6 +214,8 @@ extern DECLSPEC int SDLCALL SDL_WarpMouseGlobal(int x, int y);
  *
  *          If relative mode is not supported, this returns -1.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetRelativeMouseMode
  */
 extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
@@ -235,6 +247,15 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  * While capturing is enabled, the current window will have the
  * `SDL_WINDOW_MOUSE_CAPTURE` flag set.
  *
+ * Please note that as of SDL 2.0.22, SDL will attempt to "auto capture" the
+ * mouse while the user is pressing a button; this is to try and make mouse
+ * behavior more consistent between platforms, and deal with the common case
+ * of a user dragging the mouse outside of the window. This means that if you
+ * are calling SDL_CaptureMouse() only to deal with this situation, you no
+ * longer have to (although it is safe to do so). If this causes problems for
+ * your app, you can disable auto capture by setting the
+ * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
+ *
  * \param enabled SDL_TRUE to enable capturing, SDL_FALSE to disable.
  * \returns 0 on success or -1 if not supported; call SDL_GetError() for more
  *          information.
@@ -249,6 +270,8 @@ extern DECLSPEC int SDLCALL SDL_CaptureMouse(SDL_bool enabled);
  * Query whether relative mouse mode is enabled.
  *
  * \returns SDL_TRUE if relative mode is enabled or SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetRelativeMouseMode
  */
@@ -288,6 +311,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  *              relative to the actual mouse position
  * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_FreeCursor
  * \sa SDL_SetCursor
@@ -339,6 +364,8 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
  *
  * \param cursor a cursor to make active
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_CreateCursor
  * \sa SDL_GetCursor
  * \sa SDL_ShowCursor
@@ -352,6 +379,8 @@ extern DECLSPEC void SDLCALL SDL_SetCursor(SDL_Cursor * cursor);
  * library. It is not necessary to free the cursor with SDL_FreeCursor().
  *
  * \returns the active cursor or NULL if there is no mouse.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetCursor
  */
@@ -376,6 +405,8 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
  *
  * \param cursor the cursor to free
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
@@ -396,6 +427,8 @@ extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor * cursor);
  * \returns `SDL_ENABLE` if the cursor is shown, or `SDL_DISABLE` if the
  *          cursor is hidden, or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_CreateCursor
  * \sa SDL_SetCursor

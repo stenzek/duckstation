@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -401,6 +401,26 @@ typedef enum
     SDL_SCANCODE_AUDIOFASTFORWARD = 286,
 
     /* @} *//* Usage page 0x0C (additional media keys) */
+
+    /**
+     *  \name Mobile keys
+     *
+     *  These are values that are often used on mobile phones.
+     */
+    /* @{ */
+
+    SDL_SCANCODE_SOFTLEFT = 287, /**< Usually situated below the display on phones and
+                                      used as a multi-function feature key for selecting
+                                      a software defined function shown on the bottom left
+                                      of the display. */
+    SDL_SCANCODE_SOFTRIGHT = 288, /**< Usually situated below the display on phones and
+                                       used as a multi-function feature key for selecting
+                                       a software defined function shown on the bottom right
+                                       of the display. */
+    SDL_SCANCODE_CALL = 289, /**< Used for accepting phone calls. */
+    SDL_SCANCODE_ENDCALL = 290, /**< Used for rejecting phone calls. */
+
+    /* @} *//* Mobile keys */
 
     /* Add any other keys here. */
 

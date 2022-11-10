@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 #ifndef SDL_assert_h_
 #define SDL_assert_h_
 
-#include "SDL_config.h"
+#include "SDL_stdinc.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -51,6 +51,8 @@ assert can have unique static variables associated with it.
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
+#elif _SDL_HAS_BUILTIN(__builtin_debugtrap)
+    #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif ( (!defined(__NACL__)) && ((defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))) )
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif ( defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)) )  /* this might work on other ARM targets, but this is a known quantity... */
@@ -69,7 +71,7 @@ assert can have unique static variables associated with it.
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
 #   define SDL_FUNCTION __func__
-#elif ((__GNUC__ >= 2) || defined(_MSC_VER) || defined (__WATCOMC__))
+#elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))
 #   define SDL_FUNCTION __FUNCTION__
 #else
 #   define SDL_FUNCTION "???"
@@ -217,6 +219,8 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *                fails or NULL for the default handler
  * \param userdata a pointer that is passed to `handler`
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_GetAssertionHandler
  */
 extern DECLSPEC void SDLCALL SDL_SetAssertionHandler(
@@ -285,6 +289,8 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  * \returns a list of all failed assertions or NULL if the list is empty. This
  *          memory should not be modified or freed by the application.
  *
+ * \since This function is available since SDL 2.0.0.
+ *
  * \sa SDL_ResetAssertionReport
  */
 extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
@@ -296,6 +302,8 @@ extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
  * point. Immediately following this call, SDL_GetAssertionReport will return
  * no items. In addition, any previously-triggered assertions will be reset to
  * a trigger_count of zero, and their always_ignore state will be false.
+ *
+ * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetAssertionReport
  */

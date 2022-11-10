@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,6 +50,7 @@
 #define VERBOSE_RENDER  0x00000004
 #define VERBOSE_EVENT   0x00000008
 #define VERBOSE_AUDIO   0x00000010
+#define VERBOSE_MOTION  0x00000020
 
 typedef struct
 {
@@ -114,6 +115,10 @@ typedef struct
     int gl_minor_version;
     int gl_debug;
     int gl_profile_mask;
+
+    /* Additional fields added in 2.0.18 */
+    SDL_Rect confine;
+
 } SDLTest_CommonState;
 
 #include "begin_code.h"
@@ -215,9 +220,10 @@ void SDLTest_CommonQuit(SDLTest_CommonState * state);
  *
  * \param renderer The renderer to draw to.
  * \param window The window whose information should be displayed.
+ * \param usedHeight Returns the height used, so the caller can draw more below.
  *
  */
-void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window);
+void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int * usedHeight);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

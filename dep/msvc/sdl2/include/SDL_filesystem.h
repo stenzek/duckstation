@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -55,7 +55,7 @@ extern "C" {
  *
  * - `resource`: bundle resource directory (the default). For example:
  *   `/Applications/SDLApp/MyApp.app/Contents/Resources`
- * - `bundle`: the Bundle directory. Fpr example:
+ * - `bundle`: the Bundle directory. For example:
  *   `/Applications/SDLApp/MyApp.app/`
  * - `parent`: the containing directory of the bundle. For example:
  *   `/Applications/SDLApp/`
@@ -92,7 +92,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *
  * `C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\`
  *
- * On Linux, the string might look like"
+ * On Linux, the string might look like:
  *
  * `/home/bob/.local/share/My Program Name/`
  *
