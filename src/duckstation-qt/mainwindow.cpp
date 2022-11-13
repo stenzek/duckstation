@@ -5,6 +5,7 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "core/achievements.h"
 #include "core/host.h"
 #include "core/host_display.h"
 #include "core/memory_card.h"

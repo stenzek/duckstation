@@ -343,6 +343,7 @@ void Settings::Load(SettingsInterface& si)
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
+#ifdef WITH_CHEEVOS
   achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
   achievements_test_mode = si.GetBoolValue("Cheevos", "TestMode", false);
   achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
@@ -353,6 +354,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
   achievements_primed_indicators = si.GetBoolValue("Cheevos", "PrimedIndicators", true);
+#endif
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -530,6 +532,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
 
+#ifdef WITH_CHEEVOS
   si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
   si.SetBoolValue("Cheevos", "TestMode", achievements_test_mode);
   si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
@@ -540,6 +543,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
   si.SetBoolValue("Cheevos", "PrimedIndicators", achievements_primed_indicators);
+#endif
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
