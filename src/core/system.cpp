@@ -1197,16 +1197,18 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Allow controller analog mode for EXEs and PSFs.
   s_running_bios = s_running_game_path.empty() && !exe_boot && !psf_boot;
 
-  Bus::SetBIOS(*bios_image);
+  Bus::SetBIOS(bios_image.value());
   UpdateControllers();
   UpdateMemoryCardTypes();
   UpdateMultitaps();
   InternalReset();
 
   // Enable tty by patching bios.
-  const BIOS::Hash bios_hash = BIOS::GetHash(*bios_image);
-  if (g_settings.bios_patch_tty_enable)
-    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE, bios_hash);
+  const BIOS::ImageInfo* bios_info = BIOS::GetInfoForImage(bios_image.value());
+  if (bios_info && bios_info->patch_compatible)
+    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
+  else
+    Log_ErrorPrintf("Not patching TTY enable, as BIOS is not patch compatible.");
 
   // Load EXE late after BIOS.
   if (exe_boot && !LoadEXE(parameters.filename.c_str()))
@@ -1228,7 +1230,10 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (g_cdrom.HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
                                                                          g_settings.bios_patch_fast_boot))
   {
-    BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, bios_hash);
+    if (bios_info && bios_info->patch_compatible)
+      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+    else
+      Log_ErrorPrintf("Not patching fast boot, as BIOS is not patch compatible.");
   }
 
   // Good to go.
