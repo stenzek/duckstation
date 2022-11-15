@@ -1,6 +1,4 @@
 add_library(frontend-common
-  achievements.cpp
-  achievements.h
   common_host.cpp
   common_host.h
   fullscreen_ui.cpp

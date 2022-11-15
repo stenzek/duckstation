@@ -11,6 +11,7 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "common_host.h"
+#include "core/achievements.h"
 #include "core/bios.h"
 #include "core/cheats.h"
 #include "core/controller.h"
