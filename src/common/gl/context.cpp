@@ -64,9 +64,12 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
     // GL_{EXT,OES}_copy_image seem to be implemented on the CPU in the Mali drivers...
     // Older drivers don't implement timer queries correctly either.
     int gl_major_version, gl_minor_version, unused_version, major_version, patch_version;
-    if (std::sscanf(gl_version, "OpenGL ES %d.%d v%d.r%dp%d", &gl_major_version, &gl_minor_version, &unused_version,
-                    &major_version, &patch_version) == 5 &&
-        gl_major_version >= 3 && gl_minor_version >= 2 && major_version >= 32)
+    if ((std::sscanf(gl_version, "OpenGL ES %d.%d v%d.r%dp%d", &gl_major_version, &gl_minor_version, &unused_version,
+                     &major_version, &patch_version) == 5 &&
+         gl_major_version >= 3 && gl_minor_version >= 2 && major_version >= 32) ||
+        (std::sscanf(gl_version, "OpenGL ES %d.%d v%d.g%dp%d", &gl_major_version, &gl_minor_version, &unused_version,
+                     &major_version, &patch_version) == 5 &&
+         gl_major_version >= 3 && gl_minor_version >= 2 && major_version > 0))
     {
       // r32p0 and beyond seem okay.
       Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
@@ -134,11 +137,17 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   if (wi.type == WindowInfo::Type::X11)
   {
 #ifdef USE_EGL
+    // Always prefer EGL when running on ARM. Mali drivers don't support GLX,
+    // and anything using Mesa will support EGL anyway.
+#if defined(__arm__) || defined(__aarch64__)
+    context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
+#else
     const char* use_egl_x11 = std::getenv("USE_EGL_X11");
     if (use_egl_x11 && std::strcmp(use_egl_x11, "1") == 0)
       context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
     else
       context = ContextGLX::Create(wi, versions_to_try, num_versions_to_try);
+#endif
 #else
     context = ContextGLX::Create(wi, versions_to_try, num_versions_to_try);
 #endif
