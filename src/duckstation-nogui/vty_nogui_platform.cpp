@@ -130,11 +130,6 @@ void VTYNoGUIPlatform::SetPlatformWindowTitle(std::string title)
   Log_InfoPrintf("Window Title: %s", title.c_str());
 }
 
-void* VTYNoGUIPlatform::GetPlatformWindowHandle()
-{
-  return nullptr;
-}
-
 void VTYNoGUIPlatform::RunMessageLoop()
 {
   while (m_message_loop_running.load(std::memory_order_acquire))

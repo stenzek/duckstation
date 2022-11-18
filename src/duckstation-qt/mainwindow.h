@@ -4,8 +4,10 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QStackedWidget>
 #include <memory>
+#include <optional>
 
 #include "controllersettingsdialog.h"
+#include "common/window_info.h"
 #include "core/types.h"
 #include "displaywidget.h"
 #include "settingsdialog.h"
@@ -97,6 +99,7 @@ public Q_SLOTS:
   bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool save_state = true, bool block_until_done = false);
   void requestExit(bool allow_save_to_state = true);
   void checkForSettingChanges();
+  void getWindowInfo(WindowInfo* wi);
 
   void checkForUpdates(bool display_message);
 

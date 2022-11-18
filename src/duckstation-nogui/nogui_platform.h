@@ -25,7 +25,6 @@ public:
 
   virtual std::optional<WindowInfo> GetPlatformWindowInfo() = 0;
   virtual void SetPlatformWindowTitle(std::string title) = 0;
-  virtual void* GetPlatformWindowHandle() = 0;
 
   virtual std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str) = 0;
   virtual std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code) = 0;

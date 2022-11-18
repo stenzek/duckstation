@@ -1,7 +1,7 @@
 #include "common/window_info.h"
 
 namespace FrontendCommon {
-void SuspendScreensaver(const WindowInfo& wi);
+void SuspendScreensaver();
 void ResumeScreensaver();
 
 /// Abstracts platform-specific code for asynchronously playing a sound.

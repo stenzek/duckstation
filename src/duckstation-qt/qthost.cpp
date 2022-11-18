@@ -6,6 +6,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/window_info.h"
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/game_database.h"
@@ -1757,10 +1758,13 @@ void Host::RequestExit(bool save_state_if_running)
   QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, save_state_if_running));
 }
 
-void* Host::GetTopLevelWindowHandle()
+std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
-  void* ret = nullptr;
-  QMetaObject::invokeMethod(g_main_window, &MainWindow::getNativeWindowId, Qt::BlockingQueuedConnection, &ret);
+  // Normally we'd just feed the std::optional all the way through here. But that won't work because of some bug
+  // in Qt 6.1, and we can't upgrade that because of raging/abusive Win7 users... to anyone still using that dead
+  // OS, this is a passive-aggressive "screw you".
+  WindowInfo ret;
+  QMetaObject::invokeMethod(g_main_window, "getWindowInfo", Qt::BlockingQueuedConnection, Q_ARG(WindowInfo*, &ret));
   return ret;
 }
 

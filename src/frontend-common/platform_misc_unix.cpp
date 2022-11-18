@@ -1,6 +1,7 @@
 #include "common/log.h"
 #include "common/string.h"
 #include "platform_misc.h"
+#include "input_manager.h"
 #include <cinttypes>
 Log_SetChannel(FrontendCommon);
 
@@ -36,40 +37,42 @@ static bool SetScreensaverInhibitX11(bool inhibit, const WindowInfo& wi)
 
 #endif // USE_X11
 
-static bool SetScreensaverInhibit(bool inhibit, const WindowInfo& wi)
+static bool SetScreensaverInhibit(bool inhibit)
 {
-  switch (wi.type)
+  std::optional<WindowInfo> wi(Host::GetTopLevelWindowInfo());
+  if (!wi.has_value())
+  {
+    Log_ErrorPrintf("No top-level window.");
+    return false;
+  }
+
+  switch (wi->type)
   {
 #ifdef USE_X11
     case WindowInfo::Type::X11:
-      return SetScreensaverInhibitX11(inhibit, wi);
+      return SetScreensaverInhibitX11(inhibit, wi.value());
 #endif
 
     default:
-      Log_ErrorPrintf("Unknown type: %u", static_cast<unsigned>(wi.type));
+      Log_ErrorPrintf("Unknown type: %u", static_cast<unsigned>(wi->type));
       return false;
   }
 }
 
 static bool s_screensaver_suspended;
-static WindowInfo s_screensaver_suspender;
 
-void FrontendCommon::SuspendScreensaver(const WindowInfo& wi)
+void FrontendCommon::SuspendScreensaver()
 {
-  if (s_screensaver_suspended &&
-      (s_screensaver_suspender.type != wi.type || s_screensaver_suspender.window_handle != wi.window_handle))
-    ResumeScreensaver();
+  if (s_screensaver_suspended)
+    return;
 
-  if (!SetScreensaverInhibit(true, wi))
+  if (!SetScreensaverInhibit(true))
   {
     Log_ErrorPrintf("Failed to suspend screensaver.");
     return;
   }
 
-  Log_InfoPrintf("Screensaver suspended by 0x%" PRIx64 ".",
-                 static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
   s_screensaver_suspended = true;
-  s_screensaver_suspender = wi;
 }
 
 void FrontendCommon::ResumeScreensaver()
@@ -77,13 +80,10 @@ void FrontendCommon::ResumeScreensaver()
   if (!s_screensaver_suspended)
     return;
 
-  if (!SetScreensaverInhibit(false, s_screensaver_suspender))
+  if (!SetScreensaverInhibit(false))
     Log_ErrorPrint("Failed to resume screensaver.");
-  else
-    Log_InfoPrint("Screensaver resumed.");
 
   s_screensaver_suspended = false;
-  s_screensaver_suspender = {};
 }
 
 bool FrontendCommon::PlaySoundAsync(const char* path)

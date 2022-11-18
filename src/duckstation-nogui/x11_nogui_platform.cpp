@@ -129,11 +129,6 @@ void X11NoGUIPlatform::SetPlatformWindowTitle(std::string title)
   });
 }
 
-void* X11NoGUIPlatform::GetPlatformWindowHandle()
-{
-  return reinterpret_cast<void*>(m_window);
-}
-
 void X11NoGUIPlatform::InitializeKeyMap()
 {
   int min_keycode = 0, max_keycode = -1;

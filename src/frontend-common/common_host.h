@@ -49,8 +49,3 @@ std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, 
 namespace ImGuiManager {
 void RenderDebugWindows();
 }
-
-namespace Host {
-/// Return the current window handle. Needed for DInput.
-void* GetTopLevelWindowHandle();
-} // namespace Host

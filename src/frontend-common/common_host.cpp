@@ -243,7 +243,7 @@ void CommonHost::OnSystemStarted()
   FullscreenUI::OnSystemStarted();
 
   if (g_settings.inhibit_screensaver)
-    FrontendCommon::SuspendScreensaver(g_host_display->GetWindowInfo());
+    FrontendCommon::SuspendScreensaver();
 }
 
 void CommonHost::OnSystemPaused()
@@ -261,7 +261,7 @@ void CommonHost::OnSystemResumed()
   FullscreenUI::OnSystemResumed();
 
   if (g_settings.inhibit_screensaver)
-    FrontendCommon::SuspendScreensaver(g_host_display->GetWindowInfo());
+    FrontendCommon::SuspendScreensaver();
 }
 
 void CommonHost::OnSystemDestroyed()
@@ -361,7 +361,7 @@ void CommonHost::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
     {
       if (g_settings.inhibit_screensaver)
-        FrontendCommon::SuspendScreensaver(g_host_display->GetWindowInfo());
+        FrontendCommon::SuspendScreensaver();
       else
         FrontendCommon::ResumeScreensaver();
     }

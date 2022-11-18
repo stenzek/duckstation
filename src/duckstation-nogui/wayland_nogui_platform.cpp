@@ -193,11 +193,6 @@ void WaylandNoGUIPlatform::SetPlatformWindowTitle(std::string title)
     xdg_toplevel_set_title(m_xdg_toplevel, title.c_str());
 }
 
-void* WaylandNoGUIPlatform::GetPlatformWindowHandle()
-{
-  return m_surface;
-}
-
 std::optional<u32> WaylandNoGUIPlatform::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
   std::unique_lock lock(m_key_map_mutex);

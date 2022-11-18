@@ -29,7 +29,6 @@ public:
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
   void SetPlatformWindowTitle(std::string title) override;
-  void* GetPlatformWindowHandle() override;
 
   std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str) override;
   std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code) override;

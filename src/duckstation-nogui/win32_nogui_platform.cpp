@@ -177,11 +177,6 @@ void Win32NoGUIPlatform::SetPlatformWindowTitle(std::string title)
   SetWindowTextW(m_hwnd, StringUtil::UTF8StringToWideString(title).c_str());
 }
 
-void* Win32NoGUIPlatform::GetPlatformWindowHandle()
-{
-  return m_hwnd;
-}
-
 std::optional<u32> Win32NoGUIPlatform::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
   std::optional<DWORD> converted(Win32KeyNames::GetKeyCodeForName(str));

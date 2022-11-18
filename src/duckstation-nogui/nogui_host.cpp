@@ -964,9 +964,9 @@ void Host::SetFullscreen(bool enabled)
   g_nogui_window->SetFullscreen(enabled);
 }
 
-void* Host::GetTopLevelWindowHandle()
+std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
-  return g_nogui_window->GetPlatformWindowHandle();
+  return g_nogui_window->GetPlatformWindowInfo();
 }
 
 void Host::RequestExit(bool save_state_if_running)

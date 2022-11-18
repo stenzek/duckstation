@@ -20,13 +20,11 @@ static bool SetScreensaverInhibitWin32(bool inhibit)
 }
 
 static bool s_screensaver_suspended;
-static WindowInfo s_screensaver_suspender;
 
-void FrontendCommon::SuspendScreensaver(const WindowInfo& wi)
+void FrontendCommon::SuspendScreensaver()
 {
-  if (s_screensaver_suspended &&
-      (s_screensaver_suspender.type != wi.type || s_screensaver_suspender.window_handle != wi.window_handle))
-    ResumeScreensaver();
+  if (s_screensaver_suspended)
+    return;
 
   if (!SetScreensaverInhibitWin32(true))
   {
@@ -34,10 +32,7 @@ void FrontendCommon::SuspendScreensaver(const WindowInfo& wi)
     return;
   }
 
-  Log_InfoPrintf("Screensaver suspended by 0x%" PRIx64 ".",
-                 static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
   s_screensaver_suspended = true;
-  s_screensaver_suspender = wi;
 }
 
 void FrontendCommon::ResumeScreensaver()
@@ -47,11 +42,8 @@ void FrontendCommon::ResumeScreensaver()
 
   if (!SetScreensaverInhibitWin32(false))
     Log_ErrorPrint("Failed to resume screensaver.");
-  else
-    Log_InfoPrint("Screensaver resumed.");
 
   s_screensaver_suspended = false;
-  s_screensaver_suspender = {};
 }
 
 bool FrontendCommon::PlaySoundAsync(const char* path)
