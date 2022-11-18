@@ -3,7 +3,7 @@
 SET VERSIONFILE="scmversion.cpp"
 FOR /F "tokens=* USEBACKQ" %%g IN (`git rev-parse HEAD`) do (SET "HASH=%%g")
 FOR /F "tokens=* USEBACKQ" %%g IN (`git rev-parse --abbrev-ref HEAD`) do (SET "BRANCH=%%g")
-FOR /F "tokens=* USEBACKQ" %%g IN (`git describe --tags --dirty --exclude latest --exclude preview --exclude play-store-release`) do (SET "TAG=%%g")
+FOR /F "tokens=* USEBACKQ" %%g IN (`git describe --tags --dirty --exclude latest --exclude preview --exclude legacy --exclude play-store-release`) do (SET "TAG=%%g")
 FOR /F "tokens=* USEBACKQ" %%g IN (`git log -1 --date=iso8601-strict "--format=%%cd"`) do (SET "CDATE=%%g")
 
 SET SIGNATURELINE=// %HASH% %BRANCH% %TAG% %CDATE%
