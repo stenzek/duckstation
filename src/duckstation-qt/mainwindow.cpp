@@ -704,7 +704,7 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 void MainWindow::recreate()
 {
   if (s_system_valid)
-    requestShutdown(false, true, true);
+    requestShutdown(false, true, true, true);
 
   // We need to close input sources, because e.g. DInput uses our window handle.
   g_emu_thread->closeInputSources();
