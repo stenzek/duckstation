@@ -482,7 +482,7 @@ void GameListWidget::loadTableViewColumnVisibilitySettings()
     true,  // code
     true,  // title
     false, // file title
-    true,  // developer
+    false, // developer
     false, // publisher
     false, // genre
     false, // year
