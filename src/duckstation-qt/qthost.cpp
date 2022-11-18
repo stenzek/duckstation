@@ -166,6 +166,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     }
 
     s_base_settings_interface->SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
+    s_base_settings_interface->SetBoolValue("ControllerPorts", "ControllerSettingsMigrated", true);
     SetDefaultSettings(*s_base_settings_interface, true, true);
     s_base_settings_interface->Save();
   }
@@ -178,6 +179,14 @@ bool QtHost::InitializeConfig(std::string settings_filename)
       s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE))
   {
     Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_NONE);
+  }
+
+  // TEMPORARY: Migrate controller settings to new interface.
+  if (!s_base_settings_interface->GetBoolValue("ControllerPorts", "ControllerSettingsMigrated", false))
+  {
+    s_base_settings_interface->SetBoolValue("ControllerPorts", "ControllerSettingsMigrated", true);
+    if (InputManager::MigrateBindings(*s_base_settings_interface.get()))
+      s_base_settings_interface->Save();
   }
 
   InstallTranslator();

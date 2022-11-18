@@ -217,6 +217,9 @@ GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& devi
 /// Re-parses the config and registers all hotkey and pad bindings.
 void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si);
 
+/// Migrates any bindings from the pre-InputManager configuration.
+bool MigrateBindings(SettingsInterface& si);
+
 /// Re-parses the sources part of the config and initializes any backends.
 void ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
 

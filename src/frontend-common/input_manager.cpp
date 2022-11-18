@@ -1386,6 +1386,164 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
   }
 }
 
+bool InputManager::MigrateBindings(SettingsInterface& si)
+{
+  static constexpr const char* buttons_to_migrate[][2] = {
+    {"ButtonUp", "Up"},
+    {"ButtonDown", "Down"},
+    {"ButtonLeft", "Left"},
+    {"ButtonRight", "Right"},
+    {"ButtonSelect", "Select"},
+    {"ButtonStart", "Start"},
+    {"ButtonTriangle", "Triangle"},
+    {"ButtonCross", "Cross"},
+    {"ButtonCircle", "Circle"},
+    {"ButtonSquare", "Square"},
+    {"ButtonL1", "L1"},
+    {"ButtonL2", "L2"},
+    {"ButtonR1", "R1"},
+    {"ButtonR2", "R2"},
+    {"ButtonL3", "L3"},
+    {"ButtonR3", "R3"},
+    {"ButtonAnalog", "Analog"},
+  };
+  static constexpr const char* axes_to_migrate[][3] = {
+    {"AxisLeftX", "LLeft", "LRight"},
+    {"AxisLeftY", "LUp", "LDown"},
+    {"AxisRightX", "RLeft", "RRight"},
+    {"AxisRightY", "RUp", "RDown"},
+  };
+
+  static constexpr const char* button_mapping[] = {
+    "A",             // SDL_CONTROLLER_BUTTON_A
+    "B",             // SDL_CONTROLLER_BUTTON_B
+    "X",             // SDL_CONTROLLER_BUTTON_X
+    "Y",             // SDL_CONTROLLER_BUTTON_Y
+    "Back",          // SDL_CONTROLLER_BUTTON_BACK
+    "Guide",         // SDL_CONTROLLER_BUTTON_GUIDE
+    "Start",         // SDL_CONTROLLER_BUTTON_START
+    "LeftStick",     // SDL_CONTROLLER_BUTTON_LEFTSTICK
+    "RightStick",    // SDL_CONTROLLER_BUTTON_RIGHTSTICK
+    "LeftShoulder",  // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+    "RightShoulder", // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
+    "DPadUp",        // SDL_CONTROLLER_BUTTON_DPAD_UP
+    "DPadDown",      // SDL_CONTROLLER_BUTTON_DPAD_DOWN
+    "DPadLeft",      // SDL_CONTROLLER_BUTTON_DPAD_LEFT
+    "DPadRight",     // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+  };
+  static constexpr const char* axis_mapping[] = {
+    "LeftX",        // SDL_CONTROLLER_AXIS_LEFTX
+    "LeftY",        // SDL_CONTROLLER_AXIS_LEFTY
+    "RightX",       // SDL_CONTROLLER_AXIS_RIGHTX
+    "RightY",       // SDL_CONTROLLER_AXIS_RIGHTY
+    "LeftTrigger",  // SDL_CONTROLLER_AXIS_TRIGGERLEFT
+    "RightTrigger", // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+  };
+
+  TinyString new_bind;
+  u32 num_changes = 0;
+
+  for (u32 pad = 0; pad < NUM_CONTROLLER_AND_CARD_PORTS; pad++)
+  {
+    const std::string old_section(fmt::format("Controller{}", pad + 1));
+    const std::string new_section(Controller::GetSettingsSection(pad));
+
+    if (si.ContainsValue(old_section.c_str(), "Type"))
+      si.SetStringValue(new_section.c_str(), "Type", si.GetStringValue(old_section.c_str(), "Type").c_str());
+
+    for (u32 i = 0; i < std::size(buttons_to_migrate); i++)
+    {
+      const char* old_key = buttons_to_migrate[i][0];
+      const char* new_key = buttons_to_migrate[i][1];
+      if (si.ContainsValue(new_section.c_str(), new_key) || !si.ContainsValue(old_section.c_str(), old_key))
+        continue;
+
+      const std::string old_bind(si.GetStringValue(old_section.c_str(), old_key));
+      unsigned cnum, bnum;
+      char dir;
+      if (std::sscanf(old_bind.c_str(), "Controller%u/Button%u", &cnum, &bnum) == 2)
+      {
+        if (bnum >= std::size(button_mapping))
+          continue;
+
+        new_bind.Fmt("SDL-{}/{}", cnum, button_mapping[bnum]);
+        si.SetStringValue(new_section.c_str(), new_key, new_bind);
+        Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.GetCharArray());
+        num_changes++;
+      }
+      else if (std::sscanf(old_bind.c_str(), "Controller%u/%cAxis%u", &cnum, &dir, &bnum) == 3)
+      {
+        if (bnum >= std::size(axis_mapping))
+          continue;
+
+        new_bind.Fmt("SDL-{}/{}{}", cnum, dir, axis_mapping[bnum]);
+        si.SetStringValue(new_section.c_str(), new_key, new_bind);
+        Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.GetCharArray());
+        num_changes++;
+      }
+      else if (StringUtil::StartsWith(old_bind.c_str(), "Keyboard/Keypad+"))
+      {
+        new_bind.Fmt("Keyboard/Numpad{}", old_bind.substr(16));
+        si.SetStringValue(new_section.c_str(), new_key, new_bind);
+        Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.GetCharArray());
+        num_changes++;
+      }
+      else if (StringUtil::StartsWith(old_bind.c_str(), "Keyboard/"))
+      {
+        // pass through as-is
+        si.SetStringValue(new_section.c_str(), new_key, old_bind.c_str());
+        num_changes++;
+      }
+    }
+
+    // we have to handle axes differently :(
+    for (u32 i = 0; i < std::size(axes_to_migrate); i++)
+    {
+      const char* old_key = axes_to_migrate[i][0];
+      const char* new_neg_key = axes_to_migrate[i][1];
+      const char* new_pos_key = axes_to_migrate[i][2];
+
+      if (!si.ContainsValue(old_section.c_str(), old_key) || si.ContainsValue(new_section.c_str(), new_neg_key) ||
+          si.ContainsValue(new_section.c_str(), new_pos_key))
+      {
+        continue;
+      }
+
+      const std::string old_bind(si.GetStringValue(old_section.c_str(), old_key));
+      unsigned cnum, bnum;
+      if (std::sscanf(old_bind.c_str(), "Controller%u/Axis%u", &cnum, &bnum) == 2)
+      {
+        if (bnum >= std::size(axis_mapping))
+          continue;
+
+        new_bind.Fmt("SDL-{}/-{}", cnum, axis_mapping[bnum]);
+        si.SetStringValue(new_section.c_str(), new_neg_key, new_bind);
+        new_bind.Fmt("SDL-{}/+{}", cnum, axis_mapping[bnum]);
+        si.SetStringValue(new_section.c_str(), new_pos_key, new_bind);
+
+        Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.GetCharArray());
+        num_changes++;
+      }
+    }
+
+    if (si.ContainsValue(old_section.c_str(), "Rumble"))
+    {
+      const std::string rumble_source(si.GetStringValue(old_section.c_str(), "Rumble"));
+      unsigned cnum;
+      if (std::sscanf(rumble_source.c_str(), "Controller%u", &cnum) == 1)
+      {
+        new_bind.Fmt("SDL-{}/LargeMotor", cnum);
+        si.SetStringValue(new_section.c_str(), "LargeMotor", new_bind);
+        new_bind.Fmt("SDL-{}/SmallMotor", cnum);
+        si.SetStringValue(new_section.c_str(), "SmallMotor", new_bind);
+        num_changes++;
+      }
+    }
+  }
+
+  return (num_changes > 0);
+}
+
 // ------------------------------------------------------------------------
 // Source Management
 // ------------------------------------------------------------------------
