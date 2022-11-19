@@ -61,4 +61,9 @@
   <PropertyGroup Label="UserMacros">
     <RootBuildDir>$(SolutionDir)build\$(Configuration)-$(Platform)\</RootBuildDir>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <UseMultiToolTask>true</UseMultiToolTask>
+    <EnforceProcessCountAcrossBuilds>true</EnforceProcessCountAcrossBuilds>
+  </PropertyGroup>
 </Project>
