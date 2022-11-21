@@ -1273,6 +1273,9 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     g_cdrom.PrecacheMedia();
 
+  if (g_settings.audio_dump_on_boot)
+    StartDumpingAudio();
+
   ResetPerformanceCounters();
   if (IsRunning())
     UpdateSpeedLimiterState();

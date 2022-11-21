@@ -450,9 +450,9 @@ void SPU::CPUClockChanged()
 
 void SPU::Shutdown()
 {
+  StopDumpingAudio();
   s_tick_event.reset();
   s_transfer_event.reset();
-  s_dump_writer.reset();
   s_audio_stream.reset();
 }
 
