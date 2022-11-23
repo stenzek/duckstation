@@ -2747,7 +2747,16 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   if (was_fullscreen)
     g_emu_thread->setSurfaceless(true);
   if (!was_paused)
+  {
     g_emu_thread->setSystemPaused(true);
+
+    // Need to wait for the pause to go through, and make the main window visible if needed.
+    while (!s_system_paused)
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+    // Ensure it's visible before we try to create any dialogs parented to us.
+    QApplication::sync();
+  }
 
   // We want to parent dialogs to the display widget, except if we were fullscreen,
   // since it's going to get destroyed by the surfaceless call above.
