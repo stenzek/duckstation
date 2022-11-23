@@ -1787,7 +1787,7 @@ bool MainWindow::isRenderingToMain() const
 bool MainWindow::shouldHideMouseCursor() const
 {
   return m_hide_mouse_cursor ||
-         (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", false));
+         (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
 }
 
 bool MainWindow::shouldHideMainWindow() const
