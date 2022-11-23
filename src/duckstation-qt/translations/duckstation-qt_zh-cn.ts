@@ -2761,7 +2761,7 @@ Leaderboard Position: {} of {}</source>
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>启用CPU超频将破坏游戏，导致错误，降低性能并会显著增加系统负荷。
+        <translation>启用CPU超频将破坏游戏，导致错误，降低性能并会显著增加系统需求。
 启用此选项，即表示您同意不创建任何错误报告，除非您已确认该错误也会在禁用超频的情况下发生。
 此警告将仅显示一次。</translation>
     </message>
@@ -4511,7 +4511,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="121"/>
-        <location filename="../qtutils.cpp" line="738"/>
+        <location filename="../qtutils.cpp" line="747"/>
         <source>Enter memory address:</source>
         <translation>输入内存地址:</translation>
     </message>
@@ -4564,7 +4564,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>模式找到于0x%1。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="755"/>
+        <location filename="../qtutils.cpp" line="764"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>无效的地址。它应该是十六进制 (0x12345678或12345678)</translation>
     </message>
@@ -5138,17 +5138,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="530"/>
+        <location filename="../qthost.cpp" line="540"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="530"/>
+        <location filename="../qthost.cpp" line="540"/>
         <source>No resume save state found.</source>
         <translation>没有找到可继续存档。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1306"/>
+        <location filename="../qthost.cpp" line="1316"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -5161,34 +5161,34 @@ Achievements: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1312"/>
+        <location filename="../qthost.cpp" line="1322"/>
         <source>%n points</source>
         <translation>
             <numerusform>%n点</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1318"/>
+        <location filename="../qthost.cpp" line="1328"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1322"/>
+        <location filename="../qthost.cpp" line="1332"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1630"/>
+        <location filename="../qthost.cpp" line="1640"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1639"/>
+        <location filename="../qthost.cpp" line="1649"/>
         <source>Game: %1 FPS</source>
         <translation>游戏: %1帧/秒</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1649"/>
+        <location filename="../qthost.cpp" line="1659"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>视频: %1帧/秒 (%2%)</translation>
     </message>
@@ -5406,12 +5406,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="101"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;启用倒带：&lt;/b&gt;周期地自动存档以使您可以在游戏时回退任何错误。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带档的创建频率。频率越高对系统的要求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;倒带档的保留数量。数值越大对内存的需求就越大。</translation>
+        <translation>&lt;b&gt;启用倒带：&lt;/b&gt;周期地自动存档以使您可以在游戏时回退任何错误。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带档的创建频率。频率越高对系统的需求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;倒带档的保留数量。数值越大对内存的需求就越大。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="108"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>提前模拟系统并回滚/回放以减少输入延迟。非常高的系统要求。</translation>
+        <translation>提前模拟系统并回滚/回放以减少输入延迟。非常高的系统需求。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="121"/>
@@ -5447,7 +5447,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="204"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>倒带被禁用，因为启用了预运行。预运行会显著增加系统负荷。</translation>
+        <translation>倒带被禁用，因为启用了预运行。预运行会显著增加系统需求。</translation>
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled.</source>
@@ -5456,7 +5456,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="210"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>倒带未启用。请注意启用倒回可能会显著增加系统需求。</translation>
+        <translation>倒带未启用。请注意启用倒带可能会显著增加系统需求。</translation>
     </message>
 </context>
 <context>
@@ -5933,62 +5933,62 @@ Achievements: %5 (%6)
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../qtutils.cpp" line="685"/>
+        <location filename="../qtutils.cpp" line="694"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="686"/>
+        <location filename="../qtutils.cpp" line="695"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="687"/>
+        <location filename="../qtutils.cpp" line="696"/>
         <source>3x (for 720p)</source>
         <translation>3x (适合720p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="688"/>
+        <location filename="../qtutils.cpp" line="697"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="689"/>
+        <location filename="../qtutils.cpp" line="698"/>
         <source>5x (for 1080p)</source>
         <translation>5x (适合1080p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="690"/>
+        <location filename="../qtutils.cpp" line="699"/>
         <source>6x (for 1440p)</source>
         <translation>6x (适合1440p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="691"/>
+        <location filename="../qtutils.cpp" line="700"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="692"/>
+        <location filename="../qtutils.cpp" line="701"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="693"/>
+        <location filename="../qtutils.cpp" line="702"/>
         <source>9x (for 4K)</source>
         <translation>9x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="726"/>
+        <location filename="../qtutils.cpp" line="735"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="729"/>
+        <location filename="../qtutils.cpp" line="738"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="732"/>
+        <location filename="../qtutils.cpp" line="741"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
@@ -5997,37 +5997,37 @@ Achievements: %5 (%6)
         <translation type="vanished">9x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="694"/>
+        <location filename="../qtutils.cpp" line="703"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="695"/>
+        <location filename="../qtutils.cpp" line="704"/>
         <source>11x</source>
         <translation>11x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="696"/>
+        <location filename="../qtutils.cpp" line="705"/>
         <source>12x</source>
         <translation>12x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="697"/>
+        <location filename="../qtutils.cpp" line="706"/>
         <source>13x</source>
         <translation>13x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="698"/>
+        <location filename="../qtutils.cpp" line="707"/>
         <source>14x</source>
         <translation>14x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="699"/>
+        <location filename="../qtutils.cpp" line="708"/>
         <source>15x</source>
         <translation>15x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="700"/>
+        <location filename="../qtutils.cpp" line="709"/>
         <source>16x</source>
         <translation>16x</translation>
     </message>
@@ -6036,7 +6036,7 @@ Achievements: %5 (%6)
         <translation type="vanished">8x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="684"/>
+        <location filename="../qtutils.cpp" line="693"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口尺寸</translation>
     </message>
@@ -9095,7 +9095,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1173"/>
-        <location filename="../mainwindow.cpp" line="2623"/>
+        <location filename="../mainwindow.cpp" line="2630"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
@@ -9261,36 +9261,36 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>存档以便下次继续</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2538"/>
-        <location filename="../mainwindow.cpp" line="2543"/>
-        <location filename="../mainwindow.cpp" line="2563"/>
-        <location filename="../mainwindow.cpp" line="2572"/>
+        <location filename="../mainwindow.cpp" line="2545"/>
+        <location filename="../mainwindow.cpp" line="2550"/>
+        <location filename="../mainwindow.cpp" line="2570"/>
+        <location filename="../mainwindow.cpp" line="2579"/>
         <source>Memory Card Not Found</source>
         <translation>没有找到记忆卡</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2539"/>
+        <location filename="../mainwindow.cpp" line="2546"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>记忆卡&apos;%1&apos;不存在。您想要创建一个空的记忆卡吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2544"/>
+        <location filename="../mainwindow.cpp" line="2551"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>无法创建记忆卡&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2564"/>
-        <location filename="../mainwindow.cpp" line="2573"/>
+        <location filename="../mainwindow.cpp" line="2571"/>
+        <location filename="../mainwindow.cpp" line="2580"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>没有找到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2621"/>
+        <location filename="../mainwindow.cpp" line="2628"/>
         <source>Do not show again</source>
         <translation>不再显示</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2625"/>
+        <location filename="../mainwindow.cpp" line="2632"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -9303,17 +9303,17 @@ Are you sure you want to continue?</source>
 您确定要继续吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2688"/>
+        <location filename="../mainwindow.cpp" line="2695"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2694"/>
+        <location filename="../mainwindow.cpp" line="2701"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新的DuckStation版本不是由官方GitHub所发行。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2700"/>
+        <location filename="../mainwindow.cpp" line="2707"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -10640,7 +10640,7 @@ Please configure a supported controller from the list above.</source>
         <translation>无法获取独占式全屏。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="619"/>
+        <location filename="../qthost.cpp" line="629"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>丢失独占式全屏。</translation>
     </message>
@@ -10854,12 +10854,12 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">无法初始化主机界面，无法继续。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="672"/>
+        <location filename="../qtutils.cpp" line="681"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="673"/>
+        <location filename="../qtutils.cpp" line="682"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -10889,29 +10889,29 @@ URL: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2056"/>
-        <location filename="../qthost.cpp" line="2082"/>
-        <location filename="../qthost.cpp" line="2098"/>
+        <location filename="../qthost.cpp" line="2069"/>
+        <location filename="../qthost.cpp" line="2095"/>
+        <location filename="../qthost.cpp" line="2111"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2057"/>
+        <location filename="../qthost.cpp" line="2070"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>文件&apos;%1&apos;不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2083"/>
+        <location filename="../qthost.cpp" line="2096"/>
         <source>The specified save state does not exist.</source>
         <translation>指定的存档不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2099"/>
+        <location filename="../qthost.cpp" line="2112"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>无法使用no-gui模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2100"/>
+        <location filename="../qthost.cpp" line="2113"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>无法使用批处理模式，因为没有指定的启动文件名。</translation>
     </message>
