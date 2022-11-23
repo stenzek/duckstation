@@ -408,7 +408,7 @@ void OpenGLHostDisplay::DestroyRenderSurface()
   if (!m_gl_context)
     return;
 
-  m_window_info = {};
+  m_window_info.SetSurfaceless();
   if (!m_gl_context->ChangeSurface(m_window_info))
     Log_ErrorPrintf("Failed to switch to surfaceless");
 }

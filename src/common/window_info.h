@@ -39,5 +39,8 @@ struct WindowInfo
   void* surface_handle = nullptr;
 #endif
 
+  // Changes the window to be surfaceless (i.e. no handle/size/etc).
+  void SetSurfaceless();
+
   static bool QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_rate);
 };

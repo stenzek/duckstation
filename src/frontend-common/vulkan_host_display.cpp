@@ -130,7 +130,7 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
 
 void VulkanHostDisplay::DestroyRenderSurface()
 {
-  m_window_info = {};
+  m_window_info.SetSurfaceless();
   g_vulkan_context->WaitForGPUIdle();
   m_swap_chain.reset();
 }

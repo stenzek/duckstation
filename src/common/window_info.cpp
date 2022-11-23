@@ -2,6 +2,21 @@
 #include "common/log.h"
 Log_SetChannel(WindowInfo);
 
+void WindowInfo::SetSurfaceless()
+{
+  type = Type::Surfaceless;
+  window_handle = nullptr;
+  surface_width = 0;
+  surface_height = 0;
+  surface_refresh_rate = 0.0f;
+  surface_scale = 1.0f;
+  surface_format = SurfaceFormat::None;
+
+#ifdef __APPLE__
+  surface_handle = nullptr;
+#endif
+}
+
 #if defined(_WIN32)
 
 #include "common/windows_headers.h"

@@ -459,6 +459,7 @@ bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
 
 void D3D11HostDisplay::DestroyRenderSurface()
 {
+  m_window_info.SetSurfaceless();
   if (IsFullscreen())
     SetFullscreen(false, 0, 0, 0.0f);
 
