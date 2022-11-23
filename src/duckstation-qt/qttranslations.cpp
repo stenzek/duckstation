@@ -39,8 +39,19 @@ void QtHost::InstallTranslator()
 
   // install the base qt translation first
   const QString base_dir(QStringLiteral("%1/translations").arg(qApp->applicationDirPath()));
-  const QString base_path(QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language));
-  if (QFile::exists(base_path))
+  QString base_path(QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language));
+  bool has_base_ts = QFile::exists(base_path);
+  if (!has_base_ts)
+  {
+    // Try without the country suffix.
+    const int index = language.indexOf('-');
+    if (index > 0)
+    {
+      base_path = QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language.left(index));
+      has_base_ts = QFile::exists(base_path);
+    }
+  }
+  if (has_base_ts)
   {
     QTranslator* base_translator = new QTranslator(qApp);
     if (!base_translator->load(base_path))
