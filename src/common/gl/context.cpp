@@ -137,17 +137,11 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   if (wi.type == WindowInfo::Type::X11)
   {
 #ifdef USE_EGL
-    // Always prefer EGL when running on ARM. Mali drivers don't support GLX,
-    // and anything using Mesa will support EGL anyway.
-#if defined(__arm__) || defined(__aarch64__)
-    context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
-#else
-    const char* use_egl_x11 = std::getenv("USE_EGL_X11");
-    if (use_egl_x11 && std::strcmp(use_egl_x11, "1") == 0)
-      context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
-    else
+    const char* use_glx = std::getenv("USE_GLX");
+    if (use_glx && std::strcmp(use_glx, "1") == 0)
       context = ContextGLX::Create(wi, versions_to_try, num_versions_to_try);
-#endif
+    else
+      context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
 #else
     context = ContextGLX::Create(wi, versions_to_try, num_versions_to_try);
 #endif
