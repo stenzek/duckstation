@@ -294,7 +294,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
   g_host_display->DestroyRenderSurface();
 
-  destroyDisplayWidget(surfaceless);
+  destroyDisplayWidget(surfaceless || fullscreen);
 
   // if we're going to surfaceless, we're done here
   if (surfaceless)
@@ -1804,7 +1804,7 @@ void MainWindow::switchToGameListView()
     return;
   }
 
-  if (s_system_valid)
+  if (m_display_created)
   {
     m_was_paused_on_surface_loss = s_system_paused;
     if (!s_system_paused)
