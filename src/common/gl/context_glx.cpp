@@ -10,7 +10,7 @@ ContextGLX::ContextGLX(const WindowInfo& wi) : Context(wi) {}
 ContextGLX::~ContextGLX()
 {
   if (glXGetCurrentContext() == m_context)
-    glXMakeCurrent(GetDisplay(), None, nullptr);
+    glXMakeContextCurrent(GetDisplay(), None, None, None);
 
   if (m_context)
     glXDestroyContext(GetDisplay(), m_context);
@@ -58,10 +58,6 @@ bool ContextGLX::Initialize(const Version* versions_to_try, size_t num_versions_
     if (!CreateWindow(screen))
       return false;
   }
-  else
-  {
-    Panic("Create pbuffer");
-  }
 
   for (size_t i = 0; i < num_versions_to_try; i++)
   {
@@ -90,7 +86,7 @@ bool ContextGLX::ChangeSurface(const WindowInfo& new_wi)
 {
   const bool was_current = (glXGetCurrentContext() == m_context);
   if (was_current)
-    glXMakeCurrent(GetDisplay(), None, nullptr);
+    glXMakeContextCurrent(GetDisplay(), None, None, None);
 
   m_window.Destroy();
   m_wi = new_wi;
@@ -102,7 +98,7 @@ bool ContextGLX::ChangeSurface(const WindowInfo& new_wi)
       return false;
   }
 
-  if (was_current && !glXMakeCurrent(GetDisplay(), GetDrawable(), m_context))
+  if (was_current && !glXMakeContextCurrent(GetDisplay(), GetDrawable(), GetDrawable(), m_context))
   {
     Log_ErrorPrintf("Failed to make context current again after surface change");
     return false;
@@ -126,12 +122,12 @@ bool ContextGLX::SwapBuffers()
 
 bool ContextGLX::MakeCurrent()
 {
-  return (glXMakeCurrent(GetDisplay(), GetDrawable(), m_context) == True);
+  return (glXMakeContextCurrent(GetDisplay(), GetDrawable(), GetDrawable(), m_context) == True);
 }
 
 bool ContextGLX::DoneCurrent()
 {
-  return (glXMakeCurrent(GetDisplay(), None, nullptr) == True);
+  return (glXMakeContextCurrent(GetDisplay(), None, None, None) == True);
 }
 
 bool ContextGLX::SetSwapInterval(s32 interval)
@@ -314,9 +310,9 @@ bool ContextGLX::CreateVersionContext(const Version& version, GLXContext share_c
 
   if (make_current)
   {
-    if (!glXMakeCurrent(GetDisplay(), GetDrawable(), m_context))
+    if (!glXMakeContextCurrent(GetDisplay(), GetDrawable(), GetDrawable(), m_context))
     {
-      Log_ErrorPrint("glXMakeCurrent() failed");
+      Log_ErrorPrint("glXMakeContextCurrent() failed");
       glXDestroyContext(GetDisplay(), m_context);
       m_context = nullptr;
       return false;
