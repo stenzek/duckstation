@@ -816,7 +816,8 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   if (lba_diff < 32)
   {
-    ticks += ticks_per_sector * std::min<u32>(5u, lba_diff);
+    // Special case: when we land exactly on the right sector, we're already too late.
+    ticks += ticks_per_sector * std::min<u32>(5u, (lba_diff == 0) ? 5u : lba_diff);
   }
   else
   {
@@ -1783,6 +1784,11 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   {
     Log_DevPrintf("Read command while seeking, scheduling read after seek %u -> %u finishes in %d ticks",
                   m_seek_start_lba, m_seek_end_lba, m_drive_event->GetTicksUntilNextExecution());
+
+    // Implicit seeks won't trigger the read, so swap it for a logical.
+    if (m_drive_state == DriveState::SeekingImplicit)
+      m_drive_state = DriveState::SeekingLogical;
+
     m_read_after_seek = true;
     m_play_after_seek = false;
     return;
