@@ -278,6 +278,7 @@ void ControllerSettingsDialog::setBoolValue(const char* section, const char* key
   else
   {
     Host::SetBaseBoolSettingValue(section, key, value);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -293,6 +294,7 @@ void ControllerSettingsDialog::setIntValue(const char* section, const char* key,
   else
   {
     Host::SetBaseIntSettingValue(section, key, value);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
@@ -324,6 +326,7 @@ void ControllerSettingsDialog::clearSettingValue(const char* section, const char
   else
   {
     Host::DeleteBaseSettingValue(section, key);
+    Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
 }
