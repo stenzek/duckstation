@@ -115,6 +115,9 @@ static void LoadMacroButtonConfig(SettingsInterface& si, const std::string& sect
                                   const Controller::ControllerInfo* cinfo);
 static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 static void UpdateMacroButtons();
+
+static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
+                                   InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 } // namespace InputManager
 
 // ------------------------------------------------------------------------
@@ -470,6 +473,44 @@ InputSource* InputManager::GetInputSourceInterface(InputSourceType type)
 const char* InputManager::InputSourceToString(InputSourceType clazz)
 {
   return s_input_class_names[static_cast<u32>(clazz)];
+}
+
+bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
+{
+  switch (type)
+  {
+    case InputSourceType::Keyboard:
+    case InputSourceType::Pointer:
+      return true;
+
+#ifdef _WIN32
+    case InputSourceType::DInput:
+      return false;
+
+    case InputSourceType::XInput:
+      // Disable xinput by default if we have SDL.
+#ifdef WITH_SDL2
+      return false;
+#else
+      return true;
+#endif
+    case InputSourceType::RawInput:
+      return false;
+#endif
+
+#ifdef WITH_SDL2
+    case InputSourceType::SDL:
+      return true;
+#endif
+
+#ifdef __ANDROID__
+    case InputSourceType::Android:
+      return true;
+#endif
+
+    default:
+      return false;
+  }
 }
 
 std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::string_view& str)
@@ -1687,11 +1728,21 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::str
   return mapping;
 }
 
-static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
-                                   InputSourceType type, std::unique_ptr<InputSource> (*factory_function)(),
-                                   bool default_state)
+bool InputManager::IsInputSourceEnabled(SettingsInterface& si, InputSourceType type)
 {
-  const bool enabled = si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), default_state);
+#ifdef __ANDROID__
+  // Force Android source to always be enabled so nobody accidentally breaks it via ini.
+  if (type == InputSourceType::Android)
+    return true;
+#endif
+
+  return si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), GetInputSourceDefaultEnabled(type));
+}
+
+void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
+                                          InputSourceType type, std::unique_ptr<InputSource> (*factory_function)())
+{
+  const bool enabled = IsInputSourceEnabled(si, type);
   if (enabled)
   {
     if (s_input_sources[static_cast<u32>(type)])
@@ -1723,17 +1774,17 @@ static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::
 void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef _WIN32
-  UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource, false);
-  UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource, false);
-  UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource, false);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
 #endif
 #ifdef WITH_SDL2
-  UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource, true);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
 #endif
 #ifdef WITH_EVDEV
-  UpdateInputSourceState(si, settings_lock, InputSourceType::Evdev, &InputSource::CreateEvdevSource, true);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::Evdev, &InputSource::CreateEvdevSource);
 #endif
 #ifdef __ANDROID__
-  UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource, true);
+  UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource);
 #endif
 }

@@ -172,6 +172,9 @@ InputSource* GetInputSourceInterface(InputSourceType type);
 /// Converts an input class to a string.
 const char* InputSourceToString(InputSourceType clazz);
 
+/// Returns the default state for an input source.
+bool GetInputSourceDefaultEnabled(InputSourceType type);
+
 /// Parses an input class string.
 std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
 
@@ -214,6 +217,9 @@ std::vector<InputBindingKey> EnumerateMotors();
 
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
+
+/// Returns true if the specified input source is enabled.
+bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);
 
 /// Re-parses the config and registers all hotkey and pad bindings.
 void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si);
