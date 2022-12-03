@@ -2803,7 +2803,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
     "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.",
     "CDROM", "ReadSpeedup", 1, cdrom_read_speeds.data(), cdrom_read_speeds.size(), 1);
   DrawIntListSetting(
-    bsi, "Read Speedup",
+    bsi, "Seek Speedup",
     "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.",
     "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds.data(), cdrom_seek_speeds.size());
 
