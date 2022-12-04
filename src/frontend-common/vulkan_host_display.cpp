@@ -43,17 +43,17 @@ RenderAPI VulkanHostDisplay::GetRenderAPI() const
   return RenderAPI::Vulkan;
 }
 
-void* VulkanHostDisplay::GetRenderDevice() const
+void* VulkanHostDisplay::GetDevice() const
 {
   return nullptr;
 }
 
-void* VulkanHostDisplay::GetRenderContext() const
+void* VulkanHostDisplay::GetContext() const
 {
   return nullptr;
 }
 
-bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool VulkanHostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
   g_vulkan_context->WaitForGPUIdle();
 
@@ -98,7 +98,7 @@ bool VulkanHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   return true;
 }
 
-void VulkanHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
+void VulkanHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height)
 {
   g_vulkan_context->WaitForGPUIdle();
 
@@ -128,7 +128,7 @@ HostDisplay::AdapterAndModeList VulkanHostDisplay::GetAdapterAndModeList()
   return StaticGetAdapterAndModeList(m_window_info.type != WindowInfo::Type::Surfaceless ? &m_window_info : nullptr);
 }
 
-void VulkanHostDisplay::DestroyRenderSurface()
+void VulkanHostDisplay::DestroySurface()
 {
   m_window_info.SetSurfaceless();
   g_vulkan_context->WaitForGPUIdle();
@@ -214,7 +214,7 @@ void VulkanHostDisplay::SetVSync(bool enabled)
   m_swap_chain->SetVSync(enabled);
 }
 
-bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi)
+bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi)
 {
   WindowInfo local_wi(wi);
   if (!Vulkan::Context::Create(g_settings.gpu_adapter, &local_wi, &m_swap_chain, g_settings.gpu_threaded_presentation,
@@ -234,7 +234,7 @@ bool VulkanHostDisplay::CreateRenderDevice(const WindowInfo& wi)
   return true;
 }
 
-bool VulkanHostDisplay::InitializeRenderDevice()
+bool VulkanHostDisplay::SetupDevice()
 {
   if (!CreateResources())
     return false;
@@ -242,12 +242,12 @@ bool VulkanHostDisplay::InitializeRenderDevice()
   return true;
 }
 
-bool VulkanHostDisplay::HasRenderDevice() const
+bool VulkanHostDisplay::HasDevice() const
 {
   return static_cast<bool>(g_vulkan_context);
 }
 
-bool VulkanHostDisplay::HasRenderSurface() const
+bool VulkanHostDisplay::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
 }
@@ -571,12 +571,12 @@ bool VulkanHostDisplay::UpdateImGuiFontTexture()
   return ImGui_ImplVulkan_CreateFontsTexture();
 }
 
-bool VulkanHostDisplay::MakeRenderContextCurrent()
+bool VulkanHostDisplay::MakeCurrent()
 {
   return true;
 }
 
-bool VulkanHostDisplay::DoneRenderContextCurrent()
+bool VulkanHostDisplay::DoneCurrent()
 {
   return true;
 }
@@ -599,7 +599,7 @@ bool VulkanHostDisplay::Render(bool skip_present)
   {
     if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
     {
-      ResizeRenderWindow(0, 0);
+      ResizeWindow(0, 0);
       res = m_swap_chain->AcquireNextImage();
     }
     else if (res == VK_ERROR_SURFACE_LOST_KHR)

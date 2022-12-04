@@ -41,8 +41,8 @@ bool GPU_HW_D3D11::Initialize()
     return false;
   }
 
-  m_device = static_cast<ID3D11Device*>(g_host_display->GetRenderDevice());
-  m_context = static_cast<ID3D11DeviceContext*>(g_host_display->GetRenderContext());
+  m_device = static_cast<ID3D11Device*>(g_host_display->GetDevice());
+  m_context = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
   if (!m_device || !m_context)
     return false;
 

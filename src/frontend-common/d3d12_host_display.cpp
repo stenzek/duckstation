@@ -26,7 +26,7 @@ D3D12HostDisplay::~D3D12HostDisplay()
     return;
 
   // DestroyRenderSurface() will exec the command list.
-  DestroyRenderSurface();
+  DestroySurface();
   DestroyResources();
   g_d3d12_context->Destroy();
 }
@@ -36,22 +36,22 @@ RenderAPI D3D12HostDisplay::GetRenderAPI() const
   return RenderAPI::D3D12;
 }
 
-void* D3D12HostDisplay::GetRenderDevice() const
+void* D3D12HostDisplay::GetDevice() const
 {
   return g_d3d12_context->GetDevice();
 }
 
-void* D3D12HostDisplay::GetRenderContext() const
+void* D3D12HostDisplay::GetContext() const
 {
   return g_d3d12_context.get();
 }
 
-bool D3D12HostDisplay::HasRenderDevice() const
+bool D3D12HostDisplay::HasDevice() const
 {
   return static_cast<bool>(g_d3d12_context);
 }
 
-bool D3D12HostDisplay::HasRenderSurface() const
+bool D3D12HostDisplay::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
 }
@@ -142,7 +142,7 @@ void D3D12HostDisplay::SetVSync(bool enabled)
   m_vsync = enabled;
 }
 
-bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi)
+bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
 {
   ComPtr<IDXGIFactory> temp_dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.GetAddressOf()));
@@ -208,7 +208,7 @@ bool D3D12HostDisplay::CreateRenderDevice(const WindowInfo& wi)
   return true;
 }
 
-bool D3D12HostDisplay::InitializeRenderDevice()
+bool D3D12HostDisplay::SetupDevice()
 {
   if (!CreateResources())
     return false;
@@ -216,12 +216,12 @@ bool D3D12HostDisplay::InitializeRenderDevice()
   return true;
 }
 
-bool D3D12HostDisplay::MakeRenderContextCurrent()
+bool D3D12HostDisplay::MakeCurrent()
 {
   return true;
 }
 
-bool D3D12HostDisplay::DoneRenderContextCurrent()
+bool D3D12HostDisplay::DoneCurrent()
 {
   return true;
 }
@@ -338,15 +338,15 @@ void D3D12HostDisplay::DestroySwapChainRTVs()
   m_current_swap_chain_buffer = 0;
 }
 
-bool D3D12HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool D3D12HostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
-  DestroyRenderSurface();
+  DestroySurface();
 
   m_window_info = new_wi;
   return CreateSwapChain(nullptr);
 }
 
-void D3D12HostDisplay::DestroyRenderSurface()
+void D3D12HostDisplay::DestroySurface()
 {
   m_window_info.SetSurfaceless();
 
@@ -360,7 +360,7 @@ void D3D12HostDisplay::DestroyRenderSurface()
   m_swap_chain.Reset();
 }
 
-void D3D12HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
+void D3D12HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height)
 {
   if (!m_swap_chain)
     return;

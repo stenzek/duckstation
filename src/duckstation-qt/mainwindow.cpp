@@ -218,7 +218,7 @@ bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
   g_emu_thread->connectDisplaySignals(m_display_widget);
 
-  if (!g_host_display->CreateRenderDevice(wi.value()))
+  if (!g_host_display->CreateDevice(wi.value()))
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
     destroyDisplayWidget(true);
@@ -241,7 +241,7 @@ bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
   updateDisplayWidgetCursor();
   m_display_widget->setFocus();
 
-  g_host_display->DoneRenderContextCurrent();
+  g_host_display->DoneCurrent();
   return true;
 }
 
@@ -292,7 +292,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
     return true;
   }
 
-  g_host_display->DestroyRenderSurface();
+  g_host_display->DestroySurface();
 
   destroyDisplayWidget(surfaceless || fullscreen);
 
@@ -315,7 +315,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
   g_emu_thread->connectDisplaySignals(m_display_widget);
 
-  if (!g_host_display->ChangeRenderWindow(wi.value()))
+  if (!g_host_display->ChangeWindow(wi.value()))
     Panic("Failed to recreate surface on new widget.");
 
   if (is_exclusive_fullscreen)

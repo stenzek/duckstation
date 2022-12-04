@@ -34,12 +34,12 @@ RenderAPI OpenGLHostDisplay::GetRenderAPI() const
   return m_gl_context->IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
 }
 
-void* OpenGLHostDisplay::GetRenderDevice() const
+void* OpenGLHostDisplay::GetDevice() const
 {
   return nullptr;
 }
 
-void* OpenGLHostDisplay::GetRenderContext() const
+void* OpenGLHostDisplay::GetContext() const
 {
   return m_gl_context.get();
 }
@@ -271,17 +271,17 @@ static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLen
   }
 }
 
-bool OpenGLHostDisplay::HasRenderDevice() const
+bool OpenGLHostDisplay::HasDevice() const
 {
   return static_cast<bool>(m_gl_context);
 }
 
-bool OpenGLHostDisplay::HasRenderSurface() const
+bool OpenGLHostDisplay::HasSurface() const
 {
   return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi)
+bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi)
 {
   m_gl_context = GL::Context::Create(wi);
   if (!m_gl_context)
@@ -295,7 +295,7 @@ bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi)
   return true;
 }
 
-bool OpenGLHostDisplay::InitializeRenderDevice()
+bool OpenGLHostDisplay::SetupDevice()
 {
   m_use_gles2_draw_path = (GetRenderAPI() == RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
   if (!m_use_gles2_draw_path)
@@ -334,7 +334,7 @@ bool OpenGLHostDisplay::InitializeRenderDevice()
   return true;
 }
 
-bool OpenGLHostDisplay::MakeRenderContextCurrent()
+bool OpenGLHostDisplay::MakeCurrent()
 {
   if (!m_gl_context->MakeCurrent())
   {
@@ -345,12 +345,12 @@ bool OpenGLHostDisplay::MakeRenderContextCurrent()
   return true;
 }
 
-bool OpenGLHostDisplay::DoneRenderContextCurrent()
+bool OpenGLHostDisplay::DoneCurrent()
 {
   return m_gl_context->DoneCurrent();
 }
 
-bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool OpenGLHostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
   Assert(m_gl_context);
 
@@ -364,7 +364,7 @@ bool OpenGLHostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
   return true;
 }
 
-void OpenGLHostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
+void OpenGLHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height)
 {
   if (!m_gl_context)
     return;
@@ -403,7 +403,7 @@ HostDisplay::AdapterAndModeList OpenGLHostDisplay::GetAdapterAndModeList()
   return aml;
 }
 
-void OpenGLHostDisplay::DestroyRenderSurface()
+void OpenGLHostDisplay::DestroySurface()
 {
   if (!m_gl_context)
     return;

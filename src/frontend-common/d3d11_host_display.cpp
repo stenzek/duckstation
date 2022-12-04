@@ -29,7 +29,7 @@ D3D11HostDisplay::~D3D11HostDisplay()
 {
   DestroyStagingBuffer();
   DestroyResources();
-  DestroyRenderSurface();
+  DestroySurface();
   m_context.Reset();
   m_device.Reset();
 }
@@ -39,22 +39,22 @@ RenderAPI D3D11HostDisplay::GetRenderAPI() const
   return RenderAPI::D3D11;
 }
 
-void* D3D11HostDisplay::GetRenderDevice() const
+void* D3D11HostDisplay::GetDevice() const
 {
   return m_device.Get();
 }
 
-void* D3D11HostDisplay::GetRenderContext() const
+void* D3D11HostDisplay::GetContext() const
 {
   return m_context.Get();
 }
 
-bool D3D11HostDisplay::HasRenderDevice() const
+bool D3D11HostDisplay::HasDevice() const
 {
   return static_cast<bool>(m_device);
 }
 
-bool D3D11HostDisplay::HasRenderSurface() const
+bool D3D11HostDisplay::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
 }
@@ -197,7 +197,7 @@ void D3D11HostDisplay::SetVSync(bool enabled)
   m_vsync = enabled;
 }
 
-bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi)
+bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
 {
   UINT create_flags = 0;
   if (g_settings.gpu_use_debug_device)
@@ -316,7 +316,7 @@ bool D3D11HostDisplay::CreateRenderDevice(const WindowInfo& wi)
   return true;
 }
 
-bool D3D11HostDisplay::InitializeRenderDevice()
+bool D3D11HostDisplay::SetupDevice()
 {
   if (!CreateResources())
     return false;
@@ -324,12 +324,12 @@ bool D3D11HostDisplay::InitializeRenderDevice()
   return true;
 }
 
-bool D3D11HostDisplay::MakeRenderContextCurrent()
+bool D3D11HostDisplay::MakeCurrent()
 {
   return true;
 }
 
-bool D3D11HostDisplay::DoneRenderContextCurrent()
+bool D3D11HostDisplay::DoneCurrent()
 {
   return true;
 }
@@ -449,15 +449,15 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
   return true;
 }
 
-bool D3D11HostDisplay::ChangeRenderWindow(const WindowInfo& new_wi)
+bool D3D11HostDisplay::ChangeWindow(const WindowInfo& new_wi)
 {
-  DestroyRenderSurface();
+  DestroySurface();
 
   m_window_info = new_wi;
   return CreateSwapChain(nullptr);
 }
 
-void D3D11HostDisplay::DestroyRenderSurface()
+void D3D11HostDisplay::DestroySurface()
 {
   m_window_info.SetSurfaceless();
   if (IsFullscreen())
@@ -467,7 +467,7 @@ void D3D11HostDisplay::DestroyRenderSurface()
   m_swap_chain.Reset();
 }
 
-void D3D11HostDisplay::ResizeRenderWindow(s32 new_window_width, s32 new_window_height)
+void D3D11HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height)
 {
   if (!m_swap_chain)
     return;

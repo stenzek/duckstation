@@ -616,7 +616,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
     return;
 
   Log_DevPrintf("Display window resized to %dx%d", width, height);
-  g_host_display->ResizeRenderWindow(width, height);
+  g_host_display->ResizeWindow(width, height);
   ImGuiManager::WindowResized();
   System::HostDisplayResized();
 
@@ -742,7 +742,7 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeRenderContextCurrent() || !g_host_display->InitializeRenderDevice() ||
+  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() ||
       !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();
@@ -790,10 +790,10 @@ void EmuThread::updateDisplayState()
     return;
 
   // this expects the context to get moved back to us afterwards
-  g_host_display->DoneRenderContextCurrent();
+  g_host_display->DoneCurrent();
 
   updateDisplayRequested(m_is_fullscreen, m_is_rendering_to_main && !m_is_fullscreen, m_is_surfaceless);
-  if (!g_host_display->MakeRenderContextCurrent())
+  if (!g_host_display->MakeCurrent())
     Panic("Failed to make device context current after updating");
 
   m_is_exclusive_fullscreen = g_host_display->IsFullscreen();

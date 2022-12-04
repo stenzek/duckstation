@@ -409,7 +409,7 @@ void NoGUIHost::ProcessPlatformWindowResize(s32 width, s32 height, float scale)
 {
   Host::RunOnCPUThread([width, height, scale]() {
     // TODO: Scale
-    g_host_display->ResizeRenderWindow(width, height);
+    g_host_display->ResizeWindow(width, height);
     ImGuiManager::WindowResized();
     System::HostDisplayResized();
   });
@@ -654,12 +654,12 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
       if (wi.has_value())
       {
         g_host_display = Host::CreateDisplayForAPI(api);
-        if (g_host_display && !g_host_display->CreateRenderDevice(wi.value()))
+        if (g_host_display && !g_host_display->CreateDevice(wi.value()))
           g_host_display.reset();
       }
 
       if (g_host_display)
-        g_host_display->DoneRenderContextCurrent();
+        g_host_display->DoneCurrent();
       else
         g_nogui_window->DestroyPlatformWindow();
     }
@@ -675,7 +675,7 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeRenderContextCurrent() || !g_host_display->InitializeRenderDevice() ||
+  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() ||
       !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();
