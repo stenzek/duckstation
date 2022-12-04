@@ -1328,7 +1328,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, Controller::Co
   {
     BeginInputBinding(bsi, type, section, name, display_name);
   }
-  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
+           ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed))
   {
     bsi->DeleteValue(section, name);
     SetSettingsChanged(bsi);
