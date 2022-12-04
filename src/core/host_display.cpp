@@ -124,12 +124,17 @@ void HostDisplay::ThrottlePresentation()
   const u64 sleep_period = Common::Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
   const u64 current_ts = Common::Timer::GetCurrentValue();
 
-  if (current_ts >= m_last_frame_displayed_time)
+  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+  // allow time for the actual rendering.
+  const u64 max_variance = sleep_period * 2;
+  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
     m_last_frame_displayed_time = current_ts + sleep_period;
   else
     m_last_frame_displayed_time += sleep_period;
 
+  Common::Timer tt;
   Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
+  Log_WarningPrintf("sleep time %.2f ms", tt.GetTimeMilliseconds());
 }
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)

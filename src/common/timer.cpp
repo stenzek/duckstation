@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "types.h"
 #include <cstdio>
 #include <cstdlib>
 
@@ -109,20 +110,19 @@ void Timer::SleepUntil(Value value, bool exact)
   }
   else
   {
-    const std::int64_t diff = static_cast<std::int64_t>(value - GetCurrentValue());
+    const s64 diff = static_cast<s64>(value - GetCurrentValue());
     if (diff <= 0)
       return;
 
     HANDLE timer = GetSleepTimer();
     if (timer)
     {
-      FILETIME ft;
-      GetSystemTimeAsFileTime(&ft);
+      const u64 one_hundred_nanos_diff = static_cast<u64>(ConvertValueToNanoseconds(diff) / 100.0);
+      if (one_hundred_nanos_diff == 0)
+        return;
 
       LARGE_INTEGER fti;
-      fti.LowPart = ft.dwLowDateTime;
-      fti.HighPart = ft.dwHighDateTime;
-      fti.QuadPart += diff;
+      fti.QuadPart = -static_cast<s64>(one_hundred_nanos_diff);
 
       if (SetWaitableTimer(timer, &fti, 0, nullptr, nullptr, FALSE))
       {
@@ -132,7 +132,7 @@ void Timer::SleepUntil(Value value, bool exact)
     }
 
     // falling back to sleep... bad.
-    Sleep(static_cast<DWORD>(static_cast<std::uint64_t>(diff) / 1000000));
+    Sleep(static_cast<DWORD>(static_cast<u64>(diff) / 1000000));
   }
 }
 
