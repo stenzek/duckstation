@@ -61,7 +61,4 @@
     <ClInclude Include="dinput_source.h" />
     <ClInclude Include="imgui_overlays.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="font_roboto_regular.inl" />
-  </ItemGroup>
 </Project>

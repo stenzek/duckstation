@@ -1,5 +1,8 @@
 #include "md5_digest.h"
 
+// based heavily on this implementation:
+// http://www.fourmilab.ch/md5/
+
 #ifndef HIGHFIRST
 #define byteReverse(buf, len) /* Nothing */
 #else

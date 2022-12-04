@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
 #include "cpu_recompiler_register_cache.h"
 #include "common/log.h"
 #include "cpu_recompiler_code_generator.h"

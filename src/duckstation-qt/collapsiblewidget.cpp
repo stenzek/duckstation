@@ -1,3 +1,4 @@
+// https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
 #include <QtCore/QPropertyAnimation>
 
 #include "collapsiblewidget.h"

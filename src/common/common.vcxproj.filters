@@ -84,7 +84,6 @@
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="easing.h" />
-    <ClInclude Include="pbp_types.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="d3d12\staging_texture.h">

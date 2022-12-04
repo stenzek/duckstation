@@ -1,8 +1,8 @@
+// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
 #pragma once
 #include "types.h"
-
-// based heavily on this implementation:
-// http://www.fourmilab.ch/md5/
 
 class MD5Digest
 {

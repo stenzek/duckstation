@@ -78,9 +78,6 @@
     <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="xinput_source.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="font_roboto_regular.inl" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}</ProjectGuid>
   </PropertyGroup>
