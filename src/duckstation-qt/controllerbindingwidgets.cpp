@@ -779,37 +779,6 @@ void ControllerBindingWidget_Base::initBindingWidgets()
     default:
       break;
   }
-
-  if (QSlider* widget = findChild<QSlider*>(QStringLiteral("AnalogDeadzone")); widget)
-  {
-    const float range = static_cast<float>(widget->maximum());
-    QLabel* label = findChild<QLabel*>(QStringLiteral("AnalogDeadzoneLabel"));
-    if (label)
-    {
-      connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
-        label->setText(tr("%1%").arg((static_cast<float>(value) / range) * 100.0f, 0, 'f', 0));
-      });
-    }
-
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "AnalogDeadzone",
-                                                                      range, Controller::DEFAULT_STICK_DEADZONE);
-  }
-
-  if (QSlider* widget = findChild<QSlider*>(QStringLiteral("AnalogSensitivity")); widget)
-  {
-    // position 1.0f at the halfway point
-    const float range = static_cast<float>(widget->maximum()) * 0.5f;
-    QLabel* label = findChild<QLabel*>(QStringLiteral("AnalogSensitivityLabel"));
-    if (label)
-    {
-      connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
-        label->setText(tr("%1%").arg((static_cast<float>(value) / range) * 100.0f, 0, 'f', 0));
-      });
-    }
-
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "AnalogSensitivity",
-                                                                      range, Controller::DEFAULT_STICK_SENSITIVITY);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////
