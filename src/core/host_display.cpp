@@ -132,9 +132,7 @@ void HostDisplay::ThrottlePresentation()
   else
     m_last_frame_displayed_time += sleep_period;
 
-  Common::Timer tt;
   Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
-  Log_WarningPrintf("sleep time %.2f ms", tt.GetTimeMilliseconds());
 }
 
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
