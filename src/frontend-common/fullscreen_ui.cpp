@@ -638,7 +638,6 @@ void FullscreenUI::OnSystemDestroyed()
   if (!IsInitialized())
     return;
 
-  g_host_display->SetVSync(true);
   s_pause_menu_was_open = false;
   SwitchToLanding();
 }
@@ -668,15 +667,7 @@ void FullscreenUI::PauseForMenuOpen()
 {
   s_was_paused_on_quick_menu_open = (System::GetState() == System::State::Paused);
   if (g_settings.pause_on_menu && !s_was_paused_on_quick_menu_open)
-  {
-    Host::RunOnCPUThread([]() {
-      System::PauseSystem(true);
-
-      // force vsync on when pausing
-      if (g_host_display)
-        g_host_display->SetVSync(true);
-    });
-  }
+    Host::RunOnCPUThread([]() { System::PauseSystem(true); });
 
   s_pause_menu_was_open = true;
 }

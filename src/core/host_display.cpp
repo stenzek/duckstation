@@ -117,6 +117,21 @@ bool HostDisplay::ShouldSkipDisplayingFrame()
   return false;
 }
 
+void HostDisplay::ThrottlePresentation()
+{
+  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+
+  const u64 sleep_period = Common::Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
+  const u64 current_ts = Common::Timer::GetCurrentValue();
+
+  if (current_ts >= m_last_frame_displayed_time)
+    m_last_frame_displayed_time = current_ts + sleep_period;
+  else
+    m_last_frame_displayed_time += sleep_period;
+
+  Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
+}
+
 bool HostDisplay::GetHostRefreshRate(float* refresh_rate)
 {
   if (m_window_info.surface_refresh_rate > 0.0f)

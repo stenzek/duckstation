@@ -95,6 +95,7 @@ bool VulkanHostDisplay::ChangeWindow(const WindowInfo& new_wi)
   }
 
   m_window_info = m_swap_chain->GetWindowInfo();
+  m_vsync_enabled = m_swap_chain->IsVSyncEnabled();
   return true;
 }
 
@@ -106,6 +107,7 @@ void VulkanHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height
     Panic("Failed to resize swap chain");
 
   m_window_info = m_swap_chain->GetWindowInfo();
+  m_vsync_enabled = m_swap_chain->IsVSyncEnabled();
 }
 
 bool VulkanHostDisplay::SupportsFullscreen() const
@@ -206,19 +208,31 @@ bool VulkanHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 
 void VulkanHostDisplay::SetVSync(bool enabled)
 {
-  if (!m_swap_chain)
+  if (!m_swap_chain || m_swap_chain->IsVSyncEnabled() == enabled)
     return;
 
   // This swap chain should not be used by the current buffer, thus safe to destroy.
   g_vulkan_context->WaitForGPUIdle();
   m_swap_chain->SetVSync(enabled);
+  m_vsync_enabled = m_swap_chain->IsVSyncEnabled();
 }
 
-bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi)
+bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 {
   WindowInfo local_wi(wi);
-  if (!Vulkan::Context::Create(g_settings.gpu_adapter, &local_wi, &m_swap_chain, g_settings.gpu_threaded_presentation,
-                               g_settings.gpu_use_debug_device, false))
+  bool result =
+    Vulkan::Context::Create(g_settings.gpu_adapter, &local_wi, &m_swap_chain, g_settings.gpu_threaded_presentation,
+                            g_settings.gpu_use_debug_device, g_settings.gpu_use_debug_device, vsync);
+
+  // If validation layers were enabled, try without.
+  if (!result && g_settings.gpu_use_debug_device)
+  {
+    Log_WarningPrintf("Failed to create Vulkan context with validation layers, trying without.");
+    result = Vulkan::Context::Create(g_settings.gpu_adapter, &local_wi, &m_swap_chain,
+                                     g_settings.gpu_threaded_presentation, false, false, vsync);
+  }
+
+  if (!result)
   {
     Log_ErrorPrintf("Failed to create Vulkan context");
     m_window_info = {};
@@ -231,6 +245,7 @@ bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi)
                  g_vulkan_context->GetDeviceDriverProperties().driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY);
 
   m_window_info = m_swap_chain ? m_swap_chain->GetWindowInfo() : local_wi;
+  m_vsync_enabled = m_swap_chain ? m_swap_chain->IsVSyncEnabled() : false;
   return true;
 }
 

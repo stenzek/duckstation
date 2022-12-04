@@ -32,7 +32,7 @@ public:
   bool HasDevice() const override;
   bool HasSurface() const override;
 
-  bool CreateDevice(const WindowInfo& wi) override;
+  bool CreateDevice(const WindowInfo& wi, bool vsync) override;
   bool SetupDevice() override;
 
   bool MakeCurrent() override;
@@ -137,5 +137,4 @@ protected:
 
   bool m_allow_tearing_supported = false;
   bool m_using_allow_tearing = false;
-  bool m_vsync = true;
 };

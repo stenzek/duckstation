@@ -38,7 +38,7 @@ bool RegTestHostDisplay::HasSurface() const
   return true;
 }
 
-bool RegTestHostDisplay::CreateDevice(const WindowInfo& wi)
+bool RegTestHostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 {
   m_window_info = wi;
   return true;

@@ -139,10 +139,10 @@ bool D3D12HostDisplay::GetHostRefreshRate(float* refresh_rate)
 
 void D3D12HostDisplay::SetVSync(bool enabled)
 {
-  m_vsync = enabled;
+  m_vsync_enabled = enabled;
 }
 
-bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
+bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 {
   ComPtr<IDXGIFactory> temp_dxgi_factory;
   HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.GetAddressOf()));
@@ -198,6 +198,7 @@ bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
   }
 
   m_window_info = wi;
+  m_vsync_enabled = vsync;
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
   {
@@ -599,10 +600,10 @@ bool D3D12HostDisplay::Render(bool skip_present)
   swap_chain_buf.TransitionToState(D3D12_RESOURCE_STATE_PRESENT);
   g_d3d12_context->ExecuteCommandList(false);
 
-  if (!m_vsync && m_using_allow_tearing)
+  if (!m_vsync_enabled && m_using_allow_tearing)
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
-    m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+    m_swap_chain->Present(BoolToUInt32(m_vsync_enabled), 0);
 
   return true;
 }

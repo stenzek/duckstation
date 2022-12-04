@@ -754,18 +754,12 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
 
   m_is_exclusive_fullscreen = g_host_display->IsFullscreen();
 
-  if (m_run_fullscreen_ui)
+  if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
   {
-    if (!FullscreenUI::Initialize())
-    {
-      Log_ErrorPrint("Failed to initialize fullscreen UI");
-      releaseHostDisplay();
-      m_run_fullscreen_ui = false;
-      return false;
-    }
-
-    // start with vsync on
-    g_host_display->SetVSync(true);
+    Log_ErrorPrint("Failed to initialize fullscreen UI");
+    releaseHostDisplay();
+    m_run_fullscreen_ui = false;
+    return false;
   }
 
   return true;
@@ -1439,7 +1433,11 @@ void EmuThread::run()
       m_event_loop->processEvents(QEventLoop::AllEvents);
       CommonHost::PumpMessagesOnCPUThread();
       if (g_host_display)
+      {
         renderDisplay(false);
+        if (!g_host_display->IsVsyncEnabled())
+          g_host_display->ThrottlePresentation();
+      }
     }
   }
 

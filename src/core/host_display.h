@@ -67,7 +67,7 @@ public:
   virtual bool HasDevice() const = 0;
   virtual bool HasSurface() const = 0;
 
-  virtual bool CreateDevice(const WindowInfo& wi) = 0;
+  virtual bool CreateDevice(const WindowInfo& wi, bool vsync) = 0;
   virtual bool SetupDevice() = 0;
   virtual bool MakeCurrent() = 0;
   virtual bool DoneCurrent() = 0;
@@ -104,6 +104,7 @@ public:
   virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
                                 GPUTexture::Format* out_format) = 0;
 
+  ALWAYS_INLINE bool IsVsyncEnabled() const { return m_vsync_enabled; }
   virtual void SetVSync(bool enabled) = 0;
 
   /// ImGui context management, usually called by derived classes.
@@ -114,6 +115,7 @@ public:
   bool UsesLowerLeftOrigin() const;
   void SetDisplayMaxFPS(float max_fps);
   bool ShouldSkipDisplayingFrame();
+  void ThrottlePresentation();
 
   void ClearDisplayTexture()
   {
@@ -243,6 +245,7 @@ protected:
 
   bool m_display_changed = false;
   bool m_gpu_timing_enabled = false;
+  bool m_vsync_enabled = false;
 };
 
 /// Returns a pointer to the current host display abstraction. Assumes AcquireHostDisplay() has been caled.

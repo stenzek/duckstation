@@ -269,7 +269,7 @@ Vulkan::Context::GPUNameList Vulkan::Context::EnumerateGPUNames(VkInstance insta
 
 bool Vulkan::Context::Create(std::string_view gpu_name, const WindowInfo* wi,
                              std::unique_ptr<SwapChain>* out_swap_chain, bool threaded_presentation,
-                             bool enable_debug_utils, bool enable_validation_layer)
+                             bool enable_debug_utils, bool enable_validation_layer, bool vsync)
 {
   AssertMsg(!g_vulkan_context, "Has no current context");
 
@@ -349,7 +349,7 @@ bool Vulkan::Context::Create(std::string_view gpu_name, const WindowInfo* wi,
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
       !g_vulkan_context->CreateAllocator() || !g_vulkan_context->CreateGlobalDescriptorPool() ||
       !g_vulkan_context->CreateCommandBuffers() || !g_vulkan_context->CreateTextureStreamBuffer() ||
-      (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, true)) == nullptr))
+      (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, vsync)) == nullptr))
   {
     // Since we are destroying the instance, we're also responsible for destroying the surface.
     if (surface != VK_NULL_HANDLE)

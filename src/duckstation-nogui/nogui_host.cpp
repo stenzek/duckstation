@@ -640,6 +640,8 @@ void NoGUIHost::CPUThreadMainLoop()
 
     Host::PumpMessagesOnCPUThread();
     Host::RenderDisplay(false);
+    if (!g_host_display->IsVsyncEnabled())
+      g_host_display->ThrottlePresentation();
   }
 }
 
@@ -654,7 +656,7 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
       if (wi.has_value())
       {
         g_host_display = Host::CreateDisplayForAPI(api);
-        if (g_host_display && !g_host_display->CreateDevice(wi.value()))
+        if (g_host_display && !g_host_display->CreateDevice(wi.value(), System::ShouldUseVSync()))
           g_host_display.reset();
       }
 
@@ -675,8 +677,8 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() ||
-      !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
+  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize() ||
+      !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();
     CommonHost::ReleaseHostDisplayResources();

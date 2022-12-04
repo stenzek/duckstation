@@ -209,7 +209,7 @@ bool OpenGLHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 
 void OpenGLHostDisplay::SetVSync(bool enabled)
 {
-  if (m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
+  if (m_vsync_enabled == enabled || m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
     return;
 
   // Window framebuffer has to be bound to call SetSwapInterval.
@@ -218,6 +218,7 @@ void OpenGLHostDisplay::SetVSync(bool enabled)
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   m_gl_context->SetSwapInterval(enabled ? 1 : 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+  m_vsync_enabled = enabled;
 }
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const
@@ -281,7 +282,7 @@ bool OpenGLHostDisplay::HasSurface() const
   return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi)
+bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 {
   m_gl_context = GL::Context::Create(wi);
   if (!m_gl_context)
@@ -292,6 +293,7 @@ bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi)
   }
 
   m_window_info = m_gl_context->GetWindowInfo();
+  SetVSync(vsync);
   return true;
 }
 
@@ -327,9 +329,6 @@ bool OpenGLHostDisplay::SetupDevice()
 
   if (!CreateResources())
     return false;
-
-  // Start with vsync on.
-  SetVSync(true);
 
   return true;
 }

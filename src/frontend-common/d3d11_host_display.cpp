@@ -194,10 +194,10 @@ bool D3D11HostDisplay::GetHostRefreshRate(float* refresh_rate)
 
 void D3D11HostDisplay::SetVSync(bool enabled)
 {
-  m_vsync = enabled;
+  m_vsync_enabled = enabled;
 }
 
-bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
+bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 {
   UINT create_flags = 0;
   if (g_settings.gpu_use_debug_device)
@@ -306,6 +306,7 @@ bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
   }
 
   m_window_info = wi;
+  m_vsync_enabled = vsync;
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
   {
@@ -675,7 +676,7 @@ bool D3D11HostDisplay::Render(bool skip_present)
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if (m_vsync && m_gpu_timing_enabled)
+  if (m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   RenderDisplay();
@@ -685,13 +686,13 @@ bool D3D11HostDisplay::Render(bool skip_present)
 
   RenderSoftwareCursor();
 
-  if (!m_vsync && m_gpu_timing_enabled)
+  if (!m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  if (!m_vsync && m_using_allow_tearing)
+  if (!m_vsync_enabled && m_using_allow_tearing)
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
-    m_swap_chain->Present(BoolToUInt32(m_vsync), 0);
+    m_swap_chain->Present(BoolToUInt32(m_vsync_enabled), 0);
 
   if (m_gpu_timing_enabled)
     KickTimestampQuery();

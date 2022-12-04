@@ -352,9 +352,9 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
   // noop
 }
 
-void* Host::GetTopLevelWindowHandle()
+std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
-  return nullptr;
+  return std::nullopt;
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
