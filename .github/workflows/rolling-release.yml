@@ -195,29 +195,11 @@ jobs:
         cd ..
         scripts/make-appimage.sh $(realpath ./build) $(realpath .) $HOME/deps DuckStation-x64
 
-#    - name: Upload NoGUI AppImage
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-nogui"
-#        path: "build/duckstation-nogui-x64.AppImage"
-#
-#    - name: Upload NoGUI AppImage zsync
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-nogui-zsync"
-#        path: "build/duckstation-nogui-x64.AppImage.zsync"
-
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
       with:
         name: "linux-x64-appimage-qt"
         path: "DuckStation-x64.AppImage"
-
-#    - name: Upload Qt AppImage zsync
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: "linux-x64-appimage-qt-zsync"
-#        path: "build/duckstation-qt-x64.AppImage.zsync"
 
 
   macos-build:
@@ -273,16 +255,6 @@ jobs:
         with:
           name: "windows-arm64"
 
-#      - name: Download NoGUI AppImage Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-nogui"
-#
-#      - name: Download NoGUI AppImage zsync Artifact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: "linux-x64-appimage-nogui-zsync"
-
       - name: Download Qt AppImage Artifact
         uses: actions/download-artifact@v1
         with:
@@ -308,10 +280,6 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
             macos/duckstation-mac-release.zip
-#            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
-#            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-#            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
-#            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -320,7 +288,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: false
-          title: "Latest Development Build"
+          title: "Latest Rolling Release"
           files: |
             windows/duckstation-windows-x64-release.zip
             windows/duckstation-windows-x64-release-symbols.zip
@@ -328,7 +296,4 @@ jobs:
             windows-arm64/duckstation-windows-arm64-release-symbols.zip
             linux-x64-appimage-qt/DuckStation-x64.AppImage
             macos/duckstation-mac-release.zip
-#            linux-x64-appimage-qt/duckstation-qt-x64.AppImage
-#            linux-x64-appimage-qt-zsync/duckstation-qt-x64.AppImage.zsync
-#            linux-x64-appimage-nogui/duckstation-nogui-x64.AppImage
-#            linux-x64-appimage-nogui-zsync/duckstation-nogui-x64.AppImage.zsync
+
