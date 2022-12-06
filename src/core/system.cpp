@@ -1153,16 +1153,17 @@ bool System::BootSystem(SystemBootParameters parameters)
     return false;
   }
 
+  // Update running game, this will apply settings as well.
+  UpdateRunningGame(media ? media->GetFileName().c_str() : parameters.filename.c_str(), media.get(), true);
+
   // Check for SBI.
   if (!CheckForSBIFile(media.get()))
   {
     s_state = State::Shutdown;
+    ClearRunningGame();
     Host::OnSystemDestroyed();
     return false;
   }
-
-  // Update running game, this will apply settings as well.
-  UpdateRunningGame(media ? media->GetFileName().c_str() : parameters.filename.c_str(), media.get(), true);
 
 #ifdef WITH_CHEEVOS
   // Check for resuming with hardcore mode.
