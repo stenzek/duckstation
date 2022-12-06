@@ -1208,10 +1208,13 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   // Enable tty by patching bios.
   const BIOS::ImageInfo* bios_info = BIOS::GetInfoForImage(bios_image.value());
-  if (bios_info && bios_info->patch_compatible)
-    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
-  else
-    Log_ErrorPrintf("Not patching TTY enable, as BIOS is not patch compatible.");
+  if (g_settings.bios_patch_tty_enable)
+  {
+    if (bios_info && bios_info->patch_compatible)
+      BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
+    else
+      Log_ErrorPrintf("Not patching TTY enable, as BIOS is not patch compatible.");
+  }
 
   // Load EXE late after BIOS.
   if (exe_boot && !LoadEXE(parameters.filename.c_str()))
