@@ -212,16 +212,11 @@ bool OpenGLHostDisplay::SupportsTextureFormat(GPUTexture::Format format) const
 
 void OpenGLHostDisplay::SetVSync(bool enabled)
 {
-  if (m_vsync_enabled == enabled || m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
+  if (m_vsync_enabled == enabled)
     return;
 
-  // Window framebuffer has to be bound to call SetSwapInterval.
-  GLint current_fbo = 0;
-  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  m_gl_context->SetSwapInterval(enabled ? 1 : 0);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
   m_vsync_enabled = enabled;
+  SetSwapInterval();
 }
 
 const char* OpenGLHostDisplay::GetGLSLVersionString() const
@@ -296,7 +291,7 @@ bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
   }
 
   m_window_info = m_gl_context->GetWindowInfo();
-  SetVSync(vsync);
+  m_vsync_enabled = vsync;
   return true;
 }
 
@@ -333,6 +328,7 @@ bool OpenGLHostDisplay::SetupDevice()
   if (!CreateResources())
     return false;
 
+  SetSwapInterval();
   return true;
 }
 
@@ -363,6 +359,9 @@ bool OpenGLHostDisplay::ChangeWindow(const WindowInfo& new_wi)
   }
 
   m_window_info = m_gl_context->GetWindowInfo();
+
+  // Update swap interval for new surface.
+  SetSwapInterval();
   return true;
 }
 
@@ -373,6 +372,23 @@ void OpenGLHostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height
 
   m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
   m_window_info = m_gl_context->GetWindowInfo();
+}
+
+void OpenGLHostDisplay::SetSwapInterval()
+{
+  if (m_window_info.type == WindowInfo::Type::Surfaceless)
+    return;
+
+  // Window framebuffer has to be bound to call SetSwapInterval.
+  const s32 interval = m_vsync_enabled ? 1 : 0;
+  GLint current_fbo = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+  if (!m_gl_context->SetSwapInterval(interval))
+    Log_WarningPrintf("Failed to set swap interval to %d", interval);
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 bool OpenGLHostDisplay::SupportsFullscreen() const

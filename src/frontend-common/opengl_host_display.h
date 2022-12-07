@@ -81,6 +81,8 @@ protected:
   void DestroyImGuiContext() override;
   bool UpdateImGuiFontTexture() override;
 
+  void SetSwapInterval();
+
   void RenderDisplay();
   void RenderImGui();
   void RenderSoftwareCursor();
