@@ -189,7 +189,6 @@ void CDROM::SoftReset(TickCount ticks_late)
   m_play_after_seek = false;
   m_muted = false;
   m_adpcm_muted = false;
-  m_last_sector_header_valid = false;
   m_last_cdda_report_frame_nibble = 0xFF;
 
   ResetAudioDecoder();
