@@ -121,6 +121,11 @@ bool ContextAGL::SwapBuffers()
   return true;
 }
 
+bool ContextAGL::IsCurrent()
+{
+  return (m_context != nil && [NSOpenGLContext currentContext] == m_context);
+}
+
 bool ContextAGL::MakeCurrent()
 {
   [m_context makeCurrentContext];

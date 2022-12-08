@@ -129,6 +129,11 @@ bool ContextWGL::SwapBuffers()
   return ::SwapBuffers(m_dc);
 }
 
+bool ContextWGL::IsCurrent()
+{
+  return (m_rc && wglGetCurrentContext() == m_rc);
+}
+
 bool ContextWGL::MakeCurrent()
 {
   if (!wglMakeCurrent(m_dc, m_rc))

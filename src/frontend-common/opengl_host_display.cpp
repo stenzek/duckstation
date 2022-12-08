@@ -328,7 +328,6 @@ bool OpenGLHostDisplay::SetupDevice()
   if (!CreateResources())
     return false;
 
-  SetSwapInterval();
   return true;
 }
 
@@ -340,6 +339,7 @@ bool OpenGLHostDisplay::MakeCurrent()
     return false;
   }
 
+  SetSwapInterval();
   return true;
 }
 
@@ -361,7 +361,9 @@ bool OpenGLHostDisplay::ChangeWindow(const WindowInfo& new_wi)
   m_window_info = m_gl_context->GetWindowInfo();
 
   // Update swap interval for new surface.
-  SetSwapInterval();
+  if (m_gl_context->IsCurrent())
+    SetSwapInterval();
+
   return true;
 }
 

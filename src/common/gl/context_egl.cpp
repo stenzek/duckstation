@@ -133,6 +133,11 @@ bool ContextEGL::SwapBuffers()
   return eglSwapBuffers(m_display, m_surface);
 }
 
+bool ContextEGL::IsCurrent()
+{
+  return m_context && eglGetCurrentContext() == m_context;
+}
+
 bool ContextEGL::MakeCurrent()
 {
   if (!eglMakeCurrent(m_display, m_surface, m_surface, m_context))

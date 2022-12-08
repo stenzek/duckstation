@@ -123,6 +123,11 @@ bool ContextGLX::SwapBuffers()
   return true;
 }
 
+bool ContextGLX::IsCurrent()
+{
+  return (m_context && glXGetCurrentContext() == m_context);
+}
+
 bool ContextGLX::MakeCurrent()
 {
   return (glXMakeContextCurrent(GetDisplay(), GetDrawable(), GetDrawable(), m_context) == True);

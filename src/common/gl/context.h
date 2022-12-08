@@ -46,6 +46,7 @@ public:
   virtual bool ChangeSurface(const WindowInfo& new_wi) = 0;
   virtual void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) = 0;
   virtual bool SwapBuffers() = 0;
+  virtual bool IsCurrent() = 0;
   virtual bool MakeCurrent() = 0;
   virtual bool DoneCurrent() = 0;
   virtual bool SetSwapInterval(s32 interval) = 0;
