@@ -165,7 +165,7 @@
         <location filename="../achievementsettingswidget.ui" line="101"/>
         <location filename="../achievementsettingswidget.cpp" line="55"/>
         <source>Show Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать уведомления</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="111"/>
@@ -252,7 +252,7 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="56"/>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отображает всплывающие сообщения о таких событиях, как разблокировка достижений и отправка в список лидеров.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="59"/>
@@ -5193,12 +5193,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="988"/>
         <source>{} hours</source>
-        <translation type="unfinished"></translation>
+        <translation>{} часов</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="990"/>
         <source>{} minutes</source>
-        <translation type="unfinished"></translation>
+        <translation>{} минут</translation>
     </message>
 </context>
 <context>
@@ -7499,7 +7499,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="2457"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите выключить виртуальную машину?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2459"/>
