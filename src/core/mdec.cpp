@@ -5,6 +5,7 @@
 #include "common/log.h"
 #include "cpu_core.h"
 #include "dma.h"
+#include "gpu_types.h"
 #include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
@@ -517,22 +518,22 @@ void MDEC::CopyOutBlock()
 
     case DataOutputDepth_15Bit:
     {
-      const u16 a = ZeroExtend16(m_status.data_output_bit15.GetValue());
+      const u32 a = ZeroExtend32(m_status.data_output_bit15.GetValue()) << 15;
       for (u32 i = 0; i < static_cast<u32>(m_block_rgb.size());)
       {
         u32 color = m_block_rgb[i++];
-        u16 r = Truncate16((color >> 3) & 0x1Fu);
-        u16 g = Truncate16((color >> 11) & 0x1Fu);
-        u16 b = Truncate16((color >> 19) & 0x1Fu);
-        const u16 color15a = r | (g << 5) | (b << 10) | (a << 15);
+        u32 r = VRAMConvert8To5(color & 0xFFu);
+        u32 g = VRAMConvert8To5((color >> 8) & 0xFFu);
+        u32 b = VRAMConvert8To5((color >> 16) & 0xFFu);
+        const u32 color15a = r | (g << 5) | (b << 10) | a;
 
         color = m_block_rgb[i++];
-        r = Truncate16((color >> 3) & 0x1Fu);
-        g = Truncate16((color >> 11) & 0x1Fu);
-        b = Truncate16((color >> 19) & 0x1Fu);
-        const u16 color15b = r | (g << 5) | (b << 10) | (a << 15);
+        r = VRAMConvert8To5(color & 0xFFu);
+        g = VRAMConvert8To5((color >> 8) & 0xFFu);
+        b = VRAMConvert8To5((color >> 16) & 0xFFu);
+        const u32 color15b = r | (g << 5) | (b << 10) | a;
 
-        m_data_out_fifo.Push(ZeroExtend32(color15a) | (ZeroExtend32(color15b) << 16));
+        m_data_out_fifo.Push(color15a | (color15b << 16));
       }
     }
     break;
@@ -587,7 +588,7 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
     val = std::clamp(val, -0x400, 0x3FF);
     if (m_current_q_scale > 0)
       blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
-    else if (m_current_q_scale == 0)
+    else
       blk[m_current_coefficient] = static_cast<s16>(val);
   }
 
@@ -610,7 +611,7 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
       val = std::clamp(val, -0x400, 0x3FF);
       if (m_current_q_scale > 0)
         blk[zagzig[m_current_coefficient]] = static_cast<s16>(val);
-      else if (m_current_q_scale == 0)
+      else
         blk[m_current_coefficient] = static_cast<s16>(val);
     }
 
@@ -626,27 +627,27 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
 
 void MDEC::IDCT(s16* blk)
 {
-  std::array<s64, 64> temp_buffer;
+  std::array<s32, 64> temp;
   for (u32 x = 0; x < 8; x++)
   {
     for (u32 y = 0; y < 8; y++)
     {
-      s64 sum = 0;
-      for (u32 u = 0; u < 8; u++)
-        sum += s32(blk[u * 8 + x]) * s32(m_scale_table[u * 8 + y]);
-      temp_buffer[x + y * 8] = sum;
+      // TODO: We could alter zigzag and invert scale_table to get these in row-major order,
+      // in which case we could do optimize this to a vector multiply.
+      s32 sum = 0;
+      for (u32 z = 0; z < 8; z++)
+        sum += s32(blk[y + z * 8]) * s32(m_scale_table[x + z * 8] / 8);
+      temp[x + y * 8] = static_cast<s32>((sum + 0xfff) / 0x2000);
     }
   }
   for (u32 x = 0; x < 8; x++)
   {
     for (u32 y = 0; y < 8; y++)
     {
-      s64 sum = 0;
-      for (u32 u = 0; u < 8; u++)
-        sum += s64(temp_buffer[u + y * 8]) * s32(m_scale_table[u * 8 + x]);
-
-      blk[x + y * 8] =
-        static_cast<s16>(std::clamp<s32>(SignExtendN<9, s32>((sum >> 32) + ((sum >> 31) & 1)), -128, 127));
+      s32 sum = 0;
+      for (u32 z = 0; z < 8; z++)
+        sum += temp[y + z * 8] * s32(m_scale_table[x + z * 8] / 8);
+      blk[x + y * 8] = static_cast<s16>(std::clamp<s32>((sum + 0xfff) / 0x2000, -128, 127));
     }
   }
 }
@@ -654,6 +655,7 @@ void MDEC::IDCT(s16* blk)
 void MDEC::yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
                       const std::array<s16, 64>& Yblk)
 {
+  const s16 addval = m_status.data_output_signed ? 0 : 0x80;
   for (u32 y = 0; y < 8; y++)
   {
     for (u32 x = 0; x < 8; x++)
@@ -666,14 +668,9 @@ void MDEC::yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const st
       B = static_cast<s16>(1.772f * static_cast<float>(B));
 
       s16 Y = Yblk[x + y * 8];
-      R = static_cast<s16>(std::clamp(static_cast<int>(Y) + R, -128, 127));
-      G = static_cast<s16>(std::clamp(static_cast<int>(Y) + G, -128, 127));
-      B = static_cast<s16>(std::clamp(static_cast<int>(Y) + B, -128, 127));
-
-      // TODO: Signed output
-      R += 128;
-      G += 128;
-      B += 128;
+      R = static_cast<s16>(std::clamp(static_cast<int>(Y) + R, -128, 127)) + addval;
+      G = static_cast<s16>(std::clamp(static_cast<int>(Y) + G, -128, 127)) + addval;
+      B = static_cast<s16>(std::clamp(static_cast<int>(Y) + B, -128, 127)) + addval;
 
       m_block_rgb[(x + xx) + ((y + yy) * 16)] = ZeroExtend32(static_cast<u16>(R)) |
                                                 (ZeroExtend32(static_cast<u16>(G)) << 8) |
