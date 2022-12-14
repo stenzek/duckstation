@@ -4,11 +4,13 @@
 #include "cubeb_audio_stream.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/scoped_guard.h"
 #include "common/string_util.h"
 #include "common_host.h"
 #include "core/host.h"
 #include "core/settings.h"
 #include "cubeb/cubeb.h"
+#include "fmt/format.h"
 Log_SetChannel(CubebAudioStream);
 
 #ifdef _WIN32
@@ -123,6 +125,40 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
     }
   }
 
+  cubeb_devid selected_device = nullptr;
+  const std::string& selected_device_name = g_settings.audio_output_device;
+  cubeb_device_collection devices;
+  bool devices_valid = false;
+  if (!selected_device_name.empty())
+  {
+    rv = cubeb_enumerate_devices(m_context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
+    devices_valid = (rv == CUBEB_OK);
+    if (rv == CUBEB_OK)
+    {
+      for (size_t i = 0; i < devices.count; i++)
+      {
+        const cubeb_device_info& di = devices.device[i];
+        if (di.device_id && selected_device_name == di.device_id)
+        {
+          Log_InfoPrintf("Using output device '%s' (%s).", di.device_id,
+                         di.friendly_name ? di.friendly_name : di.device_id);
+          selected_device = di.devid;
+          break;
+        }
+      }
+
+      if (!selected_device)
+      {
+        Host::AddOSDMessage(
+          fmt::format("Requested audio output device '{}' not found, using default.", selected_device_name), 10.0f);
+      }
+    }
+    else
+    {
+      Log_WarningPrintf("cubeb_enumerate_devices() returned %d, using default device.", rv);
+    }
+  }
+
   BaseInitialize();
   m_volume = 100;
   m_paused = false;
@@ -130,8 +166,12 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
   char stream_name[32];
   std::snprintf(stream_name, sizeof(stream_name), "%p", this);
 
-  rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, nullptr, &params, latency_frames,
+  rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params, latency_frames,
                          &CubebAudioStream::DataCallback, StateCallback, this);
+
+  if (devices_valid)
+    cubeb_device_collection_destroy(m_context, &devices);
+
   if (rv != CUBEB_OK)
   {
     Log_ErrorPrintf("(Cubeb) Could not create stream: %d", rv);
@@ -209,4 +249,41 @@ std::vector<std::string> CommonHost::GetCubebDriverNames()
   for (u32 i = 0; cubeb_names[i] != nullptr; i++)
     names.emplace_back(cubeb_names[i]);
   return names;
+}
+
+std::vector<std::pair<std::string, std::string>> CommonHost::GetCubebOutputDevices(const char* driver)
+{
+  std::vector<std::pair<std::string, std::string>> ret;
+  ret.emplace_back(std::string(), Host::TranslateStdString("CommonHost", "Default Output Device"));
+
+  cubeb* context;
+  int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);
+  if (rv != CUBEB_OK)
+  {
+    Log_ErrorPrintf("cubeb_init() failed: %d", rv);
+    return ret;
+  }
+
+  ScopedGuard context_cleanup([context]() { cubeb_destroy(context); });
+
+  cubeb_device_collection devices;
+  rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
+  if (rv != CUBEB_OK)
+  {
+    Log_ErrorPrintf("cubeb_enumerate_devices() failed: %d", rv);
+    return ret;
+  }
+
+  ScopedGuard devices_cleanup([context, &devices]() { cubeb_device_collection_destroy(context, &devices); });
+
+  for (size_t i = 0; i < devices.count; i++)
+  {
+    const cubeb_device_info& di = devices.device[i];
+    if (!di.device_id)
+      continue;
+
+    ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id);
+  }
+
+  return ret;
 }

@@ -287,6 +287,7 @@ void Settings::Load(SettingsInterface& si)
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
       .value_or(DEFAULT_AUDIO_BACKEND);
   audio_driver = si.GetStringValue("Audio", "Driver");
+  audio_output_device = si.GetStringValue("Audio", "OutputDevice");
   audio_stretch_mode =
     AudioStream::ParseStretchMode(
       si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
@@ -500,6 +501,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
   si.SetStringValue("Audio", "Driver", audio_driver.c_str());
+  si.SetStringValue("Audio", "OutputDevice", audio_output_device.c_str());
   si.SetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(audio_stretch_mode));
   si.SetUIntValue("Audio", "BufferMS", audio_buffer_ms);
   si.SetUIntValue("Audio", "OutputLatencyMS", audio_output_latency_ms);

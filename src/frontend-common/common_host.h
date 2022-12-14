@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <vector>
 
 class SettingsInterface;
@@ -42,6 +43,7 @@ u64 GetSessionPlayedTime();
 std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
                                                     AudioStretchMode stretch);
 std::vector<std::string> GetCubebDriverNames();
+std::vector<std::pair<std::string, std::string>> GetCubebOutputDevices(const char* driver);
 #endif
 #ifdef _WIN32
 std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,

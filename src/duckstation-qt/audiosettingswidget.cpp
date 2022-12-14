@@ -102,26 +102,50 @@ void AudioSettingsWidget::updateDriverNames()
       .value_or(Settings::DEFAULT_AUDIO_BACKEND);
 
   std::vector<std::string> names;
+  std::vector<std::pair<std::string, std::string>> devices;
 
 #ifdef WITH_CUBEB
   if (backend == AudioBackend::Cubeb)
+  {
     names = CommonHost::GetCubebDriverNames();
+    devices = CommonHost::GetCubebOutputDevices(m_dialog->getEffectiveStringValue("Audio", "Driver", "").c_str());
+  }
 #endif
 
   m_ui.driver->disconnect();
+  m_ui.driver->clear();
   if (names.empty())
   {
+    m_ui.driver->addItem(tr("Default"));
     m_ui.driver->setEnabled(false);
-    m_ui.driver->clear();
-    return;
+  }
+  else
+  {
+    m_ui.driver->setEnabled(true);
+    for (const std::string& name : names)
+      m_ui.driver->addItem(QString::fromStdString(name));
+
+    SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "Audio", "Driver",
+                                                   std::move(names.front()));
+    connect(m_ui.driver, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   }
 
-  m_ui.driver->setEnabled(true);
-  for (const std::string& name : names)
-    m_ui.driver->addItem(QString::fromStdString(name));
+  m_ui.outputDevice->disconnect();
+  m_ui.outputDevice->clear();
+  if (names.empty())
+  {
+    m_ui.outputDevice->addItem(tr("Default"));
+    m_ui.outputDevice->setEnabled(false);
+  }
+  else
+  {
+    m_ui.outputDevice->setEnabled(true);
+    for (const auto& [id, name] : devices)
+      m_ui.outputDevice->addItem(QString::fromStdString(name), QString::fromStdString(id));
 
-  SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "Audio", "Driver",
-                                                 std::move(names.front()));
+    SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice, "Audio",
+                                                   "OutputDevice", std::move(devices.front().first));
+  }
 }
 
 void AudioSettingsWidget::updateLatencyLabel()

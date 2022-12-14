@@ -159,6 +159,7 @@ struct Settings
   AudioBackend audio_backend = DEFAULT_AUDIO_BACKEND;
   AudioStretchMode audio_stretch_mode = DEFAULT_AUDIO_STRETCH_MODE;
   std::string audio_driver;
+  std::string audio_output_device;
   u32 audio_output_latency_ms = DEFAULT_AUDIO_OUTPUT_LATENCY_MS;
   u32 audio_buffer_ms = DEFAULT_AUDIO_BUFFER_MS;
   u32 audio_output_volume = 100;
