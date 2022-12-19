@@ -713,7 +713,7 @@ DEFINE_HOTKEY("TogglePause", TRANSLATABLE("Hotkeys", "General"), TRANSLATABLE("H
 DEFINE_HOTKEY("PowerOff", TRANSLATABLE("Hotkeys", "General"), TRANSLATABLE("Hotkeys", "Power Off System"),
               [](s32 pressed) {
                 if (!pressed)
-                  Host::RequestSystemShutdown(true, true);
+                  Host::RequestSystemShutdown(true, g_settings.save_state_on_exit);
               })
 #endif
 
