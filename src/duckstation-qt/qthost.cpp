@@ -327,9 +327,9 @@ void EmuThread::loadSettings(SettingsInterface& si)
   //
 }
 
-void EmuThread::setInitialState()
+void EmuThread::setInitialState(std::optional<bool> override_fullscreen)
 {
-  m_is_fullscreen = Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false);
+  m_is_fullscreen = override_fullscreen.value_or(Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
   m_is_rendering_to_main = shouldRenderToMain();
   m_is_surfaceless = false;
 }
@@ -451,10 +451,8 @@ void EmuThread::startFullscreenUI()
   // we want settings loaded so we choose the correct renderer
   // this also sorts out input sources.
   System::LoadSettings(false);
-  setInitialState();
+  setInitialState(s_start_fullscreen_ui_fullscreen ? std::optional<bool>(true) : std::optional<bool>());
   m_run_fullscreen_ui = true;
-  if (s_start_fullscreen_ui_fullscreen)
-    m_is_fullscreen = true;
 
   if (!acquireHostDisplay(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)))
   {
@@ -500,7 +498,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
     return;
   }
 
-  setInitialState();
+  setInitialState(params->override_fullscreen);
 
   if (!System::BootSystem(std::move(*params)))
     return;

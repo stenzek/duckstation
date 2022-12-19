@@ -105,7 +105,6 @@ public:
 
   bool shouldRenderToMain() const;
   void loadSettings(SettingsInterface& si);
-  void setInitialState();
   void checkForSettingsChanges(const Settings& old_settings);
 
   void bootOrLoadState(std::string path);
@@ -208,6 +207,7 @@ private:
 
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
+  void setInitialState(std::optional<bool> override_fullscreen);
   void updateDisplayState();
 
   QThread* m_ui_thread;
