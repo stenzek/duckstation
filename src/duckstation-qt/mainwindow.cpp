@@ -106,6 +106,7 @@ MainWindow::~MainWindow()
 {
   Assert(!m_display_widget);
   Assert(!m_debugger_window);
+  cancelGameListRefresh();
 
   // we compare here, since recreate destroys the window later
   if (g_main_window == this)
