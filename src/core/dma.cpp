@@ -537,7 +537,7 @@ TickCount DMA::TransferMemoryToDevice(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::MDECin:
-      g_mdec.DMAWrite(src_pointer, word_count);
+      MDEC::DMAWrite(src_pointer, word_count);
       break;
 
     case Channel::CDROM:
@@ -598,7 +598,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::MDECout:
-      g_mdec.DMARead(dest_pointer, word_count);
+      MDEC::DMARead(dest_pointer, word_count);
       break;
 
     default:

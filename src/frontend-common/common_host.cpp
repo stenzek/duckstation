@@ -488,7 +488,7 @@ void ImGuiManager::RenderDebugWindows()
     if (g_settings.debugging.show_spu_state)
       SPU::DrawDebugStateWindow();
     if (g_settings.debugging.show_mdec_state)
-      g_mdec.DrawDebugStateWindow();
+      MDEC::DrawDebugStateWindow();
     if (g_settings.debugging.show_dma_state)
       g_dma.DrawDebugStateWindow();
   }

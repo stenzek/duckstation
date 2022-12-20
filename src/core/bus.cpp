@@ -1217,13 +1217,13 @@ ALWAYS_INLINE static TickCount DoMDECAccess(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    value = g_mdec.ReadRegister(FIXUP_WORD_OFFSET(size, offset));
+    value = MDEC::ReadRegister(FIXUP_WORD_OFFSET(size, offset));
     value = FIXUP_WORD_READ_VALUE(size, offset, value);
     return 2;
   }
   else
   {
-    g_mdec.WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
+    MDEC::WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
     return 0;
   }
 }
