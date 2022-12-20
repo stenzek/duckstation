@@ -211,6 +211,7 @@ private:
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
+  void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
   void setDisplayFullscreen(const std::string& fullscreen_mode);
 
   SettingsDialog* getSettingsDialog();

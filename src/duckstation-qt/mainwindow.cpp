@@ -239,10 +239,10 @@ bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
   m_ui.actionStartFullscreenUI->setEnabled(false);
   m_ui.actionStartFullscreenUI2->setEnabled(false);
-  m_ui.actionViewSystemDisplay->setEnabled(true);
-  m_ui.actionFullscreen->setEnabled(true);
 
   updateDisplayWidgetCursor();
+  updateDisplayRelatedActions(true, render_to_main, fullscreen);
+
   m_display_widget->setFocus();
 
   g_host_display->DoneCurrent();
@@ -304,6 +304,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
   if (surfaceless)
   {
     updateWindowState();
+    updateDisplayRelatedActions(false, render_to_main, fullscreen);
     return true;
   }
 
@@ -328,6 +329,7 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
   updateWindowTitle();
   updateWindowState();
   updateDisplayWidgetCursor();
+  updateDisplayRelatedActions(true, render_to_main, fullscreen);
   m_display_widget->setFocus();
 
   QSignalBlocker blocker(m_ui.actionFullscreen);
@@ -450,8 +452,7 @@ void MainWindow::destroyDisplay()
   destroyDisplayWidget(true);
   m_display_created = false;
 
-  m_ui.actionViewSystemDisplay->setEnabled(false);
-  m_ui.actionFullscreen->setEnabled(false);
+  updateDisplayRelatedActions(false, false, false);
 
   m_ui.actionStartFullscreenUI->setEnabled(true);
   m_ui.actionStartFullscreenUI2->setEnabled(true);
@@ -510,6 +511,19 @@ void MainWindow::updateDisplayWidgetCursor()
 {
   m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused && m_relative_mouse_mode);
   m_display_widget->updateCursor(s_system_valid && !s_system_paused && shouldHideMouseCursor());
+}
+
+void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen)
+{
+  // rendering to main, or switched to gamelist/grid
+  m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && g_host_display));
+  m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
+  m_ui.actionFullscreen->setEnabled(has_surface);
+
+  {
+    QSignalBlocker blocker(m_ui.actionFullscreen);
+    m_ui.actionFullscreen->setChecked(fullscreen);
+  }
 }
 
 void MainWindow::focusDisplayWidget()
@@ -600,7 +614,10 @@ void MainWindow::onSystemDestroyed()
   s_system_valid = false;
   s_system_paused = false;
   updateEmulationActions(false, false, Achievements::ChallengeModeActive());
-  switchToGameListView();
+  if (m_display_widget)
+    updateDisplayWidgetCursor();
+  else
+    switchToGameListView();
 
   // reload played time
   if (m_game_list_widget->isShowingGameList())
@@ -1617,7 +1634,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.actionChangeDisc->setDisabled(starting || !running);
   m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionScreenshot->setDisabled(starting || !running);
-  m_ui.actionViewSystemDisplay->setEnabled(starting || running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
