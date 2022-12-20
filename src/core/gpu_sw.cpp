@@ -142,16 +142,21 @@ ALWAYS_INLINE u16 VRAM16ToOutput<GPUTexture::Format::RGB565, u16>(u16 value)
 template<>
 ALWAYS_INLINE u32 VRAM16ToOutput<GPUTexture::Format::RGBA8, u32>(u16 value)
 {
-  return VRAMRGBA5551ToRGBA8888(value);
+  const u32 value32 = ZeroExtend32(value);
+  const u32 r = (value32 & 31u) << 3;
+  const u32 g = ((value32 >> 5) & 31u) << 3;
+  const u32 b = ((value32 >> 10) & 31u) << 3;
+  const u32 a = ((value >> 15) != 0) ? 255 : 0;
+  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
 }
 
 template<>
 ALWAYS_INLINE u32 VRAM16ToOutput<GPUTexture::Format::BGRA8, u32>(u16 value)
 {
   const u32 value32 = ZeroExtend32(value);
-  const u32 r = VRAMConvert5To8(value32 & 31u);
-  const u32 g = VRAMConvert5To8((value32 >> 5) & 31u);
-  const u32 b = VRAMConvert5To8((value32 >> 10) & 31u);
+  const u32 r = (value32 & 31u) << 3;
+  const u32 g = ((value32 >> 5) & 31u) << 3;
+  const u32 b = ((value32 >> 10) & 31u) << 3;
   return ZeroExtend32(b) | (ZeroExtend32(g) << 8) | (ZeroExtend32(r) << 16) | (0xFF000000u);
 }
 

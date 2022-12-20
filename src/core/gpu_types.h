@@ -117,29 +117,25 @@ union GPURenderCommand
   }
 };
 
-// Helper/format conversion functions - constants from https://stackoverflow.com/a/9069480
-ALWAYS_INLINE static constexpr u32 VRAMConvert5To8(u32 color)
-{
-  return (((color * 527u) + 23u) >> 6);
-}
-ALWAYS_INLINE static constexpr u32 VRAMConvert8To5(u32 color)
-{
-  return (((color * 249u) + 1014u) >> 11);
-}
 ALWAYS_INLINE static constexpr u32 VRAMRGBA5551ToRGBA8888(u32 color)
 {
-  const u32 r = VRAMConvert5To8(color & 31u);
-  const u32 g = VRAMConvert5To8((color >> 5) & 31u);
-  const u32 b = VRAMConvert5To8((color >> 10) & 31u);
+  // Helper/format conversion functions - constants from https://stackoverflow.com/a/9069480
+#define E5TO8(color) ((((color) * 527u) + 23u) >> 6)
+
+  const u32 r = E5TO8(color & 31u);
+  const u32 g = E5TO8((color >> 5) & 31u);
+  const u32 b = E5TO8((color >> 10) & 31u);
   const u32 a = ((color >> 15) != 0) ? 255 : 0;
   return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
+
+#undef E5TO8
 }
 
 ALWAYS_INLINE static constexpr u16 VRAMRGBA8888ToRGBA5551(u32 color)
 {
-  const u32 r = VRAMConvert8To5(color & 0xFFu);
-  const u32 g = VRAMConvert8To5((color >> 8) & 0xFFu);
-  const u32 b = VRAMConvert8To5((color >> 16) & 0xFFu);
+  const u32 r = (color & 0xFFu) >> 3;
+  const u32 g = ((color >> 8) & 0xFFu) >> 3;
+  const u32 b = ((color >> 16) & 0xFFu) >> 3;
   const u32 a = ((color >> 24) & 0x01u);
   return Truncate16(r | (g << 5) | (b << 10) | (a << 15));
 }
