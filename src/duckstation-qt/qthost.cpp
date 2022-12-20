@@ -306,16 +306,6 @@ void QtHost::SetDataDirectory()
     EmuFolders::DataRoot = EmuFolders::AppRoot;
 }
 
-#if 0
-void QtHost::UpdateFolders()
-{
-  // TODO: This should happen with the VM thread paused.
-  auto lock = Host::GetSettingsLock();
-  EmuFolders::LoadConfig(*s_base_settings_interface.get());
-  EmuFolders::EnsureFoldersExist();
-}
-#endif
-
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
   CommonHost::LoadSettings(si, lock);

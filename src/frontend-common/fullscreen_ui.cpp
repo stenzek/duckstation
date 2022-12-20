@@ -2228,7 +2228,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
                        bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
                        SetSettingsChanged(bsi);
 
-                       // Host::RunOnCPUThread(&Host::Internal::UpdateEmuFolders);
+                       Host::RunOnCPUThread(&EmuFolders::Update);
                        s_cover_image_map.clear();
 
                        CloseFileSelector();
@@ -2611,7 +2611,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, ICON_FA_TV " Start Fullscreen",
                     "Automatically switches to fullscreen mode when the program is started.", "Main", "StartFullscreen",
                     false);
-  DrawToggleSetting(bsi, ICON_FA_MOUSE "  Double-Click Toggles Fullscreen",
+  DrawToggleSetting(bsi, ICON_FA_MOUSE " Double-Click Toggles Fullscreen",
                     "Switches between full screen and windowed when the window is double-clicked.", "Main",
                     "DoubleClickTogglesFullscreen", true);
   DrawToggleSetting(bsi, ICON_FA_MOUSE_POINTER "Hide Cursor In Fullscreen",
