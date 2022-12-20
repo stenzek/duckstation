@@ -328,6 +328,7 @@ static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, c
                                     float step_value, float multiplier, const char* format = "%f", bool enabled = true,
                                     float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                     ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#if 0
 static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* left_key, int default_left, const char* top_key, int default_top,
                                const char* right_key, int default_right, const char* bottom_key, int default_bottom,
@@ -339,6 +340,7 @@ static void DrawStringListSetting(SettingsInterface* bsi, const char* title, con
                                   const char* const* option_values, size_t option_count, bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                   ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#endif
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                             const char* key, DataType default_value,
@@ -1656,7 +1658,6 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
                                                    std::string("Use Global Setting"));
 
   static bool manual_input = false;
-  static u32 repeat_count = 0;
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
   {
@@ -1774,6 +1775,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   ImGui::PopFont();
 }
 
+#if 0
 void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                       const char* section, const char* left_key, int default_left, const char* top_key,
                                       int default_top, const char* right_key, int default_right, const char* bottom_key,
@@ -1890,6 +1892,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
+#endif
 
 void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                          const char* section, const char* key, int default_value, int min_value,
@@ -1906,7 +1909,6 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     value_text = "Use Global Setting";
 
   static bool manual_input = false;
-  static u32 repeat_count = 0;
 
   if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
   {
@@ -2018,6 +2020,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   ImGui::PopFont();
 }
 
+#if 0
 void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                          const char* section, const char* key, const char* default_value,
                                          const char* const* options, const char* const* option_values,
@@ -2084,6 +2087,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
                      });
   }
 }
+#endif
 
 template<typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
@@ -3808,7 +3812,6 @@ enum
 void FullscreenUI::DrawPostProcessingSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
-  const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
 
@@ -3873,7 +3876,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   }
 
   u32 postprocessing_action = POSTPROCESSING_ACTION_NONE;
-  u32 postprocessing_action_index;
+  u32 postprocessing_action_index = 0;
 
   SmallString str;
   SmallString tstr;
