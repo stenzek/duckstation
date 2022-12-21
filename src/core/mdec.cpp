@@ -130,7 +130,7 @@ static u32 s_current_block = 0;        // block (0-5)
 static u32 s_current_coefficient = 64; // k (in block)
 static u16 s_current_q_scale = 0;
 
-static alignas(16) std::array<u32, 256> s_block_rgb{};
+alignas(16) static std::array<u32, 256> s_block_rgb{};
 static std::unique_ptr<TimingEvent> s_block_copy_out_event;
 
 static u32 s_total_blocks_decoded = 0;
