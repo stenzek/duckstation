@@ -289,14 +289,22 @@ void DisplaySettingsWidget::onGPUFullscreenModeIndexChanged()
 
 void DisplaySettingsWidget::onIntegerFilteringChanged()
 {
-  m_ui.displayLinearFiltering->setEnabled(!m_ui.displayIntegerScaling->isChecked());
-  m_ui.displayStretch->setEnabled(!m_ui.displayIntegerScaling->isChecked());
+  const bool integer_scaling = m_dialog->getEffectiveBoolValue("Display", "IntegerScaling", false);
+  m_ui.displayLinearFiltering->setEnabled(!integer_scaling);
+  m_ui.displayStretch->setEnabled(!integer_scaling);
 }
 
 void DisplaySettingsWidget::onAspectRatioChanged()
 {
-  const bool is_custom =
-    static_cast<DisplayAspectRatio>(m_ui.displayAspectRatio->currentIndex()) == DisplayAspectRatio::Custom;
+  const DisplayAspectRatio ratio =
+    Settings::ParseDisplayAspectRatio(
+      m_dialog
+        ->getEffectiveStringValue("Display", "AspectRatio",
+                                  Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
+        .c_str())
+      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+
+  const bool is_custom = (ratio == DisplayAspectRatio::Custom);
 
   m_ui.customAspectRatioNumerator->setVisible(is_custom);
   m_ui.customAspectRatioDenominator->setVisible(is_custom);
