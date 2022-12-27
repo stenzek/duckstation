@@ -634,24 +634,49 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_15Bit:
     {
-      const u32 a = ZeroExtend32(s_status.data_output_bit15.GetValue()) << 15;
-      for (u32 i = 0; i < static_cast<u32>(s_block_rgb.size());)
+      // people have made texture packs using the old conversion routines.. best to just leave them be.
+      if (g_settings.texture_replacements.enable_vram_write_replacements ||
+          g_settings.texture_replacements.dump_vram_writes)
       {
-#define E8TO5(color) (std::min<u32>((((color) + 4) >> 3), 0x1F))
-        u32 color = s_block_rgb[i++];
-        u32 r = E8TO5(color & 0xFFu);
-        u32 g = E8TO5((color >> 8) & 0xFFu);
-        u32 b = E8TO5((color >> 16) & 0xFFu);
-        const u32 color15a = r | (g << 5) | (b << 10) | a;
+        const u16 a = ZeroExtend16(s_status.data_output_bit15.GetValue()) << 15;
+        for (u32 i = 0; i < static_cast<u32>(s_block_rgb.size());)
+        {
+          u32 color = s_block_rgb[i++];
+          u16 r = Truncate16((color >> 3) & 0x1Fu);
+          u16 g = Truncate16((color >> 11) & 0x1Fu);
+          u16 b = Truncate16((color >> 19) & 0x1Fu);
+          const u16 color15a = r | (g << 5) | (b << 10) | (a << 15);
 
-        color = s_block_rgb[i++];
-        r = E8TO5(color & 0xFFu);
-        g = E8TO5((color >> 8) & 0xFFu);
-        b = E8TO5((color >> 16) & 0xFFu);
-        const u32 color15b = r | (g << 5) | (b << 10) | a;
+          color = s_block_rgb[i++];
+          r = Truncate16((color >> 3) & 0x1Fu);
+          g = Truncate16((color >> 11) & 0x1Fu);
+          b = Truncate16((color >> 19) & 0x1Fu);
+          const u16 color15b = r | (g << 5) | (b << 10) | (a << 15);
+
+          s_data_out_fifo.Push(ZeroExtend32(color15a) | (ZeroExtend32(color15b) << 16));
+        }
+      }
+      else
+      {
+        const u32 a = ZeroExtend32(s_status.data_output_bit15.GetValue()) << 15;
+        for (u32 i = 0; i < static_cast<u32>(s_block_rgb.size());)
+        {
+#define E8TO5(color) (std::min<u32>((((color) + 4) >> 3), 0x1F))
+          u32 color = s_block_rgb[i++];
+          u32 r = E8TO5(color & 0xFFu);
+          u32 g = E8TO5((color >> 8) & 0xFFu);
+          u32 b = E8TO5((color >> 16) & 0xFFu);
+          const u32 color15a = r | (g << 5) | (b << 10) | a;
+
+          color = s_block_rgb[i++];
+          r = E8TO5(color & 0xFFu);
+          g = E8TO5((color >> 8) & 0xFFu);
+          b = E8TO5((color >> 16) & 0xFFu);
+          const u32 color15b = r | (g << 5) | (b << 10) | a;
 #undef E8TO5
 
-        s_data_out_fifo.Push(color15a | (color15b << 16));
+          s_data_out_fifo.Push(color15a | (color15b << 16));
+        }
       }
     }
     break;
