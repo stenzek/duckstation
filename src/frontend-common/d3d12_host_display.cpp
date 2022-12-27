@@ -11,6 +11,7 @@
 #include "common/string_util.h"
 #include "core/settings.h"
 #include "display_ps.hlsl.h"
+#include "display_ps_alpha.hlsl.h"
 #include "display_vs.hlsl.h"
 #include "frontend-common/postprocessing_shadergen.h"
 #include "imgui.h"
@@ -502,6 +503,7 @@ bool D3D12HostDisplay::CreateResources()
   if (!m_display_pipeline)
     return false;
 
+  gpbuilder.SetPixelShader(s_display_ps_alpha_bytecode, sizeof(s_display_ps_alpha_bytecode));
   gpbuilder.SetBlendState(0, true, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA, D3D12_BLEND_OP_ADD,
                           D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_ALL);
   m_software_cursor_pipeline = gpbuilder.Create(g_d3d12_context->GetDevice(), false);
@@ -743,9 +745,10 @@ void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist, 
 {
   const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
 
-  cmdlist->SetPipelineState(m_display_pipeline.Get());
+  cmdlist->SetGraphicsRootSignature(m_display_root_signature.Get());
+  cmdlist->SetPipelineState(m_software_cursor_pipeline.Get());
   cmdlist->SetGraphicsRoot32BitConstants(0, static_cast<UINT>(std::size(uniforms)), uniforms, 0);
-  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12::Texture*>(texture_handle)->GetRTVOrDSVDescriptor());
+  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12::Texture*>(texture_handle)->GetSRVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, m_linear_sampler);
 
   D3D12::SetViewportAndScissor(cmdlist, left, top, width, height);
