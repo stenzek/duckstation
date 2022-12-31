@@ -733,8 +733,8 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
     return false;
   }
 
-  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() ||
-      !ImGuiManager::Initialize() || !CommonHost::CreateHostDisplayResources())
+  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize() ||
+      !CommonHost::CreateHostDisplayResources())
   {
     ImGuiManager::Shutdown();
     CommonHost::ReleaseHostDisplayResources();
@@ -1887,6 +1887,9 @@ void QtHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -settings <filename>: Loads a custom settings configuration from the\n"
                        "    specified filename. Default settings applied if file not found.\n");
   std::fprintf(stderr, "  -earlyconsole: Creates console as early as possible, for logging.\n");
+#ifdef WITH_RAINTEGRATION
+  std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
+#endif
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -2022,6 +2025,13 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         InitializeEarlyConsole();
         continue;
       }
+#ifdef WITH_RAINTEGRATION
+      else if (CHECK_ARG("-raintegration"))
+      {
+        Achievements::SwitchToRAIntegration();
+        continue;
+      }
+#endif
       else if (CHECK_ARG("--"))
       {
         no_more_args = true;
