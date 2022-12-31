@@ -1399,7 +1399,7 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     }
   }
 
-  if (s_http_downloader->HasAnyRequests())
+  if (!IsUsingRAIntegration() && s_http_downloader->HasAnyRequests())
   {
     if (image && System::IsValid())
       Host::DisplayLoadingScreen("Downloading achievements data...");
