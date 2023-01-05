@@ -139,13 +139,13 @@
         <location filename="../achievementsettingswidget.ui" line="45"/>
         <location filename="../achievementsettingswidget.cpp" line="61"/>
         <source>Enable Leaderboards</source>
-        <translation type="unfinished"></translation>
+        <translation>リーダーボードを有効にする</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
         <location filename="../achievementsettingswidget.cpp" line="65"/>
         <source>Show Challenge Indicators</source>
-        <translation type="unfinished"></translation>
+        <translation>チャレンジ指標を表示する</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="87"/>
@@ -157,13 +157,13 @@
         <location filename="../achievementsettingswidget.ui" line="94"/>
         <location filename="../achievementsettingswidget.cpp" line="58"/>
         <source>Enable Sound Effects</source>
-        <translation type="unfinished"></translation>
+        <translation>効果音を有効にする</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="101"/>
         <location filename="../achievementsettingswidget.cpp" line="55"/>
         <source>Show Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>通知を表示する</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="111"/>
@@ -235,7 +235,7 @@
     <message>
         <location filename="../achievementsettingswidget.cpp" line="52"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation type="unfinished"></translation>
+        <translation>リーダーボードの追跡を含む、実績用の &quot;チャレンジ&quot; モード。ステートセーブ、チート、スローダウン機能を無効にします。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="55"/>
@@ -243,41 +243,37 @@
         <location filename="../achievementsettingswidget.cpp" line="61"/>
         <location filename="../achievementsettingswidget.cpp" line="65"/>
         <source>Checked</source>
-        <translation type="unfinished">チェックする</translation>
+        <translation>チェックする</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="56"/>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="unfinished"></translation>
+        <translation>実績のロック解除やリーダーボードの送信などのイベントに関するポップアップ メッセージを表示します。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="59"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="unfinished"></translation>
+        <translation>実績のロック解除やリーダーボードの提出などのイベントの効果音を再生します。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="62"/>
         <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>サポートされているゲームでリーダーボードの追跡と送信を有効にします。リーダーボードが無効になっている場合でも、リーダーボードとスコアを表示できますが、スコアはアップロードされません。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="66"/>
         <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation type="unfinished"></translation>
+        <translation>チャレンジ可能な実績がある場合、画面の右下隅にアイコンを表示します。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="131"/>
         <source>Reset System</source>
-        <translation type="unfinished">システムリセット</translation>
+        <translation>システムリセット</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="132"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation type="vanished">実績用の &quot;チャレンジ&quot; モード。ステートセーブ、チート、スローダウン機能の使用が禁止されますが、実績ポイントが2倍になります。</translation>
+        <translation>システムがリセットされるまで、ハードコアモードは有効になりません。今すぐシステムをリセットしますか?</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="151"/>
@@ -353,14 +349,6 @@ Login token generated on %2.</source>
         <location filename="../../frontend-common/achievements.cpp" line="1016"/>
         <source>This game has no achievements.</source>
         <translation>このゲームには実績がありません。</translation>
-    </message>
-    <message>
-        <source>Leaderboards are enabled.</source>
-        <translation type="vanished">リーダーボードが有効になりました。</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation type="vanished">ハードコアモードがオフのため、リーダーボードは無効になります。</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1774"/>
@@ -467,10 +455,6 @@ Leaderboard Position: {} of {}</source>
         <translation>ステータスインジケータを表示する</translation>
     </message>
     <message>
-        <source>Show Enhancement Settings</source>
-        <translation type="vanished">拡張設定を表示する</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="233"/>
         <source>Multisample Antialiasing</source>
         <translation>マルチサンプルアンチエイリアス</translation>
@@ -478,22 +462,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="237"/>
         <source>Display Active Start Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>表示開始オフセット (左端/オーバースキャン用)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="239"/>
         <source>Display Active End Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>表示終了オフセット (右端/オーバースキャン用)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="241"/>
         <source>Display Line Start Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>表示開始オフセット (上端/オーバースキャン用)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="243"/>
         <source>Display Line End Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>表示終了オフセット (下端/オーバースキャン用)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="248"/>
@@ -702,22 +686,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="831"/>
         <source>Not Inverted</source>
-        <translation type="unfinished"></translation>
+        <translation>反転なし</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="832"/>
         <source>Invert Left/Right</source>
-        <translation type="unfinished"></translation>
+        <translation>左右を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="833"/>
         <source>Invert Up/Down</source>
-        <translation type="unfinished"></translation>
+        <translation>上下を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="834"/>
         <source>Invert Left/Right + Up/Down</source>
-        <translation type="unfinished"></translation>
+        <translation>左右と上下を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="837"/>
@@ -762,12 +746,12 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="856"/>
         <source>Button/Trigger Deadzone</source>
-        <translation type="unfinished"></translation>
+        <translation>ボタン/トリガーの遊び幅</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="857"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation type="unfinished"></translation>
+        <translation>ボタン/トリガーを有効にするための遊び幅、つまり無視されるトリガーの割合を設定します。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="860"/>
@@ -782,22 +766,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="864"/>
         <source>Invert Left Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>左スティックを反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="865"/>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>左アナログスティックの向きを反転します。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="867"/>
         <source>Invert Right Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>右スティックを反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="868"/>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>右アナログスティックの向きを反転します。</translation>
     </message>
 </context>
 <context>
@@ -817,22 +801,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="377"/>
         <source>Not Inverted</source>
-        <translation type="unfinished"></translation>
+        <translation>反転なし</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="378"/>
         <source>Invert Left/Right</source>
-        <translation type="unfinished"></translation>
+        <translation>左右を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="379"/>
         <source>Invert Up/Down</source>
-        <translation type="unfinished"></translation>
+        <translation>上下を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="380"/>
         <source>Invert Left/Right + Up/Down</source>
-        <translation type="unfinished"></translation>
+        <translation>左右と上下を反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="383"/>
@@ -857,22 +841,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="393"/>
         <source>Invert Left Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>左スティックを反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="394"/>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>左アナログスティックの向きを反転します。</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="396"/>
         <source>Invert Right Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>右スティックを反転</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="397"/>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>右アナログスティックの向きを反転します。</translation>
     </message>
 </context>
 <context>
@@ -964,7 +948,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="170"/>
         <source>Output Device:</source>
-        <translation type="unfinished"></translation>
+        <translation>出力デバイス:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="183"/>
@@ -1065,7 +1049,7 @@ Leaderboard Position: {} of {}</source>
         <location filename="../audiosettingswidget.cpp" line="119"/>
         <location filename="../audiosettingswidget.cpp" line="137"/>
         <source>Default</source>
-        <translation type="unfinished">デフォルト</translation>
+        <translation>デフォルト</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="159"/>
@@ -1872,7 +1856,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../frontend-common/cubeb_audio_stream.cpp" line="257"/>
         <source>Default Output Device</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトの出力デバイス</translation>
     </message>
 </context>
 <context>
@@ -2328,11 +2312,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="269"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="vanished">デバイス &apos;%1&apos; 用の汎用マッピングを生成できませんでした</translation>
+        <translation>デバイス &apos;%1&apos; 用の汎用マッピングを生成できませんでした。コントローラー/入力ソースが自動マッピングをサポートしていない可能性があります。</translation>
     </message>
 </context>
 <context>
@@ -2645,13 +2625,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1151"/>
         <source>Mode</source>
         <translation>モード</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerBindingWidget_Base</name>
-    <message>
-        <source>%1%</source>
-        <translation type="vanished">%1%</translation>
     </message>
 </context>
 <context>
@@ -3052,10 +3025,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerglobalsettingswidget.ui" line="335"/>
         <source>10</source>
         <translation>10</translation>
-    </message>
-    <message>
-        <source>Invert</source>
-        <translation type="vanished">反転する</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="224"/>
@@ -3936,17 +3905,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1064"/>
         <source>Left / Top</source>
-        <translation type="unfinished"></translation>
+        <translation>左 / 上</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1064"/>
         <source>Center</source>
-        <translation type="unfinished"></translation>
+        <translation>中央</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1065"/>
         <source>Right / Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>右 / 下</translation>
     </message>
 </context>
 <context>
@@ -4025,14 +3994,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>スレッド化プレゼンテーション</translation>
     </message>
     <message>
-        <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">ホストのリフレッシュレートに同期</translation>
-    </message>
-    <message>
-        <source>Optimal Frame Pacing</source>
-        <translation type="vanished">最適なフレームペーシング</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="103"/>
         <source>Screen Display</source>
         <translation>画面表示</translation>
@@ -4051,10 +4012,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="150"/>
         <source>Crop:</source>
         <translation>トリミング:</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">ダウンサンプリング:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="179"/>
@@ -4095,7 +4052,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="160"/>
         <source>Position:</source>
-        <translation type="unfinished"></translation>
+        <translation>位置:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="193"/>
@@ -4129,12 +4086,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="253"/>
         <source>Show GPU Usage</source>
-        <translation type="unfinished"></translation>
+        <translation>GPU 使用率を表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="260"/>
         <source>Show Settings Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>設定オーバーレイ表示</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="77"/>
@@ -4195,24 +4152,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Downsampling</source>
-        <translation type="vanished">ダウンサンプリング</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">無効</translation>
-    </message>
-    <message>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="vanished">レンダリングされた画像を表示する前にダウンサンプリングします。2D と 3D が混在するゲームで全体的な画質を向上させることができますが、&lt;br&gt;純粋な 3D ゲームでは無効にする必要があります。ハードウェアレンダラーにのみ適用されます。</translation>
+        <translation>画面に黒枠を追加する場合の表示位置を決定します。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="105"/>
@@ -4262,10 +4207,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>このオプションを有効にすると、DuckStation のリフレッシュレートを現在のモニターまたは画面と一致させます。&lt;br&gt;垂直同期が不可能な場合(100％以外の速度で実行している場合など)、垂直同期は自動的に無効になります。</translation>
     </message>
     <message>
-        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="vanished">このオプションを有効にすると、最適なフレームペーシングのために、コンソールがレンダリングするすべてのフレームが画面に表示されます。&lt;br&gt;フルスピードを維持できない場合や、音声の不具合が発生する場合は、このオプションを無効にしてみてください。</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="126"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>早送りまたは垂直同期が無効になっている場合、バックグラウンドスレッドでフレームを表示します。&lt;br&gt;これにより、Vulkan レンダラーのパフォーマンスを大幅に向上させることができます。</translation>
@@ -4274,10 +4215,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="129"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>グラフィックの描画に2番目のスレッドを使用します。現在、ソフトウェアレンダラーでのみ使用できますが、速度が大幅に向上し、安全に使用できます。</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">垂直同期と音声リサンプリングの両方が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が 1％弱増加する可能性がありますが、最もスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、このオプションの効果は得られません。&lt;br&gt;可変リフレッシュレート対応ディスプレイのユーザーは、このオプションを無効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="225"/>
@@ -4308,7 +4245,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="143"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
-        <translation type="unfinished"></translation>
+        <translation>ディスプレイの右上隅に、スレッドに基づくホストの CPU 使用率を表示します。これは、エミュレートされたシステムの CPU 使用率ではありません。100% に近い値が表示されている場合は、ホストの CPU がボトルネックになっている可能性があります。この場合、オーバークロックなどの拡張関連の設定を減らす必要があります。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="148"/>
@@ -4450,13 +4387,13 @@ Achievements: %5 (%6)
         <location filename="../emulationsettingswidget.ui" line="70"/>
         <location filename="../emulationsettingswidget.cpp" line="92"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="unfinished">ホストのリフレッシュレートに同期</translation>
+        <translation>ホストのリフレッシュレートに同期</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="77"/>
         <location filename="../emulationsettingswidget.cpp" line="98"/>
         <source>Optimal Frame Pacing</source>
-        <translation type="unfinished">最適なフレームペーシング</translation>
+        <translation>最適なフレームペーシング</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="89"/>
@@ -4605,12 +4542,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.cpp" line="93"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="unfinished">垂直同期と音声リサンプリングの両方が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が 1％弱増加する可能性がありますが、最もスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、このオプションの効果は得られません。&lt;br&gt;可変リフレッシュレート対応ディスプレイのユーザーは、このオプションを無効にする必要があります。</translation>
+        <translation>垂直同期と音声リサンプリングの両方が有効になっている場合に、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するように、&lt;br&gt;エミュレーション速度を調整します。エミュレーション速度が 1％弱増加する可能性がありますが、最もスムーズなアニメーションが得られます。&lt;br&gt;コンソールのリフレッシュレートがホストのリフレッシュレートから離れすぎている場合、このオプションの効果は得られません。&lt;br&gt;可変リフレッシュレート対応ディスプレイのユーザーは、このオプションを無効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="99"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="unfinished">このオプションを有効にすると、最適なフレームペーシングのために、コンソールがレンダリングするすべてのフレームが画面に表示されます。&lt;br&gt;フルスピードを維持できない場合や、音声の不具合が発生する場合は、このオプションを無効にしてみてください。</translation>
+        <translation>このオプションを有効にすると、最適なフレームペーシングのために、コンソールがレンダリングするすべてのフレームが画面に表示されます。&lt;br&gt;フルスピードを維持できない場合や、音声の不具合が発生する場合は、このオプションを無効にしてみてください。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="103"/>
@@ -4724,7 +4661,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.ui" line="86"/>
         <source>Downsampling:</source>
-        <translation type="unfinished">ダウンサンプリング:</translation>
+        <translation>ダウンサンプリング:</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="99"/>
@@ -4747,7 +4684,7 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.ui" line="149"/>
         <location filename="../enhancementsettingswidget.cpp" line="115"/>
         <source>Perspective Correct Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>テクスチャ遠近補正</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="177"/>
@@ -4759,7 +4696,7 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.ui" line="184"/>
         <location filename="../enhancementsettingswidget.cpp" line="119"/>
         <source>Perspective Correct Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>カラー遠近補正</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="170"/>
@@ -4806,10 +4743,6 @@ Achievements: %5 (%6)
         <translation>カリング修正を有効にする</translation>
     </message>
     <message>
-        <source>Texture Correction</source>
-        <translation type="vanished">テクスチャ補正を有効にする</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>これを 1x を超えて設定すると、レンダリングされた 3D ポリゴンとラインの解像度が向上します。ハードウェアバックエンドにのみ適用されます。 &lt;br&gt;このオプションは通常安全であり、ほとんどのゲームはより高い解像度で問題なく表示されます。解像度が高いほど、より強力な GPU が必要です。</translation>
@@ -4827,17 +4760,17 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="55"/>
         <source>Downsampling</source>
-        <translation type="unfinished">ダウンサンプリング</translation>
+        <translation>ダウンサンプリング</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="55"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>無効</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="56"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="unfinished">レンダリングされた画像を表示する前にダウンサンプリングします。2D と 3D が混在するゲームで全体的な画質を向上させることができますが、&lt;br&gt;純粋な 3D ゲームでは無効にする必要があります。ハードウェアレンダラーにのみ適用されます。</translation>
+        <translation>レンダリングされた画像を表示する前にダウンサンプリングします。2D と 3D が混在するゲームで全体的な画質を向上させることができますが、&lt;br&gt;純粋な 3D ゲームでは無効にする必要があります。ハードウェアレンダラーにのみ適用されます。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="81"/>
@@ -4860,10 +4793,6 @@ Achievements: %5 (%6)
         <translation>24ビットコンテンツ(通常はムービー)のグラデーション部分のブロックノイズを滑らかにします。ハードウェアレンダラーにのみ適用されます。</translation>
     </message>
     <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">フィルタリングを使用して、3D オブジェクトの拡大されたテクスチャのブロックっぽさを滑らかにします。 &lt;br&gt;より高い解像度のスケールに大きな影響を与えます。ハードウェアレンダラーにのみ適用されます。</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="99"/>
         <source>Widescreen Hack</source>
         <translation>ワイドスクリーンハック</translation>
@@ -4881,12 +4810,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>テクスチャ座標に遠近補正補間を使用し、歪んだテクスチャをまっすぐにします。ジオメトリ補正を有効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="120"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>頂点カラーに遠近補正補間を使用します。これにより、一部のゲームではビジュアルが改善されますが、他のゲームではレンダリングエラーが発生します。ジオメトリ補正を有効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="124"/>
@@ -4911,7 +4840,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="95"/>
         <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルタリングを使用して、3D オブジェクトの拡大されたテクスチャのブロックっぽさを滑らかにします。&lt;br&gt;より高い解像度のスケールに大きな影響を与えます。ハードウェアレンダラーにのみ適用されます。&lt;br&gt;JINC2 および特に xBR フィルタリングモードは非常に負荷が高く、速度を犠牲にする価値はないかもしれません。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="100"/>
@@ -4927,10 +4856,6 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.cpp" line="113"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>ポリゴンカリングの精度を高め、ジオメトリの穴の数を減らします。ジオメトリ補正を有効にする必要があります。</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">テクスチャの座標と色に遠近法で正しい補間を使用し、歪んだテクスチャをまっすぐにします。ジオメトリ補正を有効にする必要があります。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="77"/>
@@ -5192,43 +5117,27 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="923"/>
         <source>JINC2 (Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (遅い)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="924"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (遅い, エッジブレンディングなし)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="925"/>
         <source>xBR (Very Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>xBR (非常に遅い)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="926"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>JINC2</source>
-        <translation type="vanished">JINC2</translation>
+        <translation>xBR (非常に遅い, エッジブレンディングなし)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="923"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>バイリニア (エッジブレンディングなし)</translation>
-    </message>
-    <message>
-        <source>xBR</source>
-        <translation type="vanished">xBR</translation>
-    </message>
-    <message>
-        <source>JINC2 (No Edge Blending)</source>
-        <translation type="vanished">JINC2 (エッジブレンディングなし)</translation>
-    </message>
-    <message>
-        <source>xBR (No Edge Blending)</source>
-        <translation type="vanished">xBR (エッジブレンディングなし)</translation>
     </message>
 </context>
 <context>
@@ -5256,52 +5165,52 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="930"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>未プレイ</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="947"/>
         <source>Today</source>
-        <translation type="unfinished"></translation>
+        <translation>今日</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="952"/>
         <source>Yesterday</source>
-        <translation type="unfinished"></translation>
+        <translation>昨日</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="975"/>
         <source>{}h {}m</source>
-        <translation type="unfinished"></translation>
+        <translation>{}時間 {}分</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="977"/>
         <source>{}h {}m {}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}時間 {}分 {}秒</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="979"/>
         <source>{}m {}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}分 {}秒</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="981"/>
         <source>{}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}秒</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="983"/>
         <source>None</source>
-        <translation type="unfinished">なし</translation>
+        <translation>なし</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="988"/>
         <source>{} hours</source>
-        <translation type="unfinished"></translation>
+        <translation>{} 時間</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="990"/>
         <source>{} minutes</source>
-        <translation type="unfinished"></translation>
+        <translation>{} 分</translation>
     </message>
 </context>
 <context>
@@ -5345,13 +5254,9 @@ Achievements: %5 (%6)
         <translation>種類</translation>
     </message>
     <message>
-        <source>Code</source>
-        <translation type="vanished">コード</translation>
-    </message>
-    <message>
         <location filename="../gamelistmodel.cpp" line="606"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>シリアル番号</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="607"/>
@@ -5391,12 +5296,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistmodel.cpp" line="614"/>
         <source>Time Played</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイ時間</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="615"/>
         <source>Last Played</source>
-        <translation type="unfinished"></translation>
+        <translation>最後にプレイした日</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="616"/>
@@ -5594,10 +5499,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>PGXP カリングを無効化</translation>
     </message>
     <message>
-        <source>Disable PGXP Texture Correction</source>
-        <translation type="vanished">PGXP テクスチャ補正を無効化</translation>
-    </message>
-    <message>
         <location filename="../../core/game_database.cpp" line="65"/>
         <source>Disable PGXP Depth Buffer</source>
         <translation>PGXP 深度バッファを無効化</translation>
@@ -5625,12 +5526,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/game_database.cpp" line="63"/>
         <source>Disable PGXP Perspective Correct Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP テクスチャ遠近補正を無効化</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="64"/>
         <source>Disable PGXP Perspective Correct Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP カラー遠近補正を無効化</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="69"/>
@@ -7592,7 +7493,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="2474"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
-        <translation type="unfinished"></translation>
+        <translation>コンソールをシャットダウンしてもよろしいですか?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2476"/>
@@ -8004,20 +7905,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1177"/>
         <source>Separate Card Per Game (Serial)</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームごとに別々のカード (シリアル番号)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1178"/>
         <source>Separate Card Per Game (Title)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Code)</source>
-        <translation type="vanished">ゲームごとに別々のカード (ゲームコード)</translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Title)</source>
-        <translation type="vanished">ゲームごとに別々のカード (ゲーム名)</translation>
+        <translation>ゲームごとに別々のカード (ゲーム名)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1179"/>
@@ -8068,12 +7961,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/negcon.cpp" line="261"/>
         <source>Steering Axis Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>ねじり軸の感度</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="262"/>
         <source>Sets the steering axis scaling factor.</source>
-        <translation type="unfinished"></translation>
+        <translation>ねじり軸の倍率を設定します。</translation>
     </message>
 </context>
 <context>
@@ -8101,17 +7994,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="649"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
-        <translation>巻き戻しは、Android 用の32ビット ARM ではサポートされていません。</translation>
+        <translation>巻き戻しは Android 用の32ビット ARM ではサポートされていません。</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="656"/>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
-        <translation type="unfinished"></translation>
+        <translation>先行実行は Android 用の32ビット ARM ではサポートされていません。</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="664"/>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>先行実行が有効になっているため、巻き戻しは無効になっています。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3172"/>
@@ -8460,16 +8353,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="371"/>
         <source>PGXP perspective corrected textures disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームごとの設定に基づき、PGXP テクスチャ遠近補正を無効化します。</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="385"/>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PGXP texture correction disabled by game settings.</source>
-        <translation type="vanished">ゲームごとの設定に基づき、PGXP テクスチャ補正を無効化します。</translation>
+        <translation>ゲームごとの設定に基づき、PGXP カラー遠近補正を無効化します。</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="397"/>
