@@ -853,17 +853,20 @@ static const SettingInfo s_settings[] = {
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "ButtonDeadzone", "Button/Trigger Deadzone",
-   "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.", "0.25",
-   "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATABLE("AnalogController", "Button/Trigger Deadzone"),
+   TRANSLATABLE("AnalogController", "Sets the deadzone for activating buttons/triggers, "
+                                    "i.e. the fraction of the trigger which will be ignored."),
+   "0.25", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
    TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
                                     "functioning, try increasing this value."),
    "8", "0", "255", "1", "%d", nullptr, 1.0f},
-  {SettingInfo::Type::IntegerList, "InvertLeftStick", "Invert Left Stick",
-   "Inverts the direction of the left analog stick.", "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
-  {SettingInfo::Type::IntegerList, "InvertRightStick", "Invert Right Stick",
-   "Inverts the direction of the right analog stick.", "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("AnalogController", "Invert Left Stick"),
+   TRANSLATABLE("AnalogController", "Inverts the direction of the left analog stick."),
+   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("AnalogController", "Invert Right Stick"),
+   TRANSLATABLE("AnalogController", "Inverts the direction of the right analog stick."),
+   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
