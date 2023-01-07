@@ -36,7 +36,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
   {
     m_ui.compatibility->addItem(QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)),
-                                qApp->translate("GameDatabase", GameDatabase::GetCompatibilityRatingDisplayName(
+                                qApp->translate("GameListCompatibilityRating", GameDatabase::GetCompatibilityRatingDisplayName(
                                                                   static_cast<GameDatabase::CompatibilityRating>(i))));
   }
 
