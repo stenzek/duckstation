@@ -155,12 +155,14 @@ static bool s_display_all_frames = true;
 static bool s_syncing_to_host = false;
 
 static float s_average_frame_time_accumulator = 0.0f;
-static float s_worst_frame_time_accumulator = 0.0f;
+static float s_minimum_frame_time_accumulator = 0.0f;
+static float s_maximum_frame_time_accumulator = 0.0f;
 
 static float s_vps = 0.0f;
 static float s_fps = 0.0f;
 static float s_speed = 0.0f;
-static float s_worst_frame_time = 0.0f;
+static float s_minimum_frame_time = 0.0f;
+static float s_maximum_frame_time = 0.0f;
 static float s_average_frame_time = 0.0f;
 static float s_cpu_thread_usage = 0.0f;
 static float s_cpu_thread_time = 0.0f;
@@ -169,6 +171,8 @@ static float s_sw_thread_time = 0.0f;
 static float s_average_gpu_time = 0.0f;
 static float s_accumulated_gpu_time = 0.0f;
 static float s_gpu_usage = 0.0f;
+static System::FrameTimeHistory s_frame_time_history;
+static u32 s_frame_time_history_pos = 0;
 static u32 s_last_frame_number = 0;
 static u32 s_last_internal_frame_number = 0;
 static u32 s_last_global_tick_counter = 0;
@@ -339,9 +343,13 @@ float System::GetAverageFrameTime()
 {
   return s_average_frame_time;
 }
-float System::GetWorstFrameTime()
+float System::GetMinimumFrameTime()
 {
-  return s_worst_frame_time;
+  return s_minimum_frame_time;
+}
+float System::GetMaximumFrameTime()
+{
+  return s_maximum_frame_time;
 }
 float System::GetThrottleFrequency()
 {
@@ -370,6 +378,14 @@ float System::GetGPUUsage()
 float System::GetGPUAverageTime()
 {
   return s_average_gpu_time;
+}
+const System::FrameTimeHistory& System::GetFrameTimeHistory()
+{
+  return s_frame_time_history;
+}
+u32 System::GetFrameTimeHistoryPos()
+{
+  return s_frame_time_history_pos;
 }
 
 bool System::IsExeFileName(const std::string_view& path)
@@ -802,6 +818,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   temp.display_show_resolution = g_settings.display_show_resolution;
   temp.display_show_cpu = g_settings.display_show_cpu;
   temp.display_show_gpu = g_settings.display_show_gpu;
+  temp.display_show_frame_times = g_settings.display_show_frame_times;
 
   // keep controller, we reset it elsewhere
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -1305,12 +1322,14 @@ bool System::Initialize(bool force_software_renderer)
   s_fast_forward_enabled = false;
 
   s_average_frame_time_accumulator = 0.0f;
-  s_worst_frame_time_accumulator = 0.0f;
+  s_minimum_frame_time_accumulator = 0.0f;
+  s_maximum_frame_time_accumulator = 0.0f;
 
   s_vps = 0.0f;
   s_fps = 0.0f;
   s_speed = 0.0f;
-  s_worst_frame_time = 0.0f;
+  s_minimum_frame_time = 0.0f;
+  s_maximum_frame_time = 0.0f;
   s_average_frame_time = 0.0f;
   s_cpu_thread_usage = 0.0f;
   s_cpu_thread_time = 0.0f;
@@ -1326,6 +1345,8 @@ bool System::Initialize(bool force_software_renderer)
   s_last_cpu_time = 0;
   s_fps_timer.Reset();
   s_frame_timer.Reset();
+  s_frame_time_history.fill(0.0f);
+  s_frame_time_history_pos = 0;
 
   TimingEvents::Initialize();
 
@@ -2092,8 +2113,6 @@ void System::DoRunFrame()
 
 void System::RunFrame()
 {
-  s_frame_timer.Reset();
-
   if (s_rewind_load_counter >= 0)
   {
     DoRewind();
@@ -2183,9 +2202,12 @@ void System::RunFrames()
 
 void System::UpdatePerformanceCounters()
 {
-  const float frame_time = static_cast<float>(s_frame_timer.GetTimeMilliseconds());
+  const float frame_time = static_cast<float>(s_frame_timer.GetTimeMillisecondsAndReset());
+  s_minimum_frame_time_accumulator = (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
   s_average_frame_time_accumulator += frame_time;
-  s_worst_frame_time_accumulator = std::max(s_worst_frame_time_accumulator, frame_time);
+  s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
+  s_frame_time_history[s_frame_time_history_pos] = frame_time;
+  s_frame_time_history_pos = (s_frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
 
   // update fps counter
   const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
@@ -2204,10 +2226,10 @@ void System::UpdatePerformanceCounters()
   const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
                               (1.0 / static_cast<double>(frames_run));
 
-  s_worst_frame_time = s_worst_frame_time_accumulator;
-  s_worst_frame_time_accumulator = 0.0f;
-  s_average_frame_time = s_average_frame_time_accumulator / frames_run;
-  s_average_frame_time_accumulator = 0.0f;
+  s_minimum_frame_time = std::exchange(s_minimum_frame_time_accumulator, 0.0f);
+  s_average_frame_time = std::exchange(s_average_frame_time_accumulator, 0.0f) / frames_run;
+  s_maximum_frame_time = std::exchange(s_maximum_frame_time_accumulator, 0.0f);
+
   s_vps = static_cast<float>(frames_run / time);
   s_last_frame_number = s_frame_number;
   s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
@@ -2240,8 +2262,8 @@ void System::UpdatePerformanceCounters()
   s_accumulated_gpu_time = 0.0f;
   s_presents_since_last_update = 0;
 
-  Log_VerbosePrintf("FPS: %.2f VPS: %.2f CPU: %.2f GPU: %.2f Average: %.2fms Worst: %.2fms", s_fps, s_vps,
-                    s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_worst_frame_time);
+  Log_VerbosePrintf("FPS: %.2f VPS: %.2f CPU: %.2f GPU: %.2f Average: %.2fms Min: %.2fms Max: %.2f ms", s_fps, s_vps,
+                    s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_minimum_frame_time, s_maximum_frame_time);
 
   Host::OnPerformanceCountersUpdated();
 }
@@ -2258,7 +2280,9 @@ void System::ResetPerformanceCounters()
     s_last_sw_time = 0;
 
   s_average_frame_time_accumulator = 0.0f;
-  s_worst_frame_time_accumulator = 0.0f;
+  s_minimum_frame_time_accumulator = 0.0f;
+  s_maximum_frame_time_accumulator = 0.0f;
+  s_frame_timer.Reset();
   s_fps_timer.Reset();
   ResetThrottler();
 }
@@ -3491,8 +3515,6 @@ void System::SetRewinding(bool enabled)
 
 void System::DoRewind()
 {
-  s_frame_timer.Reset();
-
   if (s_rewind_load_counter == 0)
   {
     const u32 skip_saves = BoolToUInt32(!s_rewinding_first_save);

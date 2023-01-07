@@ -264,6 +264,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
   display_show_cpu = si.GetBoolValue("Display", "ShowCPU", false);
   display_show_gpu = si.GetBoolValue("Display", "ShowGPU", false);
+  display_show_frame_times = si.GetBoolValue("Display", "ShowFrameTimes", false);
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
@@ -478,6 +479,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
   si.SetBoolValue("Display", "ShowCPU", display_show_cpu);
   si.SetBoolValue("Display", "ShowGPU", display_show_gpu);
+  si.SetBoolValue("Display", "ShowFrameTimes", display_show_frame_times);
   si.SetBoolValue("Display", "ShowStatusIndicators", display_show_status_indicators);
   si.SetBoolValue("Display", "ShowInputs", display_show_inputs);
   si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);

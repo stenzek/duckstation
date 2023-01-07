@@ -2661,6 +2661,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     "ShowCPU", false);
   DrawToggleSetting(bsi, ICON_FA_SPINNER " Show GPU Usage",
                     "Shows the host's GPU usage in the top-right corner of the display.", "Display", "ShowGPU", false);
+  DrawToggleSetting(bsi, ICON_FA_RULER_HORIZONTAL " Show Frame Times",
+                    "Shows a visual history of frame times in the upper-left corner of the display.", "EmuCore/GS",
+                    "ShowFrameTimes", false);
   DrawToggleSetting(bsi, ICON_FA_RULER_VERTICAL " Show Resolution",
                     "Shows the current rendering resolution of the system in the top-right corner of the display.",
                     "Display", "ShowResolution", false);

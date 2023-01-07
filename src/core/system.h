@@ -176,11 +176,15 @@ const std::string& GetRunningTitle();
 bool IsRunningBIOS();
 
 // TODO: Move to PerformanceMetrics
+static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
+using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
+
 float GetFPS();
 float GetVPS();
 float GetEmulationSpeed();
 float GetAverageFrameTime();
-float GetWorstFrameTime();
+float GetMinimumFrameTime();
+float GetMaximumFrameTime();
 float GetThrottleFrequency();
 float GetCPUThreadUsage();
 float GetCPUThreadAverageTime();
@@ -188,6 +192,8 @@ float GetSWThreadUsage();
 float GetSWThreadAverageTime();
 float GetGPUUsage();
 float GetGPUAverageTime();
+const FrameTimeHistory& GetFrameTimeHistory();
+u32 GetFrameTimeHistoryPos();
 
 /// Loads global settings (i.e. EmuConfig).
 void LoadSettings(bool display_osd_messages);
