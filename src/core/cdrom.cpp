@@ -52,7 +52,10 @@ enum : u32
   MOTOR_ON_RESPONSE_TICKS = 400000,
 
   MAX_FAST_FORWARD_RATE = 12,
-  FAST_FORWARD_RATE_STEP = 4
+  FAST_FORWARD_RATE_STEP = 4,
+
+  MINIMUM_INTERRUPT_DELAY = 5000,
+  INTERRUPT_DELAY_CYCLES = 2000,
 };
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -223,7 +226,8 @@ static s16 SaturateVolume(s32 volume);
 static void SetInterrupt(Interrupt interrupt);
 static void SetAsyncInterrupt(Interrupt interrupt);
 static void ClearAsyncInterrupt();
-static void DeliverAsyncInterrupt();
+static void DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late);
+static void QueueDeliverAsyncInterrupt();
 static void SendACKAndStat();
 static void SendErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
 static void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
@@ -281,8 +285,11 @@ static void ClearSectorBuffers();
 template<bool STEREO, bool SAMPLE_RATE>
 static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
+static TinyString LBAToMSFString(CDImage::LBA lba);
+
 static std::unique_ptr<TimingEvent> s_command_event;
 static std::unique_ptr<TimingEvent> s_command_second_response_event;
+static std::unique_ptr<TimingEvent> s_async_interrupt_event;
 static std::unique_ptr<TimingEvent> s_drive_event;
 
 static Command s_command = Command::None;
@@ -297,6 +304,7 @@ static ModeRegister s_mode = {};
 static u8 s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
 static u8 s_interrupt_flag_register = 0;
 static u8 s_pending_async_interrupt = 0;
+static u32 s_last_interrupt_time = 0;
 
 static CDImage::Position s_setloc_position = {};
 static CDImage::LBA s_requested_lba{};
@@ -321,7 +329,7 @@ static u8 s_xa_current_set = false;
 
 static CDImage::SectorHeader s_last_sector_header{};
 static CDXA::XASubHeader s_last_sector_subheader{};
-static bool s_last_sector_header_valid = false;
+static bool s_last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
 static CDImage::SubChannelQ s_last_subq{};
 static u8 s_last_cdda_report_frame_nibble = 0xFF;
 static u8 s_play_track_number_bcd = 0xFF;
@@ -415,6 +423,8 @@ void CDROM::Initialize()
     TimingEvents::CreateTimingEvent("CDROM Command Event", 1, 1, &CDROM::ExecuteCommand, nullptr, false);
   s_command_second_response_event = TimingEvents::CreateTimingEvent(
     "CDROM Command Second Response Event", 1, 1, &CDROM::ExecuteCommandSecondResponse, nullptr, false);
+  s_async_interrupt_event = TimingEvents::CreateTimingEvent("CDROM Async Interrupt Event", INTERRUPT_DELAY_CYCLES, 1,
+                                                            &CDROM::DeliverAsyncInterrupt, nullptr, false);
   s_drive_event = TimingEvents::CreateTimingEvent("CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr, false);
 
   if (g_settings.cdrom_readahead_sectors > 0)
@@ -425,9 +435,10 @@ void CDROM::Initialize()
 
 void CDROM::Shutdown()
 {
-  s_command_event.reset();
-  s_command_second_response_event.reset();
   s_drive_event.reset();
+  s_async_interrupt_event.reset();
+  s_command_second_response_event.reset();
+  s_command_event.reset();
   m_reader.StopThread();
   m_reader.RemoveMedia();
 }
@@ -446,7 +457,8 @@ void CDROM::Reset()
   s_mode.read_raw_sector = true;
   s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
   s_interrupt_flag_register = 0;
-  s_pending_async_interrupt = 0;
+  s_last_interrupt_time = TimingEvents::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY;
+  ClearAsyncInterrupt();
   s_setloc_position = {};
   s_seek_start_lba = 0;
   s_seek_end_lba = 0;
@@ -502,7 +514,7 @@ void CDROM::SoftReset(TickCount ticks_late)
   s_secondary_status.shell_open = !CanReadMedia();
   s_mode.bits = 0;
   s_mode.read_raw_sector = true;
-  s_pending_async_interrupt = 0;
+  ClearAsyncInterrupt();
   s_setloc_position = {};
   s_setloc_pending = false;
   s_read_after_seek = false;
@@ -566,6 +578,7 @@ bool CDROM::DoState(StateWrapper& sw)
 
   sw.Do(&s_interrupt_enable_register);
   sw.Do(&s_interrupt_flag_register);
+  sw.DoEx(&s_last_interrupt_time, 57, TimingEvents::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY);
   sw.Do(&s_pending_async_interrupt);
   sw.DoPOD(&s_setloc_position);
   sw.Do(&s_current_lba);
@@ -779,6 +792,12 @@ bool CDROM::PrecacheMedia()
   return true;
 }
 
+TinyString CDROM::LBAToMSFString(CDImage::LBA lba)
+{
+  const auto pos = CDImage::Position::FromLBA(lba);
+  return TinyString::FromFmt("{:02d}:{:02d}:{:02d}", pos.minute, pos.second, pos.frame);
+}
+
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)
 {
   const bool want_thread = (readahead_sectors > 0);
@@ -933,7 +952,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       if (s_interrupt_flag_register == 0)
       {
         if (HasPendingAsyncInterrupt())
-          DeliverAsyncInterrupt();
+          QueueDeliverAsyncInterrupt();
         else
           UpdateCommandEvent();
       }
@@ -1042,6 +1061,7 @@ bool CDROM::HasPendingAsyncInterrupt()
 void CDROM::SetInterrupt(Interrupt interrupt)
 {
   s_interrupt_flag_register = static_cast<u8>(interrupt);
+  s_last_interrupt_time = TimingEvents::GetGlobalTickCounter();
   UpdateInterruptRequest();
 }
 
@@ -1058,30 +1078,69 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
   Assert(s_pending_async_interrupt == 0);
   s_pending_async_interrupt = static_cast<u8>(interrupt);
   if (!HasPendingInterrupt())
-    DeliverAsyncInterrupt();
+    QueueDeliverAsyncInterrupt();
 }
 
 void CDROM::ClearAsyncInterrupt()
 {
   s_pending_async_interrupt = 0;
+  s_async_interrupt_event->Deactivate();
   s_async_response_fifo.Clear();
 }
 
-void CDROM::DeliverAsyncInterrupt()
+void CDROM::QueueDeliverAsyncInterrupt()
 {
-  Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
-  Log_DebugPrintf("Delivering async interrupt %u", s_pending_async_interrupt);
+  // Why do we need this mess? A few games, such as Ogre Battle, like to spam GetlocL or GetlocP while
+  // XA playback is going. The problem is, when that happens and an INT1 also comes in. Instead of
+  // reading the interrupt flag, reading the FIFO, and then clearing the interrupt, they clear the
+  // interrupt, then read the FIFO. If an INT1 comes in during that time, it'll read the INT1 response
+  // instead of the INT3 response, and the game gets confused. So, we just delay INT1s a bit, if there
+  // has been any recent INT3s - give it enough time to read the response out. The real console does
+  // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
 
-  if (s_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
-    s_current_read_sector_buffer = s_current_write_sector_buffer;
+  if (!HasPendingAsyncInterrupt())
+    return;
 
-  s_response_fifo.Clear();
-  s_response_fifo.PushFromQueue(&s_async_response_fifo);
-  s_interrupt_flag_register = s_pending_async_interrupt;
-  s_pending_async_interrupt = 0;
-  UpdateInterruptRequest();
-  UpdateStatusRegister();
-  UpdateCommandEvent();
+  // underflows here are okay
+  const u32 diff = TimingEvents::GetGlobalTickCounter() - s_last_interrupt_time;
+  if (diff >= MINIMUM_INTERRUPT_DELAY)
+  {
+    DeliverAsyncInterrupt(nullptr, 0, 0);
+  }
+  else
+  {
+    Log_DevPrintf("Delaying async interrupt %u because it's been %u cycles since last interrupt",
+                  s_pending_async_interrupt, diff);
+    s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
+  }
+}
+
+void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
+{
+  if (HasPendingInterrupt())
+  {
+    // This shouldn't really happen, because we should block command execution.. but just in case.
+    if (!s_async_interrupt_event->IsActive())
+      s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
+  }
+  else
+  {
+    s_async_interrupt_event->Deactivate();
+
+    Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
+    Log_DebugPrintf("Delivering async interrupt %u", s_pending_async_interrupt);
+
+    if (s_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
+      s_current_read_sector_buffer = s_current_write_sector_buffer;
+
+    s_response_fifo.Clear();
+    s_response_fifo.PushFromQueue(&s_async_response_fifo);
+    s_interrupt_flag_register = s_pending_async_interrupt;
+    s_pending_async_interrupt = 0;
+    UpdateInterruptRequest();
+    UpdateStatusRegister();
+    UpdateCommandEvent();
+  }
 }
 
 void CDROM::SendACKAndStat()
@@ -2055,7 +2114,7 @@ void CDROM::UpdateCommandEvent()
 {
   // if there's a pending interrupt, we can't execute the command yet
   // so deactivate it until the interrupt is acknowledged
-  if (!HasPendingCommand() || HasPendingInterrupt())
+  if (!HasPendingCommand() || HasPendingInterrupt() || HasPendingAsyncInterrupt())
   {
     s_command_event->Deactivate();
     return;
@@ -2356,10 +2415,8 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_physical_lba = base + new_offset;
 #ifdef _DEBUG
-    const CDImage::Position old_pos(CDImage::Position::FromLBA(s_physical_lba));
-    const CDImage::Position new_pos(CDImage::Position::FromLBA(new_physical_lba));
-    Log_DevPrintf("Tick diff %u, sector diff %u, old pos %02u:%02u:%02u, new pos %02u:%02u:%02u", diff, sector_diff,
-                  old_pos.minute, old_pos.second, old_pos.frame, new_pos.minute, new_pos.second, new_pos.frame);
+    Log_DevPrintf("Tick diff %u, sector diff %u, old pos %s, new pos %s", diff, sector_diff,
+                  LBAToMSFString(s_physical_lba).GetCharArray(), LBAToMSFString(new_physical_lba).GetCharArray());
 #endif
     if (s_physical_lba != new_physical_lba)
     {
@@ -2497,10 +2554,8 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   }
   else
   {
-    CDImage::Position pos(CDImage::Position::FromLBA(m_reader.GetLastReadSector()));
-    Log_WarningPrintf("%s seek to [%02u:%02u:%02u] failed", logical ? "Logical" : "Physical", pos.minute, pos.second,
-                      pos.frame);
-
+    Log_WarningPrintf("%s seek to [%s] failed", logical ? "Logical" : "Physical",
+                      LBAToMSFString(m_reader.GetLastReadSector()).GetCharArray());
     s_secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     s_last_sector_header_valid = false;
@@ -2659,8 +2714,8 @@ void CDROM::DoSectorRead()
   else
   {
     const CDImage::Position pos(CDImage::Position::FromLBA(s_current_lba));
-    Log_DevPrintf("Sector %u [%02u:%02u:%02u] has invalid subchannel Q", s_current_lba, pos.minute, pos.second,
-                  pos.frame);
+    Log_DevPrintf("Sector %u [%s] has invalid subchannel Q", s_current_lba,
+                  LBAToMSFString(s_current_lba).GetCharArray());
   }
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
@@ -2731,9 +2786,9 @@ void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   const u32 sb_num = (s_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  Log_DevPrintf("Read sector %u: mode %u submode 0x%02X into buffer %u", s_current_lba,
-                ZeroExtend32(s_last_sector_header.sector_mode), ZeroExtend32(s_last_sector_subheader.submode.bits),
-                sb_num);
+  Log_DevPrintf("Read sector %u [%s]: mode %u submode 0x%02X into buffer %u", s_current_lba,
+                LBAToMSFString(s_current_lba).GetCharArray(), ZeroExtend32(s_last_sector_header.sector_mode),
+                ZeroExtend32(s_last_sector_subheader.submode.bits), sb_num);
 
   if (s_mode.xa_enable && s_last_sector_header.sector_mode == 2)
   {
