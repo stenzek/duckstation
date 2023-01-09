@@ -590,7 +590,7 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
       break;
 
     case Channel::CDROM:
-      g_cdrom.DMARead(dest_pointer, word_count);
+      CDROM::DMARead(dest_pointer, word_count);
       break;
 
     case Channel::SPU:

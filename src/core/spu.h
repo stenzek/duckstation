@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/bitfield.h"
-#include "common/fifo_queue.h"
-#include "system.h"
 #include "types.h"
 #include <array>
-#include <memory>
 
 class StateWrapper;
 

@@ -482,7 +482,7 @@ void ImGuiManager::RenderDebugWindows()
     if (g_settings.debugging.show_gpu_state)
       g_gpu->DrawDebugStateWindow();
     if (g_settings.debugging.show_cdrom_state)
-      g_cdrom.DrawDebugWindow();
+      CDROM::DrawDebugWindow();
     if (g_settings.debugging.show_timers_state)
       g_timers.DrawDebugStateWindow();
     if (g_settings.debugging.show_spu_state)

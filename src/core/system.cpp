@@ -42,6 +42,7 @@
 #include "texture_replacements.h"
 #include "timers.h"
 #include "util/audio_stream.h"
+#include "util/cd_image.h"
 #include "util/ini_settings_interface.h"
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
@@ -262,7 +263,7 @@ ConsoleRegion System::GetRegion()
 
 DiscRegion System::GetDiscRegion()
 {
-  return g_cdrom.GetDiscRegion();
+  return CDROM::GetDiscRegion();
 }
 
 bool System::IsPALRegion()
@@ -280,7 +281,7 @@ void System::UpdateOverclock()
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   SPU::CPUClockChanged();
-  g_cdrom.CPUClockChanged();
+  CDROM::CPUClockChanged();
   g_gpu->CPUClockChanged();
   g_timers.CPUClocksChanged();
   UpdateThrottlePeriod();
@@ -1250,9 +1251,9 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   // Insert CD, and apply fastboot patch if enabled.
   if (media)
-    g_cdrom.InsertMedia(std::move(media));
-  if (g_cdrom.HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
-                                                                         g_settings.bios_patch_fast_boot))
+    CDROM::InsertMedia(std::move(media));
+  if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
+                                                                        g_settings.bios_patch_fast_boot))
   {
     if (bios_info && bios_info->patch_compatible)
       BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
@@ -1295,7 +1296,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
-    g_cdrom.PrecacheMedia();
+    CDROM::PrecacheMedia();
 
   if (g_settings.audio_dump_on_boot)
     StartDumpingAudio();
@@ -1388,7 +1389,7 @@ bool System::Initialize(bool force_software_renderer)
   g_dma.Initialize();
   g_interrupt_controller.Initialize();
 
-  g_cdrom.Initialize();
+  CDROM::Initialize();
   g_pad.Initialize();
   g_timers.Initialize();
   SPU::Initialize();
@@ -1454,7 +1455,7 @@ void System::DestroySystem()
   SPU::Shutdown();
   g_timers.Shutdown();
   g_pad.Shutdown();
-  g_cdrom.Shutdown();
+  CDROM::Shutdown();
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
   g_dma.Shutdown();
@@ -1651,7 +1652,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!gpu_result)
     return false;
 
-  if (!sw.DoMarker("CDROM") || !g_cdrom.DoState(sw))
+  if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
     return false;
 
   if (!sw.DoMarker("Pad") || !g_pad.DoState(sw))
@@ -1741,7 +1742,7 @@ void System::InternalReset()
   g_dma.Reset();
   g_interrupt_controller.Reset();
   g_gpu->Reset(true);
-  g_cdrom.Reset();
+  CDROM::Reset();
   g_pad.Reset();
   g_timers.Reset();
   SPU::Reset();
@@ -1826,7 +1827,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
       return false;
     }
 
-    std::unique_ptr<CDImage> old_media = g_cdrom.RemoveMedia(false);
+    std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
     if (old_media && old_media->GetFileName() == media_filename)
     {
       Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
@@ -1881,16 +1882,16 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
 
   ClearMemorySaveStates();
 
-  g_cdrom.Reset();
+  CDROM::Reset();
   if (media)
   {
-    g_cdrom.InsertMedia(std::move(media));
+    CDROM::InsertMedia(std::move(media));
     if (g_settings.cdrom_load_image_to_ram)
-      g_cdrom.PrecacheMedia();
+      CDROM::PrecacheMedia();
   }
   else
   {
-    g_cdrom.RemoveMedia(false);
+    CDROM::RemoveMedia(false);
   }
 
   // ensure the correct card is loaded
@@ -1956,12 +1957,12 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
   StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
 
-  if (g_cdrom.HasMedia())
+  if (CDROM::HasMedia())
   {
-    const std::string& media_filename = g_cdrom.GetMediaFileName();
+    const std::string& media_filename = CDROM::GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
     header.media_filename_length = static_cast<u32>(media_filename.length());
-    header.media_subimage_index = g_cdrom.GetMedia()->HasSubImages() ? g_cdrom.GetMedia()->GetCurrentSubImage() : 0;
+    header.media_subimage_index = CDROM::GetMedia()->HasSubImages() ? CDROM::GetMedia()->GetCurrentSubImage() : 0;
     if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
       return false;
   }
@@ -2203,7 +2204,8 @@ void System::RunFrames()
 void System::UpdatePerformanceCounters()
 {
   const float frame_time = static_cast<float>(s_frame_timer.GetTimeMillisecondsAndReset());
-  s_minimum_frame_time_accumulator = (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
+  s_minimum_frame_time_accumulator =
+    (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
   s_average_frame_time_accumulator += frame_time;
   s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
   s_frame_time_history[s_frame_time_history_pos] = frame_time;
@@ -2884,15 +2886,15 @@ bool System::DumpSPURAM(const char* filename)
 
 bool System::HasMedia()
 {
-  return g_cdrom.HasMedia();
+  return CDROM::HasMedia();
 }
 
 std::string System::GetMediaFileName()
 {
-  if (!g_cdrom.HasMedia())
+  if (!CDROM::HasMedia())
     return {};
 
-  return g_cdrom.GetMediaFileName();
+  return CDROM::GetMediaFileName();
 }
 
 bool System::InsertMedia(const char* path)
@@ -2907,11 +2909,11 @@ bool System::InsertMedia(const char* path)
   }
 
   UpdateRunningGame(path, image.get(), false);
-  g_cdrom.InsertMedia(std::move(image));
+  CDROM::InsertMedia(std::move(image));
   Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_serial.c_str(),
                  s_running_game_title.c_str());
   if (g_settings.cdrom_load_image_to_ram)
-    g_cdrom.PrecacheMedia();
+    CDROM::PrecacheMedia();
 
   Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Inserted disc '%s' (%s)."),
                                s_running_game_title.c_str(), s_running_game_serial.c_str());
@@ -2928,7 +2930,7 @@ bool System::InsertMedia(const char* path)
 
 void System::RemoveMedia()
 {
-  g_cdrom.RemoveMedia(false);
+  CDROM::RemoveMedia(false);
   ClearMemorySaveStates();
 }
 
@@ -3034,25 +3036,25 @@ bool System::CheckForSBIFile(CDImage* image)
 
 bool System::HasMediaSubImages()
 {
-  const CDImage* cdi = g_cdrom.GetMedia();
+  const CDImage* cdi = CDROM::GetMedia();
   return cdi ? cdi->HasSubImages() : false;
 }
 
 u32 System::GetMediaSubImageCount()
 {
-  const CDImage* cdi = g_cdrom.GetMedia();
+  const CDImage* cdi = CDROM::GetMedia();
   return cdi ? cdi->GetSubImageCount() : 0;
 }
 
 u32 System::GetMediaSubImageIndex()
 {
-  const CDImage* cdi = g_cdrom.GetMedia();
+  const CDImage* cdi = CDROM::GetMedia();
   return cdi ? cdi->GetCurrentSubImage() : 0;
 }
 
 u32 System::GetMediaSubImageIndexForTitle(const std::string_view& title)
 {
-  const CDImage* cdi = g_cdrom.GetMedia();
+  const CDImage* cdi = CDROM::GetMedia();
   if (!cdi)
     return 0;
 
@@ -3068,7 +3070,7 @@ u32 System::GetMediaSubImageIndexForTitle(const std::string_view& title)
 
 std::string System::GetMediaSubImageTitle(u32 index)
 {
-  const CDImage* cdi = g_cdrom.GetMedia();
+  const CDImage* cdi = CDROM::GetMedia();
   if (!cdi)
     return {};
 
@@ -3077,10 +3079,10 @@ std::string System::GetMediaSubImageTitle(u32 index)
 
 bool System::SwitchMediaSubImage(u32 index)
 {
-  if (!g_cdrom.HasMedia())
+  if (!CDROM::HasMedia())
     return false;
 
-  std::unique_ptr<CDImage> image = g_cdrom.RemoveMedia(true);
+  std::unique_ptr<CDImage> image = CDROM::RemoveMedia(true);
   Assert(image);
 
   Common::Error error;
@@ -3089,14 +3091,14 @@ bool System::SwitchMediaSubImage(u32 index)
     Host::AddFormattedOSDMessage(10.0f,
                                  Host::TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
                                  index + 1u, image->GetFileName().c_str(), error.GetCodeAndMessage().GetCharArray());
-    g_cdrom.InsertMedia(std::move(image));
+    CDROM::InsertMedia(std::move(image));
     return false;
   }
 
   Host::AddFormattedOSDMessage(20.0f, Host::TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
                                image->GetSubImageMetadata(index, "title").c_str(), index + 1u,
                                image->GetMetadata("title").c_str());
-  g_cdrom.InsertMedia(std::move(image));
+  CDROM::InsertMedia(std::move(image));
 
   ClearMemorySaveStates();
   return true;
@@ -3272,7 +3274,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.cdrom_readahead_sectors != old_settings.cdrom_readahead_sectors)
-      g_cdrom.SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
+      CDROM::SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||

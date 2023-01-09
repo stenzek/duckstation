@@ -1145,23 +1145,23 @@ ALWAYS_INLINE static TickCount DoCDROMAccess(u32 offset, u32& value)
     {
       case MemoryAccessSize::Word:
       {
-        const u32 b0 = ZeroExtend32(g_cdrom.ReadRegister(offset));
-        const u32 b1 = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
-        const u32 b2 = ZeroExtend32(g_cdrom.ReadRegister(offset + 2u));
-        const u32 b3 = ZeroExtend32(g_cdrom.ReadRegister(offset + 3u));
+        const u32 b0 = ZeroExtend32(CDROM::ReadRegister(offset));
+        const u32 b1 = ZeroExtend32(CDROM::ReadRegister(offset + 1u));
+        const u32 b2 = ZeroExtend32(CDROM::ReadRegister(offset + 2u));
+        const u32 b3 = ZeroExtend32(CDROM::ReadRegister(offset + 3u));
         value = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
       }
 
       case MemoryAccessSize::HalfWord:
       {
-        const u32 lsb = ZeroExtend32(g_cdrom.ReadRegister(offset));
-        const u32 msb = ZeroExtend32(g_cdrom.ReadRegister(offset + 1u));
+        const u32 lsb = ZeroExtend32(CDROM::ReadRegister(offset));
+        const u32 msb = ZeroExtend32(CDROM::ReadRegister(offset + 1u));
         value = lsb | (msb << 8);
       }
 
       case MemoryAccessSize::Byte:
       default:
-        value = ZeroExtend32(g_cdrom.ReadRegister(offset));
+        value = ZeroExtend32(CDROM::ReadRegister(offset));
     }
 
     return m_cdrom_access_time[static_cast<u32>(size)];
@@ -1172,23 +1172,23 @@ ALWAYS_INLINE static TickCount DoCDROMAccess(u32 offset, u32& value)
     {
       case MemoryAccessSize::Word:
       {
-        g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
-        g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
-        g_cdrom.WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
-        g_cdrom.WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
+        CDROM::WriteRegister(offset, Truncate8(value & 0xFFu));
+        CDROM::WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+        CDROM::WriteRegister(offset + 2u, Truncate8((value >> 16) & 0xFFu));
+        CDROM::WriteRegister(offset + 3u, Truncate8((value >> 24) & 0xFFu));
       }
       break;
 
       case MemoryAccessSize::HalfWord:
       {
-        g_cdrom.WriteRegister(offset, Truncate8(value & 0xFFu));
-        g_cdrom.WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
+        CDROM::WriteRegister(offset, Truncate8(value & 0xFFu));
+        CDROM::WriteRegister(offset + 1u, Truncate8((value >> 8) & 0xFFu));
       }
       break;
 
       case MemoryAccessSize::Byte:
       default:
-        g_cdrom.WriteRegister(offset, Truncate8(value));
+        CDROM::WriteRegister(offset, Truncate8(value));
         break;
     }
 

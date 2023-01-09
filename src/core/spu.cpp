@@ -3,6 +3,8 @@
 
 #include "spu.h"
 #include "cdrom.h"
+#include "common/bitfield.h"
+#include "common/fifo_queue.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "dma.h"
@@ -13,6 +15,7 @@
 #include "util/audio_stream.h"
 #include "util/state_wrapper.h"
 #include "util/wav_writer.h"
+#include <memory>
 Log_SetChannel(SPU);
 
 // Enable to dump all voices of the SPU audio individually.
@@ -2291,7 +2294,7 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
       UpdateNoise();
 
       // Mix in CD audio.
-      const auto [cd_audio_left, cd_audio_right] = g_cdrom.GetAudioFrame();
+      const auto [cd_audio_left, cd_audio_right] = CDROM::GetAudioFrame();
       if (s_SPUCNT.cd_audio_enable)
       {
         const s32 cd_audio_volume_left = ApplyVolume(s32(cd_audio_left), s_cd_audio_volume_left);
