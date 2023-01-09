@@ -3204,7 +3204,7 @@ void CDROM::DrawDebugWindow()
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
   const float framebuffer_scale = Host::GetOSDScale();
 
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 560.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("CDROM State", nullptr))
   {
     ImGui::End();
@@ -3366,6 +3366,12 @@ void CDROM::DrawDebugWindow()
 
     ImGui::Text("Interrupt Enable Register: 0x%02X", s_interrupt_enable_register);
     ImGui::Text("Interrupt Flag Register: 0x%02X", s_interrupt_flag_register);
+
+    if (HasPendingAsyncInterrupt())
+    {
+      ImGui::SameLine();
+      ImGui::TextColored(inactive_color, " (0x%02X pending)", s_pending_async_interrupt);
+    }
   }
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
