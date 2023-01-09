@@ -130,6 +130,9 @@ public:
     return (!m_force_progressive_scan) && m_GPUSTAT.SkipDrawingToActiveField();
   }
 
+  /// Returns true if we're in PAL mode, otherwise false if NTSC.
+  ALWAYS_INLINE bool IsInPALMode() const { return m_GPUSTAT.pal_mode; }
+
   /// Returns the number of pending GPU ticks.
   TickCount GetPendingCRTCTicks() const;
   TickCount GetPendingCommandTicks() const;

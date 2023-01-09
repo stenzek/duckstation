@@ -3,8 +3,8 @@
 
 #include "imgui_overlays.h"
 #include "IconsFontAwesome5.h"
-#include "common/assert.h"
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -21,6 +21,7 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 #include "fullscreen_ui.h"
+#include "gsl/span"
 #include "icon.h"
 #include "imgui.h"
 #include "imgui_fullscreen.h"
@@ -28,7 +29,6 @@
 #include "imgui_manager.h"
 #include "input_manager.h"
 #include "util/audio_stream.h"
-#include "gsl/span"
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -125,7 +125,6 @@ static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
   return std::tie(min, max);
 #endif
 }
-
 
 static bool s_save_state_selector_ui_open = false;
 
@@ -233,14 +232,17 @@ void ImGuiManager::DrawPerformanceOverlay()
     {
       const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
-      text.Fmt("{}x{} ({})", effective_width, effective_height, interlaced ? "interlaced" : "progressive");
+      const bool pal = g_gpu->IsInPALMode();
+      text.Fmt("{}x{} {} {}", effective_width, effective_height, pal ? "PAL" : "NTSC",
+               interlaced ? "Interlaced" : "Progressive");
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
     if (g_settings.display_show_cpu)
     {
       text.Clear();
-      text.AppendFmtString("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetMaximumFrameTime(), System::GetAverageFrameTime());
+      text.AppendFmtString("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(),
+                           System::GetMaximumFrameTime(), System::GetAverageFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       text.Clear();
@@ -353,7 +355,7 @@ void ImGuiManager::DrawPerformanceOverlay()
           ImGuiPlotType_Lines, "##frame_times",
           [](void*, int idx) -> float {
             return System::GetFrameTimeHistory()[((System::GetFrameTimeHistoryPos() + idx) %
-            System::NUM_FRAME_TIME_SAMPLES)];
+                                                  System::NUM_FRAME_TIME_SAMPLES)];
           },
           nullptr, System::NUM_FRAME_TIME_SAMPLES, 0, nullptr, min, max, history_size);
 
