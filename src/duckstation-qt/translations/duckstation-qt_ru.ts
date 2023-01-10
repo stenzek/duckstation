@@ -477,7 +477,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="229"/>
         <source>Show Frame Times</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Показать время кадров</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="231"/>
@@ -695,7 +695,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="847"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>Устанавливает мёртвую зону аналогового джойстика, то есть долю движения джойстика, которая будет игнорироваться.</translation>
+        <translation>Устанавливает мертвую зону аналогового джойстика, т. е. часть движения джойстика, которая будет игнорироваться.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="850"/>
@@ -764,12 +764,12 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="856"/>
         <source>Button/Trigger Deadzone</source>
-        <translation type="unfinished"></translation>
+        <translation>Мертвая зона кнопки/триггера</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="857"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устанавливает мертвую зону для активации кнопок/триггеров, т.е. часть триггера, которая будет игнорироваться.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="860"/>
@@ -784,22 +784,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="864"/>
         <source>Invert Left Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевернуть левый стик</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="865"/>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвертирует направление левого аналогового джойстика.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="867"/>
         <source>Invert Right Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевернуть правый джойстик</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="868"/>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвертирует направление правого аналогового джойстика.</translation>
     </message>
 </context>
 <context>
@@ -819,22 +819,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="377"/>
         <source>Not Inverted</source>
-        <translation type="unfinished">Не инвертировать</translation>
+        <translation>Не инвертировать</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="378"/>
         <source>Invert Left/Right</source>
-        <translation type="unfinished">Инвертировать влево/вправо</translation>
+        <translation>Инвертировать влево/вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="379"/>
         <source>Invert Up/Down</source>
-        <translation type="unfinished">Инвертировать вверх/вниз</translation>
+        <translation>Инвертировать вверх/вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="380"/>
         <source>Invert Left/Right + Up/Down</source>
-        <translation type="unfinished">Инвертировать влево/вправо + вверх/вниз</translation>
+        <translation>Инвертировать влево/вправо + вверх/вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="383"/>
@@ -861,22 +861,22 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="393"/>
         <source>Invert Left Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевернуть левый стик</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="394"/>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвертирует направление левого аналогового джойстика.</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="396"/>
         <source>Invert Right Stick</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевернуть правый джойстик</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="397"/>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвертирует направление правого аналогового джойстика.</translation>
     </message>
 </context>
 <context>
@@ -938,7 +938,8 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="84"/>
         <source>Off (Noisy)</source>
-        <translation>Выкл. (Шумно)</translation>
+        <translatorcomment>*Шумный</translatorcomment>
+        <translation>Выкл. (шумно)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="89"/>
@@ -969,7 +970,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../audiosettingswidget.ui" line="170"/>
         <source>Output Device:</source>
-        <translation type="unfinished"></translation>
+        <translation>Устройство вывода:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="183"/>
@@ -1087,7 +1088,7 @@ Leaderboard Position: {} of {}</source>
         <location filename="../audiosettingswidget.cpp" line="119"/>
         <location filename="../audiosettingswidget.cpp" line="137"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>По умолчанию</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="159"/>
@@ -1887,7 +1888,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../frontend-common/cubeb_audio_stream.cpp" line="257"/>
         <source>Default Output Device</source>
-        <translation type="unfinished"></translation>
+        <translation>Устройство вывода по умолчанию</translation>
     </message>
 </context>
 <context>
@@ -2472,6 +2473,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="688"/>
         <source>Face Buttons</source>
+        <translatorcomment>*Передние</translatorcomment>
         <translation>Лицевые кнопки</translation>
     </message>
     <message>
