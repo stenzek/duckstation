@@ -764,7 +764,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="856"/>
         <source>Button/Trigger Deadzone</source>
-        <translation>Мертвая зона кнопки/триггера</translation>
+        <translation>Мертвая зона кнопок/триггеров</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="857"/>
