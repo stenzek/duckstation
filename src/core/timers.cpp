@@ -5,6 +5,7 @@
 #include "common/bitfield.h"
 #include "common/log.h"
 #include "gpu.h"
+#include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -67,7 +68,7 @@ static std::unique_ptr<TimingEvent> s_sysclk_event;
 static std::array<CounterState, NUM_TIMERS> s_states{};
 static TickCount s_syclk_ticks_carry = 0; // 0 unless overclocking is enabled
 static u32 s_sysclk_div_8_carry = 0;      // partial ticks for timer 3 with sysclk/8
-};                                 // namespace Timers
+};                                        // namespace Timers
 
 void Timers::Initialize()
 {
@@ -472,7 +473,7 @@ void Timers::DrawDebugStateWindow()
      {{"SysClk", "HBlank", "SysClk", "HBlank"}},
      {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
 
-  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
+  const float framebuffer_scale = Host::GetOSDScale();
 
   ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 100.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("Timer State", nullptr))
