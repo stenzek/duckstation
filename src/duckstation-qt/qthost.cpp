@@ -250,6 +250,10 @@ void QtHost::SetResourcesDirectory()
 
 void QtHost::SetDataDirectory()
 {
+  // Already set, e.g. by -portable.
+  if (!EmuFolders::DataRoot.empty())
+    return;
+
   if (ShouldUsePortableMode())
   {
     EmuFolders::DataRoot = EmuFolders::AppRoot;
@@ -1884,9 +1888,6 @@ void QtHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -nogui: Disables main window from being shown, exits on shutdown.\n");
   std::fprintf(stderr, "  -bigpicture: Automatically starts big picture UI.\n");
   std::fprintf(stderr, "  -portable: Forces \"portable mode\", data in same directory.\n");
-  std::fprintf(stderr, "  -nocontroller: Prevents the emulator from polling for controllers.\n"
-                       "                 Try this option if you're having difficulties starting\n"
-                       "                 the emulator.\n");
   std::fprintf(stderr, "  -settings <filename>: Loads a custom settings configuration from the\n"
                        "    specified filename. Default settings applied if file not found.\n");
   std::fprintf(stderr, "  -earlyconsole: Creates console as early as possible, for logging.\n");
@@ -1966,13 +1967,6 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         AutoBoot(autoboot)->override_fast_boot = false;
         continue;
       }
-      else if (CHECK_ARG("-nocontroller"))
-      {
-        Log_InfoPrintf("Command Line: Disabling controller support.");
-        // m_flags.disable_controller_interface = true;
-        Panic("Fixme");
-        continue;
-      }
       else if (CHECK_ARG("-resume"))
       {
         state_index = -1;
@@ -2007,8 +2001,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       else if (CHECK_ARG("-portable"))
       {
         Log_InfoPrintf("Command Line: Using portable mode.");
-        // SetUserDirectoryToProgramDirectory();
-        Panic("Fixme");
+        EmuFolders::DataRoot = EmuFolders::AppRoot;
         continue;
       }
       else if (CHECK_ARG_PARAM("-settings"))
