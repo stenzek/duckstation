@@ -47,7 +47,7 @@ enum : u32
   AUDIO_FIFO_SIZE = 44100 * 2,
   AUDIO_FIFO_LOW_WATERMARK = 10,
 
-  INIT_TICKS = 400000,
+  INIT_TICKS = 4000000,
   ID_READ_TICKS = 33868,
   MOTOR_ON_RESPONSE_TICKS = 400000,
 
@@ -1190,10 +1190,10 @@ bool CDROM::HasPendingDiscEvent()
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
 {
-  if (command == Command::Reset)
+  if (command == Command::Init)
   {
-    // Full reset takes longer.
-    return 120000;
+    // Init takes longer.
+    return 80000;
   }
 
   // Tests show that the average time to acknowledge a command is significantly higher when a disc is in the drive,
