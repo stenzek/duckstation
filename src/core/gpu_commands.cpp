@@ -210,7 +210,7 @@ bool GPU::HandleInterruptRequestCommand()
   if (!m_GPUSTAT.interrupt_request)
   {
     m_GPUSTAT.interrupt_request = true;
-    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::GPU);
+    InterruptController::InterruptRequest(InterruptController::IRQ::GPU);
   }
 
   m_fifo.RemoveOne();

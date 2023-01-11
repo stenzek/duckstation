@@ -898,7 +898,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
       if (new_vblank)
       {
         Log_DebugPrintf("Now in v-blank");
-        g_interrupt_controller.InterruptRequest(InterruptController::IRQ::VBLANK);
+        InterruptController::InterruptRequest(InterruptController::IRQ::VBLANK);
 
         // flush any pending draws and "scan out" the image
         FlushRender();

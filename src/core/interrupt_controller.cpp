@@ -7,11 +7,17 @@
 #include "util/state_wrapper.h"
 Log_SetChannel(InterruptController);
 
-InterruptController g_interrupt_controller;
+namespace InterruptController {
 
-InterruptController::InterruptController() = default;
+static constexpr u32 REGISTER_WRITE_MASK = (u32(1) << NUM_IRQS) - 1;
+static constexpr u32 DEFAULT_INTERRUPT_MASK = 0; //(u32(1) << NUM_IRQS) - 1;
 
-InterruptController::~InterruptController() = default;
+static void UpdateCPUInterruptRequest();
+
+static u32 s_interrupt_status_register = 0;
+static u32 s_interrupt_mask_register = DEFAULT_INTERRUPT_MASK;
+
+} // namespace InterruptController
 
 void InterruptController::Initialize()
 {
@@ -22,22 +28,27 @@ void InterruptController::Shutdown() {}
 
 void InterruptController::Reset()
 {
-  m_interrupt_status_register = 0;
-  m_interrupt_mask_register = DEFAULT_INTERRUPT_MASK;
+  s_interrupt_status_register = 0;
+  s_interrupt_mask_register = DEFAULT_INTERRUPT_MASK;
 }
 
 bool InterruptController::DoState(StateWrapper& sw)
 {
-  sw.Do(&m_interrupt_status_register);
-  sw.Do(&m_interrupt_mask_register);
+  sw.Do(&s_interrupt_status_register);
+  sw.Do(&s_interrupt_mask_register);
 
   return !sw.HasError();
+}
+
+bool InterruptController::GetIRQLineState()
+{
+  return (s_interrupt_status_register != 0);
 }
 
 void InterruptController::InterruptRequest(IRQ irq)
 {
   const u32 bit = (u32(1) << static_cast<u32>(irq));
-  m_interrupt_status_register |= bit;
+  s_interrupt_status_register |= bit;
   UpdateCPUInterruptRequest();
 }
 
@@ -46,10 +57,10 @@ u32 InterruptController::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0x00: // I_STATUS
-      return m_interrupt_status_register;
+      return s_interrupt_status_register;
 
     case 0x04: // I_MASK
-      return m_interrupt_mask_register;
+      return s_interrupt_mask_register;
 
     default:
       Log_ErrorPrintf("Invalid read at offset 0x%08X", offset);
@@ -63,10 +74,10 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
   {
     case 0x00: // I_STATUS
     {
-      if ((m_interrupt_status_register & ~value) != 0)
-        Log_DebugPrintf("Clearing bits 0x%08X", (m_interrupt_status_register & ~value));
+      if ((s_interrupt_status_register & ~value) != 0)
+        Log_DebugPrintf("Clearing bits 0x%08X", (s_interrupt_status_register & ~value));
 
-      m_interrupt_status_register = m_interrupt_status_register & (value & REGISTER_WRITE_MASK);
+      s_interrupt_status_register = s_interrupt_status_register & (value & REGISTER_WRITE_MASK);
       UpdateCPUInterruptRequest();
     }
     break;
@@ -74,7 +85,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
     case 0x04: // I_MASK
     {
       Log_DebugPrintf("Interrupt mask <- 0x%08X", value);
-      m_interrupt_mask_register = value & REGISTER_WRITE_MASK;
+      s_interrupt_mask_register = value & REGISTER_WRITE_MASK;
       UpdateCPUInterruptRequest();
     }
     break;
@@ -88,7 +99,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
 void InterruptController::UpdateCPUInterruptRequest()
 {
   // external interrupts set bit 10 only?
-  if ((m_interrupt_status_register & m_interrupt_mask_register) != 0)
+  if ((s_interrupt_status_register & s_interrupt_mask_register) != 0)
     CPU::SetExternalInterrupt(2);
   else
     CPU::ClearExternalInterrupt(2);

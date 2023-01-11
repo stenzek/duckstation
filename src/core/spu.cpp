@@ -1146,7 +1146,7 @@ void SPU::TriggerRAMIRQ()
 {
   DebugAssert(IsRAMIRQTriggerable());
   s_SPUSTAT.irq9_flag = true;
-  g_interrupt_controller.InterruptRequest(InterruptController::IRQ::SPU);
+  InterruptController::InterruptRequest(InterruptController::IRQ::SPU);
 }
 
 void SPU::CheckForLateRAMIRQs()

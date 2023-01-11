@@ -1180,7 +1180,7 @@ void CDROM::UpdateInterruptRequest()
   if ((s_interrupt_flag_register & s_interrupt_enable_register) == 0)
     return;
 
-  g_interrupt_controller.InterruptRequest(InterruptController::IRQ::CDROM);
+  InterruptController::InterruptRequest(InterruptController::IRQ::CDROM);
 }
 
 bool CDROM::HasPendingDiscEvent()

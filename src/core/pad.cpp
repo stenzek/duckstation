@@ -594,7 +594,7 @@ void Pad::DoACK()
   {
     Log_DebugPrintf("Triggering ACK interrupt");
     m_JOY_STAT.INTR = true;
-    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::IRQ7);
+    InterruptController::InterruptRequest(InterruptController::IRQ::IRQ7);
   }
 
   EndTransfer();

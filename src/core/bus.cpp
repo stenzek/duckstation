@@ -1233,13 +1233,13 @@ ALWAYS_INLINE static TickCount DoAccessInterruptController(u32 offset, u32& valu
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    value = g_interrupt_controller.ReadRegister(FIXUP_WORD_OFFSET(size, offset));
+    value = InterruptController::ReadRegister(FIXUP_WORD_OFFSET(size, offset));
     value = FIXUP_WORD_READ_VALUE(size, offset, value);
     return 2;
   }
   else
   {
-    g_interrupt_controller.WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
+    InterruptController::WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
     return 0;
   }
 }

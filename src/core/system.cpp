@@ -1387,7 +1387,7 @@ bool System::Initialize(bool force_software_renderer)
   CPU::CodeCache::Initialize();
 
   DMA::Initialize();
-  g_interrupt_controller.Initialize();
+  InterruptController::Initialize();
 
   CDROM::Initialize();
   g_pad.Initialize();
@@ -1457,7 +1457,7 @@ void System::DestroySystem()
   g_pad.Shutdown();
   CDROM::Shutdown();
   g_gpu.reset();
-  g_interrupt_controller.Shutdown();
+  InterruptController::Shutdown();
   DMA::Shutdown();
   PGXP::Shutdown();
   CPU::CodeCache::Shutdown();
@@ -1643,7 +1643,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("DMA") || !DMA::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("InterruptController") || !g_interrupt_controller.DoState(sw))
+  if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
   g_gpu->RestoreGraphicsAPIState();
@@ -1740,7 +1740,7 @@ void System::InternalReset()
 
   Bus::Reset();
   DMA::Reset();
-  g_interrupt_controller.Reset();
+  InterruptController::Reset();
   g_gpu->Reset(true);
   CDROM::Reset();
   g_pad.Reset();

@@ -430,7 +430,7 @@ void DMA::UpdateIRQ()
   if (s_DICR.master_flag)
   {
     Log_TracePrintf("Firing DMA master interrupt");
-    g_interrupt_controller.InterruptRequest(InterruptController::IRQ::DMA);
+    InterruptController::InterruptRequest(InterruptController::IRQ::DMA);
   }
 }
 

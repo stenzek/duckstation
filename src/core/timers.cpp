@@ -417,7 +417,7 @@ void Timers::UpdateIRQ(u32 index)
 
   Log_DebugPrintf("Raising timer %u IRQ", index);
   cs.irq_done = true;
-  g_interrupt_controller.InterruptRequest(
+  InterruptController::InterruptRequest(
     static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
 }
 
