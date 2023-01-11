@@ -48,6 +48,8 @@ def check_regression_test(baselinedir, testdir, name):
         #print("*** %s is missing in test set" % name)
         return False
 
+    num_diff = 0
+    header_written = False
     images = glob.glob(os.path.join(dir1, "frame_*.png"))
     for imagepath in images:
         imagename = Path(imagepath).name
@@ -61,21 +63,27 @@ def check_regression_test(baselinedir, testdir, name):
         path2 = os.path.join(dir2, imagename)
         if not os.path.isfile(path2):
             print("--- Frame %u for %s is missing in test set" % (framenum, name))
-            write("<h1>{}</h1>".format(name))
-            write("--- Frame %u for %s is missing in test set" % (framenum, name))
-            return False
+            if not header_written:
+                write("<h1>{}</h1>".format(name))
+                header_written = True
+            write("<p>--- Frame %u for %s is missing in test set</p>" % (framenum, name))
+            continue
 
         if not compare_frames(path1, path2):
             print("*** Difference in frame %u for %s" % (framenum, name))
 
             imguri1 = Path(path1).as_uri()
             imguri2 = Path(path2).as_uri()
-            write("<h1>{}</h1>".format(name))
+            if not header_written:
+                write("<h1>{}</h1>".format(name))
+                header_written = True
             write("<table width=\"100%\">")
             write("<tr><td colspan=\"2\">Frame {}</td></tr>".format(framenum))
             write("<tr><td><img src=\"{}\" /></td><td><img src=\"{}\" /></td></tr>".format(imguri1, imguri2))
             write("</table>")
-            return False
+            num_diff += 1
+            if (num_diff >= 3):
+                return False
 
     return True
 
