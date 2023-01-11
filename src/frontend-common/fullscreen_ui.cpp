@@ -5834,6 +5834,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     {ICON_FA_WRENCH " Game Properties", false},  {ICON_FA_PLAY " Resume Game", false},
     {ICON_FA_UNDO " Load State", false},         {ICON_FA_COMPACT_DISC " Default Boot", false},
     {ICON_FA_LIGHTBULB " Fast Boot", false},     {ICON_FA_MAGIC " Slow Boot", false},
+    {ICON_FA_FOLDER_MINUS " Reset Play Time", false},
     {ICON_FA_WINDOW_CLOSE " Close Menu", false},
   };
 
@@ -5859,6 +5860,9 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
           break;
         case 5: // Slow Boot
           DoStartPath(entry_path, {}, false);
+          break;
+        case 6: // Reset Play Time
+          GameList::ClearPlayedTimeForSerial(entry_serial);
           break;
         default:
           break;

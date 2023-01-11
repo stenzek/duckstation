@@ -226,6 +226,7 @@ private:
   void updateMenuSelectedTheme();
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
+  void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void setTheme(const QString& theme);
   void recreate();
 
