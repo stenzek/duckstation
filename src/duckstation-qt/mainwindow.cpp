@@ -66,6 +66,7 @@ static const char* DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
+static QPalette s_unthemed_palette;
 static bool s_unthemed_style_name_set;
 
 #if defined(_WIN32) || defined(__APPLE__)
@@ -123,6 +124,7 @@ void MainWindow::updateApplicationTheme()
   {
     s_unthemed_style_name_set = true;
     s_unthemed_style_name = QApplication::style()->objectName();
+    s_unthemed_palette = QApplication::style()->standardPalette();
   }
 
   setStyleFromSettings();
@@ -2074,7 +2076,7 @@ void MainWindow::setStyleFromSettings()
   if (theme == "qdarkstyle")
   {
     qApp->setStyle(s_unthemed_style_name);
-    qApp->setPalette(QApplication::style()->standardPalette());
+    qApp->setPalette(s_unthemed_palette);
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
@@ -2082,7 +2084,7 @@ void MainWindow::setStyleFromSettings()
   }
   else if (theme == "fusion")
   {
-    qApp->setPalette(QApplication::style()->standardPalette());
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
     qApp->setStyle(QStyleFactory::create("Fusion"));
   }
@@ -2161,7 +2163,7 @@ void MainWindow::setStyleFromSettings()
   }
   else
   {
-    qApp->setPalette(QApplication::style()->standardPalette());
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
     qApp->setStyle(s_unthemed_style_name);
   }
