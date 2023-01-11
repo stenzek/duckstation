@@ -1390,7 +1390,7 @@ bool System::Initialize(bool force_software_renderer)
   InterruptController::Initialize();
 
   CDROM::Initialize();
-  g_pad.Initialize();
+  Pad::Initialize();
   Timers::Initialize();
   SPU::Initialize();
   MDEC::Initialize();
@@ -1454,7 +1454,7 @@ void System::DestroySystem()
   MDEC::Shutdown();
   SPU::Shutdown();
   Timers::Shutdown();
-  g_pad.Shutdown();
+  Pad::Shutdown();
   CDROM::Shutdown();
   g_gpu.reset();
   InterruptController::Shutdown();
@@ -1655,7 +1655,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Pad") || !g_pad.DoState(sw))
+  if (!sw.DoMarker("Pad") || !Pad::DoState(sw))
     return false;
 
   if (!sw.DoMarker("Timers") || !Timers::DoState(sw))
@@ -1743,7 +1743,7 @@ void System::InternalReset()
   InterruptController::Reset();
   g_gpu->Reset(true);
   CDROM::Reset();
-  g_pad.Reset();
+  Pad::Reset();
   Timers::Reset();
   SPU::Reset();
   MDEC::Reset();
@@ -2630,7 +2630,7 @@ void System::StallCPU(TickCount ticks)
 
 Controller* System::GetController(u32 slot)
 {
-  return g_pad.GetController(slot);
+  return Pad::GetController(slot);
 }
 
 void System::UpdateControllers()
@@ -2639,7 +2639,7 @@ void System::UpdateControllers()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    g_pad.SetController(i, nullptr);
+    Pad::SetController(i, nullptr);
 
     const ControllerType type = g_settings.controller_types[i];
     if (type != ControllerType::None)
@@ -2648,7 +2648,7 @@ void System::UpdateControllers()
       if (controller)
       {
         controller->LoadSettings(*Host::GetSettingsInterfaceForBindings(), Controller::GetSettingsSection(i).c_str());
-        g_pad.SetController(i, std::move(controller));
+        Pad::SetController(i, std::move(controller));
       }
     }
   }
@@ -2660,7 +2660,7 @@ void System::UpdateControllerSettings()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Controller* controller = g_pad.GetController(i);
+    Controller* controller = Pad::GetController(i);
     if (controller)
       controller->LoadSettings(*Host::GetSettingsInterfaceForBindings(), Controller::GetSettingsSection(i).c_str());
   }
@@ -2670,7 +2670,7 @@ void System::ResetControllers()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Controller* controller = g_pad.GetController(i);
+    Controller* controller = Pad::GetController(i);
     if (controller)
       controller->Reset();
   }
@@ -2758,12 +2758,12 @@ void System::UpdateMemoryCardTypes()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    g_pad.SetMemoryCard(i, nullptr);
+    Pad::SetMemoryCard(i, nullptr);
 
     const MemoryCardType type = g_settings.memory_card_types[i];
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
-      g_pad.SetMemoryCard(i, std::move(card));
+      Pad::SetMemoryCard(i, std::move(card));
   }
 }
 
@@ -2775,17 +2775,17 @@ void System::UpdatePerGameMemoryCards()
     if (!Settings::IsPerGameMemoryCardType(type))
       continue;
 
-    g_pad.SetMemoryCard(i, nullptr);
+    Pad::SetMemoryCard(i, nullptr);
 
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
-      g_pad.SetMemoryCard(i, std::move(card));
+      Pad::SetMemoryCard(i, std::move(card));
   }
 }
 
 bool System::HasMemoryCard(u32 slot)
 {
-  return (g_pad.GetMemoryCard(slot) != nullptr);
+  return (Pad::GetMemoryCard(slot) != nullptr);
 }
 
 void System::SwapMemoryCards()
@@ -2793,10 +2793,10 @@ void System::SwapMemoryCards()
   if (!IsValid())
     return;
 
-  std::unique_ptr<MemoryCard> first = g_pad.RemoveMemoryCard(0);
-  std::unique_ptr<MemoryCard> second = g_pad.RemoveMemoryCard(1);
-  g_pad.SetMemoryCard(0, std::move(second));
-  g_pad.SetMemoryCard(1, std::move(first));
+  std::unique_ptr<MemoryCard> first = Pad::RemoveMemoryCard(0);
+  std::unique_ptr<MemoryCard> second = Pad::RemoveMemoryCard(1);
+  Pad::SetMemoryCard(0, std::move(second));
+  Pad::SetMemoryCard(1, std::move(first));
 
   if (HasMemoryCard(0) && HasMemoryCard(1))
   {
@@ -2828,29 +2828,29 @@ void System::UpdateMultitaps()
   {
     case MultitapMode::Disabled:
     {
-      g_pad.GetMultitap(0)->SetEnable(false, 0);
-      g_pad.GetMultitap(1)->SetEnable(false, 0);
+      Pad::GetMultitap(0)->SetEnable(false, 0);
+      Pad::GetMultitap(1)->SetEnable(false, 0);
     }
     break;
 
     case MultitapMode::Port1Only:
     {
-      g_pad.GetMultitap(0)->SetEnable(true, 0);
-      g_pad.GetMultitap(1)->SetEnable(false, 0);
+      Pad::GetMultitap(0)->SetEnable(true, 0);
+      Pad::GetMultitap(1)->SetEnable(false, 0);
     }
     break;
 
     case MultitapMode::Port2Only:
     {
-      g_pad.GetMultitap(0)->SetEnable(false, 0);
-      g_pad.GetMultitap(1)->SetEnable(true, 1);
+      Pad::GetMultitap(0)->SetEnable(false, 0);
+      Pad::GetMultitap(1)->SetEnable(true, 1);
     }
     break;
 
     case MultitapMode::BothPorts:
     {
-      g_pad.GetMultitap(0)->SetEnable(true, 0);
-      g_pad.GetMultitap(1)->SetEnable(true, 4);
+      Pad::GetMultitap(0)->SetEnable(true, 0);
+      Pad::GetMultitap(1)->SetEnable(true, 4);
     }
     break;
   }

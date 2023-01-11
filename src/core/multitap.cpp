@@ -62,7 +62,7 @@ void Multitap::ResetTransferState()
 
 bool Multitap::TransferController(u32 slot, const u8 data_in, u8* data_out) const
 {
-  Controller* const selected_controller = g_pad.GetController(m_base_index + slot);
+  Controller* const selected_controller = Pad::GetController(m_base_index + slot);
   if (!selected_controller)
   {
     *data_out = 0xFF;
@@ -74,7 +74,7 @@ bool Multitap::TransferController(u32 slot, const u8 data_in, u8* data_out) cons
 
 bool Multitap::TransferMemoryCard(u32 slot, const u8 data_in, u8* data_out) const
 {
-  MemoryCard* const selected_memcard = g_pad.GetMemoryCard(m_base_index + slot);
+  MemoryCard* const selected_memcard = Pad::GetMemoryCard(m_base_index + slot);
   if (!selected_memcard)
   {
     *data_out = 0xFF;

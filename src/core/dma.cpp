@@ -447,19 +447,19 @@ enum : u32
 TickCount DMA::GetTransferSliceTicks()
 {
 #ifdef _DEBUG
-  if (g_pad.IsTransmitting())
+  if (Pad::IsTransmitting())
   {
     Log_DebugPrintf("DMA transfer while transmitting pad - using lower slice size of %u vs %u",
                     SLICE_SIZE_WHEN_TRANSMITTING_PAD, s_max_slice_ticks);
   }
 #endif
 
-  return g_pad.IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : s_max_slice_ticks;
+  return Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : s_max_slice_ticks;
 }
 
 TickCount DMA::GetTransferHaltTicks()
 {
-  return g_pad.IsTransmitting() ? HALT_TICKS_WHEN_TRANSMITTING_PAD : s_halt_ticks;
+  return Pad::IsTransmitting() ? HALT_TICKS_WHEN_TRANSMITTING_PAD : s_halt_ticks;
 }
 
 bool DMA::TransferChannel(Channel channel)

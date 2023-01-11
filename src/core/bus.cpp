@@ -17,6 +17,7 @@
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
+#include "settings.h"
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
@@ -1109,13 +1110,13 @@ ALWAYS_INLINE static TickCount DoPadAccess(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    value = g_pad.ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
+    value = Pad::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
     value = FIXUP_HALFWORD_READ_VALUE(size, offset, value);
     return 2;
   }
   else
   {
-    g_pad.WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset), FIXUP_HALFWORD_WRITE_VALUE(size, offset, value));
+    Pad::WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset), FIXUP_HALFWORD_WRITE_VALUE(size, offset, value));
     return 0;
   }
 }
@@ -1317,7 +1318,7 @@ ALWAYS_INLINE static TickCount DoAccessSPU(u32 offset, u32& value)
       case MemoryAccessSize::Byte:
       {
         SPU::WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset),
-                            Truncate16(FIXUP_HALFWORD_READ_VALUE(size, offset, value)));
+                           Truncate16(FIXUP_HALFWORD_READ_VALUE(size, offset, value)));
         break;
       }
     }
