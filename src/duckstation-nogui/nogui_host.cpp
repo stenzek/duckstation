@@ -786,10 +786,13 @@ void Host::RenderDisplay(bool skip_present)
   if (!skip_present)
   {
     FullscreenUI::Render();
-    ImGuiManager::RenderOverlays();
+    ImGuiManager::RenderTextOverlays();
     ImGuiManager::RenderOSD();
-    ImGuiManager::RenderDebugWindows();
   }
+
+  // Debug windows are always rendered, otherwise mouse input breaks on skip.
+  ImGuiManager::RenderOverlayWindows();
+  ImGuiManager::RenderDebugWindows();
 
   g_host_display->Render(skip_present);
 

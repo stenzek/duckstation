@@ -128,7 +128,7 @@ static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
 
 static bool s_save_state_selector_ui_open = false;
 
-void ImGuiManager::RenderOverlays()
+void ImGuiManager::RenderTextOverlays()
 {
   const System::State state = System::GetState();
   if (state != System::State::Shutdown)
@@ -140,7 +140,14 @@ void ImGuiManager::RenderOverlays()
 
     if (g_settings.display_show_inputs && state != System::State::Paused)
       DrawInputsOverlay();
+  }
+}
 
+void ImGuiManager::RenderOverlayWindows()
+{
+  const System::State state = System::GetState();
+  if (state != System::State::Shutdown)
+  {
     if (s_save_state_selector_ui_open)
       SaveStateSelectorUI::Draw();
   }

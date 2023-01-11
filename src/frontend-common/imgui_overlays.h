@@ -6,7 +6,8 @@
 #include "imgui_manager.h"
 
 namespace ImGuiManager {
-void RenderOverlays();
+void RenderTextOverlays();
+void RenderOverlayWindows();
 }
 
 namespace SaveStateSelectorUI {
