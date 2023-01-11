@@ -283,7 +283,7 @@ void System::UpdateOverclock()
   SPU::CPUClockChanged();
   CDROM::CPUClockChanged();
   g_gpu->CPUClockChanged();
-  g_timers.CPUClocksChanged();
+  Timers::CPUClocksChanged();
   UpdateThrottlePeriod();
 }
 
@@ -1391,7 +1391,7 @@ bool System::Initialize(bool force_software_renderer)
 
   CDROM::Initialize();
   g_pad.Initialize();
-  g_timers.Initialize();
+  Timers::Initialize();
   SPU::Initialize();
   MDEC::Initialize();
   g_sio.Initialize();
@@ -1453,7 +1453,7 @@ void System::DestroySystem()
   g_sio.Shutdown();
   MDEC::Shutdown();
   SPU::Shutdown();
-  g_timers.Shutdown();
+  Timers::Shutdown();
   g_pad.Shutdown();
   CDROM::Shutdown();
   g_gpu.reset();
@@ -1658,7 +1658,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("Pad") || !g_pad.DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Timers") || !g_timers.DoState(sw))
+  if (!sw.DoMarker("Timers") || !Timers::DoState(sw))
     return false;
 
   if (!sw.DoMarker("SPU") || !SPU::DoState(sw))
@@ -1744,7 +1744,7 @@ void System::InternalReset()
   g_gpu->Reset(true);
   CDROM::Reset();
   g_pad.Reset();
-  g_timers.Reset();
+  Timers::Reset();
   SPU::Reset();
   MDEC::Reset();
   g_sio.Reset();

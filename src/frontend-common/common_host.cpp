@@ -484,7 +484,7 @@ void ImGuiManager::RenderDebugWindows()
     if (g_settings.debugging.show_cdrom_state)
       CDROM::DrawDebugWindow();
     if (g_settings.debugging.show_timers_state)
-      g_timers.DrawDebugStateWindow();
+      Timers::DrawDebugStateWindow();
     if (g_settings.debugging.show_spu_state)
       SPU::DrawDebugStateWindow();
     if (g_settings.debugging.show_mdec_state)

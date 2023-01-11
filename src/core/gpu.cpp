@@ -779,7 +779,7 @@ void GPU::UpdateCRTCTickEvent()
 {
   // figure out how many GPU ticks until the next vblank or event
   TickCount lines_until_event;
-  if (g_timers.IsSyncEnabled(HBLANK_TIMER_INDEX))
+  if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX))
   {
     // when the timer sync is enabled we need to sync at vblank start and end
     lines_until_event =
@@ -794,14 +794,14 @@ void GPU::UpdateCRTCTickEvent()
          (m_crtc_state.vertical_total - m_crtc_state.current_scanline + m_crtc_state.vertical_display_end) :
          (m_crtc_state.vertical_display_end - m_crtc_state.current_scanline));
   }
-  if (g_timers.IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
-    lines_until_event = std::min(lines_until_event, g_timers.GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
+  if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
+    lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
   TickCount ticks_until_event =
     lines_until_event * m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline;
-  if (g_timers.IsExternalIRQEnabled(DOT_TIMER_INDEX))
+  if (Timers::IsExternalIRQEnabled(DOT_TIMER_INDEX))
   {
-    const TickCount dots_until_irq = g_timers.GetTicksUntilIRQ(DOT_TIMER_INDEX);
+    const TickCount dots_until_irq = Timers::GetTicksUntilIRQ(DOT_TIMER_INDEX);
     const TickCount ticks_until_irq =
       (dots_until_irq * m_crtc_state.dot_clock_divider) - m_crtc_state.fractional_dot_ticks;
     ticks_until_event = std::min(ticks_until_event, std::max<TickCount>(ticks_until_irq, 0));
@@ -835,13 +835,13 @@ void GPU::CRTCTickEvent(TickCount ticks)
     const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &m_crtc_state.fractional_ticks);
     m_crtc_state.current_tick_in_scanline += gpu_ticks;
 
-    if (g_timers.IsUsingExternalClock(DOT_TIMER_INDEX))
+    if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
     {
       m_crtc_state.fractional_dot_ticks += gpu_ticks;
       const TickCount dots = m_crtc_state.fractional_dot_ticks / m_crtc_state.dot_clock_divider;
       m_crtc_state.fractional_dot_ticks = m_crtc_state.fractional_dot_ticks % m_crtc_state.dot_clock_divider;
       if (dots > 0)
-        g_timers.AddTicks(DOT_TIMER_INDEX, dots);
+        Timers::AddTicks(DOT_TIMER_INDEX, dots);
     }
   }
 
@@ -851,8 +851,8 @@ void GPU::CRTCTickEvent(TickCount ticks)
     const bool old_hblank = m_crtc_state.in_hblank;
     const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
     m_crtc_state.in_hblank = new_hblank;
-    if (!old_hblank && new_hblank && g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
-      g_timers.AddTicks(HBLANK_TIMER_INDEX, 1);
+    if (!old_hblank && new_hblank && Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
+      Timers::AddTicks(HBLANK_TIMER_INDEX, 1);
 
     UpdateCRTCTickEvent();
     return;
@@ -868,10 +868,10 @@ void GPU::CRTCTickEvent(TickCount ticks)
   const bool old_hblank = m_crtc_state.in_hblank;
   const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
   m_crtc_state.in_hblank = new_hblank;
-  if (g_timers.IsUsingExternalClock(HBLANK_TIMER_INDEX))
+  if (Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
   {
     const u32 hblank_timer_ticks = BoolToUInt32(!old_hblank) + BoolToUInt32(new_hblank) + (lines_to_draw - 1);
-    g_timers.AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
+    Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
   }
 
   while (lines_to_draw > 0)
@@ -887,7 +887,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
     if (prev_scanline < m_crtc_state.vertical_display_start &&
         m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end)
     {
-      g_timers.SetGate(HBLANK_TIMER_INDEX, false);
+      Timers::SetGate(HBLANK_TIMER_INDEX, false);
       m_crtc_state.in_vblank = false;
     }
 
@@ -912,7 +912,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
           m_crtc_state.interlaced_display_field = 0;
       }
 
-      g_timers.SetGate(HBLANK_TIMER_INDEX, new_vblank);
+      Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
       m_crtc_state.in_vblank = new_vblank;
     }
 

@@ -21,7 +21,6 @@ class HostDisplay;
 class GPUTexture;
 
 class TimingEvent;
-class Timers;
 
 namespace Threading
 {
