@@ -125,6 +125,8 @@ static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType
 static void SetTimerResolutionIncreased(bool enabled);
 } // namespace System
 
+static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
+
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
 static std::string s_input_profile_name;
@@ -1103,20 +1105,24 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Load CD image up and detect region.
   Common::Error error;
   std::unique_ptr<CDImage> media;
-  bool exe_boot = false;
-  bool psf_boot = false;
+  std::string exe_boot;
+  std::string psf_boot;
   if (!parameters.filename.empty())
   {
-    exe_boot = IsExeFileName(parameters.filename.c_str());
-    psf_boot = (!exe_boot && IsPsfFileName(parameters.filename.c_str()));
-    if (exe_boot || psf_boot)
+    const bool do_exe_boot = IsExeFileName(parameters.filename);
+    const bool do_psf_boot = (!do_exe_boot && IsPsfFileName(parameters.filename));
+    if (do_exe_boot || do_psf_boot)
     {
       if (s_region == ConsoleRegion::Auto)
       {
         const DiscRegion file_region =
-          (exe_boot ? GetRegionForExe(parameters.filename.c_str()) : GetRegionForPsf(parameters.filename.c_str()));
+          (do_exe_boot ? GetRegionForExe(parameters.filename.c_str()) : GetRegionForPsf(parameters.filename.c_str()));
         Log_InfoPrintf("EXE/PSF Region: %s", Settings::GetDiscRegionDisplayName(file_region));
         s_region = GetConsoleRegionForDiscRegion(file_region);
+        if (do_psf_boot)
+          psf_boot = std::move(parameters.filename);
+        else
+          exe_boot = std::move(parameters.filename);
       }
     }
     else
@@ -1174,6 +1180,21 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Update running game, this will apply settings as well.
   UpdateRunningGame(media ? media->GetFileName().c_str() : parameters.filename.c_str(), media.get(), true);
 
+  if (!parameters.override_exe.empty())
+  {
+    if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExeFileName(parameters.override_exe))
+    {
+      Host::ReportFormattedErrorAsync("Error", "File '%s' is not a valid executable to boot.",
+                                      parameters.override_exe.c_str());
+      s_state = State::Shutdown;
+      Host::OnSystemDestroyed();
+      return false;
+    }
+
+    Log_InfoPrintf("Overriding boot executable: '%s'", parameters.override_exe.c_str());
+    exe_boot = std::move(parameters.override_exe);
+  }
+
   // Check for SBI.
   if (!CheckForSBIFile(media.get()))
   {
@@ -1217,7 +1238,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Allow controller analog mode for EXEs and PSFs.
-  s_running_bios = s_running_game_path.empty() && !exe_boot && !psf_boot;
+  s_running_bios = s_running_game_path.empty() && exe_boot.empty() && psf_boot.empty();
 
   Bus::SetBIOS(bios_image.value());
   UpdateControllers();
@@ -1236,15 +1257,15 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Load EXE late after BIOS.
-  if (exe_boot && !LoadEXE(parameters.filename.c_str()))
+  if (!exe_boot.empty() && !LoadEXE(exe_boot.c_str()))
   {
-    Host::ReportFormattedErrorAsync("Error", "Failed to load EXE file '%s'", parameters.filename.c_str());
+    Host::ReportFormattedErrorAsync("Error", "Failed to load EXE file '%s'", exe_boot.c_str());
     DestroySystem();
     return false;
   }
-  else if (psf_boot && !PSFLoader::Load(parameters.filename.c_str()))
+  else if (!psf_boot.empty() && !PSFLoader::Load(psf_boot.c_str()))
   {
-    Host::ReportFormattedErrorAsync("Error", "Failed to load PSF file '%s'", parameters.filename.c_str());
+    Host::ReportFormattedErrorAsync("Error", "Failed to load PSF file '%s'", psf_boot.c_str());
     DestroySystem();
     return false;
   }
@@ -2215,7 +2236,7 @@ void System::UpdatePerformanceCounters()
   const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
   const Common::Timer::Value ticks_diff = now_ticks - s_fps_timer.GetStartValue();
   const float time = static_cast<float>(Common::Timer::ConvertValueToSeconds(ticks_diff));
-  if (time < 1.0f)
+  if (time < PERFORMANCE_COUNTER_UPDATE_INTERVAL)
     return;
 
   const float frames_run = static_cast<float>(s_frame_number - s_last_frame_number);

@@ -1883,6 +1883,7 @@ void QtHost::PrintCommandLineHelp(const char* progname)
                        "    a global state will be loaded.\n");
   std::fprintf(stderr, "  -statefile <filename>: Loads state from the specified filename.\n"
                        "    No boot filename is required with this option.\n");
+  std::fprintf(stderr, "  -exe <filename>: Boot the specified exe instead of loading from disc.\n");
   std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
   std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
   std::fprintf(stderr, "  -nogui: Disables main window from being shown, exits on shutdown.\n");
@@ -1983,6 +1984,12 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       {
         AutoBoot(autoboot)->save_state = args[++i].toStdString();
         Log_InfoPrintf("Command Line: Loading state file: '%s'", autoboot->save_state.c_str());
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-exe"))
+      {
+        AutoBoot(autoboot)->override_exe = args[++i].toStdString();
+        Log_InfoPrintf("Command Line: Overriding EXE file: '%s'", autoboot->override_exe.c_str());
         continue;
       }
       else if (CHECK_ARG("-fullscreen"))

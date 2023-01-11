@@ -29,6 +29,7 @@ struct SystemBootParameters
 
   std::string filename;
   std::string save_state;
+  std::string override_exe;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
   std::optional<bool> override_start_paused;

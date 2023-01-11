@@ -1079,6 +1079,7 @@ void NoGUIHost::PrintCommandLineHelp(const char* progname)
                        "    a global state will be loaded.\n");
   std::fprintf(stderr, "  -statefile <filename>: Loads state from the specified filename.\n"
                        "    No boot filename is required with this option.\n");
+  std::fprintf(stderr, "  -exe <filename>: Boot the specified exe instead of loading from disc.\n");
   std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
   std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
   std::fprintf(stderr, "  -portable: Forces \"portable mode\", data in same directory.\n");
@@ -1172,6 +1173,12 @@ bool NoGUIHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* ar
       {
         AutoBoot(autoboot)->save_state = argv[++i];
         Log_InfoPrintf("Command Line: Loading state file: '%s'", autoboot->save_state.c_str());
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-exe"))
+      {
+        AutoBoot(autoboot)->override_exe = argv[++i];
+        Log_InfoPrintf("Command Line: Overriding EXE file: '%s'", autoboot->override_exe.c_str());
         continue;
       }
       else if (CHECK_ARG("-fullscreen"))
