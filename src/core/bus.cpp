@@ -1125,13 +1125,13 @@ ALWAYS_INLINE static TickCount DoSIOAccess(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    value = g_sio.ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
+    value = SIO::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
     value = FIXUP_HALFWORD_READ_VALUE(size, offset, value);
     return 2;
   }
   else
   {
-    g_sio.WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset), FIXUP_HALFWORD_WRITE_VALUE(size, offset, value));
+    SIO::WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset), FIXUP_HALFWORD_WRITE_VALUE(size, offset, value));
     return 0;
   }
 }

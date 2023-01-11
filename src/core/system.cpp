@@ -1394,7 +1394,7 @@ bool System::Initialize(bool force_software_renderer)
   Timers::Initialize();
   SPU::Initialize();
   MDEC::Initialize();
-  g_sio.Initialize();
+  SIO::Initialize();
 
   static constexpr float WARNING_DURATION = 15.0f;
 
@@ -1450,7 +1450,7 @@ void System::DestroySystem()
 
   g_texture_replacements.Shutdown();
 
-  g_sio.Shutdown();
+  SIO::Shutdown();
   MDEC::Shutdown();
   SPU::Shutdown();
   Timers::Shutdown();
@@ -1667,7 +1667,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("MDEC") || !MDEC::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("SIO") || !g_sio.DoState(sw))
+  if (!sw.DoMarker("SIO") || !SIO::DoState(sw))
     return false;
 
   if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw))
@@ -1747,7 +1747,7 @@ void System::InternalReset()
   Timers::Reset();
   SPU::Reset();
   MDEC::Reset();
-  g_sio.Reset();
+  SIO::Reset();
   s_frame_number = 1;
   s_internal_frame_number = 0;
   TimingEvents::Reset();
