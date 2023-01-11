@@ -706,9 +706,9 @@ bool CompileBlock(CodeBlock* block, bool allow_flush)
         block->icache_line_count++;
         last_cache_line = icache_line;
       }
-      block->uncached_fetch_ticks += GetInstructionReadTicks(pc);
     }
 
+    block->uncached_fetch_ticks += GetInstructionReadTicks(pc);
     block->contains_loadstore_instructions |= cbi.is_load_instruction;
     block->contains_loadstore_instructions |= cbi.is_store_instruction;
 
