@@ -1386,7 +1386,7 @@ bool System::Initialize(bool force_software_renderer)
   // CPU code cache must happen after GPU, because it might steal our address space.
   CPU::CodeCache::Initialize();
 
-  g_dma.Initialize();
+  DMA::Initialize();
   g_interrupt_controller.Initialize();
 
   CDROM::Initialize();
@@ -1458,7 +1458,7 @@ void System::DestroySystem()
   CDROM::Shutdown();
   g_gpu.reset();
   g_interrupt_controller.Shutdown();
-  g_dma.Shutdown();
+  DMA::Shutdown();
   PGXP::Shutdown();
   CPU::CodeCache::Shutdown();
   Bus::Shutdown();
@@ -1640,7 +1640,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("DMA") || !g_dma.DoState(sw))
+  if (!sw.DoMarker("DMA") || !DMA::DoState(sw))
     return false;
 
   if (!sw.DoMarker("InterruptController") || !g_interrupt_controller.DoState(sw))
@@ -1739,7 +1739,7 @@ void System::InternalReset()
     PGXP::Initialize();
 
   Bus::Reset();
-  g_dma.Reset();
+  DMA::Reset();
   g_interrupt_controller.Reset();
   g_gpu->Reset(true);
   CDROM::Reset();
@@ -3299,8 +3299,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       g_texture_replacements.Reload();
     }
 
-    g_dma.SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
-    g_dma.SetHaltTicks(g_settings.dma_halt_ticks);
+    DMA::SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+    DMA::SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.video_sync_enabled != old_settings.video_sync_enabled ||

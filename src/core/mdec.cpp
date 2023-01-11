@@ -307,12 +307,12 @@ void MDEC::UpdateStatus()
   // we always want data in if it's enabled
   const bool data_in_request = s_enable_dma_in && s_data_in_fifo.GetSpace() >= (32 * 2);
   s_status.data_in_request = data_in_request;
-  g_dma.SetRequest(DMA::Channel::MDECin, data_in_request);
+  DMA::SetRequest(DMA::Channel::MDECin, data_in_request);
 
   // we only want to send data out if we have some in the fifo
   const bool data_out_request = s_enable_dma_out && !s_data_out_fifo.IsEmpty();
   s_status.data_out_request = data_out_request;
-  g_dma.SetRequest(DMA::Channel::MDECout, data_out_request);
+  DMA::SetRequest(DMA::Channel::MDECout, data_out_request);
 }
 
 u32 MDEC::ReadDataRegister()

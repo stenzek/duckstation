@@ -1331,13 +1331,13 @@ ALWAYS_INLINE static TickCount DoDMAAccess(u32 offset, u32& value)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    value = g_dma.ReadRegister(FIXUP_WORD_OFFSET(size, offset));
+    value = DMA::ReadRegister(FIXUP_WORD_OFFSET(size, offset));
     value = FIXUP_WORD_READ_VALUE(size, offset, value);
     return 2;
   }
   else
   {
-    g_dma.WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
+    DMA::WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
     return 0;
   }
 }

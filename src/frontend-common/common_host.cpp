@@ -490,7 +490,7 @@ void ImGuiManager::RenderDebugWindows()
     if (g_settings.debugging.show_mdec_state)
       MDEC::DrawDebugStateWindow();
     if (g_settings.debugging.show_dma_state)
-      g_dma.DrawDebugStateWindow();
+      DMA::DrawDebugStateWindow();
   }
 }
 

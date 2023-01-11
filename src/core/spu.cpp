@@ -1349,7 +1349,7 @@ void SPU::UpdateDMARequest()
   }
 
   // This might call us back directly.
-  g_dma.SetRequest(DMA::Channel::SPU, s_SPUSTAT.dma_request);
+  DMA::SetRequest(DMA::Channel::SPU, s_SPUSTAT.dma_request);
 }
 
 void SPU::DMARead(u32* words, u32 word_count)

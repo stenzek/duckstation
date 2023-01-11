@@ -1172,7 +1172,7 @@ void CDROM::UpdateStatusRegister()
   s_status.DRQSTS = !s_data_fifo.IsEmpty();
   s_status.BUSYSTS = HasPendingCommand();
 
-  g_dma.SetRequest(DMA::Channel::CDROM, s_status.DRQSTS);
+  DMA::SetRequest(DMA::Channel::CDROM, s_status.DRQSTS);
 }
 
 void CDROM::UpdateInterruptRequest()

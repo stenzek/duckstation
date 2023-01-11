@@ -341,7 +341,7 @@ void GPU::UpdateDMARequest()
       break;
   }
   m_GPUSTAT.dma_data_request = dma_request;
-  g_dma.SetRequest(DMA::Channel::GPU, dma_request);
+  DMA::SetRequest(DMA::Channel::GPU, dma_request);
 }
 
 void GPU::UpdateGPUIdle()
