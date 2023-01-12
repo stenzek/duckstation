@@ -2202,7 +2202,7 @@ void System::Throttle()
 
   // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
   // Linux also seems to do a much better job of waking up at the requested time.
-#if defined(__linux__) || defined(__ANDROID__)
+#if !defined(__linux__) && !defined(__ANDROID__)
   Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_all_frames);
 #else
   Common::Timer::SleepUntil(s_next_frame_time, false);
