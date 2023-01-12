@@ -168,6 +168,8 @@ struct Settings
   bool audio_output_muted = false;
   bool audio_dump_on_boot = false;
 
+  bool use_old_mdec_routines = false;
+
   // timing hacks section
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
   TickCount dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;

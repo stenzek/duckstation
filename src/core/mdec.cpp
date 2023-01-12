@@ -106,6 +106,8 @@ static void CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late);
 // from nocash spec
 static bool rl_decode_block(s16* blk, const u8* qt);
 static void IDCT(s16* blk);
+static void IDCT_New(s16* blk);
+static void IDCT_Old(s16* blk);
 static void yuv_to_rgb(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
                        const std::array<s16, 64>& Yblk);
 static void y_to_mono(const std::array<s16, 64>& Yblk);
@@ -627,9 +629,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_15Bit:
     {
-      // people have made texture packs using the old conversion routines.. best to just leave them be.
-      if (g_settings.texture_replacements.enable_vram_write_replacements ||
-          g_settings.texture_replacements.dump_vram_writes)
+      if (UNLIKELY(g_settings.use_old_mdec_routines))
       {
         const u16 a = ZeroExtend16(s_status.data_output_bit15.GetValue()) << 15;
         for (u32 i = 0; i < static_cast<u32>(s_block_rgb.size());)
@@ -763,6 +763,15 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
 
 void MDEC::IDCT(s16* blk)
 {
+  // people have made texture packs using the old conversion routines.. best to just leave them be.
+  if (UNLIKELY(g_settings.use_old_mdec_routines))
+    IDCT_Old(blk);
+  else
+    IDCT_New(blk);
+}
+
+void MDEC::IDCT_New(s16* blk)
+{
   std::array<s32, 64> temp;
   for (u32 x = 0; x < 8; x++)
   {
@@ -784,6 +793,33 @@ void MDEC::IDCT(s16* blk)
       for (u32 z = 0; z < 8; z++)
         sum += temp[y + z * 8] * s32(s_scale_table[x + z * 8] / 8);
       blk[x + y * 8] = static_cast<s16>(std::clamp<s32>((sum + 0xfff) / 0x2000, -128, 127));
+    }
+  }
+}
+
+void MDEC::IDCT_Old(s16* blk)
+{
+  std::array<s64, 64> temp_buffer;
+  for (u32 x = 0; x < 8; x++)
+  {
+    for (u32 y = 0; y < 8; y++)
+    {
+      s64 sum = 0;
+      for (u32 u = 0; u < 8; u++)
+        sum += s32(blk[u * 8 + x]) * s32(s_scale_table[u * 8 + y]);
+      temp_buffer[x + y * 8] = sum;
+    }
+  }
+  for (u32 x = 0; x < 8; x++)
+  {
+    for (u32 y = 0; y < 8; y++)
+    {
+      s64 sum = 0;
+      for (u32 u = 0; u < 8; u++)
+        sum += s64(temp_buffer[u + y * 8]) * s32(s_scale_table[u * 8 + x]);
+
+      blk[x + y * 8] =
+        static_cast<s16>(std::clamp<s32>(SignExtendN<9, s32>((sum >> 32) + ((sum >> 31) & 1)), -128, 127));
     }
   }
 }

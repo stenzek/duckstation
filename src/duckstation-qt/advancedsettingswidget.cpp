@@ -226,8 +226,7 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "DisableAllEnhancements", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display",
                         "ShowStatusIndicators", true);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Frame Times"), "Display",
-                        "ShowFrameTimes", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Frame Times"), "Display", "ShowFrameTimes", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
                         "ApplyCompatibilitySettings", true);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
@@ -261,6 +260,8 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
                        static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Use Old MDEC Routines"), "Hacks", "UseOldMDECRoutines",
+                        false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable VRAM Write Texture Replacement"),
                         "TextureReplacements", "EnableVRAMWriteReplacements", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Preload Texture Replacements"), "TextureReplacements",
@@ -305,7 +306,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
 
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);     // Show frame times
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show frame times
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
@@ -316,6 +317,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);             // Recompiler memory exceptions
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);              // Recompiler block linking
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                             // Use Old MDEC Routines
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
@@ -345,6 +347,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Main", "DisableAllEnhancements");
   sif->DeleteValue("Display", "ShowEnhancements");
   sif->DeleteValue("Display", "ShowStatusIndicators");
+  sif->DeleteValue("Display", "ShowFrameTimes");
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Display", "MaxFPS");
   sif->DeleteValue("Display", "ActiveStartOffset");
@@ -365,6 +368,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel");
   sif->DeleteValue("TextureReplacements", "DumpVRAMWriteWidthThreshold");
   sif->DeleteValue("TextureReplacements", "DumpVRAMWriteHeightThreshold");
+  sif->DeleteValue("Hacks", "UseOldMDECRoutines");
   sif->DeleteValue("Hacks", "DMAMaxSliceTicks");
   sif->DeleteValue("Hacks", "DMAHaltTicks");
   sif->DeleteValue("Hacks", "GPUFIFOSize");

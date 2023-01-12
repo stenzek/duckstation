@@ -301,6 +301,8 @@ void Settings::Load(SettingsInterface& si)
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
+  use_old_mdec_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
+
   dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
   dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
   gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
@@ -512,6 +514,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
   si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);
 
+  si.SetBoolValue("Hacks", "UseOldMDECRoutines", use_old_mdec_routines);
   si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);
   si.SetIntValue("Hacks", "DMAHaltTicks", dma_halt_ticks);
   si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
