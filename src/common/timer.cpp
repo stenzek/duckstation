@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #include "windows_headers.h"
 #else
+#include <errno.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -97,19 +98,18 @@ void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    for (;;)
-    {
-      Value current = GetCurrentValue();
-      if (current >= value)
-        break;
+    // Even with the high-precision timer, it's not precise enough to wake us up *exactly* when we want
+    // to. Dropping off the last 0.5ms and spinning for it seems enough on my system (Win11 22H2).
+    const Value wake_at = value - ConvertMillisecondsToValue(0.5);
+    Value current = GetCurrentValue();
+    if (wake_at > current)
+      SleepUntil(wake_at, false);
 
-      // spin for the last 1ms
-      if ((value - current) > ConvertMillisecondsToValue(1))
-      {
-        SleepUntil(value, false);
-        continue;
-      }
-    }
+    // And spin off whatever time is left.
+    do
+    {
+      current = GetCurrentValue();
+    } while (current < value);
   }
   else
   {
@@ -187,40 +187,52 @@ void Timer::SleepUntil(Value value, bool exact)
 {
   if (exact)
   {
-    for (;;)
+    static constexpr Value min_sleep_time = static_cast<Value>(0.5 * 1000000);
+    const Value wake_at = value - min_sleep_time;
+    Value current = GetCurrentValue();
+    if (wake_at > current)
+      SleepUntil(wake_at, false);
+
+    // And spin off whatever time is left.
+    do
     {
-      Value current = GetCurrentValue();
-      if (current >= value)
-        break;
-
-      static constexpr Value min_sleep_time = 1 * 1000000;
-
-      // spin for the last 1ms
-      if ((value - current) > min_sleep_time)
-      {
-        SleepUntil(value, false);
-        continue;
-      }
-    }
+      current = GetCurrentValue();
+    } while (current < value);
   }
   else
   {
     // Apple doesn't have TIMER_ABSTIME, so fall back to nanosleep in such a case.
 #ifdef __APPLE__
-    const Value current_time = GetCurrentValue();
-    if (value <= current_time)
-      return;
+    for (;;)
+    {
+      const Value current_time = GetCurrentValue();
+      if (value <= current_time)
+        return;
 
-    const Value diff = value - current_time;
-    struct timespec ts;
-    ts.tv_sec = diff / UINT64_C(1000000000);
-    ts.tv_nsec = diff % UINT64_C(1000000000);
-    nanosleep(&ts, nullptr);
+      const Value diff = value - current_time;
+      struct timespec ts;
+      ts.tv_sec = diff / UINT64_C(1000000000);
+      ts.tv_nsec = diff % UINT64_C(1000000000);
+
+      // nanosleep() can return EINTR if interrupted by a signal.
+      if (nanosleep(&ts, nullptr) == EINTR)
+        continue;
+      else
+        break;
+    }
 #else
     struct timespec ts;
     ts.tv_sec = value / UINT64_C(1000000000);
     ts.tv_nsec = value % UINT64_C(1000000000);
-    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr);
+
+    for (;;)
+    {
+      // clock_nanosleep() can return EINTR if interrupted by a signal.
+      if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr) == EINTR)
+        continue;
+      else
+        break;
+    }
 #endif
   }
 }

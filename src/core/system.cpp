@@ -1542,10 +1542,13 @@ void System::Execute()
       s_presents_since_last_update++;
     }
 
-    System::UpdatePerformanceCounters();
-
     if (s_throttler_enabled)
       System::Throttle();
+
+    // Update perf counters *after* throttling, we want to measure from start-of-frame
+    // to start-of-frame, not end-of-frame to end-of-frame (will be noisy due to different
+    // amounts of computation happening in each frame).
+    System::UpdatePerformanceCounters();
   }
 }
 
@@ -2189,7 +2192,7 @@ void System::Throttle()
   // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
   // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
   // hundreds of frames when we resume.
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time > s_next_frame_time)
   {
     const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
@@ -2197,7 +2200,13 @@ void System::Throttle()
     return;
   }
 
-  Common::Timer::SleepUntil(s_next_frame_time, true);
+  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
+  // Linux also seems to do a much better job of waking up at the requested time.
+#if defined(__linux__) || defined(__ANDROID__)
+  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_all_frames);
+#else
+  Common::Timer::SleepUntil(s_next_frame_time, false);
+#endif
 }
 
 void System::RunFrames()
