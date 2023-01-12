@@ -249,7 +249,7 @@ void ImGuiManager::DrawPerformanceOverlay()
     {
       text.Clear();
       text.AppendFmtString("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(),
-                           System::GetMaximumFrameTime(), System::GetAverageFrameTime());
+                           System::GetAverageFrameTime(), System::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       text.Clear();
