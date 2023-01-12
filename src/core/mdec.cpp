@@ -21,6 +21,7 @@ namespace MDEC {
 static constexpr u32 DATA_IN_FIFO_SIZE = 1024;
 static constexpr u32 DATA_OUT_FIFO_SIZE = 768;
 static constexpr u32 NUM_BLOCKS = 6;
+static constexpr TickCount TICKS_PER_BLOCK = 448;
 
 enum DataOutputDepth : u8
 {
@@ -411,7 +412,7 @@ void MDEC::Execute()
         if (HandleDecodeMacroblockCommand())
         {
           // we should be writing out now
-          Assert(s_state == State::WritingMacroblock);
+          DebugAssert(s_state == State::WritingMacroblock);
           goto finished;
         }
 
@@ -487,14 +488,6 @@ bool MDEC::HandleDecodeMacroblockCommand()
     return DecodeColoredMacroblock();
 }
 
-// Parasite Eve needs slightly higher timing in 16bpp mode, Disney's Treasure Planet needs lower timing in 24bpp mode.
-static constexpr std::array<TickCount, 4> s_ticks_per_block = {{
-  448, // 4bpp
-  448, // 8bpp
-  448, // 24bpp
-  550, // 16bpp
-}};
-
 bool MDEC::DecodeMonoMacroblock()
 {
   // TODO: This should guard the output not the input
@@ -512,7 +505,7 @@ bool MDEC::DecodeMonoMacroblock()
 
   y_to_mono(s_blocks[0]);
 
-  ScheduleBlockCopyOut(s_ticks_per_block[static_cast<u8>(s_status.data_output_depth)] * 6);
+  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
 
   s_total_blocks_decoded++;
   return true;
@@ -542,7 +535,7 @@ bool MDEC::DecodeColoredMacroblock()
   yuv_to_rgb(8, 8, s_blocks[0], s_blocks[1], s_blocks[5]);
   s_total_blocks_decoded += 4;
 
-  ScheduleBlockCopyOut(s_ticks_per_block[static_cast<u8>(s_status.data_output_depth)] * 6);
+  ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
   return true;
 }
 
