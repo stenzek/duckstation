@@ -607,6 +607,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cdrom_seek_speedup = 1;
     g_settings.cdrom_mute_cd_audio = false;
     g_settings.texture_replacements.enable_vram_write_replacements = false;
+    g_settings.use_old_mdec_routines = false;
     g_settings.bios_patch_fast_boot = false;
     g_settings.bios_patch_tty_enable = false;
   }
