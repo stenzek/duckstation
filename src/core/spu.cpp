@@ -1195,7 +1195,7 @@ void SPU::IncrementCaptureBufferPosition()
   s_SPUSTAT.second_half_capture_buffer = s_capture_buffer_position >= (CAPTURE_BUFFER_SIZE_PER_CHANNEL / 2);
 }
 
-void ALWAYS_INLINE SPU::ExecuteFIFOReadFromRAM(TickCount& ticks)
+ALWAYS_INLINE_RELEASE void SPU::ExecuteFIFOReadFromRAM(TickCount& ticks)
 {
   while (ticks > 0 && !s_transfer_fifo.IsFull())
   {
@@ -1213,7 +1213,7 @@ void ALWAYS_INLINE SPU::ExecuteFIFOReadFromRAM(TickCount& ticks)
   }
 }
 
-void ALWAYS_INLINE SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
+ALWAYS_INLINE_RELEASE void SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
 {
   while (ticks > 0 && !s_transfer_fifo.IsEmpty())
   {
@@ -1233,7 +1233,7 @@ void ALWAYS_INLINE SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
 void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
 {
   const RAMTransferMode mode = s_SPUCNT.ram_transfer_mode;
-  Assert(mode != RAMTransferMode::Stopped);
+  DebugAssert(mode != RAMTransferMode::Stopped);
 
   if (mode == RAMTransferMode::DMARead)
   {
@@ -1286,14 +1286,21 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
 
 void SPU::ManualTransferWrite(u16 value)
 {
-  if (s_transfer_fifo.IsFull())
+  if (!s_transfer_fifo.IsEmpty() && s_SPUCNT.ram_transfer_mode != RAMTransferMode::DMARead)
   {
-    Log_WarningPrintf("FIFO full, dropping write of 0x%04X", value);
-    return;
+    Log_WarningPrintf("FIFO not empty on manual SPU write, draining to hopefully avoid corruption. Game is silly.");
+    if (s_SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped)
+      ExecuteTransfer(nullptr, std::numeric_limits<s32>::max(), 0);
   }
 
-  s_transfer_fifo.Push(value);
-  UpdateTransferEvent();
+  std::memcpy(&s_ram[s_transfer_address], &value, sizeof(u16));
+  s_transfer_address = (s_transfer_address + sizeof(u16)) & RAM_MASK;
+
+  if (IsRAMIRQTriggerable() && CheckRAMIRQ(s_transfer_address))
+  {
+    Log_DebugPrintf("Trigger IRQ @ %08X %04X from manual write", s_transfer_address, s_transfer_address / 8);
+    TriggerRAMIRQ();
+  }
 }
 
 void SPU::UpdateTransferEvent()
