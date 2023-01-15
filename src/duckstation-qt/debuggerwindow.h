@@ -55,6 +55,7 @@ private Q_SLOTS:
   void onStepOverActionTriggered();
   void onStepOutActionTriggered();
   void onCodeViewItemActivated(QModelIndex index);
+  void onCodeViewContextMenuRequested(const QPoint& pt);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
 
