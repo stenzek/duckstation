@@ -111,9 +111,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
   {
     // double clicks get triggered if we click bind, then click again quickly.
-    unsigned long button_index;
-    if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
-      m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+    const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+    m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
     return true;
   }
   else if (event_type == QEvent::Wheel)

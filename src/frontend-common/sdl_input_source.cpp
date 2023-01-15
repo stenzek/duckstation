@@ -3,6 +3,7 @@
 
 #include "sdl_input_source.h"
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "core/host.h"
@@ -718,8 +719,7 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
   unsigned long changed_direction = last_direction ^ ev->value;
   while (changed_direction != 0)
   {
-    unsigned long pos;
-    _BitScanForward(&pos, changed_direction);
+    const u32 pos = CountTrailingZeros(changed_direction);
 
     const unsigned long mask = (1u << pos);
     changed_direction &= ~mask;
