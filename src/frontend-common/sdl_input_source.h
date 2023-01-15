@@ -14,6 +14,8 @@ class SettingsInterface;
 class SDLInputSource final : public InputSource
 {
 public:
+  static constexpr u32 MAX_LED_COLORS = 4;
+
   SDLInputSource();
   ~SDLInputSource();
 
@@ -37,6 +39,9 @@ public:
   bool ProcessSDLEvent(const SDL_Event* event);
 
   SDL_Joystick* GetJoystickForDevice(const std::string_view& device);
+
+  static u32 GetRGBForPlayerId(SettingsInterface& si, u32 player_id);
+  static u32 ParseRGBForPlayerId(const std::string_view& str, u32 player_id);
 
 private:
   struct ControllerData
@@ -82,5 +87,6 @@ private:
 
   bool m_sdl_subsystem_initialized = false;
   bool m_controller_enhanced_mode = false;
+  std::array<u32, MAX_LED_COLORS> m_led_colors{};
   std::vector<std::pair<std::string, std::string>> m_sdl_hints;
 };

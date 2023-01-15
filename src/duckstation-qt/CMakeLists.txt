@@ -27,6 +27,8 @@ set(SRCS
   cheatmanagerdialog.ui
   collapsiblewidget.cpp
   collapsiblewidget.h
+  colorpickerbutton.cpp
+  colorpickerbutton.h
   consolesettingswidget.cpp
   consolesettingswidget.h
   consolesettingswidget.ui
@@ -42,6 +44,7 @@ set(SRCS
   controllerglobalsettingswidget.cpp
   controllerglobalsettingswidget.h
   controllerglobalsettingswidget.ui
+  controllerledsettingsdialog.ui
   controllermacroeditwidget.ui
   controllermacrowidget.ui
   controllersettingsdialog.cpp

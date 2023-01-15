@@ -181,6 +181,7 @@
 		<file>icons/black/svg/image-fill.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
 		<file>icons/black/svg/layout-grid-line.svg</file>
+		<file>icons/black/svg/lightbulb-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
 		<file>icons/black/svg/mouse-line.svg</file>
 		<file>icons/black/svg/paint-brush-line.svg</file>
@@ -512,6 +513,7 @@
 		<file>icons/white/svg/image-fill.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
 		<file>icons/white/svg/layout-grid-line.svg</file>
+		<file>icons/white/svg/lightbulb-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>
 		<file>icons/white/svg/mouse-line.svg</file>
 		<file>icons/white/svg/paint-brush-line.svg</file>

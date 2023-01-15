@@ -101,8 +101,8 @@ if(SDL2_FOUND)
     sdl_input_source.h
   )
   target_compile_definitions(frontend-common PUBLIC "WITH_SDL2=1")
-  target_include_directories(frontend-common PRIVATE ${SDL2_INCLUDE_DIRS})
-  target_link_libraries(frontend-common PRIVATE ${SDL2_LIBRARIES})
+  target_include_directories(frontend-common PUBLIC ${SDL2_INCLUDE_DIRS})
+  target_link_libraries(frontend-common PUBLIC ${SDL2_LIBRARIES})
 
   # Copy bundled SDL2 to output on Windows.
   if(WIN32)

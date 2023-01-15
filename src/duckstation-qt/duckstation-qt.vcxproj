@@ -12,6 +12,7 @@
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="collapsiblewidget.cpp" />
+    <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
@@ -79,6 +80,7 @@
     <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingsdialog.h" />
+    <QtMoc Include="colorpickerbutton.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryviewwidget.h" />
     <ClInclude Include="resource.h" />
@@ -232,6 +234,7 @@
     <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerglobalsettingswidget.cpp" />
@@ -319,6 +322,9 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="controllerledsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
   </ItemGroup>

@@ -7,6 +7,8 @@
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
+#include "frontend-common/sdl_input_source.h"
+
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
   : QWidget(parent), m_dialog(dialog)
 {
@@ -14,10 +16,18 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
+#ifdef WITH_SDL2
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                "SDLControllerEnhancedMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
+  connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this,
+          &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+  connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
+#else
+  m_ui.enableSDLSource->setEnabled(false);
+  m_ui.ledSettings->setEnabled(false);
+#endif
+
 #ifdef _WIN32
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
@@ -27,6 +37,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   m_ui.enableXInputSource->setEnabled(false);
   m_ui.enableRawInput->setEnabled(false);
 #endif
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode",
                                                &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
                                                Settings::DEFAULT_MULTITAP_MODE);
@@ -52,8 +63,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.profileSettings = nullptr;
   }
 
-  connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this,
-          &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
 
   connect(m_ui.pointerXScale, &QSlider::valueChanged, this,
@@ -90,8 +99,44 @@ void ControllerGlobalSettingsWidget::removeDeviceFromList(const QString& identif
   }
 }
 
+void ControllerGlobalSettingsWidget::ledSettingsClicked()
+{
+  ControllerLEDSettingsDialog dialog(this, m_dialog);
+  dialog.exec();
+}
+
 void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 {
   const bool enabled = m_ui.enableSDLSource->isChecked();
   m_ui.enableSDLEnhancedMode->setEnabled(enabled);
+  m_ui.ledSettings->setEnabled(enabled);
+}
+
+ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+  : QDialog(parent), m_dialog(dialog)
+{
+  m_ui.setupUi(this);
+
+  linkButton(m_ui.SDL0LED, 0);
+  linkButton(m_ui.SDL1LED, 1);
+  linkButton(m_ui.SDL2LED, 2);
+  linkButton(m_ui.SDL3LED, 3);
+
+  connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
+}
+
+ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;
+
+void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 player_id)
+{
+#ifdef WITH_SDL2
+  std::string key(fmt::format("Player{}LED", player_id));
+  const u32 current_value =
+    SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
+  button->setColor(current_value);
+
+  connect(button, &ColorPickerButton::colorChanged, this, [this, player_id, key = std::move(key)](u32 new_rgb) {
+    m_dialog->setStringValue("SDLExtra", key.c_str(), fmt::format("{:06X}", new_rgb).c_str());
+  });
+#endif
 }
