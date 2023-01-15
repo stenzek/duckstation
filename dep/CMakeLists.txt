@@ -17,6 +17,7 @@ add_subdirectory(soundtouch)
 add_subdirectory(tinyxml2)
 add_subdirectory(googletest)
 add_subdirectory(cpuinfo)
+add_subdirectory(fast_float)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)
