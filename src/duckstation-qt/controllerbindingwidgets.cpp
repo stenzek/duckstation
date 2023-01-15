@@ -370,7 +370,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   for (u32 i = 0; i < cinfo->num_bindings; i++)
   {
     const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
-    if (bi.type == Controller::ControllerBindingType::Motor)
+    if (bi.type == InputBindingInfo::Type::Motor)
       continue;
 
     QListWidgetItem* item = new QListWidgetItem();
@@ -383,7 +383,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   m_frequency = dialog->getIntValue(section.c_str(), fmt::format("Macro{}Frequency", index + 1u).c_str(), 0);
   updateFrequencyText();
 
-  m_ui.trigger->initialize(dialog->getProfileSettingsInterface(), section, fmt::format("Macro{}", index + 1u));
+  m_ui.trigger->initialize(dialog->getProfileSettingsInterface(), InputBindingInfo::Type::Macro, section,
+                           fmt::format("Macro{}", index + 1u));
 
   connect(m_ui.increaseFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(1); });
   connect(m_ui.decreateFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(-1); });
@@ -453,7 +454,7 @@ void ControllerMacroEditWidget::updateBinds()
   for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
   {
     const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
-    if (bi.type == Controller::ControllerBindingType::Motor)
+    if (bi.type == InputBindingInfo::Type::Motor)
       continue;
 
     const QListWidgetItem* item = m_ui.bindList->item(static_cast<int>(bind_index));
@@ -740,17 +741,18 @@ void ControllerBindingWidget_Base::initBindingWidgets()
   for (u32 i = 0; i < cinfo->num_bindings; i++)
   {
     const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
-    if (bi.type == Controller::ControllerBindingType::Unknown || bi.type == Controller::ControllerBindingType::Motor)
-      continue;
-
-    InputBindingWidget* widget = findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
-    if (!widget)
+    if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
+        bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer)
     {
-      Log_ErrorPrintf("No widget found for '%s' (%s)", bi.name, cinfo->name);
-      continue;
-    }
+      InputBindingWidget* widget = findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
+      if (!widget)
+      {
+        Log_ErrorPrintf("No widget found for '%s' (%s)", bi.name, cinfo->name);
+        continue;
+      }
 
-    widget->initialize(sif, config_section, bi.name);
+      widget->initialize(sif, bi.type, config_section, bi.name);
+    }
   }
 
   switch (cinfo->vibration_caps)

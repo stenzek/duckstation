@@ -789,12 +789,12 @@ std::unique_ptr<AnalogController> AnalogController::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 #define AXIS(name, display_name, halfaxis, genb)                                                                       \
   {                                                                                                                    \
     name, display_name, static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(halfaxis),                \
-      Controller::ControllerBindingType::HalfAxis, genb                                                                \
+      InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
   BUTTON("Up", "D-Pad Up", AnalogController::Button::Up, GenericInputBinding::DPadUp),
@@ -862,11 +862,11 @@ static const SettingInfo s_settings[] = {
                                     "functioning, try increasing this value."),
    "8", "0", "255", "1", "%d", nullptr, 1.0f},
   {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("AnalogController", "Invert Left Stick"),
-   TRANSLATABLE("AnalogController", "Inverts the direction of the left analog stick."),
-   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+   TRANSLATABLE("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
+   s_invert_settings, 0.0f},
   {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("AnalogController", "Invert Right Stick"),
-   TRANSLATABLE("AnalogController", "Inverts the direction of the right analog stick."),
-   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+   TRANSLATABLE("AnalogController", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
+   nullptr, s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,

@@ -3,6 +3,7 @@
 
 #pragma once
 #include "common/image.h"
+#include "input_types.h"
 #include "settings.h"
 #include "types.h"
 #include <memory>
@@ -16,21 +17,9 @@ class SettingsInterface;
 class StateWrapper;
 class HostInterface;
 
-enum class GenericInputBinding : u8;
-
 class Controller
 {
 public:
-  enum class ControllerBindingType : u8
-  {
-    Unknown,
-    Button,
-    Axis,
-    HalfAxis,
-    Motor,
-    Macro
-  };
-
   enum class VibrationCapabilities : u8
   {
     NoVibration,
@@ -44,7 +33,7 @@ public:
     const char* name;
     const char* display_name;
     u32 bind_index;
-    ControllerBindingType type;
+    InputBindingInfo::Type type;
     GenericInputBinding generic_mapping;
   };
 

@@ -124,5 +124,6 @@
     <ClInclude Include="host_settings.h" />
     <ClInclude Include="achievements.h" />
     <ClInclude Include="game_database.h" />
+    <ClInclude Include="input_types.h" />
   </ItemGroup>
 </Project>

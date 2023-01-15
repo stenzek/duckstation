@@ -335,12 +335,12 @@ std::unique_ptr<AnalogJoystick> AnalogJoystick::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 #define AXIS(name, display_name, halfaxis, genb)                                                                       \
   {                                                                                                                    \
     name, display_name, static_cast<u32>(AnalogJoystick::Button::Count) + static_cast<u32>(halfaxis),                  \
-      Controller::ControllerBindingType::HalfAxis, genb                                                                \
+      InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
   BUTTON("Up", "D-Pad Up", AnalogJoystick::Button::Up, GenericInputBinding::DPadUp),
@@ -391,11 +391,11 @@ static const SettingInfo s_settings[] = {
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("AnalogJoystick", "Invert Left Stick"),
-   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the left analog stick."),
-   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
+   s_invert_settings, 0.0f},
   {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("AnalogJoystick", "Invert Right Stick"),
-   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the right analog stick."),
-   "0", "0", "3", nullptr, nullptr, s_invert_settings, 0.0f},
+   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr, nullptr,
+   s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJoystick,

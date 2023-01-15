@@ -260,7 +260,7 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_vi
         // found an axis!
         key.source_subtype = InputSubclass::ControllerAxis;
         key.data = i;
-        key.negative = (binding[0] == '-');
+        key.modifier = binding[0] == '-' ? InputModifier::Negate : InputModifier::None;
         return key;
       }
     }
@@ -291,8 +291,8 @@ std::string XInputSource::ConvertKeyToString(InputBindingKey key)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
     {
-      ret = StringUtil::StdStringFromFormat("XInput-%u/%c%s", key.source_index, key.negative ? '-' : '+',
-                                            s_axis_names[key.data]);
+      const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
+      ret = StringUtil::StdStringFromFormat("XInput-%u/%c%s", key.source_index, modifier, s_axis_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
     {
@@ -382,16 +382,15 @@ void XInputSource::HandleControllerConnection(u32 index)
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
   cd.last_state = {};
 
-  Host::OnInputDeviceConnected(StringUtil::StdStringFromFormat("XInput-%u", index),
-                               StringUtil::StdStringFromFormat("XInput Controller %u", index));
+  InputManager::OnInputDeviceConnected(StringUtil::StdStringFromFormat("XInput-%u", index),
+                                       StringUtil::StdStringFromFormat("XInput Controller %u", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
   Log_InfoPrintf("XInput controller %u disconnected.", index);
+  InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
   m_controllers[index] = {};
-
-  Host::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
 }
 
 void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state)

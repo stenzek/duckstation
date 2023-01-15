@@ -23,49 +23,6 @@ class CDImage;
 /// Marks a core string as being translatable.
 #define TRANSLATABLE(context, str) str
 
-/// Generic input bindings. These roughly match a DualShock 4 or XBox One controller.
-/// They are used for automatic binding to PS2 controller types, and for big picture mode navigation.
-enum class GenericInputBinding : u8
-{
-  Unknown,
-
-  DPadUp,
-  DPadRight,
-  DPadLeft,
-  DPadDown,
-
-  LeftStickUp,
-  LeftStickRight,
-  LeftStickDown,
-  LeftStickLeft,
-  L3,
-
-  RightStickUp,
-  RightStickRight,
-  RightStickDown,
-  RightStickLeft,
-  R3,
-
-  Triangle, // Y on XBox pads.
-  Circle,   // B on XBox pads.
-  Cross,    // A on XBox pads.
-  Square,   // X on XBox pads.
-
-  Select, // Share on DS4, View on XBox pads.
-  Start,  // Options on DS4, Menu on XBox pads.
-  System, // PS button on DS4, Guide button on XBox pads.
-
-  L1, // LB on Xbox pads.
-  L2, // Left trigger on XBox pads.
-  R1, // RB on XBox pads.
-  R2, // Right trigger on Xbox pads.
-
-  SmallMotor, // High frequency vibration.
-  LargeMotor, // Low frequency vibration.
-
-  Count,
-};
-
 namespace Host {
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.

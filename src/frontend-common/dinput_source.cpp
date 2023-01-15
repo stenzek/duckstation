@@ -56,7 +56,7 @@ std::string DInputSource::GetDeviceIdentifier(u32 index)
 }
 
 static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {
-  {"Up", "Right", "Down", "Left"}};
+  {"Up", "Down", "Left", "Right"}};
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
@@ -88,13 +88,14 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
   // need to release the lock while we're enumerating, because we call winId().
   settings_lock.unlock();
-	const std::optional<WindowInfo> toplevel_wi(Host::GetTopLevelWindowInfo());
-	if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfo::Type::Win32)
-	{
-		Log_ErrorPrintf("Missing top level window, cannot add DInput devices.");
-		return false;
-	}
+  const std::optional<WindowInfo> toplevel_wi(Host::GetTopLevelWindowInfo());
   settings_lock.lock();
+
+  if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfo::Type::Win32)
+  {
+    Log_ErrorPrintf("Missing top level window, cannot add DInput devices.");
+    return false;
+  }
 
   m_toplevel_window = static_cast<HWND>(toplevel_wi->window_handle);
   ReloadDevices();
@@ -104,15 +105,6 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   // noop
-}
-
-void DInputSource::Shutdown()
-{
-  while (!m_controllers.empty())
-  {
-    Host::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
-    m_controllers.pop_back();
-  }
 }
 
 static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
@@ -126,6 +118,7 @@ bool DInputSource::ReloadDevices()
   // detect any removals
   PollEvents();
 
+  // look for new devices
   std::vector<DIDEVICEINSTANCEW> devices;
   m_dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumCallback, &devices, DIEDFL_ATTACHEDONLY);
 
@@ -156,12 +149,21 @@ bool DInputSource::ReloadDevices()
     {
       const u32 index = static_cast<u32>(m_controllers.size());
       m_controllers.push_back(std::move(cd));
-      Host::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
+      InputManager::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
       changed = true;
     }
   }
 
   return changed;
+}
+
+void DInputSource::Shutdown()
+{
+  while (!m_controllers.empty())
+  {
+    InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+    m_controllers.pop_back();
+  }
 }
 
 bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
@@ -204,11 +206,11 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 
   cd.num_buttons = caps.dwButtons;
 
-  static constexpr auto axis_offsets =
-    make_array(offsetof(DIJOYSTATE, lX), offsetof(DIJOYSTATE, lY), offsetof(DIJOYSTATE, lZ), offsetof(DIJOYSTATE, lRz),
-               offsetof(DIJOYSTATE, lRx), offsetof(DIJOYSTATE, lRy), offsetof(DIJOYSTATE, rglSlider[0]),
-               offsetof(DIJOYSTATE, rglSlider[1]));
-  for (const auto offset : axis_offsets)
+  static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE, lX),           offsetof(DIJOYSTATE, lY),
+                                               offsetof(DIJOYSTATE, lZ),           offsetof(DIJOYSTATE, lRz),
+                                               offsetof(DIJOYSTATE, lRx),          offsetof(DIJOYSTATE, lRy),
+                                               offsetof(DIJOYSTATE, rglSlider[0]), offsetof(DIJOYSTATE, rglSlider[1])};
+  for (const u32 offset : axis_offsets)
   {
     // ask for 16 bits of axis range
     DIPROPRANGE range = {};
@@ -222,9 +224,7 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 
     // did it apply?
     if (SUCCEEDED(cd.device->GetProperty(DIPROP_RANGE, &range.diph)))
-    {
-      cd.axis_offsets.push_back(static_cast<u32>(offset));
-    }
+      cd.axis_offsets.push_back(offset);
   }
 
   cd.num_hats = caps.dwPOVs;
@@ -263,7 +263,7 @@ void DInputSource::PollEvents()
 
       if (hr != DI_OK)
       {
-        Host::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
+        InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
         m_controllers.erase(m_controllers.begin() + i);
         continue;
       }
@@ -336,13 +336,28 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 
   if (StringUtil::StartsWith(binding, "+Axis") || StringUtil::StartsWith(binding, "-Axis"))
   {
-    const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5));
+    std::string_view end;
+    const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5), 10, &end);
     if (!axis_index.has_value())
       return std::nullopt;
 
     key.source_subtype = InputSubclass::ControllerAxis;
     key.data = axis_index.value();
-    key.negative = (binding[0] == '-');
+    key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+    key.invert = (end == "~");
+    return key;
+  }
+  else if (StringUtil::StartsWith(binding, "FullAxis"))
+  {
+    std::string_view end;
+    const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(8), 10, &end);
+    if (!axis_index.has_value())
+      return std::nullopt;
+
+    key.source_subtype = InputSubclass::ControllerAxis;
+    key.data = axis_index.value();
+    key.modifier = InputModifier::FullAxis;
+    key.invert = (end == "~");
     return key;
   }
   else if (StringUtil::StartsWith(binding, "Hat"))
@@ -388,7 +403,9 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis)
     {
-      ret = fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.negative ? '-' : '+', u32(key.data));
+      const char* modifier =
+        (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
+      ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
     {

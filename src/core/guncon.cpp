@@ -208,7 +208,7 @@ std::unique_ptr<GunCon> GunCon::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 
   BUTTON("Trigger", "Trigger", GunCon::Button::Trigger, GenericInputBinding::R2),

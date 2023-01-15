@@ -148,7 +148,7 @@ std::vector<std::string> Controller::GetControllerBinds(const std::string_view& 
     for (u32 i = 0; i < info->num_bindings; i++)
     {
       const ControllerBindingInfo& bi = info->bindings[i];
-      if (bi.type == ControllerBindingType::Unknown || bi.type == ControllerBindingType::Motor)
+      if (bi.type == InputBindingInfo::Type::Unknown || bi.type == InputBindingInfo::Type::Motor)
         continue;
 
       ret.emplace_back(info->bindings[i].name);
@@ -168,7 +168,7 @@ std::vector<std::string> Controller::GetControllerBinds(ControllerType type)
     for (u32 i = 0; i < info->num_bindings; i++)
     {
       const ControllerBindingInfo& bi = info->bindings[i];
-      if (bi.type == ControllerBindingType::Unknown || bi.type == ControllerBindingType::Motor)
+      if (bi.type == InputBindingInfo::Type::Unknown || bi.type == InputBindingInfo::Type::Motor)
         continue;
 
       ret.emplace_back(info->bindings[i].name);

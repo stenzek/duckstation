@@ -281,48 +281,72 @@ bool InputManager::ParseBindingAndGetSource(const std::string_view& binding, Inp
   return false;
 }
 
-std::string InputManager::ConvertInputBindingKeyToString(InputBindingKey key)
+std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  if (key.source_type == InputSourceType::Keyboard)
+  if (binding_type == InputBindingInfo::Type::Pointer)
   {
-    const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
-    if (str.has_value() && !str->empty())
-      return fmt::format("Keyboard/{}", str->c_str());
-  }
-  else if (key.source_type == InputSourceType::Pointer)
-  {
-    if (key.source_subtype == InputSubclass::PointerButton)
+    // pointer and device bindings don't have a data part
+    if (key.source_type == InputSourceType::Pointer)
     {
-      if (key.data < s_pointer_button_names.size())
-        return fmt::format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
-      else
-        return fmt::format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+      return GetPointerDeviceName(key.data);
     }
-    else if (key.source_subtype == InputSubclass::PointerAxis)
+    else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
     {
-      return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
-                         key.negative ? '-' : '+');
+      // This assumes that it always follows the Type/Binding form.
+      std::string keystr(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key));
+      std::string::size_type pos = keystr.find('/');
+      if (pos != std::string::npos)
+        keystr.erase(pos);
+      return keystr;
     }
   }
-  else if (key.source_type == InputSourceType::Sensor)
+  else
   {
-    if (key.source_subtype == InputSubclass::SensorAccelerometer && key.data < s_sensor_accelerometer_names.size())
-      return fmt::format("Sensor/{}", s_sensor_accelerometer_names[key.data]);
-  }
-  else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
-  {
-    return s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key);
+    if (key.source_type == InputSourceType::Keyboard)
+    {
+      const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
+      if (str.has_value() && !str->empty())
+        return fmt::format("Keyboard/{}", str->c_str());
+    }
+    else if (key.source_type == InputSourceType::Pointer)
+    {
+      if (key.source_subtype == InputSubclass::PointerButton)
+      {
+        if (key.data < s_pointer_button_names.size())
+          return fmt::format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
+        else
+          return fmt::format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+      }
+      else if (key.source_subtype == InputSubclass::PointerAxis)
+      {
+        return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
+                           key.modifier == InputModifier::Negate ? '-' : '+');
+      }
+    }
+    else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
+    {
+      return s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key);
+    }
   }
 
   return {};
 }
 
-std::string InputManager::ConvertInputBindingKeysToString(const InputBindingKey* keys, size_t num_keys)
+std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
+                                                          const InputBindingKey* keys, size_t num_keys)
 {
+  // can't have a chord of devices/pointers
+  if (binding_type == InputBindingInfo::Type::Pointer)
+  {
+    // so only take the first
+    if (num_keys > 0)
+      return ConvertInputBindingKeyToString(binding_type, keys[0]);
+  }
+
   std::stringstream ss;
   for (size_t i = 0; i < num_keys; i++)
   {
-    const std::string keystr(ConvertInputBindingKeyToString(keys[i]));
+    const std::string keystr(ConvertInputBindingKeyToString(binding_type, keys[i]));
     if (keystr.empty())
       return std::string();
 
@@ -574,9 +598,9 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 
       const std::string_view dir_part(sub_binding.substr(std::strlen(s_pointer_axis_names[i])));
       if (dir_part == "+")
-        key.negative = false;
+        key.modifier = InputModifier::None;
       else if (dir_part == "-")
-        key.negative = true;
+        key.modifier = InputModifier::Negate;
       else
         return std::nullopt;
 
@@ -595,6 +619,23 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
   }
 
   return std::nullopt;
+}
+
+std::optional<u32> InputManager::GetIndexFromPointerBinding(const std::string_view& source)
+{
+  if (!StringUtil::StartsWith(source, "Pointer-"))
+    return std::nullopt;
+
+  const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));
+  if (!pointer_index.has_value() || pointer_index.value() < 0)
+    return std::nullopt;
+
+  return static_cast<u32>(pointer_index.value());
+}
+
+std::string InputManager::GetPointerDeviceName(u32 pointer_index)
+{
+  return fmt::format("Pointer-{}", pointer_index);
 }
 
 std::optional<InputBindingKey> InputManager::ParseSensorKey(const std::string_view& source,
@@ -616,9 +657,9 @@ std::optional<InputBindingKey> InputManager::ParseSensorKey(const std::string_vi
 
       const std::string_view dir_part(sub_binding.substr(std::strlen(s_sensor_accelerometer_names[i])));
       if (dir_part == "+")
-        key.negative = false;
+        key.modifier = InputModifier::None;
       else if (dir_part == "-")
-        key.negative = true;
+        key.modifier = InputModifier::Negate;
       else
         return std::nullopt;
 
@@ -777,7 +818,6 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
   for (auto it = range.first; it != range.second; ++it)
   {
     InputBinding* binding = it->second.get();
-
     // find the key which matches us
     for (u32 i = 0; i < binding->num_keys; i++)
     {
@@ -785,11 +825,26 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
         continue;
 
       const u8 bit = static_cast<u8>(1) << i;
-      const bool negative = binding->keys[i].negative;
+      const bool negative = binding->keys[i].modifier == InputModifier::Negate;
       const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
+      float value_to_pass = 0.0f;
+      switch (binding->keys[i].modifier)
+      {
+        case InputModifier::None:
+          if (value > 0.0f)
+            value_to_pass = value;
+          break;
+        case InputModifier::Negate:
+          if (value < 0.0f)
+            value_to_pass = -value;
+          break;
+        case InputModifier::FullAxis:
+          value_to_pass = value * 0.5f + 0.5f;
+          break;
+      }
 
-      // invert if we're negative, since the handler expects 0..1
-      const float value_to_pass = (negative ? ((value < 0.0f) ? -value : 0.0f) : (value > 0.0f) ? value : 0.0f);
+      // handle inverting, needed for some wheels.
+      value_to_pass = binding->keys[i].invert ? (1.0f - value_to_pass) : value_to_pass;
 
       // axes are fired regardless of a state change, unless they're zero
       // (but going from not-zero to zero will still fire, because of the full state)
@@ -1128,6 +1183,16 @@ std::vector<std::string> InputManager::GetInputProfileNames()
   for (FILESYSTEM_FIND_DATA& fd : results)
     ret.emplace_back(Path::GetFileTitle(fd.FileName));
   return ret;
+}
+
+void InputManager::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+{
+  Host::OnInputDeviceConnected(identifier, device_name);
+}
+
+void InputManager::OnInputDeviceDisconnected(const std::string_view& identifier)
+{
+  Host::OnInputDeviceDisconnected(identifier);
 }
 
 // ------------------------------------------------------------------------

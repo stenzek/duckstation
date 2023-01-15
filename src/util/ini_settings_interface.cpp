@@ -186,28 +186,28 @@ bool INISettingsInterface::GetStringValue(const char* section, const char* key, 
   return true;
 }
 
-void INISettingsInterface::SetIntValue(const char* section, const char* key, int value)
+void INISettingsInterface::SetIntValue(const char* section, const char* key, s32 value)
 {
   m_dirty = true;
-  m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
+  m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
 {
   m_dirty = true;
-  m_ini.SetLongValue(section, key, static_cast<long>(value), nullptr, false, true);
+  m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
   m_dirty = true;
-  m_ini.SetDoubleValue(section, key, static_cast<double>(value), nullptr, true);
+  m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
 {
   m_dirty = true;
-  m_ini.SetDoubleValue(section, key, value, nullptr, true);
+  m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
@@ -281,4 +281,41 @@ bool INISettingsInterface::AddToStringList(const char* section, const char* key,
   m_dirty = true;
   m_ini.SetValue(section, key, item, nullptr, false);
   return true;
+}
+
+std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyValueList(const char* section) const
+{
+  using Entry = CSimpleIniA::Entry;
+  using KVEntry = std::pair<const char*, Entry>;
+  std::vector<KVEntry> entries;
+  std::vector<std::pair<std::string, std::string>> output;
+  std::list<Entry> keys, values;
+  if (m_ini.GetAllKeys(section, keys))
+  {
+    for (Entry& key : keys)
+    {
+      if (!m_ini.GetAllValues(section, key.pItem, values)) // [[unlikely]]
+      {
+        Log_ErrorPrintf("Got no values for a key returned from GetAllKeys!");
+        continue;
+      }
+      for (const Entry& value : values)
+        entries.emplace_back(key.pItem, value);
+    }
+  }
+
+  std::sort(entries.begin(), entries.end(),
+            [](const KVEntry& a, const KVEntry& b) { return a.second.nOrder < b.second.nOrder; });
+  for (const KVEntry& entry : entries)
+    output.emplace_back(entry.first, entry.second.pItem);
+
+  return output;
+}
+
+void INISettingsInterface::SetKeyValueList(const char* section,
+                                           const std::vector<std::pair<std::string, std::string>>& items)
+{
+  m_ini.Delete(section, nullptr);
+  for (const std::pair<std::string, std::string>& item : items)
+    m_ini.SetValue(section, item.first.c_str(), item.second.c_str(), nullptr, false);
 }

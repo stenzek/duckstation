@@ -237,7 +237,7 @@ void ControllerSettingsDialog::onVibrationMotorsEnumerated(const QList<InputBind
 
   for (const InputBindingKey key : motors)
   {
-    const std::string key_str(InputManager::ConvertInputBindingKeyToString(key));
+    const std::string key_str(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key));
     if (!key_str.empty())
       m_vibration_motors.push_back(QString::fromStdString(key_str));
   }

@@ -59,6 +59,7 @@ add_library(core
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
     host_settings.h
+    input_types.h
     interrupt_controller.cpp
     interrupt_controller.h
     libcrypt_serials.cpp

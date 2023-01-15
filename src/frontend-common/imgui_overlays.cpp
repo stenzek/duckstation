@@ -523,8 +523,8 @@ void ImGuiManager::DrawInputsOverlay()
       const Controller::ControllerBindingInfo& bi = cinfo->bindings[bind];
       switch (bi.type)
       {
-        case Controller::ControllerBindingType::Axis:
-        case Controller::ControllerBindingType::HalfAxis:
+        case InputBindingInfo::Type::Axis:
+        case InputBindingInfo::Type::HalfAxis:
         {
           // axes are always shown
           const float value = controller->GetBindState(bi.bind_index);
@@ -535,7 +535,7 @@ void ImGuiManager::DrawInputsOverlay()
         }
         break;
 
-        case Controller::ControllerBindingType::Button:
+        case InputBindingInfo::Type::Button:
         {
           // buttons only shown when active
           const float value = controller->GetBindState(bi.bind_index);
@@ -544,9 +544,10 @@ void ImGuiManager::DrawInputsOverlay()
         }
         break;
 
-        case Controller::ControllerBindingType::Motor:
-        case Controller::ControllerBindingType::Macro:
-        case Controller::ControllerBindingType::Unknown:
+        case InputBindingInfo::Type::Motor:
+        case InputBindingInfo::Type::Macro:
+        case InputBindingInfo::Type::Unknown:
+        case InputBindingInfo::Type::Pointer:
         default:
           break;
       }

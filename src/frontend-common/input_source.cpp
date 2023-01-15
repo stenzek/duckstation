@@ -38,6 +38,17 @@ InputBindingKey InputSource::MakeGenericControllerButtonKey(InputSourceType claz
   return key;
 }
 
+InputBindingKey InputSource::MakeGenericControllerHatKey(InputSourceType clazz, u32 controller_index, s32 hat_index,
+                                                         u8 hat_direction, u32 num_directions)
+{
+  InputBindingKey key = {};
+  key.source_type = clazz;
+  key.source_index = controller_index;
+  key.source_subtype = InputSubclass::ControllerHat;
+  key.data = static_cast<u32>(hat_index) * num_directions + hat_direction;
+  return key;
+}
+
 InputBindingKey InputSource::MakeGenericControllerMotorKey(InputSourceType clazz, u32 controller_index, s32 motor_index)
 {
   InputBindingKey key = {};
@@ -81,11 +92,20 @@ std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(InputSourc
     key.data = static_cast<u32>(axis_number.value());
 
     if (sub_binding[0] == '+')
-      key.negative = false;
+      key.modifier = InputModifier::None;
     else if (sub_binding[0] == '-')
-      key.negative = true;
+      key.modifier = InputModifier::Negate;
     else
       return std::nullopt;
+  }
+  else if (StringUtil::StartsWith(sub_binding, "FullAxis"))
+  {
+    const std::optional<s32> axis_number = StringUtil::FromChars<s32>(sub_binding.substr(8));
+    if (!axis_number.has_value() || axis_number.value() < 0)
+      return std::nullopt;
+    key.source_subtype = InputSubclass::ControllerAxis;
+    key.data = static_cast<u32>(axis_number.value());
+    key.modifier = InputModifier::FullAxis;
   }
   else if (StringUtil::StartsWith(sub_binding, "Button"))
   {
@@ -108,8 +128,21 @@ std::string InputSource::ConvertGenericControllerKeyToString(InputBindingKey key
 {
   if (key.source_subtype == InputSubclass::ControllerAxis)
   {
-    return StringUtil::StdStringFromFormat("%s-%u/%cAxis%u", InputManager::InputSourceToString(key.source_type),
-                                           key.source_index, key.negative ? '+' : '-', key.data);
+    const char* modifier = "";
+    switch (key.modifier)
+    {
+      case InputModifier::None:
+        modifier = "+";
+        break;
+      case InputModifier::Negate:
+        modifier = "-";
+        break;
+      case InputModifier::FullAxis:
+        modifier = "Full";
+        break;
+    }
+    return StringUtil::StdStringFromFormat("%s-%u/%sAxis%u", InputManager::InputSourceToString(key.source_type),
+                                           key.source_index, modifier, key.data);
   }
   else if (key.source_subtype == InputSubclass::ControllerButton)
   {

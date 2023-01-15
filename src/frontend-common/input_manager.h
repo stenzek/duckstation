@@ -14,6 +14,8 @@
 #include "common/types.h"
 #include "common/window_info.h"
 
+#include "core/input_types.h"
+
 /// Class, or source of an input event.
 enum class InputSourceType : u32
 {
@@ -47,10 +49,18 @@ enum class InputSubclass : u32
 
   ControllerButton = 0,
   ControllerAxis = 1,
-  ControllerMotor = 2,
-  ControllerHaptic = 3,
+  ControllerHat = 2,
+  ControllerMotor = 3,
+  ControllerHaptic = 4,
 
   SensorAccelerometer = 0,
+};
+
+enum class InputModifier : u32
+{
+  None = 0,
+  Negate,   ///< Input * -1, gets the negative side of the axis
+  FullAxis, ///< (Input * 0.5) + 0.5, uses both the negative and positive side of the axis together
 };
 
 /// A composite type representing a full input key which is part of an event.
@@ -60,9 +70,10 @@ union InputBindingKey
   {
     InputSourceType source_type : 4;
     u32 source_index : 8;             ///< controller number
-    InputSubclass source_subtype : 2; ///< if 1, binding is for an axis and not a button (used for controllers)
-    u32 negative : 1;                 ///< if 1, binding is for the negative side of the axis
-    u32 unused : 17;
+    InputSubclass source_subtype : 3; ///< if 1, binding is for an axis and not a button (used for controllers)
+    InputModifier modifier : 2;
+    u32 invert : 1; ///< if 1, value is inverted prior to being sent to the sink
+    u32 unused : 14;
     u32 data;
   };
 
@@ -77,7 +88,8 @@ union InputBindingKey
   {
     InputBindingKey r;
     r.bits = bits;
-    r.negative = false;
+    r.modifier = InputModifier::None;
+    r.invert = 0;
     return r;
   }
 };
@@ -181,6 +193,12 @@ bool GetInputSourceDefaultEnabled(InputSourceType type);
 /// Parses an input class string.
 std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
 
+/// Parses a pointer device string, i.e. tells you which pointer is specified.
+std::optional<u32> GetIndexFromPointerBinding(const std::string_view& str);
+
+/// Returns the device name for a pointer index (e.g. Pointer-0).
+std::string GetPointerDeviceName(u32 pointer_index);
+
 /// Converts a key code from a human-readable string to an identifier.
 std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str);
 
@@ -204,10 +222,11 @@ InputBindingKey MakeSensorAxisKey(InputSubclass sensor, u32 axis);
 std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
 
 /// Converts a input key to a string.
-std::string ConvertInputBindingKeyToString(InputBindingKey key);
+std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
 /// Converts a chord of binding keys to a string.
-std::string ConvertInputBindingKeysToString(const InputBindingKey* keys, size_t num_keys);
+std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys,
+                                            size_t num_keys);
 
 /// Returns a list of all hotkeys.
 std::vector<const HotkeyInfo*> GetHotkeyList();
@@ -263,7 +282,7 @@ void AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding, 
 
 /// Updates internal state for any binds for this key, and fires callbacks as needed.
 /// Returns true if anything was bound to this key, otherwise false.
-bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key);
+bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
 
 /// Sets a hook which can be used to intercept events before they're processed by the normal bindings.
 /// This is typically used when binding new controls to detect what gets pressed.
@@ -315,6 +334,12 @@ bool MapController(SettingsInterface& si, u32 controller,
 
 /// Returns a list of input profiles available.
 std::vector<std::string> GetInputProfileNames();
+
+/// Called when a new input device is connected.
+void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+
+/// Called when an input device is disconnected.
+void OnInputDeviceDisconnected(const std::string_view& identifier);
 } // namespace InputManager
 
 namespace Host {

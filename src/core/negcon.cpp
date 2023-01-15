@@ -228,12 +228,12 @@ std::unique_ptr<NeGcon> NeGcon::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 #define AXIS(name, display_name, halfaxis, genb)                                                                       \
   {                                                                                                                    \
     name, display_name, static_cast<u32>(NeGcon::Button::Count) + static_cast<u32>(halfaxis),                          \
-      Controller::ControllerBindingType::HalfAxis, genb                                                                \
+      InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
   BUTTON("Up", "D-Pad Up", NeGcon::Button::Up, GenericInputBinding::DPadUp),

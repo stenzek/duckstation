@@ -35,6 +35,9 @@ public:
   virtual bool RemoveFromStringList(const char* section, const char* key, const char* item) = 0;
   virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;
 
+  virtual std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const = 0;
+  virtual void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) = 0;
+
   virtual bool ContainsValue(const char* section, const char* key) const = 0;
   virtual void DeleteValue(const char* section, const char* key) = 0;
   virtual void ClearSection(const char* section) = 0;

@@ -17,8 +17,8 @@ class InputBindingDialog : public QDialog
   Q_OBJECT
 
 public:
-  InputBindingDialog(SettingsInterface* sif, std::string section_name, std::string key_name,
-                     std::vector<std::string> bindings, QWidget* parent);
+  InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
+                     std::string key_name, std::vector<std::string> bindings, QWidget* parent);
   ~InputBindingDialog();
 
 protected Q_SLOTS:
@@ -51,13 +51,15 @@ protected:
   Ui::InputBindingDialog m_ui;
 
   SettingsInterface* m_sif;
+  InputBindingInfo::Type m_bind_type;
   std::string m_section_name;
   std::string m_key_name;
   std::vector<std::string> m_bindings;
   std::vector<InputBindingKey> m_new_bindings;
+  std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
 
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
-  QPointF m_input_listen_start_position{};
+  QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
 };

@@ -11,10 +11,11 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
 
-InputBindingDialog::InputBindingDialog(SettingsInterface* sif, std::string section_name, std::string key_name,
+InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
+                                       std::string section_name, std::string key_name,
                                        std::vector<std::string> bindings, QWidget* parent)
-  : QDialog(parent), m_sif(sif), m_section_name(std::move(section_name)), m_key_name(std::move(key_name)),
-    m_bindings(std::move(bindings))
+  : QDialog(parent), m_sif(sif), m_bind_type(bind_type), m_section_name(std::move(section_name)),
+    m_key_name(std::move(key_name)), m_bindings(std::move(bindings))
 {
   m_ui.setupUi(this);
   m_ui.title->setText(
@@ -53,8 +54,9 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
   else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
   {
     // double clicks get triggered if we click bind, then click again quickly.
-    unsigned button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-    m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+    unsigned long button_index;
+    if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
+      m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
     return true;
   }
   else if (event_type == QEvent::Wheel)
@@ -64,7 +66,7 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
     if (dx != 0.0f)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelX));
-      key.negative = (dx < 0.0f);
+      key.modifier = dx < 0.0f ? InputModifier::Negate : InputModifier::None;
       m_new_bindings.push_back(key);
     }
 
@@ -72,7 +74,7 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
     if (dy != 0.0f)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelY));
-      key.negative = (dy < 0.0f);
+      key.modifier = dy < 0.0f ? InputModifier::Negate : InputModifier::None;
       m_new_bindings.push_back(key);
     }
 
@@ -89,20 +91,20 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
     // if we've moved more than a decent distance from the center of the widget, bind it.
     // this is so we don't accidentally bind to the mouse if you bump it while reaching for your pad.
     static constexpr const s32 THRESHOLD = 50;
-    const QPointF diff(static_cast<QMouseEvent*>(event)->globalPosition() - m_input_listen_start_position);
+    const QPoint diff(static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - m_input_listen_start_position);
     bool has_one = false;
 
     if (std::abs(diff.x()) >= THRESHOLD)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::X));
-      key.negative = (diff.x() < 0);
+      key.modifier = diff.x() < 0 ? InputModifier::Negate : InputModifier::None;
       m_new_bindings.push_back(key);
       has_one = true;
     }
     if (std::abs(diff.y()) >= THRESHOLD)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::Y));
-      key.negative = (diff.y() < 0);
+      key.modifier = diff.y() < 0 ? InputModifier::Negate : InputModifier::None;
       m_new_bindings.push_back(key);
       has_one = true;
     }
@@ -132,6 +134,7 @@ void InputBindingDialog::onInputListenTimerTimeout()
 
 void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
+  m_value_ranges.clear();
   m_new_bindings.clear();
   m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled();
   m_input_listen_start_position = QCursor::pos();
@@ -179,7 +182,7 @@ void InputBindingDialog::addNewBinding()
     return;
 
   const std::string new_binding(
-    InputManager::ConvertInputBindingKeysToString(m_new_bindings.data(), m_new_bindings.size()));
+    InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size()));
   if (!new_binding.empty())
   {
     if (std::find(m_bindings.begin(), m_bindings.end(), new_binding) != m_bindings.end())
@@ -248,14 +251,37 @@ void InputBindingDialog::saveListToSettings()
 
 void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float value)
 {
-  const float abs_value = std::abs(value);
+  if (!isListeningForInput())
+    return;
 
-  for (InputBindingKey other_key : m_new_bindings)
+  float initial_value = value;
+  float min_value = value;
+  auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
+                         [key](const auto& it) { return it.first.bits == key.bits; });
+  if (it != m_value_ranges.end())
+  {
+    initial_value = it->second.first;
+    min_value = it->second.second = std::min(it->second.second, value);
+  }
+  else
+  {
+    m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+  }
+
+  const float abs_value = std::abs(value);
+  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis && initial_value > 0.5f);
+
+  for (InputBindingKey& other_key : m_new_bindings)
   {
     if (other_key.MaskDirection() == key.MaskDirection())
     {
-      if (abs_value < 0.5f)
+      // for pedals, we wait for it to go back to near its starting point to commit the binding
+      if ((reverse_threshold ? ((initial_value - value) <= 0.25f) : (abs_value < 0.5f)))
       {
+        // did we go the full range?
+        if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
+          other_key.modifier = InputModifier::FullAxis;
+
         // if this key is in our new binding list, it's a "release", and we're done
         addNewBinding();
         stopListeningForInput();
@@ -268,10 +294,11 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
   }
 
   // new binding, add it to the list, but wait for a decent distance first, and then wait for release
-  if (abs_value >= 0.5f)
+  if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
   {
     InputBindingKey key_to_add = key;
-    key_to_add.negative = (value < 0.0f);
+    key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
+    key_to_add.invert = reverse_threshold;
     m_new_bindings.push_back(key_to_add);
   }
 }

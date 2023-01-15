@@ -4,8 +4,8 @@
 #pragma once
 #define DIRECTINPUT_VERSION 0x0800
 #include "common/windows_headers.h"
-#include "input_source.h"
 #include "core/types.h"
+#include "input_source.h"
 #include <array>
 #include <dinput.h>
 #include <functional>
@@ -80,7 +80,7 @@ private:
   ControllerDataArray m_controllers;
 
   HMODULE m_dinput_module{};
-  LPCDIDATAFORMAT m_joystick_data_format{};
   ComPtr<IDirectInput8W> m_dinput;
+  LPCDIDATAFORMAT m_joystick_data_format{};
   HWND m_toplevel_window = NULL;
 };

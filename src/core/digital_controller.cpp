@@ -146,7 +146,7 @@ std::unique_ptr<DigitalController> DigitalController::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, button, genb)                                                                       \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), Controller::ControllerBindingType::Button, genb                      \
+    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 
   BUTTON("Up", "D-Pad Up", DigitalController::Button::Up, GenericInputBinding::DPadUp),

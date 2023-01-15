@@ -44,6 +44,8 @@
 #include <bitset>
 #include <thread>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 Log_SetChannel(FullscreenUI);
 
 #ifdef WITH_CHEEVOS
@@ -362,11 +364,10 @@ static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
 static void PopulatePostProcessingChain();
 static void SavePostProcessingChain();
-static void BeginInputBinding(SettingsInterface* bsi, Controller::ControllerBindingType type,
-                              const std::string_view& section, const std::string_view& key,
-                              const std::string_view& display_name);
+static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
+                              const std::string_view& key, const std::string_view& display_name);
 static void DrawInputBindingWindow();
-static void DrawInputBindingButton(SettingsInterface* bsi, Controller::ControllerBindingType type, const char* section,
+static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                    const char* name, const char* display_name, bool show_type = true);
 static void ClearInputBindingVariables();
 static void StartAutomaticBinding(u32 port);
@@ -381,11 +382,12 @@ static FrontendCommon::PostProcessingChain s_postprocessing_chain;
 static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 static std::atomic_bool s_settings_changed{false};
 static std::atomic_bool s_game_settings_changed{false};
-static Controller::ControllerBindingType s_input_binding_type = Controller::ControllerBindingType::Unknown;
+static InputBindingInfo::Type s_input_binding_type = InputBindingInfo::Type::Unknown;
 static std::string s_input_binding_section;
 static std::string s_input_binding_key;
 static std::string s_input_binding_display_name;
 static std::vector<InputBindingKey> s_input_binding_new_bindings;
+static std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
 static Common::Timer s_input_binding_timer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -788,7 +790,7 @@ void FullscreenUI::Render()
   if (s_about_window_open)
     DrawAboutWindow();
 
-  if (s_input_binding_type != Controller::ControllerBindingType::Unknown)
+  if (s_input_binding_type != InputBindingInfo::Type::Unknown)
     DrawInputBindingWindow();
 
   ImGuiFullscreen::EndLayout();
@@ -1277,9 +1279,8 @@ std::string FullscreenUI::GetEffectiveStringSetting(SettingsInterface* bsi, cons
   return ret;
 }
 
-void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, Controller::ControllerBindingType type,
-                                          const char* section, const char* name, const char* display_name,
-                                          bool show_type)
+void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
+                                          const char* name, const char* display_name, bool show_type)
 {
   TinyString title;
   title.Fmt("{}/{}", section, name);
@@ -1299,17 +1300,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, Controller::Co
   {
     switch (type)
     {
-      case Controller::ControllerBindingType::Button:
+      case InputBindingInfo::Type::Button:
         title = fmt::format(ICON_FA_DOT_CIRCLE " {}", display_name);
         break;
-      case Controller::ControllerBindingType::Axis:
-      case Controller::ControllerBindingType::HalfAxis:
+      case InputBindingInfo::Type::Axis:
+      case InputBindingInfo::Type::HalfAxis:
         title = fmt::format(ICON_FA_BULLSEYE " {}", display_name);
         break;
-      case Controller::ControllerBindingType::Motor:
+      case InputBindingInfo::Type::Motor:
         title = fmt::format(ICON_FA_BELL " {}", display_name);
         break;
-      case Controller::ControllerBindingType::Macro:
+      case InputBindingInfo::Type::Macro:
         title = fmt::format(ICON_FA_PIZZA_SLICE " {}", display_name);
         break;
       default:
@@ -1343,18 +1344,19 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, Controller::Co
 
 void FullscreenUI::ClearInputBindingVariables()
 {
-  s_input_binding_type = Controller::ControllerBindingType::Unknown;
+  s_input_binding_type = InputBindingInfo::Type::Unknown;
   s_input_binding_section = {};
   s_input_binding_key = {};
   s_input_binding_display_name = {};
   s_input_binding_new_bindings = {};
+  s_input_binding_value_ranges = {};
 }
 
-void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, Controller::ControllerBindingType type,
+void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type,
                                      const std::string_view& section, const std::string_view& key,
                                      const std::string_view& display_name)
 {
-  if (s_input_binding_type != Controller::ControllerBindingType::Unknown)
+  if (s_input_binding_type != InputBindingInfo::Type::Unknown)
   {
     InputManager::RemoveHook();
     ClearInputBindingVariables();
@@ -1365,25 +1367,50 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, Controller::Control
   s_input_binding_key = key;
   s_input_binding_display_name = display_name;
   s_input_binding_new_bindings = {};
+  s_input_binding_value_ranges = {};
   s_input_binding_timer.Reset();
 
-  InputManager::SetHook([game_settings = IsEditingGameSettings(bsi)](
-                          InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
+  const bool game_settings = IsEditingGameSettings(bsi);
+
+  InputManager::SetHook([game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
+    if (s_input_binding_type == InputBindingInfo::Type::Unknown)
+      return InputInterceptHook::CallbackResult::StopProcessingEvent;
+
     // holding the settings lock here will protect the input binding list
     auto lock = Host::GetSettingsLock();
 
-    const float abs_value = std::abs(value);
-
-    for (InputBindingKey other_key : s_input_binding_new_bindings)
+    float initial_value = value;
+    float min_value = value;
+    auto it = std::find_if(s_input_binding_value_ranges.begin(), s_input_binding_value_ranges.end(),
+                           [key](const auto& it) { return it.first.bits == key.bits; });
+    if (it != s_input_binding_value_ranges.end())
     {
+      initial_value = it->second.first;
+      min_value = it->second.second = std::min(it->second.second, value);
+    }
+    else
+    {
+      s_input_binding_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+    }
+
+    const float abs_value = std::abs(value);
+    const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis && initial_value > 0.5f);
+
+    for (InputBindingKey& other_key : s_input_binding_new_bindings)
+    {
+      // if this key is in our new binding list, it's a "release", and we're done
       if (other_key.MaskDirection() == key.MaskDirection())
       {
-        if (abs_value < 0.5f)
+        // for pedals, we wait for it to go back to near its starting point to commit the binding
+        if ((reverse_threshold ? ((initial_value - value) <= 0.25f) : (abs_value < 0.5f)))
         {
-          // if this key is in our new binding list, it's a "release", and we're done
+          // did we go the full range?
+          if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
+            other_key.modifier = InputModifier::FullAxis;
+
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
           const std::string new_binding(InputManager::ConvertInputBindingKeysToString(
-            s_input_binding_new_bindings.data(), s_input_binding_new_bindings.size()));
+            s_input_binding_type, s_input_binding_new_bindings.data(), s_input_binding_new_bindings.size()));
           bsi->SetStringValue(s_input_binding_section.c_str(), s_input_binding_key.c_str(), new_binding.c_str());
           SetSettingsChanged(bsi);
           ClearInputBindingVariables();
@@ -1396,10 +1423,11 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, Controller::Control
     }
 
     // new binding, add it to the list, but wait for a decent distance first, and then wait for release
-    if (abs_value >= 0.5f)
+    if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
     {
       InputBindingKey key_to_add = key;
-      key_to_add.negative = (value < 0.0f);
+      key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
+      key_to_add.invert = reverse_threshold;
       s_input_binding_new_bindings.push_back(key_to_add);
     }
 
@@ -1409,7 +1437,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, Controller::Control
 
 void FullscreenUI::DrawInputBindingWindow()
 {
-  DebugAssert(s_input_binding_type != Controller::ControllerBindingType::Unknown);
+  DebugAssert(s_input_binding_type != InputBindingInfo::Type::Unknown);
 
   const double time_remaining = INPUT_BINDING_TIMEOUT_SECONDS - s_input_binding_timer.GetTimeSeconds();
   if (time_remaining <= 0.0)
@@ -3180,7 +3208,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
-      DrawInputBindingButton(bsi, Controller::ControllerBindingType::Macro, section.c_str(),
+      DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              fmt::format("Macro{}", macro_index + 1).c_str(),
                              fmt::format("Macro {} Trigger", macro_index + 1).c_str());
 
@@ -3194,9 +3222,8 @@ void FullscreenUI::DrawControllerSettingsPage()
         for (u32 i = 0; i < ci->num_bindings; i++)
         {
           const Controller::ControllerBindingInfo& bi = ci->bindings[i];
-          if (bi.type != Controller::ControllerBindingType::Button &&
-              bi.type != Controller::ControllerBindingType::Axis &&
-              bi.type != Controller::ControllerBindingType::HalfAxis)
+          if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
+              bi.type != InputBindingInfo::Type::HalfAxis)
           {
             continue;
           }
@@ -3350,8 +3377,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
       last_category = hotkey;
     }
 
-    DrawInputBindingButton(bsi, Controller::ControllerBindingType::Button, "Hotkeys", hotkey->name,
-                           hotkey->display_name, false);
+    DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name, hotkey->display_name, false);
   }
 
   EndMenuButtons();
@@ -5831,9 +5857,12 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
   ImGuiFullscreen::ChoiceDialogOptions options = {
-    {ICON_FA_WRENCH " Game Properties", false},  {ICON_FA_PLAY " Resume Game", false},
-    {ICON_FA_UNDO " Load State", false},         {ICON_FA_COMPACT_DISC " Default Boot", false},
-    {ICON_FA_LIGHTBULB " Fast Boot", false},     {ICON_FA_MAGIC " Slow Boot", false},
+    {ICON_FA_WRENCH " Game Properties", false},
+    {ICON_FA_PLAY " Resume Game", false},
+    {ICON_FA_UNDO " Load State", false},
+    {ICON_FA_COMPACT_DISC " Default Boot", false},
+    {ICON_FA_LIGHTBULB " Fast Boot", false},
+    {ICON_FA_MAGIC " Slow Boot", false},
     {ICON_FA_FOLDER_MINUS " Reset Play Time", false},
     {ICON_FA_WINDOW_CLOSE " Close Menu", false},
   };
