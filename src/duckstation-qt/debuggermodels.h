@@ -3,6 +3,7 @@
 
 #pragma once
 #include "core/bus.h"
+#include "core/cpu_core.h"
 #include "core/cpu_types.h"
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QAbstractTableModel>
@@ -67,7 +68,7 @@ public:
   void saveCurrentValues();
 
 private:
-  u32 m_old_reg_values[static_cast<u32>(CPU::Reg::count)] = {};
+  u32 m_old_reg_values[CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES] = {};
 };
 
 class DebuggerStackModel : public QAbstractListModel

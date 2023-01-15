@@ -293,7 +293,7 @@ DebuggerRegistersModel::~DebuggerRegistersModel() {}
 
 int DebuggerRegistersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-  return static_cast<int>(CPU::Reg::count);
+  return static_cast<int>(CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES);
 }
 
 int DebuggerRegistersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -304,7 +304,7 @@ int DebuggerRegistersModel::columnCount(const QModelIndex& parent /*= QModelInde
 QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
 {
   u32 reg_index = static_cast<u32>(index.row());
-  if (reg_index >= static_cast<u32>(CPU::Reg::count))
+  if (reg_index >= CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES)
     return QVariant();
 
   if (index.column() < 0 || index.column() > 1)
@@ -314,8 +314,8 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt:
   {
     case 0: // address
     {
-      if (role == Qt::DisplayRole)
-        return QString::fromUtf8(CPU::GetRegName(static_cast<CPU::Reg>(reg_index)));
+        if (role == Qt::DisplayRole)
+          return QString::fromUtf8(CPU::g_debugger_register_list[reg_index].name);
     }
     break;
 
@@ -323,11 +323,11 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt:
     {
       if (role == Qt::DisplayRole)
       {
-        return QString::asprintf("0x%08X", CPU::g_state.regs.r[reg_index]);
+        return QString::asprintf("0x%08X", *CPU::g_debugger_register_list[reg_index].value_ptr);
       }
       else if (role == Qt::ForegroundRole)
       {
-        if (CPU::g_state.regs.r[reg_index] != m_old_reg_values[reg_index])
+        if (*CPU::g_debugger_register_list[reg_index].value_ptr != m_old_reg_values[reg_index])
           return QColor(255, 50, 50);
       }
     }

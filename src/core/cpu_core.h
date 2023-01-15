@@ -195,4 +195,14 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
 
 extern bool TRACE_EXECUTION;
 
+// Debug register introspection
+struct DebuggerRegisterListEntry
+{
+  const char* name;
+  u32* value_ptr;
+};
+
+static constexpr u32 NUM_DEBUGGER_REGISTER_LIST_ENTRIES = 104;
+extern const std::array<DebuggerRegisterListEntry, NUM_DEBUGGER_REGISTER_LIST_ENTRIES> g_debugger_register_list;
+
 } // namespace CPU
