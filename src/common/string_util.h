@@ -3,6 +3,7 @@
 
 #pragma once
 #include "types.h"
+#include <charconv>
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
@@ -12,13 +13,16 @@
 #include <string_view>
 #include <vector>
 
-#if defined(__has_include) && __has_include(<charconv>)
-#include <charconv>
-#ifndef _MSC_VER
+#include "fast_float/fast_float.h"
+
+// Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
+// merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
+#if !defined(_MSC_VER)
+#include <locale>
 #include <sstream>
+#ifdef __APPLE__
+#include <Availability.h>
 #endif
-#else
-#include <sstream>
 #endif
 
 namespace StringUtil {
@@ -56,23 +60,34 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 #endif
 }
 
-/// Wrapper arond std::from_chars
+/// Wrapper around std::from_chars
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline std::optional<T> FromChars(const std::string_view& str, int base = 10)
 {
   T value;
 
-#if defined(__has_include) && __has_include(<charconv>)
   const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
   if (result.ec != std::errc())
     return std::nullopt;
-#else
-  std::string temp(str);
-  std::istringstream ss(temp);
-  ss >> std::setbase(base) >> value;
-  if (ss.fail())
+
+  return value;
+}
+template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+inline std::optional<T> FromChars(const std::string_view& str, int base, std::string_view* endptr)
+{
+  T value;
+
+  const char* ptr = str.data();
+  const char* end = ptr + str.length();
+  const std::from_chars_result result = std::from_chars(ptr, end, value, base);
+  if (result.ec != std::errc())
     return std::nullopt;
-#endif
+
+  if (endptr)
+  {
+    const size_t remaining_len = end - ptr - 1;
+    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+  }
 
   return value;
 }
@@ -82,20 +97,73 @@ inline std::optional<T> FromChars(const std::string_view& str)
 {
   T value;
 
-#if defined(__has_include) && __has_include(<charconv>) && defined(_MSC_VER)
-  const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value);
+  const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
   if (result.ec != std::errc())
     return std::nullopt;
-#else
-  /// libstdc++ does not support from_chars with floats yet
-  std::string temp(str);
-  std::istringstream ss(temp);
-  ss >> value;
-  if (ss.fail())
-    return std::nullopt;
-#endif
 
   return value;
+}
+template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+inline std::optional<T> FromChars(const std::string_view& str, std::string_view* endptr)
+{
+  T value;
+
+  const char* ptr = str.data();
+  const char* end = ptr + str.length();
+  const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  if (endptr)
+  {
+    const size_t remaining_len = end - ptr - 1;
+    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+  }
+
+  return value;
+}
+
+/// Wrapper around std::to_chars
+template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+inline std::string ToChars(T value, int base = 10)
+{
+  // to_chars() requires macOS 10.15+.
+#if !defined(__APPLE__) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15
+  constexpr size_t MAX_SIZE = 32;
+  char buf[MAX_SIZE];
+  std::string ret;
+
+  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value, base);
+  if (result.ec == std::errc())
+    ret.append(buf, result.ptr - buf);
+
+  return ret;
+#else
+  std::ostringstream ss;
+  ss.imbue(std::locale::classic());
+  ss << std::setbase(base) << value;
+  return ss.str();
+#endif
+}
+
+template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+inline std::string ToChars(T value)
+{
+  // No to_chars() in older versions of libstdc++/libc++.
+#ifdef _MSC_VER
+  constexpr size_t MAX_SIZE = 64;
+  char buf[MAX_SIZE];
+  std::string ret;
+  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value);
+  if (result.ec == std::errc())
+    ret.append(buf, result.ptr - buf);
+  return ret;
+#else
+  std::ostringstream ss;
+  ss.imbue(std::locale::classic());
+  ss << value;
+  return ss.str();
+#endif
 }
 
 /// Explicit override for booleans
@@ -117,6 +185,12 @@ inline std::optional<bool> FromChars(const std::string_view& str, int base)
   }
 
   return std::nullopt;
+}
+
+template<>
+inline std::string ToChars(bool value, int base)
+{
+  return std::string(value ? "true" : "false");
 }
 
 /// Encode/decode hexadecimal byte buffers
