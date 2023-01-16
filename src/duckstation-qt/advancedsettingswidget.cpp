@@ -321,7 +321,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // VRAM write texture replacement
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Preload texture replacements
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Dump replacable VRAM writes
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Set dumped VRAM write alpha channel
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Set dumped VRAM write alpha channel
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
