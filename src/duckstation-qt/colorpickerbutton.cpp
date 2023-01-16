@@ -39,7 +39,9 @@ void ColorPickerButton::onClicked()
 
   const QColor initial(QColor::fromRgb(red, green, blue));
   const QColor selected(QColorDialog::getColor(initial, QtUtils::GetRootWidget(this), tr("Select LED Color")));
-  if (initial == selected)
+
+  // QColorDialog returns Invalid on cancel, and apparently initial == Invalid is true...
+  if (!selected.isValid() || initial == selected)
     return;
 
   const u32 new_rgb = (static_cast<u32>(selected.red()) << 16) | (static_cast<u32>(selected.green()) << 8) |
