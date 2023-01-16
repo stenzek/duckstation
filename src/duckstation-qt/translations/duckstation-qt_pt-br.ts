@@ -429,27 +429,27 @@ Leaderboard Position: {} of {}</source>
 Posição nos placares de lideres: {} de {}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6922"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6951"/>
         <source>This game has {} leaderboards.</source>
         <translation>Este jogo não possui {} placares de lideres.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6940"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6969"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>O envio de pontuações está desligado porque o modo dificílimo está desativado. As tabelas de classificação são somente leitura.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6975"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7004"/>
         <source>Time</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6976"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7005"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7032"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7061"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Baixando informações de placares, por favor aguarde...</translation>
     </message>
@@ -2357,6 +2357,14 @@ Posição nos placares de lideres: {} de {}</translation>
     </message>
 </context>
 <context>
+    <name>ColorPickerButton</name>
+    <message>
+        <location filename="../colorpickerbutton.cpp" line="41"/>
+        <source>Select LED Color</source>
+        <translation>Escolha a cor do LED</translation>
+    </message>
+</context>
+<context>
     <name>CommonHost</name>
     <message>
         <location filename="../../frontend-common/cubeb_audio_stream.cpp" line="257"/>
@@ -3589,7 +3597,7 @@ This warning will only be shown once.</source>
         <translation>Direção/Giro</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="864"/>
+        <location filename="../controllerbindingwidgets.cpp" line="866"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -3612,22 +3620,22 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="503"/>
+        <location filename="../controllerbindingwidgets.cpp" line="504"/>
         <source>%1 Settings</source>
         <translation>%1 Configurações</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="512"/>
+        <location filename="../controllerbindingwidgets.cpp" line="513"/>
         <source>Restore Default Settings</source>
         <translation>Restaurar a configuração original</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="624"/>
+        <location filename="../controllerbindingwidgets.cpp" line="625"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="627"/>
+        <location filename="../controllerbindingwidgets.cpp" line="628"/>
         <source>Select File</source>
         <translation>Escolha o arquivo</translation>
     </message>
@@ -3705,7 +3713,7 @@ This warning will only be shown once.</source>
         <translation>Ativar fonte de entrada SDL</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="156"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="158"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation>DualShock 4 / Modo Aprimorado DualSense</translation>
     </message>
@@ -3715,13 +3723,13 @@ This warning will only be shown once.</source>
         <translation>Dispositivos encontrados</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="218"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
         <source>Mouse/Pointer Source</source>
         <translation>Fonte do Ponteiro do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="280"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="335"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="296"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="351"/>
         <source>10</source>
         <translation>10</translation>
     </message>
@@ -3730,57 +3738,62 @@ This warning will only be shown once.</source>
         <translation type="vanished">Inverter</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="240"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>O uso de entrada legada melhora a precisão quando você vincula os analógicos do controle ao ponteiro do mouse. Também permite que vários mouses sejam usados.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="289"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
         <source>Vertical Sensitivity:</source>
         <translation>Sensibilidade Vertical:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="250"/>
         <source>Horizontal Sensitivity:</source>
         <translation>Sensibilidade horizontal:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="346"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="362"/>
         <source>Enable Mouse Mapping</source>
         <translation>Ativar mapeamento do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="353"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="369"/>
         <source>Use Raw Input</source>
         <translation>Usar entrada legada</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="166"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
         <source>XInput Source</source>
         <translation>Fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="172"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="165"/>
+        <source>Controller LED Settings</source>
+        <translation>Configurações de LED do controle</translation>
+    </message>
+    <message>
+        <location filename="../controllerglobalsettingswidget.ui" line="188"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>A fonte de entrada XInput fornece suporte para controles XBox 360 / XBox One / XBox Series e controles de terceiros que implementam o protocolo XInput.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
         <source>Enable XInput Input Source</source>
         <translation>Ativar fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="192"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
         <source>Profile Settings</source>
         <translation>Configurações de perfil</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="214"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>Quando esta opção está ligada, as teclas de atalho podem ser definidas para este perfil de entrada e serão usadas no lugar das teclas de atalho globais. Por padrão, as teclas de atalho são sempre compartilhadas entre todos os perfis.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Usar teclas de atalho por perfil</translation>
     </message>
@@ -3806,6 +3819,34 @@ This warning will only be shown once.</source>
     <message>
         <source>Evdev</source>
         <translation type="vanished">Evdev</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerLEDSettingsDialog</name>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="14"/>
+        <source>Controller LED Settings</source>
+        <translation>Configurações de LED do controle</translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="20"/>
+        <source>SDL-0 LED</source>
+        <translation>SDL-0 LED</translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="32"/>
+        <source>SDL-1 LED</source>
+        <translation>SDL-1 LED</translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="44"/>
+        <source>SDL-2 LED</source>
+        <translation>SDL-2 LED</translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="56"/>
+        <source>SDL-3 LED</source>
+        <translation>SDL-3 LED</translation>
     </message>
 </context>
 <context>
@@ -3869,27 +3910,27 @@ This warning will only be shown once.</source>
         <translation>Definir...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="405"/>
+        <location filename="../controllerbindingwidgets.cpp" line="406"/>
         <source>Not Configured</source>
         <translation>Não configurado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="411"/>
+        <location filename="../controllerbindingwidgets.cpp" line="412"/>
         <source>Set Frequency</source>
         <translation>Definir frequência</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="411"/>
+        <location filename="../controllerbindingwidgets.cpp" line="412"/>
         <source>Frequency: </source>
         <translation>Frequência: </translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="440"/>
+        <location filename="../controllerbindingwidgets.cpp" line="441"/>
         <source>Macro will not repeat.</source>
         <translation>O macro não se repetirá.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="442"/>
+        <location filename="../controllerbindingwidgets.cpp" line="443"/>
         <source>Macro will toggle buttons every %1 frames.</source>
         <translation>O macro alternará os botões a cada %1 quadros.</translation>
     </message>
@@ -4304,42 +4345,42 @@ Esta ação não poderá ser desfeita.</translation>
 <context>
     <name>DebuggerMessage</name>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1697"/>
+        <location filename="../../core/cpu_core.cpp" line="1805"/>
         <source>Added breakpoint at 0x%08X.</source>
         <translation>Interruptor adicionado em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1724"/>
+        <location filename="../../core/cpu_core.cpp" line="1832"/>
         <source>Removed breakpoint at 0x%08X.</source>
         <translation>Interruptor removido em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1756"/>
+        <location filename="../../core/cpu_core.cpp" line="1864"/>
         <source>0x%08X is not a call instruction.</source>
         <translation>0x%08X não é uma chamada de instrução.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1767"/>
+        <location filename="../../core/cpu_core.cpp" line="1875"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
         <translation>Não é possível duplicar ramificações em 0x%08X</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1774"/>
+        <location filename="../../core/cpu_core.cpp" line="1882"/>
         <source>Stepping over to 0x%08X.</source>
         <translation>Pulando para 0x%8X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1791"/>
+        <location filename="../../core/cpu_core.cpp" line="1899"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
         <translation>Leitura de instrução falhou em %08X ao final da busca.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1798"/>
+        <location filename="../../core/cpu_core.cpp" line="1906"/>
         <source>Stepping out to 0x%08X.</source>
         <translation>Saindo em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1805"/>
+        <location filename="../../core/cpu_core.cpp" line="1913"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation>Sem instrução de retorno encontrada após%u nas instruções de saída em %08X.</translation>
     </message>
@@ -4510,6 +4551,7 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="356"/>
+        <location filename="../debuggerwindow.cpp" line="254"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation>&amp;Alternar interruptor</translation>
     </message>
@@ -4545,6 +4587,7 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="391"/>
+        <location filename="../debuggerwindow.cpp" line="257"/>
         <source>&amp;Run To Cursor</source>
         <translation>&amp;Executar para cursores</translation>
     </message>
@@ -4682,23 +4725,33 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Falha ao adicionar um ponto de interrupção, você esta em uma função válida?</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="288"/>
-        <location filename="../debuggerwindow.cpp" line="315"/>
+        <location filename="../debuggerwindow.cpp" line="266"/>
+        <source>View in &amp;Dump</source>
+        <translation>Exibir e &amp;despejar</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="269"/>
+        <source>Follow Load/Store</source>
+        <translation>Carregar/armazena</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="321"/>
+        <location filename="../debuggerwindow.cpp" line="348"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Padrão de busca inválido! Os valores devem conter digitos em hexadecimais ou pontos de exclamação.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="327"/>
+        <location filename="../debuggerwindow.cpp" line="360"/>
         <source>Pattern not found.</source>
         <translation>Padrão não encontrado.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="343"/>
+        <location filename="../debuggerwindow.cpp" line="376"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translation>Padrão encontrado em 0x%1. (além do endereço de memória).</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="349"/>
+        <location filename="../debuggerwindow.cpp" line="382"/>
         <source>Pattern found at 0x%1.</source>
         <translation>Padrão encontrado em 0x%1.</translation>
     </message>
@@ -8626,18 +8679,18 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Limpar atribuições</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="21"/>
+        <location filename="../inputbindingdialog.cpp" line="22"/>
         <source>Bindings for %1 %2</source>
         <translation>Atribuições para %1 %2</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="22"/>
+        <location filename="../inputbindingdialog.cpp" line="23"/>
         <source>Close</source>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="130"/>
-        <location filename="../inputbindingdialog.cpp" line="145"/>
+        <location filename="../inputbindingdialog.cpp" line="131"/>
+        <location filename="../inputbindingdialog.cpp" line="147"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Aperte botão/analógicos... [%1]</translation>
     </message>
@@ -8649,7 +8702,7 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation type="vanished">%1 atribuições</translation>
     </message>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="63"/>
+        <location filename="../inputbindingwidgets.cpp" line="65"/>
         <source>%n bindings</source>
         <translation>
             <numerusform></numerusform>
@@ -8657,8 +8710,8 @@ This will download approximately 4 megabytes over your current internet connecti
         </translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="278"/>
-        <location filename="../inputbindingwidgets.cpp" line="293"/>
+        <location filename="../inputbindingwidgets.cpp" line="280"/>
+        <location filename="../inputbindingwidgets.cpp" line="296"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Aperte botão/analógicos... [%1]</translation>
     </message>
@@ -8666,17 +8719,17 @@ This will download approximately 4 megabytes over your current internet connecti
 <context>
     <name>InputVibrationBindingWidget</name>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="418"/>
+        <location filename="../inputbindingwidgets.cpp" line="446"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="419"/>
+        <location filename="../inputbindingwidgets.cpp" line="447"/>
         <source>No devices with vibration motors were detected.</source>
         <translation>Nenhum dispositivo com motores de vibração foi detectado.</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="425"/>
+        <location filename="../inputbindingwidgets.cpp" line="453"/>
         <source>Select vibration motor for %1.</source>
         <translation>Escolha o motor de vibração para %1.</translation>
     </message>
@@ -11650,37 +11703,37 @@ The saves will not be recoverable.</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="680"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="681"/>
         <source>Load</source>
         <translation>Carregar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="682"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="683"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="684"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="685"/>
         <source>Select Previous</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="686"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="687"/>
         <source>Select Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="743"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="744"/>
         <source>No Save State</source>
         <translation>Sem estado salvo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="816"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="817"/>
         <source>Global Slot %d</source>
         <translation>Compartimento global %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="820"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="821"/>
         <source>Game Slot %d</source>
         <translation>Compartimento %d</translation>
     </message>
@@ -11689,7 +11742,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">Compartimento %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="824"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="825"/>
         <source>%s Slot %d</source>
         <translation>%s Compartimento %d</translation>
     </message>
