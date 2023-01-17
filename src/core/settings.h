@@ -147,7 +147,7 @@ struct Settings
   float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float gpu_pgxp_tolerance = -1.0f;
-  float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD;
+  float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
 
   u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
   bool cdrom_region_check = false;
@@ -251,43 +251,25 @@ struct Settings
   bool log_to_window = false;
   bool log_to_file = false;
 
-  ALWAYS_INLINE bool IsUsingCodeCache() const
-  {
-    return (cpu_execution_mode != CPUExecutionMode::Interpreter);
-  }
-  ALWAYS_INLINE bool IsUsingRecompiler() const
-  {
-    return (cpu_execution_mode == CPUExecutionMode::Recompiler);
-  }
-  ALWAYS_INLINE bool IsUsingSoftwareRenderer() const
-  {
-    return (gpu_renderer == GPURenderer::Software);
-  }
-  ALWAYS_INLINE bool IsRunaheadEnabled() const
-  {
-    return (runahead_frames > 0);
-  }
+  ALWAYS_INLINE bool IsUsingCodeCache() const { return (cpu_execution_mode != CPUExecutionMode::Interpreter); }
+  ALWAYS_INLINE bool IsUsingRecompiler() const { return (cpu_execution_mode == CPUExecutionMode::Recompiler); }
+  ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+  ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
   ALWAYS_INLINE PGXPMode GetPGXPMode()
   {
     return gpu_pgxp_enable ? (gpu_pgxp_cpu ? PGXPMode::CPU : PGXPMode::Memory) : PGXPMode::Disabled;
   }
 
-  ALWAYS_INLINE bool UsingPGXPDepthBuffer() const
-  {
-    return gpu_pgxp_enable && gpu_pgxp_depth_buffer;
-  }
-  ALWAYS_INLINE bool UsingPGXPCPUMode() const
-  {
-    return gpu_pgxp_enable && gpu_pgxp_cpu;
-  }
+  ALWAYS_INLINE bool UsingPGXPDepthBuffer() const { return gpu_pgxp_enable && gpu_pgxp_depth_buffer; }
+  ALWAYS_INLINE bool UsingPGXPCPUMode() const { return gpu_pgxp_enable && gpu_pgxp_cpu; }
   ALWAYS_INLINE float GetPGXPDepthClearThreshold() const
   {
-    return gpu_pgxp_depth_clear_threshold * 4096.0f;
+    return gpu_pgxp_depth_clear_threshold * GPU_PGXP_DEPTH_THRESHOLD_SCALE;
   }
   ALWAYS_INLINE void SetPGXPDepthClearThreshold(float value)
   {
-    gpu_pgxp_depth_clear_threshold = value / 4096.0f;
+    gpu_pgxp_depth_clear_threshold = value / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
   }
 
   ALWAYS_INLINE bool IsUsingFastmem() const
@@ -428,6 +410,7 @@ struct Settings
   static constexpr GPUDownsampleMode DEFAULT_GPU_DOWNSAMPLE_MODE = GPUDownsampleMode::Disabled;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
+  static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;
 
 #ifdef WITH_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
