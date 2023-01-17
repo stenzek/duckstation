@@ -1259,7 +1259,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (lba_diff < 32)
   {
     // Special case: when we land exactly on the right sector, we're already too late.
-    ticks += ticks_per_sector * std::min<u32>(5u, (lba_diff == 0) ? 5u : lba_diff);
+    ticks += ticks_per_sector * std::min<u32>(5u, (lba_diff == 0) ? 4u : lba_diff);
   }
   else
   {
