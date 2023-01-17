@@ -89,7 +89,7 @@ bool RegTestHost::InitializeConfig()
   SettingsInterface& si = *s_base_settings_interface.get();
   g_settings.Save(si);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
-  si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
+  si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::AnalogController));
   si.SetStringValue("Pad2", "Type", Settings::GetControllerTypeName(ControllerType::None));
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
@@ -372,86 +372,6 @@ void Host::CancelGameListRefresh()
 
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
-
-#if 0
-
-void RegTestHostInterface::InitializeSettings()
-{
-  SettingsInterface& si = m_settings_interface;
-  HostInterface::SetDefaultSettings(si);
-
-  // Set the settings we need for testing.
-  si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(s_renderer_to_use));
-  si.SetStringValue("Controller1", "Type", Settings::GetControllerTypeName(ControllerType::DigitalController));
-  si.SetStringValue("Controller2", "Type", Settings::GetControllerTypeName(ControllerType::None));
-  si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
-  si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
-  si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(MultitapMode::Disabled));
-  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_DEV));
-  si.SetBoolValue("Logging", "LogToConsole", true);
-
-  HostInterface::LoadSettings(si);
-}
-
-bool RegTestHostInterface::AcquireHostDisplay()
-{
-  switch (g_settings.gpu_renderer)
-  {
-#ifdef _WIN32
-    case GPURenderer::HardwareD3D11:
-      m_display = std::make_unique<FrontendCommon::D3D11HostDisplay>();
-      break;
-
-    case GPURenderer::HardwareD3D12:
-      m_display = std::make_unique<FrontendCommon::D3D12HostDisplay>();
-      break;
-#endif
-
-    case GPURenderer::HardwareOpenGL:
-      m_display = std::make_unique<FrontendCommon::OpenGLHostDisplay>();
-      break;
-
-    case GPURenderer::HardwareVulkan:
-      m_display = std::make_unique<FrontendCommon::VulkanHostDisplay>();
-      break;
-
-    case GPURenderer::Software:
-    default:
-      m_display = std::make_unique<RegTestHostDisplay>();
-      break;
-  }
-
-  WindowInfo wi;
-  wi.type = WindowInfo::Type::Surfaceless;
-  wi.surface_width = 640;
-  wi.surface_height = 480;
-  if (!m_display->CreateRenderDevice(wi, std::string_view(), false, false))
-  {
-    Log_ErrorPrintf("Failed to create render device");
-    m_display.reset();
-    return false;
-  }
-
-  if (!m_display->InitializeRenderDevice(std::string_view(), false, false))
-  {
-    Log_ErrorPrintf("Failed to initialize render device");
-    m_display->DestroyRenderDevice();
-    m_display.reset();
-    return false;
-  }
-
-  return true;
-}
-
-void RegTestHostInterface::ReleaseHostDisplay()
-{
-  if (!m_display)
-    return;
-
-  m_display->DestroyRenderDevice();
-  m_display.reset();
-}
-#endif
 
 static void SignalHandler(int signal)
 {
