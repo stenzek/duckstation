@@ -22,6 +22,7 @@ const std::string& GetMediaFileName();
 const CDImage* GetMedia();
 DiscRegion GetDiscRegion();
 bool IsMediaPS1Disc();
+bool IsMediaAudioCD();
 bool DoesMediaRegionMatchConsole();
 
 void InsertMedia(std::unique_ptr<CDImage> media);
