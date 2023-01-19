@@ -680,6 +680,9 @@ bool CDROM::DoesMediaRegionMatchConsole()
   if (!g_settings.cdrom_region_check)
     return true;
 
+  if (s_disc_region == DiscRegion::Other)
+    return false;
+
   return System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_disc_region);
 }
 
