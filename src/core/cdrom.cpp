@@ -296,6 +296,7 @@ static Command s_command = Command::None;
 static Command s_command_second_response = Command::None;
 static DriveState s_drive_state = DriveState::Idle;
 static DiscRegion s_disc_region = DiscRegion::Other;
+static bool s_ps1_disc = false;
 
 static StatusRegister s_status = {};
 static SecondaryStatusRegister s_secondary_status = {};
@@ -665,20 +666,25 @@ DiscRegion CDROM::GetDiscRegion()
 
 bool CDROM::IsMediaPS1Disc()
 {
+  return s_ps1_disc;
+}
+
+bool CDROM::IsMediaAudioCD()
+{
   if (!m_reader.HasMedia())
     return false;
 
-  // Check for a data track as the first track.
-  if (m_reader.GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio)
-    return false;
-
-  return true;
+  // Check for an audio track as the first track.
+  return (m_reader.GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio);
 }
 
 bool CDROM::DoesMediaRegionMatchConsole()
 {
   if (!g_settings.cdrom_region_check)
     return true;
+
+  if (s_disc_region == DiscRegion::Other)
+    return false;
 
   return System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_disc_region);
 }
@@ -714,10 +720,23 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
   if (CanReadMedia())
     RemoveMedia(true);
 
-  // set the region from the system area of the disc
-  s_disc_region = System::GetRegionForImage(media.get());
-  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(s_disc_region),
-                 Settings::GetConsoleRegionName(System::GetRegion()));
+  // check if it's a valid PS1 disc
+  std::string exe_name;
+  std::vector<u8> exe_buffer;
+  s_ps1_disc = System::ReadExecutableFromImage(media.get(), &exe_name, &exe_buffer);
+
+  if (s_ps1_disc)
+  {
+    // set the region from the system area of the disc
+    s_disc_region = System::GetRegionForImage(media.get());
+    Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s",
+                   Settings::GetDiscRegionName(s_disc_region), Settings::GetConsoleRegionName(System::GetRegion()));
+  }
+  else
+  {
+    s_disc_region = DiscRegion::Other;
+    Log_InfoPrint("Inserting new media, non-PS1 disc");
+  }
 
   // motor automatically spins up
   if (s_drive_state != DriveState::ShellOpening)
@@ -746,6 +765,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   s_secondary_status.shell_open = true;
   s_secondary_status.ClearActiveBits();
   s_disc_region = DiscRegion::Other;
+  s_ps1_disc = false;
 
   // If the drive was doing anything, we need to abort the command.
   ClearDriveState();
@@ -2633,12 +2653,12 @@ void CDROM::DoIDRead()
   }
   else
   {
-    if (!IsMediaPS1Disc())
+    if (IsMediaAudioCD())
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7) | (1 << 4); // Unlicensed + Audio CD
     }
-    else if (!DoesMediaRegionMatchConsole())
+    else if (!IsMediaPS1Disc() || !DoesMediaRegionMatchConsole())
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed
