@@ -143,6 +143,7 @@ struct Settings
   bool display_show_enhancements = false;
   bool display_all_frames = false;
   bool display_internal_resolution_screenshots = false;
+  bool display_always_stretch_horizontally = false;
   bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
   float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;

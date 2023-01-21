@@ -4506,6 +4506,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawFloatRangeSetting(bsi, "Display FPS Limit",
                         "Limits how many frames are displayed to the screen. These frames are still rendered.",
                         "Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
+  DrawToggleSetting(bsi, "Always Stretch Display Horizontally",
+                    "Enables old DuckStation behavior for Integer Scaling, where the display is always stretched horizontally.",
+                    "Display", "AlwaysStretchHorizontally", false);
 
   MenuHeading("PGXP Settings");
 

@@ -288,6 +288,9 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Use Debug Host GPU Device"), "GPU", "UseDebugDevice",
                         false);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Always Stretch Display Horizontally"), "Display",
+                        "AlwaysStretchHorizontally", false);
+
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
 
@@ -354,6 +357,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Display", "ActiveEndOffset");
   sif->DeleteValue("Display", "LineStartOffset");
   sif->DeleteValue("Display", "LineEndOffset");
+  sif->DeleteValue("Display", "AlwaysStretchHorizontally");
   sif->DeleteValue("GPU", "Multisamples");
   sif->DeleteValue("GPU", "PerSampleShading");
   sif->DeleteValue("GPU", "PGXPVertexCache");
