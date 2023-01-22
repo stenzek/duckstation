@@ -2,12 +2,12 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
-    <name>AudioSettingsWidget</name>
+    <name>EmuThread</name>
     <message numerus="yes">
-        <source>Maximum Latency: %n frames (%1ms)</source>
+        <source>%n points</source>
         <translation>
-            <numerusform>Maximum Latency: %n frame (%1ms)</numerusform>
-            <numerusform>Maximum Latency: %n frames (%1ms)</numerusform>
+            <numerusform>%n point</numerusform>
+            <numerusform>%n points</numerusform>
         </translation>
     </message>
 </context>
@@ -44,20 +44,6 @@
 <context>
     <name>OSDMessage</name>
     <message numerus="yes">
-        <source>Loaded %n cheats from list.</source>
-        <translation>
-            <numerusform>Loaded %n cheat from list.</numerusform>
-            <numerusform>Loaded %n cheats from list.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source> %n cheats are enabled.</source>
-        <translation>
-            <numerusform> %n cheat is enabled.</numerusform>
-            <numerusform> %n cheats are enabled.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform>%n cheat is now active.</numerusform>
@@ -72,27 +58,17 @@
         </translation>
     </message>
     <message numerus="yes">
-        <source>Loaded %n cheats from database.</source>
-        <translation>
-            <numerusform>Loaded %n cheat from database.</numerusform>
-            <numerusform>Loaded %n cheats from database.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
         <source>Saved %n cheats to &apos;%s&apos;.</source>
         <translation>
             <numerusform>Saved %n cheat to &apos;%s&apos;.</numerusform>
             <numerusform>Saved %n cheats to &apos;%s&apos;.</numerusform>
         </translation>
     </message>
-</context>
-<context>
-    <name>QtHostInterface</name>
     <message numerus="yes">
-        <source>%n points</source>
+        <source>%n cheats are enabled. This may result in instability.</source>
         <translation>
-            <numerusform>%n point</numerusform>
-            <numerusform>%n points</numerusform>
+            <numerusform>%n cheat is enabled. This may result in instability.</numerusform>
+            <numerusform>%n cheats are enabled. This may result in instability.</numerusform>
         </translation>
     </message>
 </context>
