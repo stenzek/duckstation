@@ -270,7 +270,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
   display_internal_resolution_screenshots = si.GetBoolValue("Display", "InternalResolutionScreenshots", false);
-  display_always_stretch_horizontally = si.GetBoolValue("Display", "AlwaysStretchHorizontally", false);
+  display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
   display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
@@ -488,7 +488,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
   si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "InternalResolutionScreenshots", display_internal_resolution_screenshots);
-  si.SetBoolValue("Display", "AlwaysStretchHorizontally", display_always_stretch_horizontally);
+  si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
   if (display_post_process_chain.empty())
     si.DeleteValue("Display", "PostProcessChain");

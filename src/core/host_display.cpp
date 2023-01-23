@@ -227,39 +227,18 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
     apply_aspect_ratio ?
       (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
       1.0f;
-  const float display_width_stretched = static_cast<float>(m_display_width) * x_scale;
-  const float display_width_pre =
-    (display_width_stretched > static_cast<float>(m_display_width)) ?
-      display_width_stretched : static_cast<float>(m_display_width);
-  const float display_width = g_settings.display_always_stretch_horizontally ? display_width_stretched :
-    display_width_pre;
-  const float active_left_stretched = static_cast<float>(m_display_active_left) * x_scale;
-  const float active_left_pre =
-    (display_width_stretched > static_cast<float>(m_display_width)) ?
-      active_left_stretched : static_cast<float>(m_display_active_left);
-  const float active_left = g_settings.display_always_stretch_horizontally ? active_left_stretched :
-    active_left_pre;
-  const float active_width_stretched = static_cast<float>(m_display_active_width) * x_scale;
-  const float active_width_pre =
-    (display_width_stretched > static_cast<float>(m_display_width)) ?
-      active_width_stretched : static_cast<float>(m_display_active_width);
-  const float active_width = g_settings.display_always_stretch_horizontally ? active_width_stretched :
-    active_width_pre;
-  const float display_height_pre =
-    (display_width_stretched < static_cast<float>(m_display_width)) ?
-      static_cast<float>(m_display_height) / x_scale : static_cast<float>(m_display_height);
-  const float display_height = g_settings.display_always_stretch_horizontally ?
-    static_cast<float>(m_display_height) : display_height_pre;
-  const float active_top_pre =
-    (display_width_stretched < static_cast<float>(m_display_width)) ?
-      static_cast<float>(m_display_active_top) / x_scale : static_cast<float>(m_display_active_top);
-  const float active_top = g_settings.display_always_stretch_horizontally ?
-    static_cast<float>(m_display_active_top) : active_top_pre;
-  const float active_height_pre =
-    (display_width_stretched < static_cast<float>(m_display_width)) ?
-      static_cast<float>(m_display_active_height) / x_scale : static_cast<float>(m_display_active_height);
-  const float active_height = g_settings.display_always_stretch_horizontally ?
-    static_cast<float>(m_display_active_height) : active_height_pre;
+  const float display_width = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_width) : static_cast<float>(m_display_width) * x_scale;
+  const float display_height = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_height) / x_scale : static_cast<float>(m_display_height);
+  const float active_left = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_active_left) : static_cast<float>(m_display_active_left) * x_scale;
+  const float active_top = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_active_top) / x_scale : static_cast<float>(m_display_active_top);
+  const float active_width = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_active_width) : static_cast<float>(m_display_active_width) * x_scale;
+  const float active_height = g_settings.display_stretch_vertically ?
+    static_cast<float>(m_display_active_height) / x_scale : static_cast<float>(m_display_active_height);
   if (out_x_scale)
     *out_x_scale = x_scale;
 
@@ -387,17 +366,8 @@ std::tuple<float, float> HostDisplay::ConvertWindowCoordinatesToDisplayCoordinat
   const float scaled_display_y = static_cast<float>(window_y) - top_padding;
 
   // scale back to internal resolution
-  const float display_x_stretched = scaled_display_x / scale / x_scale;
-  const float display_x_pre =
-    (display_x_stretched > (scaled_display_x / scale)) ?
-      display_x_stretched : (scaled_display_x / scale);
-  const float display_x = g_settings.display_always_stretch_horizontally ?
-    display_x_stretched : display_x_pre;
-  const float display_y_pre =
-    (display_x_stretched < (scaled_display_x / scale)) ?
-      scaled_display_y / scale * x_scale : scaled_display_y / scale;
-  const float display_y = g_settings.display_always_stretch_horizontally ?
-    scaled_display_y / scale : display_y_pre;
+  const float display_x = scaled_display_x / scale / x_scale;
+  const float display_y = scaled_display_y / scale;
 
   return std::make_tuple(display_x, display_y);
 }
@@ -524,20 +494,12 @@ bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_reso
     const float ss_width_scale = static_cast<float>(m_display_active_width) / static_cast<float>(m_display_width);
     const float ss_height_scale = static_cast<float>(m_display_active_height) / static_cast<float>(m_display_height);
     const float ss_aspect_ratio = m_display_aspect_ratio * ss_width_scale / ss_height_scale;
-    const float resize_width_stretched = static_cast<float>(resize_height) * ss_aspect_ratio;
-    const float resize_width_pre =
-      (static_cast<s32>(resize_width_stretched) > m_display_texture_view_width) ?
-        resize_width_stretched : static_cast<float>(m_display_texture_view_width);
-    resize_width = g_settings.display_always_stretch_horizontally ?
-      static_cast<s32>(resize_width_stretched) : static_cast<s32>(resize_width_pre);
-    if (!g_settings.display_always_stretch_horizontally)
-    {
-      resize_height =
-        (static_cast<s32>(resize_width_stretched) < m_display_texture_view_width) ?
-          static_cast<s32>(static_cast<float>(resize_height) /
-            (m_display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)))) :
-          resize_height;
-    }
+    resize_width = g_settings.display_stretch_vertically ?
+      m_display_texture_view_width : static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
+    resize_height = g_settings.display_stretch_vertically ?
+      static_cast<s32>(static_cast<float>(resize_height) /
+      (m_display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)))) :
+      resize_height;
   }
   else
   {
