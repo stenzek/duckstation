@@ -734,7 +734,7 @@ bool Achievements::DoState(StateWrapper& sw)
   {
     // if we're active, make sure we've downloaded and activated all the achievements
     // before deserializing, otherwise that state's going to get lost.
-    if (s_http_downloader->HasAnyRequests())
+    if (!IsUsingRAIntegration() && s_http_downloader->HasAnyRequests())
     {
       Host::DisplayLoadingScreen("Downloading achievements data...");
       s_http_downloader->WaitForAllRequests();
