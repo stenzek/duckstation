@@ -442,7 +442,12 @@ struct Settings
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;
 
+#ifndef __ANDROID__
+  // Android still defaults to digital controller for now.
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::AnalogController;
+#else
+  static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::DigitalController;
+#endif
   static constexpr ControllerType DEFAULT_CONTROLLER_2_TYPE = ControllerType::None;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_2_TYPE = MemoryCardType::None;
