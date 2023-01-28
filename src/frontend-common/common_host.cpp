@@ -255,6 +255,10 @@ void CommonHost::OnSystemPaused()
 
   InputManager::PauseVibration();
 
+#ifdef WITH_CHEEVOS
+  Achievements::OnSystemPaused(true);
+#endif
+
   if (g_settings.inhibit_screensaver)
     FrontendCommon::ResumeScreensaver();
 }
@@ -262,6 +266,10 @@ void CommonHost::OnSystemPaused()
 void CommonHost::OnSystemResumed()
 {
   FullscreenUI::OnSystemResumed();
+
+#ifdef WITH_CHEEVOS
+  Achievements::OnSystemPaused(false);
+#endif
 
   if (g_settings.inhibit_screensaver)
     FrontendCommon::SuspendScreensaver();
