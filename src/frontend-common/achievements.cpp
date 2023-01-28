@@ -1024,13 +1024,11 @@ void Achievements::DisplayAchievementSummary()
 
   Host::RunOnCPUThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
     if (FullscreenUI::IsInitialized() && g_settings.achievements_notifications)
-    {
       ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
 
-      // Technically not going through the resource API, but since we're passing this to something else, we can't.
-      if (g_settings.achievements_sound_effects)
-        FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
-    }
+    // Technically not going through the resource API, but since we're passing this to something else, we can't.
+    if (g_settings.achievements_sound_effects)
+      FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
   });
 }
 
@@ -1821,9 +1819,9 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 
     ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description,
                                      GetAchievementBadgePath(*achievement));
-    if (g_settings.achievements_sound_effects)
-      FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
   }
+  if (g_settings.achievements_sound_effects)
+    FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
 
   if (IsMastered())
     DisplayMasteredNotification();

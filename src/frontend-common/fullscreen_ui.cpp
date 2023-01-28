@@ -4278,7 +4278,6 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
   const bool enabled = bsi->GetBoolValue("Cheevos", "Enabled", false);
   const bool challenge = bsi->GetBoolValue("Cheevos", "ChallengeMode", false);
-  const bool notifications = bsi->GetBoolValue("Cheevos", "Notifications", true);
 
   DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS " Rich Presence",
                     "When enabled, rich presence information will be collected and sent to the server where supported.",
@@ -4299,7 +4298,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                     "Cheevos", "Notifications", true, enabled);
   DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Enable Sound Effects",
                     "Plays sound effects for events such as achievement unlocks and leaderboard submissions.",
-                    "Cheevos", "SoundEffects", true, enabled && notifications);
+                    "Cheevos", "SoundEffects", true, enabled);
   DrawToggleSetting(
     bsi, ICON_FA_MAGIC " Show Challenge Indicators",
     "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.", "Cheevos",
