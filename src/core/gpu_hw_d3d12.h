@@ -12,7 +12,7 @@
 #include <memory>
 #include <tuple>
 
-class GPU_HW_D3D12 : public GPU_HW
+class GPU_HW_D3D12 final : public GPU_HW
 {
 public:
   template<typename T>

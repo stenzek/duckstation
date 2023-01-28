@@ -159,9 +159,6 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
     }
     bd->GlVersion = (GLuint)(major * 100 + minor * 10);
 
-    if (bd->GlVersion >= 320)
-        io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
-
     // Store GLSL version string so we can refer to it later in case we recreate shaders.
     // Note: GLSL version is NOT the same as GL version. Leave this to NULL if unsure.
     if (glsl_version == NULL)
@@ -171,11 +168,10 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
     strcpy(bd->GlslVersionString, glsl_version);
     strcat(bd->GlslVersionString, "\n");
 
-    if (!glDrawElementsBaseVertex)
-    {
-      Log_ErrorPrintf("Missing glDrawElementsBaseVertex()");
-      return false;
-    }
+    if (glDrawElementsBaseVertex)
+      io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+    else
+      Log_WarningPrintf("Missing glDrawElementsBaseVertex()");
 
     return ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
@@ -226,7 +222,9 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     glUniformMatrix4fv(bd->AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 
     // Bind vertex/index buffers and setup attributes for ImDrawVert
-    glBindVertexArray(bd->VaoHandle);
+    if (bd->VaoHandle)
+      glBindVertexArray(bd->VaoHandle);
+
     glBindBuffer(GL_ARRAY_BUFFER, bd->VboHandle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bd->ElementsHandle);
     glEnableVertexAttribArray(bd->AttribLocationVtxPos);
@@ -305,12 +303,17 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 const GL::Texture* tex = static_cast<const GL::Texture*>(pcmd->GetTexID());
                 if (tex)
                   tex->Bind();
-                glDrawElementsBaseVertex(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)), (GLint)pcmd->VtxOffset);
+
+                if (glDrawElementsBaseVertex)
+                  glDrawElementsBaseVertex(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)), (GLint)pcmd->VtxOffset);
+                else
+                  glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)));
             }
         }
     }
 
-    glBindVertexArray(0);
+    if (bd->VaoHandle)
+      glBindVertexArray(0);
 }
 
 bool ImGui_ImplOpenGL3_CreateFontsTexture()
@@ -544,7 +547,9 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
     // Create buffers
     glGenBuffers(1, &bd->VboHandle);
     glGenBuffers(1, &bd->ElementsHandle);
-    glGenVertexArrays(1, &bd->VaoHandle);
+
+    if (glGenVertexArrays)
+      glGenVertexArrays(1, &bd->VaoHandle);
 
     return true;
 }

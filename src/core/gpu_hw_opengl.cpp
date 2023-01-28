@@ -28,11 +28,8 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
   if (m_texture_buffer_r16ui_texture != 0)
     glDeleteTextures(1, &m_texture_buffer_r16ui_texture);
 
-  if (g_host_display)
-  {
-    g_host_display->ClearDisplayTexture();
-    ResetGraphicsAPIState();
-  }
+  g_host_display->ClearDisplayTexture();
+  GPU_HW_OpenGL::ResetGraphicsAPIState();
 
   // One of our programs might've been bound.
   GL::Program::ResetLastProgram();
@@ -46,27 +43,6 @@ GPURenderer GPU_HW_OpenGL::GetRendererType() const
 
 bool GPU_HW_OpenGL::Initialize()
 {
-  // Don't re-request GL when we already have GLES here...
-  const RenderAPI current_api = g_host_display ? g_host_display->GetRenderAPI() : RenderAPI::None;
-  if (current_api != RenderAPI::OpenGL && current_api != RenderAPI::OpenGLES &&
-      !Host::AcquireHostDisplay(RenderAPI::OpenGL))
-  {
-    Log_ErrorPrintf("Host render API type is incompatible");
-    return false;
-  }
-
-  const bool opengl_is_available = ((g_host_display->GetRenderAPI() == RenderAPI::OpenGL &&
-                                     (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
-                                    (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_0));
-  if (!opengl_is_available)
-  {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",
-                                                 "OpenGL renderer unavailable, your driver or hardware is not "
-                                                 "recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required."),
-                        20.0f);
-    return false;
-  }
-
   SetCapabilities();
 
   if (!GPU_HW::Initialize())
@@ -1333,5 +1309,30 @@ void GPU_HW_OpenGL::DownsampleFramebufferBoxFilter(GL::Texture& source, u32 left
 
 std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()
 {
-  return std::make_unique<GPU_HW_OpenGL>();
+  // Don't re-request GL when we already have GLES here...
+  const RenderAPI current_api = g_host_display ? g_host_display->GetRenderAPI() : RenderAPI::None;
+  if (current_api != RenderAPI::OpenGL && current_api != RenderAPI::OpenGLES &&
+      !Host::AcquireHostDisplay(RenderAPI::OpenGL))
+  {
+    Log_ErrorPrintf("Host render API type is incompatible");
+    return nullptr;
+  }
+
+  const bool opengl_is_available = ((g_host_display->GetRenderAPI() == RenderAPI::OpenGL &&
+                                     (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
+                                    (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_1));
+  if (!opengl_is_available)
+  {
+    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",
+                                                 "OpenGL renderer unavailable, your driver or hardware is not "
+                                                 "recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required."),
+                        20.0f);
+    return nullptr;
+  }
+
+  std::unique_ptr<GPU_HW_OpenGL> gpu(std::make_unique<GPU_HW_OpenGL>());
+  if (!gpu->Initialize())
+    return nullptr;
+
+  return gpu;
 }

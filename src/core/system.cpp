@@ -1619,7 +1619,7 @@ bool System::CreateGPU(GPURenderer renderer)
       break;
   }
 
-  if (!g_gpu || !g_gpu->Initialize())
+  if (!g_gpu)
   {
     Log_ErrorPrintf("Failed to initialize %s renderer, falling back to software renderer",
                     Settings::GetRendererName(renderer));
@@ -1629,8 +1629,11 @@ bool System::CreateGPU(GPURenderer renderer)
       Settings::GetRendererName(renderer));
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
-    if (!g_gpu->Initialize())
+    if (!g_gpu)
+    {
+      Log_ErrorPrintf("Failed to create fallback software renderer.");
       return false;
+    }
   }
 
   return true;

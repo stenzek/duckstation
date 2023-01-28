@@ -13,7 +13,7 @@
 #include <memory>
 #include <tuple>
 
-class GPU_HW_OpenGL : public GPU_HW
+class GPU_HW_OpenGL final : public GPU_HW
 {
 public:
   GPU_HW_OpenGL();

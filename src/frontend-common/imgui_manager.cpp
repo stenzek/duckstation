@@ -569,6 +569,11 @@ void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
+	if (!key.empty())
+		Log_InfoPrintf("OSD [%s]: %s", key.c_str(), message.c_str());
+	else
+		Log_InfoPrintf("OSD: %s", message.c_str());
+
   OSDMessage msg;
   msg.key = std::move(key);
   msg.text = std::move(message);
@@ -711,7 +716,7 @@ void ImGuiManager::DrawOSDMessages()
   }
 }
 
-void ImGuiManager::RenderOSD()
+void ImGuiManager::RenderOSDMessages()
 {
   AcquirePendingOSDMessages();
   DrawOSDMessages();

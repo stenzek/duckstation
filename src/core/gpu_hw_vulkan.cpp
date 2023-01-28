@@ -20,12 +20,8 @@ GPU_HW_Vulkan::GPU_HW_Vulkan() = default;
 
 GPU_HW_Vulkan::~GPU_HW_Vulkan()
 {
-  if (g_host_display)
-  {
-    g_host_display->ClearDisplayTexture();
-    ResetGraphicsAPIState();
-  }
-
+  g_host_display->ClearDisplayTexture();
+  GPU_HW_Vulkan::ResetGraphicsAPIState();
   DestroyResources();
 }
 
@@ -36,13 +32,6 @@ GPURenderer GPU_HW_Vulkan::GetRendererType() const
 
 bool GPU_HW_Vulkan::Initialize()
 {
-  if (!Host::AcquireHostDisplay(RenderAPI::Vulkan))
-  {
-    Log_ErrorPrintf("Host render API is incompatible");
-    return false;
-  }
-
-  Assert(g_vulkan_shader_cache);
   SetCapabilities();
 
   if (!GPU_HW::Initialize())
@@ -1993,5 +1982,16 @@ void GPU_HW_Vulkan::DownsampleFramebufferAdaptive(Vulkan::Texture& source, u32 l
 
 std::unique_ptr<GPU> GPU::CreateHardwareVulkanRenderer()
 {
-  return std::make_unique<GPU_HW_Vulkan>();
+  if (!Host::AcquireHostDisplay(RenderAPI::Vulkan))
+  {
+    Log_ErrorPrintf("Host render API is incompatible");
+    return nullptr;
+  }
+
+  Assert(g_vulkan_shader_cache);
+  std::unique_ptr<GPU_HW_Vulkan> gpu(std::make_unique<GPU_HW_Vulkan>());
+  if (!gpu->Initialize())
+    return nullptr;
+
+  return gpu;
 }

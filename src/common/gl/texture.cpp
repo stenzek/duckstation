@@ -118,6 +118,9 @@ bool GL::Texture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samp
       else
         glTexImage2DMultisample(target, samples, gl_internal_format, width, height, GL_FALSE);
     }
+
+    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels);
   }
   else
   {
@@ -148,8 +151,12 @@ bool GL::Texture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samp
           glTexImage2D(target, i, gl_internal_format, width, height, 0, gl_format, gl_type, data);
       }
 
-      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
-      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels);
+      // This doesn't exist on GLES2.
+      if (!GLAD_GL_ES_VERSION_2_0 || GLAD_GL_ES_VERSION_3_0)
+      {
+        glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels);
+      }
     }
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
@@ -160,10 +167,6 @@ bool GL::Texture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samp
     if (layers > 1)
       glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
   }
-
-  // This doesn't exist on GLES2.
-  if (!GLAD_GL_ES_VERSION_2_0 || GLAD_GL_ES_VERSION_3_0)
-    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1);
 
   GLenum error = glGetError();
   if (error != GL_NO_ERROR)

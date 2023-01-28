@@ -11,7 +11,7 @@
 #include <memory>
 #include <tuple>
 
-class GPU_HW_Vulkan : public GPU_HW
+class GPU_HW_Vulkan final : public GPU_HW
 {
 public:
   GPU_HW_Vulkan();

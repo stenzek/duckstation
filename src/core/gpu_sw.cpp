@@ -39,8 +39,7 @@ GPU_SW::GPU_SW()
 GPU_SW::~GPU_SW()
 {
   m_backend.Shutdown();
-  if (g_host_display)
-    g_host_display->ClearDisplayTexture();
+  g_host_display->ClearDisplayTexture();
 }
 
 GPURenderer GPU_SW::GetRendererType() const
@@ -55,18 +54,13 @@ const Threading::Thread* GPU_SW::GetSWThread() const
 
 bool GPU_SW::Initialize()
 {
-  // we need something to draw in.. but keep the current api if we have one
-  if (!g_host_display && !Host::AcquireHostDisplay(HostDisplay::GetPreferredAPI()))
-    return false;
-
   if (!GPU::Initialize() || !m_backend.Initialize(false))
     return false;
 
   static constexpr auto formats_for_16bit = make_array(GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
                                                        GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8);
-  static constexpr auto formats_for_24bit =
-    make_array(GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8, GPUTexture::Format::RGB565,
-               GPUTexture::Format::RGBA5551);
+  static constexpr auto formats_for_24bit = make_array(GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8,
+                                                       GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551);
   for (const GPUTexture::Format format : formats_for_16bit)
   {
     if (g_host_display->SupportsTextureFormat(format))
@@ -260,8 +254,9 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
   u8* dst_ptr;
   u32 dst_stride;
 
-  using OutputPixelType = std::conditional_t<
-    display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32, u16>;
+  using OutputPixelType =
+    std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
+                       u16>;
 
   GPUTexture* texture = GetDisplayTexture(width, height, display_format);
   if (!texture)
@@ -353,8 +348,9 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   u8* dst_ptr;
   u32 dst_stride;
 
-  using OutputPixelType = std::conditional_t<
-    display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32, u16>;
+  using OutputPixelType =
+    std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
+                       u16>;
 
   GPUTexture* texture = GetDisplayTexture(width, height, display_format);
   if (!texture)
@@ -481,14 +477,13 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   g_host_display->SetDisplayTexture(texture, 0, 0, width, height);
 }
 
-void GPU_SW::CopyOut24Bit(GPUTexture::Format display_format, u32 src_x, u32 src_y, u32 skip_x, u32 width,
-                          u32 height, u32 field, bool interlaced, bool interleaved)
+void GPU_SW::CopyOut24Bit(GPUTexture::Format display_format, u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height,
+                          u32 field, bool interlaced, bool interleaved)
 {
   switch (display_format)
   {
     case GPUTexture::Format::RGBA5551:
-      CopyOut24Bit<GPUTexture::Format::RGBA5551>(src_x, src_y, skip_x, width, height, field, interlaced,
-                                                     interleaved);
+      CopyOut24Bit<GPUTexture::Format::RGBA5551>(src_x, src_y, skip_x, width, height, field, interlaced, interleaved);
       break;
     case GPUTexture::Format::RGB565:
       CopyOut24Bit<GPUTexture::Format::RGB565>(src_x, src_y, skip_x, width, height, field, interlaced, interleaved);
@@ -899,5 +894,13 @@ void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 
 std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()
 {
-  return std::make_unique<GPU_SW>();
+  // we need something to draw in.. but keep the current api if we have one
+  if (!g_host_display && !Host::AcquireHostDisplay(HostDisplay::GetPreferredAPI()))
+    return nullptr;
+
+  std::unique_ptr<GPU_SW> gpu(std::make_unique<GPU_SW>());
+  if (!gpu->Initialize())
+    return nullptr;
+
+  return gpu;
 }

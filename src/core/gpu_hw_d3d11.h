@@ -13,13 +13,13 @@
 #include <tuple>
 #include <wrl/client.h>
 
-class GPU_HW_D3D11 : public GPU_HW
+class GPU_HW_D3D11 final : public GPU_HW
 {
 public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  GPU_HW_D3D11();
+  GPU_HW_D3D11(ID3D11Device* device, ID3D11DeviceContext* context);
   ~GPU_HW_D3D11() override;
 
   GPURenderer GetRendererType() const override;

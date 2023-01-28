@@ -14,18 +14,12 @@
 #include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_D3D11);
 
-GPU_HW_D3D11::GPU_HW_D3D11() = default;
+GPU_HW_D3D11::GPU_HW_D3D11(ID3D11Device* device, ID3D11DeviceContext* context) : m_device(device), m_context(context) {}
 
 GPU_HW_D3D11::~GPU_HW_D3D11()
 {
-  if (g_host_display)
-  {
-    g_host_display->ClearDisplayTexture();
-    ResetGraphicsAPIState();
-  }
-
-  if (m_context)
-    m_context->ClearState();
+  g_host_display->ClearDisplayTexture();
+  GPU_HW_D3D11::ResetGraphicsAPIState();
 
   DestroyShaders();
   DestroyStateObjects();
@@ -38,17 +32,6 @@ GPURenderer GPU_HW_D3D11::GetRendererType() const
 
 bool GPU_HW_D3D11::Initialize()
 {
-  if (!Host::AcquireHostDisplay(RenderAPI::D3D11))
-  {
-    Log_ErrorPrintf("Host render API is incompatible");
-    return false;
-  }
-
-  m_device = static_cast<ID3D11Device*>(g_host_display->GetDevice());
-  m_context = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
-  if (!m_device || !m_context)
-    return false;
-
   SetCapabilities();
 
   if (!GPU_HW::Initialize())
@@ -1213,5 +1196,20 @@ void GPU_HW_D3D11::DownsampleFramebufferBoxFilter(D3D11::Texture& source, u32 le
 
 std::unique_ptr<GPU> GPU::CreateHardwareD3D11Renderer()
 {
-  return std::make_unique<GPU_HW_D3D11>();
+  if (!Host::AcquireHostDisplay(RenderAPI::D3D11))
+  {
+    Log_ErrorPrintf("Host render API is incompatible");
+    return nullptr;
+  }
+
+  ID3D11Device* device = static_cast<ID3D11Device*>(g_host_display->GetDevice());
+  ID3D11DeviceContext* context = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
+  if (!device || !context)
+    return nullptr;
+
+  std::unique_ptr<GPU_HW_D3D11> gpu(std::make_unique<GPU_HW_D3D11>(device, context));
+  if (!gpu->Initialize())
+    return nullptr;
+
+  return gpu;
 }

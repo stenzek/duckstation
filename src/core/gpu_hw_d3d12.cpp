@@ -21,11 +21,8 @@ GPU_HW_D3D12::GPU_HW_D3D12() = default;
 
 GPU_HW_D3D12::~GPU_HW_D3D12()
 {
-  if (g_host_display)
-  {
-    g_host_display->ClearDisplayTexture();
-    ResetGraphicsAPIState();
-  }
+  g_host_display->ClearDisplayTexture();
+  GPU_HW_D3D12::ResetGraphicsAPIState();
 
   DestroyResources();
 }
@@ -37,12 +34,6 @@ GPURenderer GPU_HW_D3D12::GetRendererType() const
 
 bool GPU_HW_D3D12::Initialize()
 {
-  if (!Host::AcquireHostDisplay(RenderAPI::D3D12))
-  {
-    Log_ErrorPrintf("Host render API is incompatible");
-    return false;
-  }
-
   SetCapabilities();
 
   if (!GPU_HW::Initialize())
@@ -1193,5 +1184,15 @@ void GPU_HW_D3D12::ClearDepthBuffer()
 
 std::unique_ptr<GPU> GPU::CreateHardwareD3D12Renderer()
 {
-  return std::make_unique<GPU_HW_D3D12>();
+  if (!Host::AcquireHostDisplay(RenderAPI::D3D12))
+  {
+    Log_ErrorPrintf("Host render API is incompatible");
+    return nullptr;
+  }
+
+  std::unique_ptr<GPU_HW_D3D12> gpu(std::make_unique<GPU_HW_D3D12>());
+  if (!gpu->Initialize())
+    return nullptr;
+
+  return gpu;
 }

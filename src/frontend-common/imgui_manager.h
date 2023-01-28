@@ -34,7 +34,7 @@ void UpdateScale();
 void NewFrame();
 
 /// Renders any on-screen display elements.
-void RenderOSD();
+void RenderOSDMessages();
 
 /// Returns the scale of all on-screen elements.
 float GetGlobalScale();

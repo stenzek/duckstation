@@ -297,7 +297,8 @@ bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi, bool vsync)
 
 bool OpenGLHostDisplay::SetupDevice()
 {
-  m_use_gles2_draw_path = (GetRenderAPI() == RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_0);
+  // If we don't have GLES3.1, then SV_VertexID isn't defined when no VBOs are active.
+  m_use_gles2_draw_path = (GetRenderAPI() == RenderAPI::OpenGLES && !GLAD_GL_ES_VERSION_3_1);
   if (!m_use_gles2_draw_path)
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
 
@@ -540,7 +541,7 @@ void main()
 
       glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
       glSamplerParameteri(m_display_border_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-      glTexParameterfv(m_display_border_sampler, GL_TEXTURE_BORDER_COLOR, border_color);
+      glSamplerParameterfv(m_display_border_sampler, GL_TEXTURE_BORDER_COLOR, border_color);
     }
   }
   else
@@ -740,7 +741,7 @@ void OpenGLHostDisplay::RenderDisplay()
     return;
   }
 
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   if (!HasDisplayTexture())
