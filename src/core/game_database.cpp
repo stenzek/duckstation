@@ -217,7 +217,7 @@ const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating 
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
 {
-  constexpr float osd_duration = 10.0f;
+  constexpr float osd_duration = 5.0f;
 
   if (display_active_start_offset.has_value())
     settings.display_active_start_offset = display_active_start_offset.value();
@@ -262,6 +262,18 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_renderer = GPURenderer::Software;
+  }
+
+  if (HasTrait(Trait::ForceSoftwareRendererForReadbacks))
+  {
+    if (display_osd_messages && settings.gpu_renderer != GPURenderer::Software)
+    {
+      Host::AddKeyedOSDMessage("gamedb_force_software_rb",
+                               Host::TranslateStdString("OSDMessage", "Using software renderer for readbacks based on game settings."),
+                               osd_duration);
+    }
+
+    settings.gpu_use_software_renderer_for_readbacks = true;
   }
 
   if (HasTrait(Trait::ForceInterlacing))
