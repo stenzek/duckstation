@@ -389,6 +389,7 @@ protected:
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   bool m_using_uv_limits = false;
+  bool m_round_upscale_coordinates = false;
   bool m_pgxp_depth_buffer = false;
 
   BatchConfig m_batch;

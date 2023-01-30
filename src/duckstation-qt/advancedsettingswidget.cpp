@@ -233,6 +233,9 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addMSAATweakOption(m_dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Always Round Upscaled Texture Coordinates"), "GPU",
+                        "RoundUpscaleCoordinates", false);
+
   if (m_dialog->isPerGameSettings())
   {
     addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"), "Display",
@@ -359,6 +362,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Display", "LineEndOffset");
   sif->DeleteValue("Display", "StretchVertically");
   sif->DeleteValue("GPU", "Multisamples");
+  sif->DeleteValue("GPU", "RoundUpscaleCoordinates");
   sif->DeleteValue("GPU", "PerSampleShading");
   sif->DeleteValue("GPU", "PGXPVertexCache");
   sif->DeleteValue("GPU", "PGXPTolerance");

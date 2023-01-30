@@ -10,7 +10,8 @@ class GPU_HW_ShaderGen : public ShaderGen
 public:
   GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
                    bool true_color, bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits,
-                   bool pgxp_depth, bool disable_color_perspective, bool supports_dual_source_blend);
+                   bool pgxp_depth, bool disable_color_perspective, bool round_upscale_coordinates,
+                   bool supports_dual_source_blend);
   ~GPU_HW_ShaderGen();
 
   std::string GenerateBatchVertexShader(bool textured);
@@ -46,4 +47,5 @@ private:
   bool m_uv_limits;
   bool m_pgxp_depth;
   bool m_disable_color_perspective;
+  bool m_round_upscale_coordinates;
 };

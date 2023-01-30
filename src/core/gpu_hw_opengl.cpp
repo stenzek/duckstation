@@ -497,7 +497,8 @@ bool GPU_HW_OpenGL::CompilePrograms()
   const bool use_binding_layout = GPU_HW_ShaderGen::UseGLSLBindingLayout();
   GPU_HW_ShaderGen shadergen(g_host_display->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
-                             m_pgxp_depth_buffer, m_disable_color_perspective, m_supports_dual_source_blend);
+                             m_pgxp_depth_buffer, m_disable_color_perspective, m_round_upscale_coordinates,
+                             m_supports_dual_source_blend);
 
   ShaderCompileProgressTracker progress("Compiling Programs", (4 * 9 * 2 * 2) + (2 * 3) + (2 * 2) + 1 + 1 + 1 + 1 + 1);
 

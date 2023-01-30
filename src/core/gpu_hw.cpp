@@ -73,6 +73,7 @@ bool GPU_HW::Initialize()
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
   m_disable_color_perspective = m_supports_disable_color_perspective && ShouldDisableColorPerspective();
+  m_round_upscale_coordinates = g_settings.gpu_round_upscale_coordinates;
 
   if (m_multisamples != g_settings.gpu_multisamples)
   {
@@ -161,7 +162,8 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
      m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
      m_downsample_mode != downsample_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
-     m_disable_color_perspective != disable_color_perspective);
+     m_disable_color_perspective != disable_color_perspective ||
+     m_round_upscale_coordinates != g_settings.gpu_round_upscale_coordinates);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -198,6 +200,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = downsample_mode;
   m_disable_color_perspective = disable_color_perspective;
+  m_round_upscale_coordinates = g_settings.gpu_round_upscale_coordinates;
 
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
     m_texture_filtering = GPUTextureFilter::Nearest;

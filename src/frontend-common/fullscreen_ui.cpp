@@ -4508,6 +4508,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, "Stretch Display Vertically",
                     "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.",
                     "Display", "StretchVertically", false);
+  DrawToggleSetting(bsi, "Always Round Upscaled Texture Coordinates",
+                    "Forces texture coordinates to be rounded when the game's resolution is upscaled. Works better for certain games, but may require PGXP.",
+                    "GPU", "RoundUpscaleCoordinates", false);
 
   MenuHeading("PGXP Settings");
 
