@@ -29,7 +29,6 @@ GPU_HW_OpenGL::~GPU_HW_OpenGL()
     glDeleteTextures(1, &m_texture_buffer_r16ui_texture);
 
   g_host_display->ClearDisplayTexture();
-  GPU_HW_OpenGL::ResetGraphicsAPIState();
 
   // One of our programs might've been bound.
   GL::Program::ResetLastProgram();

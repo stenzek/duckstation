@@ -1477,6 +1477,8 @@ void System::DestroySystem()
   Timers::Shutdown();
   Pad::Shutdown();
   CDROM::Shutdown();
+  if (g_gpu)
+    g_gpu->ResetGraphicsAPIState();
   g_gpu.reset();
   InterruptController::Shutdown();
   DMA::Shutdown();

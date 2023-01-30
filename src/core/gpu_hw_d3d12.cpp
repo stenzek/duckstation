@@ -22,7 +22,6 @@ GPU_HW_D3D12::GPU_HW_D3D12() = default;
 GPU_HW_D3D12::~GPU_HW_D3D12()
 {
   g_host_display->ClearDisplayTexture();
-  GPU_HW_D3D12::ResetGraphicsAPIState();
 
   DestroyResources();
 }

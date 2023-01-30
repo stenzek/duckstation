@@ -21,7 +21,6 @@ GPU_HW_Vulkan::GPU_HW_Vulkan() = default;
 GPU_HW_Vulkan::~GPU_HW_Vulkan()
 {
   g_host_display->ClearDisplayTexture();
-  GPU_HW_Vulkan::ResetGraphicsAPIState();
   DestroyResources();
 }
 

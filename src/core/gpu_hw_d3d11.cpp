@@ -19,7 +19,6 @@ GPU_HW_D3D11::GPU_HW_D3D11(ID3D11Device* device, ID3D11DeviceContext* context) :
 GPU_HW_D3D11::~GPU_HW_D3D11()
 {
   g_host_display->ClearDisplayTexture();
-  GPU_HW_D3D11::ResetGraphicsAPIState();
 
   DestroyShaders();
   DestroyStateObjects();
