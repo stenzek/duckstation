@@ -4506,6 +4506,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawFloatRangeSetting(bsi, "Display FPS Limit",
                         "Limits how many frames are displayed to the screen. These frames are still rendered.",
                         "Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
+  DrawToggleSetting(bsi, "Stretch Display Vertically",
+                    "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.",
+                    "Display", "StretchVertically", false);
 
   MenuHeading("PGXP Settings");
 
