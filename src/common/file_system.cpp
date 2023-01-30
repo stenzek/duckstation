@@ -1917,36 +1917,48 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return false;
 }
 
-FileSystem::POSIXLock::POSIXLock(int fd)
+static bool SetLock(int fd, bool lock)
 {
-  if (lockf(fd, F_LOCK, 0) == 0)
+  // We want to lock the whole file.
+  const off_t offs = lseek(fd, 0, SEEK_CUR);
+  if (offs < 0)
   {
-    m_fd = fd;
+    Log_ErrorPrintf("lseek(%d) failed: %d", fd, errno);
+    return false;
   }
-  else
+
+  if (offs != 0 && lseek(fd, 0, SEEK_SET) < 0)
   {
-    Log_ErrorPrintf("lockf() failed: %d", errno);
-    m_fd = -1;
+    Log_ErrorPrintf("lseek(%d, 0) failed: %d", fd, errno);
+    return false;
   }
+
+  const bool res = (lockf(fd, lock ? F_LOCK : F_ULOCK, 0) == 0);
+  if (lseek(fd, offs, SEEK_SET) < 0)
+    Panic("Repositioning file descriptor after lock failed.");
+
+  if (!res)
+    Log_ErrorPrintf("lockf() for %s failed: %d", lock ? "lock" : "unlock", errno);
+
+  return res;
 }
 
-FileSystem::POSIXLock::POSIXLock(std::FILE* fp)
+FileSystem::POSIXLock::POSIXLock(int fd) : m_fd(fd)
 {
-  m_fd = fileno(fp);
-  if (m_fd >= 0)
-  {
-    if (lockf(m_fd, F_LOCK, 0) != 0)
-    {
-      Log_ErrorPrintf("lockf() failed: %d", errno);
-      m_fd = -1;
-    }
-  }
+  if (!SetLock(m_fd, true))
+    m_fd = -1;
+}
+
+FileSystem::POSIXLock::POSIXLock(std::FILE* fp) : m_fd(fileno(fp))
+{
+  if (!SetLock(m_fd, true))
+    m_fd = -1;
 }
 
 FileSystem::POSIXLock::~POSIXLock()
 {
   if (m_fd >= 0)
-    lockf(m_fd, F_ULOCK, m_fd);
+    SetLock(m_fd, false);
 }
 
 #endif
