@@ -31,7 +31,7 @@ target_sources(soundtouch PRIVATE
 target_include_directories(soundtouch PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_definitions(soundtouch PRIVATE ${COMPILE_DEFINITIONS})
 target_compile_options(soundtouch PRIVATE ${COMPILE_OPTIONS})
-target_compile_definitions(soundtouch PRIVATE SOUNDTOUCH_FLOAT_SAMPLES ST_NO_EXCEPTION_HANDLING=1)
+target_compile_definitions(soundtouch PUBLIC SOUNDTOUCH_FLOAT_SAMPLES ST_NO_EXCEPTION_HANDLING=1)
 
 if("${CPU_ARCH}" STREQUAL "aarch32" OR "${CPU_ARCH}" STREQUAL "aarch64")
   target_compile_definitions(soundtouch PRIVATE SOUNDTOUCH_USE_NEON)

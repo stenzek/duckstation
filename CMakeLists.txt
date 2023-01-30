@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(duckstation C CXX)
 
+# Policy settings.
+cmake_policy(SET CMP0069 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+
 message("CMake Version: ${CMAKE_VERSION}")
 message("CMake System Name: ${CMAKE_SYSTEM_NAME}")
 message("Build Type: ${CMAKE_BUILD_TYPE}")
@@ -181,14 +185,12 @@ endif()
 
 # Default symbol visibility to hidden, that way we don't go through the PLT for intra-library calls.
 if(ANDROID)
+  cmake_policy(SET CMP0063 NEW)
+  set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
   set(CMAKE_C_VISIBILITY_PRESET hidden)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-
-  # -fno-semantic-interposition appears to be broken on Macs... of course.
-  if((CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND NOT APPLE AND NOT ANDROID)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-semantic-interposition")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-semantic-interposition")
-  endif()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-semantic-interposition")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-semantic-interposition")
 endif()
 
 
@@ -238,6 +240,13 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
   endif()
 else()
   message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+
+# We don't need exceptions, disable them to save a bit of code size.
+# Except xbyak still uses them :(
+if(NOT ("${CPU_ARCH}" STREQUAL "x86" OR "${CPU_ARCH}" STREQUAL "x64"))
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 endif()
 
 
