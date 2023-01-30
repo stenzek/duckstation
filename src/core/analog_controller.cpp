@@ -312,8 +312,8 @@ void AnalogController::ProcessAnalogModeToggle()
     Host::AddIconOSDMessage(
       fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
       fmt::format((m_analog_mode ?
-                     Host::TranslateString("AnalogController", "Controller %u is locked to analog mode by the game.") :
-                     Host::TranslateString("AnalogController", "Controller %u is locked to digital mode by the game."))
+                     Host::TranslateString("AnalogController", "Controller {} is locked to analog mode by the game.") :
+                     Host::TranslateString("AnalogController", "Controller {} is locked to digital mode by the game."))
                     .GetCharArray(),
                   m_index + 1u),
       5.0f);
