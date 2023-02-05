@@ -33,6 +33,11 @@ unset MACOSX_DEPLOYMENT_TARGET
 BINPATH=bin/DuckStation.app/Contents/MacOS/DuckStation
 lipo -create "build-x64/$BINPATH" "build-arm64/$BINPATH" -o "build-x64/$BINPATH"
 
+# For some reason, the svg image format plugin doesn't get included in combined builds...
+if [ -f $HOME/deps/plugins/imageformats/libqsvg.dylib ]; then
+  cp -v -n $HOME/deps/plugins/imageformats/libqsvg.dylib build-x64/bin/DuckStation.app/Contents/PlugIns/imageformats
+fi
+
 echo "Grab app..."
 mv build-x64/bin/DuckStation.app .
 rm -fr build-x64 build-arm64
