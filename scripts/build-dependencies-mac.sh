@@ -5,10 +5,10 @@ set -e
 export MACOSX_DEPLOYMENT_TARGET=10.14
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.0.22
-QT=6.3.1
-MOLTENVK=1.1.10
-CURL=7.84.0
+SDL=SDL2-2.26.2
+QT=6.4.2
+MOLTENVK=1.2.2
+CURL=7.87.0
 
 mkdir deps-build
 cd deps-build
@@ -19,13 +19,13 @@ export CFLAGS="-I$INSTALLDIR/include -Os $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include -Os $CXXFLAGS"
 
 cat > SHASUMS <<EOF
-fe7cbf3127882e3fc7259a75a0cb585620272c51745d3852ab9dd87960697f2e  $SDL.tar.gz
-fac11c2501195c9ce042103685c7778e35484562e6c084963a22072dd0a602e0  v$MOLTENVK.tar.gz
-3c6893d38d054d4e378267166858698899e9d87258e8ff1419d020c395384535  curl-$CURL.tar.gz
-0a64421d9c2469c2c48490a032ab91d547017c9cc171f3f8070bc31888f24e03  qtbase-everywhere-src-$QT.tar.xz
-7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
-c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
-d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations-everywhere-src-$QT.tar.xz
+95d39bc3de037fbdfa722623737340648de4f180a601b0afad27645d150b99e0  $SDL.tar.gz
+8065a10c2d70b561f48475dedb118e643176527b162d6e439fa127270c2a07dd  v$MOLTENVK.tar.gz
+8a063d664d1c23d35526b87a2bf15514962ffdd8ef7fd40519191b3c23e39548  curl-$CURL.tar.gz
+a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d  qtbase-everywhere-src-$QT.tar.xz
+b746af3cb1793621d8ed7eae38d9ad5a15541dc2742031069f2ae3fe87590314  qtsvg-everywhere-src-$QT.tar.xz
+a31387916184e4a5ef522d3ea841e8e931cc0f88be0824a7a354a572d5826c68  qttools-everywhere-src-$QT.tar.xz
+bbe0291502c2604b72fef730e1935bd22f8b921d8c473250f298a723b2a9c496  qttranslations-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
@@ -45,21 +45,21 @@ cd "$SDL"
 
 # Patch clang wrappers to require 10.14 for x64.
 patch -u build-scripts/clang-fat.sh <<EOF
---- clang-fat.bak	2022-07-30 22:32:22.000000000 -0700
-+++ clang-fat.sh	2022-07-30 22:34:57.000000000 -0700
+--- clang-fat.bak	2023-02-05 13:22:17.032581300 +1000
++++ clang-fat.sh	2023-02-05 13:23:15.668561400 +1000
 @@ -6,12 +6,12 @@
  
  DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
  
--# Intel 64-bit compiler flags (10.6 runtime compatibility)
--CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.6 \\
---DMAC_OS_X_VERSION_MIN_REQUIRED=1060 \\
+-# Intel 64-bit compiler flags (10.9 runtime compatibility)
+-CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.9 \\
+--DMAC_OS_X_VERSION_MIN_REQUIRED=1070 \\
 +# Intel 64-bit compiler flags (10.14 runtime compatibility)
 +CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.14 \\
 +-DMAC_OS_X_VERSION_MIN_REQUIRED=101400 \\
  -I/usr/local/include"
  
--CLANG_LINK_X64="-mmacosx-version-min=10.6"
+-CLANG_LINK_X64="-mmacosx-version-min=10.9"
 +CLANG_LINK_X64="-mmacosx-version-min=10.14"
  
  # ARM 64-bit compiler flags (11.0 runtime compatibility)
@@ -67,19 +67,19 @@ patch -u build-scripts/clang-fat.sh <<EOF
 EOF
 
 patch -u build-scripts/clang++-fat.sh << EOF
---- clang++-fat.bak	2022-07-30 22:55:02.000000000 -0700
-+++ clang++-fat.sh	2022-07-30 22:55:19.000000000 -0700
+--- clang++-fat.bak	2023-02-05 13:22:23.744491600 +1000
++++ clang++-fat.sh	2023-02-05 13:23:27.160575900 +1000
 @@ -6,11 +6,11 @@
  
  DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
  
--# Intel 64-bit compiler flags (10.6 runtime compatibility)
--CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.6 \\
+-# Intel 64-bit compiler flags (10.7 runtime compatibility)
+-CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.7 \\
 +# Intel 64-bit compiler flags (10.14 runtime compatibility)
 +CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.14 \\
  -I/usr/local/include"
  
--CLANG_LINK_X64="-mmacosx-version-min=10.6"
+-CLANG_LINK_X64="-mmacosx-version-min=10.7"
 +CLANG_LINK_X64="-mmacosx-version-min=10.14"
  
  # ARM 64-bit compiler flags (11.0 runtime compatibility)
