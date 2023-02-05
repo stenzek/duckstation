@@ -212,7 +212,7 @@ if(APPLE)
   get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
   find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
   add_custom_target(duckstation-postprocess-bundle ALL
-    COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}"
+    COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}" -no-strip
   )
   add_dependencies(duckstation-postprocess-bundle duckstation-qt)
 
