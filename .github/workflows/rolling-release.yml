@@ -5,7 +5,6 @@ on:
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
-      - 'scripts/*'
       - '.github/ISSUE_TEMPLATE/*'
   push:
     branches:
@@ -14,7 +13,6 @@ on:
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
-      - 'scripts/*'
       - '.github/ISSUE_TEMPLATE/*'
   workflow_dispatch:
 
