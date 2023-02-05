@@ -400,7 +400,7 @@ struct Settings
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D12;
 #elif defined(_WIN32)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
-#elif defined(WITH_OPENGL)
+#elif defined(WITH_OPENGL) && (!defined(__APPLE__) || !defined(WITH_VULKAN))
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
 #elif defined(WITH_VULKAN)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareVulkan;
