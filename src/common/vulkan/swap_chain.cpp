@@ -715,7 +715,8 @@ bool SwapChain::SetupSwapChainImages()
 
     // Create texture object, which creates a view of the backbuffer
     if (!image.texture.Adopt(image.image, VK_IMAGE_VIEW_TYPE_2D, m_window_info.surface_width,
-                             m_window_info.surface_height, 1, 1, m_surface_format.format, VK_SAMPLE_COUNT_1_BIT))
+                             m_window_info.surface_height, 1, 1, m_surface_format.format, VK_SAMPLE_COUNT_1_BIT,
+                             VK_IMAGE_LAYOUT_UNDEFINED))
     {
       return false;
     }

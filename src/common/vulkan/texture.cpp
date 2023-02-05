@@ -163,6 +163,7 @@ bool Vulkan::Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFo
   m_samples = static_cast<u8>(samples);
   m_format = LookupBaseFormat(format);
   m_view_type = view_type;
+  m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
   m_image = image;
   m_allocation = allocation;
   m_view = view;
@@ -170,7 +171,7 @@ bool Vulkan::Texture::Create(u32 width, u32 height, u32 levels, u32 layers, VkFo
 }
 
 bool Vulkan::Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u32 width, u32 height, u32 levels,
-                            u32 layers, VkFormat format, VkSampleCountFlagBits samples,
+                            u32 layers, VkFormat format, VkSampleCountFlagBits samples, VkImageLayout layout,
                             const VkComponentMapping* swizzle /* = nullptr */)
 {
   // Only need to create the image view, this is mainly for swap chains.
@@ -205,6 +206,7 @@ bool Vulkan::Texture::Adopt(VkImage existing_image, VkImageViewType view_type, u
   m_format = LookupBaseFormat(format);
   m_samples = static_cast<u8>(samples);
   m_view_type = view_type;
+  m_layout = layout;
   m_image = existing_image;
   m_view = view;
   return true;
@@ -395,8 +397,11 @@ VkFramebuffer Vulkan::Texture::CreateFramebuffer(VkRenderPass render_pass)
 void Vulkan::Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width,
                                        u32 height, VkBuffer buffer, u32 buffer_offset, u32 row_length)
 {
+  // If we're previously undefined, don't leave any images in this layout.
   const VkImageLayout old_layout = m_layout;
-  if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+  if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  else if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     TransitionSubresourcesToLayout(cmdbuf, level, 1, layer, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
@@ -406,9 +411,9 @@ void Vulkan::Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 la
                                  {static_cast<int32_t>(x), static_cast<int32_t>(y), 0},
                                  {width, height, 1u}};
 
-  vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, m_layout, 1, &bic);
+  vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bic);
 
-  if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+  if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && old_layout != VK_IMAGE_LAYOUT_UNDEFINED)
     TransitionSubresourcesToLayout(cmdbuf, level, 1, layer, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, old_layout);
 }
 

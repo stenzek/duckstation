@@ -46,7 +46,8 @@ public:
               const VkComponentMapping* swizzle = nullptr);
 
   bool Adopt(VkImage existing_image, VkImageViewType view_type, u32 width, u32 height, u32 levels, u32 layers,
-             VkFormat format, VkSampleCountFlagBits samples, const VkComponentMapping* swizzle = nullptr);
+             VkFormat format, VkSampleCountFlagBits samples, VkImageLayout layout,
+             const VkComponentMapping* swizzle = nullptr);
 
   void Destroy(bool defer = true);
 
