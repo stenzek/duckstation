@@ -1073,7 +1073,7 @@ void FullscreenUI::DoToggleAnalogMode()
 
 void FullscreenUI::DoRequestExit()
 {
-  Host::RunOnCPUThread([]() { Host::RequestExit(g_settings.save_state_on_exit); });
+  Host::RunOnCPUThread([]() { Host::RequestExit(true); });
 }
 
 void FullscreenUI::DoToggleFullscreen()

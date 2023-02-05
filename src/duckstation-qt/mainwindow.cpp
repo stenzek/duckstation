@@ -615,6 +615,15 @@ void MainWindow::onSystemDestroyed()
 
   s_system_valid = false;
   s_system_paused = false;
+
+  // If we're closing or in batch mode, quit the whole application now.
+  if (m_is_closing || QtHost::InBatchMode())
+  {
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+    QCoreApplication::quit();
+    return;
+  }
+
   updateEmulationActions(false, false, Achievements::ChallengeModeActive());
   if (m_display_widget)
     updateDisplayWidgetCursor();
@@ -727,7 +736,12 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 void MainWindow::recreate()
 {
   if (s_system_valid)
-    requestShutdown(false, true, true, true);
+  {
+    requestShutdown(false, true, true);
+
+    while (s_system_valid)
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+  }
 
   // We need to close input sources, because e.g. DInput uses our window handle.
   g_emu_thread->closeInputSources();
@@ -2375,16 +2389,24 @@ void MainWindow::showEvent(QShowEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-  if (!requestShutdown(true, true, true))
+  // If there's no VM, we can just exit as normal.
+  if (!s_system_valid)
   {
-    event->ignore();
+    QMainWindow::closeEvent(event);
     return;
   }
 
+  // But if there is, we have to cancel the action, regardless of whether we ended exiting
+  // or not. The window still needs to be visible while GS is shutting down.
+  event->ignore();
+
+  // Exit cancelled?
+  if (!requestShutdown(true, true, g_settings.save_state_on_exit))
+    return;
+
+  // Application will be exited in VM stopped handler.
   saveGeometryToConfig();
   m_is_closing = true;
-
-  QMainWindow::closeEvent(event);
 }
 
 void MainWindow::changeEvent(QEvent* event)
@@ -2473,7 +2495,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 }
 
 bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */,
-                                 bool save_state /* = true */, bool block_until_done /* = false */)
+                                 bool save_state /* = true */)
 {
   if (!s_system_valid)
     return true;
@@ -2518,34 +2540,21 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 
   // Now we can actually shut down the VM.
   g_emu_thread->shutdownSystem(save_state);
-
-  if (block_until_done || m_is_closing || QtHost::InBatchMode())
-  {
-    // We need to yield here, since the display gets destroyed.
-    while (s_system_valid || System::GetState() != System::State::Shutdown)
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-  }
-
-  if (!m_is_closing && QtHost::InBatchMode())
-  {
-    // Closing the window should shut down everything. If we don't set the closing flag here,
-    // the VM shutdown may not complete by the time closeEvent() is called, leading to a confirm.
-    m_is_closing = true;
-    QGuiApplication::quit();
-  }
-
   return true;
 }
 
-void MainWindow::requestExit(bool allow_save_to_state /* = true */)
+void MainWindow::requestExit(bool allow_confirm /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  if (!requestShutdown(true, allow_save_to_state, g_settings.save_state_on_exit))
+  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit))
     return;
 
-  // We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
-  // doesn't quit the application.
-  QGuiApplication::quit();
+  // VM stopped signal won't have fired yet, so queue an exit if we still have one.
+  // Otherwise, immediately exit, because there's no VM to exit us later.
+  if (s_system_valid)
+    m_is_closing = true;
+  else
+    QGuiApplication::quit();
 }
 
 void MainWindow::checkForSettingChanges()

@@ -981,11 +981,11 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
   return g_nogui_window->GetPlatformWindowInfo();
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExit(bool allow_confirm)
 {
   if (System::IsValid())
   {
-    Host::RunOnCPUThread([save_state_if_running]() { System::ShutdownSystem(save_state_if_running); });
+    Host::RunOnCPUThread([]() { System::ShutdownSystem(g_settings.save_state_on_exit); });
   }
 
   // clear the running flag, this'll break out of the main CPU loop once the VM is shutdown.
@@ -1022,7 +1022,7 @@ static void SignalHandler(int signal)
   {
     std::fprintf(stderr, "Received CTRL+C, attempting graceful shutdown. Press CTRL+C again to force.\n");
     graceful_shutdown_attempted = true;
-    Host::RequestExit(true);
+    Host::RequestExit(false);
     return;
   }
 

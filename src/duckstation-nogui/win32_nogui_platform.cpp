@@ -399,7 +399,8 @@ LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     case WM_CLOSE:
     case WM_QUIT:
     {
-      Host::RunOnCPUThread([]() { Host::RequestExit(g_settings.save_state_on_exit); });
+      Host::RunOnCPUThread([]() { Host::RequestExit(false); });
+      return 0;
     }
     break;
 

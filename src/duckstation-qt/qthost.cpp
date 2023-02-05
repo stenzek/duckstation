@@ -1746,12 +1746,12 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
     return;
 
   QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-                            Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, false));
+                            Q_ARG(bool, true), Q_ARG(bool, save_state));
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExit(bool allow_confirm)
 {
-  QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, save_state_if_running));
+  QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, allow_confirm));
 }
 
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()

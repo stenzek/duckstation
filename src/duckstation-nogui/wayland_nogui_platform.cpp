@@ -270,7 +270,7 @@ void WaylandNoGUIPlatform::TopLevelConfigure(void* data, struct xdg_toplevel* xd
 
 void WaylandNoGUIPlatform::TopLevelClose(void* data, struct xdg_toplevel* xdg_toplevel)
 {
-  Host::RunOnCPUThread([]() { Host::RequestExit(g_settings.save_state_on_exit); });
+  Host::RunOnCPUThread([]() { Host::RequestExit(false); });
 }
 
 void WaylandNoGUIPlatform::SeatCapabilities(void* data, wl_seat* seat, uint32_t capabilities)

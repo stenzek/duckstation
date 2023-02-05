@@ -481,7 +481,7 @@ void RequestResizeHostDisplay(s32 width, s32 height);
 
 /// Requests shut down and exit of the hosting application. This may not actually exit,
 /// if the user cancels the shutdown confirmation.
-void RequestExit(bool save_state_if_running);
+void RequestExit(bool allow_confirm);
 
 /// Requests shut down of the current virtual machine.
 void RequestSystemShutdown(bool allow_confirm, bool save_state);

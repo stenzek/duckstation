@@ -233,7 +233,7 @@ void X11NoGUIPlatform::ProcessXEvents()
       case ClientMessage:
       {
         if (static_cast<Atom>(event.xclient.data.l[0]) == XInternAtom(m_display, "WM_DELETE_WINDOW", False))
-          Host::RequestExit(true);
+          Host::RequestExit(false);
       }
       break;
 
