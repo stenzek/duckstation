@@ -351,7 +351,8 @@ bool Vulkan::Context::Create(std::string_view gpu_name, const WindowInfo* wi,
   // Attempt to create the device.
   if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
       !g_vulkan_context->CreateAllocator() || !g_vulkan_context->CreateGlobalDescriptorPool() ||
-      !g_vulkan_context->CreateCommandBuffers() || !g_vulkan_context->CreateTextureStreamBuffer() ||
+      !g_vulkan_context->CreateQueryPool() || !g_vulkan_context->CreateCommandBuffers() ||
+      !g_vulkan_context->CreateTextureStreamBuffer() ||
       (enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, vsync)) == nullptr))
   {
     // Since we are destroying the instance, we're also responsible for destroying the surface.
@@ -368,31 +369,6 @@ bool Vulkan::Context::Create(std::string_view gpu_name, const WindowInfo* wi,
   return true;
 }
 
-bool Vulkan::Context::CreateFromExistingInstance(
-  VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface, bool take_ownership, bool enable_validation_layer,
-  bool enable_debug_utils, const char** required_device_extensions /* = nullptr */,
-  u32 num_required_device_extensions /* = 0 */, const char** required_device_layers /* = nullptr */,
-  u32 num_required_device_layers /* = 0 */, const VkPhysicalDeviceFeatures* required_features /* = nullptr */)
-{
-  g_vulkan_context.reset(new Context(instance, gpu, take_ownership));
-
-  // Enable debug utils if the "Host GPU" log category is enabled.
-  if (enable_debug_utils)
-    g_vulkan_context->EnableDebugUtils();
-
-  // Attempt to create the device.
-  if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, required_device_extensions,
-                                      num_required_device_extensions, required_device_layers,
-                                      num_required_device_layers, required_features) ||
-      !g_vulkan_context->CreateGlobalDescriptorPool() || !g_vulkan_context->CreateCommandBuffers())
-  {
-    g_vulkan_context.reset();
-    return false;
-  }
-
-  return true;
-}
-
 void Vulkan::Context::Destroy()
 {
   AssertMsg(g_vulkan_context, "Has context");
@@ -405,6 +381,7 @@ void Vulkan::Context::Destroy()
   g_vulkan_context->m_texture_upload_buffer.Destroy(false);
 
   g_vulkan_context->DestroyRenderPassCache();
+  g_vulkan_context->DestroyQueryPool();
   g_vulkan_context->DestroyGlobalDescriptorPool();
   g_vulkan_context->DestroyCommandBuffers();
   g_vulkan_context->DestroyAllocator();
@@ -806,37 +783,50 @@ bool Vulkan::Context::CreateGlobalDescriptorPool()
                                                  static_cast<u32>(countof(pool_sizes)),
                                                  pool_sizes};
 
-  VkResult res = vkCreateDescriptorPool(m_device, &pool_create_info, nullptr, &m_global_descriptor_pool);
+  const VkResult res = vkCreateDescriptorPool(m_device, &pool_create_info, nullptr, &m_global_descriptor_pool);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateDescriptorPool failed: ");
     return false;
   }
   Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_global_descriptor_pool, "Global Descriptor Pool");
-
-  if (m_gpu_timing_supported)
-  {
-    const VkQueryPoolCreateInfo query_create_info = {
-      VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr, 0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 2, 0};
-    res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_timestamp_query_pool);
-    if (res != VK_SUCCESS)
-    {
-      LOG_VULKAN_ERROR(res, "vkCreateQueryPool failed: ");
-      m_gpu_timing_supported = false;
-      return false;
-    }
-  }
-
   return true;
 }
 
 void Vulkan::Context::DestroyGlobalDescriptorPool()
 {
-  if (m_global_descriptor_pool != VK_NULL_HANDLE)
+  if (m_global_descriptor_pool == VK_NULL_HANDLE)
+    return;
+
+  vkDestroyDescriptorPool(m_device, m_global_descriptor_pool, nullptr);
+  m_global_descriptor_pool = VK_NULL_HANDLE;
+}
+
+bool Vulkan::Context::CreateQueryPool()
+{
+  if (!m_gpu_timing_supported)
+    return true;
+
+  const VkQueryPoolCreateInfo query_create_info = {
+    VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr, 0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 2, 0};
+  const VkResult res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_timestamp_query_pool);
+  if (res != VK_SUCCESS)
   {
-    vkDestroyDescriptorPool(m_device, m_global_descriptor_pool, nullptr);
-    m_global_descriptor_pool = VK_NULL_HANDLE;
+    LOG_VULKAN_ERROR(res, "vkCreateQueryPool failed: ");
+    m_gpu_timing_supported = false;
+    return false;
   }
+
+  return true;
+}
+
+void Vulkan::Context::DestroyQueryPool()
+{
+  if (!m_gpu_timing_supported)
+    return;
+
+  vkDestroyQueryPool(m_device, m_timestamp_query_pool, nullptr);
+  m_timestamp_query_pool = VK_NULL_HANDLE;
 }
 
 bool Vulkan::Context::CreateTextureStreamBuffer()

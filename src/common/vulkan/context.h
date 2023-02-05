@@ -55,15 +55,6 @@ public:
   static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
                      bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer, bool vsync);
 
-  // Creates a new context from a pre-existing instance.
-  static bool CreateFromExistingInstance(VkInstance instance, VkPhysicalDevice gpu, VkSurfaceKHR surface,
-                                         bool take_ownership, bool enable_validation_layer, bool enable_debug_utils,
-                                         const char** required_device_extensions = nullptr,
-                                         u32 num_required_device_extensions = 0,
-                                         const char** required_device_layers = nullptr,
-                                         u32 num_required_device_layers = 0,
-                                         const VkPhysicalDeviceFeatures* required_features = nullptr);
-
   // Destroys context.
   static void Destroy();
 
@@ -214,6 +205,8 @@ private:
   void DestroyCommandBuffers();
   bool CreateGlobalDescriptorPool();
   void DestroyGlobalDescriptorPool();
+  bool CreateQueryPool();
+  void DestroyQueryPool();
   bool CreateTextureStreamBuffer();
   void DestroyRenderPassCache();
 
