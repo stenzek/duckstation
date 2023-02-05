@@ -18,6 +18,7 @@
 #include "debuggerwindow.h"
 #include "displaywidget.h"
 #include "frontend-common/game_list.h"
+#include "frontend-common/platform_misc.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "gdbserver.h"
@@ -62,7 +63,11 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe "
   "*.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
 
-static const char* DEFAULT_THEME_NAME = "darkfusion";
+#ifdef __APPLE__
+const char* DEFAULT_THEME_NAME = "";
+#else
+const char* DEFAULT_THEME_NAME = "darkfusion";
+#endif
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
@@ -116,6 +121,9 @@ MainWindow::~MainWindow()
 #ifdef _WIN32
   unregisterForDeviceNotifications();
 #endif
+#ifdef __APPLE__
+  FrontendCommon::RemoveThemeChangeHandler(this);
+#endif
 }
 
 void MainWindow::updateApplicationTheme()
@@ -148,6 +156,11 @@ void MainWindow::initialize()
 
 #ifdef _WIN32
   registerForDeviceNotifications();
+#endif
+
+#ifdef __APPLE__
+  FrontendCommon::AddThemeChangeHandler(this,
+                                        [](void* ctx) { QtHost::RunOnUIThread([] { g_main_window->updateTheme(); }); });
 #endif
 }
 
@@ -2078,6 +2091,11 @@ void MainWindow::setTheme(const QString& theme)
 {
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
   Host::CommitBaseSettingChanges();
+  updateTheme();
+}
+
+void MainWindow::updateTheme()
+{
   updateApplicationTheme();
   updateMenuSelectedTheme();
   m_game_list_widget->reloadCommonImages();
@@ -2185,15 +2203,9 @@ void MainWindow::setStyleFromSettings()
 
 void MainWindow::setIconThemeFromSettings()
 {
-  const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
-  QString icon_theme;
-
-  if (theme == "qdarkstyle" || theme == "darkfusion" || theme == "darkfusionblue")
-    icon_theme = QStringLiteral("white");
-  else
-    icon_theme = QStringLiteral("black");
-
-  QIcon::setThemeName(icon_theme);
+  const QPalette palette(qApp->palette());
+  const bool dark = palette.windowText().color().value() > palette.window().color().value();
+  QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
 }
 
 void MainWindow::onSettingsResetToDefault()
