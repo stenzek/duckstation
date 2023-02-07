@@ -545,6 +545,8 @@ bool D3D12HostDisplay::CreateResources()
 
 void D3D12HostDisplay::DestroyResources()
 {
+  HostDisplay::DestroyResources();
+
   m_post_processing_cbuffer.Destroy(false);
   m_post_processing_chain.ClearStages();
   m_post_processing_input_texture.Destroy();

@@ -633,6 +633,8 @@ bool D3D11HostDisplay::CreateResources()
 
 void D3D11HostDisplay::DestroyResources()
 {
+  HostDisplay::DestroyResources();
+
   m_post_processing_chain.ClearStages();
   m_post_processing_input_texture.Destroy();
   m_post_processing_stages.clear();

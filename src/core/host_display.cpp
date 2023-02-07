@@ -32,6 +32,11 @@ RenderAPI HostDisplay::GetPreferredAPI()
 #endif
 }
 
+void HostDisplay::DestroyResources()
+{
+  m_cursor_texture.reset();
+}
+
 bool HostDisplay::UpdateTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch)
 {
   void* map_ptr;

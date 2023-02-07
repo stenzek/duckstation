@@ -81,7 +81,7 @@ public:
   virtual bool SetFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
   virtual AdapterAndModeList GetAdapterAndModeList() = 0;
   virtual bool CreateResources() = 0;
-  virtual void DestroyResources() = 0;
+  virtual void DestroyResources();
 
   virtual bool SetPostProcessingChain(const std::string_view& config) = 0;
 

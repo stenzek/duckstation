@@ -545,6 +545,8 @@ void main()
 
 void VulkanHostDisplay::DestroyResources()
 {
+  HostDisplay::DestroyResources();
+
   Vulkan::Util::SafeDestroyPipelineLayout(m_post_process_pipeline_layout);
   Vulkan::Util::SafeDestroyPipelineLayout(m_post_process_ubo_pipeline_layout);
   Vulkan::Util::SafeDestroyDescriptorSetLayout(m_post_process_descriptor_set_layout);
