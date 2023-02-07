@@ -172,6 +172,25 @@ void Vulkan::Util::SetViewportAndScissor(VkCommandBuffer command_buffer, int x, 
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
+void Vulkan::Util::SetViewportAndClampScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height,
+                                              float min_depth /*= 0.0f*/, float max_depth /*= 1.0f*/)
+{
+  const VkViewport vp{static_cast<float>(x),
+                      static_cast<float>(y),
+                      static_cast<float>(width),
+                      static_cast<float>(height),
+                      min_depth,
+                      max_depth};
+  vkCmdSetViewport(command_buffer, 0, 1, &vp);
+
+  const int cx = std::max(x, 0);
+  const int cy = std::max(y, 0);
+  const int cwidth = width - (cx - x);
+  const int cheight = height - (cy - y);
+  const VkRect2D scissor{{cx, cy}, {static_cast<u32>(cwidth), static_cast<u32>(cheight)}};
+  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+}
+
 void Vulkan::Util::SafeDestroyFramebuffer(VkFramebuffer& fb)
 {
   if (fb != VK_NULL_HANDLE)

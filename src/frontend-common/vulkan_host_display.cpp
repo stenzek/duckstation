@@ -851,7 +851,7 @@ void VulkanHostDisplay::RenderDisplay(s32 left, s32 top, s32 width, s32 height, 
   vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_display_pipeline);
   vkCmdPushConstants(cmdbuffer, m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pc), &pc);
   vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout, 0, 1, &ds, 0, nullptr);
-  Vulkan::Util::SetViewportAndScissor(cmdbuffer, left, top, width, height);
+  Vulkan::Util::SetViewportAndClampScissor(cmdbuffer, left, top, width, height);
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 
@@ -895,7 +895,7 @@ void VulkanHostDisplay::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 h
   vkCmdBindPipeline(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_cursor_pipeline);
   vkCmdPushConstants(cmdbuffer, m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pc), &pc);
   vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout, 0, 1, &ds, 0, nullptr);
-  Vulkan::Util::SetViewportAndScissor(cmdbuffer, left, top, width, height);
+  Vulkan::Util::SetViewportAndClampScissor(cmdbuffer, left, top, width, height);
   vkCmdDraw(cmdbuffer, 3, 1, 0, 0);
 }
 

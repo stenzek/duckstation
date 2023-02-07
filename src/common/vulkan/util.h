@@ -52,6 +52,8 @@ void SetScissor(VkCommandBuffer command_buffer, int x, int y, int width, int hei
 // Combines viewport and scissor updates
 void SetViewportAndScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height, float min_depth = 0.0f,
                            float max_depth = 1.0f);
+void SetViewportAndClampScissor(VkCommandBuffer command_buffer, int x, int y, int width, int height,
+                                float min_depth = 0.0f, float max_depth = 1.0f);
 
 // Wrapper for creating an barrier on a buffer
 void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,

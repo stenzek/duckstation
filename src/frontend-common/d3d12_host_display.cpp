@@ -727,7 +727,7 @@ void D3D12HostDisplay::RenderDisplay(ID3D12GraphicsCommandList* cmdlist, s32 lef
   cmdlist->SetGraphicsRootDescriptorTable(1, texture->GetSRVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, linear_filter ? m_linear_sampler : m_point_sampler);
 
-  D3D12::SetViewportAndScissor(cmdlist, left, top, width, height);
+  D3D12::SetViewportAndClampScissor(cmdlist, left, top, width, height);
 
   cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   cmdlist->DrawInstanced(3, 1, 0, 0);
@@ -753,7 +753,7 @@ void D3D12HostDisplay::RenderSoftwareCursor(ID3D12GraphicsCommandList* cmdlist, 
   cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12::Texture*>(texture_handle)->GetSRVDescriptor());
   cmdlist->SetGraphicsRootDescriptorTable(2, m_linear_sampler);
 
-  D3D12::SetViewportAndScissor(cmdlist, left, top, width, height);
+  D3D12::SetViewportAndClampScissor(cmdlist, left, top, width, height);
 
   cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   cmdlist->DrawInstanced(3, 1, 0, 0);
