@@ -174,7 +174,7 @@
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="126"/>
-        <location filename="../achievementsettingswidget.cpp" line="159"/>
+        <location filename="../achievementsettingswidget.cpp" line="158"/>
         <source>Login...</source>
         <translation>Авторизация...</translation>
     </message>
@@ -270,31 +270,31 @@
         <translation type="unfinished">Отображает значки в правом нижнем углу экрана, когда активно испытание или достижение.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="131"/>
+        <location filename="../achievementsettingswidget.cpp" line="130"/>
         <source>Reset System</source>
         <translatorcomment>*Сброс системы</translatorcomment>
         <translation type="unfinished">Сбросить систему</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="132"/>
+        <location filename="../achievementsettingswidget.cpp" line="131"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation type="unfinished">Хардкорный режим не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="151"/>
+        <location filename="../achievementsettingswidget.cpp" line="150"/>
         <source>Username: %1
 Login token generated on %2.</source>
         <translation type="unfinished">Имя пользователя: %1
 Токен входа сгенерирован %2.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="154"/>
+        <location filename="../achievementsettingswidget.cpp" line="153"/>
         <source>Logout</source>
         <translatorcomment>*Выход*</translatorcomment>
         <translation type="unfinished">Выйти</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="158"/>
+        <location filename="../achievementsettingswidget.cpp" line="157"/>
         <source>Not Logged In.</source>
         <translatorcomment>*Не авторизовался.</translatorcomment>
         <translation type="unfinished">Не авторизован.</translation>
@@ -303,17 +303,17 @@ Login token generated on %2.</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="987"/>
+        <location filename="../../core/system.cpp" line="989"/>
         <source>Loading state</source>
         <translation type="unfinished">Загрузка состояния</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1189"/>
+        <location filename="../../core/system.cpp" line="1210"/>
         <source>Resuming state</source>
         <translation type="unfinished">Возобновление состояния</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1906"/>
+        <location filename="../../core/system.cpp" line="1935"/>
         <source>Hardcore mode disabled by state switch.</source>
         <translation type="unfinished">Хардкорный режим отключен переключателем состояния.</translation>
     </message>
@@ -358,35 +358,35 @@ Login token generated on %2.</source>
         <translation>В этой игре нет достижений.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1774"/>
+        <location filename="../../frontend-common/achievements.cpp" line="1772"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
         <translation type="unfinished">Ваш результат: {} (Лучший: {})
 Позиция в списке лидеров: {} из {}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6918"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6953"/>
         <source>This game has {} leaderboards.</source>
         <translation type="unfinished">В этой игре есть {} в списке лидеров.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6936"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6971"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation type="unfinished">Отправка результатов отключена, так как режим хардкора выключен. Список лидеров доступен только для чтения.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6971"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7006"/>
         <source>Time</source>
         <translation>Время</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="6972"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7007"/>
         <source>Score</source>
         <translatorcomment>*Показатель *Счет</translatorcomment>
         <translation type="unfinished">Результат</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7028"/>
+        <location filename="../../frontend-common/fullscreen_ui.cpp" line="7063"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation type="unfinished">Загрузка данных списка лидеров, пожалуйста, подождите...</translation>
     </message>
@@ -480,128 +480,138 @@ Leaderboard Position: {} of {}</source>
         <translation type="unfinished">Показать время кадров</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="231"/>
+        <location filename="../advancedsettingswidget.cpp" line="230"/>
         <source>Apply Compatibility Settings</source>
         <translation>Применить параметры совместимости</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="235"/>
+        <location filename="../advancedsettingswidget.cpp" line="234"/>
         <source>Multisample Antialiasing</source>
         <translation>Множественная выборка сглаживания</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="239"/>
+        <location filename="../advancedsettingswidget.cpp" line="238"/>
         <source>Display Active Start Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="241"/>
+        <location filename="../advancedsettingswidget.cpp" line="240"/>
         <source>Display Active End Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="243"/>
+        <location filename="../advancedsettingswidget.cpp" line="242"/>
         <source>Display Line Start Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="245"/>
+        <location filename="../advancedsettingswidget.cpp" line="244"/>
         <source>Display Line End Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="249"/>
+        <location filename="../advancedsettingswidget.cpp" line="248"/>
         <source>PGXP Vertex Cache</source>
         <translation>Кэш вершин PGXP</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="250"/>
+        <location filename="../advancedsettingswidget.cpp" line="249"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>Допуск геометрии PGXP</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="252"/>
+        <location filename="../advancedsettingswidget.cpp" line="251"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>Порог очистки глубины PGXP</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="255"/>
+        <location filename="../advancedsettingswidget.cpp" line="254"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Включить исключения памяти перекомпилятора</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="257"/>
+        <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>Включить связывание блоков перекомпилятора</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="259"/>
+        <location filename="../advancedsettingswidget.cpp" line="258"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>Включить быстрый доступ к памяти перекомпилятора</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="264"/>
+        <location filename="../advancedsettingswidget.cpp" line="263"/>
+        <source>Use Old MDEC Routines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="265"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation type="unfinished">Включить запись замены текстур VRAM</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="266"/>
+        <location filename="../advancedsettingswidget.cpp" line="267"/>
         <source>Preload Texture Replacements</source>
         <translatorcomment>*Предзагрузка</translatorcomment>
         <translation>Предварительная загрузка замены текстур</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="268"/>
+        <location filename="../advancedsettingswidget.cpp" line="269"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="270"/>
+        <location filename="../advancedsettingswidget.cpp" line="271"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="272"/>
+        <location filename="../advancedsettingswidget.cpp" line="273"/>
         <source>Minimum Dumped VRAM Write Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="275"/>
+        <location filename="../advancedsettingswidget.cpp" line="276"/>
         <source>Minimum Dumped VRAM Write Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="279"/>
+        <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>DMA Max Slice Ticks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="281"/>
+        <location filename="../advancedsettingswidget.cpp" line="282"/>
         <source>DMA Halt Ticks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="283"/>
+        <location filename="../advancedsettingswidget.cpp" line="284"/>
         <source>GPU FIFO Size</source>
         <translation>Размер очереди ГП</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="285"/>
+        <location filename="../advancedsettingswidget.cpp" line="286"/>
         <source>GPU Max Run-Ahead</source>
         <translation>Максимальное опережение ГП</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="287"/>
+        <location filename="../advancedsettingswidget.cpp" line="288"/>
         <source>Use Debug Host GPU Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="293"/>
+        <location filename="../advancedsettingswidget.cpp" line="291"/>
+        <source>Stretch Display Vertically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="297"/>
         <source>Allow Booting Without SBI File</source>
         <translation>Разрешить загрузку без файла SBI</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="296"/>
+        <location filename="../advancedsettingswidget.cpp" line="300"/>
         <source>Create Save State Backups</source>
         <translation>Создание резервных копий сохранений состояний</translation>
     </message>
@@ -659,7 +669,7 @@ Leaderboard Position: {} of {}</source>
         <translation>Показывает строку меню отладки с дополнительной статистикой и быстрыми настройками.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="233"/>
+        <location filename="../advancedsettingswidget.cpp" line="232"/>
         <source>Display FPS Limit</source>
         <translatorcomment>*Отобразить *Отображать</translatorcomment>
         <translation>Показать ограничение FPS</translation>
@@ -670,7 +680,7 @@ Leaderboard Position: {} of {}</source>
         <translation>Отключить все улучшения</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="290"/>
+        <location filename="../advancedsettingswidget.cpp" line="294"/>
         <source>Increase Timer Resolution</source>
         <translation>Увеличить разрешение таймера</translation>
     </message>
@@ -678,14 +688,12 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="315"/>
         <source>Controller %u is locked to analog mode by the game.</source>
-        <translation>Контроллер %u заблокирован игрой в аналоговом режиме.</translation>
+        <translation type="vanished">Контроллер %u заблокирован игрой в аналоговом режиме.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="316"/>
         <source>Controller %u is locked to digital mode by the game.</source>
-        <translation>Контроллер %u заблокирован игрой в цифровом режиме.</translation>
+        <translation type="vanished">Контроллер %u заблокирован игрой в цифровом режиме.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="846"/>
@@ -720,6 +728,16 @@ Leaderboard Position: {} of {}</source>
         <source>Controller {} switched to digital mode.</source>
         <translatorcomment>*Переключилися</translatorcomment>
         <translation>Контроллер {} переключен в цифровой режим.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="315"/>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="316"/>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="831"/>
@@ -882,17 +900,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1106"/>
+        <location filename="../../core/settings.cpp" line="1112"/>
         <source>Null (No Output)</source>
         <translation>Пусто (без вывода)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1108"/>
+        <location filename="../../core/settings.cpp" line="1114"/>
         <source>Cubeb</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1111"/>
+        <location filename="../../core/settings.cpp" line="1117"/>
         <source>XAudio2</source>
         <translation></translation>
     </message>
@@ -1309,17 +1327,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="791"/>
+        <location filename="../../core/settings.cpp" line="797"/>
         <source>Interpreter (Slowest)</source>
         <translation>Интерпретатор (самый медленный)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="792"/>
+        <location filename="../../core/settings.cpp" line="798"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Кешированный интерпретатор (быстрее)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="793"/>
+        <location filename="../../core/settings.cpp" line="799"/>
         <source>Recompiler (Fastest)</source>
         <translation>Перекомпилятор (самый быстрый)</translation>
     </message>
@@ -1327,17 +1345,17 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="822"/>
+        <location filename="../../core/settings.cpp" line="828"/>
         <source>Disabled (Slowest)</source>
         <translation>Отключено (самый медленный)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="823"/>
+        <location filename="../../core/settings.cpp" line="829"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (аппаратный, самый быстрый, только 64-битный)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="824"/>
+        <location filename="../../core/settings.cpp" line="830"/>
         <source>LUT (Faster)</source>
         <translation>LUT (быстрее)</translation>
     </message>
@@ -1884,6 +1902,14 @@ Leaderboard Position: {} of {}</source>
     </message>
 </context>
 <context>
+    <name>ColorPickerButton</name>
+    <message>
+        <location filename="../colorpickerbutton.cpp" line="41"/>
+        <source>Select LED Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CommonHost</name>
     <message>
         <location filename="../../frontend-common/cubeb_audio_stream.cpp" line="257"/>
@@ -1894,7 +1920,7 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>CommonHostInterface</name>
     <message>
-        <location filename="../../core/system.cpp" line="3917"/>
+        <location filename="../../core/system.cpp" line="3952"/>
         <source>Invalid version %u (%s version %u)</source>
         <translation>Недопустимая версия %u (%s версия %u)</translation>
     </message>
@@ -1902,22 +1928,22 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="733"/>
+        <location filename="../../core/settings.cpp" line="739"/>
         <source>Auto-Detect</source>
         <translation>Авто-определение</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="733"/>
+        <location filename="../../core/settings.cpp" line="739"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Япония)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="734"/>
+        <location filename="../../core/settings.cpp" line="740"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (США, Канада)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="734"/>
+        <location filename="../../core/settings.cpp" line="740"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Европа, Австралия)</translation>
     </message>
@@ -2957,7 +2983,7 @@ This warning will only be shown once.</source>
         <translation>Рулевое управление/поворот</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="864"/>
+        <location filename="../controllerbindingwidgets.cpp" line="866"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -2965,22 +2991,22 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="503"/>
+        <location filename="../controllerbindingwidgets.cpp" line="504"/>
         <source>%1 Settings</source>
         <translation>%1: настройки</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="512"/>
+        <location filename="../controllerbindingwidgets.cpp" line="513"/>
         <source>Restore Default Settings</source>
         <translation>Восстановить настройки по умолчанию</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="624"/>
+        <location filename="../controllerbindingwidgets.cpp" line="625"/>
         <source>Browse...</source>
         <translation>Обзор...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="627"/>
+        <location filename="../controllerbindingwidgets.cpp" line="628"/>
         <source>Select File</source>
         <translation>Выбрать файл</translation>
     </message>
@@ -3058,7 +3084,7 @@ This warning will only be shown once.</source>
         <translation>Включить источник ввода SDL</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="156"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="158"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation>Расширенный режим DualSense / DualShock 4</translation>
     </message>
@@ -3068,70 +3094,103 @@ This warning will only be shown once.</source>
         <translation>Обнаруженные устройства</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="218"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
         <source>Mouse/Pointer Source</source>
         <translation>Источник ввода мыши/указателя</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="280"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="335"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="296"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="351"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="240"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>Использование необработанного ввода повышает точность при привязке джойстиков контроллера к указателю мыши. Также позволяет использовать несколько мышей.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="289"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
         <source>Vertical Sensitivity:</source>
         <translation>Вертикальная чувствительность:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="250"/>
         <source>Horizontal Sensitivity:</source>
         <translation>Горизонтальная чувствительность:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="346"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="362"/>
         <source>Enable Mouse Mapping</source>
         <translation>Включить сопоставление мыши</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="353"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="369"/>
         <source>Use Raw Input</source>
         <translation>Использовать необработанный ввод</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="166"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
         <source>XInput Source</source>
         <translation>Источник ввода XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="172"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="165"/>
+        <source>Controller LED Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerglobalsettingswidget.ui" line="188"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>Источник ввода XInput обеспечивает поддержку контроллеров XBox 360 / XBox One / XBox Series и контроллеров сторонних производителей, которые реализуют протокол XInput.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
         <source>Enable XInput Input Source</source>
         <translation>Включить источник ввода XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="192"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
         <source>Profile Settings</source>
         <translation>Настройки профиля</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="214"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>Когда эта опция включена, горячие клавиши могут быть установлены в этом профиле ввода и будут использоваться вместо глобальных горячих клавиш. По умолчанию горячие клавиши всегда используются всеми профилями.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Используйте горячие клавиши для каждого профиля</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerLEDSettingsDialog</name>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="14"/>
+        <source>Controller LED Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="20"/>
+        <source>SDL-0 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="32"/>
+        <source>SDL-1 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="44"/>
+        <source>SDL-2 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="56"/>
+        <source>SDL-3 LED</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3182,27 +3241,27 @@ This warning will only be shown once.</source>
         <translation>Установить...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="405"/>
+        <location filename="../controllerbindingwidgets.cpp" line="406"/>
         <source>Not Configured</source>
         <translation>Не настроен</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="411"/>
+        <location filename="../controllerbindingwidgets.cpp" line="412"/>
         <source>Set Frequency</source>
         <translation>Установить частоту</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="411"/>
+        <location filename="../controllerbindingwidgets.cpp" line="412"/>
         <source>Frequency: </source>
         <translation>Частота: </translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="440"/>
+        <location filename="../controllerbindingwidgets.cpp" line="441"/>
         <source>Macro will not repeat.</source>
         <translation>Макрос не будет повторяться.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="442"/>
+        <location filename="../controllerbindingwidgets.cpp" line="443"/>
         <source>Macro will toggle buttons every %1 frames.</source>
         <translation>Макрос будет переключать кнопки каждые %1 кадров.</translation>
     </message>
@@ -3379,36 +3438,36 @@ You cannot undo this action.</source>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1146"/>
+        <location filename="../../core/settings.cpp" line="1152"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="177"/>
-        <location filename="../../core/settings.cpp" line="1146"/>
+        <location filename="../../core/settings.cpp" line="1152"/>
         <source>Digital Controller</source>
         <translation>Цифровой контроллер</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1147"/>
+        <location filename="../../core/settings.cpp" line="1153"/>
         <source>Analog Controller (DualShock)</source>
         <translation>Аналоговый контроллер (DualShock)</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="403"/>
-        <location filename="../../core/settings.cpp" line="1147"/>
+        <location filename="../../core/settings.cpp" line="1153"/>
         <source>Analog Joystick</source>
         <translation>Аналоговый джойстик</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="198"/>
-        <location filename="../../core/settings.cpp" line="1148"/>
+        <location filename="../../core/settings.cpp" line="1154"/>
         <source>PlayStation Mouse</source>
         <translation>Мышь PlayStation</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="268"/>
-        <location filename="../../core/settings.cpp" line="1149"/>
+        <location filename="../../core/settings.cpp" line="1155"/>
         <source>NeGcon</source>
         <translation></translation>
     </message>
@@ -3419,7 +3478,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="234"/>
-        <location filename="../../core/settings.cpp" line="1148"/>
+        <location filename="../../core/settings.cpp" line="1154"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
     </message>
@@ -3512,42 +3571,42 @@ You cannot undo this action.</source>
 <context>
     <name>DebuggerMessage</name>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1697"/>
+        <location filename="../../core/cpu_core.cpp" line="1805"/>
         <source>Added breakpoint at 0x%08X.</source>
         <translation type="unfinished">Добавлена точка останова на 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1724"/>
+        <location filename="../../core/cpu_core.cpp" line="1832"/>
         <source>Removed breakpoint at 0x%08X.</source>
         <translation type="unfinished">Удалена точка останова на 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1756"/>
+        <location filename="../../core/cpu_core.cpp" line="1864"/>
         <source>0x%08X is not a call instruction.</source>
         <translation type="unfinished">0x%08X не является инструкцией вызова.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1767"/>
+        <location filename="../../core/cpu_core.cpp" line="1875"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
         <translation type="unfinished">Не удается пройти через двойную ветвь по адресу 0x%08X</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1774"/>
+        <location filename="../../core/cpu_core.cpp" line="1882"/>
         <source>Stepping over to 0x%08X.</source>
         <translation type="unfinished">Переход к 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1791"/>
+        <location filename="../../core/cpu_core.cpp" line="1899"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
         <translation type="unfinished">Сбой чтения инструкции на %08X при поиске конца функции.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1798"/>
+        <location filename="../../core/cpu_core.cpp" line="1906"/>
         <source>Stepping out to 0x%08X.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1805"/>
+        <location filename="../../core/cpu_core.cpp" line="1913"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3721,6 +3780,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="356"/>
+        <location filename="../debuggerwindow.cpp" line="254"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation type="unfinished">Переключить &amp;точку останова</translation>
     </message>
@@ -3756,6 +3816,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="391"/>
+        <location filename="../debuggerwindow.cpp" line="257"/>
         <source>&amp;Run To Cursor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3894,24 +3955,34 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="288"/>
-        <location filename="../debuggerwindow.cpp" line="315"/>
+        <location filename="../debuggerwindow.cpp" line="266"/>
+        <source>View in &amp;Dump</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="269"/>
+        <source>Follow Load/Store</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="321"/>
+        <location filename="../debuggerwindow.cpp" line="348"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation type="unfinished">Неверный шаблон поиска. Он должен содержать шестнадцатеричные цифры или вопросительные знаки.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="327"/>
+        <location filename="../debuggerwindow.cpp" line="360"/>
         <source>Pattern not found.</source>
         <translation type="unfinished">Шаблон не найден.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="343"/>
+        <location filename="../debuggerwindow.cpp" line="376"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translatorcomment>*(пройден конец памяти).</translatorcomment>
         <translation type="unfinished">Шаблон найден в 0x%1 (прошел конец памяти).</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="349"/>
+        <location filename="../debuggerwindow.cpp" line="382"/>
         <source>Pattern found at 0x%1.</source>
         <translation type="unfinished">Шаблон обнаружен в 0x%1.</translation>
     </message>
@@ -3937,22 +4008,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="762"/>
+        <location filename="../../core/settings.cpp" line="768"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Япония)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="762"/>
+        <location filename="../../core/settings.cpp" line="768"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (США, Канада)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="763"/>
+        <location filename="../../core/settings.cpp" line="769"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Европа, Австралия)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="763"/>
+        <location filename="../../core/settings.cpp" line="769"/>
         <source>Other</source>
         <translation>Прочие</translation>
     </message>
@@ -3960,17 +4031,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAlignment</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1066"/>
+        <location filename="../../core/settings.cpp" line="1072"/>
         <source>Left / Top</source>
         <translation>Слева / сверху</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1066"/>
+        <location filename="../../core/settings.cpp" line="1072"/>
         <source>Center</source>
         <translation>Центр</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1067"/>
+        <location filename="../../core/settings.cpp" line="1073"/>
         <source>Right / Bottom</source>
         <translation>Справа / снизу</translation>
     </message>
@@ -3978,17 +4049,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1013"/>
+        <location filename="../../core/settings.cpp" line="1019"/>
         <source>Auto (Game Native)</source>
         <translation>Авто (нативно игре)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1013"/>
+        <location filename="../../core/settings.cpp" line="1019"/>
         <source>Auto (Match Window)</source>
         <translation>Авто (соответствует окну)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1014"/>
+        <location filename="../../core/settings.cpp" line="1020"/>
         <source>Custom</source>
         <translation>Произвольный</translation>
     </message>
@@ -3996,17 +4067,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="985"/>
+        <location filename="../../core/settings.cpp" line="991"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="985"/>
+        <location filename="../../core/settings.cpp" line="991"/>
         <source>Only Overscan Area</source>
         <translation>Только нерабочая область экрана</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="986"/>
+        <location filename="../../core/settings.cpp" line="992"/>
         <source>All Borders</source>
         <translation>Все границы</translation>
     </message>
@@ -4360,17 +4431,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="531"/>
+        <location filename="../qthost.cpp" line="535"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="531"/>
+        <location filename="../qthost.cpp" line="535"/>
         <source>No resume save state found.</source>
         <translation>Состояние сохранения возобновления не найдено.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1301"/>
+        <location filename="../qthost.cpp" line="1305"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -4383,7 +4454,7 @@ Achievements: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1307"/>
+        <location filename="../qthost.cpp" line="1311"/>
         <source>%n points</source>
         <translation type="unfinished">
             <numerusform>%n балл</numerusform>
@@ -4392,27 +4463,27 @@ Achievements: %5 (%6)
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1313"/>
+        <location filename="../qthost.cpp" line="1317"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished">Rich presence неактивен или не поддерживается.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1317"/>
+        <location filename="../qthost.cpp" line="1321"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Игра не загружена или RetroAchievements недоступен.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1629"/>
+        <location filename="../qthost.cpp" line="1636"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1638"/>
+        <location filename="../qthost.cpp" line="1645"/>
         <source>Game: %1 FPS</source>
         <translation>Игра: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1648"/>
+        <location filename="../qthost.cpp" line="1655"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Видео: %1 FPS (%2%)</translation>
     </message>
@@ -5019,17 +5090,17 @@ Achievements: %5 (%6)
 <context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="956"/>
+        <location filename="../../core/settings.cpp" line="962"/>
         <source>Disabled</source>
         <translation>Отключен</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="956"/>
+        <location filename="../../core/settings.cpp" line="962"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation type="unfinished">Квадрат (десемпл 3D/сгладить все)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="957"/>
+        <location filename="../../core/settings.cpp" line="963"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>Адаптивный (сохранение 3D/сглаживание 2D)</translation>
     </message>
@@ -5037,27 +5108,27 @@ Achievements: %5 (%6)
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="863"/>
+        <location filename="../../core/settings.cpp" line="869"/>
         <source>Hardware (D3D11)</source>
         <translation>Аппаратный (D3D11)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="863"/>
+        <location filename="../../core/settings.cpp" line="869"/>
         <source>Hardware (D3D12)</source>
         <translation>Аппаратный (D3D12)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="866"/>
+        <location filename="../../core/settings.cpp" line="872"/>
         <source>Hardware (Vulkan)</source>
         <translation>Аппаратный (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="869"/>
+        <location filename="../../core/settings.cpp" line="875"/>
         <source>Hardware (OpenGL)</source>
         <translation>Аппаратный (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="871"/>
+        <location filename="../../core/settings.cpp" line="877"/>
         <source>Software</source>
         <translation>Программный</translation>
     </message>
@@ -5168,37 +5239,37 @@ Achievements: %5 (%6)
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="924"/>
+        <location filename="../../core/settings.cpp" line="930"/>
         <source>Nearest-Neighbor</source>
         <translation>Ближайший сосед</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="924"/>
+        <location filename="../../core/settings.cpp" line="930"/>
         <source>Bilinear</source>
         <translation>Билинейная</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="925"/>
+        <location filename="../../core/settings.cpp" line="931"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Билинейная (без смешивания краев)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="925"/>
+        <location filename="../../core/settings.cpp" line="931"/>
         <source>JINC2 (Slow)</source>
         <translation>JINC2 (медленно)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="926"/>
+        <location filename="../../core/settings.cpp" line="932"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <translation>JINC2 (медленно, без смешивания краев)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="927"/>
+        <location filename="../../core/settings.cpp" line="933"/>
         <source>xBR (Very Slow)</source>
         <translation>xBR (очень медленно)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="928"/>
+        <location filename="../../core/settings.cpp" line="934"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <translation>xBR (очень медленно, без смешивания краев)</translation>
     </message>
@@ -5226,53 +5297,53 @@ Achievements: %5 (%6)
         <translation>PSF</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="930"/>
+        <location filename="../../frontend-common/game_list.cpp" line="951"/>
         <source>Never</source>
         <translation>Никогда</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="947"/>
+        <location filename="../../frontend-common/game_list.cpp" line="968"/>
         <source>Today</source>
         <translation>Сегодня</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="952"/>
+        <location filename="../../frontend-common/game_list.cpp" line="973"/>
         <source>Yesterday</source>
         <translatorcomment>*Недавно</translatorcomment>
         <translation>Вчера</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="975"/>
+        <location filename="../../frontend-common/game_list.cpp" line="996"/>
         <source>{}h {}m</source>
         <translation>{}ч {}м</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="977"/>
+        <location filename="../../frontend-common/game_list.cpp" line="998"/>
         <source>{}h {}m {}s</source>
         <translation>{}ч {}м {}с</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="979"/>
+        <location filename="../../frontend-common/game_list.cpp" line="1000"/>
         <source>{}m {}s</source>
         <translation>{}м {}с</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="981"/>
+        <location filename="../../frontend-common/game_list.cpp" line="1002"/>
         <source>{}s</source>
         <translation>{}с</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="983"/>
+        <location filename="../../frontend-common/game_list.cpp" line="1004"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="988"/>
+        <location filename="../../frontend-common/game_list.cpp" line="1009"/>
         <source>{} hours</source>
         <translation>{} часов</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="990"/>
+        <location filename="../../frontend-common/game_list.cpp" line="1011"/>
         <source>{} minutes</source>
         <translation>{} минут</translation>
     </message>
@@ -6088,473 +6159,473 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="668"/>
-        <location filename="../../frontend-common/common_host.cpp" line="675"/>
-        <location filename="../../frontend-common/common_host.cpp" line="682"/>
-        <location filename="../../frontend-common/common_host.cpp" line="688"/>
-        <location filename="../../frontend-common/common_host.cpp" line="694"/>
-        <location filename="../../frontend-common/common_host.cpp" line="701"/>
-        <location filename="../../frontend-common/common_host.cpp" line="707"/>
-        <location filename="../../frontend-common/common_host.cpp" line="713"/>
-        <location filename="../../frontend-common/common_host.cpp" line="720"/>
-        <location filename="../../frontend-common/common_host.cpp" line="727"/>
-        <location filename="../../frontend-common/common_host.cpp" line="740"/>
+        <location filename="../../frontend-common/common_host.cpp" line="676"/>
+        <location filename="../../frontend-common/common_host.cpp" line="683"/>
+        <location filename="../../frontend-common/common_host.cpp" line="690"/>
+        <location filename="../../frontend-common/common_host.cpp" line="696"/>
+        <location filename="../../frontend-common/common_host.cpp" line="702"/>
+        <location filename="../../frontend-common/common_host.cpp" line="709"/>
+        <location filename="../../frontend-common/common_host.cpp" line="715"/>
+        <location filename="../../frontend-common/common_host.cpp" line="721"/>
+        <location filename="../../frontend-common/common_host.cpp" line="728"/>
+        <location filename="../../frontend-common/common_host.cpp" line="735"/>
+        <location filename="../../frontend-common/common_host.cpp" line="748"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="675"/>
+        <location filename="../../frontend-common/common_host.cpp" line="683"/>
         <source>Fast Forward</source>
         <translation>Перемотка вперед</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="682"/>
+        <location filename="../../frontend-common/common_host.cpp" line="690"/>
         <source>Toggle Fast Forward</source>
         <translation>Переключить перемотку вперед</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="688"/>
+        <location filename="../../frontend-common/common_host.cpp" line="696"/>
         <source>Turbo</source>
         <translation>Ускорение</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="694"/>
+        <location filename="../../frontend-common/common_host.cpp" line="702"/>
         <source>Toggle Turbo</source>
         <translation>Переключить ускорение</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="701"/>
+        <location filename="../../frontend-common/common_host.cpp" line="709"/>
         <source>Toggle Fullscreen</source>
         <translation>Переключение полноэкранного режима</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="707"/>
+        <location filename="../../frontend-common/common_host.cpp" line="715"/>
         <source>Toggle Pause</source>
         <translation>Переключить паузу</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="789"/>
+        <location filename="../../frontend-common/common_host.cpp" line="797"/>
         <source>Toggle Cheats</source>
         <translation>Переключить читы</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="713"/>
+        <location filename="../../frontend-common/common_host.cpp" line="721"/>
         <source>Power Off System</source>
         <translation>Выключить питание системы</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="795"/>
+        <location filename="../../frontend-common/common_host.cpp" line="803"/>
         <source>Toggle Patch Codes</source>
         <translation>Переключить коды исправлений</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="754"/>
+        <location filename="../../frontend-common/common_host.cpp" line="762"/>
         <source>Reset System</source>
         <translation>Сбросить систему</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="720"/>
+        <location filename="../../frontend-common/common_host.cpp" line="728"/>
         <source>Save Screenshot</source>
         <translation>Сохранить снимок экрана</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="776"/>
+        <location filename="../../frontend-common/common_host.cpp" line="784"/>
         <source>Frame Step</source>
         <translation>Шаг кадра</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="782"/>
+        <location filename="../../frontend-common/common_host.cpp" line="790"/>
         <source>Rewind</source>
         <translation>Перемотка назад</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="866"/>
-        <location filename="../../frontend-common/common_host.cpp" line="872"/>
-        <location filename="../../frontend-common/common_host.cpp" line="898"/>
-        <location filename="../../frontend-common/common_host.cpp" line="904"/>
-        <location filename="../../frontend-common/common_host.cpp" line="910"/>
-        <location filename="../../frontend-common/common_host.cpp" line="916"/>
-        <location filename="../../frontend-common/common_host.cpp" line="922"/>
-        <location filename="../../frontend-common/common_host.cpp" line="933"/>
-        <location filename="../../frontend-common/common_host.cpp" line="939"/>
-        <location filename="../../frontend-common/common_host.cpp" line="960"/>
+        <location filename="../../frontend-common/common_host.cpp" line="874"/>
+        <location filename="../../frontend-common/common_host.cpp" line="880"/>
+        <location filename="../../frontend-common/common_host.cpp" line="906"/>
+        <location filename="../../frontend-common/common_host.cpp" line="912"/>
+        <location filename="../../frontend-common/common_host.cpp" line="918"/>
+        <location filename="../../frontend-common/common_host.cpp" line="924"/>
+        <location filename="../../frontend-common/common_host.cpp" line="930"/>
+        <location filename="../../frontend-common/common_host.cpp" line="941"/>
+        <location filename="../../frontend-common/common_host.cpp" line="947"/>
+        <location filename="../../frontend-common/common_host.cpp" line="968"/>
         <source>Graphics</source>
         <translation>Графика</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="867"/>
+        <location filename="../../frontend-common/common_host.cpp" line="875"/>
         <source>Toggle Software Rendering</source>
         <translation>Переключить программный рендер</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="872"/>
+        <location filename="../../frontend-common/common_host.cpp" line="880"/>
         <source>Toggle PGXP</source>
         <translation>Переключить PGXP</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="940"/>
+        <location filename="../../frontend-common/common_host.cpp" line="948"/>
         <source>Toggle PGXP Depth Buffer</source>
         <translation>Переключить буфер глубины PGXP</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="899"/>
+        <location filename="../../frontend-common/common_host.cpp" line="907"/>
         <source>Increase Resolution Scale</source>
         <translation>Увеличить масштаб разрешения</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="668"/>
+        <location filename="../../frontend-common/common_host.cpp" line="676"/>
         <source>Open Pause Menu</source>
         <translation>Открыть меню паузы</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="727"/>
+        <location filename="../../frontend-common/common_host.cpp" line="735"/>
         <source>Open Achievement List</source>
         <translation>Открыть список достижений</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="740"/>
+        <location filename="../../frontend-common/common_host.cpp" line="748"/>
         <source>Open Leaderboard List</source>
         <translation>Открыть список лидеров</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="754"/>
-        <location filename="../../frontend-common/common_host.cpp" line="759"/>
-        <location filename="../../frontend-common/common_host.cpp" line="769"/>
-        <location filename="../../frontend-common/common_host.cpp" line="776"/>
-        <location filename="../../frontend-common/common_host.cpp" line="782"/>
-        <location filename="../../frontend-common/common_host.cpp" line="789"/>
-        <location filename="../../frontend-common/common_host.cpp" line="795"/>
-        <location filename="../../frontend-common/common_host.cpp" line="802"/>
-        <location filename="../../frontend-common/common_host.cpp" line="830"/>
-        <location filename="../../frontend-common/common_host.cpp" line="842"/>
-        <location filename="../../frontend-common/common_host.cpp" line="854"/>
+        <location filename="../../frontend-common/common_host.cpp" line="762"/>
+        <location filename="../../frontend-common/common_host.cpp" line="767"/>
+        <location filename="../../frontend-common/common_host.cpp" line="777"/>
+        <location filename="../../frontend-common/common_host.cpp" line="784"/>
+        <location filename="../../frontend-common/common_host.cpp" line="790"/>
+        <location filename="../../frontend-common/common_host.cpp" line="797"/>
+        <location filename="../../frontend-common/common_host.cpp" line="803"/>
+        <location filename="../../frontend-common/common_host.cpp" line="810"/>
+        <location filename="../../frontend-common/common_host.cpp" line="838"/>
+        <location filename="../../frontend-common/common_host.cpp" line="850"/>
+        <location filename="../../frontend-common/common_host.cpp" line="862"/>
         <source>System</source>
         <translation>Система</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="759"/>
+        <location filename="../../frontend-common/common_host.cpp" line="767"/>
         <source>Change Disc</source>
         <translation>Сменить диск</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="769"/>
+        <location filename="../../frontend-common/common_host.cpp" line="777"/>
         <source>Swap Memory Card Slots</source>
         <translation>Поменять слоты карт памяти</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="803"/>
+        <location filename="../../frontend-common/common_host.cpp" line="811"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
         <translation>Переключить управление тактовой частотой (разгон)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="831"/>
+        <location filename="../../frontend-common/common_host.cpp" line="839"/>
         <source>Increase Emulation Speed</source>
         <translation>Увеличить скорость эмуляции</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="843"/>
+        <location filename="../../frontend-common/common_host.cpp" line="851"/>
         <source>Decrease Emulation Speed</source>
         <translation>Уменьшить скорость эмуляции</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="855"/>
+        <location filename="../../frontend-common/common_host.cpp" line="863"/>
         <source>Reset Emulation Speed</source>
         <translation>Сбросить скорость эмуляции</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="905"/>
+        <location filename="../../frontend-common/common_host.cpp" line="913"/>
         <source>Decrease Resolution Scale</source>
         <translation>Уменьшить масштаб разрешения</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="911"/>
+        <location filename="../../frontend-common/common_host.cpp" line="919"/>
         <source>Toggle Post-Processing</source>
         <translation>Переключить постобработку</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="917"/>
+        <location filename="../../frontend-common/common_host.cpp" line="925"/>
         <source>Reload Post Processing Shaders</source>
         <translation>Перезагрузить шейдеры постобработки</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="923"/>
+        <location filename="../../frontend-common/common_host.cpp" line="931"/>
         <source>Reload Texture Replacements</source>
         <translation>Перезагрузить замены текстур</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="933"/>
+        <location filename="../../frontend-common/common_host.cpp" line="941"/>
         <source>Toggle Widescreen</source>
         <translation>Переключить широкоэкранный режим</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="960"/>
+        <location filename="../../frontend-common/common_host.cpp" line="968"/>
         <source>Toggle PGXP CPU Mode</source>
         <translation>Переключить режим процессора PGXP</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1049"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1054"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1059"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1064"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1070"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1077"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1083"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1057"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1062"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1067"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1072"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1078"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1085"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1091"/>
         <source>Save States</source>
         <translation>Сохранение состояний</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1050"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1058"/>
         <source>Load From Selected Slot</source>
         <translatorcomment>**загрузка из выбранного слота</translatorcomment>
         <translation>Загрузить из выбранного слота</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1055"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1063"/>
         <source>Save To Selected Slot</source>
         <translatorcomment>**сохранение в выбранный слот</translatorcomment>
         <translation>Сохранить в выбранный слот</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1060"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1068"/>
         <source>Select Previous Save Slot</source>
         <translation>Выбрать предыдущий слот для сохранения</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1065"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1073"/>
         <source>Select Next Save Slot</source>
         <translation>Выбрать следующий слот для сохранения</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1070"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1078"/>
         <source>Undo Load State</source>
         <translation>Отменить загрузку состояния</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1089"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1097"/>
         <source>Load Game State 1</source>
         <translation>Загрузить состояние игры 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1091"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1099"/>
         <source>Load Game State 2</source>
         <translation>Загрузить состояние игры 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1093"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1101"/>
         <source>Load Game State 3</source>
         <translation>Загрузить состояние игры 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1095"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1103"/>
         <source>Load Game State 4</source>
         <translation>Загрузить состояние игры 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1097"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1105"/>
         <source>Load Game State 5</source>
         <translation>Загрузить состояние игры 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1099"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1107"/>
         <source>Load Game State 6</source>
         <translation>Загрузить состояние игры 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1101"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1109"/>
         <source>Load Game State 7</source>
         <translation>Загрузить состояние игры 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1103"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1111"/>
         <source>Load Game State 8</source>
         <translation>Загрузить состояние игры 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1105"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1113"/>
         <source>Load Game State 9</source>
         <translation>Загрузить состояние игры 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1107"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1115"/>
         <source>Load Game State 10</source>
         <translation>Загрузить состояние игры 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1090"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1098"/>
         <source>Save Game State 1</source>
         <translation>Сохранить состояние игры 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1092"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1100"/>
         <source>Save Game State 2</source>
         <translation>Сохранить состояние игры 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1094"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1102"/>
         <source>Save Game State 3</source>
         <translation>Сохранить состояние игры 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1096"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1104"/>
         <source>Save Game State 4</source>
         <translation>Сохранить состояние игры 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1098"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1106"/>
         <source>Save Game State 5</source>
         <translation>Сохранить состояние игры 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1100"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1108"/>
         <source>Save Game State 6</source>
         <translation>Сохранить состояние игры 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1102"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1110"/>
         <source>Save Game State 7</source>
         <translation>Сохранить состояние игры 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1104"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1112"/>
         <source>Save Game State 8</source>
         <translation>Сохранить состояние игры 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1106"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1114"/>
         <source>Save Game State 9</source>
         <translation>Сохранить состояние игры 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1108"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1116"/>
         <source>Save Game State 10</source>
         <translation>Сохранить состояние игры 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1110"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1118"/>
         <source>Load Global State 1</source>
         <translation>Загрузить глобальное состояние 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1112"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1120"/>
         <source>Load Global State 2</source>
         <translation>Загрузить глобальное состояние 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1114"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1122"/>
         <source>Load Global State 3</source>
         <translation>Загрузить глобальное состояние 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1116"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1124"/>
         <source>Load Global State 4</source>
         <translation>Загрузить глобальное состояние 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1118"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1126"/>
         <source>Load Global State 5</source>
         <translation>Загрузить глобальное состояние 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1120"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1128"/>
         <source>Load Global State 6</source>
         <translation>Загрузить глобальное состояние 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1122"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1130"/>
         <source>Load Global State 7</source>
         <translation>Загрузить глобальное состояние 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1124"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1132"/>
         <source>Load Global State 8</source>
         <translation>Загрузить глобальное состояние 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1126"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1134"/>
         <source>Load Global State 9</source>
         <translation>Загрузить глобальное состояние 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1128"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1136"/>
         <source>Load Global State 10</source>
         <translation>Загрузить глобальное состояние 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1111"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1119"/>
         <source>Save Global State 1</source>
         <translation>Сохранить глобальное состояние 1</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1113"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1121"/>
         <source>Save Global State 2</source>
         <translation>Сохранить глобальное состояние 2</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1115"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1123"/>
         <source>Save Global State 3</source>
         <translation>Сохранить глобальное состояние 3</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1117"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1125"/>
         <source>Save Global State 4</source>
         <translation>Сохранить глобальное состояние 4</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1119"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1127"/>
         <source>Save Global State 5</source>
         <translation>Сохранить глобальное состояние 5</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1121"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1129"/>
         <source>Save Global State 6</source>
         <translation>Сохранить глобальное состояние 6</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1123"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1131"/>
         <source>Save Global State 7</source>
         <translation>Сохранить глобальное состояние 7</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1125"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1133"/>
         <source>Save Global State 8</source>
         <translation>Сохранить глобальное состояние 8</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1127"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1135"/>
         <source>Save Global State 9</source>
         <translation>Сохранить глобальное состояние 9</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1129"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1137"/>
         <source>Save Global State 10</source>
         <translation>Сохранить глобальное состояние 10</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="987"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1006"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1018"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1032"/>
+        <location filename="../../frontend-common/common_host.cpp" line="995"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1014"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1026"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1040"/>
         <source>Audio</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="987"/>
+        <location filename="../../frontend-common/common_host.cpp" line="995"/>
         <source>Toggle Mute</source>
         <translation>Переключить звук</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1006"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1014"/>
         <source>Toggle CD Audio Mute</source>
         <translatorcomment>*компакт-диска</translatorcomment>
         <translation>Переключить звук CD</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1018"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1026"/>
         <source>Volume Up</source>
         <translation>Увеличить громкость</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1032"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1040"/>
         <source>Volume Down</source>
         <translation>Уменьшить громкость</translation>
     </message>
@@ -6587,18 +6658,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Очистить привязки</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="21"/>
+        <location filename="../inputbindingdialog.cpp" line="22"/>
         <source>Bindings for %1 %2</source>
         <translation>Привязки для %1 %2</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="22"/>
+        <location filename="../inputbindingdialog.cpp" line="23"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="130"/>
-        <location filename="../inputbindingdialog.cpp" line="145"/>
+        <location filename="../inputbindingdialog.cpp" line="131"/>
+        <location filename="../inputbindingdialog.cpp" line="147"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Нажмите кнопку/ось... [%1]</translation>
     </message>
@@ -6606,7 +6677,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>InputBindingWidget</name>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="63"/>
+        <location filename="../inputbindingwidgets.cpp" line="65"/>
         <source>%n bindings</source>
         <translation>
             <numerusform>%n привязка</numerusform>
@@ -6615,8 +6686,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         </translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="278"/>
-        <location filename="../inputbindingwidgets.cpp" line="293"/>
+        <location filename="../inputbindingwidgets.cpp" line="280"/>
+        <location filename="../inputbindingwidgets.cpp" line="296"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Нажмите кнопку/Ось... [%1]</translation>
     </message>
@@ -6624,17 +6695,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>InputVibrationBindingWidget</name>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="418"/>
+        <location filename="../inputbindingwidgets.cpp" line="446"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="419"/>
+        <location filename="../inputbindingwidgets.cpp" line="447"/>
         <source>No devices with vibration motors were detected.</source>
         <translation>Устройств с вибродвигателями обнаружено не было.</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="425"/>
+        <location filename="../inputbindingwidgets.cpp" line="453"/>
         <source>Select vibration motor for %1.</source>
         <translation>Выберите вибрационный двигатель для %1.</translation>
     </message>
@@ -6642,52 +6713,52 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="702"/>
+        <location filename="../../core/settings.cpp" line="708"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="702"/>
+        <location filename="../../core/settings.cpp" line="708"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="702"/>
+        <location filename="../../core/settings.cpp" line="708"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="703"/>
+        <location filename="../../core/settings.cpp" line="709"/>
         <source>Performance</source>
         <translation>Производительность</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="703"/>
+        <location filename="../../core/settings.cpp" line="709"/>
         <source>Information</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="704"/>
+        <location filename="../../core/settings.cpp" line="710"/>
         <source>Verbose</source>
         <translation>Подробный</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="704"/>
+        <location filename="../../core/settings.cpp" line="710"/>
         <source>Developer</source>
         <translation>Разработчик</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="704"/>
+        <location filename="../../core/settings.cpp" line="710"/>
         <source>Profile</source>
         <translation>Профиль</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="705"/>
+        <location filename="../../core/settings.cpp" line="711"/>
         <source>Debug</source>
         <translation>Отладка</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="705"/>
+        <location filename="../../core/settings.cpp" line="711"/>
         <source>Trace</source>
         <translation>Трассировка</translation>
     </message>
@@ -6706,8 +6777,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../mainwindow.ui" line="39"/>
-        <location filename="../mainwindow.cpp" line="1159"/>
-        <location filename="../mainwindow.cpp" line="1398"/>
+        <location filename="../mainwindow.cpp" line="1193"/>
+        <location filename="../mainwindow.cpp" line="1432"/>
         <source>Change Disc</source>
         <translation>Сменить диск</translation>
     </message>
@@ -6718,8 +6789,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../mainwindow.ui" line="63"/>
-        <location filename="../mainwindow.cpp" line="750"/>
-        <location filename="../mainwindow.cpp" line="1027"/>
+        <location filename="../mainwindow.cpp" line="784"/>
+        <location filename="../mainwindow.cpp" line="1061"/>
         <source>Load State</source>
         <translation>Загрузить состояние</translation>
     </message>
@@ -7183,7 +7254,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../mainwindow.ui" line="789"/>
-        <location filename="../mainwindow.cpp" line="747"/>
+        <location filename="../mainwindow.cpp" line="781"/>
         <source>Resume</source>
         <translation>Продолжить</translation>
     </message>
@@ -7218,95 +7289,95 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Редактор &amp;карт памяти</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="227"/>
+        <location filename="../mainwindow.cpp" line="242"/>
         <source>Failed to create host display device context.</source>
         <translation type="unfinished">Не удалось создать контекст устройства отображения хоста.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="676"/>
-        <location filename="../mainwindow.cpp" line="1144"/>
+        <location filename="../mainwindow.cpp" line="705"/>
+        <location filename="../mainwindow.cpp" line="1178"/>
         <source>Select Disc Image</source>
         <translation>Выбрать образ диска</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1129"/>
+        <location filename="../mainwindow.cpp" line="1163"/>
         <source>Start Disc</source>
         <translation>Запустить диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="691"/>
+        <location filename="../mainwindow.cpp" line="720"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Не удалось найти никаких устройств CD-ROM. Пожалуйста, убедитесь, что у вас подключен привод CD-ROM и достаточно разрешений для доступа к нему.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="57"/>
+        <location filename="../mainwindow.cpp" line="58"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation>Все типы файлов (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Образы Single-Track Raw (*.bin *.img *.iso);;Cue Sheets (*.cue);;Образы MAME CHD (*.chd);;Образы Error Code Modeler (*.ecm);;Образы Media Descriptor Sidecar (*.mds);;PlayStation EBOOTы (*.pbp);;Исполняемые файлы PlayStation (*.exe *.psexe *.ps-exe);;Файлы Портативного формата звука (*.psf *.minipsf);;Плейлисты (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="218"/>
-        <location filename="../mainwindow.cpp" line="227"/>
-        <location filename="../mainwindow.cpp" line="316"/>
-        <location filename="../mainwindow.cpp" line="1047"/>
-        <location filename="../mainwindow.cpp" line="1312"/>
+        <location filename="../mainwindow.cpp" line="233"/>
+        <location filename="../mainwindow.cpp" line="242"/>
+        <location filename="../mainwindow.cpp" line="331"/>
+        <location filename="../mainwindow.cpp" line="1081"/>
+        <location filename="../mainwindow.cpp" line="1346"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="218"/>
+        <location filename="../mainwindow.cpp" line="233"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished">Не удалось получить информацию об окне из виджета</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="316"/>
+        <location filename="../mainwindow.cpp" line="331"/>
         <source>Failed to get new window info from widget</source>
         <translation type="unfinished">Не удалось получить информацию о новом окне из виджета</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="582"/>
+        <location filename="../mainwindow.cpp" line="602"/>
         <source>Paused</source>
         <translation type="unfinished">Приостановлено</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="705"/>
+        <location filename="../mainwindow.cpp" line="734"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="709"/>
+        <location filename="../mainwindow.cpp" line="738"/>
         <source>Select disc drive:</source>
         <translatorcomment>*Выбрать</translatorcomment>
         <translation type="unfinished">Выберите дисковод:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="770"/>
+        <location filename="../mainwindow.cpp" line="804"/>
         <source>Resume (%1)</source>
         <translation type="unfinished">Продолжить (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="777"/>
-        <location filename="../mainwindow.cpp" line="894"/>
-        <location filename="../mainwindow.cpp" line="933"/>
+        <location filename="../mainwindow.cpp" line="811"/>
+        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="967"/>
         <source>Game Save %1 (%2)</source>
         <translation type="unfinished">Игра сохранена %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="786"/>
+        <location filename="../mainwindow.cpp" line="820"/>
         <source>Edit Memory Cards...</source>
         <translation>Редактировать карты памяти...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="834"/>
+        <location filename="../mainwindow.cpp" line="868"/>
         <source>Delete Save States...</source>
         <translation>Удалить сохранённые состояния...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="840"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Confirm Save State Deletion</source>
         <translation>Подтвердить удаление сохранённых состояний</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="841"/>
+        <location filename="../mainwindow.cpp" line="875"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -7315,67 +7386,67 @@ The saves will not be recoverable.</source>
 Сохранения не подлежат восстановлению.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="878"/>
+        <location filename="../mainwindow.cpp" line="912"/>
         <source>Load From File...</source>
         <translation type="unfinished">Загрузка из файла...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="880"/>
-        <location filename="../mainwindow.cpp" line="922"/>
+        <location filename="../mainwindow.cpp" line="914"/>
+        <location filename="../mainwindow.cpp" line="956"/>
         <source>Select Save State File</source>
         <translation type="unfinished">Выберите файл состояния сохранения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="880"/>
-        <location filename="../mainwindow.cpp" line="922"/>
+        <location filename="../mainwindow.cpp" line="914"/>
+        <location filename="../mainwindow.cpp" line="956"/>
         <source>Save States (*.sav)</source>
         <translation>Сохраненные состояния (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="886"/>
+        <location filename="../mainwindow.cpp" line="920"/>
         <source>Undo Load State</source>
         <translation>Отменить загрузку состояния</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="894"/>
-        <location filename="../mainwindow.cpp" line="933"/>
+        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="967"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Сохранение игры %1 (пусто)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="900"/>
-        <location filename="../mainwindow.cpp" line="939"/>
+        <location filename="../mainwindow.cpp" line="934"/>
+        <location filename="../mainwindow.cpp" line="973"/>
         <source>Global Save %1 (%2)</source>
         <translation>Глобальное сохранение %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="900"/>
-        <location filename="../mainwindow.cpp" line="939"/>
+        <location filename="../mainwindow.cpp" line="934"/>
+        <location filename="../mainwindow.cpp" line="973"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Глобальное сохранение %1 (пусто)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="917"/>
+        <location filename="../mainwindow.cpp" line="951"/>
         <source>Save To File...</source>
         <translation>Сохранить в файл...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="966"/>
+        <location filename="../mainwindow.cpp" line="1000"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Включить читы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="968"/>
+        <location filename="../mainwindow.cpp" line="1002"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Применить читы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1022"/>
+        <location filename="../mainwindow.cpp" line="1056"/>
         <source>Load Resume State</source>
         <translation>Загрузить состояние возобновления</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1023"/>
+        <location filename="../mainwindow.cpp" line="1057"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -7388,232 +7459,249 @@ Do you want to load this state, or start from a fresh boot?</source>
 Вы хотите загрузить это состояние или начать с новой загрузки?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1028"/>
+        <location filename="../mainwindow.cpp" line="1062"/>
         <source>Fresh Boot</source>
         <translation>Новая загрузка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1029"/>
+        <location filename="../mainwindow.cpp" line="1063"/>
         <source>Delete And Boot</source>
         <translation>Удалить и загрузить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1048"/>
+        <location filename="../mainwindow.cpp" line="1082"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Не удалось удалить файл сохранения состояния &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1105"/>
+        <location filename="../mainwindow.cpp" line="1139"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished">Подтверждение замены диска</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1106"/>
+        <location filename="../mainwindow.cpp" line="1140"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished">Вы хотите поменять диски местами или загрузить новый образ (через сброс системы)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1108"/>
+        <location filename="../mainwindow.cpp" line="1142"/>
         <source>Swap Disc</source>
         <translation type="unfinished">Поменять диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1109"/>
+        <location filename="../mainwindow.cpp" line="1143"/>
         <source>Reset</source>
         <translation>Сброс</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1110"/>
+        <location filename="../mainwindow.cpp" line="1144"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1194"/>
-        <location filename="../mainwindow.cpp" line="2650"/>
+        <location filename="../mainwindow.cpp" line="1228"/>
+        <location filename="../mainwindow.cpp" line="2695"/>
         <source>Cheat Manager</source>
         <translation>Менеджер читов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1312"/>
+        <location filename="../mainwindow.cpp" line="1346"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished">Вы должны выбрать диск для замены дисков.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1351"/>
+        <location filename="../mainwindow.cpp" line="1385"/>
         <source>Properties...</source>
         <translation>Свойства...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1355"/>
+        <location filename="../mainwindow.cpp" line="1389"/>
         <source>Open Containing Directory...</source>
         <translation>Открыть папку с содержимым...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1360"/>
+        <location filename="../mainwindow.cpp" line="1394"/>
         <source>Set Cover Image...</source>
         <translation>Установить изображение обложки...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1370"/>
+        <location filename="../mainwindow.cpp" line="1404"/>
         <source>Default Boot</source>
         <translation>Обычный запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1373"/>
+        <location filename="../mainwindow.cpp" line="1407"/>
         <source>Fast Boot</source>
         <translation>Быстрый запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1379"/>
+        <location filename="../mainwindow.cpp" line="1413"/>
         <source>Full Boot</source>
         <translation>Полный запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1387"/>
+        <location filename="../mainwindow.cpp" line="1421"/>
         <source>Boot and Debug</source>
         <translation>Загрузка и отладка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1408"/>
+        <location filename="../mainwindow.cpp" line="1441"/>
         <source>Exclude From List</source>
         <translation>Исключить из списка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1411"/>
+        <location filename="../mainwindow.cpp" line="1444"/>
+        <source>Reset Play Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1448"/>
         <source>Add Search Directory...</source>
         <translation>Добавить папку для поиска...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1419"/>
+        <location filename="../mainwindow.cpp" line="1456"/>
         <source>Select Cover Image</source>
         <translation>Выбрать изображение обложки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1420"/>
+        <location filename="../mainwindow.cpp" line="1457"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>Все типы изображений (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1426"/>
+        <location filename="../mainwindow.cpp" line="1463"/>
         <source>Cover Already Exists</source>
         <translation>Обложка уже существует</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1427"/>
+        <location filename="../mainwindow.cpp" line="1464"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Обложка изображения для этой игры уже существует, вы хотите заменить её?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1441"/>
-        <location filename="../mainwindow.cpp" line="1447"/>
+        <location filename="../mainwindow.cpp" line="1478"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>Copy Error</source>
         <translation>Ошибка копирования</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1441"/>
+        <location filename="../mainwindow.cpp" line="1478"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Не удалось удалить существующую обложку &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1447"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Не удалось скопировать &apos;%1&apos; в &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1587"/>
+        <location filename="../mainwindow.cpp" line="1494"/>
+        <source>Confirm Reset</source>
+        <translation type="unfinished">Подтвердить сброс</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1495"/>
+        <source>Are you sure you want to reset the play time for &apos;%1&apos;?
+
+This action cannot be undone.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1638"/>
         <source>%1x Scale</source>
         <translation>%1x Масштаб</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1996"/>
-        <location filename="../mainwindow.cpp" line="2003"/>
-        <location filename="../mainwindow.cpp" line="2012"/>
+        <location filename="../mainwindow.cpp" line="2047"/>
+        <location filename="../mainwindow.cpp" line="2054"/>
+        <location filename="../mainwindow.cpp" line="2063"/>
         <source>Destination File</source>
         <translation>Целевой файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1996"/>
-        <location filename="../mainwindow.cpp" line="2012"/>
+        <location filename="../mainwindow.cpp" line="2047"/>
+        <location filename="../mainwindow.cpp" line="2063"/>
         <source>Binary Files (*.bin)</source>
         <translation>Двоичные файлы (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2004"/>
+        <location filename="../mainwindow.cpp" line="2055"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Двоичные файлы (*.bin);;Изображения PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2028"/>
+        <location filename="../mainwindow.cpp" line="2079"/>
         <source>Default</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2029"/>
+        <location filename="../mainwindow.cpp" line="2080"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2030"/>
+        <location filename="../mainwindow.cpp" line="2081"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Dark Fusion (Серый)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2031"/>
+        <location filename="../mainwindow.cpp" line="2082"/>
         <source>Dark Fusion (Blue)</source>
         <translation>Dark Fusion (Синий)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2032"/>
+        <location filename="../mainwindow.cpp" line="2083"/>
         <source>QDarkStyle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2473"/>
+        <location filename="../mainwindow.cpp" line="2531"/>
         <source>Confirm Shutdown</source>
         <translation>Подтвердить завершение работы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2474"/>
+        <location filename="../mainwindow.cpp" line="2532"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Вы уверены, что хотите выключить виртуальную машину?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2476"/>
+        <location filename="../mainwindow.cpp" line="2534"/>
         <source>Save State For Resume</source>
         <translatorcomment>*возобновления</translatorcomment>
         <translation>Сохранить состояние для продолжения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2565"/>
-        <location filename="../mainwindow.cpp" line="2570"/>
-        <location filename="../mainwindow.cpp" line="2590"/>
-        <location filename="../mainwindow.cpp" line="2599"/>
+        <location filename="../mainwindow.cpp" line="2610"/>
+        <location filename="../mainwindow.cpp" line="2615"/>
+        <location filename="../mainwindow.cpp" line="2635"/>
+        <location filename="../mainwindow.cpp" line="2644"/>
         <source>Memory Card Not Found</source>
         <translation>Карта памяти не найдена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2566"/>
+        <location filename="../mainwindow.cpp" line="2611"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Карта памяти &apos;%1&apos; не существует. Хотите создать пустую карту памяти?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2571"/>
+        <location filename="../mainwindow.cpp" line="2616"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Не удалось создать карту памяти &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2591"/>
-        <location filename="../mainwindow.cpp" line="2600"/>
+        <location filename="../mainwindow.cpp" line="2636"/>
+        <location filename="../mainwindow.cpp" line="2645"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Карта памяти &apos;%1&apos; не найдена. Попробуйте начать игру и сохранить, чтобы создать её.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2648"/>
+        <location filename="../mainwindow.cpp" line="2693"/>
         <source>Do not show again</source>
         <translation>Больше не показывать</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2652"/>
+        <location filename="../mainwindow.cpp" line="2697"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -7626,17 +7714,17 @@ Are you sure you want to continue?</source>
 Уверены, что хотите продолжить?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2715"/>
+        <location filename="../mainwindow.cpp" line="2760"/>
         <source>Updater Error</source>
         <translation>Ошибка обновления</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2721"/>
+        <location filename="../mainwindow.cpp" line="2766"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;К сожалению, вы пытаетесь обновить версию DuckStation, которая не является официальным выпуском GitHub. Чтобы предотвратить несовместимость, автоматическое обновление включено только в официальных сборках.&lt;/p&gt;&lt;p&gt;Чтобы получить официальную сборку, следуйте инструкциям в разделе &quot;Загрузка и запуск&quot; по ссылке ниже:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2727"/>
+        <location filename="../mainwindow.cpp" line="2772"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Автоматические обновление не поддерживается на этой платформе.</translation>
     </message>
@@ -7971,32 +8059,32 @@ Are you sure you want to continue?</source>
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1178"/>
+        <location filename="../../core/settings.cpp" line="1184"/>
         <source>No Memory Card</source>
         <translation>Без карты памяти</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1178"/>
+        <location filename="../../core/settings.cpp" line="1184"/>
         <source>Shared Between All Games</source>
         <translation>Общая для всех игр</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1179"/>
+        <location filename="../../core/settings.cpp" line="1185"/>
         <source>Separate Card Per Game (Serial)</source>
         <translation>Отдельная карта для каждой игры (серийный №)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1180"/>
+        <location filename="../../core/settings.cpp" line="1186"/>
         <source>Separate Card Per Game (Title)</source>
         <translation>Отдельная карта на игру (название)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1181"/>
+        <location filename="../../core/settings.cpp" line="1187"/>
         <source>Separate Card Per Game (File Title)</source>
         <translation>Отдельная карта для каждой игры (название файла)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1182"/>
+        <location filename="../../core/settings.cpp" line="1188"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>Непостоянная карта (не сохранять)</translation>
     </message>
@@ -8004,22 +8092,22 @@ Are you sure you want to continue?</source>
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1234"/>
+        <location filename="../../core/settings.cpp" line="1240"/>
         <source>Disabled</source>
         <translation>Отключен</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1234"/>
+        <location filename="../../core/settings.cpp" line="1240"/>
         <source>Enable on Port 1 Only</source>
         <translation>Включить только на порту 1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1235"/>
+        <location filename="../../core/settings.cpp" line="1241"/>
         <source>Enable on Port 2 Only</source>
         <translation>Включить только на порту 2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1235"/>
+        <location filename="../../core/settings.cpp" line="1241"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Включить на портах 1 и 2</translation>
     </message>
@@ -8050,17 +8138,17 @@ Are you sure you want to continue?</source>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../mainwindow.cpp" line="418"/>
+        <location filename="../mainwindow.cpp" line="438"/>
         <source>Acquired exclusive fullscreen.</source>
         <translation>Получен эксклюзивный полноэкранный режим.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="422"/>
+        <location filename="../mainwindow.cpp" line="442"/>
         <source>Failed to acquire exclusive fullscreen.</source>
         <translation>Не удалось получить эксклюзивный полноэкранный режим.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="620"/>
+        <location filename="../qthost.cpp" line="624"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>Утерян эксклюзивный полноэкранный режим.</translation>
     </message>
@@ -8111,79 +8199,78 @@ Are you sure you want to continue?</source>
         <translation>Масштаб разрешения %ux не поддерживается для адаптивного сглаживания с использованием %ux.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw_opengl.cpp" line="63"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation>Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0.</translation>
+        <translation type="vanished">Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="953"/>
+        <location filename="../../core/system.cpp" line="955"/>
         <source>System reset.</source>
         <translatorcomment>*Сброс системы</translatorcomment>
         <translation>Система сброшена.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1015"/>
+        <location filename="../../core/system.cpp" line="1017"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Не удалось загрузить состояние из &apos;%s&apos;. Сброс.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1056"/>
+        <location filename="../../core/system.cpp" line="1058"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Не удалось сохранить состояние в &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="631"/>
+        <location filename="../../core/settings.cpp" line="637"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP несовместим с программным рендерером, PGXP отключен.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="651"/>
+        <location filename="../../core/settings.cpp" line="657"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
         <translation>Перемотка назад не поддерживается на 32-разрядном ARM для Android.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="658"/>
+        <location filename="../../core/settings.cpp" line="664"/>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
         <translation>Опережение не поддерживается в 32-разрядной версии ARM для Android.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="666"/>
+        <location filename="../../core/settings.cpp" line="672"/>
         <source>Rewind is disabled because runahead is enabled.</source>
         <translation>Перемотка отключена, потому что включено опережение.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3139"/>
+        <location filename="../../core/system.cpp" line="3174"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>Переключение рендера ГПУ на %s%s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3163"/>
+        <location filename="../../core/system.cpp" line="3198"/>
         <source>Switching to %s audio backend.</source>
         <translation>Переключение на аудио движок %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3185"/>
+        <location filename="../../core/system.cpp" line="3220"/>
         <source>Switching to %s CPU execution mode.</source>
         <translatorcomment>*выполнения</translatorcomment>
         <translation>Переключение в режим исполнения процессора %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3198"/>
+        <location filename="../../core/system.cpp" line="3233"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation type="unfinished">Параметры перекомпилятора изменились, очистка всех блоков.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3263"/>
+        <location filename="../../core/system.cpp" line="3298"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP включен, все блоки перекомпилированы.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3264"/>
+        <location filename="../../core/system.cpp" line="3299"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP отключен, все блоки перекомпилированы.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4254"/>
+        <location filename="../../core/system.cpp" line="4289"/>
         <source>Switching to %s renderer...</source>
         <translation>Переключение рендера на %s...</translation>
     </message>
@@ -8203,136 +8290,136 @@ Are you sure you want to continue?</source>
         <translation>Карта памяти сохранена в &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="74"/>
+        <location filename="../../core/pad.cpp" line="173"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>Состояние сохранения содержит тип контроллера %s в порту %u, но используется %s. Переключение.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="82"/>
+        <location filename="../../core/pad.cpp" line="181"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
         <translation>Игнорирование несовпадающего типа контроллера %s в порту %u.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="178"/>
+        <location filename="../../core/pad.cpp" line="277"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation type="unfinished">Карта памяти %u из состояния сохранения соответствует текущим данным карты. Имитация повторной вставки.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="196"/>
+        <location filename="../../core/pad.cpp" line="295"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation type="unfinished">Карта памяти %u присутствует в состоянии сохранения, но не в системе. Игнорирование карты.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="217"/>
+        <location filename="../../core/pad.cpp" line="316"/>
         <source>Memory card %u present in system but not in save state. Replugging card.</source>
         <translation type="unfinished">Карта памяти %u присутствует в системе, но не в состоянии сохранения. Пере-подключение карты.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="137"/>
+        <location filename="../../core/pad.cpp" line="236"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation type="unfinished">Карта памяти %u присутствует в состоянии сохранения, но не в системе. Создание временной карты.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="209"/>
+        <location filename="../../core/pad.cpp" line="308"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
         <translation type="unfinished">Карта памяти %u присутствует в системе, но не в состоянии сохранения. Извлечение карты.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="779"/>
+        <location filename="../../core/cdrom.cpp" line="799"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
         <translation type="unfinished">Предварительная загрузка образа компакт-диска недоступна для многодискового образа &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="787"/>
+        <location filename="../../core/cdrom.cpp" line="807"/>
         <source>Precaching CD image failed, it may be unreliable.</source>
         <translation type="unfinished">Сбой предварительного кэширования образа компакт-диска, возможно, он ненадежен.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1005"/>
+        <location filename="../../core/system.cpp" line="1007"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Загрузка состояния из &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1055"/>
+        <location filename="../../core/system.cpp" line="1057"/>
         <source>Save State</source>
         <translation type="unfinished">Сохранить состояние</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1063"/>
+        <location filename="../../core/system.cpp" line="1065"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Состояние сохранено в &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1405"/>
+        <location filename="../../core/system.cpp" line="1426"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>Частота процессора установлена на %u%% (%u / %u). Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1412"/>
+        <location filename="../../core/system.cpp" line="1433"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>Ускорение чтения CD-ROM установлено на %ux (эффективная скорость %ux). Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1421"/>
+        <location filename="../../core/system.cpp" line="1442"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>Ускорение поиска по CD-ROM установлено на мгновенное. Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1428"/>
+        <location filename="../../core/system.cpp" line="1449"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>Ускорение поиска по CD-ROM установлено в %ux. Это может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1604"/>
+        <location filename="../../core/system.cpp" line="1630"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Не удалось инициализировать рендер %s, возврат к программному рендеру.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1691"/>
+        <location filename="../../core/system.cpp" line="1720"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>ВНИМАНИЕ: разгон процессора (%u%%) отличался в сохранении состояния (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1845"/>
+        <location filename="../../core/system.cpp" line="1874"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
         <translation>Не удалось открыть образ компакт-диска из состояния сохранения &apos;%s&apos;: %s. Использование существующего образа &apos;%s&apos;, может привести к нестабильности.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2906"/>
+        <location filename="../../core/system.cpp" line="2941"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>Не удалось открыть образ диска &apos;%s: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3092"/>
+        <location filename="../../core/system.cpp" line="3127"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation type="unfinished">Не удалось переключиться на под-образ %u в &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3098"/>
+        <location filename="../../core/system.cpp" line="3133"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translatorcomment>*Переключён</translatorcomment>
         <translation type="unfinished">Переключился на под-образ %s (%u) в &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2918"/>
+        <location filename="../../core/system.cpp" line="2953"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>Вставлен диск &apos;%s&apos; (%s).</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="54"/>
-        <location filename="../../core/system.cpp" line="3323"/>
-        <location filename="../../core/system.cpp" line="4182"/>
+        <location filename="../../core/system.cpp" line="3358"/>
+        <location filename="../../core/system.cpp" line="4217"/>
         <source>Failed to load post processing shader chain.</source>
         <translation>Не удалось загрузить цепочку шейдеров постобработки.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2449"/>
+        <location filename="../../core/system.cpp" line="2484"/>
         <source>No cheats are loaded.</source>
         <translatorcomment>** не загружаются.</translatorcomment>
         <translation>Читы не загружены.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2457"/>
+        <location filename="../../core/system.cpp" line="2492"/>
         <source>%n cheats are now active.</source>
         <translation>
             <numerusform>%n чит активен.</numerusform>
@@ -8341,7 +8428,7 @@ Are you sure you want to continue?</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2458"/>
+        <location filename="../../core/system.cpp" line="2493"/>
         <source>%n cheats are now inactive.</source>
         <translation>
             <numerusform>%n чит неактивнен.</numerusform>
@@ -8350,148 +8437,148 @@ Are you sure you want to continue?</source>
         </translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="883"/>
+        <location filename="../../frontend-common/common_host.cpp" line="891"/>
         <source>PGXP is now enabled.</source>
         <translation>PGXP включен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="884"/>
+        <location filename="../../frontend-common/common_host.cpp" line="892"/>
         <source>PGXP is now disabled.</source>
         <translation>PGXP отключен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="954"/>
+        <location filename="../../frontend-common/common_host.cpp" line="962"/>
         <source>PGXP Depth Buffer is now enabled.</source>
         <translation>Буфер глубины PGXP включен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="955"/>
+        <location filename="../../frontend-common/common_host.cpp" line="963"/>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>Буфер глубины PGXP отключен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="927"/>
+        <location filename="../../frontend-common/common_host.cpp" line="935"/>
         <source>Texture replacements reloaded.</source>
         <translation>Перезагружены замены текстур.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3708"/>
+        <location filename="../../core/system.cpp" line="3743"/>
         <source>Failed to save undo load state.</source>
         <translation type="unfinished">Не удалось сохранить состояние отмены загрузки.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2407"/>
+        <location filename="../../core/system.cpp" line="2442"/>
         <source>Rewinding is not enabled.</source>
         <translation>Перемотка назад не включена.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="632"/>
+        <location filename="../../frontend-common/common_host.cpp" line="640"/>
         <source>Cannot load state for game without serial.</source>
         <translation>Невозможно загрузить состояние для игры без серийного номера.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="642"/>
+        <location filename="../../frontend-common/common_host.cpp" line="650"/>
         <source>No save state found in slot {}.</source>
         <translation>Не найдено состояние сохранения в слоте {}.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="656"/>
+        <location filename="../../frontend-common/common_host.cpp" line="664"/>
         <source>Cannot save state for game without serial.</source>
         <translation>Невозможно сохранить состояние для игры без серийного номера.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="734"/>
+        <location filename="../../frontend-common/common_host.cpp" line="742"/>
         <source>Achievements are disabled or unavailable for  game.</source>
         <translation>Достижения отключены или недоступны для игры.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="747"/>
+        <location filename="../../frontend-common/common_host.cpp" line="755"/>
         <source>Leaderboards are disabled or unavailable for  game.</source>
         <translation type="unfinished">Список лидеров отключён или недоступен для игры.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="817"/>
+        <location filename="../../frontend-common/common_host.cpp" line="825"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
         <translation>Управление тактовой частотой процессора включено (%u%% / %.3f МГц).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="824"/>
+        <location filename="../../frontend-common/common_host.cpp" line="832"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
         <translation>Управление тактовой частотой процессора отключено (%.3f МГц).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="837"/>
-        <location filename="../../frontend-common/common_host.cpp" line="849"/>
-        <location filename="../../frontend-common/common_host.cpp" line="861"/>
+        <location filename="../../frontend-common/common_host.cpp" line="845"/>
+        <location filename="../../frontend-common/common_host.cpp" line="857"/>
+        <location filename="../../frontend-common/common_host.cpp" line="869"/>
         <source>Emulation speed set to %u%%.</source>
         <translation>Скорость эмуляции установлена на %u%%.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="974"/>
+        <location filename="../../frontend-common/common_host.cpp" line="982"/>
         <source>PGXP CPU mode is now enabled.</source>
         <translation>Режим процессора PGXP включен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="975"/>
+        <location filename="../../frontend-common/common_host.cpp" line="983"/>
         <source>PGXP CPU mode is now disabled.</source>
         <translation>Режим процессора PGXP отключен.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="996"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1004"/>
         <source>Volume: Muted</source>
         <translation>Громкость: без звука</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1001"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1028"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1044"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1009"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1036"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1052"/>
         <source>Volume: {}%</source>
         <translation>Громкость: {}%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1013"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1021"/>
         <source>CD Audio Muted.</source>
         <translatorcomment>*Звук компакт-диска отключён</translatorcomment>
         <translation>Отключён звук компакт-диска.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1014"/>
+        <location filename="../../frontend-common/common_host.cpp" line="1022"/>
         <source>CD Audio Unmuted.</source>
         <translatorcomment>*Звук компакт-диска отключён</translatorcomment>
         <translation>Включён звук компакт-диска.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3769"/>
+        <location filename="../../core/system.cpp" line="3804"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation type="unfinished">Запущен дамп звука в &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3774"/>
+        <location filename="../../core/system.cpp" line="3809"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Не удалось начать дамп звука в &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3785"/>
+        <location filename="../../core/system.cpp" line="3820"/>
         <source>Stopped dumping audio.</source>
         <translation>Дамп звука остановлен.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3815"/>
+        <location filename="../../core/system.cpp" line="3850"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Файл снимка экрана &apos;%s&apos; уже существует.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3827"/>
+        <location filename="../../core/system.cpp" line="3862"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Не удалось сохранить снимок экрана в &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3832"/>
+        <location filename="../../core/system.cpp" line="3867"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Снимок экрана сохранен в &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="485"/>
+        <location filename="../../core/game_database.cpp" line="497"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
@@ -8500,12 +8587,12 @@ Please configure a supported controller from the list above.</source>
 Пожалуйста, настройте поддерживаемый контроллер из приведенного выше списка.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4008"/>
+        <location filename="../../core/system.cpp" line="4043"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Не удалось загрузить читы из &apos;%s&apos;.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4079"/>
+        <location filename="../../core/system.cpp" line="4114"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
         <translation>
             <numerusform>Сохранен %n чит в &apos;%s&apos;.</numerusform>
@@ -8514,45 +8601,45 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4230"/>
+        <location filename="../../core/system.cpp" line="4265"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
         <translatorcomment>*и, соотношение..</translatorcomment>
         <translation type="unfinished">Широкоэкранный хак включен, а соотношение сторон установлено на %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4238"/>
+        <location filename="../../core/system.cpp" line="4273"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
         <translatorcomment>*и, соотношение..</translatorcomment>
         <translation type="unfinished">Широкоэкранный хак отключен, а соотношение сторон установлено на %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2804"/>
+        <location filename="../../core/system.cpp" line="2839"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translatorcomment>*Порты карт памяти поменялись местами</translatorcomment>
         <translation type="unfinished">Поменялись местами порты карт памяти. Оба порта имеют карту памяти.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2809"/>
+        <location filename="../../core/system.cpp" line="2844"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation type="unfinished">Поменялись местами порты карт памяти. Порт 2 имеет карту памяти, порт 1 пуст.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2815"/>
+        <location filename="../../core/system.cpp" line="2850"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation type="unfinished">Поменялись местами порты карт памяти. Порт 1 имеет карту памяти, порт 2 пуст.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2821"/>
+        <location filename="../../core/system.cpp" line="2856"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation type="unfinished">Поменялись местами порты карт памяти. Ни в одном из портов нет карты памяти.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4062"/>
+        <location filename="../../core/system.cpp" line="4097"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Не удалось сохранить список читов в &apos;%s&apos;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4015"/>
+        <location filename="../../core/system.cpp" line="4050"/>
         <source>%n cheats are enabled. This may result in instability.</source>
         <translation>
             <numerusform>%n чит включен. Это может привести к нестабильности.</numerusform>
@@ -8561,47 +8648,47 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4095"/>
+        <location filename="../../core/system.cpp" line="4130"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
         <translation>Удален список читов &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4138"/>
+        <location filename="../../core/system.cpp" line="4173"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Чит &apos;%s&apos; включен.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4143"/>
+        <location filename="../../core/system.cpp" line="4178"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Чит &apos;%s&apos; отключен.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4160"/>
+        <location filename="../../core/system.cpp" line="4195"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Применен чит &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4165"/>
+        <location filename="../../core/system.cpp" line="4200"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Чит &apos;%s&apos; уже включен.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4179"/>
+        <location filename="../../core/system.cpp" line="4214"/>
         <source>Post-processing is now enabled.</source>
         <translation>Пост-обработка включена.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4188"/>
+        <location filename="../../core/system.cpp" line="4223"/>
         <source>Post-processing is now disabled.</source>
         <translation>Пост-обработка отключена.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4199"/>
+        <location filename="../../core/system.cpp" line="4234"/>
         <source>Failed to load post-processing shader chain.</source>
         <translation>Не удалось загрузить цепочку шейдеров постобработки.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4201"/>
+        <location filename="../../core/system.cpp" line="4236"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Перезагрузка шейдеров постобработки.</translation>
     </message>
@@ -8619,70 +8706,80 @@ Please configure a supported controller from the list above.</source>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="272"/>
+        <source>Using software renderer for readbacks based on game settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="284"/>
         <source>Interlacing forced by game settings.</source>
         <translation>Чересстрочная развертка принудительно задана в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="284"/>
+        <location filename="../../core/game_database.cpp" line="296"/>
         <source>True color disabled by game settings.</source>
         <translation>True color отключен в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="296"/>
+        <location filename="../../core/game_database.cpp" line="308"/>
         <source>Upscaling disabled by game settings.</source>
         <translation>Масштабирование отключено в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="308"/>
+        <location filename="../../core/game_database.cpp" line="320"/>
         <source>Scaled dithering disabled by game settings.</source>
         <translation>Масштабируемый дизеринг отключен в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="321"/>
+        <location filename="../../core/game_database.cpp" line="333"/>
         <source>Widescreen disabled by game settings.</source>
         <translation>Широкоэкранный режим отключен в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="335"/>
+        <location filename="../../core/game_database.cpp" line="347"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
         <translation>Принудительная синхронизация NTSC запрещена в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="347"/>
+        <location filename="../../core/game_database.cpp" line="359"/>
         <source>PGXP geometry correction disabled by game settings.</source>
         <translation>Корректировка геометрии PGXP отключена в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="358"/>
+        <location filename="../../core/game_database.cpp" line="370"/>
         <source>PGXP culling disabled by game settings.</source>
         <translation>Отбраковка PGXP отключена в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="371"/>
+        <location filename="../../core/game_database.cpp" line="383"/>
         <source>PGXP perspective corrected textures disabled by game settings.</source>
         <translation>Текстуры с корректировкой перспективы PGXP отключены в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="385"/>
+        <location filename="../../core/game_database.cpp" line="397"/>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
         <translation>Цвета с корректировкой перспективы PGXP отключены в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="397"/>
+        <location filename="../../core/game_database.cpp" line="409"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translatorcomment>*установлен</translatorcomment>
         <translation>Кеш вершин PGXP принудительно задан в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="409"/>
+        <location filename="../../core/game_database.cpp" line="421"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translatorcomment>*установлен</translatorcomment>
         <translation>Режим процессора PGXP, принудительно задан в настройках игры.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="421"/>
+        <location filename="../../core/game_database.cpp" line="433"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
         <translation>Буфер глубины PGXP отключен в настройках игры.</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw_opengl.cpp" line="1325"/>
+        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
+        <translation type="unfinished">Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0. {3.1 ?} {3.1 ?}</translation>
     </message>
 </context>
 <context>
@@ -8868,29 +8965,29 @@ URL: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2068"/>
-        <location filename="../qthost.cpp" line="2094"/>
-        <location filename="../qthost.cpp" line="2110"/>
+        <location filename="../qthost.cpp" line="2071"/>
+        <location filename="../qthost.cpp" line="2097"/>
+        <location filename="../qthost.cpp" line="2113"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2069"/>
+        <location filename="../qthost.cpp" line="2072"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>Файл &apos;%1&apos; не существует.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2095"/>
+        <location filename="../qthost.cpp" line="2098"/>
         <source>The specified save state does not exist.</source>
         <translation>Указанное состояние сохранения не существует.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2111"/>
+        <location filename="../qthost.cpp" line="2114"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Невозможно использовать режим &quot;без графического интерфейса&quot;, поскольку не было указано имя файла загрузки.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2112"/>
+        <location filename="../qthost.cpp" line="2115"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Невозможно использовать пакетный режим, поскольку не было указано имя файла загрузки.</translation>
     </message>
@@ -8926,44 +9023,44 @@ URL: %1</translation>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="673"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="681"/>
         <source>Load</source>
         <translation>Загрузить</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="675"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="683"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="677"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="685"/>
         <source>Select Previous</source>
         <translatorcomment>*предыдущий*</translatorcomment>
         <translation>Выбрать предыдущее</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="679"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="687"/>
         <source>Select Next</source>
         <translatorcomment>*следующий*</translatorcomment>
         <translation>Выбрать следующее</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="736"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="744"/>
         <source>No Save State</source>
         <translation>Нет состояния сохранения</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="809"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="817"/>
         <source>Global Slot %d</source>
         <translation>Глобальный слот %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="813"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="821"/>
         <source>Game Slot %d</source>
         <translation>Слот игры %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="817"/>
+        <location filename="../../frontend-common/imgui_overlays.cpp" line="825"/>
         <source>%s Slot %d</source>
         <translation>%s Слот %d</translation>
     </message>
@@ -9180,48 +9277,48 @@ URL: %1</translation>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="1202"/>
+        <location filename="../../core/system.cpp" line="1223"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Не удалось загрузить BIOS %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1284"/>
-        <location filename="../../core/system.cpp" line="3025"/>
+        <location filename="../../core/system.cpp" line="1305"/>
+        <location filename="../../core/system.cpp" line="3060"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1285"/>
+        <location filename="../../core/system.cpp" line="1306"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>Не удалось загрузить файл состояния сохранения &apos;{}&apos; для загрузки.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1804"/>
+        <location filename="../../core/system.cpp" line="1833"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Сохраненное состояние несовместимо: минимальная версия -%u, но версия состояния - %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1813"/>
+        <location filename="../../core/system.cpp" line="1842"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Сохраненное состояние несовместимо: максимальная версия - %u, но версия состояния - %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1854"/>
+        <location filename="../../core/system.cpp" line="1883"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Не удалось открыть образ компакт-диска &apos;%s&apos;, используемый сохранением состояния: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1873"/>
+        <location filename="../../core/system.cpp" line="1902"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
         <translation>Не удалось переключиться на под-образ %u в образе компакт-диска &apos;%s&apos;, используемом в сохранении состояния: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2731"/>
+        <location filename="../../core/system.cpp" line="2766"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
         <translation>Карта памяти для каждой игры не может использоваться для слота %u, так как запущенная игра не имеет пути. Вместо этого используется общая карта.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3027"/>
+        <location filename="../../core/system.cpp" line="3062"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -9238,24 +9335,24 @@ The name of the SBI file must match the name of the disc image.</source>
 Имя файла SBI должно совпадать с именем образа диска.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2694"/>
+        <location filename="../../core/system.cpp" line="2729"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
         <translatorcomment>**Используйте</translatorcomment>
         <translation>Карту памяти для каждой игры не возможно использовать для слота %u, так как запущенная игра не имеет кода. Вместо этого используется общая карта.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2711"/>
+        <location filename="../../core/system.cpp" line="2746"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
         <translatorcomment>**Используйте</translatorcomment>
         <translation>Карту памяти для каждой игры не возможно использовать для слота %u, так как у запущенной игры нет названия. Вместо этого используется общая карта.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2923"/>
+        <location filename="../../core/system.cpp" line="2958"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Игра изменилась, карты памяти перезагружены.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3014"/>
+        <location filename="../../core/system.cpp" line="3049"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
