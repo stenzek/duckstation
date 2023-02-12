@@ -603,7 +603,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="291"/>
         <source>Stretch Display Vertically</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Растянуть экран по вертикали</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="297"/>
@@ -732,12 +732,12 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="315"/>
         <source>Controller {} is locked to analog mode by the game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер {} заблокирован игрой в аналоговом режиме.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="316"/>
         <source>Controller {} is locked to digital mode by the game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер {} заблокирован игрой в цифровом режиме.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="831"/>
@@ -1906,7 +1906,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../colorpickerbutton.cpp" line="41"/>
         <source>Select LED Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите цвет светодиодной подсветки</translation>
     </message>
 </context>
 <context>
@@ -3137,7 +3137,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="165"/>
         <source>Controller LED Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки светодиодной подсветки контроллера</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="188"/>
@@ -3170,27 +3170,27 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="14"/>
         <source>Controller LED Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки светодиодной подсветки контроллера</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="20"/>
         <source>SDL-0 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>Светодиод SDL-0</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="32"/>
         <source>SDL-1 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>Светодиод SDL-1</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="44"/>
         <source>SDL-2 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>Светодиод SDL-2</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="56"/>
         <source>SDL-3 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>Светодиод SDL-3</translation>
     </message>
 </context>
 <context>
@@ -4038,7 +4038,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1072"/>
         <source>Center</source>
-        <translation>Центр</translation>
+        <translation>По центру</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1073"/>
@@ -7552,7 +7552,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1444"/>
         <source>Reset Play Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбросить время игры</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1448"/>
@@ -7598,14 +7598,16 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1494"/>
         <source>Confirm Reset</source>
-        <translation type="unfinished">Подтвердить сброс</translation>
+        <translation>Подтвердить сброс</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1495"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите сбросить время игры для &apos;%1&apos;?
+
+Это действие не может быть отменено.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1638"/>
@@ -8707,7 +8709,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="272"/>
         <source>Using software renderer for readbacks based on game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Использование программного рендерера для обратных считываний на основе настроек игры.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="284"/>
@@ -8779,7 +8781,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="1325"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="unfinished">Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0. {3.1 ?} {3.1 ?}</translation>
+        <translation>Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.1.</translation>
     </message>
 </context>
 <context>
