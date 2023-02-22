@@ -390,10 +390,11 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
-  QMainWindow::closeEvent(event);
+  g_emu_thread->disconnect(this);
   g_emu_thread->setSystemPaused(true, true);
-  CPU::ClearBreakpoints();
+  Host::RunOnCPUThread(&CPU::ClearBreakpoints);
   g_emu_thread->setSystemPaused(false);
+  QMainWindow::closeEvent(event);
   emit closed();
 }
 
@@ -421,10 +422,9 @@ void DebuggerWindow::setupAdditionalUi()
 
 void DebuggerWindow::connectSignals()
 {
-  EmuThread* hi = g_emu_thread;
-  connect(hi, &EmuThread::systemPaused, this, &DebuggerWindow::onEmulationPaused);
-  connect(hi, &EmuThread::systemResumed, this, &DebuggerWindow::onEmulationResumed);
-  connect(hi, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
+  connect(g_emu_thread, &EmuThread::systemPaused, this, &DebuggerWindow::onEmulationPaused);
+  connect(g_emu_thread, &EmuThread::systemResumed, this, &DebuggerWindow::onEmulationResumed);
+  connect(g_emu_thread, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
   connect(m_ui.actionPause, &QAction::toggled, this, &DebuggerWindow::onPauseActionToggled);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
