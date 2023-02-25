@@ -5,12 +5,14 @@
 #include <QtCore/QThread>
 #include <QtNetwork/QTcpSocket>
 
-class GDBConnection : public QThread
+class GDBServer;
+
+class GDBConnection : public QTcpSocket
 {
   Q_OBJECT
 
 public:
-  GDBConnection(QObject *parent, int descriptor);
+  GDBConnection(GDBServer *parent, intptr_t descriptor);
 
 public Q_SLOTS:
   void gotDisconnected();
@@ -21,8 +23,7 @@ public Q_SLOTS:
 private:
   void writePacket(std::string_view data);
 
-  int m_descriptor;
-  QTcpSocket m_socket;
+  intptr_t m_descriptor;
   std::string m_readBuffer;
   bool m_seen_resume;
 };

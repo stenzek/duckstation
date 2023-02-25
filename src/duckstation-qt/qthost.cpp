@@ -98,6 +98,7 @@ static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
 
 EmuThread* g_emu_thread;
+GDBServer* g_gdb_server;
 
 EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread) {}
 
@@ -1373,6 +1374,8 @@ void EmuThread::start()
   AssertMsg(!g_emu_thread, "Emu thread does not exist");
 
   g_emu_thread = new EmuThread(QThread::currentThread());
+  g_gdb_server = new GDBServer();
+  g_gdb_server->moveToThread(g_emu_thread);
   g_emu_thread->QThread::start();
   g_emu_thread->m_started_semaphore.acquire();
   g_emu_thread->moveToThread(g_emu_thread);

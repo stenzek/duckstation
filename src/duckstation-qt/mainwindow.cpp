@@ -21,7 +21,6 @@
 #include "frontend-common/platform_misc.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
-#include "gdbserver.h"
 #include "memorycardeditordialog.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -1723,17 +1722,13 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   if ((!starting && !running) || running)
     m_open_debugger_on_start = false;
 
-  if (g_settings.debugging.enable_gdb_server)
+  if (!g_gdb_server->isListening() && g_settings.debugging.enable_gdb_server && starting)
   {
-    if (starting && !m_gdb_server)
-    {
-      m_gdb_server = new GDBServer(this, g_settings.debugging.gdb_server_port);
-    }
-    else if (!running && m_gdb_server)
-    {
-      delete m_gdb_server;
-      m_gdb_server = nullptr;
-    }
+    QMetaObject::invokeMethod(g_gdb_server, "start", Qt::QueuedConnection, Q_ARG(quint16, g_settings.debugging.gdb_server_port));
+  }
+  else if (g_gdb_server->isListening() && !running)
+  {
+    QMetaObject::invokeMethod(g_gdb_server, "stop", Qt::QueuedConnection);
   }
 
   m_ui.statusBar->clearMessage();

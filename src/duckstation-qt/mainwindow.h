@@ -33,8 +33,6 @@ namespace GameList {
 struct Entry;
 }
 
-class GDBServer;
-
 class MainWindow final : public QMainWindow
 {
   Q_OBJECT
@@ -285,8 +283,6 @@ private:
   bool m_was_paused_on_surface_loss = false;
   bool m_was_disc_change_request = false;
   bool m_is_closing = false;
-
-  GDBServer* m_gdb_server = nullptr;
 
 #ifdef _WIN32
   void* m_device_notification_handle = nullptr;
