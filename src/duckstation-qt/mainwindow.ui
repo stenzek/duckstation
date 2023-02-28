@@ -118,6 +118,7 @@
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
+    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionGeneralSettings"/>
     <addaction name="actionGameListSettings"/>
@@ -216,7 +217,6 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
-    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
@@ -845,6 +845,10 @@
   <action name="actionViewGameProperties">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="file-settings-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Game &amp;Properties</string>
