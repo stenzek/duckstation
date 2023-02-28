@@ -5,6 +5,7 @@
 #include <QtCore/QThread>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QStackedWidget>
 #include <memory>
 #include <optional>
@@ -156,6 +157,7 @@ private Q_SLOTS:
   void onToolsCoverDownloaderTriggered();
   void onToolsCheatManagerTriggered();
   void onToolsOpenDataDirectoryTriggered();
+  void onSettingsTriggeredFromToolbar();
 
   void onGameListRefreshComplete();
   void onGameListRefreshProgress(const QString& status, int current, int total);
@@ -263,6 +265,8 @@ private:
   QLabel* m_status_fps_widget = nullptr;
   QLabel* m_status_vps_widget = nullptr;
   QLabel* m_status_resolution_widget = nullptr;
+
+  QMenu* m_settings_toolbar_menu = nullptr;
 
   SettingsDialog* m_settings_dialog = nullptr;
   ControllerSettingsDialog* m_controller_settings_dialog = nullptr;

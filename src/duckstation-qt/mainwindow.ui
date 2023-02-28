@@ -277,7 +277,7 @@
    <addaction name="actionSaveState"/>
    <addaction name="separator"/>
    <addaction name="actionFullscreen"/>
-   <addaction name="actionSettings"/>
+   <addaction name="actionSettings2"/>
    <addaction name="actionControllerSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -610,7 +610,22 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Settings...</string>
+    <string>&amp;Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="actionSettings2">
+   <property name="icon">
+    <iconset theme="settings-3-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionChangeDiscFromFile">
