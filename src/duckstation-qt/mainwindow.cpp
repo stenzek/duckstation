@@ -1555,6 +1555,10 @@ void MainWindow::setupAdditionalUi()
   m_status_vps_widget->setFixedSize(125, 16);
   m_status_vps_widget->hide();
 
+  m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
+  m_settings_toolbar_menu->addAction(m_ui.actionSettings);
+  m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
+
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 
   updateDebugMenuVisibility();
@@ -1943,6 +1947,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
   connect(m_ui.actionFullscreen, &QAction::triggered, g_emu_thread, &EmuThread::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
+  connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
   connect(m_ui.actionGeneralSettings, &QAction::triggered, [this]() { doSettings("General"); });
   connect(m_ui.actionBIOSSettings, &QAction::triggered, [this]() { doSettings("BIOS"); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered, [this]() { doSettings("Console"); });
@@ -2748,6 +2753,18 @@ void MainWindow::onCPUDebuggerClosed()
 void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
   QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::DataRoot)));
+}
+
+void MainWindow::onSettingsTriggeredFromToolbar()
+{
+    if (s_system_valid)
+    {
+        m_settings_toolbar_menu->exec(QCursor::pos());
+    }
+    else
+    {
+        doSettings();
+    }
 }
 
 void MainWindow::checkForUpdates(bool display_message)
