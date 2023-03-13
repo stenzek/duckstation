@@ -688,14 +688,6 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller %u is locked to analog mode by the game.</source>
-        <translation type="vanished">Контроллер %u заблокирован игрой в аналоговом режиме.</translation>
-    </message>
-    <message>
-        <source>Controller %u is locked to digital mode by the game.</source>
-        <translation type="vanished">Контроллер %u заблокирован игрой в цифровом режиме.</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="846"/>
         <source>Analog Deadzone</source>
         <translation>Мёртвая зона аналога</translation>
@@ -2380,10 +2372,6 @@ This warning will only be shown once.</source>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Для устройства &quot;%1&quot; не было создано общих привязок. Контроллер/источник может не поддерживать автоматическое сопоставление.</translation>
     </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="vanished">Для устройства &apos;%1&apos; не было создано общих привязок</translation>
-    </message>
 </context>
 <context>
     <name>ControllerBindingWidget_AnalogController</name>
@@ -2696,13 +2684,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1151"/>
         <source>Mode</source>
         <translation>Режим</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerBindingWidget_Base</name>
-    <message>
-        <source>%1%</source>
-        <translation type="vanished">%1%</translation>
     </message>
 </context>
 <context>
@@ -7169,10 +7150,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Добавить каталог с играми...</translation>
     </message>
     <message>
-        <source>&amp;Settings...</source>
-        <translation type="vanished">&amp;Настройки...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="634"/>
         <source>From File...</source>
         <translation>Из файла...</translation>
@@ -8209,10 +8186,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/gpu_hw.cpp" line="250"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
         <translation>Масштаб разрешения %ux не поддерживается для адаптивного сглаживания с использованием %ux.</translation>
-    </message>
-    <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="vanished">Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="955"/>
