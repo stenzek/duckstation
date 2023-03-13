@@ -11,12 +11,13 @@ class GDBServer : public QTcpServer
   Q_OBJECT
 
 public:
-  GDBServer(QObject* parent, u16 port);
+  GDBServer(QObject* parent = nullptr);
   ~GDBServer();
+
+public Q_SLOTS:
+  void start(quint16 port);
+  void stop();
 
 protected:
   void incomingConnection(qintptr socketDescriptor) override;
-
-private:
-  std::list<GDBConnection*> m_connections;
 };

@@ -10,6 +10,7 @@
 #include "frontend-common/common_host.h"
 #include "frontend-common/game_list.h"
 #include "frontend-common/input_manager.h"
+#include "gdbserver.h"
 #include "qtutils.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
@@ -235,6 +236,7 @@ private:
 };
 
 extern EmuThread* g_emu_thread;
+extern GDBServer* g_gdb_server;
 
 namespace QtHost {
 /// Sets batch mode (exit after game shutdown).
