@@ -6948,12 +6948,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.ui" line="614"/>
         <location filename="../mainwindow.ui" line="626"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Настройки</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="893"/>
         <source>Enable GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить сервер GDB</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="962"/>
