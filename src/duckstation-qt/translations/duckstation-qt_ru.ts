@@ -688,14 +688,6 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller %u is locked to analog mode by the game.</source>
-        <translation type="vanished">Контроллер %u заблокирован игрой в аналоговом режиме.</translation>
-    </message>
-    <message>
-        <source>Controller %u is locked to digital mode by the game.</source>
-        <translation type="vanished">Контроллер %u заблокирован игрой в цифровом режиме.</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="846"/>
         <source>Analog Deadzone</source>
         <translation>Мёртвая зона аналога</translation>
@@ -2380,10 +2372,6 @@ This warning will only be shown once.</source>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Для устройства &quot;%1&quot; не было создано общих привязок. Контроллер/источник может не поддерживать автоматическое сопоставление.</translation>
     </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="vanished">Для устройства &apos;%1&apos; не было создано общих привязок</translation>
-    </message>
 </context>
 <context>
     <name>ControllerBindingWidget_AnalogController</name>
@@ -2696,13 +2684,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1151"/>
         <source>Mode</source>
         <translation>Режим</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerBindingWidget_Base</name>
-    <message>
-        <source>%1%</source>
-        <translation type="vanished">%1%</translation>
     </message>
 </context>
 <context>
@@ -4431,17 +4412,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="535"/>
+        <location filename="../qthost.cpp" line="536"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="535"/>
+        <location filename="../qthost.cpp" line="536"/>
         <source>No resume save state found.</source>
         <translation>Состояние сохранения возобновления не найдено.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1305"/>
+        <location filename="../qthost.cpp" line="1306"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -4454,7 +4435,7 @@ Achievements: %5 (%6)
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1311"/>
+        <location filename="../qthost.cpp" line="1312"/>
         <source>%n points</source>
         <translation type="unfinished">
             <numerusform>%n балл</numerusform>
@@ -4463,27 +4444,27 @@ Achievements: %5 (%6)
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1317"/>
+        <location filename="../qthost.cpp" line="1318"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished">Rich presence неактивен или не поддерживается.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1321"/>
+        <location filename="../qthost.cpp" line="1322"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Игра не загружена или RetroAchievements недоступен.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1636"/>
+        <location filename="../qthost.cpp" line="1639"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1645"/>
+        <location filename="../qthost.cpp" line="1648"/>
         <source>Game: %1 FPS</source>
         <translation>Игра: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1655"/>
+        <location filename="../qthost.cpp" line="1658"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Видео: %1 FPS (%2%)</translation>
     </message>
@@ -6777,8 +6758,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../mainwindow.ui" line="39"/>
-        <location filename="../mainwindow.cpp" line="1193"/>
-        <location filename="../mainwindow.cpp" line="1432"/>
+        <location filename="../mainwindow.cpp" line="1192"/>
+        <location filename="../mainwindow.cpp" line="1431"/>
         <source>Change Disc</source>
         <translation>Сменить диск</translation>
     </message>
@@ -6789,8 +6770,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../mainwindow.ui" line="63"/>
-        <location filename="../mainwindow.cpp" line="784"/>
-        <location filename="../mainwindow.cpp" line="1061"/>
+        <location filename="../mainwindow.cpp" line="783"/>
+        <location filename="../mainwindow.cpp" line="1060"/>
         <source>Load State</source>
         <translation>Загрузить состояние</translation>
     </message>
@@ -6815,569 +6796,575 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="148"/>
+        <location filename="../mainwindow.ui" line="149"/>
         <source>&amp;Help</source>
         <translation>&amp;Помощь</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="161"/>
+        <location filename="../mainwindow.ui" line="162"/>
         <source>&amp;Debug</source>
         <translation>&amp;Отладка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="165"/>
+        <location filename="../mainwindow.ui" line="166"/>
         <source>Switch GPU Renderer</source>
         <translation>Переключить рендер ГП</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="170"/>
+        <location filename="../mainwindow.ui" line="171"/>
         <source>Switch CPU Emulation Mode</source>
         <translation>Переключить режим эмуляции ЦП</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="175"/>
+        <location filename="../mainwindow.ui" line="176"/>
         <source>Switch Crop Mode</source>
         <translation>Переключить режим обрезки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="205"/>
+        <location filename="../mainwindow.ui" line="207"/>
         <source>&amp;View</source>
         <translation>П&amp;росмотр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="209"/>
+        <location filename="../mainwindow.ui" line="211"/>
         <source>&amp;Window Size</source>
         <translation>&amp;Размер окна</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="231"/>
+        <location filename="../mainwindow.ui" line="232"/>
         <source>&amp;Tools</source>
         <translation>&amp;Утилиты</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="248"/>
+        <location filename="../mainwindow.ui" line="249"/>
         <source>toolBar</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="290"/>
+        <location filename="../mainwindow.ui" line="291"/>
         <source>Start &amp;File...</source>
         <translation>Запустить &amp;файл...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="299"/>
+        <location filename="../mainwindow.ui" line="300"/>
         <source>Start &amp;Disc...</source>
         <translation>Запустить &amp;диск...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="308"/>
+        <location filename="../mainwindow.ui" line="309"/>
         <source>Start &amp;BIOS</source>
         <translation>Запустить &amp;BIOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="317"/>
+        <location filename="../mainwindow.ui" line="318"/>
         <source>&amp;Scan For New Games</source>
         <translation>&amp;Сканировать новые игры</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="326"/>
+        <location filename="../mainwindow.ui" line="327"/>
         <source>&amp;Rescan All Games</source>
         <translation>Пере&amp;сканирование всех игр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="335"/>
+        <location filename="../mainwindow.ui" line="336"/>
         <source>Power &amp;Off</source>
         <translation>&amp;Выключить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="344"/>
+        <location filename="../mainwindow.ui" line="345"/>
         <source>&amp;Reset</source>
         <translation>&amp;Сброс</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="356"/>
+        <location filename="../mainwindow.ui" line="357"/>
         <source>&amp;Pause</source>
         <translation>Пау&amp;за</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="365"/>
+        <location filename="../mainwindow.ui" line="366"/>
         <source>&amp;Load State</source>
         <translation>&amp;Загрузить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="374"/>
+        <location filename="../mainwindow.ui" line="375"/>
         <source>&amp;Save State</source>
         <translation>Со&amp;хранить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="383"/>
+        <location filename="../mainwindow.ui" line="384"/>
         <source>E&amp;xit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="550"/>
+        <location filename="../mainwindow.ui" line="551"/>
         <source>Audio</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="559"/>
+        <location filename="../mainwindow.ui" line="560"/>
         <source>Achievements</source>
         <translation>Достижения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="568"/>
+        <location filename="../mainwindow.ui" line="569"/>
         <source>Folders</source>
         <translation>Папки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="577"/>
+        <location filename="../mainwindow.ui" line="578"/>
         <source>Game List</source>
         <translation>Список игр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="586"/>
+        <location filename="../mainwindow.ui" line="587"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="595"/>
+        <location filename="../mainwindow.ui" line="596"/>
         <source>Advanced</source>
         <translation>Дополнительные</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="934"/>
+        <location filename="../mainwindow.ui" line="614"/>
+        <location filename="../mainwindow.ui" line="626"/>
+        <source>&amp;Settings</source>
+        <translation>&amp;Настройки</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="893"/>
+        <source>Enable GDB server</source>
+        <translation>Включить сервер GDB</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="962"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished">Запустить режим Big Picture</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="943"/>
+        <location filename="../mainwindow.ui" line="971"/>
         <source>Big Picture</source>
         <translation type="unfinished">Big Picture</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="948"/>
+        <location filename="../mainwindow.ui" line="976"/>
         <source>Cover Downloader</source>
         <translation>Загрузчик обложек</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="464"/>
+        <location filename="../mainwindow.ui" line="465"/>
         <source>Fullscreen</source>
         <translation>Во весь экран</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="469"/>
+        <location filename="../mainwindow.ui" line="470"/>
         <source>Resolution Scale</source>
         <translation>Масштаб разрешения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="478"/>
+        <location filename="../mainwindow.ui" line="479"/>
         <source>&amp;GitHub Repository...</source>
         <translation>Репозиторий &amp;GitHub...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="487"/>
+        <location filename="../mainwindow.ui" line="488"/>
         <source>&amp;Issue Tracker...</source>
         <translation>&amp;Проблемы...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="496"/>
+        <location filename="../mainwindow.ui" line="497"/>
         <source>&amp;Discord Server...</source>
         <translation>Сервер &amp;Discord...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="505"/>
+        <location filename="../mainwindow.ui" line="506"/>
         <source>Check for &amp;Updates...</source>
         <translation>Проверить &amp;обновления...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="514"/>
+        <location filename="../mainwindow.ui" line="515"/>
         <source>About &amp;Qt...</source>
         <translation>Про &amp;Qt...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="523"/>
+        <location filename="../mainwindow.ui" line="524"/>
         <source>&amp;About DuckStation...</source>
         <translation>Про &amp;DuckStation...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="623"/>
+        <location filename="../mainwindow.ui" line="639"/>
         <source>From Device...</source>
         <translation>Из устройства...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="675"/>
+        <location filename="../mainwindow.ui" line="691"/>
         <source>Disable All Enhancements</source>
         <translation>Отключить все улучшения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="709"/>
+        <location filename="../mainwindow.ui" line="725"/>
         <source>Dump VRAM...</source>
         <translation type="unfinished">Дамп VRAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="714"/>
+        <location filename="../mainwindow.ui" line="730"/>
         <source>Dump SPU RAM...</source>
         <translation type="unfinished">Дамп SPU RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="730"/>
+        <location filename="../mainwindow.ui" line="746"/>
         <source>Show CD-ROM State</source>
         <translation>Показать состояние CD-ROM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="780"/>
+        <location filename="../mainwindow.ui" line="796"/>
         <source>&amp;Memory Cards</source>
         <translation>&amp;Карты памяти</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="814"/>
+        <location filename="../mainwindow.ui" line="830"/>
         <source>Lock Toolbar</source>
         <translatorcomment>**Блокировка панели инструментов</translatorcomment>
         <translation type="unfinished">Заблокировать панель инструментов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="834"/>
+        <location filename="../mainwindow.ui" line="850"/>
         <source>Game &amp;List</source>
         <translation>&amp;Список игр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="860"/>
+        <location filename="../mainwindow.ui" line="880"/>
         <source>C&amp;heat Manager</source>
         <translation>Менеджер &amp;читов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="865"/>
+        <location filename="../mainwindow.ui" line="885"/>
         <source>CPU D&amp;ebugger</source>
         <translation>О&amp;тладчик процессора</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="874"/>
+        <location filename="../mainwindow.ui" line="902"/>
         <source>Game &amp;Grid</source>
         <translation>&amp;Сетка игр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="885"/>
+        <location filename="../mainwindow.ui" line="913"/>
         <source>Show Titles (Grid View)</source>
         <translation>Показать заголовки (вид сетки)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="890"/>
+        <location filename="../mainwindow.ui" line="918"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translatorcomment>**&amp;Приблизить</translatorcomment>
         <translation>&amp;Увеличить (вид сетки)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="893"/>
+        <location filename="../mainwindow.ui" line="921"/>
         <source>Ctrl++</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="898"/>
+        <location filename="../mainwindow.ui" line="926"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translatorcomment>**&amp;Отдалить</translatorcomment>
         <translation>&amp;Уменьшить (вид сетки)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="901"/>
+        <location filename="../mainwindow.ui" line="929"/>
         <source>Ctrl+-</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="906"/>
+        <location filename="../mainwindow.ui" line="934"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>Обновить &amp;обложки (вид сетки)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="911"/>
+        <location filename="../mainwindow.ui" line="939"/>
         <source>Open Memory Card Directory...</source>
         <translation>Открыть папку карты памяти...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="916"/>
+        <location filename="../mainwindow.ui" line="944"/>
         <source>Open Data Directory...</source>
         <translation>Открыть каталог данных...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="925"/>
+        <location filename="../mainwindow.ui" line="953"/>
         <source>Power Off &amp;Without Saving</source>
         <translation>Выключить &amp;без сохранения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="532"/>
+        <location filename="../mainwindow.ui" line="533"/>
         <source>Change Disc...</source>
         <translation>Сменить диск...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="392"/>
+        <location filename="../mainwindow.ui" line="393"/>
         <source>B&amp;IOS</source>
         <translation>B&amp;IOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="401"/>
+        <location filename="../mainwindow.ui" line="402"/>
         <source>C&amp;onsole</source>
         <translation>К&amp;онсоль</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="410"/>
+        <location filename="../mainwindow.ui" line="411"/>
         <source>E&amp;mulation</source>
         <translation>&amp;Эмуляция</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="419"/>
+        <location filename="../mainwindow.ui" line="420"/>
         <source>&amp;Controllers</source>
         <translation>&amp;Контроллеры</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="428"/>
+        <location filename="../mainwindow.ui" line="429"/>
         <source>&amp;Hotkeys</source>
         <translation>&amp;Горячие клавиши</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="437"/>
+        <location filename="../mainwindow.ui" line="438"/>
         <source>&amp;Display</source>
         <translation>&amp;Отображение</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="446"/>
+        <location filename="../mainwindow.ui" line="447"/>
         <source>&amp;Enhancements</source>
         <translation>&amp;Улучшения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="455"/>
+        <location filename="../mainwindow.ui" line="456"/>
         <source>&amp;Post-Processing</source>
         <translation>&amp;Постобработка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="541"/>
+        <location filename="../mainwindow.ui" line="542"/>
         <source>Cheats...</source>
         <translation>Читы...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="604"/>
+        <location filename="../mainwindow.ui" line="605"/>
         <source>Add Game Directory...</source>
         <translation>Добавить каталог с играми...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="613"/>
-        <source>&amp;Settings...</source>
-        <translation>&amp;Настройки...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="618"/>
+        <location filename="../mainwindow.ui" line="634"/>
         <source>From File...</source>
         <translation>Из файла...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="628"/>
+        <location filename="../mainwindow.ui" line="644"/>
         <source>From Game List...</source>
         <translation>Из списка игр...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="633"/>
+        <location filename="../mainwindow.ui" line="649"/>
         <source>Remove Disc</source>
         <translation>Извлечь диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="638"/>
+        <location filename="../mainwindow.ui" line="654"/>
         <source>Resume State</source>
         <translation>Возобновить состояние</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="643"/>
+        <location filename="../mainwindow.ui" line="659"/>
         <source>Global State</source>
         <translation>Глобальное состояние</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="651"/>
+        <location filename="../mainwindow.ui" line="667"/>
         <source>Show VRAM</source>
         <translation>Показать VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="659"/>
+        <location filename="../mainwindow.ui" line="675"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="667"/>
+        <location filename="../mainwindow.ui" line="683"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="683"/>
+        <location filename="../mainwindow.ui" line="699"/>
         <source>Disable Interlacing</source>
         <translation>Отключить чересстрочную развертку</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="691"/>
+        <location filename="../mainwindow.ui" line="707"/>
         <source>Force NTSC Timings</source>
         <translation>Принудительная синхронизация NTSC</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="699"/>
+        <location filename="../mainwindow.ui" line="715"/>
         <source>Dump Audio</source>
         <translation>Дамп звука</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="704"/>
+        <location filename="../mainwindow.ui" line="720"/>
         <source>Dump RAM...</source>
         <translation>Дамп RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="722"/>
+        <location filename="../mainwindow.ui" line="738"/>
         <source>Show GPU State</source>
         <translation>Показать состояние ГП</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="738"/>
+        <location filename="../mainwindow.ui" line="754"/>
         <source>Show SPU State</source>
         <translation>Показать состояние SPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="746"/>
+        <location filename="../mainwindow.ui" line="762"/>
         <source>Show Timers State</source>
         <translation>Показать состояние таймера</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="754"/>
+        <location filename="../mainwindow.ui" line="770"/>
         <source>Show MDEC State</source>
         <translation>Показать состояние MDEC</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="762"/>
+        <location filename="../mainwindow.ui" line="778"/>
         <source>Show DMA State</source>
         <translation>Показать состояние DMA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="771"/>
+        <location filename="../mainwindow.ui" line="787"/>
         <source>&amp;Screenshot</source>
         <translation>&amp;Снимок</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="789"/>
-        <location filename="../mainwindow.cpp" line="781"/>
+        <location filename="../mainwindow.ui" line="805"/>
+        <location filename="../mainwindow.cpp" line="780"/>
         <source>Resume</source>
         <translation>Продолжить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="792"/>
+        <location filename="../mainwindow.ui" line="808"/>
         <source>Resumes the last save state created.</source>
         <translation>Возобновляет последнее созданное сохранение.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="803"/>
+        <location filename="../mainwindow.ui" line="819"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="825"/>
+        <location filename="../mainwindow.ui" line="841"/>
         <source>&amp;Status Bar</source>
         <translation>&amp;Панель статуса</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="842"/>
+        <location filename="../mainwindow.ui" line="858"/>
         <source>System &amp;Display</source>
         <translation>Отображение &amp;системы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="850"/>
+        <location filename="../mainwindow.ui" line="870"/>
         <source>Game &amp;Properties</source>
         <translation>&amp;Свойства игры</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="855"/>
+        <location filename="../mainwindow.ui" line="875"/>
         <source>Memory &amp;Card Editor</source>
         <translation>Редактор &amp;карт памяти</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="242"/>
+        <location filename="../mainwindow.cpp" line="241"/>
         <source>Failed to create host display device context.</source>
         <translation type="unfinished">Не удалось создать контекст устройства отображения хоста.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="705"/>
-        <location filename="../mainwindow.cpp" line="1178"/>
+        <location filename="../mainwindow.cpp" line="704"/>
+        <location filename="../mainwindow.cpp" line="1177"/>
         <source>Select Disc Image</source>
         <translation>Выбрать образ диска</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1163"/>
+        <location filename="../mainwindow.cpp" line="1162"/>
         <source>Start Disc</source>
         <translation>Запустить диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="720"/>
+        <location filename="../mainwindow.cpp" line="719"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Не удалось найти никаких устройств CD-ROM. Пожалуйста, убедитесь, что у вас подключен привод CD-ROM и достаточно разрешений для доступа к нему.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="58"/>
+        <location filename="../mainwindow.cpp" line="57"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation>Все типы файлов (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Образы Single-Track Raw (*.bin *.img *.iso);;Cue Sheets (*.cue);;Образы MAME CHD (*.chd);;Образы Error Code Modeler (*.ecm);;Образы Media Descriptor Sidecar (*.mds);;PlayStation EBOOTы (*.pbp);;Исполняемые файлы PlayStation (*.exe *.psexe *.ps-exe);;Файлы Портативного формата звука (*.psf *.minipsf);;Плейлисты (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="233"/>
-        <location filename="../mainwindow.cpp" line="242"/>
-        <location filename="../mainwindow.cpp" line="331"/>
-        <location filename="../mainwindow.cpp" line="1081"/>
-        <location filename="../mainwindow.cpp" line="1346"/>
+        <location filename="../mainwindow.cpp" line="232"/>
+        <location filename="../mainwindow.cpp" line="241"/>
+        <location filename="../mainwindow.cpp" line="330"/>
+        <location filename="../mainwindow.cpp" line="1080"/>
+        <location filename="../mainwindow.cpp" line="1345"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="233"/>
+        <location filename="../mainwindow.cpp" line="232"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished">Не удалось получить информацию об окне из виджета</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="331"/>
+        <location filename="../mainwindow.cpp" line="330"/>
         <source>Failed to get new window info from widget</source>
         <translation type="unfinished">Не удалось получить информацию о новом окне из виджета</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="602"/>
+        <location filename="../mainwindow.cpp" line="601"/>
         <source>Paused</source>
         <translation type="unfinished">Приостановлено</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="734"/>
+        <location filename="../mainwindow.cpp" line="733"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="738"/>
+        <location filename="../mainwindow.cpp" line="737"/>
         <source>Select disc drive:</source>
         <translatorcomment>*Выбрать</translatorcomment>
         <translation type="unfinished">Выберите дисковод:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="804"/>
+        <location filename="../mainwindow.cpp" line="803"/>
         <source>Resume (%1)</source>
         <translation type="unfinished">Продолжить (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="811"/>
-        <location filename="../mainwindow.cpp" line="928"/>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="810"/>
+        <location filename="../mainwindow.cpp" line="927"/>
+        <location filename="../mainwindow.cpp" line="966"/>
         <source>Game Save %1 (%2)</source>
         <translation type="unfinished">Игра сохранена %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="820"/>
+        <location filename="../mainwindow.cpp" line="819"/>
         <source>Edit Memory Cards...</source>
         <translation>Редактировать карты памяти...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="867"/>
         <source>Delete Save States...</source>
         <translation>Удалить сохранённые состояния...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="874"/>
+        <location filename="../mainwindow.cpp" line="873"/>
         <source>Confirm Save State Deletion</source>
         <translation>Подтвердить удаление сохранённых состояний</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="875"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -7386,67 +7373,67 @@ The saves will not be recoverable.</source>
 Сохранения не подлежат восстановлению.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="912"/>
+        <location filename="../mainwindow.cpp" line="911"/>
         <source>Load From File...</source>
         <translation type="unfinished">Загрузка из файла...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="914"/>
-        <location filename="../mainwindow.cpp" line="956"/>
+        <location filename="../mainwindow.cpp" line="913"/>
+        <location filename="../mainwindow.cpp" line="955"/>
         <source>Select Save State File</source>
         <translation type="unfinished">Выберите файл состояния сохранения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="914"/>
-        <location filename="../mainwindow.cpp" line="956"/>
+        <location filename="../mainwindow.cpp" line="913"/>
+        <location filename="../mainwindow.cpp" line="955"/>
         <source>Save States (*.sav)</source>
         <translation>Сохраненные состояния (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="920"/>
+        <location filename="../mainwindow.cpp" line="919"/>
         <source>Undo Load State</source>
         <translation>Отменить загрузку состояния</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="928"/>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="927"/>
+        <location filename="../mainwindow.cpp" line="966"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Сохранение игры %1 (пусто)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="933"/>
+        <location filename="../mainwindow.cpp" line="972"/>
         <source>Global Save %1 (%2)</source>
         <translation>Глобальное сохранение %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="933"/>
+        <location filename="../mainwindow.cpp" line="972"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Глобальное сохранение %1 (пусто)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="951"/>
+        <location filename="../mainwindow.cpp" line="950"/>
         <source>Save To File...</source>
         <translation>Сохранить в файл...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1000"/>
+        <location filename="../mainwindow.cpp" line="999"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Включить читы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1002"/>
+        <location filename="../mainwindow.cpp" line="1001"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Применить читы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1056"/>
+        <location filename="../mainwindow.cpp" line="1055"/>
         <source>Load Resume State</source>
         <translation>Загрузить состояние возобновления</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1057"/>
+        <location filename="../mainwindow.cpp" line="1056"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -7459,149 +7446,149 @@ Do you want to load this state, or start from a fresh boot?</source>
 Вы хотите загрузить это состояние или начать с новой загрузки?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1062"/>
+        <location filename="../mainwindow.cpp" line="1061"/>
         <source>Fresh Boot</source>
         <translation>Новая загрузка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1063"/>
+        <location filename="../mainwindow.cpp" line="1062"/>
         <source>Delete And Boot</source>
         <translation>Удалить и загрузить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1082"/>
+        <location filename="../mainwindow.cpp" line="1081"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Не удалось удалить файл сохранения состояния &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1139"/>
+        <location filename="../mainwindow.cpp" line="1138"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished">Подтверждение замены диска</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1140"/>
+        <location filename="../mainwindow.cpp" line="1139"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished">Вы хотите поменять диски местами или загрузить новый образ (через сброс системы)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1142"/>
+        <location filename="../mainwindow.cpp" line="1141"/>
         <source>Swap Disc</source>
         <translation type="unfinished">Поменять диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1143"/>
+        <location filename="../mainwindow.cpp" line="1142"/>
         <source>Reset</source>
         <translation>Сброс</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1144"/>
+        <location filename="../mainwindow.cpp" line="1143"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1228"/>
-        <location filename="../mainwindow.cpp" line="2695"/>
+        <location filename="../mainwindow.cpp" line="1227"/>
+        <location filename="../mainwindow.cpp" line="2696"/>
         <source>Cheat Manager</source>
         <translation>Менеджер читов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1346"/>
+        <location filename="../mainwindow.cpp" line="1345"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished">Вы должны выбрать диск для замены дисков.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1385"/>
+        <location filename="../mainwindow.cpp" line="1384"/>
         <source>Properties...</source>
         <translation>Свойства...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1389"/>
+        <location filename="../mainwindow.cpp" line="1388"/>
         <source>Open Containing Directory...</source>
         <translation>Открыть папку с содержимым...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1394"/>
+        <location filename="../mainwindow.cpp" line="1393"/>
         <source>Set Cover Image...</source>
         <translation>Установить изображение обложки...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1404"/>
+        <location filename="../mainwindow.cpp" line="1403"/>
         <source>Default Boot</source>
         <translation>Обычный запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1407"/>
+        <location filename="../mainwindow.cpp" line="1406"/>
         <source>Fast Boot</source>
         <translation>Быстрый запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1413"/>
+        <location filename="../mainwindow.cpp" line="1412"/>
         <source>Full Boot</source>
         <translation>Полный запуск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1421"/>
+        <location filename="../mainwindow.cpp" line="1420"/>
         <source>Boot and Debug</source>
         <translation>Загрузка и отладка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1441"/>
+        <location filename="../mainwindow.cpp" line="1440"/>
         <source>Exclude From List</source>
         <translation>Исключить из списка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1444"/>
+        <location filename="../mainwindow.cpp" line="1443"/>
         <source>Reset Play Time</source>
         <translation>Сбросить время игры</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1448"/>
+        <location filename="../mainwindow.cpp" line="1447"/>
         <source>Add Search Directory...</source>
         <translation>Добавить папку для поиска...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1456"/>
+        <location filename="../mainwindow.cpp" line="1455"/>
         <source>Select Cover Image</source>
         <translation>Выбрать изображение обложки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1457"/>
+        <location filename="../mainwindow.cpp" line="1456"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation>Все типы изображений (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1463"/>
+        <location filename="../mainwindow.cpp" line="1462"/>
         <source>Cover Already Exists</source>
         <translation>Обложка уже существует</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1464"/>
+        <location filename="../mainwindow.cpp" line="1463"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Обложка изображения для этой игры уже существует, вы хотите заменить её?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1478"/>
-        <location filename="../mainwindow.cpp" line="1484"/>
+        <location filename="../mainwindow.cpp" line="1477"/>
+        <location filename="../mainwindow.cpp" line="1483"/>
         <source>Copy Error</source>
         <translation>Ошибка копирования</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1478"/>
+        <location filename="../mainwindow.cpp" line="1477"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Не удалось удалить существующую обложку &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1484"/>
+        <location filename="../mainwindow.cpp" line="1483"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Не удалось скопировать &apos;%1&apos; в &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1494"/>
+        <location filename="../mainwindow.cpp" line="1493"/>
         <source>Confirm Reset</source>
         <translation>Подтвердить сброс</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1495"/>
+        <location filename="../mainwindow.cpp" line="1494"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -7610,100 +7597,100 @@ This action cannot be undone.</source>
 Это действие не может быть отменено.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1638"/>
+        <location filename="../mainwindow.cpp" line="1641"/>
         <source>%1x Scale</source>
         <translation>%1x Масштаб</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2047"/>
-        <location filename="../mainwindow.cpp" line="2054"/>
-        <location filename="../mainwindow.cpp" line="2063"/>
+        <location filename="../mainwindow.cpp" line="2048"/>
+        <location filename="../mainwindow.cpp" line="2055"/>
+        <location filename="../mainwindow.cpp" line="2064"/>
         <source>Destination File</source>
         <translation>Целевой файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2047"/>
-        <location filename="../mainwindow.cpp" line="2063"/>
+        <location filename="../mainwindow.cpp" line="2048"/>
+        <location filename="../mainwindow.cpp" line="2064"/>
         <source>Binary Files (*.bin)</source>
         <translation>Двоичные файлы (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2055"/>
+        <location filename="../mainwindow.cpp" line="2056"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Двоичные файлы (*.bin);;Изображения PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2079"/>
+        <location filename="../mainwindow.cpp" line="2080"/>
         <source>Default</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2080"/>
+        <location filename="../mainwindow.cpp" line="2081"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2081"/>
+        <location filename="../mainwindow.cpp" line="2082"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Dark Fusion (Серый)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2082"/>
+        <location filename="../mainwindow.cpp" line="2083"/>
         <source>Dark Fusion (Blue)</source>
         <translation>Dark Fusion (Синий)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2083"/>
+        <location filename="../mainwindow.cpp" line="2084"/>
         <source>QDarkStyle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2531"/>
+        <location filename="../mainwindow.cpp" line="2532"/>
         <source>Confirm Shutdown</source>
         <translation>Подтвердить завершение работы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2532"/>
+        <location filename="../mainwindow.cpp" line="2533"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Вы уверены, что хотите выключить виртуальную машину?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2534"/>
+        <location filename="../mainwindow.cpp" line="2535"/>
         <source>Save State For Resume</source>
         <translatorcomment>*возобновления</translatorcomment>
         <translation>Сохранить состояние для продолжения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2610"/>
-        <location filename="../mainwindow.cpp" line="2615"/>
-        <location filename="../mainwindow.cpp" line="2635"/>
-        <location filename="../mainwindow.cpp" line="2644"/>
+        <location filename="../mainwindow.cpp" line="2611"/>
+        <location filename="../mainwindow.cpp" line="2616"/>
+        <location filename="../mainwindow.cpp" line="2636"/>
+        <location filename="../mainwindow.cpp" line="2645"/>
         <source>Memory Card Not Found</source>
         <translation>Карта памяти не найдена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2611"/>
+        <location filename="../mainwindow.cpp" line="2612"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Карта памяти &apos;%1&apos; не существует. Хотите создать пустую карту памяти?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2616"/>
+        <location filename="../mainwindow.cpp" line="2617"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Не удалось создать карту памяти &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2636"/>
-        <location filename="../mainwindow.cpp" line="2645"/>
+        <location filename="../mainwindow.cpp" line="2637"/>
+        <location filename="../mainwindow.cpp" line="2646"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Карта памяти &apos;%1&apos; не найдена. Попробуйте начать игру и сохранить, чтобы создать её.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2693"/>
+        <location filename="../mainwindow.cpp" line="2694"/>
         <source>Do not show again</source>
         <translation>Больше не показывать</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2697"/>
+        <location filename="../mainwindow.cpp" line="2698"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -7716,17 +7703,17 @@ Are you sure you want to continue?</source>
 Уверены, что хотите продолжить?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2760"/>
+        <location filename="../mainwindow.cpp" line="2773"/>
         <source>Updater Error</source>
         <translation>Ошибка обновления</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2766"/>
+        <location filename="../mainwindow.cpp" line="2779"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;К сожалению, вы пытаетесь обновить версию DuckStation, которая не является официальным выпуском GitHub. Чтобы предотвратить несовместимость, автоматическое обновление включено только в официальных сборках.&lt;/p&gt;&lt;p&gt;Чтобы получить официальную сборку, следуйте инструкциям в разделе &quot;Загрузка и запуск&quot; по ссылке ниже:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2772"/>
+        <location filename="../mainwindow.cpp" line="2785"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Автоматические обновление не поддерживается на этой платформе.</translation>
     </message>
@@ -8140,17 +8127,17 @@ Are you sure you want to continue?</source>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../mainwindow.cpp" line="438"/>
+        <location filename="../mainwindow.cpp" line="437"/>
         <source>Acquired exclusive fullscreen.</source>
         <translation>Получен эксклюзивный полноэкранный режим.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="442"/>
+        <location filename="../mainwindow.cpp" line="441"/>
         <source>Failed to acquire exclusive fullscreen.</source>
         <translation>Не удалось получить эксклюзивный полноэкранный режим.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="624"/>
+        <location filename="../qthost.cpp" line="625"/>
         <source>Lost exclusive fullscreen.</source>
         <translation>Утерян эксклюзивный полноэкранный режим.</translation>
     </message>
@@ -8199,10 +8186,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/gpu_hw.cpp" line="250"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
         <translation>Масштаб разрешения %ux не поддерживается для адаптивного сглаживания с использованием %ux.</translation>
-    </message>
-    <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="vanished">Рендер OpenGL недоступен, у вас недостаточно новый драйвер или устройство. Требуется OpenGL 3.1 или OpenGL ES 3.0.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="955"/>
@@ -8967,29 +8950,29 @@ URL: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2071"/>
-        <location filename="../qthost.cpp" line="2097"/>
-        <location filename="../qthost.cpp" line="2113"/>
+        <location filename="../qthost.cpp" line="2074"/>
+        <location filename="../qthost.cpp" line="2100"/>
+        <location filename="../qthost.cpp" line="2116"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2072"/>
+        <location filename="../qthost.cpp" line="2075"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>Файл &apos;%1&apos; не существует.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2098"/>
+        <location filename="../qthost.cpp" line="2101"/>
         <source>The specified save state does not exist.</source>
         <translation>Указанное состояние сохранения не существует.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2114"/>
+        <location filename="../qthost.cpp" line="2117"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Невозможно использовать режим &quot;без графического интерфейса&quot;, поскольку не было указано имя файла загрузки.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2115"/>
+        <location filename="../qthost.cpp" line="2118"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Невозможно использовать пакетный режим, поскольку не было указано имя файла загрузки.</translation>
     </message>
