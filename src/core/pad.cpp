@@ -798,7 +798,7 @@ void Pad::DoTransfer(TickCount ticks_late)
             const u32 frame_number = System::GetFrameNumber();
 
             // consider u32 overflow case
-            if ((frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
+            if (ShouldAvoidSavingToState() && (frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
               BackupMemoryCardState();
 
             s_last_memory_card_transfer_frame = frame_number;
