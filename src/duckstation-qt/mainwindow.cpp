@@ -675,17 +675,22 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
 {
-  if (!s_system_valid || !g_settings.pause_on_focus_loss)
+  if (!s_system_valid)
     return;
 
   const bool focus_loss = (state != Qt::ApplicationActive);
   if (focus_loss)
   {
-    if (!m_was_paused_by_focus_loss && !s_system_paused)
+    if (g_settings.pause_on_focus_loss && !m_was_paused_by_focus_loss && !s_system_paused)
     {
       g_emu_thread->setSystemPaused(true);
       m_was_paused_by_focus_loss = true;
     }
+
+    // Clear the state of all keyboard binds.
+    // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
+    // got the key release message, because it happened in another window which "stole" the event.
+    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
   }
   else
   {
@@ -1728,7 +1733,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   if (!g_gdb_server->isListening() && g_settings.debugging.enable_gdb_server && starting)
   {
-    QMetaObject::invokeMethod(g_gdb_server, "start", Qt::QueuedConnection, Q_ARG(quint16, g_settings.debugging.gdb_server_port));
+    QMetaObject::invokeMethod(g_gdb_server, "start", Qt::QueuedConnection,
+                              Q_ARG(quint16, g_settings.debugging.gdb_server_port));
   }
   else if (g_gdb_server->isListening() && !running)
   {
@@ -2753,14 +2759,14 @@ void MainWindow::onToolsOpenDataDirectoryTriggered()
 
 void MainWindow::onSettingsTriggeredFromToolbar()
 {
-    if (s_system_valid)
-    {
-        m_settings_toolbar_menu->exec(QCursor::pos());
-    }
-    else
-    {
-        doSettings();
-    }
+  if (s_system_valid)
+  {
+    m_settings_toolbar_menu->exec(QCursor::pos());
+  }
+  else
+  {
+    doSettings();
+  }
 }
 
 void MainWindow::checkForUpdates(bool display_message)
