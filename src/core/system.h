@@ -19,6 +19,12 @@ class Controller;
 struct CheatCode;
 class CheatList;
 
+namespace BIOS
+{
+struct ImageInfo;
+struct Hash;
+}
+
 struct SystemBootParameters
 {
   SystemBootParameters();
@@ -174,7 +180,10 @@ void IncrementInternalFrameNumber();
 const std::string& GetRunningPath();
 const std::string& GetRunningSerial();
 const std::string& GetRunningTitle();
+
 bool IsRunningBIOS();
+const BIOS::ImageInfo* GetBIOSImageInfo();
+const BIOS::Hash& GetBIOSHash();
 
 // TODO: Move to PerformanceMetrics
 static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;

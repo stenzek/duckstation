@@ -96,7 +96,7 @@ static constexpr const BIOS::ImageInfo s_openbios_info = {"OpenBIOS", ConsoleReg
 static constexpr const char s_openbios_signature[] = {'O', 'p', 'e', 'n', 'B', 'I', 'O', 'S'};
 static constexpr u32 s_openbios_signature_offset = 0x78;
 
-static BIOS::Hash GetHash(const BIOS::Image& image)
+BIOS::Hash BIOS::GetImageHash(const BIOS::Image& image)
 {
   BIOS::Hash hash;
   MD5Digest digest;
@@ -132,17 +132,21 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename)
     return std::nullopt;
   }
 
-  Log_DevPrint(fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetHash(ret).ToString()).c_str());
+  Log_DevPrint(fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetImageHash(ret).ToString()).c_str());
   return ret;
 }
 
 const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image)
 {
-  const Hash hash(GetHash(image));
+  const Hash hash(GetImageHash(image));
+  return GetInfoForImage(image, hash);
+}
 
+const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& hash)
+{
   // check for openbios
   if (image.size() >= (s_openbios_signature_offset + std::size(s_openbios_signature)) &&
-    std::memcmp(&image[s_openbios_signature_offset], s_openbios_signature, std::size(s_openbios_signature)) == 0)
+      std::memcmp(&image[s_openbios_signature_offset], s_openbios_signature, std::size(s_openbios_signature)) == 0)
   {
     return &s_openbios_info;
   }

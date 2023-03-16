@@ -59,8 +59,10 @@ static_assert(sizeof(PSEXEHeader) == 0x800);
 #pragma pack(pop)
 
 std::optional<Image> LoadImageFromFile(const char* filename);
+Hash GetImageHash(const Image& image);
 
 const ImageInfo* GetInfoForImage(const Image& image);
+const ImageInfo* GetInfoForImage(const Image& image, const Hash& hash);
 bool IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_region);
 
 void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));

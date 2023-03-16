@@ -223,17 +223,6 @@ void SetExpansionROM(std::vector<u8> data)
   m_exp1_rom = std::move(data);
 }
 
-void SetBIOS(const std::vector<u8>& image)
-{
-  if (image.size() != static_cast<u32>(BIOS_SIZE))
-  {
-    Panic("Incorrect BIOS image size");
-    return;
-  }
-
-  std::memcpy(g_bios, image.data(), BIOS_SIZE);
-}
-
 std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
 {
   // from nocash spec

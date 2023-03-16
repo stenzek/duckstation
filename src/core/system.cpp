@@ -96,6 +96,7 @@ static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_
 
 static void StallCPU(TickCount ticks);
 
+static bool LoadBIOS();
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -139,6 +140,8 @@ TickCount System::g_ticks_per_second = System::MASTER_CLOCK;
 static TickCount s_max_slice_ticks = System::MASTER_CLOCK / 10;
 static u32 s_frame_number = 1;
 static u32 s_internal_frame_number = 1;
+static const BIOS::ImageInfo* s_bios_image_info = nullptr;
+static BIOS::Hash s_bios_hash = {};
 
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
@@ -328,6 +331,16 @@ const std::string& System::GetRunningTitle()
 bool System::IsRunningBIOS()
 {
   return s_running_bios;
+}
+
+const BIOS::ImageInfo* System::GetBIOSImageInfo()
+{
+  return s_bios_image_info;
+}
+
+const BIOS::Hash& System::GetBIOSHash()
+{
+  return s_bios_hash;
 }
 
 float System::GetFPS()
@@ -1217,11 +1230,8 @@ bool System::BootSystem(SystemBootParameters parameters)
 #endif
 
   // Load BIOS image.
-  std::optional<BIOS::Image> bios_image(BIOS::GetBIOSImage(s_region));
-  if (!bios_image)
+  if (!LoadBIOS())
   {
-    Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Failed to load %s BIOS."),
-                                    Settings::GetConsoleRegionName(s_region));
     s_state = State::Shutdown;
     ClearRunningGame();
     Host::OnSystemDestroyed();
@@ -1240,17 +1250,15 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Allow controller analog mode for EXEs and PSFs.
   s_running_bios = s_running_game_path.empty() && exe_boot.empty() && psf_boot.empty();
 
-  Bus::SetBIOS(bios_image.value());
   UpdateControllers();
   UpdateMemoryCardTypes();
   UpdateMultitaps();
   InternalReset();
 
   // Enable tty by patching bios.
-  const BIOS::ImageInfo* bios_info = BIOS::GetInfoForImage(bios_image.value());
   if (g_settings.bios_patch_tty_enable)
   {
-    if (bios_info && bios_info->patch_compatible)
+    if (s_bios_image_info && s_bios_image_info->patch_compatible)
       BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
     else
       Log_ErrorPrintf("Not patching TTY enable, as BIOS is not patch compatible.");
@@ -1276,7 +1284,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
                                                                         g_settings.bios_patch_fast_boot))
   {
-    if (bios_info && bios_info->patch_compatible)
+    if (s_bios_image_info && s_bios_image_info->patch_compatible)
       BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
     else
       Log_ErrorPrintf("Not patching fast boot, as BIOS is not patch compatible.");
@@ -1496,6 +1504,9 @@ void System::DestroySystem()
     UpdateSoftwareCursor();
     Host::ReleaseHostDisplay();
   }
+
+  s_bios_hash = {};
+  s_bios_image_info = nullptr;
 
   Host::OnSystemDestroyed();
 }
@@ -1753,6 +1764,33 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   }
 
   return !sw.HasError();
+}
+
+bool System::LoadBIOS()
+{
+  std::optional<BIOS::Image> bios_image(BIOS::GetBIOSImage(s_region));
+  if (!bios_image.has_value())
+  {
+    Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Failed to load %s BIOS."),
+                                    Settings::GetConsoleRegionName(s_region));
+    return false;
+  }
+
+  if (bios_image->size() != static_cast<u32>(Bus::BIOS_SIZE))
+  {
+    Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Incorrect BIOS image size"));
+    return false;
+  }
+
+  s_bios_hash = BIOS::GetImageHash(bios_image.value());
+  s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
+  if (s_bios_image_info)
+    Log_InfoPrintf("Using BIOS: %s", s_bios_image_info->description);
+  else
+    Log_WarningPrintf("Using an unknown BIOS: %s", s_bios_image_info->hash.ToString().c_str());
+
+  std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
+  return true;
 }
 
 void System::InternalReset()
