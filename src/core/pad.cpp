@@ -10,6 +10,7 @@
 #include "interrupt_controller.h"
 #include "memory_card.h"
 #include "multitap.h"
+#include "save_state_version.h"
 #include "system.h"
 #include "types.h"
 #include "util/state_wrapper.h"
@@ -74,6 +75,8 @@ union JOY_MODE
 };
 
 static bool CanTransfer();
+static bool ShouldAvoidSavingToState();
+static u32 GetMaximumRollbackFrames();
 
 static TickCount GetTransferTicks();
 
@@ -96,7 +99,10 @@ static void EndTransfer();
 static void ResetDeviceTransferState();
 
 static bool DoStateController(StateWrapper& sw, u32 i);
-static bool DoStateMemcard(StateWrapper& sw, u32 i);
+static bool DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state);
+static MemoryCard* GetDummyMemcard();
+static void BackupMemoryCardState();
+static void RestoreMemoryCardState();
 
 static std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> s_controllers;
 static std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> s_memory_cards;
@@ -118,6 +124,10 @@ static u8 s_transmit_value = 0;
 static bool s_receive_buffer_full = false;
 static bool s_transmit_buffer_full = false;
 
+static u32 s_last_memory_card_transfer_frame = 0;
+static std::unique_ptr<GrowableMemoryByteStream> s_memory_card_backup;
+static std::unique_ptr<MemoryCard> s_dummy_card;
+
 } // namespace Pad
 
 void Pad::Initialize()
@@ -128,6 +138,8 @@ void Pad::Initialize()
 
 void Pad::Shutdown()
 {
+  s_memory_card_backup.reset();
+
   s_transfer_event.reset();
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -152,6 +164,17 @@ void Pad::Reset()
 
   for (u32 i = 0; i < NUM_MULTITAPS; i++)
     s_multitaps[i].Reset();
+}
+
+bool Pad::ShouldAvoidSavingToState()
+{
+  // Currently only runahead, will also be used for netplay.
+  return g_settings.IsRunaheadEnabled();
+}
+
+u32 Pad::GetMaximumRollbackFrames()
+{
+  return g_settings.runahead_frames;
 }
 
 bool Pad::DoStateController(StateWrapper& sw, u32 i)
@@ -223,7 +246,7 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
   return true;
 }
 
-bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
+bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 {
   bool card_present_in_state = static_cast<bool>(s_memory_cards[i]);
 
@@ -249,9 +272,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
       // load memcard into a temporary: If the card datas match, take the one from the savestate
       // since it has other useful non-data state information. Otherwise take the user's card
       // and perform a re-plugging.
-
-      card_from_state = std::make_unique<MemoryCard>();
-      card_ptr = card_from_state.get();
+      card_ptr = GetDummyMemcard();
     }
 
     if (!sw.DoMarker("MemoryCard") || !card_ptr->DoState(sw))
@@ -322,39 +343,164 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i)
   return true;
 }
 
-bool Pad::DoState(StateWrapper& sw)
+MemoryCard* Pad::GetDummyMemcard()
 {
+  if (!s_dummy_card)
+    s_dummy_card = MemoryCard::Create();
+  return s_dummy_card.get();
+}
+
+void Pad::BackupMemoryCardState()
+{
+  Log_DevPrintf("Backing up memory card state.");
+
+  if (!s_memory_card_backup)
+  {
+    s_memory_card_backup =
+      std::make_unique<GrowableMemoryByteStream>(nullptr, MemoryCard::STATE_SIZE * NUM_CONTROLLER_AND_CARD_PORTS);
+  }
+
+  s_memory_card_backup->SeekAbsolute(0);
+
+  StateWrapper sw(s_memory_card_backup.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if ((sw.GetVersion() < 50) && (i >= 2))
+    if (s_memory_cards[i])
+      s_memory_cards[i]->DoState(sw);
+  }
+}
+
+void Pad::RestoreMemoryCardState()
+{
+  DebugAssert(s_memory_card_backup);
+
+  Log_VerbosePrintf("Restoring backed up memory card state.");
+
+  s_memory_card_backup->SeekAbsolute(0);
+  StateWrapper sw(s_memory_card_backup.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    if (s_memory_cards[i])
+      s_memory_cards[i]->DoState(sw);
+  }
+}
+
+bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
+{
+  if (is_memory_state && ShouldAvoidSavingToState())
+  {
+    // We do a bit of trickery for memory states here to avoid writing 128KB * num_cards to the state.
+    // Profiling shows that the card write scan be up to 17% of overall CPU time, so it's definitely worth skipping.
+    // However, we can't roll back past a transfer boundary, because that'll corrupt our cards. So, we have to be smart
+    // about this.
+    //
+    // There's three main scenarios:
+    //  (1) No transfers occurring before or after the rollback point.
+    //  (2) A transfer was started before the rollback point.
+    //  (3) A transfer was started after the rollback point.
+    //
+    // For (1), it's easy, we don't have to do anything. Just skip saving and continue on our merry way.
+    //
+    // For (2), we serialize the state whenever there's a transfer within the last N_ROLLBACK frames. Easy-ish.
+    //
+    // For (3), it gets messy. We didn't know that a transfer was going to start, and our rollback state doesn't
+    // contain the state of the memory cards, because we were cheeky and skipped it. So, instead, we back up
+    // the state of memory cards when any transfer begins, assuming it's not within the last N_ROLLBACK frames, in
+    // DoTransfer(). That way, when we do have to roll back past this boundary, we can just restore the known good "pre
+    // transfer" state. Any memory saves created after the transfer begun will go through the same path as (2), so we
+    // don't risk corrupting that way.
+    //
+    // Hopefully that's everything.
+    //
+    bool process_memcard_state = true;
+
+    const u32 frame_number = System::GetFrameNumber();
+    const u32 frames_since_transfer = frame_number - s_last_memory_card_transfer_frame;
+    const u32 prev_transfer_frame = s_last_memory_card_transfer_frame;
+    bool state_has_memcards = false;
+
+    sw.Do(&s_last_memory_card_transfer_frame);
+
+    // If there's been a transfer within the last N_ROLLBACK frames, include the memory card state when saving.
+    state_has_memcards = (frames_since_transfer <= GetMaximumRollbackFrames());
+    sw.Do(&state_has_memcards);
+
+    if (sw.IsReading())
     {
-      // loading from old savestate which only had max 2 controllers.
-      // honoring load_devices_from_save_states in this case seems debatable, but might as well...
-      if (s_controllers[i])
+      // If no transfers have occurred, no need to reload state.
+      if (s_last_memory_card_transfer_frame != frame_number && s_last_memory_card_transfer_frame == prev_transfer_frame)
       {
-        if (g_settings.load_devices_from_save_states)
-          s_controllers[i].reset();
-        else
-          s_controllers[i]->Reset();
+        process_memcard_state = false;
       }
-
-      if (s_memory_cards[i])
+      else if (!state_has_memcards)
       {
-        if (g_settings.load_devices_from_save_states)
-          s_memory_cards[i].reset();
-        else
-          s_memory_cards[i]->Reset();
+        // If the memory state doesn't have card data (i.e. rolling back past a transfer start), reload the backed up
+        // state created when the transfer initially begun.
+        RestoreMemoryCardState();
+        process_memcard_state = false;
       }
-
-      // ... and make sure to skip trying to read controller_type / card_present flags which don't exist in old states.
-      continue;
     }
 
-    if (!DoStateController(sw, i))
-      return false;
+    // Still have to parse through the data if it's present.
+    if (state_has_memcards)
+    {
+      MemoryCard* dummy_card = process_memcard_state ? nullptr : GetDummyMemcard();
+      for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+      {
+        if (s_memory_cards[i])
+        {
+          MemoryCard* const mc = process_memcard_state ? s_memory_cards[i].get() : dummy_card;
+          mc->DoState(sw);
+        }
+      }
+    }
 
-    if (!DoStateMemcard(sw, i))
-      return false;
+    // Always save controller state.
+    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+    {
+      if (s_controllers[i])
+      {
+        // Ignore input state, use the current. I think we want this?
+        s_controllers[i]->DoState(sw, false);
+      }
+    }
+  }
+  else
+  {
+    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+    {
+      if ((sw.GetVersion() < 50) && (i >= 2))
+      {
+        // loading from old savestate which only had max 2 controllers.
+        // honoring load_devices_from_save_states in this case seems debatable, but might as well...
+        if (s_controllers[i])
+        {
+          if (g_settings.load_devices_from_save_states)
+            s_controllers[i].reset();
+          else
+            s_controllers[i]->Reset();
+        }
+
+        if (s_memory_cards[i])
+        {
+          if (g_settings.load_devices_from_save_states)
+            s_memory_cards[i].reset();
+          else
+            s_memory_cards[i]->Reset();
+        }
+
+        // and make sure to skip trying to read controller_type / card_present flags which don't exist in old states.
+        continue;
+      }
+
+      if (!DoStateController(sw, i))
+        return false;
+
+      if (!DoStateMemcard(sw, i, is_memory_state))
+        return false;
+    }
   }
 
   if (sw.GetVersion() >= 50)
@@ -647,6 +793,15 @@ void Pad::DoTransfer(TickCount ticks_late)
             // memory card responded, make it the active device until non-ack
             Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
             s_active_device = ActiveDevice::MemoryCard;
+
+            // back up memory card state in case we roll back to before this transfer begun
+            const u32 frame_number = System::GetFrameNumber();
+
+            // consider u32 overflow case
+            if ((frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
+              BackupMemoryCardState();
+
+            s_last_memory_card_transfer_frame = frame_number;
           }
         }
         else
@@ -673,6 +828,7 @@ void Pad::DoTransfer(TickCount ticks_late)
     {
       if (memory_card)
       {
+        s_last_memory_card_transfer_frame = System::GetFrameNumber();
         ack = memory_card->Transfer(data_out, &data_in);
         Log_TracePrintf("Transfer to memory card, data_out=0x%02X, data_in=0x%02X", data_out, data_in);
       }

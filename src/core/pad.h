@@ -18,7 +18,7 @@ static constexpr u32 NUM_SLOTS = 2;
 void Initialize();
 void Shutdown();
 void Reset();
-bool DoState(StateWrapper& sw);
+bool DoState(StateWrapper& sw, bool is_memory_state);
 
 Controller* GetController(u32 slot);
 void SetController(u32 slot, std::unique_ptr<Controller> dev);

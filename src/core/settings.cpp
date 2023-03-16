@@ -678,7 +678,11 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   {
     // Block linking is good for performance, but hurts when regularly loading (i.e. runahead), since everything has to
     // be unlinked. Which would be thousands of blocks.
-    g_settings.cpu_recompiler_block_linking = false;
+    if (g_settings.cpu_recompiler_block_linking)
+    {
+      Log_WarningPrintf("Disabling block linking due to runahead.");
+      g_settings.cpu_recompiler_block_linking = false;
+    }
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states

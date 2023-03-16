@@ -1712,7 +1712,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Pad") || !Pad::DoState(sw))
+  if (!sw.DoMarker("Pad") || !Pad::DoState(sw, is_memory_state))
     return false;
 
   if (!sw.DoMarker("Timers") || !Timers::DoState(sw))
