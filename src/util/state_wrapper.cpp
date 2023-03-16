@@ -29,6 +29,17 @@ void StateWrapper::DoBytes(void* data, size_t length)
   }
 }
 
+void StateWrapper::DoBytesEx(void* data, size_t length, u32 version_introduced, const void* default_value)
+{
+  if (m_mode == Mode::Read && m_version < version_introduced)
+  {
+    std::memcpy(data, default_value, length);
+    return;
+  }
+
+  DoBytes(data, length);
+}
+
 void StateWrapper::Do(bool* value_ptr)
 {
   if (m_mode == Mode::Read)

@@ -1661,6 +1661,23 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   sw.Do(&s_frame_number);
   sw.Do(&s_internal_frame_number);
 
+  // Don't bother checking this at all for memory states, since they won't have a different BIOS...
+  if (!is_memory_state)
+  {
+    BIOS::Hash bios_hash = s_bios_hash;
+    sw.DoBytesEx(bios_hash.bytes, sizeof(bios_hash.bytes), 58, s_bios_hash.bytes);
+    if (bios_hash != s_bios_hash)
+    {
+      Log_WarningPrintf("BIOS hash mismatch: System: %s | State: %s", s_bios_hash.ToString().c_str(),
+                        bios_hash.ToString().c_str());
+      Host::AddKeyedOSDMessage(
+        "StateBIOSMismatch",
+        Host::TranslateStdString("OSDMessage", "This save state was created with a different BIOS version or patch "
+                                               "options. This may cause stability issues."),
+        10.0f);
+    }
+  }
+
   if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
     return false;
 

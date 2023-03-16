@@ -211,7 +211,13 @@ bool DoState(StateWrapper& sw)
   sw.Do(&m_cdrom_access_time);
   sw.Do(&m_spu_access_time);
   sw.DoBytes(g_ram, g_ram_size);
-  sw.DoBytes(g_bios, BIOS_SIZE);
+
+  if (sw.GetVersion() < 58)
+  {
+    Log_WarningPrint("Overwriting loaded BIOS with old save state.");
+    sw.DoBytes(g_bios, BIOS_SIZE);
+  }
+
   sw.DoArray(m_MEMCTRL.regs, countof(m_MEMCTRL.regs));
   sw.Do(&m_ram_size_reg);
   sw.Do(&m_tty_line_buffer);

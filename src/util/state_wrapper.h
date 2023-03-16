@@ -104,6 +104,7 @@ public:
   }
 
   void DoBytes(void* data, size_t length);
+  void DoBytesEx(void* data, size_t length, u32 version_introduced, const void* default_value);
 
   void Do(bool* value_ptr);
   void Do(std::string* value_ptr);
@@ -182,7 +183,7 @@ public:
   template<typename T>
   void DoEx(T* data, u32 version_introduced, T default_value)
   {
-    if (m_version < version_introduced)
+    if (m_mode == Mode::Read && m_version < version_introduced)
     {
       *data = std::move(default_value);
       return;
