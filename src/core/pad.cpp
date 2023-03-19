@@ -169,12 +169,12 @@ void Pad::Reset()
 bool Pad::ShouldAvoidSavingToState()
 {
   // Currently only runahead, will also be used for netplay.
-  return g_settings.IsRunaheadEnabled();
+  return g_settings.IsRunaheadEnabled() || Netplay::Session::IsActive();
 }
 
 u32 Pad::GetMaximumRollbackFrames()
 {
-  return g_settings.runahead_frames;
+  return (Netplay::Session::IsActive() ? Netplay::Session::GetMaxPrediction() : g_settings.runahead_frames);
 }
 
 bool Pad::DoStateController(StateWrapper& sw, u32 i)

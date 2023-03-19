@@ -3,6 +3,7 @@
 
 #pragma once
 #include "common/timer.h"
+#include "netplay.h"
 #include "settings.h"
 #include "timing_event.h"
 #include "types.h"
@@ -19,11 +20,10 @@ class Controller;
 struct CheatCode;
 class CheatList;
 
-namespace BIOS
-{
+namespace BIOS {
 struct ImageInfo;
 struct Hash;
-}
+} // namespace BIOS
 
 struct SystemBootParameters
 {
@@ -226,6 +226,9 @@ bool SaveResumeState();
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
+
+/// Runs the VM and netplay loop. when the netplay loop cancels it switches to normal execute mode.
+void ExecuteNetplay();
 
 /// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
 void RecreateSystem();
@@ -452,6 +455,11 @@ void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
 
+/// Netplay
+void StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port, s32 input_delay,
+                         std::string& game_path);
+void StopNetplaySession();
+void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 } // namespace System
 
 namespace Host {
@@ -500,4 +508,6 @@ bool IsFullscreen();
 
 /// Alters fullscreen state of hosting application.
 void SetFullscreen(bool enabled);
+// netplay
+void OnNetplayMessage(std::string& message);
 } // namespace Host

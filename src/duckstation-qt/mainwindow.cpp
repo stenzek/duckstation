@@ -50,6 +50,7 @@
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <Dbt.h>
+#include <WinSock2.h>
 #endif
 
 Log_SetChannel(MainWindow);
@@ -105,6 +106,12 @@ MainWindow::MainWindow() : QMainWindow(nullptr)
 #if !defined(_WIN32) && !defined(__APPLE__)
   s_use_central_widget = DisplayContainer::isRunningOnWayland();
 #endif
+
+#if defined(_WIN32)
+  // Setup WinSock
+  WSADATA wd = {};
+  WSAStartup(MAKEWORD(2, 2), &wd);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -119,6 +126,8 @@ MainWindow::~MainWindow()
 
 #ifdef _WIN32
   unregisterForDeviceNotifications();
+  // Cleanup WinSock
+  WSACleanup();
 #endif
 #ifdef __APPLE__
   FrontendCommon::RemoveThemeChangeHandler(this);
@@ -1556,8 +1565,12 @@ void MainWindow::setupAdditionalUi()
   m_status_fps_widget->hide();
 
   m_status_vps_widget = new QLabel(m_ui.statusBar);
-  m_status_vps_widget->setFixedSize(125, 16);
+  m_status_vps_widget->setFixedSize(120, 16);
   m_status_vps_widget->hide();
+
+  m_status_ping_widget = new QLabel(m_ui.statusBar);
+  m_status_ping_widget->setFixedSize(110, 16);
+  m_status_ping_widget->hide();
 
   m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);
@@ -1764,6 +1777,7 @@ void MainWindow::updateStatusBarWidgetVisibility()
   Update(m_status_resolution_widget, s_system_valid && !s_system_paused, 0);
   Update(m_status_fps_widget, s_system_valid && !s_system_paused, 0);
   Update(m_status_vps_widget, s_system_valid && !s_system_paused, 0);
+  Update(m_status_ping_widget, s_system_valid && !s_system_paused && m_netplay_window != nullptr, 0);
 }
 
 void MainWindow::updateWindowTitle()
@@ -2089,6 +2103,9 @@ void MainWindow::connectSignals()
   addThemeToMenu(tr("Dark Fusion (Blue)"), QStringLiteral("darkfusionblue"));
   addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
   updateMenuSelectedTheme();
+
+  // Netplay UI , TODO
+  connect(m_ui.actionCreateNetplaySession, &QAction::triggered, this, &MainWindow::onNetplaySessionCreated);
 }
 
 void MainWindow::addThemeToMenu(const QString& name, const QString& key)
@@ -2750,6 +2767,28 @@ void MainWindow::onCPUDebuggerClosed()
   Assert(m_debugger_window);
   m_debugger_window->deleteLater();
   m_debugger_window = nullptr;
+}
+
+void MainWindow::onNetplaySessionCreated()
+{
+  Assert(!m_netplay_window);
+
+  m_netplay_window = new NetplayWidget(this);
+  m_netplay_window->setWindowIcon(windowIcon());
+  m_netplay_window->setWindowTitle("Netplay Session");
+  m_netplay_window->setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
+  m_netplay_window->show();
+
+  m_ui.menuNetplay->setDisabled(true);
+
+  connect(m_netplay_window, &NetplayWidget::finished, [this]() {
+    Assert(m_netplay_window);
+
+    m_netplay_window->deleteLater();
+    m_netplay_window = nullptr;
+
+    m_ui.menuNetplay->setDisabled(false);
+  });
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()

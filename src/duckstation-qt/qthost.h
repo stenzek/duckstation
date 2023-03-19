@@ -143,6 +143,7 @@ Q_SIGNALS:
   void achievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
   void achievementsChallengeModeChanged();
   void cheatEnabled(quint32 index, bool enabled);
+  void onNetplayMessage(const QString& message);
 
 public Q_SLOTS:
   void setDefaultSettings(bool system = true, bool controller = true);
@@ -187,6 +188,10 @@ public Q_SLOTS:
   void setCheatEnabled(quint32 index, bool enabled);
   void applyCheat(quint32 index);
   void reloadPostProcessingShaders();
+  void startNetplaySession(int local_handle, quint16 local_port, const QString& remote_addr, quint16 remote_port,
+                           int input_delay, const QString& game_path);
+  void stopNetplaySession();
+  void sendNetplayMessage(const QString& message);
 
 private Q_SLOTS:
   void stopInThread();
@@ -232,6 +237,7 @@ private:
   float m_last_video_fps = std::numeric_limits<float>::infinity();
   u32 m_last_render_width = std::numeric_limits<u32>::max();
   u32 m_last_render_height = std::numeric_limits<u32>::max();
+  u32 m_last_ping = std::numeric_limits<u32>::max();
   GPURenderer m_last_renderer = GPURenderer::Count;
 };
 
