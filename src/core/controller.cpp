@@ -8,6 +8,7 @@
 #include "fmt/format.h"
 #include "guncon.h"
 #include "negcon.h"
+#include "jogcon.h"
 #include "playstation_mouse.h"
 #include "util/state_wrapper.h"
 
@@ -22,7 +23,7 @@ static const Controller::ControllerInfo s_none_info = {ControllerType::None,
 
 static const Controller::ControllerInfo* s_controller_info[] = {
   &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO, &NeGcon::INFO,
-  &GunCon::INFO, &PlayStationMouse::INFO,
+  &JogCon::INFO, &GunCon::INFO, &PlayStationMouse::INFO,
 };
 
 Controller::Controller(u32 index) : m_index(index) {}
@@ -94,6 +95,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::NeGcon:
       return NeGcon::Create(index);
+
+    case ControllerType::JogCon:
+      return JogCon::Create(index);
 
     case ControllerType::None:
     default:
