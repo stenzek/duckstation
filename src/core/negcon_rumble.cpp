@@ -30,6 +30,10 @@ ControllerType NeGconRumble::GetType() const
 {
   return ControllerType::NeGconRumble;
 }
+bool NeGconRumble::InAnalogMode() const
+{
+  return m_analog_mode;
+}
 
 void NeGconRumble::Reset()
 {
@@ -121,31 +125,60 @@ bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 
 float NeGconRumble::GetBindState(u32 index) const
 {
-  if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
-      index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
+  if (index >= static_cast<u32>(Button::Count))
   {
-    return static_cast<float>(m_half_axis_state[index - static_cast<u32>(Button::Count)]) * (1.0f / 255.0f);
-  }
-  else if (index >= static_cast<u32>(Button::Count))
-  {
-    // less one because of the two steering axes
-    const u32 sub_index = index - (static_cast<u32>(Button::Count) + 1);
-    if (sub_index >= m_axis_state.size())
+    const u32 sub_index = index - static_cast<u32>(Button::Count);
+    if (sub_index >= static_cast<u32>(m_half_axis_state.size()))
       return 0.0f;
 
-    return static_cast<float>(m_axis_state[sub_index]) * (1.0f / 255.0f);
+    return static_cast<float>(m_half_axis_state[sub_index]) * (1.0f / 255.0f);
+  }
+  else if (index < static_cast<u32>(Button::Analog))
+  {
+    return static_cast<float>(((m_button_state >> index) & 1u) ^ 1u);
   }
   else
   {
-    const u32 bit = s_button_indices[index];
-    return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
+    return 0.0f;
   }
+  //if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
+  //    index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
+  //{
+  //  return static_cast<float>(m_half_axis_state[index - static_cast<u32>(Button::Count)]) * (1.0f / 255.0f);
+  //}
+  //else if (index >= static_cast<u32>(Button::Count))
+  //{
+  //  // less one because of the two steering axes
+  //  const u32 sub_index = index - (static_cast<u32>(Button::Analog) + 1);
+  //  if (sub_index >= m_axis_state.size())
+  //    return 0.0f;
+
+  //  return static_cast<float>(m_axis_state[sub_index]) * (1.0f / 255.0f);
+  //}
+  //else
+  //{
+  //  const u32 bit = s_button_indices[index];
+  //  return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
+  //}
 }
 
 void NeGconRumble::SetBindState(u32 index, float value)
 {
+  if (index == static_cast<s32>(Button::Analog))
+  {
+    // analog toggle
+    if (value >= 0.5f)
+    {
+      if (m_command == Command::Idle)
+        ProcessAnalogModeToggle();
+      else
+        m_analog_toggle_queued = true;
+    }
+
+    return;
+  }
   // Steering Axis: -1..1 -> 0..255
-  if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
+  else if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
       index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
   {
     value *= m_steering_sensitivity;
@@ -159,19 +192,6 @@ void NeGconRumble::SetBindState(u32 index, float value)
     m_axis_state[static_cast<u32>(Axis::Steering)] =
       ((m_half_axis_state[1] != 0) ? (127u + ((m_half_axis_state[1] + 1u) / 2u)) :
                                      (127u - (m_half_axis_state[0] / 2u)));
-  }
-  else if (index == static_cast<s32>(Button::Analog))
-  {
-    // analog toggle
-    if (value >= m_button_deadzone)
-    {
-      if (m_command == Command::Idle)
-        ProcessAnalogModeToggle();
-      else
-        m_analog_toggle_queued = true;
-    }
-
-    return;
   }
   else if (index >= static_cast<u32>(Button::Count))
   {
@@ -670,7 +690,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         if (data_in == 0x00)
           m_tx_buffer[5] = 0x04;
         else if (data_in == 0x01)
-          m_tx_buffer[5] = 0x07;
+          m_tx_buffer[5] = 0x02;
       }
     }
     break;
