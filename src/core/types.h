@@ -213,6 +213,7 @@ enum class ControllerType
   GunCon,
   PlayStationMouse,
   NeGcon,
+  JogCon,
   Count
 };
 

@@ -65,6 +65,7 @@
     <ClCompile Include="cpu_newrec_compiler_aarch64.cpp" />
     <ClCompile Include="cpu_newrec_compiler_riscv64.cpp" />
     <ClCompile Include="cpu_newrec_compiler_aarch32.cpp" />
+    <ClCompile Include="jogcon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -136,5 +137,6 @@
     <ClInclude Include="cpu_newrec_compiler_riscv64.h" />
     <ClInclude Include="cpu_newrec_compiler_aarch32.h" />
     <ClInclude Include="achievements_private.h" />
+    <ClInclude Include="jogcon.h" />
   </ItemGroup>
 </Project>

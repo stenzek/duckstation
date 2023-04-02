@@ -1,0 +1,192 @@
+// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
+#pragma once
+#include "controller.h"
+#include <array>
+#include <memory>
+#include <optional>
+#include <string_view>
+
+class JogCon final : public Controller
+{
+public:
+  enum class Axis : u8
+  {
+    LeftX,
+    LeftY,
+    RightX,
+    RightY,
+    Count
+  };
+
+  enum class Button : u8
+  {
+    Select = 0,
+    L3 = 1,
+    R3 = 2,
+    Start = 3,
+    Up = 4,
+    Right = 5,
+    Down = 6,
+    Left = 7,
+    L2 = 8,
+    R2 = 9,
+    L1 = 10,
+    R1 = 11,
+    Triangle = 12,
+    Circle = 13,
+    Cross = 14,
+    Square = 15,
+    Analog = 16,
+    Count
+  };
+
+  enum class HalfAxis : u8
+  {
+    LLeft,
+    LRight,
+    LDown,
+    LUp,
+    RLeft,
+    RRight,
+    RDown,
+    RUp,
+    Count
+  };
+
+
+  enum class JogconDirection : u8
+  {
+    JOGCON_DIR_NONE = 0x0,
+    JOGCON_DIR_CW = 0x1,
+    JOGCON_DIR_CCW = 0x2,
+    JOGCON_DIR_START = 0x3,
+    // Bellow values are only used as return on getJogconData()
+    JOGCON_DIR_MAX = 0x4,  // Position and revolutions maxed out
+    JOGCON_DIR_OTHER = 0xF // Using 0x0F as generic unhandled code
+  };
+
+  enum class JogconCommand : u8
+  {
+    JOGCON_CMD_NONE = 0x0,
+    JOGCON_CMD_DROP_REVOLUTIONS = 0x8,
+    JOGCON_CMD_NEW_START = 0xC,
+    // Bellow values are only used as return on getJogconData()
+    JOGCON_CMD_OTHER = 0xF // Using 0xF as generic unhandled code return
+  };
+
+  static constexpr u8 NUM_MOTORS = 2;
+
+  static const Controller::ControllerInfo INFO;
+
+  JogCon(u32 index);
+  ~JogCon() override;
+
+  static std::unique_ptr<JogCon> Create(u32 index);
+
+  ControllerType GetType() const override;
+  bool InAnalogMode() const override;
+
+  void Reset() override;
+  bool DoState(StateWrapper& sw, bool ignore_input_state) override;
+
+  float GetBindState(u32 index) const override;
+  void SetBindState(u32 index, float value) override;
+  u32 GetButtonStateBits() const override;
+  std::optional<u32> GetAnalogInputBytes() const override;
+
+  void ResetTransferState() override;
+  bool Transfer(const u8 data_in, u8* data_out) override;
+
+  void LoadSettings(SettingsInterface& si, const char* section) override;
+
+private:
+  using MotorState = std::array<u8, NUM_MOTORS>;
+
+  enum class Command : u8
+  {
+    Idle,
+    Ready,
+    ReadPad,           // 0x42
+    ConfigModeSetMode, // 0x43
+    SetAnalogMode,     // 0x44
+    GetAnalogMode,     // 0x45
+    Command46,         // 0x46
+    Command47,         // 0x47
+    Command4C,         // 0x4C
+    GetSetRumble       // 0x4D
+  };
+
+  Command m_command = Command::Idle;
+  int m_command_step = 0;
+
+  // Transmit and receive buffers, not including the first Hi-Z/ack response byte
+  static constexpr u32 MAX_RESPONSE_LENGTH = 8;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer;
+  u32 m_response_length = 0;
+
+  // Get number of response halfwords (excluding the initial controller info halfword)
+  u8 GetResponseNumHalfwords() const;
+
+  u8 GetModeID() const;
+  u8 GetIDByte() const;
+
+  void SetAnalogMode(bool enabled, bool show_message);
+  void ProcessAnalogModeToggle();
+  void SetMotorState(u32 motor, u8 value);
+  void UpdateHostVibration();
+  u8 GetExtraButtonMaskLSB() const;
+  void ResetRumbleConfig();
+  void SetMotorStateForConfigIndex(int index, u8 value);
+
+  bool m_force_analog_on_reset = false;
+  bool m_analog_dpad_in_digital_mode = false;
+  float m_analog_deadzone = 0.0f;
+  float m_analog_sensitivity = 1.33f;
+  float m_button_deadzone = 0.0f;
+  u8 m_rumble_bias = 8;
+  u8 m_invert_left_stick = 0;
+  u8 m_invert_right_stick = 0;
+
+  bool m_analog_mode = false;
+  bool m_analog_locked = false;
+  bool m_dualshock_enabled = false;
+  bool m_configuration_mode = false;
+
+  std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
+
+  enum : u8
+  {
+    LargeMotor = 0,
+    SmallMotor = 1
+  };
+
+  std::array<u8, 6> m_rumble_config{};
+  int m_rumble_config_large_motor_index = -1;
+  int m_rumble_config_small_motor_index = -1;
+
+  bool m_analog_toggle_queued = false;
+  u8 m_status_byte = 0;
+
+  // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
+  u8 m_digital_mode_extra_halfwords = 0;
+
+  // buttons are active low
+  u16 m_button_state = UINT16_C(0xFFFF);
+
+  MotorState m_motor_state{};
+
+  // both directions of axis state, merged to m_axis_state
+  std::array<u8, static_cast<u32>(HalfAxis::Count)> m_half_axis_state{};
+
+  // Member variables that are no longer used, but kept and serialized for compatibility with older save states
+  u8 m_command_param = 0;
+  bool m_legacy_rumble_unlocked = false;
+
+  u8 jog_position = 0x0;
+  JogconDirection jog_direction = JogconDirection::JOGCON_DIR_NONE;
+  u8 jog_rotations = 0x0;
+  JogconCommand jog_last_command = JogconCommand::JOGCON_CMD_NONE;
+};

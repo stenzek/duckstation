@@ -1629,7 +1629,7 @@ const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
 }
 
 static constexpr const std::array s_controller_type_names = {
-  "None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon"};
+  "None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon", "JogCon"};
 static constexpr const std::array s_controller_display_names = {
   TRANSLATE_NOOP("ControllerType", "None"),
   TRANSLATE_NOOP("ControllerType", "Digital Controller"),
@@ -1637,7 +1637,8 @@ static constexpr const std::array s_controller_display_names = {
   TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
   TRANSLATE_NOOP("ControllerType", "GunCon"),
   TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
-  TRANSLATE_NOOP("ControllerType", "NeGcon")};
+  TRANSLATE_NOOP("ControllerType", "NeGcon"),
+  TRANSLATE_NOOP("ControllerType", "JogCon")};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(std::string_view str)
 {
