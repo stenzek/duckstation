@@ -490,9 +490,9 @@ void main()
 }
 )";
 
-    if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
+    if (!m_display_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader,
                                    GetGLSLVersionHeader() + display_fragment_shader) ||
-        !m_cursor_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader, {},
+        !m_cursor_program.Compile(GetGLSLVersionHeader() + fullscreen_quad_vertex_shader,
                                   GetGLSLVersionHeader() + cursor_fragment_shader))
     {
       Log_ErrorPrintf("Failed to compile display shaders");
@@ -586,8 +586,8 @@ void main()
 }
 )";
 
-    if (!m_display_program.Compile(fullscreen_quad_vertex_shader, {}, display_fragment_shader) ||
-        !m_cursor_program.Compile(fullscreen_quad_vertex_shader, {}, cursor_fragment_shader))
+    if (!m_display_program.Compile(fullscreen_quad_vertex_shader, display_fragment_shader) ||
+        !m_cursor_program.Compile(fullscreen_quad_vertex_shader, cursor_fragment_shader))
     {
       Log_ErrorPrintf("Failed to compile display shaders");
       return false;
@@ -879,7 +879,7 @@ bool OpenGLHostDisplay::SetPostProcessingChain(const std::string_view& config)
 
     PostProcessingStage stage;
     stage.uniforms_size = shader.GetUniformsSize();
-    if (!stage.program.Compile(vs, {}, ps))
+    if (!stage.program.Compile(vs, ps))
     {
       Log_InfoPrintf("Failed to compile post-processing program, disabling.");
       m_post_processing_stages.clear();

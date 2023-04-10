@@ -25,20 +25,17 @@ public:
 
   void Open(bool is_gles, std::string_view base_path, u32 version);
 
-  std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view geometry_shader,
-                                    const std::string_view fragment_shader, const PreLinkCallback& callback = {});
+  std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view fragment_shader,
+                                    const PreLinkCallback& callback = {});
 
 private:
-  static constexpr u32 FILE_VERSION = 3;
+  static constexpr u32 FILE_VERSION = 4;
 
   struct CacheIndexKey
   {
     u64 vertex_source_hash_low;
     u64 vertex_source_hash_high;
     u32 vertex_source_length;
-    u64 geometry_source_hash_low;
-    u64 geometry_source_hash_high;
-    u32 geometry_source_length;
     u64 fragment_source_hash_low;
     u64 fragment_source_hash_high;
     u32 fragment_source_length;
@@ -53,7 +50,6 @@ private:
     {
       std::size_t h = 0;
       hash_combine(h, e.vertex_source_hash_low, e.vertex_source_hash_high, e.vertex_source_length,
-                   e.geometry_source_hash_low, e.geometry_source_hash_high, e.geometry_source_length,
                    e.fragment_source_hash_low, e.fragment_source_hash_high, e.fragment_source_length);
       return h;
     }
@@ -68,8 +64,7 @@ private:
 
   using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-  static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& geometry_shader,
-                                   const std::string_view& fragment_shader);
+  static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& fragment_shader);
 
   std::string GetIndexFileName() const;
   std::string GetBlobFileName() const;
@@ -79,11 +74,9 @@ private:
   void Close();
   bool Recreate();
 
-  std::optional<Program> CompileProgram(const std::string_view& vertex_shader, const std::string_view& geometry_shader,
-                                        const std::string_view& fragment_shader, const PreLinkCallback& callback,
-                                        bool set_retrievable);
+  std::optional<Program> CompileProgram(const std::string_view& vertex_shader, const std::string_view& fragment_shader,
+                                        const PreLinkCallback& callback, bool set_retrievable);
   std::optional<Program> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view& vertex_shader,
-                                              const std::string_view& geometry_shader,
                                               const std::string_view& fragment_shader, const PreLinkCallback& callback);
 
   std::string m_base_path;
