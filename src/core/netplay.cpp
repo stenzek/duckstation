@@ -7,10 +7,10 @@
 #include "common/timer.h"
 #include "digital_controller.h"
 #include "ggponet.h"
+#include "host_settings.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
-#include "host_settings.h"
 #include <bitset>
 #include <deque>
 Log_SetChannel(Netplay);
@@ -82,7 +82,6 @@ static Common::Timer::Value s_next_frame_time = 0;
 
 // Netplay Impl
 
-
 s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred)
 {
   SetSettings();
@@ -105,7 +104,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
   GGPOErrorCode result;
 
   result = ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, s_max_pred);
-  //result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
+  // result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
 
   ggpo_set_disconnect_timeout(s_ggpo, 3000);
   ggpo_set_disconnect_notify_start(s_ggpo, 1000);
@@ -133,6 +132,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
     }
   }
   ggpo_set_frame_delay(s_ggpo, s_local_handle, ldelay);
+  ggpo_set_manual_network_polling(s_ggpo, true);
 
   return result;
 }
@@ -227,8 +227,7 @@ void Netplay::Throttle()
   for (;;)
   {
     // Poll network.
-    // TODO: Ideally we would sleep on the poll()/select() here instead.
-    ggpo_idle(s_ggpo);
+    ggpo_poll_network(s_ggpo);
 
     current_time = Common::Timer::GetCurrentValue();
     if (current_time >= s_next_frame_time)
@@ -250,6 +249,7 @@ void Netplay::AdvanceFrame(u16 checksum)
 void Netplay::RunFrame()
 {
   // run game
+  bool needIdle = true;
   auto result = GGPO_OK;
   int disconnectFlags = 0;
   Netplay::Input inputs[2] = {};
@@ -268,8 +268,13 @@ void Netplay::RunFrame()
       // enable again when rolling back done
       SPU::SetAudioOutputMuted(false);
       NetplayAdvanceFrame(inputs, disconnectFlags);
+      // coming here means that the system doesnt need to idle anymore
+      needIdle = false;
     }
   }
+  // allow ggpo to do housekeeping if needed
+  if (needIdle)
+    ggpo_idle(s_ggpo);
 }
 
 void Netplay::CollectInput(u32 slot, u32 bind, float value)

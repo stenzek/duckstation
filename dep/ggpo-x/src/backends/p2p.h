@@ -34,7 +34,10 @@ public:
    virtual GGPOErrorCode SetDisconnectNotifyStart(int timeout) override;
    virtual GGPOErrorCode Chat(const char* text) override;
    virtual GGPOErrorCode CurrentFrame(int& current) override;
-public:
+   virtual GGPOErrorCode PollNetwork() override;
+   virtual GGPOErrorCode SetManualNetworkPolling(bool value) override;
+
+   public:
    virtual void OnMsg(sockaddr_in &from, UdpMsg *msg, int len);
 
 protected:
@@ -71,6 +74,8 @@ protected:
    int                   _next_spectator_frame;
    int                   _disconnect_timeout;
    int                   _disconnect_notify_start;
+
+   bool                  _manual_network_polling;
 
    UdpMsg::connect_status _local_connect_status[UDP_MSG_MAX_PLAYERS];
    struct ChecksumEntry {

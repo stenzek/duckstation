@@ -20,6 +20,7 @@ SpectatorBackend::SpectatorBackend(GGPOSessionCallbacks *cb,
 {
    _callbacks = *cb;
    _synchronizing = true;
+   _manual_network_polling = false;
 
    for (int i = 0; i < ARRAY_SIZE(_inputs); i++) {
       _inputs[i].frame = -1;
@@ -46,10 +47,11 @@ SpectatorBackend::~SpectatorBackend()
 {
 }
 
-GGPOErrorCode
+GGPOErrorCode 
 SpectatorBackend::DoPoll()
 {
-   _poll.Pump(0);
+   if (!_manual_network_polling)
+      _poll.Pump(0);
 
    PollUdpProtocolEvents();
    return GGPO_OK;
@@ -86,11 +88,27 @@ SpectatorBackend::SyncInput(void *values,
    return GGPO_OK;
 }
 
-GGPOErrorCode SpectatorBackend::CurrentFrame(int& current) 
+GGPOErrorCode 
+SpectatorBackend::CurrentFrame(int& current) 
 {
     current= _next_input_to_send;
     return GGPO_OK;
 }
+
+GGPOErrorCode 
+SpectatorBackend::PollNetwork()
+{
+    _poll.Pump(0);
+    return GGPO_OK;
+}
+
+GGPOErrorCode 
+SpectatorBackend::SetManualNetworkPolling(bool value)
+{
+    _manual_network_polling = value;
+    return GGPO_OK;
+}
+
 GGPOErrorCode
 SpectatorBackend::IncrementFrame(uint16_t checksum)
 {

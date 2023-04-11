@@ -191,6 +191,16 @@ ggpo_set_disconnect_timeout(GGPOSession *ggpo, int timeout)
    return ggpo->SetDisconnectTimeout(timeout);
 }
 
+GGPOErrorCode 
+ggpo_set_manual_network_polling(GGPOSession *ggpo, bool value)
+{
+   if (!ggpo)
+   {
+      return GGPO_ERRORCODE_INVALID_SESSION;
+   }
+   return ggpo->SetManualNetworkPolling(value);
+}
+
 GGPOErrorCode
 ggpo_set_disconnect_notify_start(GGPOSession *ggpo, int timeout)
 {
@@ -198,6 +208,16 @@ ggpo_set_disconnect_notify_start(GGPOSession *ggpo, int timeout)
       return GGPO_ERRORCODE_INVALID_SESSION;
    }
    return ggpo->SetDisconnectNotifyStart(timeout);
+}
+
+GGPOErrorCode 
+ggpo_poll_network(GGPOSession* ggpo)
+{
+   if (!ggpo)
+   {
+      return GGPO_ERRORCODE_INVALID_SESSION;
+   }
+   return ggpo->PollNetwork();
 }
 
 GGPOErrorCode ggpo_start_spectating(GGPOSession **session,

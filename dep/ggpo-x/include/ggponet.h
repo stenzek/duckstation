@@ -541,8 +541,9 @@ GGPO_API GGPOErrorCode __cdecl ggpo_disconnect_player(GGPOSession *,
 GGPO_API GGPOErrorCode __cdecl ggpo_advance_frame(GGPOSession *, uint16_t checksum);
 
 /*
- * ggpo_get_current_frame -- current frame GGPO is dealing with
- *
+ * ggpo_get_current_frame -- 
+ * 
+ *  current frame GGPO is dealing with
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_get_current_frame(GGPOSession* ggpo, int& nFrame);
 /*
@@ -573,8 +574,16 @@ GGPO_API GGPOErrorCode __cdecl ggpo_get_network_stats(GGPOSession *,
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_set_disconnect_timeout(GGPOSession *,
                                                            int timeout);
-
 /*
+ * ggpo_enable_manual_network_polling --
+ *
+ * disables polling done by ggpo and it's expected that ggpo_poll_network will be used instead.  
+ *
+ */
+
+GGPO_API GGPOErrorCode __cdecl ggpo_set_manual_network_polling(GGPOSession*,
+                                                               bool value);
+  /*
  * ggpo_set_disconnect_notify_start --
  *
  * The time to wait before the first GGPO_EVENTCODE_NETWORK_INTERRUPTED timeout
@@ -584,7 +593,15 @@ GGPO_API GGPOErrorCode __cdecl ggpo_set_disconnect_timeout(GGPOSession *,
  *           before the GGPO_EVENTCODE_NETWORK_INTERRUPTED event is sent.
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_set_disconnect_notify_start(GGPOSession *,
-                                                                int timeout);
+                                                               int timeout);
+/*
+* ggpo_poll_network --
+* 
+* polls the network socket for any messages to be sent and recieved.
+* 
+*/
+
+GGPO_API GGPOErrorCode __cdecl ggpo_poll_network(GGPOSession*);
 
 /*
  * ggpo_log --
