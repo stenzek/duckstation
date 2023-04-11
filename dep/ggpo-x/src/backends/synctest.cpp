@@ -126,9 +126,12 @@ SyncTestBackend::IncrementFrame(uint16_t cs)
    SavedInfo info;
    info.frame = frame;
    info.input = _last_input;
-   info.cbuf = _sync.GetLastSavedFrame().cbuf;
-   info.buf = (char *)malloc(info.cbuf);
-   memcpy(info.buf, _sync.GetLastSavedFrame().buf, info.cbuf);
+
+   const Sync::SavedFrame& lsf = _sync.GetLastSavedFrame();
+   info.cbuf = 0;
+   info.buf = nullptr;
+   info.checksum = 0;
+   _callbacks.copy_game_state(_callbacks.context, &info.buf, &info.cbuf, &info.checksum, lsf.buf, lsf.cbuf, lsf.checksum);
    info.checksum = _sync.GetLastSavedFrame().checksum;
    _saved_frames.push(info);
 
@@ -155,7 +158,7 @@ SyncTestBackend::IncrementFrame(uint16_t cs)
             RaiseSyncError("Checksum for frame %d does not match saved (%d != %d)", frame, checksum, info.checksum);
          }
          printf("Checksum %08d for frame %d matches.\n", checksum, info.frame);
-         free(info.buf);
+         _callbacks.free_buffer(_callbacks.context, info.buf);
       }
       _last_verified = frame;
       _rollingback = false;

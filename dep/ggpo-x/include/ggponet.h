@@ -232,6 +232,12 @@ typedef struct {
    bool (__cdecl *load_game_state)(void* context, unsigned char* buffer, int len, int framesToRollback, int frameToLoad);
 
    /*
+    * copy_game_state - creates a copy of an existing save state.
+    */
+   bool(__cdecl* copy_game_state)(void* context, unsigned char** out_buffer, int* out_len, int* out_checksum,
+                                  const unsigned char* in_buffer, const int in_len, const int in_checksum);
+
+   /*
     * log_game_state - Used in diagnostic testing.  The client should use
     * the ggpo_log function to write the contents of the specified save
     * state in a human readible form.

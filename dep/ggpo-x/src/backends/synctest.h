@@ -31,7 +31,7 @@ protected:
    struct SavedInfo {
       int         frame;
       int         checksum;
-      char        *buf;
+      byte        *buf;
       int         cbuf;
       GameInput   input;
    };
