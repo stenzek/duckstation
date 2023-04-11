@@ -187,7 +187,7 @@ Sync::LoadFrame(int frame, int framesToRollback)
        state->frame, state->cbuf, state->checksum);
 
    ASSERT(state->buf && state->cbuf);
-   _callbacks.load_game_state(_callbacks.context, state->buf, state->cbuf, framesToRollback);
+   _callbacks.load_game_state(_callbacks.context, state->buf, state->cbuf, framesToRollback, state->frame);
 
    // Reset framecount and the head of the state ring-buffer to point in
    // advance of the current frame (as if we had just finished executing it).
