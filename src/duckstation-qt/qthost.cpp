@@ -17,6 +17,7 @@
 #include "core/host.h"
 #include "core/host_settings.h"
 #include "core/memory_card.h"
+#include "core/netplay.h"
 #include "core/spu.h"
 #include "core/system.h"
 #include "displaywidget.h"
@@ -96,6 +97,9 @@ static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
+
+// TODO: REMOVE ME
+static int s_netplay_test = -1;
 
 EmuThread* g_emu_thread;
 GDBServer* g_gdb_server;
@@ -2091,6 +2095,11 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         InitializeEarlyConsole();
         continue;
       }
+      else if (CHECK_ARG_PARAM("-netplay"))
+      {
+        s_netplay_test = StringUtil::FromChars<int>(args[++i].toStdString()).value_or(0);
+        continue;
+      }
 #ifdef WITH_RAINTEGRATION
       else if (CHECK_ARG("-raintegration"))
       {
@@ -2227,6 +2236,19 @@ int main(int argc, char* argv[])
     g_emu_thread->bootSystem(std::move(autoboot));
   else if (!s_nogui_mode)
     main_window->startupUpdateCheck();
+
+  if (s_netplay_test >= 0)
+  {
+    Host::RunOnCPUThread([]() {
+      const bool first = (s_netplay_test == 0);
+      const int h = first ? 1 : 2;
+      const int nh = first ? 2 : 1;
+      const int port_base = 31200;
+      std::string remote = "127.0.0.1";
+      std::string game = "D:\\PSX\\chd\\padtest.chd";
+      Netplay::StartNetplaySession(h, port_base + h, remote, port_base + nh, 1, game);
+    });
+  }
 
   // This doesn't return until we exit.
   const int result = app.exec();
