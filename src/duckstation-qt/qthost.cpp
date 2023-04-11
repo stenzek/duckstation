@@ -1090,7 +1090,7 @@ void EmuThread::startNetplaySession(int local_handle, quint16 local_port, const 
 
   auto remAddr = remote_addr.trimmed().toStdString();
   auto gamePath = game_path.trimmed().toStdString();
-  System::StartNetplaySession(local_handle, local_port, remAddr, remote_port, input_delay, gamePath);
+  Netplay::StartNetplaySession(local_handle, local_port, remAddr, remote_port, input_delay, gamePath);
 }
 
 void EmuThread::sendNetplayMessage(const QString& message)
@@ -1110,7 +1110,7 @@ void EmuThread::stopNetplaySession()
     QMetaObject::invokeMethod(this, "stopNetplaySession", Qt::QueuedConnection);
     return;
   }
-  System::StopNetplaySession();
+  Netplay::StopNetplaySession();
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)
@@ -1464,7 +1464,7 @@ void EmuThread::run()
   {
     if (Netplay::IsActive())
     {
-      System::ExecuteNetplay();
+      Netplay::ExecuteNetplay();
     }
     else if (System::IsRunning())
     {

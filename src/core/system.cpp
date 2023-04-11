@@ -75,18 +75,10 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 
 SystemBootParameters::~SystemBootParameters() = default;
 
-struct MemorySaveState
-{
-  std::unique_ptr<GPUTexture> vram_texture;
-  std::unique_ptr<GrowableMemoryByteStream> state_stream;
-};
-
 namespace System {
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
 static bool InternalSaveState(ByteStream* state, u32 screenshot_size = 256,
                               u32 compression_method = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
-static bool SaveMemoryState(MemorySaveState* mss);
-static bool LoadMemoryState(const MemorySaveState& mss);
 
 static bool LoadEXE(const char* filename);
 
@@ -104,7 +96,8 @@ static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
-static void DoRunFrame();
+static void WrappedRunFrame();
+static void RunFramesToNow();
 static bool CreateGPU(GPURenderer renderer);
 static bool SaveUndoLoadState();
 
@@ -197,18 +190,16 @@ static std::unique_ptr<ByteStream> m_undo_load_state;
 
 static bool s_memory_saves_enabled = false;
 
-static std::deque<MemorySaveState> s_rewind_states;
+static std::deque<System::MemorySaveState> s_rewind_states;
 static s32 s_rewind_load_frequency = -1;
 static s32 s_rewind_load_counter = -1;
 static s32 s_rewind_save_frequency = -1;
 static s32 s_rewind_save_counter = -1;
 static bool s_rewinding_first_save = false;
 
-static std::deque<MemorySaveState> s_runahead_states;
+static std::deque<System::MemorySaveState> s_runahead_states;
 static bool s_runahead_replay_pending = false;
 static u32 s_runahead_frames = 0;
-
-static std::deque<MemorySaveState> s_netplay_states;
 
 static TinyString GetTimestampStringForFileName()
 {
@@ -1532,12 +1523,12 @@ void System::ClearRunningGame()
 
 void System::Execute()
 {
-  while (System::IsRunning())
+  while (IsRunning())
   {
     if (s_display_all_frames)
-      System::RunFrame();
+      WrappedRunFrame();
     else
-      System::RunFrames();
+      RunFramesToNow();
 
     // this can shut us down
     Host::PumpMessagesOnCPUThread();
@@ -1550,13 +1541,7 @@ void System::Execute()
       PauseSystem(true);
     }
 
-    const bool skip_present = g_host_display->ShouldSkipDisplayingFrame();
-    Host::RenderDisplay(skip_present);
-    if (!skip_present && g_host_display->IsGPUTimingEnabled())
-    {
-      s_accumulated_gpu_time += g_host_display->GetAndResetAccumulatedGPUTime();
-      s_presents_since_last_update++;
-    }
+    PresentFrame();
 
     if (s_throttler_enabled)
       System::Throttle();
@@ -1568,35 +1553,14 @@ void System::Execute()
   }
 }
 
-void System::ExecuteNetplay()
+void System::PresentFrame()
 {
-  // frame timing
-  s32 timeToWait;
-  std::chrono::steady_clock::time_point start, next, now;
-  start = next = now = std::chrono::steady_clock::now();
-  while (Netplay::IsActive() && System::IsRunning())
+  const bool skip_present = g_host_display->ShouldSkipDisplayingFrame();
+  Host::RenderDisplay(skip_present);
+  if (!skip_present && g_host_display->IsGPUTimingEnabled())
   {
-    now = std::chrono::steady_clock::now();
-    if (now >= next)
-    {
-      Netplay::RunFrame(timeToWait);
-      next = now + std::chrono::microseconds(timeToWait);
-      s_next_frame_time += timeToWait;
-      // this can shut us down
-      Host::PumpMessagesOnCPUThread();
-      if (!IsValid() || !Netplay::IsActive())
-        break;
-
-      const bool skip_present = g_host_display->ShouldSkipDisplayingFrame();
-      Host::RenderDisplay(skip_present);
-      if (!skip_present && g_host_display->IsGPUTimingEnabled())
-      {
-        s_accumulated_gpu_time += g_host_display->GetAndResetAccumulatedGPUTime();
-        s_presents_since_last_update++;
-      }
-
-      System::UpdatePerformanceCounters();
-    }
+    s_accumulated_gpu_time += g_host_display->GetAndResetAccumulatedGPUTime();
+    s_presents_since_last_update++;
   }
 }
 
@@ -2191,7 +2155,7 @@ void System::SingleStepCPU()
   g_gpu->ResetGraphicsAPIState();
 }
 
-void System::DoRunFrame()
+void System::RunFrame()
 {
   g_gpu->RestoreGraphicsAPIState();
 
@@ -2231,7 +2195,7 @@ void System::DoRunFrame()
   g_gpu->ResetGraphicsAPIState();
 }
 
-void System::RunFrame()
+void System::WrappedRunFrame()
 {
   if (s_rewind_load_counter >= 0)
   {
@@ -2242,7 +2206,7 @@ void System::RunFrame()
   if (s_runahead_frames > 0)
     DoRunahead();
 
-  DoRunFrame();
+  RunFrame();
 
   s_next_frame_time += s_frame_period;
 
@@ -2304,7 +2268,7 @@ void System::Throttle()
 #endif
 }
 
-void System::RunFrames()
+void System::RunFramesToNow()
 {
   // If we're running more than this in a single loop... we're in for a bad time.
   const u32 max_frames_to_run = 2;
@@ -2316,7 +2280,7 @@ void System::RunFrames()
     if (value < s_next_frame_time)
       break;
 
-    RunFrame();
+    WrappedRunFrame();
     frames_run++;
 
     value = Common::Timer::GetCurrentValue();
@@ -3716,7 +3680,7 @@ void System::DoRunahead()
 
     while (frames_to_run > 0)
     {
-      DoRunFrame();
+      RunFrame();
       SaveRunaheadState();
       frames_to_run--;
     }
@@ -4465,164 +4429,4 @@ void System::SetTimerResolutionIncreased(bool enabled)
   else
     timeEndPeriod(1);
 #endif
-}
-
-void System::StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port,
-                                 s32 input_delay, std::string& game_path)
-{
-  // dont want to start a session when theres already one going on.
-  if (Netplay::IsActive())
-    return;
-  // set game path for later loading during the begin game callback
-  Netplay::SetGamePath(game_path);
-  // set netplay timer
-  const u32 fps = (s_region == ConsoleRegion::PAL ? 50 : 60);
-  Netplay::GetTimer()->Init(fps, 180);
-  // create session
-  int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, 8);
-  if (result != GGPO_OK)
-  {
-    Log_ErrorPrintf("Failed to Create Netplay Session! Error: %d", result);
-  }
-}
-
-void System::StopNetplaySession()
-{
-  if (!Netplay::IsActive())
-    return;
-  s_netplay_states.clear();
-  Netplay::Close();
-}
-
-void System::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
-{
-  Netplay::SetInputs(inputs);
-  System::DoRunFrame();
-  Netplay::AdvanceFrame();
-}
-
-bool NpBeginGameCb(void* ctx, const char* game_name)
-{
-  // close system if its already running
-  if (System::IsValid())
-    System::ShutdownSystem(false);
-  // fast boot the selected game and wait for the other player
-  auto param = SystemBootParameters(Netplay::GetGamePath());
-  param.override_fast_boot = true;
-  if (!System::BootSystem(param))
-  {
-    System::StopNetplaySession();
-    return false;
-  }
-  // Fast Forward to Game Start
-  SPU::SetAudioOutputMuted(true);
-  while (s_internal_frame_number < 2)
-    System::DoRunFrame();
-  SPU::SetAudioOutputMuted(false);
-  return true;
-}
-
-bool NpAdvFrameCb(void* ctx, int flags)
-{
-  Netplay::Input inputs[2] = {};
-  int disconnectFlags;
-  Netplay::SyncInput(inputs, &disconnectFlags);
-  System::NetplayAdvanceFrame(inputs, disconnectFlags);
-  return true;
-}
-
-bool NpSaveFrameCb(void* ctx, uint8_t** buffer, int* len, int* checksum, int frame)
-{
-  bool result = false;
-  // give ggpo something so it doesnt complain.
-  u8 dummyData = 43;
-  *len = sizeof(u8);
-  *buffer = (unsigned char*)malloc(*len);
-  if (!*buffer)
-    return false;
-  memcpy(*buffer, &dummyData, *len);
-  // store state for later.
-  int pred = Netplay::GetMaxPrediction();
-  if (frame < pred && s_netplay_states.size() < pred)
-  {
-    MemorySaveState save;
-    result = System::SaveMemoryState(&save);
-    s_netplay_states.push_back(std::move(save));
-  }
-  else
-  {
-    // reuse streams
-    result = System::SaveMemoryState(&s_netplay_states[frame % pred]);
-  }
-  return result;
-}
-
-bool NpLoadFrameCb(void* ctx, uint8_t* buffer, int len, int rb_frames, int frame_to_load)
-{
-  // Disable Audio For upcoming rollback
-  SPU::SetAudioOutputMuted(true);
-  return System::LoadMemoryState(s_netplay_states[frame_to_load % Netplay::GetMaxPrediction()]);
-}
-
-bool NpOnEventCb(void* ctx, GGPOEvent* ev)
-{
-  char buff[128];
-  std::string msg;
-  switch (ev->code)
-  {
-    case GGPOEventCode::GGPO_EVENTCODE_CONNECTED_TO_PEER:
-      sprintf(buff, "Netplay Connected To Player: %d", ev->u.connected.player);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
-      sprintf(buff, "Netplay Synchronzing: %d/%d", ev->u.synchronizing.count, ev->u.synchronizing.total);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
-      sprintf(buff, "Netplay Synchronized With Player: %d", ev->u.synchronized.player);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
-      sprintf(buff, "Netplay Player: %d Disconnected", ev->u.disconnected.player);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_RUNNING:
-      msg = "Netplay Is Running";
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
-      sprintf(buff, "Netplay Player: %d Connection Interupted, Timeout: %d", ev->u.connection_interrupted.player,
-              ev->u.connection_interrupted.disconnect_timeout);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_RESUMED:
-      sprintf(buff, "Netplay Player: %d Connection Resumed", ev->u.connection_resumed.player);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_CHAT:
-      sprintf(buff, "%s", ev->u.chat.msg);
-      msg = buff;
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_TIMESYNC:
-      Netplay::GetTimer()->OnGGPOTimeSyncEvent(ev->u.timesync.frames_ahead);
-      break;
-    case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
-      sprintf(buff, "Netplay Desync Detected!: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
-              ev->u.desync.ourCheckSum, ev->u.desync.remoteChecksum);
-      msg = buff;
-      break;
-    default:
-      sprintf(buff, "Netplay Event Code: %d", ev->code);
-      msg = buff;
-  }
-  if (!msg.empty())
-  {
-    Host::OnNetplayMessage(msg);
-    Log_InfoPrintf("%s", msg.c_str());
-  }
-  return true;
-}
-
-void NpFreeBuffCb(void* ctx, void* buffer)
-{
-  free(buffer);
 }

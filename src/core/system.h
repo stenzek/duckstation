@@ -20,6 +20,9 @@ class Controller;
 struct CheatCode;
 class CheatList;
 
+class GPUTexture;
+class GrowableMemoryByteStream;
+
 namespace BIOS {
 struct ImageInfo;
 struct Hash;
@@ -224,11 +227,17 @@ bool LoadState(const char* filename);
 bool SaveState(const char* filename, bool backup_existing_save);
 bool SaveResumeState();
 
+/// Memory save states - only for internal use.
+struct MemorySaveState
+{
+  std::unique_ptr<GPUTexture> vram_texture;
+  std::unique_ptr<GrowableMemoryByteStream> state_stream;
+};
+bool SaveMemoryState(MemorySaveState* mss);
+bool LoadMemoryState(const MemorySaveState& mss);
+
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
-
-/// Runs the VM and netplay loop. when the netplay loop cancels it switches to normal execute mode.
-void ExecuteNetplay();
 
 /// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
 void RecreateSystem();
@@ -238,7 +247,7 @@ bool RecreateGPU(GPURenderer renderer, bool force_recreate_display = false, bool
 
 void SingleStepCPU();
 void RunFrame();
-void RunFrames();
+void PresentFrame();
 
 /// Sets target emulation speed.
 float GetTargetSpeed();
@@ -454,12 +463,6 @@ void ClearMemorySaveStates();
 void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
-
-/// Netplay
-void StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port, s32 input_delay,
-                         std::string& game_path);
-void StopNetplaySession();
-void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 } // namespace System
 
 namespace Host {

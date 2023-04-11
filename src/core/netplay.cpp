@@ -1,22 +1,89 @@
 #include "netplay.h"
+#include "common/byte_stream.h"
+#include "common/gpu_texture.h"
+#include "common/log.h"
+#include "digital_controller.h"
+#include "ggponet.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
 #include <bitset>
+#include <deque>
+Log_SetChannel(Netplay);
 
 #ifdef _WIN32
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-Netplay::LoopTimer s_timer;
-std::string s_game_path;
-u32 s_max_pred = 0;
+namespace Netplay {
 
-GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
-GGPONetworkStats s_last_net_stats{};
-GGPOSession* s_ggpo = nullptr;
+struct Input
+{
+  u32 button_data;
+};
 
-std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_input;
+struct LoopTimer
+{
+public:
+  void Init(u32 fps, u32 frames_to_spread_wait);
+  void OnGGPOTimeSyncEvent(float frames_ahead);
+  // Call every loop, to get the amount of time the current iteration of gameloop should take
+  s32 UsToWaitThisLoop();
+
+private:
+  float m_last_advantage = 0.0f;
+  s32 m_us_per_game_loop = 0;
+  s32 m_us_ahead = 0;
+  s32 m_us_extra_to_wait = 0;
+  s32 m_frames_to_spread_wait = 0;
+  s32 m_wait_count = 0;
+};
+
+static bool NpAdvFrameCb(void* ctx, int flags);
+static bool NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame);
+static bool NpLoadFrameCb(void* ctx, unsigned char* buffer, int len, int rb_frames, int frame_to_load);
+static bool NpBeginGameCb(void* ctx, const char* game_name);
+static void NpFreeBuffCb(void* ctx, void* buffer);
+static bool NpOnEventCb(void* ctx, GGPOEvent* ev);
+
+static Input ReadLocalInput();
+static GGPOErrorCode AddLocalInput(Netplay::Input input);
+static GGPOErrorCode SyncInput(Input inputs[2], int* disconnect_flags);
+static void SetInputs(Input inputs[2]);
+
+static LoopTimer* GetTimer();
+
+// l = local, r = remote
+static s32 Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred);
+static void Close();
+static void RunIdle();
+
+static void AdvanceFrame(u16 checksum = 0);
+static void RunFrame(s32& waitTime);
+static s32 CurrentFrame();
+
+static std::string& GetGamePath();
+static void SetGamePath(std::string& path);
+
+static GGPONetworkStats& GetNetStats(s32 handle);
+static GGPOPlayerHandle GetLocalHandle();
+static u16 Fletcher16(uint8_t* data, int count);
+
+static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
+
+static LoopTimer s_timer;
+static std::string s_game_path;
+static u32 s_max_pred = 0;
+
+static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
+static GGPONetworkStats s_last_net_stats{};
+static GGPOSession* s_ggpo = nullptr;
+
+static std::deque<System::MemorySaveState> s_netplay_states;
+
+static std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_input;
+
+} // namespace Netplay
 
 // Netplay Impl
 
@@ -117,7 +184,7 @@ void Netplay::RunFrame(s32& waitTime)
     {
       // enable again when rolling back done
       SPU::SetAudioOutputMuted(false);
-      System::NetplayAdvanceFrame(inputs, disconnectFlags);
+      NetplayAdvanceFrame(inputs, disconnectFlags);
     }
     else
       RunIdle();
@@ -268,4 +335,190 @@ s32 Netplay::LoopTimer::UsToWaitThisLoop()
       m_us_extra_to_wait = 0;
   }
   return timetoWait;
+}
+
+void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port,
+                                  s32 input_delay, std::string& game_path)
+{
+  // dont want to start a session when theres already one going on.
+  if (IsActive())
+    return;
+  // set game path for later loading during the begin game callback
+  SetGamePath(game_path);
+  // set netplay timer
+  const u32 fps = (System::GetRegion() == ConsoleRegion::PAL ? 50 : 60);
+  GetTimer()->Init(fps, 180);
+  // create session
+  int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, 8);
+  if (result != GGPO_OK)
+  {
+    Log_ErrorPrintf("Failed to Create Netplay Session! Error: %d", result);
+  }
+}
+
+void Netplay::StopNetplaySession()
+{
+  if (!IsActive())
+    return;
+  s_netplay_states.clear();
+  Close();
+}
+
+void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
+{
+  Netplay::SetInputs(inputs);
+  System::RunFrame();
+  Netplay::AdvanceFrame();
+}
+
+void Netplay::ExecuteNetplay()
+{
+  // frame timing
+  s32 timeToWait;
+  std::chrono::steady_clock::time_point start, next, now;
+  start = next = now = std::chrono::steady_clock::now();
+  while (Netplay::IsActive() && System::IsRunning())
+  {
+    now = std::chrono::steady_clock::now();
+    if (now >= next)
+    {
+      Netplay::RunFrame(timeToWait);
+      next = now + std::chrono::microseconds(timeToWait);
+      // s_next_frame_time += timeToWait;
+
+      // this can shut us down
+      Host::PumpMessagesOnCPUThread();
+      if (!System::IsValid() || !Netplay::IsActive())
+        break;
+
+      System::PresentFrame();
+      System::UpdatePerformanceCounters();
+    }
+  }
+}
+
+bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
+{
+  // close system if its already running
+  if (System::IsValid())
+    System::ShutdownSystem(false);
+  // fast boot the selected game and wait for the other player
+  auto param = SystemBootParameters(Netplay::GetGamePath());
+  param.override_fast_boot = true;
+  if (!System::BootSystem(param))
+  {
+    StopNetplaySession();
+    return false;
+  }
+  // Fast Forward to Game Start
+  SPU::SetAudioOutputMuted(true);
+  while (System::GetInternalFrameNumber() < 2)
+    System::RunFrame();
+  SPU::SetAudioOutputMuted(false);
+  return true;
+}
+
+bool Netplay::NpAdvFrameCb(void* ctx, int flags)
+{
+  Netplay::Input inputs[2] = {};
+  int disconnectFlags;
+  Netplay::SyncInput(inputs, &disconnectFlags);
+  NetplayAdvanceFrame(inputs, disconnectFlags);
+  return true;
+}
+
+bool Netplay::NpSaveFrameCb(void* ctx, uint8_t** buffer, int* len, int* checksum, int frame)
+{
+  bool result = false;
+  // give ggpo something so it doesnt complain.
+  u8 dummyData = 43;
+  *len = sizeof(u8);
+  *buffer = (unsigned char*)malloc(*len);
+  if (!*buffer)
+    return false;
+  memcpy(*buffer, &dummyData, *len);
+  // store state for later.
+  int pred = Netplay::GetMaxPrediction();
+  if (frame < pred && s_netplay_states.size() < pred)
+  {
+    System::MemorySaveState save;
+    result = System::SaveMemoryState(&save);
+    s_netplay_states.push_back(std::move(save));
+  }
+  else
+  {
+    // reuse streams
+    result = System::SaveMemoryState(&s_netplay_states[frame % pred]);
+  }
+  return result;
+}
+
+bool Netplay::NpLoadFrameCb(void* ctx, uint8_t* buffer, int len, int rb_frames, int frame_to_load)
+{
+  // Disable Audio For upcoming rollback
+  SPU::SetAudioOutputMuted(true);
+  return System::LoadMemoryState(s_netplay_states[frame_to_load % Netplay::GetMaxPrediction()]);
+}
+
+bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
+{
+  char buff[128];
+  std::string msg;
+  switch (ev->code)
+  {
+    case GGPOEventCode::GGPO_EVENTCODE_CONNECTED_TO_PEER:
+      sprintf(buff, "Netplay Connected To Player: %d", ev->u.connected.player);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
+      sprintf(buff, "Netplay Synchronzing: %d/%d", ev->u.synchronizing.count, ev->u.synchronizing.total);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
+      sprintf(buff, "Netplay Synchronized With Player: %d", ev->u.synchronized.player);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
+      sprintf(buff, "Netplay Player: %d Disconnected", ev->u.disconnected.player);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_RUNNING:
+      msg = "Netplay Is Running";
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
+      sprintf(buff, "Netplay Player: %d Connection Interupted, Timeout: %d", ev->u.connection_interrupted.player,
+              ev->u.connection_interrupted.disconnect_timeout);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_RESUMED:
+      sprintf(buff, "Netplay Player: %d Connection Resumed", ev->u.connection_resumed.player);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_CHAT:
+      sprintf(buff, "%s", ev->u.chat.msg);
+      msg = buff;
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_TIMESYNC:
+      Netplay::GetTimer()->OnGGPOTimeSyncEvent(ev->u.timesync.frames_ahead);
+      break;
+    case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
+      sprintf(buff, "Netplay Desync Detected!: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
+              ev->u.desync.ourCheckSum, ev->u.desync.remoteChecksum);
+      msg = buff;
+      break;
+    default:
+      sprintf(buff, "Netplay Event Code: %d", ev->code);
+      msg = buff;
+  }
+  if (!msg.empty())
+  {
+    Host::OnNetplayMessage(msg);
+    Log_InfoPrintf("%s", msg.c_str());
+  }
+  return true;
+}
+
+void Netplay::NpFreeBuffCb(void* ctx, void* buffer)
+{
+  free(buffer);
 }
