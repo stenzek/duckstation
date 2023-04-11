@@ -69,5 +69,8 @@ void SetGameSettingsLayer(SettingsInterface* sif);
 
 /// Sets the input profile settings layer. Called by VMManager when the game changes.
 void SetInputSettingsLayer(SettingsInterface* sif);
+
+/// Sets the netplay settings layer. Use once a session is established.
+void SetNetplaySettingsLayer(SettingsInterface* sif);
 } // namespace Internal
 } // namespace Host

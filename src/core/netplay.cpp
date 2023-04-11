@@ -2,11 +2,13 @@
 #include "common/byte_stream.h"
 #include "common/gpu_texture.h"
 #include "common/log.h"
+#include "common/memory_settings_interface.h"
 #include "digital_controller.h"
 #include "ggponet.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
+#include "host_settings.h"
 #include <bitset>
 #include <deque>
 Log_SetChannel(Netplay);
@@ -53,6 +55,8 @@ static void SetInputs(Input inputs[2]);
 
 static LoopTimer* GetTimer();
 
+static void SetSettings();
+
 // l = local, r = remote
 static s32 Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred);
 static void Close();
@@ -62,6 +66,12 @@ static void AdvanceFrame(u16 checksum = 0);
 static void RunFrame(s32& waitTime);
 
 static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
+
+//////////////////////////////////////////////////////////////////////////
+// Variables
+//////////////////////////////////////////////////////////////////////////
+
+static MemorySettingsInterface s_settings_overlay;
 
 static LoopTimer s_timer;
 static std::string s_game_path;
@@ -79,8 +89,29 @@ static std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_in
 
 // Netplay Impl
 
+void Netplay::SetSettings()
+{
+  MemorySettingsInterface& si = s_settings_overlay;
+
+  si.Clear();
+  for (u32 i = 0; i < MAX_PLAYERS; i++)
+  {
+    // Only digital pads supported for now.
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                                      Settings::GetControllerTypeName(ControllerType::DigitalController));
+  }
+
+  // No runahead or rewind, that'd be a disaster.
+  si.SetIntValue("Main", "RunaheadFrameCount", 0);
+  si.SetBoolValue("Main", "RewindEnable", false);
+
+  Host::Internal::SetNetplaySettingsLayer(&si);
+}
+
 s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred)
 {
+  SetSettings();
+
   s_max_pred = pred;
   /*
   TODO: since saving every frame during rollback loses us time to do actual gamestate iterations it might be better to
@@ -140,6 +171,9 @@ void Netplay::Close()
   s_ggpo = nullptr;
   s_local_handle = GGPO_INVALID_HANDLE;
   s_max_pred = 0;
+
+  // Restore original settings.
+  Host::Internal::SetNetplaySettingsLayer(nullptr);
 }
 
 bool Netplay::IsActive()

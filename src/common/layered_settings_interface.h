@@ -10,6 +10,7 @@ class LayeredSettingsInterface final : public SettingsInterface
 public:
   enum Layer : u32
   {
+    LAYER_NETPLAY,
     LAYER_CMDLINE,
     LAYER_GAME,
     LAYER_INPUT,
@@ -61,7 +62,7 @@ public:
   using SettingsInterface::GetUIntValue;
 
 private:
-  static constexpr Layer FIRST_LAYER = LAYER_CMDLINE;
+  static constexpr Layer FIRST_LAYER = LAYER_NETPLAY;
   static constexpr Layer LAST_LAYER = LAYER_BASE;
 
   std::array<SettingsInterface*, NUM_LAYERS> m_layers{};
