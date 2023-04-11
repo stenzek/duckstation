@@ -347,7 +347,7 @@ bool DoState(StateWrapper& sw)
       sw.Do(&last_event_run_time);
     }
 
-    Log_DevPrintf("Loaded %u events from save state.", event_count);
+    Log_DebugPrintf("Loaded %u events from save state.", event_count);
     SortEvents();
   }
   else
@@ -364,7 +364,7 @@ bool DoState(StateWrapper& sw)
       sw.Do(&event->m_interval);
     }
 
-    Log_DevPrintf("Wrote %u events to save state.", s_active_event_count);
+    Log_DebugPrintf("Wrote %u events to save state.", s_active_event_count);
   }
 
   return !sw.HasError();

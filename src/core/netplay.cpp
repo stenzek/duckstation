@@ -3,6 +3,8 @@
 #include "common/gpu_texture.h"
 #include "common/log.h"
 #include "common/memory_settings_interface.h"
+#include "common/string_util.h"
+#include "common/timer.h"
 #include "digital_controller.h"
 #include "ggponet.h"
 #include "pad.h"
@@ -24,23 +26,6 @@ struct Input
   u32 button_data;
 };
 
-struct LoopTimer
-{
-public:
-  void Init(u32 fps, u32 frames_to_spread_wait);
-  void OnGGPOTimeSyncEvent(float frames_ahead);
-  // Call every loop, to get the amount of time the current iteration of gameloop should take
-  s32 UsToWaitThisLoop();
-
-private:
-  float m_last_advantage = 0.0f;
-  s32 m_us_per_game_loop = 0;
-  s32 m_us_ahead = 0;
-  s32 m_us_extra_to_wait = 0;
-  s32 m_frames_to_spread_wait = 0;
-  s32 m_wait_count = 0;
-};
-
 static bool NpAdvFrameCb(void* ctx, int flags);
 static bool NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame);
 static bool NpLoadFrameCb(void* ctx, unsigned char* buffer, int len, int rb_frames, int frame_to_load);
@@ -53,19 +38,21 @@ static GGPOErrorCode AddLocalInput(Netplay::Input input);
 static GGPOErrorCode SyncInput(Input inputs[2], int* disconnect_flags);
 static void SetInputs(Input inputs[2]);
 
-static LoopTimer* GetTimer();
-
 static void SetSettings();
 
 // l = local, r = remote
 static s32 Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred);
 static void Close();
-static void RunIdle();
 
 static void AdvanceFrame(u16 checksum = 0);
-static void RunFrame(s32& waitTime);
+static void RunFrame();
 
 static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
+
+/// Frame Pacing
+static void InitializeFramePacing();
+static void HandleTimeSyncEvent(float frame_delta, int update_interval);
+static void Throttle();
 
 //////////////////////////////////////////////////////////////////////////
 // Variables
@@ -73,7 +60,6 @@ static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 
 static MemorySettingsInterface s_settings_overlay;
 
-static LoopTimer s_timer;
 static std::string s_game_path;
 static u32 s_max_pred = 0;
 
@@ -85,32 +71,20 @@ static std::deque<System::MemorySaveState> s_netplay_states;
 
 static std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_input;
 
+/// Frame timing. We manage our own frame pacing here, because we need to constantly adjust.
+static float s_target_speed = 1.0f;
+static Common::Timer::Value s_frame_period = 0;
+static Common::Timer::Value s_next_frame_time = 0;
+
 } // namespace Netplay
 
 // Netplay Impl
 
-void Netplay::SetSettings()
-{
-  MemorySettingsInterface& si = s_settings_overlay;
-
-  si.Clear();
-  for (u32 i = 0; i < MAX_PLAYERS; i++)
-  {
-    // Only digital pads supported for now.
-    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
-                                      Settings::GetControllerTypeName(ControllerType::DigitalController));
-  }
-
-  // No runahead or rewind, that'd be a disaster.
-  si.SetIntValue("Main", "RunaheadFrameCount", 0);
-  si.SetBoolValue("Main", "RewindEnable", false);
-
-  Host::Internal::SetNetplaySettingsLayer(&si);
-}
 
 s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred)
 {
   SetSettings();
+  InitializeFramePacing();
 
   s_max_pred = pred;
   /*
@@ -151,11 +125,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
     else
     {
       player.type = GGPOPlayerType::GGPO_PLAYERTYPE_REMOTE;
-#ifdef _WIN32
-      strcpy_s(player.u.remote.ip_address, raddr.c_str());
-#else
-      strcpy(player.u.remote.ip_address, raddr.c_str());
-#endif
+      StringUtil::Strlcpy(player.u.remote.ip_address, raddr.c_str(), std::size(player.u.remote.ip_address));
       player.u.remote.port = rport;
       result = ggpo_add_player(s_ggpo, &player, &handle);
     }
@@ -181,9 +151,92 @@ bool Netplay::IsActive()
   return s_ggpo != nullptr;
 }
 
-void Netplay::RunIdle()
+//////////////////////////////////////////////////////////////////////////
+// Settings Overlay
+//////////////////////////////////////////////////////////////////////////
+
+void Netplay::SetSettings()
 {
-  ggpo_idle(s_ggpo);
+  MemorySettingsInterface& si = s_settings_overlay;
+
+  si.Clear();
+  for (u32 i = 0; i < MAX_PLAYERS; i++)
+  {
+    // Only digital pads supported for now.
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                      Settings::GetControllerTypeName(ControllerType::DigitalController));
+  }
+
+  // No runahead or rewind, that'd be a disaster.
+  si.SetIntValue("Main", "RunaheadFrameCount", 0);
+  si.SetBoolValue("Main", "RewindEnable", false);
+
+  Host::Internal::SetNetplaySettingsLayer(&si);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Frame Pacing
+//////////////////////////////////////////////////////////////////////////
+
+void Netplay::InitializeFramePacing()
+{
+  // Start at 100% speed, adjust as soon as we get a timesync event.
+  s_target_speed = 1.0f;
+  UpdateThrottlePeriod();
+
+  s_next_frame_time = Common::Timer::GetCurrentValue() + s_frame_period;
+}
+
+void Netplay::UpdateThrottlePeriod()
+{
+  s_frame_period =
+    Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(System::GetThrottleFrequency()) * s_target_speed));
+}
+
+void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
+{
+  // Distribute the frame difference over the next N frames.
+  s_target_speed = 1.0f + -(frame_delta / static_cast<float>(update_interval));
+  UpdateThrottlePeriod();
+
+  Log_DevPrintf("TimeSync: %f frames %s, target speed %.4f%%", std::abs(frame_delta),
+                (frame_delta >= 0.0f ? "ahead" : "behind"), s_target_speed * 100.0f);
+}
+
+void Netplay::Throttle()
+{
+  s_next_frame_time += s_frame_period;
+
+  // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
+  // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
+  // hundreds of frames when we resume.
+  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (current_time > s_next_frame_time)
+  {
+    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
+    s_next_frame_time += (diff / s_frame_period) * s_frame_period;
+    return;
+  }
+
+  // Poll at 2ms throughout the sleep.
+  // This way the network traffic comes through as soon as possible.
+  const Common::Timer::Value sleep_period = Common::Timer::ConvertMillisecondsToValue(1);
+  for (;;)
+  {
+    // Poll network.
+    // TODO: Ideally we would sleep on the poll()/select() here instead.
+    ggpo_idle(s_ggpo);
+
+    current_time = Common::Timer::GetCurrentValue();
+    if (current_time >= s_next_frame_time)
+      break;
+
+    // Spin for the last millisecond.
+    if ((s_next_frame_time - current_time) <= sleep_period)
+      Common::Timer::BusyWait(s_next_frame_time - current_time);
+    else
+      Common::Timer::SleepUntil(current_time + sleep_period, false);
+  }
 }
 
 void Netplay::AdvanceFrame(u16 checksum)
@@ -191,7 +244,7 @@ void Netplay::AdvanceFrame(u16 checksum)
   ggpo_advance_frame(s_ggpo, checksum);
 }
 
-void Netplay::RunFrame(s32& waitTime)
+void Netplay::RunFrame()
 {
   // run game
   auto result = GGPO_OK;
@@ -213,13 +266,7 @@ void Netplay::RunFrame(s32& waitTime)
       SPU::SetAudioOutputMuted(false);
       NetplayAdvanceFrame(inputs, disconnectFlags);
     }
-    else
-      RunIdle();
   }
-  else
-    RunIdle();
-
-  waitTime = GetTimer()->UsToWaitThisLoop();
 }
 
 void Netplay::CollectInput(u32 slot, u32 bind, float value)
@@ -277,50 +324,6 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-Netplay::LoopTimer* Netplay::GetTimer()
-{
-  return &s_timer;
-}
-
-void Netplay::LoopTimer::Init(u32 fps, u32 frames_to_spread_wait)
-{
-  m_us_per_game_loop = 1000000 / fps;
-  m_us_ahead = 0;
-  m_us_extra_to_wait = 0;
-  m_frames_to_spread_wait = frames_to_spread_wait;
-  m_last_advantage = 0.0f;
-}
-
-void Netplay::LoopTimer::OnGGPOTimeSyncEvent(float frames_ahead)
-{
-  m_last_advantage = (1000.0f * frames_ahead / 60.0f);
-  m_last_advantage /= 2;
-  if (m_last_advantage < 0)
-  {
-    int t = 0;
-    t++;
-  }
-  m_us_extra_to_wait = (int)(m_last_advantage * 1000);
-  if (m_us_extra_to_wait)
-  {
-    m_us_extra_to_wait /= m_frames_to_spread_wait;
-    m_wait_count = m_frames_to_spread_wait;
-  }
-}
-
-s32 Netplay::LoopTimer::UsToWaitThisLoop()
-{
-  s32 timetoWait = m_us_per_game_loop;
-  if (m_wait_count)
-  {
-    timetoWait += m_us_extra_to_wait;
-    m_wait_count--;
-    if (!m_wait_count)
-      m_us_extra_to_wait = 0;
-  }
-  return timetoWait;
-}
-
 void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port,
                                   s32 input_delay, std::string game_path)
 {
@@ -328,10 +331,7 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
   if (IsActive())
     return;
   // set game path for later loading during the begin game callback
-  s_game_path = game_path;
-  // set netplay timer
-  const u32 fps = (System::GetRegion() == ConsoleRegion::PAL ? 50 : 60);
-  GetTimer()->Init(fps, 180);
+  s_game_path = std::move(game_path);
   // create session
   int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, 8);
   if (result != GGPO_OK)
@@ -357,27 +357,19 @@ void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
 
 void Netplay::ExecuteNetplay()
 {
-  // frame timing
-  s32 timeToWait;
-  std::chrono::steady_clock::time_point start, next, now;
-  start = next = now = std::chrono::steady_clock::now();
-  while (Netplay::IsActive() && System::IsRunning())
+  while (System::IsValid())
   {
-    now = std::chrono::steady_clock::now();
-    if (now >= next)
-    {
-      Netplay::RunFrame(timeToWait);
-      next = now + std::chrono::microseconds(timeToWait);
-      // s_next_frame_time += timeToWait;
+    Netplay::RunFrame();
 
-      // this can shut us down
-      Host::PumpMessagesOnCPUThread();
-      if (!System::IsValid() || !Netplay::IsActive())
-        break;
+    // this can shut us down
+    Host::PumpMessagesOnCPUThread();
+    if (!System::IsValid() || !Netplay::IsActive())
+      break;
 
-      System::PresentFrame();
-      System::UpdatePerformanceCounters();
-    }
+    System::PresentFrame();
+    System::UpdatePerformanceCounters();
+
+    Throttle();
   }
 }
 
@@ -399,6 +391,7 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
   while (System::GetInternalFrameNumber() < 2)
     System::RunFrame();
   SPU::SetAudioOutputMuted(false);
+  InitializeFramePacing();
   return true;
 }
 
@@ -483,7 +476,7 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
       msg = buff;
       break;
     case GGPOEventCode::GGPO_EVENTCODE_TIMESYNC:
-      Netplay::GetTimer()->OnGGPOTimeSyncEvent(ev->u.timesync.frames_ahead);
+      HandleTimeSyncEvent(ev->u.timesync.frames_ahead, ev->u.timesync.timeSyncPeriodInFrames);
       break;
     case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
       sprintf(buff, "Netplay Desync Detected!: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,

@@ -2239,6 +2239,9 @@ void System::UpdateThrottlePeriod()
   }
 
   ResetThrottler();
+
+  if (Netplay::IsActive())
+    Netplay::UpdateThrottlePeriod();
 }
 
 void System::ResetThrottler()

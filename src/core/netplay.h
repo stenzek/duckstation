@@ -27,4 +27,7 @@ void SendMsg(const char* msg);
 s32 GetPing();
 u32 GetMaxPrediction();
 
+/// Updates the throttle period, call when target emulation speed changes.
+void UpdateThrottlePeriod();
+
 } // namespace Netplay
