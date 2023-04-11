@@ -60,14 +60,6 @@ static void RunIdle();
 
 static void AdvanceFrame(u16 checksum = 0);
 static void RunFrame(s32& waitTime);
-static s32 CurrentFrame();
-
-static std::string& GetGamePath();
-static void SetGamePath(std::string& path);
-
-static GGPONetworkStats& GetNetStats(s32 handle);
-static GGPOPlayerHandle GetLocalHandle();
-static u16 Fletcher16(uint8_t* data, int count);
 
 static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 
@@ -106,6 +98,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
   GGPOErrorCode result;
 
   result = ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, s_max_pred);
+  //result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
 
   ggpo_set_disconnect_timeout(s_ggpo, 3000);
   ggpo_set_disconnect_notify_start(s_ggpo, 1000);
@@ -171,7 +164,7 @@ void Netplay::RunFrame(s32& waitTime)
   int disconnectFlags = 0;
   Netplay::Input inputs[2] = {};
   // add local input
-  if (GetLocalHandle() != GGPO_INVALID_HANDLE)
+  if (s_local_handle != GGPO_INVALID_HANDLE)
   {
     auto inp = ReadLocalInput();
     result = AddLocalInput(inp);
@@ -195,13 +188,6 @@ void Netplay::RunFrame(s32& waitTime)
   waitTime = GetTimer()->UsToWaitThisLoop();
 }
 
-s32 Netplay::CurrentFrame()
-{
-  s32 frame;
-  ggpo_get_current_frame(s_ggpo, frame);
-  return frame;
-}
-
 void Netplay::CollectInput(u32 slot, u32 bind, float value)
 {
   s_net_input[slot][bind] = value;
@@ -219,16 +205,6 @@ Netplay::Input Netplay::ReadLocalInput()
   return inp;
 }
 
-std::string& Netplay::GetGamePath()
-{
-  return s_game_path;
-}
-
-void Netplay::SetGamePath(std::string& path)
-{
-  s_game_path = path;
-}
-
 void Netplay::SendMsg(const char* msg)
 {
   ggpo_client_chat(s_ggpo, msg);
@@ -244,15 +220,9 @@ GGPOErrorCode Netplay::AddLocalInput(Netplay::Input input)
   return ggpo_add_local_input(s_ggpo, s_local_handle, &input, sizeof(Netplay::Input));
 }
 
-GGPONetworkStats& Netplay::GetNetStats(s32 handle)
-{
-  ggpo_get_network_stats(s_ggpo, handle, &s_last_net_stats);
-  return s_last_net_stats;
-}
-
 s32 Netplay::GetPing()
 {
-  const int handle = GetLocalHandle() == 1 ? 2 : 1;
+  const int handle = s_local_handle == 1 ? 2 : 1;
   ggpo_get_network_stats(s_ggpo, handle, &s_last_net_stats);
   return s_last_net_stats.network.ping;
 }
@@ -260,11 +230,6 @@ s32 Netplay::GetPing()
 u32 Netplay::GetMaxPrediction()
 {
   return s_max_pred;
-}
-
-GGPOPlayerHandle Netplay::GetLocalHandle()
-{
-  return s_local_handle;
 }
 
 void Netplay::SetInputs(Netplay::Input inputs[2])
@@ -281,21 +246,6 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
 Netplay::LoopTimer* Netplay::GetTimer()
 {
   return &s_timer;
-}
-
-u16 Netplay::Fletcher16(uint8_t* data, int count)
-{
-  u16 sum1 = 0;
-  u16 sum2 = 0;
-  int index;
-
-  for (index = 0; index < count; ++index)
-  {
-    sum1 = (sum1 + data[index]) % 255;
-    sum2 = (sum2 + sum1) % 255;
-  }
-
-  return (sum2 << 8) | sum1;
 }
 
 void Netplay::LoopTimer::Init(u32 fps, u32 frames_to_spread_wait)
@@ -338,13 +288,13 @@ s32 Netplay::LoopTimer::UsToWaitThisLoop()
 }
 
 void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port,
-                                  s32 input_delay, std::string& game_path)
+                                  s32 input_delay, std::string game_path)
 {
   // dont want to start a session when theres already one going on.
   if (IsActive())
     return;
   // set game path for later loading during the begin game callback
-  SetGamePath(game_path);
+  s_game_path = game_path;
   // set netplay timer
   const u32 fps = (System::GetRegion() == ConsoleRegion::PAL ? 50 : 60);
   GetTimer()->Init(fps, 180);
@@ -403,7 +353,7 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
   if (System::IsValid())
     System::ShutdownSystem(false);
   // fast boot the selected game and wait for the other player
-  auto param = SystemBootParameters(Netplay::GetGamePath());
+  auto param = SystemBootParameters(s_game_path);
   param.override_fast_boot = true;
   if (!System::BootSystem(param))
   {

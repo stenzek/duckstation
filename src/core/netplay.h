@@ -5,8 +5,14 @@
 
 namespace Netplay {
 
+enum : u32
+{
+  // Maximum number of emulated controllers.
+  MAX_PLAYERS = 2,
+};
+
 void StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port, s32 input_delay,
-                         std::string& game_path);
+                         std::string game_path);
 void StopNetplaySession();
 
 bool IsActive();
