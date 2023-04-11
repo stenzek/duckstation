@@ -21,6 +21,8 @@ Log_SetChannel(Netplay);
 
 namespace Netplay {
 
+using SaveStateBuffer = std::unique_ptr<System::MemorySaveState>;
+
 struct Input
 {
   u32 button_data;
@@ -67,7 +69,7 @@ static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
 static GGPONetworkStats s_last_net_stats{};
 static GGPOSession* s_ggpo = nullptr;
 
-static std::deque<System::MemorySaveState> s_netplay_states;
+static std::deque<SaveStateBuffer> s_save_buffer_pool;
 
 static std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_input;
 
@@ -139,6 +141,7 @@ void Netplay::Close()
 {
   ggpo_close_session(s_ggpo);
   s_ggpo = nullptr;
+  s_save_buffer_pool.clear();
   s_local_handle = GGPO_INVALID_HANDLE;
   s_max_pred = 0;
 
@@ -344,7 +347,7 @@ void Netplay::StopNetplaySession()
 {
   if (!IsActive())
     return;
-  s_netplay_states.clear();
+
   Close();
 }
 
@@ -404,37 +407,42 @@ bool Netplay::NpAdvFrameCb(void* ctx, int flags)
   return true;
 }
 
-bool Netplay::NpSaveFrameCb(void* ctx, uint8_t** buffer, int* len, int* checksum, int frame)
+bool Netplay::NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame)
 {
-  bool result = false;
-  // give ggpo something so it doesnt complain.
-  u8 dummyData = 43;
-  *len = sizeof(u8);
-  *buffer = (unsigned char*)malloc(*len);
-  if (!*buffer)
-    return false;
-  memcpy(*buffer, &dummyData, *len);
-  // store state for later.
-  int pred = Netplay::GetMaxPrediction();
-  if (frame < pred && s_netplay_states.size() < pred)
+  SaveStateBuffer our_buffer;
+  if (s_save_buffer_pool.empty())
   {
-    System::MemorySaveState save;
-    result = System::SaveMemoryState(&save);
-    s_netplay_states.push_back(std::move(save));
+    our_buffer = std::make_unique<System::MemorySaveState>();
   }
   else
   {
-    // reuse streams
-    result = System::SaveMemoryState(&s_netplay_states[frame % pred]);
+    our_buffer = std::move(s_save_buffer_pool.back());
+    s_save_buffer_pool.pop_back();
   }
-  return result;
+
+  if (!System::SaveMemoryState(our_buffer.get()))
+  {
+    s_save_buffer_pool.push_back(std::move(our_buffer));
+    return false;
+  }
+
+  *len = sizeof(System::MemorySaveState);
+  *buffer = reinterpret_cast<unsigned char*>(our_buffer.release());
+  return true;
 }
 
-bool Netplay::NpLoadFrameCb(void* ctx, uint8_t* buffer, int len, int rb_frames, int frame_to_load)
+bool Netplay::NpLoadFrameCb(void* ctx, unsigned char* buffer, int len, int rb_frames, int frame_to_load)
 {
   // Disable Audio For upcoming rollback
   SPU::SetAudioOutputMuted(true);
-  return System::LoadMemoryState(s_netplay_states[frame_to_load % Netplay::GetMaxPrediction()]);
+
+  return System::LoadMemoryState(*reinterpret_cast<const System::MemorySaveState*>(buffer));
+}
+
+void Netplay::NpFreeBuffCb(void* ctx, void* buffer)
+{
+  SaveStateBuffer our_buffer(reinterpret_cast<System::MemorySaveState*>(buffer));
+  s_save_buffer_pool.push_back(std::move(our_buffer));
 }
 
 bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
@@ -493,9 +501,4 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
     Log_InfoPrintf("%s", msg.c_str());
   }
   return true;
-}
-
-void Netplay::NpFreeBuffCb(void* ctx, void* buffer)
-{
-  free(buffer);
 }
