@@ -62,6 +62,7 @@
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
+    <ClCompile Include="netplay.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="pgxp.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="multitap.h" />
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
+    <ClInclude Include="netplay.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="pgxp.h" />

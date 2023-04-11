@@ -4,6 +4,10 @@
 #include "system.h"
 #include <bitset>
 
+#ifdef _WIN32
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 // Netplay Impl
 Netplay::Session::Session() = default;
 
