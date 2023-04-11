@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\msvc\vsprops\Configurations.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EDF3634A-CE8A-4625-92BD-27BAD5D30A9A}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ggponet.h" />
+    <ClInclude Include="src\backends\backend.h" />
+    <ClInclude Include="src\backends\p2p.h" />
+    <ClInclude Include="src\backends\spectator.h" />
+    <ClInclude Include="src\backends\synctest.h" />
+    <ClInclude Include="src\bitvector.h" />
+    <ClInclude Include="src\game_input.h" />
+    <ClInclude Include="src\input_queue.h" />
+    <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\network\udp.h" />
+    <ClInclude Include="src\network\udp_msg.h" />
+    <ClInclude Include="src\network\udp_proto.h" />
+    <ClInclude Include="src\platform_windows.h" />
+    <ClInclude Include="src\poll.h" />
+    <ClInclude Include="src\ring_buffer.h" />
+    <ClInclude Include="src\static_buffer.h" />
+    <ClInclude Include="src\sync.h" />
+    <ClInclude Include="src\timesync.h" />
+    <ClInclude Include="src\types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\backends\p2p.cpp" />
+    <ClCompile Include="src\backends\spectator.cpp" />
+    <ClCompile Include="src\backends\synctest.cpp" />
+    <ClCompile Include="src\bitvector.cpp" />
+    <ClCompile Include="src\game_input.cpp" />
+    <ClCompile Include="src\input_queue.cpp" />
+    <ClCompile Include="src\log.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\network\udp.cpp" />
+    <ClCompile Include="src\network\udp_proto.cpp" />
+    <ClCompile Include="src\platform_windows.cpp" />
+    <ClCompile Include="src\poll.cpp" />
+    <ClCompile Include="src\sync.cpp" />
+    <ClCompile Include="src\timesync.cpp" />
+  </ItemGroup>
+  <Import Project="..\msvc\vsprops\StaticLibrary.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PreprocessorDefinitions>_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="..\msvc\vsprops\Targets.props" />
+</Project>
