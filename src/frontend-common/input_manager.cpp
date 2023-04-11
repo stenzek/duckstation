@@ -714,9 +714,9 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
                     if (!System::IsValid())
                       return;
 
-                    if (Netplay::Session::IsActive())
+                    if (Netplay::IsActive())
                     {
-                      Netplay::Session::CollectInput(pad_index, bind_index, value);
+                      Netplay::CollectInput(pad_index, bind_index, value);
                       return;
                     }
 

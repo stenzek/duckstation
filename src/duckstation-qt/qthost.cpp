@@ -1100,7 +1100,7 @@ void EmuThread::sendNetplayMessage(const QString& message)
     QMetaObject::invokeMethod(this, "sendNetplayMessage", Qt::QueuedConnection, Q_ARG(const QString&, message));
     return;
   }
-  Netplay::Session::SendMsg(message.toStdString().c_str());
+  Netplay::SendMsg(message.toStdString().c_str());
 }
 
 void EmuThread::stopNetplaySession()
@@ -1462,12 +1462,13 @@ void EmuThread::run()
   // main loop
   while (!m_shutdown_flag)
   {
-    if (System::IsRunning())
+    if (Netplay::IsActive())
     {
-      if (Netplay::Session::IsActive())
-        System::ExecuteNetplay();
-      else
-        System::Execute();
+      System::ExecuteNetplay();
+    }
+    else if (System::IsRunning())
+    {
+      System::Execute();
     }
     else
     {
@@ -1711,7 +1712,7 @@ void EmuThread::updatePerformanceCounters()
     m_last_video_fps = vfps;
   }
 
-  const s32 ping = Netplay::Session::GetPing();
+  const s32 ping = Netplay::GetPing();
   if (m_last_ping != ping)
   {
     QMetaObject::invokeMethod(g_main_window->getStatusPingWidget(), "setText", Qt::QueuedConnection,
