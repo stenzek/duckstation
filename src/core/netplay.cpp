@@ -199,7 +199,7 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
-  // threshold to what is is with correcting for.
+  // we need a threshold since sub frame values are not worth correcting for.
   if (frame_delta <= 1.0f)
     return;
 
