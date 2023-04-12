@@ -7,10 +7,10 @@
 #include "common/timer.h"
 #include "digital_controller.h"
 #include "ggponet.h"
+#include "host_settings.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
-#include "host_settings.h"
 #include <bitset>
 #include <deque>
 Log_SetChannel(Netplay);
@@ -49,6 +49,8 @@ static void Close();
 static void AdvanceFrame(u16 checksum = 0);
 static void RunFrame();
 
+static s32 CurrentFrame();
+
 static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 
 /// Frame Pacing
@@ -63,7 +65,6 @@ static void Throttle();
 static MemorySettingsInterface s_settings_overlay;
 
 static std::string s_game_path;
-static u32 s_max_pred = 0;
 
 static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
 static GGPONetworkStats s_last_net_stats{};
@@ -77,18 +78,17 @@ static std::array<std::array<float, 32>, NUM_CONTROLLER_AND_CARD_PORTS> s_net_in
 static float s_target_speed = 1.0f;
 static Common::Timer::Value s_frame_period = 0;
 static Common::Timer::Value s_next_frame_time = 0;
+static s32 s_next_timesync_recovery_frame = -1;
 
 } // namespace Netplay
 
 // Netplay Impl
-
 
 s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred)
 {
   SetSettings();
   InitializeFramePacing();
 
-  s_max_pred = pred;
   /*
   TODO: since saving every frame during rollback loses us time to do actual gamestate iterations it might be better to
   hijack the update / save / load cycle to only save every confirmed frame only saving when actually needed.
@@ -104,8 +104,9 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
 
   GGPOErrorCode result;
 
-  result = ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, s_max_pred);
-  //result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
+  result =
+    ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, MAX_ROLLBACK_FRAMES);
+  // result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
 
   ggpo_set_disconnect_timeout(s_ggpo, 3000);
   ggpo_set_disconnect_notify_start(s_ggpo, 1000);
@@ -133,6 +134,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
     }
   }
   ggpo_set_frame_delay(s_ggpo, s_local_handle, ldelay);
+  ggpo_set_manual_network_polling(s_ggpo, true);
 
   return result;
 }
@@ -143,7 +145,6 @@ void Netplay::Close()
   s_ggpo = nullptr;
   s_save_buffer_pool.clear();
   s_local_handle = GGPO_INVALID_HANDLE;
-  s_max_pred = 0;
 
   // Restore original settings.
   Host::Internal::SetNetplaySettingsLayer(nullptr);
@@ -198,16 +199,38 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
-  // Distribute the frame difference over the next N frames.
-  s_target_speed = 1.0f + -(frame_delta / static_cast<float>(update_interval));
+  // threshold to what is is with correcting for.
+  if (frame_delta <= 1.0f)
+    return;
+
+  float total_time = frame_delta * s_frame_period;
+  // Distribute the frame difference over the next N * 0.8 frames.
+  // only part of the interval time is used since we want to come back to normal speed.
+  // otherwise we will keep spiraling into unplayable gameplay.
+  float added_time_per_frame = -(total_time / (static_cast<float>(update_interval) * 0.8f));
+  float iterations_per_frame = 1.0f / s_frame_period;
+
+  s_target_speed = (s_frame_period + added_time_per_frame) * iterations_per_frame;
+  s_next_timesync_recovery_frame = CurrentFrame() + std::ceil(static_cast<float>(update_interval) * 0.8f);
+
   UpdateThrottlePeriod();
 
-  Log_DevPrintf("TimeSync: %f frames %s, target speed %.4f%%", std::abs(frame_delta),
-                (frame_delta >= 0.0f ? "ahead" : "behind"), s_target_speed * 100.0f);
+  Log_VerbosePrintf("TimeSync: %f frames %s, target speed %.4f%%", std::abs(frame_delta),
+                    (frame_delta >= 0.0f ? "ahead" : "behind"), s_target_speed * 100.0f);
 }
 
 void Netplay::Throttle()
 {
+  // if the s_next_timesync_recovery_frame has been reached revert back to the normal throttle speed
+  s32 current_frame = CurrentFrame();
+  if (s_target_speed != 1.0f && current_frame >= s_next_timesync_recovery_frame)
+  {
+    s_target_speed = 1.0f;
+    UpdateThrottlePeriod();
+
+    Log_VerbosePrintf("TimeSync Recovery: frame %d, target speed %.4f%%", current_frame, s_target_speed * 100.0f);
+  }
+
   s_next_frame_time += s_frame_period;
 
   // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
@@ -220,15 +243,13 @@ void Netplay::Throttle()
     s_next_frame_time += (diff / s_frame_period) * s_frame_period;
     return;
   }
-
   // Poll at 2ms throughout the sleep.
   // This way the network traffic comes through as soon as possible.
   const Common::Timer::Value sleep_period = Common::Timer::ConvertMillisecondsToValue(1);
   for (;;)
   {
     // Poll network.
-    // TODO: Ideally we would sleep on the poll()/select() here instead.
-    ggpo_idle(s_ggpo);
+    ggpo_poll_network(s_ggpo);
 
     current_time = Common::Timer::GetCurrentValue();
     if (current_time >= s_next_frame_time)
@@ -250,8 +271,9 @@ void Netplay::AdvanceFrame(u16 checksum)
 void Netplay::RunFrame()
 {
   // run game
+  bool need_idle = true;
   auto result = GGPO_OK;
-  int disconnectFlags = 0;
+  int disconnect_flags = 0;
   Netplay::Input inputs[2] = {};
   // add local input
   if (s_local_handle != GGPO_INVALID_HANDLE)
@@ -262,14 +284,26 @@ void Netplay::RunFrame()
   // advance game
   if (GGPO_SUCCEEDED(result))
   {
-    result = SyncInput(inputs, &disconnectFlags);
+    result = SyncInput(inputs, &disconnect_flags);
     if (GGPO_SUCCEEDED(result))
     {
       // enable again when rolling back done
       SPU::SetAudioOutputMuted(false);
-      NetplayAdvanceFrame(inputs, disconnectFlags);
+      NetplayAdvanceFrame(inputs, disconnect_flags);
+      // coming here means that the system doesnt need to idle anymore
+      need_idle = false;
     }
   }
+  // allow ggpo to do housekeeping if needed
+  if (need_idle)
+    ggpo_idle(s_ggpo);
+}
+
+s32 Netplay::CurrentFrame()
+{
+  s32 current = -1;
+  ggpo_get_current_frame(s_ggpo, current);
+  return current;
 }
 
 void Netplay::CollectInput(u32 slot, u32 bind, float value)
@@ -313,7 +347,7 @@ s32 Netplay::GetPing()
 
 u32 Netplay::GetMaxPrediction()
 {
-  return s_max_pred;
+  return MAX_ROLLBACK_FRAMES;
 }
 
 void Netplay::SetInputs(Netplay::Input inputs[2])
@@ -321,9 +355,9 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   for (u32 i = 0; i < 2; i++)
   {
     auto cont = Pad::GetController(i);
-    std::bitset<sizeof(u32) * 8> buttonBits(inputs[i].button_data);
+    std::bitset<sizeof(u32) * 8> button_bits(inputs[i].button_data);
     for (u32 j = 0; j < (u32)DigitalController::Button::Count; j++)
-      cont->SetBindState(j, buttonBits.test(j) ? 1.0f : 0.0f);
+      cont->SetBindState(j, button_bits.test(j) ? 1.0f : 0.0f);
   }
 }
 
@@ -336,7 +370,7 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
   // set game path for later loading during the begin game callback
   s_game_path = std::move(game_path);
   // create session
-  int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, 8);
+  int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, MAX_ROLLBACK_FRAMES);
   if (result != GGPO_OK)
   {
     Log_ErrorPrintf("Failed to Create Netplay Session! Error: %d", result);
@@ -401,9 +435,9 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
 bool Netplay::NpAdvFrameCb(void* ctx, int flags)
 {
   Netplay::Input inputs[2] = {};
-  int disconnectFlags;
-  Netplay::SyncInput(inputs, &disconnectFlags);
-  NetplayAdvanceFrame(inputs, disconnectFlags);
+  int disconnect_flags;
+  Netplay::SyncInput(inputs, &disconnect_flags);
+  NetplayAdvanceFrame(inputs, disconnect_flags);
   return true;
 }
 

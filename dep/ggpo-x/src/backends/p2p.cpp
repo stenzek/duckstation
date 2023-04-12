@@ -27,6 +27,7 @@ Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
    _callbacks = *cb;
    _synchronizing = true;
    _next_recommended_sleep = 0;
+   _manual_network_polling = false;
 
    /*
     * Initialize the synchronziation layer
@@ -150,6 +151,7 @@ void Peer2PeerBackend::CheckDesync()
     }
     
 }
+
 GGPOErrorCode
 Peer2PeerBackend::DoPoll()
 {
@@ -165,7 +167,8 @@ Peer2PeerBackend::DoPoll()
     }
 
    if (!_sync.InRollback()) {
-      _poll.Pump(0);
+      if (!_manual_network_polling)
+        _poll.Pump(0);
 
       PollUdpProtocolEvents();
       CheckDesync();
@@ -402,11 +405,27 @@ Peer2PeerBackend::SyncInput(void *values,
    }
    return GGPO_OK;
 }
-GGPOErrorCode Peer2PeerBackend::CurrentFrame(int& current)
+
+GGPOErrorCode 
+Peer2PeerBackend::CurrentFrame(int& current)
 {
     current = _sync.GetFrameCount();
     return GGPO_OK;
 }
+
+GGPOErrorCode 
+Peer2PeerBackend::PollNetwork()
+{
+    _poll.Pump(0);
+    return GGPO_OK;
+}
+
+GGPOErrorCode Peer2PeerBackend::SetManualNetworkPolling(bool value)
+{
+    _manual_network_polling = value;
+    return GGPO_OK;
+}
+
 GGPOErrorCode
 Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
 {  

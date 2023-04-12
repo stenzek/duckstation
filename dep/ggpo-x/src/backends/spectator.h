@@ -36,7 +36,8 @@ public:
    virtual GGPOErrorCode SetDisconnectNotifyStart(int timeout) { return GGPO_ERRORCODE_UNSUPPORTED; }
    virtual GGPOErrorCode Chat(const char* text) override { return GGPO_ERRORCODE_UNSUPPORTED; }
    virtual GGPOErrorCode CurrentFrame(int& current) override;
-   
+   virtual GGPOErrorCode PollNetwork() override;
+   virtual GGPOErrorCode SetManualNetworkPolling(bool value) override;
 
 public:
    virtual void OnMsg(sockaddr_in &from, UdpMsg *msg, int len);
@@ -57,6 +58,7 @@ protected:
    int                   _num_players;
    int                   _next_input_to_send;
    GameInput             _inputs[SPECTATOR_FRAME_BUFFER_SIZE];
+   bool                  _manual_network_polling;
 };
 
 #endif
