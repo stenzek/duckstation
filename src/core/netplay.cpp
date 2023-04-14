@@ -199,14 +199,13 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
-  // we need a threshold since sub frame values are not worth correcting for.
-  if (frame_delta <= 1.0f)
+  // we need a threshold since low advantage frames values are not worth correcting for.
+  if (std::abs(frame_delta) <= 1.0f)
     return;
-
-  float total_time = frame_delta * s_frame_period;
   // Distribute the frame difference over the next N * 0.8 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
+  float total_time = frame_delta * s_frame_period;
   float added_time_per_frame = -(total_time / (static_cast<float>(update_interval) * 0.8f));
   float iterations_per_frame = 1.0f / s_frame_period;
 
