@@ -1395,15 +1395,6 @@ void CDROM::BeginCommand(Command command)
     }
   }
 
-  if (s_command_second_response != Command::None)
-  {
-    Log_WarningPrintf("Cancelling pending command 0x%02X (%s) second response",
-                      static_cast<u16>(s_command_second_response),
-                      s_command_info[static_cast<u16>(s_command_second_response)].name);
-
-    ClearCommandSecondResponse();
-  }
-
   s_command = command;
   s_command_event->SetIntervalAndSchedule(ack_delay);
   UpdateCommandEvent();
@@ -1466,6 +1457,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::GetID:
     {
       Log_DebugPrintf("CDROM GetID command");
+      ClearCommandSecondResponse();
 
       if (!CanReadMedia())
       {
@@ -1484,6 +1476,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::ReadTOC:
     {
       Log_DebugPrintf("CDROM ReadTOC command");
+      ClearCommandSecondResponse();
+
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -1622,6 +1616,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
       else
       {
+        ClearCommandSecondResponse();
         SendACKAndStat();
 
         s_async_command_parameter = session;
@@ -1745,10 +1740,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Pause:
     {
-      SendACKAndStat();
-
       const bool was_reading = (s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing);
       const TickCount pause_time = was_reading ? (s_mode.double_speed ? 2000000 : 1000000) : 7000;
+
+      ClearCommandSecondResponse();
+      SendACKAndStat();
 
       if (s_drive_state == DriveState::SeekingLogical || s_drive_state == DriveState::SeekingPhysical)
       {
@@ -1780,6 +1776,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Stop:
     {
       const TickCount stop_time = GetTicksForStop(IsMotorOn());
+      ClearCommandSecondResponse();
       SendACKAndStat();
 
       StopMotor();
@@ -1824,13 +1821,16 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         SendACKAndStat();
 
         // still pending?
-        if (s_command_second_response != Command::MotorOn)
+        if (s_command_second_response == Command::MotorOn)
         {
-          if (CanReadMedia())
-            StartMotor();
-
-          QueueCommandSecondResponse(Command::MotorOn, MOTOR_ON_RESPONSE_TICKS);
+          EndCommand();
+          return;
         }
+
+        if (CanReadMedia())
+          StartMotor();
+
+        QueueCommandSecondResponse(Command::MotorOn, MOTOR_ON_RESPONSE_TICKS);
       }
 
       EndCommand();
@@ -2126,6 +2126,12 @@ void CDROM::QueueCommandSecondResponse(Command command, TickCount ticks)
 
 void CDROM::ClearCommandSecondResponse()
 {
+  if (s_command_second_response != Command::None)
+  {
+    Log_DevPrintf("Cancelling pending command 0x%02X (%s) second response", static_cast<u16>(s_command_second_response),
+                  s_command_info[static_cast<u16>(s_command_second_response)].name);
+  }
+
   s_command_second_response_event->Deactivate();
   s_command_second_response = Command::None;
 }
@@ -2254,6 +2260,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba)) - ticks_late;
 
+  ClearCommandSecondResponse();
   ResetAudioDecoder();
 
   s_drive_state = DriveState::Reading;
@@ -2296,6 +2303,7 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba, true)) - ticks_late;
 
+  ClearCommandSecondResponse();
   ClearSectorBuffers();
   ResetAudioDecoder();
 
@@ -2326,9 +2334,11 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const CDImage::LBA seek_lba = s_setloc_position.ToLBA();
   const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
 
+  ClearCommandSecondResponse();
+  ResetAudioDecoder();
+
   s_secondary_status.SetSeeking();
   s_last_sector_header_valid = false;
-  ResetAudioDecoder();
 
   s_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
   s_drive_event->SetIntervalAndSchedule(seek_time);
