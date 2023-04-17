@@ -44,7 +44,6 @@ static void SetSettings();
 
 // l = local, r = remote
 static s32 Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred);
-static void Close();
 
 static void AdvanceFrame(u16 checksum = 0);
 static void RunFrame();
@@ -139,8 +138,10 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
   return result;
 }
 
-void Netplay::Close()
+void Netplay::CloseSession()
 {
+  Assert(IsActive());
+
   ggpo_close_session(s_ggpo);
   s_ggpo = nullptr;
   s_save_buffer_pool.clear();
@@ -211,7 +212,7 @@ void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
   float iterations_per_frame = 1.0f / s_frame_period;
 
   s_target_speed = (s_frame_period + added_time_per_frame) * iterations_per_frame;
-  s_next_timesync_recovery_frame = CurrentFrame() + std::ceil(static_cast<float>(update_interval) * 0.8f);
+  s_next_timesync_recovery_frame = CurrentFrame() + static_cast<s32>(std::ceil(static_cast<float>(update_interval) * 0.8f));
 
   UpdateThrottlePeriod();
 
@@ -382,7 +383,8 @@ void Netplay::StopNetplaySession()
   if (!IsActive())
     return;
 
-  Close();
+  // This will call back to us.
+  System::ShutdownSystem(false);
 }
 
 void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
@@ -394,13 +396,13 @@ void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
 
 void Netplay::ExecuteNetplay()
 {
-  while (System::IsValid())
+  while (System::IsRunning())
   {
     Netplay::RunFrame();
 
     // this can shut us down
     Host::PumpMessagesOnCPUThread();
-    if (!System::IsValid() || !Netplay::IsActive())
+    if (!System::IsValid())
       break;
 
     System::PresentFrame();

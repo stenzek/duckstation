@@ -1532,7 +1532,7 @@ void System::Execute()
 
     // this can shut us down
     Host::PumpMessagesOnCPUThread();
-    if (!IsValid() || Netplay::IsActive())
+    if (!IsValid())
       return;
 
     if (s_frame_step_request)
@@ -3740,6 +3740,9 @@ void System::ShutdownSystem(bool save_resume_state)
 {
   if (!IsValid())
     return;
+
+  if (Netplay::IsActive())
+    Netplay::CloseSession();
 
   if (save_resume_state)
     SaveResumeState();
