@@ -19,6 +19,10 @@ void StopNetplaySession();
 
 bool IsActive();
 
+/// Frees up resources associated with the current netplay session.
+/// Should only be called by System::ShutdownSystem().
+void CloseSession();
+
 /// Runs the VM and netplay loop. when the netplay loop cancels it switches to normal execute mode.
 void ExecuteNetplay();
 
