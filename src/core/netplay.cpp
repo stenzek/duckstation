@@ -176,6 +176,9 @@ void Netplay::SetSettings()
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
   si.SetBoolValue("Main", "RewindEnable", false);
 
+  // no block linking, it degrades loading performance 
+  si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
+
   Host::Internal::SetNetplaySettingsLayer(&si);
 }
 
@@ -201,17 +204,19 @@ void Netplay::UpdateThrottlePeriod()
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
   // we need a threshold since low advantage frames values are not worth correcting for.
-  if (std::abs(frame_delta) <= 1.0f)
+  if (std::abs(frame_delta ) < 3.0f)
     return;
-  // Distribute the frame difference over the next N * 0.8 frames.
+  // only account for half the distance
+  // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
   float total_time = frame_delta * s_frame_period;
-  float added_time_per_frame = -(total_time / (static_cast<float>(update_interval) * 0.8f));
+  float mun_timesync_frames = update_interval * 0.75f;
+  float added_time_per_frame = -(total_time / mun_timesync_frames);
   float iterations_per_frame = 1.0f / s_frame_period;
-
+  
   s_target_speed = (s_frame_period + added_time_per_frame) * iterations_per_frame;
-  s_next_timesync_recovery_frame = CurrentFrame() + static_cast<s32>(std::ceil(static_cast<float>(update_interval) * 0.8f));
+  s_next_timesync_recovery_frame = CurrentFrame() + static_cast<s32>(std::ceil(mun_timesync_frames));
 
   UpdateThrottlePeriod();
 
@@ -270,8 +275,9 @@ void Netplay::AdvanceFrame(u16 checksum)
 
 void Netplay::RunFrame()
 {
+  // housekeeping
+  ggpo_idle(s_ggpo);
   // run game
-  bool need_idle = true;
   auto result = GGPO_OK;
   int disconnect_flags = 0;
   Netplay::Input inputs[2] = {};
@@ -290,13 +296,8 @@ void Netplay::RunFrame()
       // enable again when rolling back done
       SPU::SetAudioOutputMuted(false);
       NetplayAdvanceFrame(inputs, disconnect_flags);
-      // coming here means that the system doesnt need to idle anymore
-      need_idle = false;
     }
   }
-  // allow ggpo to do housekeeping if needed
-  if (need_idle)
-    ggpo_idle(s_ggpo);
 }
 
 s32 Netplay::CurrentFrame()
@@ -371,10 +372,9 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
   s_game_path = std::move(game_path);
   // create session
   int result = Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, MAX_ROLLBACK_FRAMES);
+  // notify that the session failed
   if (result != GGPO_OK)
-  {
     Log_ErrorPrintf("Failed to Create Netplay Session! Error: %d", result);
-  }
 }
 
 void Netplay::StopNetplaySession()
