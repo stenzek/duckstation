@@ -1803,7 +1803,7 @@ bool System::LoadBIOS()
   if (s_bios_image_info)
     Log_InfoPrintf("Using BIOS: %s", s_bios_image_info->description);
   else
-    Log_WarningPrintf("Using an unknown BIOS: %s", s_bios_image_info->hash.ToString().c_str());
+    Log_WarningPrintf("Using an unknown BIOS: %s", s_bios_hash.ToString().c_str());
 
   std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
   return true;
