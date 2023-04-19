@@ -1466,7 +1466,7 @@ void EmuThread::run()
   // main loop
   while (!m_shutdown_flag)
   {
-    if (Netplay::IsActive())
+    if (Netplay::IsActive() && System::IsRunning())
     {
       Netplay::ExecuteNetplay();
     }

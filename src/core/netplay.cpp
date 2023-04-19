@@ -176,7 +176,7 @@ void Netplay::SetSettings()
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
   si.SetBoolValue("Main", "RewindEnable", false);
 
-  // no block linking, it degrades loading performance 
+  // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
@@ -203,18 +203,14 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
-  // we need a threshold since low advantage frames values are not worth correcting for.
-  if (std::abs(frame_delta ) < 3.0f)
-    return;
-  // only account for half the distance
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
-  float total_time = frame_delta * s_frame_period;
+  float total_time = (frame_delta / 8) * s_frame_period;
   float mun_timesync_frames = update_interval * 0.75f;
   float added_time_per_frame = -(total_time / mun_timesync_frames);
   float iterations_per_frame = 1.0f / s_frame_period;
-  
+
   s_target_speed = (s_frame_period + added_time_per_frame) * iterations_per_frame;
   s_next_timesync_recovery_frame = CurrentFrame() + static_cast<s32>(std::ceil(mun_timesync_frames));
 
