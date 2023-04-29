@@ -1,0 +1,74 @@
+- 25/07/2021: Funcionalidade de inicializar jogos diretamente a partir de um CD-ROM.
+- 11/07/2021: Emulador portado para consoles xboxOne.
+- 10/07/2021: Renderizador Direct3D 12 adicionado. Não suporta pós-processamento (função exclusiva e destinada ao uso em consoles).
+- 25/06/2021: Funcionalidade de recuperar arquivos excluídos do editor de cartão de memória.
+- 22/06/2021: Conquistas da plataforma RetroAchievements adicionada ao emulador.
+- 19/06/2021: Placares de líderes RetroAchievements adicionada ao emulador.
+- 01/06/2021: Carregamento de arquivos PPF adicionado.
+- 23/05/2021: Suporte para saves em formato (srm) adicionado ao núcleo libretro.
+- 23/05/2021: Aprimoramento de aceleração de busca em CD-ROM adicionado.
+- 16/05/2021: Funcionalidade de turbo adicionado aos botões no emulador.
+- 10/05/2021: Retorno do núcleo libretro. Venda ou distribuição comercial do núcleo do emulador DuckStation **NÃO É PERMITIDA**.
+- 02/05/2021: Menu de pausa adicionado ao aplicativo Android.
+- 29/04/2021: Suporte a razão de aspecto personalizada.
+- 20/03/2021: Editor de cartão de memória adicionado ao aplicativo Android.
+- 17/03/2021: Adicionado suporte para carregamento de imagens PBP **homebrew**. Versões de jogos oriundos da loja oficial (PSN) não são suportadas devido a potenciais questões legais relacionadas à criptografia nesses arquivos.
+- 14/03/2021: Função de multitap e vibração do controle adicionados ao aplicativo Android. Será preciso reconfigurar seus controles do zero.
+- 14/03/2021: RetroAchievements adicionado ao aplicativo Android.
+- 03/03/2021: RetroAchievements disponíveis. Agora você pode se conectar na sua conta do retroacheivements.org via DuckStation e ganhar pontos em jogos que têm esse suporte implementado. Atualmente disponível apenas para Windows/Linux/Mac, o Android será adicionado no futuro.
+- 03/03/2021: Suporte a funçao Multitap para até 8 controles. Escolha quais das portas do controle ligado em configurações > controle.
+- 03/03/2021: Funcionalidade de adição e remoção de botões de controle em tela podendo alterar a opacidade no aplicativo Android.
+- 31/01/2021: "UI em tela cheia" incorporado, também conhecido como "Big Duck/TV Mode". Esta interface é totalmente navegável com um controle. Atualmente, está limitada por meio do exeucutável NoGUI, mas estará disponível diretamente na interface Qt em um futuro próximo, com mais recursos sendo adicionados (por exemplo, grade de jogos) visão de grade na lista dos jogos.
+- 24/01/2021: Pulo de quadros - contorne o atraso de entrada em alguns jogos executando o pulo de quadros. Funciona com escalonamento e renderizadores por hardware, mas ainda é necessário um computador poderoso para pular quadros maiores.
+- 24/01/2021: Função de retroceder - agora você pode "rebobinar" (mas não por muito tempo), ou "pular o retrocesso" enquanto joga.
+- 10/01/2021: Opção para sincronia de taxa de atualização (ativada por padrão). Isso fornecerá a animação mais suave possível sem quadros duplicados, com custo de rodar o jogo 1% mais rápido. Usuários com monitores com taxa de atualização variável terão que manter essas funções desativadas.
+- 10/01/2021: Funcionalidade de conversão de taxa de amostragem de áudio ao avançar rapidamente para velocidades fixas. Em vez de áudio estalando, você agora terá áudio alterado de tom.
+- 03/01/2021: Configurações individuais por jogo e propriedades adicionadas à versão Android.
+- 30/12/2020: Modos downsampling "Box e Adaptivas" adicionadas. O downsampling adaptativo suavizará os fundos 2D, mas tentará preservar a geometria 3D via validação igualitária de pixels (somente suportado em D3D11/Vulkan). Box é um filtro médio simples que reduzirá a resolução nativa.
+- 30/12/2020: Vinculo de teclas de atalho adicionada à versão Android. Agora você pode vincular teclas de atalho, como avanço rápido, salvar estado, etc., a botões do controle. A capacidade de vincular combinações de vários botões (macro) será adicionada no futuro.
+- 29/12/2020: Mapeamento/vinculo do controle adicionada para a versão Android. Por padrão, os mapeamentos serão refeitos e você terá que reconfigurá-los, isso pode ser feito em `Configurações -> Controles -> Mapeamento do Controle`. Perfis também podem ser salvos e carregados.
+- 29/12/2020: Tema escuro adicionado para o Android. Por padrão, ele seguirá o tema do seu sistema (Android 10+), mas pode ser substituído nas configurações.
+- 29/12/2020: Interface DirectInput/DInput adicionada para controles no Windows. Se tiver dificuldades com o SDL, a vibração ainda não é suportada.
+- 25/12/2020: Suporte parcial à substituição de texturas adicionado. Por enquanto, só é aplicável a um pequeno número de jogos que carregam fundos na RAM de vídeo a cada quadro. As opções de dumping(despejo) e substituição estão disponíveis em `Configurações Avançadas`.
+- 22/12/2020: Aprimoramento do buffer de profundidade PGXP adicionado. Este aprimoramento pode eliminar "polígonos" nos jogos, dando um ganho aos jogos de PS1 que nunca teve. A compatibilidade é relativamente baixa no momento, mas para os jogos em que funciona, funciona muito bem.
+- 21/12/2020: DuckStation agora tem duas versões - Development e Preview. Novos recursos aparecerão primeiro no Preview e chegarão na sua versão Development alguns dias depois. Para mudar para o preview, atualize para a última versão de desenvolvimento (versões antigas serão atualizadas para as de desenvolvimento), altere o canal de `latest` para `preview` nas configurações gerais e clique em `Check for Updates`.
+- 16/12/2020: Depurador de CPU integrado adicionado na interface Qt.
+- 13/12/2020: O layout de botões para controles em tela na versão Android já pode ser personalizado.
+- 10/12/2020: Suporte à tradução adicionado para a versão Android. Atualmente disponível em português brasileiro, italiano e holandês.
+- 27/11/2020: Suporte a capas adicionado para a lista de jogos na versão Android. O procedimento é o mesmo da versão para desktop, exceto que você deve colocar as imagens da capa em `<storage>/duckstation/covers` (veja [Adicionando Capas de Jogo](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 27/11/2020: O banco de dados de discos é fornecido com as versões para desktop e Android, cortesia do redump.org. Isso fornecerá títulos para jogos no Android, onde não era possível anteriormente.
+- 27/11/2020: Bancos de dados de compatibilidade adicionados ao núcleo libretro - melhorias não compativeis serão desativadas automaticamente. Você pode desativar isso desabilitando "Aplicar Configurações de Compatibilidade" nas opções do núcleo.
+- 27/11/2020: O banco de dados de controles SDL está incluído nas versões para desktop, cortesia de https://github.com/gabomdq/SDL_GameControllerDB.
+- 21/11/2020: Suporte a OpenGL ES 2.0 adicionado. Ainda não é possível usar o renderizador de hardware com GLES2, pios ainda requer o GLES3, mas GPUs GLES2 agora podem usar o renderizador por software.
+- 21/11/2020: Renderização por software adicionado. Pode resultar em um aumento significativo de velocidade dependendo do jogo.
+- 21/11/2020: Recompilador AArch32/armv7 adicionado. As compilações para Android e Linux serão atualizadas após mais testes, mas por enquanto você pode compilá-lo caso queira utilizar.
+- 18/11/2020: Tamanho da janela (redimensionar janela para resolução do jogo) adicionado às interfaces Qt.
+- 10/11/2020: hack de tela panorâmica agora é renderizado na razão de aspecto da tela em vez de sempre em 16:9.
+- 01/11/2020: Opção de tela cheia exclusiva adicionada.
+- 31/10/2020: Anti-aliasing Multisample adicionado como funcionalidade.
+- 30/10/2020: Opção de usar o analógico como d-pad para controle analógico adicionada.
+- 20/10/2020: Novo gerenciador de trapaças com varredura de memória adicionado. Mais recursos serão adicionados no futuro.
+- 05/10/2020: Melhoria de aumento de velocidade de leitura de CD-ROM.
+- 30/09/2020: Overclocking da CPU agora suportado. Use com cuidado, pois quebrará jogos e aumentará os requisitos do sistema. Pode ser definido globalmente ou por jogo.
+- 25/09/2020: Suporte a trapaças adicionado para o núcleo libretro.
+- 23/09/2020: Capas de jogo adicionadas na interface Qt (veja [Adicionando Capas de Jogo](https://github.com/stenzek/duckstation/wiki/Adding-Game-Covers)).
+- 19/09/2020: Importação/Edição de cartão de memória adicionado na interface Qt.
+- 13/09/2020: Suporte para shaders de pós-processamento.
+- 12/09/2020: Opções adicionais de filtragem de textura.
+- 09/09/2020: Suporte básico a trapaças adicionado. Nem todas as instruções/comandos são suportados ainda.
+- 01/09/2020: Muitas configurações adicionais de usuário disponíveis, incluindo cartões de memória e melhorias gráficas. Agora você pode definir essas opções por jogo.
+- 25/08/2020: Versões para macOS agora estão disponíveis.
+- 22/08/2020: Backend do Controle XInput adicionado.
+- 20/08/2020: Configurações por jogo adicionadas. Principalmente para compatibilidade, mas algumas opções podem ser personalizadas.
+- 19/08/2020: Modo CPU PGXP adicionado. É muito lento e incompatível com o recompilador, use apenas para jogos que precisam.
+- 15/08/2020: Suporte a lista de reprodução/cartão de memória único para jogos multi-disco adicionado na interface Qt.
+- 07/08/2020: Atualizador automático para compilações independentes do Windows.
+- 01/08/2020: Suporte inicial a PGXP (correção de geometria/perspectiva).
+- 28/07/2020: A interface Qt suporta exibição em vários idiomas.
+- 23/07/2020: Suporte a m3u para jogos multi-disco no núcleo libretro.
+- 22/07/2020: Suporte a múltiplas atribuições para cada botão/eixo do controlador.
+- 18/07/2020: Melhoria de hack de tela panorâmica adicionada.
+- 04/07/2020: Renderizador Vulkan agora disponível no núcleo libretro.
+- 02/07/2020: Duckstation disponível como um núcleo libretro.
+- 01/07/2020: Suporte a pistola com retículas personalizadas.
+- 19/06/2020: Renderizador de hardware Vulkan adicionado.
