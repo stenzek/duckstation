@@ -4,6 +4,7 @@
 #pragma once
 #include "types.h"
 #include <cinttypes>
+#include <cstdarg>
 #include <mutex>
 
 enum LOGLEVEL

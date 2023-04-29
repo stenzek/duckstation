@@ -10,6 +10,7 @@ namespace CPU {
 // exceptions
 void RaiseException(Exception excode);
 void RaiseException(u32 CAUSE_bits, u32 EPC);
+void RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits);
 
 ALWAYS_INLINE bool HasPendingInterrupt()
 {

@@ -202,14 +202,14 @@ Requisitos:
 ### Linux
 Requisitos (Debian/Ubuntu):
  - CMake (`cmake`)
- - SDL2 (`libsdl2-dev`, `libxrandr-dev`)
+ - SDL2 (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 5 (`qtbase5-dev`, `qtbase5-private-dev`, `qtbase5-dev-tools`, `qttools5-dev`)
+ - Qt 6 (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Nota: necessário para clonar o repositório e em tempo de construção)
- - Quando o wayland está ativado (padrão): `libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules`
+ - Quando o wayland está ativado (padrão): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - Opcional para RetroAchievements (ativado por padrão): libcurl (`libcurl4-gnutls-dev`)
- - Opcional para saída do framebuffer: DRM/GBM (`libgbm-dev`, `libdrm-dev`)
+ - Opcional para saída do framebuffer: DRM/GBM (`libgbm-dev` `libdrm-dev`)
  - Opcional para construção rápida: Ninja (`ninja-build`)
 
 1. Clone o repositório. Submódulos não são necessários, há apenas um e é usado apenas para Windows     (`git clone https://github.com/stenzek/duckstation.git -b dev`).
