@@ -931,8 +931,17 @@ void CodeGenerator::GenerateExceptionExit(const CodeBlockInstruction& cbi, Excep
     m_register_cache.FlushAllGuestRegisters(true, true);
     m_register_cache.FlushLoadDelay(true);
 
-    EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), CAUSE_bits,
-                     GetCurrentInstructionPC());
+    if (excode == Exception::BP)
+    {
+      EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32, u32)>(&CPU::RaiseBreakException), CAUSE_bits,
+                       GetCurrentInstructionPC(), Value::FromConstantU32(cbi.instruction.bits));
+    }
+    else
+    {
+      EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), CAUSE_bits,
+                       GetCurrentInstructionPC());
+    }
+
     return;
   }
 

@@ -34,6 +34,7 @@
 #include "memory_card.h"
 #include "multitap.h"
 #include "pad.h"
+#include "pcdrv.h"
 #include "pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
@@ -1424,6 +1425,7 @@ bool System::Initialize(bool force_software_renderer)
   SPU::Initialize();
   MDEC::Initialize();
   SIO::Initialize();
+  PCDrv::Initialize();
 
   static constexpr float WARNING_DURATION = 15.0f;
 
@@ -1479,6 +1481,7 @@ void System::DestroySystem()
 
   g_texture_replacements.Shutdown();
 
+  PCDrv::Shutdown();
   SIO::Shutdown();
   MDEC::Shutdown();
   SPU::Shutdown();
@@ -1832,6 +1835,7 @@ void System::InternalReset()
   SPU::Reset();
   MDEC::Reset();
   SIO::Reset();
+  PCDrv::Reset();
   s_frame_number = 1;
   s_internal_frame_number = 0;
   TimingEvents::Reset();
