@@ -13,6 +13,9 @@
 #include "system.h"
 #include <bitset>
 #include <deque>
+#include <xxhash.h>
+#include "host.h"
+
 Log_SetChannel(Netplay);
 
 #ifdef _WIN32
@@ -56,6 +59,9 @@ static void NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags);
 static void InitializeFramePacing();
 static void HandleTimeSyncEvent(float frame_delta, int update_interval);
 static void Throttle();
+
+// Desync Detection
+static void GenerateChecksumForFrame(int* checksum, int frame, unsigned char* buffer, int buffer_size);
 
 //////////////////////////////////////////////////////////////////////////
 // Variables
@@ -107,8 +113,8 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
     ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, MAX_ROLLBACK_FRAMES);
   // result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
 
-  ggpo_set_disconnect_timeout(s_ggpo, 3000);
-  ggpo_set_disconnect_notify_start(s_ggpo, 1000);
+  ggpo_set_disconnect_timeout(s_ggpo, 10000);
+  ggpo_set_disconnect_notify_start(s_ggpo, 2000);
 
   for (int i = 1; i <= 2; i++)
   {
@@ -206,7 +212,7 @@ void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
-  float total_time = (frame_delta / 8) * s_frame_period;
+  float total_time = (frame_delta * s_frame_period) / 4;
   float mun_timesync_frames = update_interval * 0.75f;
   float added_time_per_frame = -(total_time / mun_timesync_frames);
   float iterations_per_frame = 1.0f / s_frame_period;
@@ -264,6 +270,15 @@ void Netplay::Throttle()
   }
 }
 
+void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* buffer, int buffer_size)
+{
+  u32 sliding_window_size = 4096;
+  u32 num_pages = buffer_size / sliding_window_size;
+  u32 start_position = (frame % num_pages) * sliding_window_size;
+  *checksum = XXH32(buffer + start_position, sliding_window_size, frame);
+  Log_VerbosePrintf("check: f:%d c:%u", frame, *checksum);
+}
+
 void Netplay::AdvanceFrame(u16 checksum)
 {
   ggpo_advance_frame(s_ggpo, checksum);
@@ -314,7 +329,7 @@ Netplay::Input Netplay::ReadLocalInput()
   Netplay::Input inp{0};
   for (u32 i = 0; i < (u32)DigitalController::Button::Count; i++)
   {
-    if (s_net_input[0][i] >= 0.25f)
+    if (s_net_input[0][i] >= 0.4f)
       inp.button_data |= 1 << i;
   }
   return inp;
@@ -425,6 +440,7 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
   while (System::GetInternalFrameNumber() < 2)
     System::RunFrame();
   SPU::SetAudioOutputMuted(false);
+  // Set Initial Frame Pacing
   InitializeFramePacing();
   return true;
 }
@@ -457,8 +473,13 @@ bool Netplay::NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* ch
     return false;
   }
 
+  Netplay::GenerateChecksumForFrame(checksum, frame,
+                                    reinterpret_cast<unsigned char*>(our_buffer.get()->state_stream.get()->GetMemoryPointer()),
+                                    our_buffer.get()->state_stream.get()->GetMemorySize());
+
   *len = sizeof(System::MemorySaveState);
   *buffer = reinterpret_cast<unsigned char*>(our_buffer.release());
+
   return true;
 }
 
@@ -521,6 +542,7 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
       sprintf(buff, "Netplay Desync Detected!: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
               ev->u.desync.ourCheckSum, ev->u.desync.remoteChecksum);
       msg = buff;
+      Host::AddKeyedOSDMessage("Netplay", msg);
       break;
     default:
       sprintf(buff, "Netplay Event Code: %d", ev->code);
