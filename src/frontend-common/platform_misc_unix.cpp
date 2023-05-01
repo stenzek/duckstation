@@ -8,11 +8,13 @@
 #include <cinttypes>
 Log_SetChannel(FrontendCommon);
 
+#include <spawn.h>
+#include <unistd.h>
+
 #ifdef USE_X11
 #include <cstdio>
-#include <spawn.h>
 #include <sys/wait.h>
-#include <unistd.h>
+
 
 static bool SetScreensaverInhibitX11(bool inhibit, const WindowInfo& wi)
 {
