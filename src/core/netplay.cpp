@@ -184,6 +184,10 @@ void Netplay::SetSettings()
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
 
+  // for some games CDROM async readahead seems to cause desyncs (most notable during testing were the tekken games)
+  // so for now disabling it seems like the only option 
+  si.SetIntValue("CDROM", "ReadaheadSectors", 0);
+
   Host::Internal::SetNetplaySettingsLayer(&si);
 }
 
@@ -538,11 +542,12 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
       HandleTimeSyncEvent(ev->u.timesync.frames_ahead, ev->u.timesync.timeSyncPeriodInFrames);
       break;
     case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
-      sprintf(buff, "Netplay Desync Detected!: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
+      sprintf(buff, "Possible Desync Detected: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
               ev->u.desync.ourCheckSum, ev->u.desync.remoteChecksum);
       msg = buff;
-      Host::AddKeyedOSDMessage("Netplay", msg);
-      break;
+      Log_InfoPrintf("%s", msg.c_str());
+      Host::AddKeyedOSDMessage("Netplay", msg, 5);
+      return true;
     default:
       sprintf(buff, "Netplay Event Code: %d", ev->code);
       msg = buff;
