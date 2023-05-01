@@ -61,7 +61,8 @@ public:
     bool GetEvent(Event& e);
     int  MaxPredictionFrames() const { return _max_prediction_frames; }
 protected:
-    friend SyncTestBackend;
+    friend class SyncTestBackend;
+    friend class Peer2PeerBackend;
 
     struct SavedFrame {
         byte* buf;

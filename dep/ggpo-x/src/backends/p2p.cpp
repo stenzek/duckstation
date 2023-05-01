@@ -428,21 +428,23 @@ GGPOErrorCode Peer2PeerBackend::SetManualNetworkPolling(bool value)
 
 GGPOErrorCode
 Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
-{  
+{
     auto currentFrame = _sync.GetFrameCount();
+    _sync.IncrementFrame();
+    checksum1 = _sync.GetLastSavedFrame().checksum;
     char buf[256];
     uint16_t cSum = checksum1;
-    Log("End of frame (%d)...\n", _sync.GetFrameCount());
+    Log("End of frame (%d)...\n", currentFrame);
     static int maxDif = 0;
-    if (_pendingCheckSums.count(_sync.GetFrameCount()))
+    if (_pendingCheckSums.count(currentFrame))
     {
         auto max = _pendingCheckSums.rbegin()->first;
         auto diff = max - currentFrame;
         maxDif = max(maxDif, diff);
-        int oldChecksum = _pendingCheckSums[_sync.GetFrameCount()];
-        _pendingCheckSums[_sync.GetFrameCount()] = cSum;
-        sprintf_s<256>(buf, "Replace local checksum for frame %d: %d with %d, newest frame is %d, max diff %d\n", _sync.GetFrameCount(), oldChecksum, _pendingCheckSums[_sync.GetFrameCount()], max, maxDif);
-
+        int oldChecksum = _pendingCheckSums[currentFrame];
+        _pendingCheckSums[currentFrame] = cSum;
+        sprintf_s<256>(buf, "Replace local checksum for frame %d: %d with %d, newest frame is %d, max diff %d\n",
+                       currentFrame, oldChecksum, _pendingCheckSums[currentFrame], max, maxDif);
        
         if (currentFrame <= _confirmedCheckSumFrame)
         {
@@ -461,16 +463,13 @@ Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
     }
     else
     {
-       sprintf_s<256>(buf, "Added local checksum for frame %d: %d\n", _sync.GetFrameCount(), cSum);
+        sprintf_s<256>(buf, "Added local checksum for frame %d: %d\n", currentFrame, cSum);
        //OutputDebugStringA(buf);
     }
 
-    _pendingCheckSums[_sync.GetFrameCount()]= cSum ;
+    _pendingCheckSums[currentFrame] = cSum;
   
-   
-   
-    _sync.IncrementFrame();
-     DoPoll();
+    DoPoll();
     PollSyncEvents();
 
     return GGPO_OK;
