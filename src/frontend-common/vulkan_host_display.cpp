@@ -677,8 +677,8 @@ bool VulkanHostDisplay::Render(bool skip_present)
   return true;
 }
 
-bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                         GPUTexture::Format* out_format)
+bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect,
+                                         std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
 {
   // in theory we could do this without a swap chain, but postprocessing assumes it for now...
   if (!m_swap_chain)
@@ -746,20 +746,19 @@ bool VulkanHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>
                                             "VulkanHostDisplay::RenderScreenshot: %ux%u", width, height);
   tex.TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
-
   if (!m_post_processing_chain.IsEmpty())
   {
-    ApplyPostProcessingChain(fb, left, top, draw_width, draw_height, static_cast<Vulkan::Texture*>(m_display_texture),
-                             m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                             m_display_texture_view_height, width, height);
+    ApplyPostProcessingChain(fb, draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
+                             static_cast<Vulkan::Texture*>(m_display_texture), m_display_texture_view_x,
+                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
+                             width, height);
   }
   else
   {
     BeginSwapChainRenderPass(fb, width, height);
-    RenderDisplay(left, top, draw_width, draw_height, static_cast<Vulkan::Texture*>(m_display_texture),
-                  m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                  m_display_texture_view_height, IsUsingLinearFiltering());
+    RenderDisplay(draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
+                  static_cast<Vulkan::Texture*>(m_display_texture), m_display_texture_view_x, m_display_texture_view_y,
+                  m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
   }
 
   vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
