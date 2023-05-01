@@ -60,6 +60,11 @@ Log_SetChannel(EmuThread);
 #include "frontend-common/achievements.h"
 #endif
 
+// Just for defaulting to X11, this and related code should be removed when QT fixes their Wayland implementation.
+#ifdef USE_X11
+#include <stdlib.h>
+#endif
+
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
@@ -2125,6 +2130,22 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 int main(int argc, char* argv[])
 {
   CrashHandler::Install();
+
+// Default to X11, this macro block should be removed when QT fixes their Wayland implementation.
+#ifdef USE_X11
+  {
+    // Guard for if the user uses "var_name=" for unsetting vars instead of "unset"
+    bool WaylandDisplayEnv = (getenv("WAYLAND_DISPLAY")) ? *getenv("WAYLAND_DISPLAY") : false;
+    bool X11DisplayEnv = (getenv("DISPLAY")) ? *getenv("DISPLAY") : false;
+    bool UserQtOverrideEnv = (getenv("QT_QPA_PLATFORM")) ? *getenv("QT_QPA_PLATFORM") : false;
+
+    if (WaylandDisplayEnv && X11DisplayEnv && !UserQtOverrideEnv)
+    {
+      Log_InfoPrintf("Defaulting to X11\nUse QT_QPA_PLATFORM=wayland to run on Wayland anyway");
+      putenv((char*)"QT_QPA_PLATFORM=xcb");
+    }
+  }
+#endif
 
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   QtHost::RegisterTypes();

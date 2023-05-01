@@ -252,3 +252,7 @@ if(APPLE)
   endif()
 endif()
 
+# Just for defaulting to X11, this and related code should be removed when QT fixes their Wayland implementation.
+if (USE_X11)
+  target_compile_definitions(duckstation-qt PRIVATE USE_X11)
+endif()
