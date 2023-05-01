@@ -457,12 +457,12 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="205"/>
         <source>Select folder for %1</source>
-        <translation type="unfinished">%1 フォルダを選択してください</translation>
+        <translation>%1 フォルダを選択してください</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="275"/>
         <source>Show Frame Times</source>
-        <translation type="unfinished"></translation>
+        <translation>フレーム時間を表示</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="280"/>
@@ -512,7 +512,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="309"/>
         <source>Use Old MDEC Routines</source>
-        <translation type="unfinished"></translation>
+        <translation>昔の MDEC ルーチンを使用する</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="311"/>
@@ -567,7 +567,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="337"/>
         <source>Stretch Display Vertically</source>
-        <translation type="unfinished"></translation>
+        <translation>画面を垂直方向に引き延ばす</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="343"/>
@@ -582,17 +582,17 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="349"/>
         <source>Enable PCDrv</source>
-        <translation type="unfinished"></translation>
+        <translation>PCDrv を有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="350"/>
         <source>Enable PCDrv Writes</source>
-        <translation type="unfinished"></translation>
+        <translation>PCDrv の書き込みを有効にする</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="351"/>
         <source>PCDrv Root Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>PCDrv のルートディレクトリ</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="253"/>
@@ -697,14 +697,6 @@ Leaderboard Position: {} of {}</source>
 <context>
     <name>AnalogController</name>
     <message>
-        <source>Controller %u is locked to analog mode by the game.</source>
-        <translation type="vanished">コントローラー %u は、ゲームによってアナログモードにロックされています。</translation>
-    </message>
-    <message>
-        <source>Controller %u is locked to digital mode by the game.</source>
-        <translation type="vanished">コントローラー %u は、ゲームによってデジタルモードにロックされています。</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="112"/>
         <location filename="../../core/analog_controller.cpp" line="299"/>
         <source>Controller {} switched to analog mode.</source>
@@ -719,12 +711,12 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="315"/>
         <source>Controller {} is locked to analog mode by the game.</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー {} は、ゲームによってアナログモードにロックされています。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="316"/>
         <source>Controller {} is locked to digital mode by the game.</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー {} は、ゲームによってデジタルモードにロックされています。</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="831"/>
@@ -1899,7 +1891,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../colorpickerbutton.cpp" line="41"/>
         <source>Select LED Color</source>
-        <translation type="unfinished"></translation>
+        <translation>LED の色を選択</translation>
     </message>
 </context>
 <context>
@@ -3110,7 +3102,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="165"/>
         <source>Controller LED Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラーの LED 設定</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="188"/>
@@ -3143,27 +3135,27 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="14"/>
         <source>Controller LED Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>コントローラー LED 設定</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="20"/>
         <source>SDL-0 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL-0 LED</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="32"/>
         <source>SDL-1 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL-1 LED</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="44"/>
         <source>SDL-2 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL-2 LED</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="56"/>
         <source>SDL-3 LED</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL-3 LED</translation>
     </message>
 </context>
 <context>
@@ -3926,12 +3918,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="266"/>
         <source>View in &amp;Dump</source>
-        <translation type="unfinished"></translation>
+        <translation>ダンプに表示(&amp;D)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="269"/>
         <source>Follow Load/Store</source>
-        <translation type="unfinished"></translation>
+        <translation>ロード/ストア先のメモリーを表示</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="321"/>
@@ -6870,7 +6862,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.ui" line="614"/>
         <location filename="../mainwindow.ui" line="626"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>設定(&amp;S)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="746"/>
@@ -6890,7 +6882,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="893"/>
         <source>Enable GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB サーバーを有効化</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="929"/>
@@ -7041,10 +7033,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.ui" line="605"/>
         <source>Add Game Directory...</source>
         <translation>ゲームディレクトリを追加...</translation>
-    </message>
-    <message>
-        <source>&amp;Settings...</source>
-        <translation type="vanished">設定(&amp;S)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="634"/>
@@ -7505,7 +7493,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1448"/>
         <source>Reset Play Time</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイ時間をリセット</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1452"/>
@@ -7551,14 +7539,16 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1498"/>
         <source>Confirm Reset</source>
-        <translation type="unfinished">リセットの確認</translation>
+        <translation>リセットの確認</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1499"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; のプレイ時間をリセットしてもよろしいですか？
+
+この操作は元に戻せません。</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1646"/>
@@ -8436,7 +8426,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="272"/>
         <source>Using software renderer for readbacks based on game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームごとの設定に基づき、リードバック用にソフトウェアレンダラーを使用します。</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="284"/>
@@ -8592,7 +8582,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/system.cpp" line="1678"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
-        <translation type="unfinished"></translation>
+        <translation>このステートセーブは異なるバージョンの BIOS またはパッチオプションで保存されています。このため動作が不安定になる可能性があります。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1751"/>
@@ -8696,10 +8686,6 @@ Please configure a supported controller from the list above.</source>
         <translation>排他的フルスクリーンを失いました。</translation>
     </message>
     <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="vanished">OpenGL レンダラーが利用できません。ドライバーまたはハードウェアが対応していません。OpenGL 3.1 または OpenGL ES 3.0 が必要です。</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="60"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
         <translation>ゲームごとの設定に基づき、アナログモードの強制を無効化します。コントローラーはデジタルモードで動作します。</translation>
@@ -8721,7 +8707,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="1323"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="unfinished">OpenGL レンダラーが利用できません。ドライバーまたはハードウェアが対応していません。OpenGL 3.1 または OpenGL ES 3.0 が必要です。 {3.1 ?} {3.1 ?}</translation>
+        <translation>OpenGL レンダラーが利用できません。ドライバーまたはハードウェアが対応していません。OpenGL 3.1 または OpenGL ES 3.1 が必要です。</translation>
     </message>
 </context>
 <context>
@@ -9240,7 +9226,7 @@ URL は次のとおりです: %1</translation>
     <message>
         <location filename="../../core/system.cpp" line="1801"/>
         <source>Incorrect BIOS image size</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS イメージのサイズが正しくありません</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1901"/>
