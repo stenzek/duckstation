@@ -53,6 +53,7 @@ if((LINUX OR FREEBSD) AND NOT ANDROID)
   option(USE_DRMKMS "Support DRM/KMS OpenGL contexts" OFF)
   option(USE_FBDEV "Support FBDev OpenGL contexts" OFF)
   option(USE_EVDEV "Support EVDev controller interface" OFF)
+  option(USE_DBUS "Enable DBus support for screensaver inhibiting" ON)
 endif()
 
 # Force EGL when using Wayland
