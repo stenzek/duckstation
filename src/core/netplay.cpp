@@ -15,7 +15,6 @@
 #include <bitset>
 #include <deque>
 #include <xxhash.h>
-
 Log_SetChannel(Netplay);
 
 #ifdef _WIN32
@@ -48,7 +47,7 @@ static void SetSettings();
 // l = local, r = remote
 static s32 Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ldelay, u32 pred);
 
-static void AdvanceFrame(u16 checksum = 0);
+static void AdvanceFrame();
 static void RunFrame();
 
 static s32 CurrentFrame();
@@ -278,9 +277,9 @@ void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* 
   Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
 }
 
-void Netplay::AdvanceFrame(u16 checksum)
+void Netplay::AdvanceFrame()
 {
-  ggpo_advance_frame(s_ggpo, checksum);
+  ggpo_advance_frame(s_ggpo, 0);
 }
 
 void Netplay::RunFrame()
