@@ -112,7 +112,7 @@ s32 Netplay::Start(s32 lhandle, u16 lport, std::string& raddr, u16 rport, s32 ld
     ggpo_start_session(&s_ggpo, &cb, "Duckstation-Netplay", 2, sizeof(Netplay::Input), lport, MAX_ROLLBACK_FRAMES);
   // result = ggpo_start_synctest(&s_ggpo, &cb, (char*)"asdf", 2, sizeof(Netplay::Input), 1);
 
-  ggpo_set_disconnect_timeout(s_ggpo, 3000);
+  ggpo_set_disconnect_timeout(s_ggpo, 2000);
   ggpo_set_disconnect_notify_start(s_ggpo, 1000);
 
   for (int i = 1; i <= 2; i++)
@@ -184,10 +184,6 @@ void Netplay::SetSettings()
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
 
-  // for some games CDROM async readahead seems to cause desyncs (most notable during testing were the tekken games)
-  // so for now disabling it seems like the only option 
-  si.SetIntValue("CDROM", "ReadaheadSectors", 0);
-
   Host::Internal::SetNetplaySettingsLayer(&si);
 }
 
@@ -215,7 +211,7 @@ void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
-  float total_time = (frame_delta * s_frame_period) / 8;
+  float total_time = (frame_delta * s_frame_period) / 4;
   float mun_timesync_frames = update_interval * 0.75f;
   float added_time_per_frame = -(total_time / mun_timesync_frames);
   float iterations_per_frame = 1.0f / s_frame_period;
@@ -279,7 +275,7 @@ void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* 
   const u32 num_group_of_pages = buffer_size / sliding_window_size;
   const u32 start_position = (frame % num_group_of_pages) * sliding_window_size;
   *checksum = XXH32(buffer + start_position, sliding_window_size, frame);
-  // Log_InfoPrintf("check: f:%d c:%u", frame, *checksum);
+  Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
 }
 
 void Netplay::AdvanceFrame(u16 checksum)
@@ -332,7 +328,7 @@ Netplay::Input Netplay::ReadLocalInput()
   Netplay::Input inp{0};
   for (u32 i = 0; i < (u32)DigitalController::Button::Count; i++)
   {
-    if (s_net_input[0][i] >= 0.4f)
+    if (s_net_input[0][i] >= 0.25f)
       inp.button_data |= 1 << i;
   }
   return inp;
@@ -432,7 +428,7 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
     System::ShutdownSystem(false);
   // fast boot the selected game and wait for the other player
   auto param = SystemBootParameters(s_game_path);
-  param.override_fast_boot = true;
+  // param.save_state = EmuFolders::SaveStates + "/SLUS-00402_2.sav";
   if (!System::BootSystem(param))
   {
     StopNetplaySession();

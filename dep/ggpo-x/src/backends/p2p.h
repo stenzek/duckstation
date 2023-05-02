@@ -82,11 +82,11 @@ protected:
        int         nFrame;
        int         checkSum;;
    };
-   std::map<int, uint16> _pendingCheckSums;
-   std::map<int, uint16> _confirmedCheckSums;
+   std::map<int, uint32> _pendingCheckSums;
+   std::map<int, uint32> _confirmedCheckSums;
    
  //  uint16 GetChecksumForConfirmedFrame(int frameNumber) const;
-   void CheckRemoteChecksum(int framenumber, uint16 cs);
+   void CheckRemoteChecksum(int framenumber, uint32 cs);
    int HowFarBackForChecksums()const;
    int _confirmedCheckSumFrame = -500;
    void CheckDesync();

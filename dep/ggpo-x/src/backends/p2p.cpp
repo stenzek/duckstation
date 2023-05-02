@@ -431,9 +431,8 @@ Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
 {
     auto currentFrame = _sync.GetFrameCount();
     _sync.IncrementFrame();
-    checksum1 = _sync.GetLastSavedFrame().checksum;
+    uint32 cSum = _sync.GetLastSavedFrame().checksum;
     char buf[256];
-    uint16_t cSum = checksum1;
     Log("End of frame (%d)...\n", currentFrame);
     static int maxDif = 0;
     if (_pendingCheckSums.count(currentFrame))
@@ -510,7 +509,7 @@ Peer2PeerBackend::PollUdpProtocolEvents(void)
 //}
 }
 
-void Peer2PeerBackend::CheckRemoteChecksum(int framenumber, uint16 cs)
+void Peer2PeerBackend::CheckRemoteChecksum(int framenumber, uint32 cs)
 {
     if (framenumber <= _sync.MaxPredictionFrames())
         return;
@@ -521,7 +520,7 @@ void Peer2PeerBackend::CheckRemoteChecksum(int framenumber, uint16 cs)
 
 int Peer2PeerBackend::HowFarBackForChecksums()const
 {
-    return 16;
+    return 32;
 }/*
 uint16 Peer2PeerBackend::GetChecksumForConfirmedFrame(int frameNumber) const
 {

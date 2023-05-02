@@ -67,7 +67,7 @@ struct UdpMsg
          int               ack_frame:31;
 
          uint16            num_bits;
-         uint16            checksum16;
+         uint32            checksum32;
          uint8             input_size; // XXX: shouldn't be in every single packet!
          uint8             bits[MAX_COMPRESSED_BITS]; /* must be last */
       } input;

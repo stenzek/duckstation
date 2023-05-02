@@ -24,7 +24,7 @@ struct GameInput {
    int      frame;
    int      size; /* size in bytes of the entire input for all players */
    char     bits[GAMEINPUT_MAX_BYTES * GAMEINPUT_MAX_PLAYERS];
-   uint16 checksum;
+   uint32 checksum;
    bool is_null() { return frame == NullFrame; }
    void init(int frame, char *bits, int size, int offset);
    void init(int frame, char *bits, int size);

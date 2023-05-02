@@ -134,7 +134,7 @@ UdpProtocol::SendPendingOutput()
       ASSERT(last.frame == -1 || last.frame + 1 == msg->u.input.start_frame);
       for (j = 0; j < _pending_output.size(); j++) {        
          GameInput &current = _pending_output.item(j);
-         msg->u.input.checksum16 = current.checksum;
+         msg->u.input.checksum32 = current.checksum;
          if (memcmp(current.bits, last.bits, current.size) != 0) {
             ASSERT((GAMEINPUT_MAX_BYTES * GAMEINPUT_MAX_PLAYERS * 8) < (1 << BITVECTOR_NIBBLE_SIZE));
             for (i = 0; i < current.size * 8; i++) {
@@ -627,7 +627,7 @@ UdpProtocol::OnInput(UdpMsg *msg, int len)
             char desc[1024];
             ASSERT(currentFrame == _last_received_input.frame + 1);
             _last_received_input.frame = currentFrame;
-            _last_received_input.checksum = msg->u.input.checksum16;
+            _last_received_input.checksum = msg->u.input.checksum32;
             /*
              * Send the event to the emualtor
              */

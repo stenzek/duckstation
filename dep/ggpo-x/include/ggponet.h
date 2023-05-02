@@ -196,8 +196,8 @@ typedef struct {
       } chat;
       struct {
           int nFrameOfDesync;
-          uint16_t ourCheckSum;
-          uint16_t remoteChecksum;
+          uint32_t ourCheckSum;
+          uint32_t remoteChecksum;
       } desync;
    } u;
 } GGPOEvent;
