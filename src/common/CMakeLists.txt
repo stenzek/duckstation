@@ -125,6 +125,8 @@ endif()
 
 if(USE_WAYLAND)
   target_compile_definitions(common PRIVATE "-DUSE_WAYLAND=1")
+elseif(SUPPORTS_WAYLAND)
+  message(WARNING "Wayland support for renderers is disabled.\nDuckStation will FAIL to start on Wayland.")
 endif()
 
 if(USE_DRMKMS)
