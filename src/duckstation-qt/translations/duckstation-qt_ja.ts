@@ -3294,7 +3294,7 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingsdialog.cpp" line="100"/>
         <location filename="../controllersettingsdialog.cpp" line="133"/>
         <location filename="../controllersettingsdialog.cpp" line="177"/>
-        <location filename="../controllersettingsdialog.cpp" line="474"/>
+        <location filename="../controllersettingsdialog.cpp" line="476"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
@@ -3369,33 +3369,33 @@ You cannot undo this action.</source>
         <translation>グローバル設定</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="399"/>
-        <location filename="../controllersettingsdialog.cpp" line="439"/>
+        <location filename="../controllersettingsdialog.cpp" line="400"/>
+        <location filename="../controllersettingsdialog.cpp" line="441"/>
         <source>Controller Port %1%2
 %3</source>
         <translation>コントローラーポート %1%2
 %3</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="400"/>
-        <location filename="../controllersettingsdialog.cpp" line="440"/>
+        <location filename="../controllersettingsdialog.cpp" line="401"/>
+        <location filename="../controllersettingsdialog.cpp" line="442"/>
         <source>Controller Port %1
 %2</source>
         <translation>コントローラーポート %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="410"/>
+        <location filename="../controllersettingsdialog.cpp" line="411"/>
         <source>Hotkeys</source>
         <translation>ホットキー</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="452"/>
+        <location filename="../controllersettingsdialog.cpp" line="454"/>
         <source>Shared</source>
         <translation>共有</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="474"/>
+        <location filename="../controllersettingsdialog.cpp" line="476"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation>&apos;%1&apos; という名前の入力プロファイルが見つかりません。</translation>
     </message>
@@ -3446,6 +3446,11 @@ You cannot undo this action.</source>
         <location filename="../../core/settings.cpp" line="1179"/>
         <source>GunCon</source>
         <translation>ガンコン</translation>
+    </message>
+    <message>
+        <location filename="../../core/controller.cpp" line="16"/>
+        <source>Not Connected</source>
+        <translation>未接続</translation>
     </message>
 </context>
 <context>
