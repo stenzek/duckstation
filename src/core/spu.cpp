@@ -5,8 +5,8 @@
 #include "cdrom.h"
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
-#include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "dma.h"
 #include "host.h"
 #include "imgui.h"
@@ -1493,7 +1493,7 @@ bool SPU::StartDumpingAudio(const char* filename)
     else
       new_suffix.Format("voice%u.wav", i);
 
-    std::string voice_filename(FileSystem::ReplaceExtension(filename, new_suffix));
+    const std::string voice_filename = Path::ReplaceExtension(filename, new_suffix);
     if (!s_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))
     {
       Log_ErrorPrintf("Failed to open voice dump filename '%s'", voice_filename.c_str());

@@ -175,6 +175,52 @@ static void addMSAATweakOption(SettingsDialog* dialog, QTableWidget* table, cons
   table->setCellWidget(row, 1, msaa);
 }
 
+static void addDirectoryOption(SettingsDialog* dialog, QTableWidget* table, const QString& name, std::string section,
+                               std::string key)
+{
+  const int row = table->rowCount();
+
+  table->insertRow(row);
+
+  QTableWidgetItem* name_item = new QTableWidgetItem(name);
+  name_item->setFlags(name_item->flags() & ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+  table->setItem(row, 0, name_item);
+
+  QWidget* container = new QWidget(table);
+
+  QHBoxLayout* layout = new QHBoxLayout(container);
+  layout->setContentsMargins(0, 0, 0, 0);
+
+  QLineEdit* value = new QLineEdit(container);
+  value->setObjectName(QStringLiteral("value"));
+  SettingWidgetBinder::BindWidgetToStringSetting(dialog->getSettingsInterface(), value, std::move(section),
+                                                 std::move(key));
+  layout->addWidget(value, 1);
+
+  QPushButton* browse = new QPushButton(container);
+  browse->setText(QStringLiteral("..."));
+  browse->setMaximumWidth(32);
+  QObject::connect(browse, &QPushButton::clicked, browse, [browse, value, name]() {
+    const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
+      QtUtils::GetRootWidget(browse), qApp->translate("AdvancedSettingsWidget", "Select folder for %1").arg(name),
+      value->text())));
+    if (!path.isEmpty())
+      value->setText(path);
+  });
+  layout->addWidget(browse, 0);
+
+  table->setCellWidget(row, 1, container);
+}
+
+static void setDirectoryOption(QTableWidget* table, int row, const char* value)
+{
+  QWidget* widget = table->cellWidget(row, 1);
+  Assert(widget);
+  QLineEdit* valuew = widget->findChild<QLineEdit*>(QStringLiteral("value"));
+  Assert(valuew);
+  valuew->setText(QString::fromUtf8(value));
+}
+
 AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
@@ -299,6 +345,10 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Create Save State Backups"), "General",
                         "CreateSaveStateBackups", false);
+
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), "PCDrv", "Enabled", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv Writes"), "PCDrv", "EnableWrites", false);
+  addDirectoryOption(m_dialog, m_ui.tweakOptionTable, tr("PCDrv Root Directory"), "PCDrv", "Root");
 }
 
 void AdvancedSettingsWidget::onResetToDefaultClicked()
@@ -338,9 +388,13 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Use debug host GPU device
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase timer resolution
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Stretch Display Vertically
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase Timer Resolution
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Allow booting without SBI file
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Create save state backups
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                            // PCDrv Root Directory
 
     return;
   }
@@ -378,9 +432,13 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Hacks", "GPUFIFOSize");
   sif->DeleteValue("Hacks", "GPUMaxRunAhead");
   sif->DeleteValue("GPU", "UseDebugDevice");
+  sif->DeleteValue("Display", "StretchVertically");
   sif->DeleteValue("Main", "IncreaseTimerResolution");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("General", "CreateSaveStateBackups");
+  sif->DeleteValue("PCDrv", "Enabled");
+  sif->DeleteValue("PCDrv", "EnableWrites");
+  sif->DeleteValue("PCDrv", "Root");
   sif->Save();
   while (m_ui.tweakOptionTable->rowCount() > 0)
     m_ui.tweakOptionTable->removeRow(m_ui.tweakOptionTable->rowCount() - 1);

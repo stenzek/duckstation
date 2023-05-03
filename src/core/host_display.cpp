@@ -232,18 +232,20 @@ void HostDisplay::CalculateDrawRect(s32 window_width, s32 window_height, float* 
     apply_aspect_ratio ?
       (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
       1.0f;
-  const float display_width = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_width) : static_cast<float>(m_display_width) * x_scale;
-  const float display_height = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_height) / x_scale : static_cast<float>(m_display_height);
-  const float active_left = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_active_left) : static_cast<float>(m_display_active_left) * x_scale;
-  const float active_top = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_active_top) / x_scale : static_cast<float>(m_display_active_top);
+  const float display_width = g_settings.display_stretch_vertically ? static_cast<float>(m_display_width) :
+                                                                      static_cast<float>(m_display_width) * x_scale;
+  const float display_height = g_settings.display_stretch_vertically ? static_cast<float>(m_display_height) / x_scale :
+                                                                       static_cast<float>(m_display_height);
+  const float active_left = g_settings.display_stretch_vertically ? static_cast<float>(m_display_active_left) :
+                                                                    static_cast<float>(m_display_active_left) * x_scale;
+  const float active_top = g_settings.display_stretch_vertically ? static_cast<float>(m_display_active_top) / x_scale :
+                                                                   static_cast<float>(m_display_active_top);
   const float active_width = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_active_width) : static_cast<float>(m_display_active_width) * x_scale;
+                               static_cast<float>(m_display_active_width) :
+                               static_cast<float>(m_display_active_width) * x_scale;
   const float active_height = g_settings.display_stretch_vertically ?
-    static_cast<float>(m_display_active_height) / x_scale : static_cast<float>(m_display_active_height);
+                                static_cast<float>(m_display_active_height) / x_scale :
+                                static_cast<float>(m_display_active_height);
   if (out_x_scale)
     *out_x_scale = x_scale;
 
@@ -500,11 +502,13 @@ bool HostDisplay::WriteDisplayTextureToFile(std::string filename, bool full_reso
     const float ss_height_scale = static_cast<float>(m_display_active_height) / static_cast<float>(m_display_height);
     const float ss_aspect_ratio = m_display_aspect_ratio * ss_width_scale / ss_height_scale;
     resize_width = g_settings.display_stretch_vertically ?
-      m_display_texture_view_width : static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
+                     m_display_texture_view_width :
+                     static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
     resize_height = g_settings.display_stretch_vertically ?
-      static_cast<s32>(static_cast<float>(resize_height) /
-      (m_display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)))) :
-      resize_height;
+                      static_cast<s32>(static_cast<float>(resize_height) /
+                                       (m_display_aspect_ratio /
+                                        (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)))) :
+                      resize_height;
   }
   else
   {
@@ -614,17 +618,65 @@ bool HostDisplay::WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resi
   return true;
 }
 
-bool HostDisplay::WriteScreenshotToFile(std::string filename, bool compress_on_thread /*= false*/)
+bool HostDisplay::WriteScreenshotToFile(std::string filename, bool internal_resolution /* = false */,
+                                        bool compress_on_thread /* = false */)
 {
-  const u32 width = m_window_info.surface_width;
-  const u32 height = m_window_info.surface_height;
+  u32 width = m_window_info.surface_width;
+  u32 height = m_window_info.surface_height;
+  auto [draw_left, draw_top, draw_width, draw_height] = CalculateDrawRect(width, height);
+
+  if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
+  {
+    // If internal res, scale the computed draw rectangle to the internal res.
+    // We re-use the draw rect because it's already been AR corrected.
+    const float sar =
+      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
+    const float dar = static_cast<float>(draw_width) / static_cast<float>(draw_height);
+    if (sar >= dar)
+    {
+      // stretch height, preserve width
+      const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
+      width = m_display_texture_view_width;
+      height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
+    }
+    else
+    {
+      // stretch width, preserve height
+      const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
+      width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
+      height = m_display_texture_view_height;
+    }
+
+    // DX11 won't go past 16K texture size.
+    constexpr u32 MAX_TEXTURE_SIZE = 16384;
+    if (width > MAX_TEXTURE_SIZE)
+    {
+      height = static_cast<u32>(static_cast<float>(height) /
+                                (static_cast<float>(width) / static_cast<float>(MAX_TEXTURE_SIZE)));
+      width = MAX_TEXTURE_SIZE;
+    }
+    if (height > MAX_TEXTURE_SIZE)
+    {
+      height = MAX_TEXTURE_SIZE;
+      width = static_cast<u32>(static_cast<float>(width) /
+                               (static_cast<float>(height) / static_cast<float>(MAX_TEXTURE_SIZE)));
+    }
+
+    // Remove padding, it's not part of the framebuffer.
+    draw_left = 0;
+    draw_top = 0;
+    draw_width = static_cast<s32>(width);
+    draw_height = static_cast<s32>(height);
+  }
   if (width == 0 || height == 0)
     return false;
 
   std::vector<u32> pixels;
   u32 pixels_stride;
   GPUTexture::Format pixels_format;
-  if (!RenderScreenshot(width, height, &pixels, &pixels_stride, &pixels_format))
+  if (!RenderScreenshot(width, height,
+                        Common::Rectangle<s32>::FromExtents(draw_top, draw_left, draw_width, draw_height), &pixels,
+                        &pixels_stride, &pixels_format))
   {
     Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
     return false;

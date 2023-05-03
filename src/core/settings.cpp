@@ -303,6 +303,9 @@ void Settings::Load(SettingsInterface& si)
   audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
   use_old_mdec_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
+  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
+  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
+  pcdrv_root = si.GetStringValue("PCDrv", "Root");
 
   dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
   dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
@@ -522,6 +525,10 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
   si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
 
+  si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
+  si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
+  si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
+
   si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
@@ -610,8 +617,15 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cdrom_mute_cd_audio = false;
     g_settings.texture_replacements.enable_vram_write_replacements = false;
     g_settings.use_old_mdec_routines = false;
+    g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
     g_settings.bios_patch_tty_enable = false;
+  }
+
+  if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())
+  {
+    Log_WarningPrintf("Disabling PCDrv because no root directory is specified.");
+    g_settings.pcdrv_enable = false;
   }
 
   if (g_settings.display_integer_scaling && g_settings.display_linear_filtering)

@@ -170,6 +170,7 @@ struct Settings
   bool audio_dump_on_boot = false;
 
   bool use_old_mdec_routines = false;
+  bool pcdrv_enable = false;
 
   // timing hacks section
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
@@ -228,8 +229,6 @@ struct Settings
     }
   } texture_replacements;
 
-  // TODO: Controllers, memory cards, etc.
-
   bool bios_patch_tty_enable = false;
   bool bios_patch_fast_boot = DEFAULT_FAST_BOOT_VALUE;
   bool enable_8mb_ram = false;
@@ -242,6 +241,9 @@ struct Settings
   bool memory_card_use_playlist_title = true;
 
   MultitapMode multitap_mode = DEFAULT_MULTITAP_MODE;
+
+  std::string pcdrv_root;
+  bool pcdrv_enable_writes = false;
 
   std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> GeneratePortLabels() const;
 

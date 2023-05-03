@@ -2019,6 +2019,27 @@ bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
   return true;
 }
 
+bool SafeReadMemoryCString(VirtualMemoryAddress addr, std::string* value, u32 max_length /*= 1024*/)
+{
+  value->clear();
+
+  u8 ch;
+  while (SafeReadMemoryByte(addr, &ch))
+  {
+    if (ch == 0)
+      return true;
+
+    value->push_back(ch);
+    if (value->size() >= max_length)
+      return true;
+
+    addr++;
+  }
+
+  value->clear();
+  return false;
+}
+
 bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
 {
   u32 temp = ZeroExtend32(value);

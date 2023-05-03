@@ -4,6 +4,7 @@
 #include "context.h"
 #include "../log.h"
 #include "loader.h"
+#include <cstdio>
 #include <cstdlib>
 #ifdef __APPLE__
 #include <stdlib.h>
