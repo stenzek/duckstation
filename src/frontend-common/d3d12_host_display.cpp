@@ -615,8 +615,8 @@ bool D3D12HostDisplay::Render(bool skip_present)
   return true;
 }
 
-bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                        GPUTexture::Format* out_format)
+bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect,
+                                        std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
 {
   static constexpr DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
   static constexpr GPUTexture::Format hdformat = GPUTexture::Format::RGBA8;
@@ -630,14 +630,13 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
   }
 
   ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-  const auto [left, top, draw_width, draw_height] = CalculateDrawRect(width, height);
 
   if (HasDisplayTexture() && !m_post_processing_chain.IsEmpty())
   {
-    ApplyPostProcessingChain(cmdlist, &render_texture, left, top, width, height,
-                             static_cast<D3D12::Texture*>(m_display_texture), m_display_texture_view_x,
-                             m_display_texture_view_y, m_display_texture_view_width, m_display_texture_view_height,
-                             width, height);
+    ApplyPostProcessingChain(cmdlist, &render_texture, draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
+                             draw_rect.GetHeight(), static_cast<D3D12::Texture*>(m_display_texture),
+                             m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                             m_display_texture_view_height, width, height);
   }
   else
   {
@@ -647,9 +646,9 @@ bool D3D12HostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>*
 
     if (HasDisplayTexture())
     {
-      RenderDisplay(cmdlist, left, top, draw_width, draw_height, static_cast<D3D12::Texture*>(m_display_texture),
-                    m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                    m_display_texture_view_height, IsUsingLinearFiltering());
+      RenderDisplay(cmdlist, draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
+                    static_cast<D3D12::Texture*>(m_display_texture), m_display_texture_view_x, m_display_texture_view_y,
+                    m_display_texture_view_width, m_display_texture_view_height, IsUsingLinearFiltering());
     }
   }
 

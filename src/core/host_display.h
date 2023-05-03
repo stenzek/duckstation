@@ -104,8 +104,8 @@ public:
   virtual bool Render(bool skip_present) = 0;
 
   /// Renders the display with postprocessing to the specified image.
-  virtual bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                GPUTexture::Format* out_format) = 0;
+  virtual bool RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect,
+                                std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format) = 0;
 
   ALWAYS_INLINE bool IsVsyncEnabled() const { return m_vsync_enabled; }
   virtual void SetVSync(bool enabled) = 0;
@@ -206,7 +206,7 @@ public:
                                    bool clear_alpha = true);
 
   /// Helper function to save screenshot to PNG.
-  bool WriteScreenshotToFile(std::string filename, bool compress_on_thread = false);
+  bool WriteScreenshotToFile(std::string filename, bool internal_resolution = false, bool compress_on_thread = false);
 
 protected:
   ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }

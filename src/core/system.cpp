@@ -2069,8 +2069,9 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
-    if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height, &screenshot_buffer, &screenshot_stride,
-                                         &screenshot_format) &&
+    if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height,
+                                         Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
+                                         &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {
@@ -3911,10 +3912,8 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
     return false;
   }
 
-  const bool screenshot_saved =
-    g_settings.display_internal_resolution_screenshots ?
-      g_host_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread) :
-      g_host_display->WriteScreenshotToFile(filename, compress_on_thread);
+  const bool screenshot_saved = g_host_display->WriteScreenshotToFile(
+    filename, g_settings.display_internal_resolution_screenshots, compress_on_thread);
 
   if (!screenshot_saved)
   {
