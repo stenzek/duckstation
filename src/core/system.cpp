@@ -1752,6 +1752,18 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
       cpu_overclock_active ?
         Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
         100u);
+
+    // during netplay if a file savestate is loaded set
+    // the overclocks to the same value as the savestate
+    // file savestates are usually only loaded at game start
+    if (Netplay::IsActive() && !is_memory_state)
+    {
+      g_settings.cpu_overclock_enable = true;
+      g_settings.cpu_overclock_active = cpu_overclock_active;
+      g_settings.cpu_overclock_numerator = cpu_overclock_numerator;
+      g_settings.cpu_overclock_denominator = cpu_overclock_denominator;
+    }
+
     UpdateOverclock();
   }
 

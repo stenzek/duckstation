@@ -182,6 +182,8 @@ void Netplay::SetSettings()
 
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
+  // not sure its needed but enabled for now. TODO
+  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
 }
@@ -427,14 +429,17 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
     System::ShutdownSystem(false);
   // fast boot the selected game and wait for the other player
   auto param = SystemBootParameters(s_game_path);
-  // param.save_state = EmuFolders::SaveStates + "/SLUS-00402_2.sav";
+  param.override_fast_boot = true;
   if (!System::BootSystem(param))
   {
     StopNetplaySession();
     return false;
   }
-  // Fast Forward to Game Start
   SPU::SetAudioOutputMuted(true);
+  // Load savestate if available
+  std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
+  System::LoadState(save.c_str());
+  // Fast Forward to Game Start if needed.
   while (System::GetInternalFrameNumber() < 2)
     System::RunFrame();
   SPU::SetAudioOutputMuted(false);
