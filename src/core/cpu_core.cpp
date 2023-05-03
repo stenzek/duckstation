@@ -11,6 +11,7 @@
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
 #include "host.h"
+#include "pcdrv.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "system.h"
@@ -291,6 +292,20 @@ void RaiseException(Exception excode)
                                                              g_state.current_instruction_was_branch_taken,
                                                              g_state.current_instruction.cop.cop_n),
                  g_state.current_instruction_pc, GetExceptionVector());
+}
+
+void RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits)
+{
+  if (PCDrv::HandleSyscall(instruction_bits, g_state.regs))
+  {
+    // immediately return
+    g_state.regs.npc = EPC + 4;
+    FlushPipeline();
+    return;
+  }
+
+  // normal exception
+  RaiseException(CAUSE_bits, EPC, GetExceptionVector());
 }
 
 void SetExternalInterrupt(u8 bit)
@@ -1109,7 +1124,10 @@ restart_instruction:
 
         case InstructionFunct::break_:
         {
-          RaiseException(Exception::BP);
+          RaiseBreakException(Cop0Registers::CAUSE::MakeValueForException(
+                                Exception::BP, g_state.current_instruction_in_branch_delay_slot,
+                                g_state.current_instruction_was_branch_taken, g_state.current_instruction.cop.cop_n),
+                              g_state.current_instruction_pc, g_state.current_instruction.bits);
         }
         break;
 

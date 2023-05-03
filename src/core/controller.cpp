@@ -7,13 +7,14 @@
 #include "digital_controller.h"
 #include "fmt/format.h"
 #include "guncon.h"
+#include "host.h"
 #include "negcon.h"
 #include "playstation_mouse.h"
 #include "util/state_wrapper.h"
 
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
-                                                       "Not Connected",
+                                                       TRANSLATABLE("ControllerType", "Not Connected"),
                                                        nullptr,
                                                        0,
                                                        nullptr,

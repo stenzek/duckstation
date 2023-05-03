@@ -59,8 +59,8 @@ public:
   void SetVSync(bool enabled) override;
 
   bool Render(bool skip_present) override;
-  bool RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                        GPUTexture::Format* out_format) override;
+  bool RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, std::vector<u32>* out_pixels,
+                        u32* out_stride, GPUTexture::Format* out_format) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;

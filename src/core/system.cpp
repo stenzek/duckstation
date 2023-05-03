@@ -35,6 +35,7 @@
 #include "multitap.h"
 #include "netplay.h"
 #include "pad.h"
+#include "pcdrv.h"
 #include "pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
@@ -1418,6 +1419,7 @@ bool System::Initialize(bool force_software_renderer)
   SPU::Initialize();
   MDEC::Initialize();
   SIO::Initialize();
+  PCDrv::Initialize();
 
   static constexpr float WARNING_DURATION = 15.0f;
 
@@ -1473,6 +1475,7 @@ void System::DestroySystem()
 
   g_texture_replacements.Shutdown();
 
+  PCDrv::Shutdown();
   SIO::Shutdown();
   MDEC::Shutdown();
   SPU::Shutdown();
@@ -1831,6 +1834,7 @@ void System::InternalReset()
   SPU::Reset();
   MDEC::Reset();
   SIO::Reset();
+  PCDrv::Reset();
   s_frame_number = 1;
   s_internal_frame_number = 0;
   TimingEvents::Reset();
@@ -2064,8 +2068,9 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
-    if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height, &screenshot_buffer, &screenshot_stride,
-                                         &screenshot_format) &&
+    if (g_host_display->RenderScreenshot(screenshot_width, screenshot_height,
+                                         Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
+                                         &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {
@@ -3912,10 +3917,8 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
     return false;
   }
 
-  const bool screenshot_saved =
-    g_settings.display_internal_resolution_screenshots ?
-      g_host_display->WriteDisplayTextureToFile(filename, full_resolution, apply_aspect_ratio, compress_on_thread) :
-      g_host_display->WriteScreenshotToFile(filename, compress_on_thread);
+  const bool screenshot_saved = g_host_display->WriteScreenshotToFile(
+    filename, g_settings.display_internal_resolution_screenshots, compress_on_thread);
 
   if (!screenshot_saved)
   {

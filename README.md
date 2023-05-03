@@ -1,8 +1,6 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 [Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Discord Server:** https://discord.gg/Buktv3t
-
 **Latest Builds for Windows and Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit
@@ -144,14 +142,14 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (at least version 2.0.22) (`libsdl2-dev`, `libxrandr-dev`)
+ - SDL2 (at least version 2.0.22) (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.1.0) (`qtbase6-dev`, `qtbase6-private-dev`, `qtbase6-dev-tools`, `qttools6-dev`)
+ - Qt 6 (at least version 6.1.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
- - When Wayland is enabled (default): `libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules`
+ - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
- - Optional for framebuffer output: DRM/GBM (`libgbm-dev`, `libdrm-dev`)
+ - Optional for framebuffer output: DRM/GBM (`libgbm-dev` `libdrm-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).

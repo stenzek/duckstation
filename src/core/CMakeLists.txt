@@ -76,6 +76,8 @@ add_library(core
     negcon.h
     pad.cpp
     pad.h
+    pcdrv.cpp
+    pcdrv.h
     pgxp.cpp
     pgxp.h
     playstation_mouse.cpp
