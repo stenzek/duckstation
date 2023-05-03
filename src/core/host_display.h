@@ -251,7 +251,7 @@ protected:
   bool m_vsync_enabled = false;
 };
 
-/// Returns a pointer to the current host display abstraction. Assumes AcquireHostDisplay() has been caled.
+/// Returns a pointer to the current host display abstraction. Assumes AcquireHostDisplay() has been called.
 extern std::unique_ptr<HostDisplay> g_host_display;
 
 namespace Host {
