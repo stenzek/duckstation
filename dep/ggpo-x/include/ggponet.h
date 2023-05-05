@@ -196,8 +196,8 @@ typedef struct {
       } chat;
       struct {
           int nFrameOfDesync;
-          uint16_t ourCheckSum;
-          uint16_t remoteChecksum;
+          uint32_t ourCheckSum;
+          uint32_t remoteChecksum;
       } desync;
    } u;
 } GGPOEvent;
@@ -248,7 +248,7 @@ typedef struct {
     * free_buffer - Frees a game state allocated in save_game_state.  You
     * should deallocate the memory contained in the buffer.
     */
-   void (__cdecl *free_buffer)(void* context, void *buffer);
+   void (__cdecl *free_buffer)(void* context, void *buffer, int frame);
 
    /*
     * advance_frame - Called during a rollback.  You should advance your game

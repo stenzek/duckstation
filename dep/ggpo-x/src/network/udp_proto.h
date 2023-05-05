@@ -94,8 +94,8 @@ public:
    void ApplyToEvents(std::function<void(UdpProtocol::Event&)> cb);
    void StartPollLoop();
    void EndPollLoop();
-   std::map<int, uint16> _remoteCheckSums;
-   std::map<int, uint16> _remoteCheckSumsThisFrame;
+   std::map<int, uint32> _remoteCheckSums;
+   std::map<int, uint32> _remoteCheckSumsThisFrame;
 protected:
    enum State {
       Syncing,
