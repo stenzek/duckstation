@@ -158,7 +158,7 @@ SyncTestBackend::IncrementFrame(uint16_t cs)
             RaiseSyncError("Checksum for frame %d does not match saved (%d != %d)", frame, checksum, info.checksum);
          }
          printf("Checksum %08d for frame %d matches.\n", checksum, info.frame);
-         _callbacks.free_buffer(_callbacks.context, info.buf);
+         _callbacks.free_buffer(_callbacks.context, info.buf, info.frame);
       }
       _last_verified = frame;
       _rollingback = false;

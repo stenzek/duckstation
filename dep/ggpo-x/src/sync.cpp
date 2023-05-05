@@ -24,7 +24,7 @@ Sync::~Sync()
     * structure so we can efficently copy frames via weak references.
     */
    for (int i = 0; i < _savedstate.frames.size(); i++) {
-      _callbacks.free_buffer(_callbacks.context, _savedstate.frames[i].buf);
+     _callbacks.free_buffer(_callbacks.context, _savedstate.frames[i].buf, _savedstate.frames[i].frame);
    }
    delete [] _input_queues;
    _input_queues = NULL;
@@ -204,7 +204,7 @@ Sync::SaveCurrentFrame()
     */
    SavedFrame *state = &_savedstate.frames[_savedstate.head];
    if (state->buf) {
-      _callbacks.free_buffer(_callbacks.context, state->buf);
+      _callbacks.free_buffer(_callbacks.context, state->buf, state->frame);
       state->buf = NULL;
    }
    state->frame = _framecount;

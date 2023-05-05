@@ -520,7 +520,7 @@ void Peer2PeerBackend::CheckRemoteChecksum(int framenumber, uint32 cs)
 
 int Peer2PeerBackend::HowFarBackForChecksums()const
 {
-    return 32;
+    return _sync.MaxPredictionFrames() + 2;
 }/*
 uint16 Peer2PeerBackend::GetChecksumForConfirmedFrame(int frameNumber) const
 {

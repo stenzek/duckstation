@@ -34,7 +34,7 @@ static bool NpAdvFrameCb(void* ctx, int flags);
 static bool NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame);
 static bool NpLoadFrameCb(void* ctx, unsigned char* buffer, int len, int rb_frames, int frame_to_load);
 static bool NpBeginGameCb(void* ctx, const char* game_name);
-static void NpFreeBuffCb(void* ctx, void* buffer);
+static void NpFreeBuffCb(void* ctx, void* buffer, int frame);
 static bool NpOnEventCb(void* ctx, GGPOEvent* ev);
 
 static Input ReadLocalInput();
@@ -61,7 +61,7 @@ static void Throttle();
 
 // Desync Detection
 static void GenerateChecksumForFrame(int* checksum, int frame, unsigned char* buffer, int buffer_size);
-
+static void GenerateDesyncReport(s32 desync_frame);
 //////////////////////////////////////////////////////////////////////////
 // Variables
 //////////////////////////////////////////////////////////////////////////
@@ -83,6 +83,7 @@ static float s_target_speed = 1.0f;
 static Common::Timer::Value s_frame_period = 0;
 static Common::Timer::Value s_next_frame_time = 0;
 static s32 s_next_timesync_recovery_frame = -1;
+
 } // namespace Netplay
 
 // Netplay Impl
@@ -182,7 +183,7 @@ void Netplay::SetSettings()
 
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
-  // not sure its needed but enabled for now. TODO
+  // not sure its needed but enabled for now... TODO
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
@@ -276,8 +277,40 @@ void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* 
   const u32 num_group_of_pages = buffer_size / sliding_window_size;
   const u32 start_position = (frame % num_group_of_pages) * sliding_window_size;
   *checksum = XXH32(buffer + start_position, sliding_window_size, frame);
-  Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
+  // Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
 }
+
+void Netplay::GenerateDesyncReport(s32 desync_frame) 
+{
+  std::string path = "\\netplaylogs\\desync_frame_" + std::to_string(desync_frame) + "_p" +
+                     std::to_string(s_local_handle) + "_" + System::GetRunningSerial() + "_.txt";
+  std::string filename = EmuFolders::Dumps + path;
+
+  std::unique_ptr<ByteStream> stream =
+    ByteStream::OpenFile(filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
+                                             BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
+  if (!stream)
+  {
+    Log_VerbosePrint("desync log creation failed to create stream");
+    return;
+  }
+
+  if (!ByteStream::WriteBinaryToStream(stream.get(),
+                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
+                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize()))
+  {
+    Log_VerbosePrint("desync log creation failed to write the stream");
+    stream->Discard();
+    return;
+  }
+ /* stream->Write(s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
+                s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize());*/
+
+  stream->Commit();
+
+  Log_VerbosePrintf("desync log created for frame %d", desync_frame);
+}
+
 
 void Netplay::AdvanceFrame()
 {
@@ -386,6 +419,12 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
   // notify that the session failed
   if (result != GGPO_OK)
     Log_ErrorPrintf("Failed to Create Netplay Session! Error: %d", result);
+  else
+  {
+    // Load savestate if available
+    std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
+    System::LoadState(save.c_str());
+  }
 }
 
 void Netplay::StopNetplaySession()
@@ -436,9 +475,6 @@ bool Netplay::NpBeginGameCb(void* ctx, const char* game_name)
     return false;
   }
   SPU::SetAudioOutputMuted(true);
-  // Load savestate if available
-  std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
-  System::LoadState(save.c_str());
   // Fast Forward to Game Start if needed.
   while (System::GetInternalFrameNumber() < 2)
     System::RunFrame();
@@ -460,25 +496,27 @@ bool Netplay::NpAdvFrameCb(void* ctx, int flags)
 bool Netplay::NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame)
 {
   SaveStateBuffer our_buffer;
-  if (s_save_buffer_pool.empty())
+  // min size is 2 because otherwise the desync logger doesnt have enough time to dump the state.
+  if (s_save_buffer_pool.size() < 2)
   {
     our_buffer = std::make_unique<System::MemorySaveState>();
   }
   else
   {
-    our_buffer = std::move(s_save_buffer_pool.back());
-    s_save_buffer_pool.pop_back();
+    our_buffer = std::move(s_save_buffer_pool.front());
+    s_save_buffer_pool.pop_front();
   }
 
   if (!System::SaveMemoryState(our_buffer.get()))
   {
-    s_save_buffer_pool.push_back(std::move(our_buffer));
+    s_save_buffer_pool.push_front(std::move(our_buffer));
     return false;
   }
 
-  GenerateChecksumForFrame(checksum, frame,
-                           reinterpret_cast<unsigned char*>(our_buffer.get()->state_stream.get()->GetMemoryPointer()),
-                           our_buffer.get()->state_stream.get()->GetMemorySize());
+  // desync detection
+  const u32 state_size = our_buffer.get()->state_stream.get()->GetMemorySize();
+  unsigned char* state = reinterpret_cast<unsigned char*>(our_buffer.get()->state_stream.get()->GetMemoryPointer());
+  GenerateChecksumForFrame(checksum, frame, state, state_size);
 
   *len = sizeof(System::MemorySaveState);
   *buffer = reinterpret_cast<unsigned char*>(our_buffer.release());
@@ -494,8 +532,9 @@ bool Netplay::NpLoadFrameCb(void* ctx, unsigned char* buffer, int len, int rb_fr
   return System::LoadMemoryState(*reinterpret_cast<const System::MemorySaveState*>(buffer));
 }
 
-void Netplay::NpFreeBuffCb(void* ctx, void* buffer)
+void Netplay::NpFreeBuffCb(void* ctx, void* buffer, int frame)
 {
+  // Log_VerbosePrintf("Reuse Buffer: %d", frame);
   SaveStateBuffer our_buffer(reinterpret_cast<System::MemorySaveState*>(buffer));
   s_save_buffer_pool.push_back(std::move(our_buffer));
 }
@@ -503,7 +542,7 @@ void Netplay::NpFreeBuffCb(void* ctx, void* buffer)
 bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
 {
   char buff[128];
-  std::string msg;
+  std::string msg, filename;
   switch (ev->code)
   {
     case GGPOEventCode::GGPO_EVENTCODE_CONNECTED_TO_PEER:
@@ -542,11 +581,13 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
       HandleTimeSyncEvent(ev->u.timesync.frames_ahead, ev->u.timesync.timeSyncPeriodInFrames);
       break;
     case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
-      sprintf(buff, "Possible Desync Detected: Frame: %d, L:%u, R:%u", ev->u.desync.nFrameOfDesync,
-              ev->u.desync.ourCheckSum, ev->u.desync.remoteChecksum);
+      sprintf(buff, "Desync Detected: Current Frame: %d, Desync Frame: %d, Diff: %d, L:%u, R:%u", CurrentFrame(),
+              ev->u.desync.nFrameOfDesync, CurrentFrame() - ev->u.desync.nFrameOfDesync, ev->u.desync.ourCheckSum,
+              ev->u.desync.remoteChecksum);
       msg = buff;
-      Log_InfoPrintf("%s", msg.c_str());
+      GenerateDesyncReport(ev->u.desync.nFrameOfDesync);
       Host::AddKeyedOSDMessage("Netplay", msg, 5);
+
       return true;
     default:
       sprintf(buff, "Netplay Event Code: %d", ev->code);
