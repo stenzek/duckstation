@@ -543,62 +543,46 @@ void Netplay::NpFreeBuffCb(void* ctx, void* buffer, int frame)
 
 bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
 {
-  char buff[128];
-  std::string msg, filename;
   switch (ev->code)
   {
     case GGPOEventCode::GGPO_EVENTCODE_CONNECTED_TO_PEER:
-      sprintf(buff, "Netplay Connected To Player: %d", ev->u.connected.player);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Connected To Player: {}", ev->u.connected.player));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
-      sprintf(buff, "Netplay Synchronzing: %d/%d", ev->u.synchronizing.count, ev->u.synchronizing.total);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Synchronzing: {}/{}", ev->u.synchronizing.count, ev->u.synchronizing.total));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
-      sprintf(buff, "Netplay Synchronized With Player: %d", ev->u.synchronized.player);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Synchronized With Player: {}", ev->u.synchronized.player));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
-      sprintf(buff, "Netplay Player: %d Disconnected", ev->u.disconnected.player);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Player: %d Disconnected", ev->u.disconnected.player));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_RUNNING:
-      msg = "Netplay Is Running";
+      Host::OnNetplayMessage("Netplay Is Running");
       break;
     case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
-      sprintf(buff, "Netplay Player: %d Connection Interupted, Timeout: %d", ev->u.connection_interrupted.player,
-              ev->u.connection_interrupted.disconnect_timeout);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Player: {} Connection Interupted, Timeout: {}", ev->u.connection_interrupted.player,
+              ev->u.connection_interrupted.disconnect_timeout));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_CONNECTION_RESUMED:
-      sprintf(buff, "Netplay Player: %d Connection Resumed", ev->u.connection_resumed.player);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Player: {} Connection Resumed", ev->u.connection_resumed.player));
       break;
     case GGPOEventCode::GGPO_EVENTCODE_CHAT:
-      sprintf(buff, "%s", ev->u.chat.msg);
-      msg = buff;
+      Host::OnNetplayMessage(ev->u.chat.msg);
       break;
     case GGPOEventCode::GGPO_EVENTCODE_TIMESYNC:
       HandleTimeSyncEvent(ev->u.timesync.frames_ahead, ev->u.timesync.timeSyncPeriodInFrames);
       break;
     case GGPOEventCode::GGPO_EVENTCODE_DESYNC:
-      sprintf(buff, "Desync Detected: Current Frame: %d, Desync Frame: %d, Diff: %d, L:%u, R:%u", CurrentFrame(),
+      Host::OnNetplayMessage(fmt::format("Desync Detected: Current Frame: {}, Desync Frame: {}, Diff: {}, L:{}, R:{}", CurrentFrame(),
               ev->u.desync.nFrameOfDesync, CurrentFrame() - ev->u.desync.nFrameOfDesync, ev->u.desync.ourCheckSum,
-              ev->u.desync.remoteChecksum);
-      msg = buff;
+              ev->u.desync.remoteChecksum));
       GenerateDesyncReport(ev->u.desync.nFrameOfDesync);
-      Host::AddKeyedOSDMessage("Netplay", msg, 5);
-
-      return true;
+      break;
     default:
-      sprintf(buff, "Netplay Event Code: %d", ev->code);
-      msg = buff;
+      Host::OnNetplayMessage(fmt::format("Netplay Event Code: {}", static_cast<int>(ev->code)));
+      break;
   }
-  if (!msg.empty())
-  {
-    Host::OnNetplayMessage(msg);
-    Log_InfoPrintf("%s", msg.c_str());
-  }
+
   return true;
 }

@@ -8,6 +8,9 @@
 namespace ImGuiManager {
 void RenderTextOverlays();
 void RenderOverlayWindows();
+
+void RenderNetplayOverlays();
+void OpenNetplayChat();
 }
 
 namespace SaveStateSelectorUI {

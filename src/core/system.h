@@ -512,5 +512,5 @@ bool IsFullscreen();
 /// Alters fullscreen state of hosting application.
 void SetFullscreen(bool enabled);
 // netplay
-void OnNetplayMessage(std::string& message);
+void OnNetplayMessage(std::string message);
 } // namespace Host

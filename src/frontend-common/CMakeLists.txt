@@ -16,6 +16,7 @@ add_library(frontend-common
   imgui_fullscreen.h
   imgui_manager.cpp
   imgui_manager.h
+  imgui_netplay.cpp
   imgui_overlays.cpp
   imgui_overlays.h
   platform_misc.h

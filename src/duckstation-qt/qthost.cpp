@@ -465,12 +465,6 @@ void EmuThread::startFullscreenUI()
   wakeThread();
 }
 
-void Host::OnNetplayMessage(std::string& message)
-{
-  QString msg(message.c_str());
-  emit g_emu_thread->onNetplayMessage(msg);
-}
-
 void EmuThread::stopFullscreenUI()
 {
   if (!isOnThread())
@@ -1513,6 +1507,8 @@ void EmuThread::renderDisplay(bool skip_present)
   if (!skip_present)
   {
     FullscreenUI::Render();
+    if (Netplay::IsActive())
+      ImGuiManager::RenderNetplayOverlays();
     ImGuiManager::RenderTextOverlays();
     ImGuiManager::RenderOSDMessages();
   }

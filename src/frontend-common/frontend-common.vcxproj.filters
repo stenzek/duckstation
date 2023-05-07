@@ -30,6 +30,7 @@
     <ClCompile Include="dinput_source.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="platform_misc_win32.cpp" />
+    <ClCompile Include="imgui_netplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icon.h" />

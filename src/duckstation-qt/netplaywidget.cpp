@@ -38,8 +38,6 @@ void NetplayWidget::FillGameList()
 
 void NetplayWidget::SetupConnections()
 {
-  // connect netplay window messages
-  connect(g_emu_thread, &EmuThread::onNetplayMessage, this, &NetplayWidget::OnMsgReceived);
   // connect sending messages when the chat button has been pressed
   connect(m_ui->btnSendMsg, &QPushButton::pressed, [this]() {
     // check if message aint empty and the complete message ( message + name + ":" + space) is below 120 characters

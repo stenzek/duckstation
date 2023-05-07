@@ -22,6 +22,7 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="imgui_manager.cpp" />
+    <ClCompile Include="imgui_netplay.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="input_source.cpp" />
