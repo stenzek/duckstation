@@ -1089,6 +1089,9 @@ void EmuThread::startNetplaySession(int local_handle, quint16 local_port, const 
   auto remAddr = remote_addr.trimmed().toStdString();
   auto gamePath = game_path.trimmed().toStdString();
   Netplay::StartNetplaySession(local_handle, local_port, remAddr, remote_port, input_delay, gamePath);
+
+  // TODO: Fix this junk.. for some reason, it stays sleeping...
+  g_emu_thread->wakeThread();
 }
 
 void EmuThread::sendNetplayMessage(const QString& message)
@@ -2243,6 +2246,9 @@ int main(int argc, char* argv[])
       std::string remote = "127.0.0.1";
       std::string game = "D:\\PSX\\chd\\padtest.chd";
       Netplay::StartNetplaySession(h, port_base + h, remote, port_base + nh, 1, game);
+
+      // TODO: Fix this junk.. for some reason, it stays sleeping...
+      g_emu_thread->wakeThread();
     });
   }
 

@@ -55,6 +55,12 @@ SyncTestBackend::DoPoll()
 }
 
 GGPOErrorCode
+SyncTestBackend::NetworkIdle()
+{
+  return GGPO_OK;
+}
+
+GGPOErrorCode
 SyncTestBackend::AddPlayer(GGPOPlayer *player, GGPOPlayerHandle *handle)
 {
    if (player->player_num < 1 || player->player_num > _num_players) {

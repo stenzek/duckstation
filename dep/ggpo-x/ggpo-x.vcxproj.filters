@@ -6,9 +6,7 @@
     <ClInclude Include="src\game_input.h" />
     <ClInclude Include="src\input_queue.h" />
     <ClInclude Include="src\log.h" />
-    <ClInclude Include="src\platform_linux.h" />
     <ClInclude Include="src\platform_windows.h" />
-    <ClInclude Include="src\poll.h" />
     <ClInclude Include="src\ring_buffer.h" />
     <ClInclude Include="src\static_buffer.h" />
     <ClInclude Include="src\sync.h" />
@@ -32,9 +30,6 @@
     <ClInclude Include="src\network\udp_proto.h">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="src\network\udp.h">
-      <Filter>network</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\bitvector.cpp" />
@@ -42,9 +37,7 @@
     <ClCompile Include="src\input_queue.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\platform_linux.cpp" />
     <ClCompile Include="src\platform_windows.cpp" />
-    <ClCompile Include="src\poll.cpp" />
     <ClCompile Include="src\sync.cpp" />
     <ClCompile Include="src\timesync.cpp" />
     <ClCompile Include="src\backends\spectator.cpp">
@@ -57,9 +50,6 @@
       <Filter>backends</Filter>
     </ClCompile>
     <ClCompile Include="src\network\udp_proto.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\udp.cpp">
       <Filter>network</Filter>
     </ClCompile>
   </ItemGroup>

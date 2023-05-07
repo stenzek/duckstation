@@ -466,14 +466,14 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
       ImGui::Text("%s: %d/%d", message, progress_value, progress_max);
       ImGui::ProgressBar(static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min),
                          ImVec2(-1.0f, 0.0f), "");
-      Log_InfoPrintf("%s: %d/%d", message, progress_value, progress_max);
+      Log_DebugPrintf("%s: %d/%d", message, progress_value, progress_max);
     }
     else
     {
       const ImVec2 text_size(ImGui::CalcTextSize(message));
       ImGui::SetCursorPosX((width - text_size.x) / 2.0f);
       ImGui::TextUnformatted(message);
-      Log_InfoPrintf("%s", message);
+      Log_DebugPrintf("%s", message);
     }
   }
   ImGui::End();

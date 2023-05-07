@@ -8,8 +8,7 @@
 #ifndef _UDP_PROTO_H_
 #define _UDP_PROTO_H_
 
-#include "poll.h"
-#include "udp.h"
+#include "enet/enet.h"
 #include "udp_msg.h"
 #include "game_input.h"
 #include "timesync.h"
@@ -19,7 +18,7 @@
 #include <vector>
 #include <string>
 #include <map>
-class UdpProtocol : public IPollSink
+class UdpProtocol
 {
 public:
    struct Stats {
@@ -29,7 +28,6 @@ public:
       float                 av_remote_frame_advantage;
       float                 av_local_frame_advantage;
       int                 send_queue_len;
-      Udp::Stats          udp;
    };
 
    struct Event {
@@ -39,9 +37,6 @@ public:
          Synchronizing,
          Synchronzied,
          Input,
-         Disconnected,
-         NetworkInterrupted,
-         NetworkResumed,
       };
 
       Type      type;
@@ -62,23 +57,23 @@ public:
    };
 
 public:
-   virtual bool OnLoopPoll(void *cookie);
+   bool NetworkIdle();
 
 public:
    UdpProtocol();
-   virtual ~UdpProtocol();
+   ~UdpProtocol();
 
-   void Init(Udp *udp, Poll &p, int queue, char *ip, u_short port, UdpMsg::connect_status *status);
+   ENetPeer* GetENetPeer() const { return _peer; }
+
+   void Init(ENetPeer* peer, int queue, UdpMsg::connect_status *status);
 
    void Synchronize();
    bool GetPeerConnectStatus(int id, int *frame);
-   bool IsInitialized() { return _udp != NULL; }
+   bool IsInitialized() { return _peer != nullptr; }
    bool IsSynchronized() { return _current_state == Running; }
    bool IsRunning() { return _current_state == Running; }
    void SendInput(GameInput &input);
-   void SendChat(const char* message);
    void SendInputAck();
-   bool HandlesMsg(sockaddr_in &from, UdpMsg *msg);
    void OnMsg(UdpMsg *msg, int len);
    void Disconnect();
   
@@ -87,10 +82,7 @@ public:
    void SetLocalFrameNumber(int num);
    float RecommendFrameDelay();
    int RemoteFrameDelay()const;
-   void SetDisconnectTimeout(int timeout);
-   void SetDisconnectNotifyStart(int timeout);
    void SetFrameDelay(int delay);
-   void ConsumeChat(std::function<void(const char*)> onChat);
    void ApplyToEvents(std::function<void(UdpProtocol::Event&)> cb);
    void StartPollLoop();
    void EndPollLoop();
@@ -114,13 +106,11 @@ protected:
 
    void UpdateNetworkStats(void);
    void QueueEvent(const UdpProtocol::Event &evt);
-   void ClearSendQueue(void);
    void Log(const char *fmt, ...);
    void LogMsg(const char *prefix, UdpMsg *msg);
    void LogEvent(const char *prefix, const UdpProtocol::Event &evt);
    void SendSyncRequest();
    void SendMsg(UdpMsg *msg);
-   void PumpSendQueue();
    void SendPendingOutput();
    bool OnInvalid(UdpMsg *msg, int len);
    bool OnSyncRequest(UdpMsg *msg, int len);
@@ -129,27 +119,16 @@ protected:
    bool OnInputAck(UdpMsg *msg, int len);
    bool OnQualityReport(UdpMsg *msg, int len);
    bool OnQualityReply(UdpMsg *msg, int len);
-   bool OnKeepAlive(UdpMsg *msg, int len);
-   bool OnChat(UdpMsg *msg, int len);
   
 protected:
    /*
     * Network transmission information
     */
-   Udp            *_udp;
-   sockaddr_in    _peer_addr; 
+   ENetPeer       *_peer;
    uint16         _magic_number;
    int            _queue;
    uint16         _remote_magic_number;
    bool           _connected;
-   int            _send_latency;
-   int            _oop_percent;
-   struct {
-      int         send_time;
-      sockaddr_in dest_addr;
-      UdpMsg*     msg;
-   }              _oo_packet;
-   RingBuffer<QueueEntry, 64> _send_queue;
 
    /*
     * Stats
@@ -194,11 +173,6 @@ protected:
    GameInput                  _last_acked_input;
    unsigned int               _last_send_time;
    unsigned int               _last_recv_time;
-   unsigned int               _shutdown_timeout;
-   unsigned int               _disconnect_event_sent;
-   unsigned int               _disconnect_timeout;
-   unsigned int               _disconnect_notify_start;
-   bool                       _disconnect_notify_sent;
 
    uint16                     _next_send_seq;
    uint16                     _next_recv_seq;
@@ -212,7 +186,6 @@ protected:
     * Event queue
     */
    RingBuffer<UdpProtocol::Event, 64>  _event_queue;
-   std::vector<std::string> _chatMessages;
 };
 
 #endif
