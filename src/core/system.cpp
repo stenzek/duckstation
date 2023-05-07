@@ -78,8 +78,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
-static bool InternalSaveState(ByteStream* state, u32 screenshot_size = 256,
-                              u32 compression_method = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
 
 static bool LoadEXE(const char* filename);
 
@@ -95,7 +93,6 @@ static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
-static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 static void WrappedRunFrame();
 static void RunFramesToNow();
@@ -1019,7 +1016,7 @@ bool System::LoadState(const char* filename)
 
   SaveUndoLoadState();
 
-  if (!DoLoadState(stream.get(), false, true))
+  if (!LoadStateFromStream(stream.get(), true))
   {
     Host::ReportFormattedErrorAsync(
       "Load State Error", Host::TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
@@ -1057,7 +1054,7 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   Log_InfoPrintf("Saving state to '%s'...", filename);
 
   const u32 screenshot_size = 256;
-  const bool result = InternalSaveState(stream.get(), screenshot_size,
+  const bool result = SaveStateToStream(stream.get(), screenshot_size,
                                         g_settings.compress_save_states ? SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD :
                                                                           SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
   if (!result)
@@ -1312,7 +1309,7 @@ bool System::BootSystem(SystemBootParameters parameters)
       return false;
     }
 
-    if (!DoLoadState(stream.get(), false, true))
+    if (!LoadStateFromStream(stream.get(), true))
     {
       DestroySystem();
       return false;
@@ -1573,7 +1570,7 @@ void System::RecreateSystem()
 
   const bool was_paused = System::IsPaused();
   std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::InternalSaveState(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
+  if (!System::SaveStateToStream(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
   {
     Host::ReportErrorAsync("Error", "Failed to save state before system recreation. Shutting down.");
     DestroySystem();
@@ -1589,7 +1586,7 @@ void System::RecreateSystem()
     return;
   }
 
-  if (!DoLoadState(stream.get(), false, false))
+  if (!LoadStateFromStream(stream.get(), false))
   {
     DestroySystem();
     return;
@@ -1890,7 +1887,7 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return ret;
 }
 
-bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool update_display)
+bool System::LoadStateFromStream(ByteStream* state, bool update_display)
 {
   Assert(IsValid());
 
@@ -2043,7 +2040,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   return true;
 }
 
-bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 */,
+bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 */,
                                u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/)
 {
   if (IsShutdown())
@@ -3801,7 +3798,7 @@ bool System::UndoLoadState()
   Assert(IsValid());
 
   m_undo_load_state->SeekAbsolute(0);
-  if (!DoLoadState(m_undo_load_state.get(), false, true))
+  if (!LoadStateFromStream(m_undo_load_state.get(), true))
   {
     Host::ReportErrorAsync("Error", "Failed to load undo state, resetting system.");
     m_undo_load_state.reset();
@@ -3820,7 +3817,7 @@ bool System::SaveUndoLoadState()
     m_undo_load_state.reset();
 
   m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!InternalSaveState(m_undo_load_state.get()))
+  if (!SaveStateToStream(m_undo_load_state.get()))
   {
     Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
     m_undo_load_state.reset();

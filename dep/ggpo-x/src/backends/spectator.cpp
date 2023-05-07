@@ -7,16 +7,8 @@
 
 #include "spectator.h"
 
-SpectatorBackend::SpectatorBackend(GGPOSessionCallbacks *cb,
-                                   const char* gamename,
-                                   uint16 localport,
-                                   int num_players,
-                                   int input_size,
-                                   char *hostip,
-                                   u_short hostport) :
-   _num_players(num_players),
-   _input_size(input_size),
-   _next_input_to_send(0)
+SpectatorBackend::SpectatorBackend(GGPOSessionCallbacks* cb, int num_players, int input_size, ENetPeer* peer)
+  : _num_players(num_players), _input_size(input_size), _next_input_to_send(0)
 {
    _callbacks = *cb;
    _synchronizing = true;
@@ -37,11 +29,6 @@ SpectatorBackend::SpectatorBackend(GGPOSessionCallbacks *cb,
     */
    //_host.Init(&_udp, _poll, 0, hostip, hostport, NULL);
    _host.Synchronize();
-
-   /*
-    * Preload the ROM
-    */
-   _callbacks.begin_game(_callbacks.context, gamename);
 }
   
 SpectatorBackend::~SpectatorBackend()

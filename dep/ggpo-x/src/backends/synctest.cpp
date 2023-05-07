@@ -8,7 +8,6 @@
 #include "synctest.h"
 
 SyncTestBackend::SyncTestBackend(GGPOSessionCallbacks *cb,
-                                 char *gamename,
                                  int frames,
                                  int num_players) :
    _sync(NULL, MAX_PREDICTION_FRAMES)
@@ -21,7 +20,6 @@ SyncTestBackend::SyncTestBackend(GGPOSessionCallbacks *cb,
    _running = false;
    _logfp = NULL;
    _current_input.erase();
-   strcpy_s(_game, gamename);
 
    /*
     * Initialize the synchronziation layer
@@ -30,11 +28,6 @@ SyncTestBackend::SyncTestBackend(GGPOSessionCallbacks *cb,
    config.callbacks = _callbacks;
    config.num_prediction_frames = MAX_PREDICTION_FRAMES;
    _sync.Init(config);
-
-   /*
-    * Preload the ROM
-    */
-   _callbacks.begin_game(_callbacks.context, gamename);
 }
 
 SyncTestBackend::~SyncTestBackend()

@@ -18,7 +18,7 @@
 
 class SpectatorBackend final : public GGPOSession {
 public:
-   SpectatorBackend(GGPOSessionCallbacks *cb, const char *gamename, uint16 localport, int num_players, int input_size, char *hostip, u_short hostport);
+   SpectatorBackend(GGPOSessionCallbacks *cb, int num_players, int input_size, ENetPeer* peer);
    virtual ~SpectatorBackend();
 
 

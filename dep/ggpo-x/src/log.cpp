@@ -28,6 +28,7 @@ void Log(const char *fmt, ...)
 
 void Logv(const char *fmt, va_list args)
 {
+#if 1
    if (!Platform::GetConfigBool("ggpo.log") || Platform::GetConfigBool("ggpo.log.ignore")) {
       return;
    }
@@ -36,6 +37,9 @@ void Logv(const char *fmt, va_list args)
       fopen_s(&logfile, logbuf, "w");
    }
    Logv(logfile, fmt, args);
+#else
+  vfprintf(stderr, fmt, args);
+#endif
 }
 
 void Logv(FILE *fp, const char *fmt, va_list args)

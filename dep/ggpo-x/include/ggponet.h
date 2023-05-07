@@ -202,12 +202,6 @@ typedef struct {
  */
 typedef struct {
    /*
-    * begin_game callback - This callback has been deprecated.  You must
-    * implement it, but should ignore the 'game' parameter.
-    */
-   bool (__cdecl *begin_game)(void* context, const char *game);
-
-   /*
     * save_game_state - The client should allocate a buffer, copy the
     * entire contents of the current game state into it, and copy the
     * length into the *len parameter.  Optionally, the client can compute
@@ -340,10 +334,8 @@ typedef struct GGPONetworkStats {
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_start_session(GGPOSession **session,
                                                   GGPOSessionCallbacks *cb,
-                                                  const char *game,
                                                   int num_players,
                                                   int input_size,
-                                                  unsigned short localport,
                                                   int maxPrediction);
 
 
@@ -389,7 +381,6 @@ GGPO_API GGPOErrorCode __cdecl ggpo_add_player(GGPOSession *session,
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_start_synctest(GGPOSession **session,
                                                    GGPOSessionCallbacks *cb,
-                                                   char *game,
                                                    int num_players,
                                                    int input_size,
                                                    int frames);
@@ -421,12 +412,10 @@ GGPO_API GGPOErrorCode __cdecl ggpo_start_synctest(GGPOSession **session,
  */
 GGPO_API GGPOErrorCode __cdecl ggpo_start_spectating(GGPOSession **session,
                                                      GGPOSessionCallbacks *cb,
-                                                     const char *game,
                                                      int num_players,
                                                      int input_size,
-                                                     unsigned short local_port,
-                                                     char *host_ip,
-                                                     unsigned short host_port);
+                                                     ENetPeer* host);
+
 
 /*
  * ggpo_close_session --

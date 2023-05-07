@@ -15,7 +15,7 @@
 
 class SyncTestBackend final : public GGPOSession {
 public:
-   SyncTestBackend(GGPOSessionCallbacks *cb, char *gamename, int frames, int num_players);
+   SyncTestBackend(GGPOSessionCallbacks *cb, int frames, int num_players);
    virtual ~SyncTestBackend();
 
    virtual GGPOErrorCode DoPoll();
@@ -52,7 +52,6 @@ protected:
    bool                   _rollingback;
    bool                   _running;
    FILE                   *_logfp;
-   char                   _game[128];
 
    GameInput                  _current_input;
    GameInput                  _last_input;

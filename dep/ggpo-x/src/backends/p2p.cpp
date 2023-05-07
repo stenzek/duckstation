@@ -10,8 +10,6 @@
 static const int RECOMMENDATION_INTERVAL           = 120;
 
 Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
-                                   const char *gamename,
-                                   uint16 localport,
                                    int num_players,
                                    int input_size, int nframes) :
     _num_players(num_players),
@@ -39,11 +37,6 @@ Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
    for (int i = 0; i < ARRAY_SIZE(_local_connect_status); i++) {
       _local_connect_status[i].last_frame = -1;
    }
-
-   /*
-    * Preload the ROM
-    */
-   _callbacks.begin_game(_callbacks.context, gamename);
 }
   
 Peer2PeerBackend::~Peer2PeerBackend()
@@ -299,6 +292,11 @@ Peer2PeerBackend::AddPlayer(GGPOPlayer *player,
    if (player->type == GGPO_PLAYERTYPE_REMOTE) {
       AddRemotePlayer(player->u.remote.peer, queue);
    }
+
+   // no other players in this session?
+   if (player->type == GGPO_PLAYERTYPE_LOCAL && _num_players == 1)
+     _synchronizing = false;
+
    return GGPO_OK;
 }
 

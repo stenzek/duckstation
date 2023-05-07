@@ -235,6 +235,8 @@ struct MemorySaveState
 };
 bool SaveMemoryState(MemorySaveState* mss);
 bool LoadMemoryState(const MemorySaveState& mss);
+bool LoadStateFromStream(ByteStream* stream, bool update_display);
+bool SaveStateToStream(ByteStream* state, u32 screenshot_size = 256, u32 compression_method = 0);
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();

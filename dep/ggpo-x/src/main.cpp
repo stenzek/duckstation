@@ -40,15 +40,11 @@ ggpo_logv(GGPOSession *ggpo, const char *fmt, va_list args)
 GGPOErrorCode
 ggpo_start_session(GGPOSession **session,
                    GGPOSessionCallbacks *cb,
-                   const char *game,
                    int num_players,
                    int input_size,
-                   unsigned short localport,
                    int maxPrediction)
 {
    *session= new Peer2PeerBackend(cb,
-                                                 game,
-                                                 localport,
                                                  num_players,
                                                  input_size,
                                                     maxPrediction);
@@ -71,12 +67,11 @@ ggpo_add_player(GGPOSession *ggpo,
 GGPOErrorCode
 ggpo_start_synctest(GGPOSession **ggpo,
                     GGPOSessionCallbacks *cb,
-                    char *game,
                     int num_players,
                     int input_size,
                     int frames)
 {
-   *ggpo = new SyncTestBackend(cb, game, frames, num_players);
+   *ggpo = new SyncTestBackend(cb, frames, num_players);
    return GGPO_OK;
 }
 
@@ -209,19 +204,10 @@ ggpo_set_disconnect_notify_start(GGPOSession *ggpo, int timeout)
 
 GGPOErrorCode ggpo_start_spectating(GGPOSession **session,
                                     GGPOSessionCallbacks *cb,
-                                    const char *game,
                                     int num_players,
                                     int input_size,
-                                    unsigned short local_port,
-                                    char *host_ip,
-                                    unsigned short host_port)
+                                    ENetPeer* host)
 {
-   *session= new SpectatorBackend(cb,
-                                                 game,
-                                                 local_port,
-                                                 num_players,
-                                                 input_size,
-                                                 host_ip,
-                                                 host_port);
-   return GGPO_OK;
+  *session = new SpectatorBackend(cb, num_players, input_size, host);
+  return GGPO_OK;
 }

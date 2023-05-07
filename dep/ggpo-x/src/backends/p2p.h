@@ -17,7 +17,7 @@
 class Peer2PeerBackend final : public GGPOSession
 {
 public:
-   Peer2PeerBackend(GGPOSessionCallbacks *cb, const char *gamename, uint16 localport, int num_players, int input_size, int nframes);
+   Peer2PeerBackend(GGPOSessionCallbacks *cb, int num_players, int input_size, int nframes);
    virtual ~Peer2PeerBackend();
 
 
