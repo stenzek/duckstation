@@ -154,6 +154,7 @@ void Netplay::CloseSession()
 
   // Restore original settings.
   Host::Internal::SetNetplaySettingsLayer(nullptr);
+  System::ApplySettings(false);
 }
 
 bool Netplay::IsActive()
@@ -187,6 +188,7 @@ void Netplay::SetSettings()
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
+  System::ApplySettings(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
