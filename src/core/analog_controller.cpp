@@ -53,7 +53,7 @@ void AnalogController::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningBIOS())
+    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningUnknownGame())
     {
       Host::AddIconOSDMessage(
         fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
@@ -835,8 +835,7 @@ static const char* s_invert_settings[] = {TRANSLATABLE("AnalogController", "Not 
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("AnalogController", "Force Analog Mode on Reset"),
-   TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on. May "
-                                    "cause issues with games, so it is recommended to leave this option off."),
+   TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on."),
    "true"},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
    TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),

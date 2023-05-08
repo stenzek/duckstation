@@ -181,7 +181,7 @@ const std::string& GetRunningPath();
 const std::string& GetRunningSerial();
 const std::string& GetRunningTitle();
 
-bool IsRunningBIOS();
+bool IsRunningUnknownGame();
 const BIOS::ImageInfo* GetBIOSImageInfo();
 const BIOS::Hash& GetBIOSHash();
 
