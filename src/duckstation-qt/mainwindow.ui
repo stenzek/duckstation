@@ -27,7 +27,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -241,7 +241,10 @@
     <property name="title">
      <string>Netplay</string>
     </property>
+    <addaction name="actionSetupNetplaySession"/>
+    <addaction name="separator"/>
     <addaction name="actionCreateNetplaySession"/>
+    <addaction name="actionJoinNetplaySession"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -983,9 +986,19 @@
     <string>Cover Downloader</string>
    </property>
   </action>
+  <action name="actionSetupNetplaySession">
+   <property name="text">
+    <string>Setup Session</string>
+   </property>
+  </action>
   <action name="actionCreateNetplaySession">
    <property name="text">
-    <string>Create Session</string>
+    <string>Create Session...</string>
+   </property>
+  </action>
+  <action name="actionJoinNetplaySession">
+   <property name="text">
+    <string>Join Session...</string>
    </property>
   </action>
  </widget>

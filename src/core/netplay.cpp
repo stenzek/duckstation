@@ -97,8 +97,7 @@ static void HandleChatMessage(s32 player_id, const ENetPacket* pkt);
 // l = local, r = remote
 static void CreateGGPOSession();
 static void DestroyGGPOSession();
-static bool Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport, s32 ldelay, u32 pred,
-                  std::string game_path);
+static bool Start(bool is_hosting, std::string nickname, const std::string& remote_addr, s32 port, s32 ldelay);
 static void CloseSession();
 
 // Host functions.
@@ -275,19 +274,39 @@ static const T* CheckReceivedPacket(s32 player_id, const ENetPacket* pkt)
 
 // Netplay Impl
 
-bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport, s32 ldelay, u32 pred,
-                    std::string game_path)
+bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& remote_addr, s32 port, s32 ldelay)
 {
-  const bool is_hosting = (lhandle == 1);
+  if (IsActive())
+  {
+    Log_ErrorPrintf("Netplay session already active");
+    return false;
+  }
+
+  // Port should be valid regardless of hosting/joining.
+  if (port < 0 || port >= 65535)
+  {
+    Log_ErrorPrintf("Invalid port %d", port);
+    return false;
+  }
+
+  // Need a system if we're hosting.
+  if (!System::IsValid())
+  {
+    if (is_hosting)
+    {
+      Log_ErrorPrintf("Can't host a netplay session without a valid VM");
+      return false;
+    }
+    else if (!is_hosting && !CreateSystem(std::string(), false))
+    {
+      Log_ErrorPrintf("Failed to create VM for joining session");
+      return false;
+    }
+  }
+
   s_state = SessionState::Initializing;
 
   SetSettings();
-
-  if (!CreateSystem(std::move(game_path), is_hosting))
-  {
-    Log_ErrorPrintf("Failed to create system.");
-    return false;
-  }
 
   if (!InitializeEnet())
   {
@@ -298,7 +317,7 @@ bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport,
   // Create our "host" (which is basically just our port).
   ENetAddress server_address;
   server_address.host = ENET_HOST_ANY;
-  server_address.port = lport;
+  server_address.port = is_hosting ? static_cast<u16>(port) : ENET_PORT_ANY;
   s_enet_host = enet_host_create(&server_address, MAX_PLAYERS - 1, NUM_ENET_CHANNELS, 0, 0);
   if (!s_enet_host)
   {
@@ -307,7 +326,7 @@ bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport,
   }
 
   s_host_player_id = 0;
-  s_local_nickname = fmt::format("NICKNAME{}", lhandle);
+  s_local_nickname = std::move(nickname);
   s_local_delay = ldelay;
   s_reset_cookie = 0;
   s_reset_players.reset();
@@ -321,7 +340,8 @@ bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport,
     s_reset_players = 1;
     CreateGGPOSession();
     s_state = SessionState::Running;
-    Log_InfoPrintf("Netplay session started as host.");
+    Log_InfoPrintf("Netplay session started as host on port %d.", port);
+    System::SetState(System::State::Paused);
     return true;
   }
 
@@ -330,10 +350,10 @@ bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport,
 
   // Connect to host.
   ENetAddress host_address;
-  host_address.port = rport;
-  if (enet_address_set_host_ip(&host_address, raddr.c_str()) != 0)
+  host_address.port = static_cast<u16>(port);
+  if (enet_address_set_host(&host_address, remote_addr.c_str()) != 0)
   {
-    Log_ErrorPrintf("Failed to parse host: '%s'", raddr.c_str());
+    Log_ErrorPrintf("Failed to parse host: '%s'", remote_addr.c_str());
     return false;
   }
 
@@ -348,6 +368,7 @@ bool Netplay::Start(s32 lhandle, u16 lport, const std::string& raddr, u16 rport,
   // Wait until we're connected to the main host. They'll send us back state to load and a full player list.
   s_state = SessionState::Connecting;
   s_reset_start_time.Reset();
+  System::SetState(System::State::Paused);
   return true;
 }
 
@@ -1409,6 +1430,8 @@ void Netplay::SetSettings()
                       Settings::GetControllerTypeName(ControllerType::DigitalController));
   }
 
+  //si.SetStringValue("CPU", "ExecutionMode", "Interpreter");
+
   // No runahead or rewind, that'd be a disaster.
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
   si.SetBoolValue("Main", "RewindEnable", false);
@@ -1619,16 +1642,23 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string& remote_addr, u16 remote_port,
+void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
                                   s32 input_delay, std::string game_path)
 {
   // dont want to start a session when theres already one going on.
   if (IsActive())
     return;
 
+  const bool is_hosting = (local_handle == 1);
+  if (!CreateSystem(std::move(game_path), is_hosting))
+  {
+    Log_ErrorPrintf("Failed to create system.");
+    return;
+  }
+
   // create session
-  if (!Netplay::Start(local_handle, local_port, remote_addr, remote_port, input_delay, MAX_ROLLBACK_FRAMES,
-                      std::move(game_path)))
+  std::string nickname = fmt::format("NICKNAME{}", local_handle);
+  if (!Netplay::Start(is_hosting, std::move(nickname), remote_addr, is_hosting ? local_port : remote_port, input_delay))
   {
     // this'll call back to us to shut everything netplay-related down
     Log_ErrorPrint("Failed to Create Netplay Session!");
@@ -1652,6 +1682,36 @@ void Netplay::StopNetplaySession()
   System::ShutdownSystem(false);
 }
 
+bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
+{
+  // TODO: Password
+
+  const s32 input_delay = 1;
+
+  if (!Netplay::Start(true, std::move(nickname), std::string(), port, input_delay))
+  {
+    CloseSession();
+    return false;
+  }
+
+  return true;
+}
+
+bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password)
+{
+  // TODO: Password
+
+  const s32 input_delay = 1;
+
+  if (!Netplay::Start(false, std::move(nickname), hostname, port, input_delay))
+  {
+    CloseSession();
+    return false;
+  }
+
+  return true;
+}
+
 void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
 {
   Netplay::SetInputs(inputs);
@@ -1661,6 +1721,9 @@ void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
 
 void Netplay::ExecuteNetplay()
 {
+  // TODO: Fix this hackery to get out of the CPU loop...
+  System::SetState(System::State::Running);
+
   while (s_state != SessionState::Inactive)
   {
     switch (s_state)

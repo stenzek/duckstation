@@ -191,6 +191,8 @@ public Q_SLOTS:
                            int input_delay, const QString& game_path);
   void stopNetplaySession();
   void sendNetplayMessage(const QString& message);
+  void createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password);
+  void joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port, const QString& password);
 
 private Q_SLOTS:
   void stopInThread();

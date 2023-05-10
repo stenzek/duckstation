@@ -22,6 +22,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "memorycardeditordialog.h"
+#include "netplaydialogs.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -1716,6 +1717,9 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   m_ui.actionViewGameProperties->setDisabled(starting || !running);
 
+  m_ui.actionCreateNetplaySession->setDisabled(!running || cheevos_challenge_mode);
+  m_ui.actionJoinNetplaySession->setDisabled(cheevos_challenge_mode);
+
   if (starting || running)
   {
     if (!m_ui.toolBar->actions().contains(m_ui.actionPowerOff))
@@ -2100,7 +2104,9 @@ void MainWindow::connectSignals()
   updateMenuSelectedTheme();
 
   // Netplay UI , TODO
-  connect(m_ui.actionCreateNetplaySession, &QAction::triggered, this, &MainWindow::onNetplaySessionCreated);
+  connect(m_ui.actionSetupNetplaySession, &QAction::triggered, this, &MainWindow::onSetupNetplaySessionClicked);
+  connect(m_ui.actionCreateNetplaySession, &QAction::triggered, this, &MainWindow::onCreateNetplaySessionClicked);
+  connect(m_ui.actionJoinNetplaySession, &QAction::triggered, this, &MainWindow::onJoinNetplaySessionClicked);
 }
 
 void MainWindow::addThemeToMenu(const QString& name, const QString& key)
@@ -2765,7 +2771,7 @@ void MainWindow::onCPUDebuggerClosed()
   m_debugger_window = nullptr;
 }
 
-void MainWindow::onNetplaySessionCreated()
+void MainWindow::onSetupNetplaySessionClicked()
 {
   Assert(!m_netplay_window);
 
@@ -2785,6 +2791,18 @@ void MainWindow::onNetplaySessionCreated()
 
     m_ui.menuNetplay->setDisabled(false);
   });
+}
+
+void MainWindow::onCreateNetplaySessionClicked()
+{
+  CreateNetplaySessionDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onJoinNetplaySessionClicked()
+{
+  JoinNetplaySessionDialog dlg(this);
+  dlg.exec();
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()

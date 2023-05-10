@@ -41,6 +41,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="memorycardeditordialog.cpp" />
+    <ClCompile Include="netplaydialogs.cpp" />
     <ClCompile Include="netplaywidget.cpp" />
     <ClCompile Include="postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="postprocessingshaderconfigwidget.cpp" />
@@ -84,6 +85,7 @@
     <QtMoc Include="colorpickerbutton.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryviewwidget.h" />
+    <QtMoc Include="netplaydialogs.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -265,6 +267,7 @@
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_netplaydialogs.cpp" />
     <ClCompile Include="$(IntDir)moc_netplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
@@ -329,6 +332,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="controllerledsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="createnetplaysessiondialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="joinnetplaysessiondialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

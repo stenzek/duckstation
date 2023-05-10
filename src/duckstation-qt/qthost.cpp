@@ -1099,6 +1099,45 @@ void EmuThread::sendNetplayMessage(const QString& message)
   // Netplay::SendMsg(message.toStdString().c_str());
 }
 
+void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "createNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
+                              Q_ARG(qint32, port), Q_ARG(qint32, max_players), Q_ARG(const QString&, password));
+    return;
+  }
+
+  if (!Netplay::CreateSession(nickname.toStdString(), port, max_players, password.toStdString()))
+  {
+    errorReported(tr("Netplay Error"), tr("Failed to create netplay session. The log may contain more information."));
+    return;
+  }
+
+  // TODO: Fix this junk.. for some reason, it stays sleeping...
+  g_emu_thread->wakeThread();
+}
+
+void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port,
+                                   const QString& password)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "joinNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
+                              Q_ARG(const QString&, hostname), Q_ARG(qint32, port), Q_ARG(const QString&, password));
+    return;
+  }
+
+  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString()))
+  {
+    errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
+    return;
+  }
+
+  // TODO: Fix this junk.. for some reason, it stays sleeping...
+  g_emu_thread->wakeThread();
+}
+
 void EmuThread::stopNetplaySession()
 {
   if (!isOnThread())
@@ -1458,7 +1497,7 @@ void EmuThread::run()
   // main loop
   while (!m_shutdown_flag)
   {
-    if (Netplay::IsActive() && System::IsRunning())
+    if (Netplay::IsActive() && System::IsValid())
     {
       Netplay::ExecuteNetplay();
     }
@@ -2227,8 +2266,7 @@ int main(int argc, char* argv[])
   {
     Host::RunOnCPUThread([]() {
       const bool first = (s_netplay_test == 0);
-      if (!first)
-        QtHost::RunOnUIThread([]() { g_main_window->move(g_main_window->pos() + QPoint(1200, 0)); });
+      QtHost::RunOnUIThread([first]() { g_main_window->move(QPoint(first ? 300 : 1400, 500)); });
 
       const int h = first ? 1 : 2;
       const int nh = first ? 2 : 1;
