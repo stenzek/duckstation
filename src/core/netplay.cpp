@@ -46,10 +46,6 @@ enum class ControlMessage : u32
   ConnectResponse,
   SynchronizeSession,
   SynchronizeComplete,
-};
-
-enum class SessionMessage : u32
-{
   ChatMessage,
 };
 
@@ -57,13 +53,6 @@ enum class SessionMessage : u32
 struct ControlMessageHeader
 {
   ControlMessage type;
-  u32 size;
-};
-
-#pragma pack(push, 1)
-struct SessionMessageHeader
-{
-  SessionMessage type;
   u32 size;
 };
 
@@ -107,13 +96,13 @@ struct ControlSynchronizeCompleteMessage
   static ControlMessage MessageType() { return ControlMessage::SynchronizeComplete; }
 };
 
-struct SessionChatMessage
+struct ControlChatMessage
 {
-  SessionMessageHeader header;
+  ControlMessageHeader header;
 
   u32 chat_message_size;
 
-  static SessionMessage MessageType() { return SessionMessage::ChatMessage; }
+  static ControlMessage MessageType() { return ControlMessage::ChatMessage; }
 };
 #pragma pack(pop)
 
@@ -162,10 +151,7 @@ static void HandleControlMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeSessionMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* pkt);
-
-// Sessionpackets
-static void HandleSessionMessage(s32 player_id, const ENetPacket* pkt);
-static void HandleSessionChatMessage(s32 player_id, const ENetPacket* pkt);
+static void HandleControlChatMessage(s32 player_id, const ENetPacket* pkt);
 
 // l = local, r = remote
 static bool CreateGGPOSession();
@@ -275,34 +261,6 @@ static bool SendControlPacket(s32 player_id, const PacketWrapper<T>& pkt)
 {
   DebugAssert(player_id >= 0 && player_id < MAX_PLAYERS && s_peers[player_id].peer);
   return SendControlPacket<T>(s_peers[player_id].peer, pkt);
-}
-template<typename T>
-static PacketWrapper<T> NewSessionPacket(u32 size = sizeof(T), u32 flags = ENET_PACKET_FLAG_RELIABLE)
-{
-  PacketWrapper<T> ret = NewWrappedPacket<T>(size, flags);
-  SessionMessageHeader* hdr = reinterpret_cast<SessionMessageHeader*>(ret.pkt->data);
-  hdr->type = T::MessageType();
-  hdr->size = size;
-  return ret;
-}
-template<typename T>
-static bool SendSessionPacket(ENetPeer* peer, const PacketWrapper<T>& pkt)
-{
-  const int rc = enet_peer_send(peer, ENET_CHANNEL_SESSION, pkt.pkt);
-  if (rc != 0)
-  {
-    Log_ErrorPrintf("enet_peer_send() failed: %d", rc);
-    enet_packet_destroy(pkt.pkt);
-    return false;
-  }
-
-  return true;
-}
-template<typename T>
-static bool SendSessionPacket(s32 player_id, const PacketWrapper<T>& pkt)
-{
-  DebugAssert(player_id >= 0 && player_id < MAX_PLAYERS && s_peers[player_id].peer);
-  return SendSessionPacket<T>(s_peers[player_id].peer, pkt);
 }
 } // namespace Netplay
 
@@ -530,10 +488,6 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
         if (rc != GGPO_OK)
           Log_ErrorPrintf("Failed to process GGPO packet!");
       }
-      else if (event->channelID == ENET_CHANNEL_SESSION)
-      {
-        HandleSessionMessage(player_id, event->packet);
-      }
       else
       {
         Log_ErrorPrintf("Unexpected packet channel %u", event->channelID);
@@ -749,6 +703,10 @@ void Netplay::HandleControlMessage(s32 player_id, const ENetPacket* pkt)
 
     case ControlMessage::SynchronizeComplete:
       HandleSynchronizeCompleteMessage(player_id, pkt);
+      break;
+
+    case ControlMessage::ChatMessage:
+      HandleControlChatMessage(player_id, pkt);
       break;
 
     default:
@@ -1061,39 +1019,18 @@ void Netplay::HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* 
   CheckForCompleteResynchronize();
 }
 
-void Netplay::HandleSessionMessage(s32 player_id, const ENetPacket* pkt)
+void Netplay::HandleControlChatMessage(s32 player_id, const ENetPacket* pkt)
 {
-  if (pkt->dataLength < sizeof(SessionMessageHeader))
-  {
-    Log_ErrorPrintf("Invalid session packet from player %d of size %zu", player_id, pkt->dataLength);
-    return;
-  }
-
-  const SessionMessageHeader* hdr = reinterpret_cast<const SessionMessageHeader*>(pkt->data);
-  switch (hdr->type)
-  {
-    case SessionMessage::ChatMessage:
-      HandleSessionChatMessage(player_id, pkt);
-      break;
-
-    default:
-      Log_ErrorPrintf("Unhandled session packet %u from player %d of size %zu", hdr->type, player_id, pkt->dataLength);
-      break;
-  }
-}
-
-void Netplay::HandleSessionChatMessage(s32 player_id, const ENetPacket* pkt)
-{
-  const SessionChatMessage* msg = reinterpret_cast<const SessionChatMessage*>(pkt->data);
-  if (pkt->dataLength < sizeof(SessionChatMessage) ||
-      pkt->dataLength < (sizeof(SessionChatMessage) + msg->chat_message_size))
+  const ControlChatMessage* msg = reinterpret_cast<const ControlChatMessage*>(pkt->data);
+  if (pkt->dataLength < sizeof(ControlChatMessage) ||
+      pkt->dataLength < (sizeof(ControlChatMessage) + msg->chat_message_size))
   {
     // invalid chat message. ignore.
     return;
   }
 
-  std::string message(pkt->data + sizeof(SessionChatMessage),
-                      pkt->data + sizeof(SessionChatMessage) + msg->chat_message_size);
+  std::string message(pkt->data + sizeof(ControlChatMessage),
+                      pkt->data + sizeof(ControlChatMessage) + msg->chat_message_size);
 
   Host::OnNetplayMessage(fmt::format("Player {}: {}", PlayerIdToGGPOHandle(player_id), message));
 }
@@ -1301,11 +1238,11 @@ Netplay::Input Netplay::ReadLocalInput()
 
 void Netplay::SendMsg(std::string msg)
 {
-  SessionChatMessage header{};
+  ControlChatMessage header{};
   const size_t msg_size = msg.size();
 
-  header.header.type = SessionMessage::ChatMessage;
-  header.header.size = sizeof(SessionChatMessage) + msg_size;
+  header.header.type = ControlMessage::ChatMessage;
+  header.header.size = sizeof(ControlChatMessage) + msg_size;
   header.chat_message_size = msg_size;
 
   ENetPacket* pkt = enet_packet_create(nullptr, sizeof(header) + msg_size, ENET_PACKET_FLAG_RELIABLE);
@@ -1317,7 +1254,7 @@ void Netplay::SendMsg(std::string msg)
     if (!s_peers[i].peer)
       continue;
 
-    const int err = enet_peer_send(s_peers[i].peer, ENET_CHANNEL_SESSION, pkt);
+    const int err = enet_peer_send(s_peers[i].peer, ENET_CHANNEL_CONTROL, pkt);
     if (err != 0)
     {
       // failed to send netplay message? just clean it up.
