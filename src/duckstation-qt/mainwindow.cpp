@@ -1568,10 +1568,6 @@ void MainWindow::setupAdditionalUi()
   m_status_vps_widget->setFixedSize(120, 16);
   m_status_vps_widget->hide();
 
-  m_status_ping_widget = new QLabel(m_ui.statusBar);
-  m_status_ping_widget->setFixedSize(110, 16);
-  m_status_ping_widget->hide();
-
   m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);
   m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
@@ -1777,7 +1773,6 @@ void MainWindow::updateStatusBarWidgetVisibility()
   Update(m_status_resolution_widget, s_system_valid && !s_system_paused, 0);
   Update(m_status_fps_widget, s_system_valid && !s_system_paused, 0);
   Update(m_status_vps_widget, s_system_valid && !s_system_paused, 0);
-  Update(m_status_ping_widget, s_system_valid && !s_system_paused && m_netplay_window != nullptr, 0);
 }
 
 void MainWindow::updateWindowTitle()

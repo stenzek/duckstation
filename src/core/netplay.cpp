@@ -523,16 +523,16 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
       {
         HandleControlMessage(player_id, event->packet);
       }
-      else if (event->channelID == ENET_CHANNEL_SESSION)
-      {
-        HandleSessionMessage(player_id, event->packet);
-      }
       else if (event->channelID == ENET_CHANNEL_GGPO)
       {
         Log_TracePrintf("Received %zu ggpo bytes from player %d", event->packet->dataLength, player_id);
         const int rc = ggpo_handle_packet(s_ggpo, event->peer, event->packet);
         if (rc != GGPO_OK)
           Log_ErrorPrintf("Failed to process GGPO packet!");
+      }
+      else if (event->channelID == ENET_CHANNEL_SESSION)
+      {
+        HandleSessionMessage(player_id, event->packet);
       }
       else
       {
@@ -1095,7 +1095,7 @@ void Netplay::HandleSessionChatMessage(s32 player_id, const ENetPacket* pkt)
   std::string message(pkt->data + sizeof(SessionChatMessage),
                       pkt->data + sizeof(SessionChatMessage) + msg->chat_message_size);
 
-  Host::OnNetplayMessage(fmt::format("Player {}: {}", player_id + 1, message));
+  Host::OnNetplayMessage(fmt::format("Player {}: {}", PlayerIdToGGPOHandle(player_id), message));
 }
 
 void Netplay::CheckForCompleteResynchronize()
@@ -1132,6 +1132,8 @@ void Netplay::SetSettings()
 
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
+  // not sure its needed but enabled for now... TODO
+  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
   System::ApplySettings(false);

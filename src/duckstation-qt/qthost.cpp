@@ -1709,14 +1709,6 @@ void EmuThread::updatePerformanceCounters()
     m_last_speed = speed;
     m_last_video_fps = vfps;
   }
-
-  const s32 ping = Netplay::GetPing();
-  if (m_last_ping != ping)
-  {
-    QMetaObject::invokeMethod(g_main_window->getStatusPingWidget(), "setText", Qt::QueuedConnection,
-                              Q_ARG(const QString&, tr("Netplay Ping: %1 ").arg(ping, 0, 'f', 0)));
-    m_last_ping = ping;
-  }
 }
 
 void EmuThread::resetPerformanceCounters()

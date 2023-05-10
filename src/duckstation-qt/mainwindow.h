@@ -90,7 +90,6 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
-  ALWAYS_INLINE QLabel* getStatusPingWidget() const { return m_status_ping_widget; }
 
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
@@ -266,7 +265,6 @@ private:
   QLabel* m_status_renderer_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;
   QLabel* m_status_vps_widget = nullptr;
-  QLabel* m_status_ping_widget = nullptr;
   QLabel* m_status_resolution_widget = nullptr;
 
   QMenu* m_settings_toolbar_menu = nullptr;
