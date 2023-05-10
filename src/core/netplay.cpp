@@ -48,10 +48,22 @@ enum class ControlMessage : u32
   SynchronizeComplete,
 };
 
+enum class SessionMessage : u32
+{
+  ChatMessage,
+};
+
 #pragma pack(push, 1)
 struct ControlMessageHeader
 {
   ControlMessage type;
+  u32 size;
+};
+
+#pragma pack(push, 1)
+struct SessionMessageHeader
+{
+  SessionMessage type;
   u32 size;
 };
 
@@ -93,6 +105,15 @@ struct ControlSynchronizeCompleteMessage
   ControlMessageHeader header;
 
   static ControlMessage MessageType() { return ControlMessage::SynchronizeComplete; }
+};
+
+struct SessionChatMessage
+{
+  SessionMessageHeader header;
+
+  u32 chat_message_size;
+
+  static SessionMessage MessageType() { return SessionMessage::ChatMessage; }
 };
 #pragma pack(pop)
 
@@ -142,6 +163,10 @@ static void HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeSessionMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* pkt);
 
+// Sessionpackets
+static void HandleSessionMessage(s32 player_id, const ENetPacket* pkt);
+static void HandleSessionChatMessage(s32 player_id, const ENetPacket* pkt);
+
 // l = local, r = remote
 static bool CreateGGPOSession();
 static void DestroyGGPOSession();
@@ -170,7 +195,6 @@ static void Throttle();
 
 // Desync Detection
 static void GenerateChecksumForFrame(int* checksum, int frame, unsigned char* buffer, int buffer_size);
-static void GenerateDesyncReport(s32 desync_frame);
 
 //////////////////////////////////////////////////////////////////////////
 // Variables
@@ -252,7 +276,34 @@ static bool SendControlPacket(s32 player_id, const PacketWrapper<T>& pkt)
   DebugAssert(player_id >= 0 && player_id < MAX_PLAYERS && s_peers[player_id].peer);
   return SendControlPacket<T>(s_peers[player_id].peer, pkt);
 }
+template<typename T>
+static PacketWrapper<T> NewSessionPacket(u32 size = sizeof(T), u32 flags = ENET_PACKET_FLAG_RELIABLE)
+{
+  PacketWrapper<T> ret = NewWrappedPacket<T>(size, flags);
+  SessionMessageHeader* hdr = reinterpret_cast<SessionMessageHeader*>(ret.pkt->data);
+  hdr->type = T::MessageType();
+  hdr->size = size;
+  return ret;
+}
+template<typename T>
+static bool SendSessionPacket(ENetPeer* peer, const PacketWrapper<T>& pkt)
+{
+  const int rc = enet_peer_send(peer, ENET_CHANNEL_SESSION, pkt.pkt);
+  if (rc != 0)
+  {
+    Log_ErrorPrintf("enet_peer_send() failed: %d", rc);
+    enet_packet_destroy(pkt.pkt);
+    return false;
+  }
 
+  return true;
+}
+template<typename T>
+static bool SendSessionPacket(s32 player_id, const PacketWrapper<T>& pkt)
+{
+  DebugAssert(player_id >= 0 && player_id < MAX_PLAYERS && s_peers[player_id].peer);
+  return SendSessionPacket<T>(s_peers[player_id].peer, pkt);
+}
 } // namespace Netplay
 
 // Netplay Impl
@@ -472,6 +523,10 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
       {
         HandleControlMessage(player_id, event->packet);
       }
+      else if (event->channelID == ENET_CHANNEL_SESSION)
+      {
+        HandleSessionMessage(player_id, event->packet);
+      }
       else if (event->channelID == ENET_CHANNEL_GGPO)
       {
         Log_TracePrintf("Received %zu ggpo bytes from player %d", event->packet->dataLength, player_id);
@@ -505,6 +560,10 @@ void Netplay::PollEnet(Common::Timer::Value until_time)
     const u32 enet_timeout = (current_time >= until_time) ?
                                0 :
                                static_cast<u32>(Common::Timer::ConvertValueToMilliseconds(until_time - current_time));
+
+    // make sure s_enet_host exists
+    Assert(s_enet_host);
+
     const int res = enet_host_service(s_enet_host, &event, enet_timeout);
     if (res > 0)
     {
@@ -514,7 +573,6 @@ void Netplay::PollEnet(Common::Timer::Value until_time)
       current_time = Common::Timer::GetCurrentValue();
       continue;
     }
-
     // exit once we're nonblocking
     current_time = Common::Timer::GetCurrentValue();
     if (enet_timeout == 0 || current_time >= until_time)
@@ -1003,6 +1061,43 @@ void Netplay::HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* 
   CheckForCompleteResynchronize();
 }
 
+void Netplay::HandleSessionMessage(s32 player_id, const ENetPacket* pkt)
+{
+  if (pkt->dataLength < sizeof(ControlMessageHeader))
+  {
+    Log_ErrorPrintf("Invalid control packet from player %d of size %zu", player_id, pkt->dataLength);
+    return;
+  }
+
+  const SessionMessageHeader* hdr = reinterpret_cast<const SessionMessageHeader*>(pkt->data);
+  switch (hdr->type)
+  {
+    case SessionMessage::ChatMessage:
+      HandleSessionChatMessage(player_id, pkt);
+      break;
+
+    default:
+      Log_ErrorPrintf("Unhandled session packet %u from player %d of size %zu", hdr->type, player_id, pkt->dataLength);
+      break;
+  }
+}
+
+void Netplay::HandleSessionChatMessage(s32 player_id, const ENetPacket* pkt)
+{
+  const SessionChatMessage* msg = reinterpret_cast<const SessionChatMessage*>(pkt->data);
+  if (pkt->dataLength < sizeof(SessionChatMessage) ||
+      pkt->dataLength < (sizeof(SessionChatMessage) + msg->chat_message_size))
+  {
+    // invalid chat message. ignore.
+    return;
+  }
+
+  std::string message(pkt->data + sizeof(SessionChatMessage),
+                      pkt->data + sizeof(SessionChatMessage) + msg->chat_message_size);
+
+  Host::OnNetplayMessage(fmt::format("Player {}: {}", player_id + 1, message));
+}
+
 void Netplay::CheckForCompleteResynchronize()
 {
   if (s_synchronized_players == s_num_players)
@@ -1037,8 +1132,6 @@ void Netplay::SetSettings()
 
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
-  // not sure its needed but enabled for now... TODO
-  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   Host::Internal::SetNetplaySettingsLayer(&si);
   System::ApplySettings(false);
@@ -1065,6 +1158,9 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
+  // only activate timesync if its worth correcting.
+  if (std::abs(frame_delta) < 1.0f)
+    return;
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
@@ -1140,37 +1236,6 @@ void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* 
   // Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
 }
 
-void Netplay::GenerateDesyncReport(s32 desync_frame)
-{
-  std::string path = "\\netplaylogs\\desync_frame_" + std::to_string(desync_frame) + "_p" +
-                     std::to_string(s_local_handle) + "_" + System::GetRunningSerial() + "_.txt";
-  std::string filename = EmuFolders::Dumps + path;
-
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
-                                             BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
-  {
-    Log_VerbosePrint("desync log creation failed to create stream");
-    return;
-  }
-
-  if (!ByteStream::WriteBinaryToStream(stream.get(),
-                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
-                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize()))
-  {
-    Log_VerbosePrint("desync log creation failed to write the stream");
-    stream->Discard();
-    return;
-  }
-  /* stream->Write(s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
-                 s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize());*/
-
-  stream->Commit();
-
-  Log_VerbosePrintf("desync log created for frame %d", desync_frame);
-}
-
 void Netplay::AdvanceFrame()
 {
   ggpo_advance_frame(s_ggpo, 0);
@@ -1178,19 +1243,13 @@ void Netplay::AdvanceFrame()
 
 void Netplay::RunFrame()
 {
+  PollEnet(0);
+
+  if (!s_ggpo)
+    return;
   // housekeeping
-  // TODO: get rid of double polling
-  PollEnet(0);
-  if (!s_ggpo)
-    return;
-
   ggpo_network_idle(s_ggpo);
-  PollEnet(0);
-  if (!s_ggpo)
-    return;
-
   ggpo_idle(s_ggpo);
-
   // run game
   auto result = GGPO_OK;
   int disconnect_flags = 0;
@@ -1238,7 +1297,36 @@ Netplay::Input Netplay::ReadLocalInput()
   return inp;
 }
 
-void Netplay::SendMsg(const char* msg) {}
+void Netplay::SendMsg(std::string msg)
+{
+  SessionChatMessage header{};
+  const size_t msg_size = msg.size();
+
+  header.header.type = SessionMessage::ChatMessage;
+  header.header.size = sizeof(SessionChatMessage) + msg_size;
+  header.chat_message_size = msg_size;
+
+  ENetPacket* pkt = enet_packet_create(nullptr, sizeof(header) + msg_size, ENET_PACKET_FLAG_RELIABLE);
+  std::memcpy(pkt->data, &header, sizeof(header));
+  std::memcpy(pkt->data + sizeof(header), msg.c_str(), msg_size);
+
+  for (s32 i = 0; i < MAX_PLAYERS; i++)
+  {
+    if (!s_peers[i].peer)
+      continue;
+
+    const int err = enet_peer_send(s_peers[i].peer, ENET_CHANNEL_SESSION, pkt);
+    if (err != 0)
+    {
+      // failed to send netplay message? just clean it up.
+      Log_ErrorPrint("Failed to send netplay message");
+      enet_packet_destroy(pkt);
+    }
+  }
+
+  // add own netplay message locally to netplay messages
+  Host::OnNetplayMessage(fmt::format("Player {}: {}", s_local_handle, msg));
+}
 
 GGPOErrorCode Netplay::SyncInput(Netplay::Input inputs[2], int* disconnect_flags)
 {
@@ -1377,8 +1465,7 @@ bool Netplay::NpAdvFrameCb(void* ctx, int flags)
 bool Netplay::NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame)
 {
   SaveStateBuffer our_buffer;
-  // min size is 2 because otherwise the desync logger doesnt have enough time to dump the state.
-  if (s_save_buffer_pool.size() < 2)
+  if (s_save_buffer_pool.empty())
   {
     our_buffer = std::make_unique<System::MemorySaveState>();
   }
@@ -1465,7 +1552,6 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
                                          CurrentFrame(), ev->u.desync.nFrameOfDesync,
                                          CurrentFrame() - ev->u.desync.nFrameOfDesync, ev->u.desync.ourCheckSum,
                                          ev->u.desync.remoteChecksum));
-      GenerateDesyncReport(ev->u.desync.nFrameOfDesync);
       break;
     default:
       Host::OnNetplayMessage(fmt::format("Netplay Event Code: {}", static_cast<int>(ev->code)));

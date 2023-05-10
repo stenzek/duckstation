@@ -1079,12 +1079,6 @@ void EmuThread::startNetplaySession(int local_handle, quint16 local_port, const 
                               Q_ARG(quint16, remote_port), Q_ARG(int, input_delay), Q_ARG(const QString&, game_path));
     return;
   }
-  // disable block linking and disable rewind and runahead during a netplay session
-  g_settings.cpu_recompiler_block_linking = false;
-  g_settings.rewind_enable = false;
-  g_settings.runahead_frames = 0;
-
-  Log_WarningPrintf("Disabling block linking, runahead and rewind due to rollback.");
 
   auto remAddr = remote_addr.trimmed().toStdString();
   auto gamePath = game_path.trimmed().toStdString();
@@ -1101,7 +1095,8 @@ void EmuThread::sendNetplayMessage(const QString& message)
     QMetaObject::invokeMethod(this, "sendNetplayMessage", Qt::QueuedConnection, Q_ARG(const QString&, message));
     return;
   }
-  Netplay::SendMsg(message.toStdString().c_str());
+  // TODO REDO NETPLAY UI
+  // Netplay::SendMsg(message.toStdString().c_str());
 }
 
 void EmuThread::stopNetplaySession()
