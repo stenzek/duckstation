@@ -138,7 +138,7 @@ static BIOS::Hash s_bios_hash = {};
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
 static std::string s_running_game_title;
-static bool s_running_bios;
+static bool s_running_unknown_game;
 
 static float s_throttle_frequency = 60.0f;
 static float s_target_speed = 1.0f;
@@ -320,9 +320,9 @@ const std::string& System::GetRunningTitle()
   return s_running_game_title;
 }
 
-bool System::IsRunningBIOS()
+bool System::IsRunningUnknownGame()
 {
-  return s_running_bios;
+  return s_running_unknown_game;
 }
 
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
@@ -958,9 +958,6 @@ void System::ResetSystem()
   ResetPerformanceCounters();
   ResetThrottler();
   Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "System reset."));
-
-  // need to clear this here, because of eject disc -> reset.
-  s_running_bios = !s_running_game_path.empty();
 }
 
 void System::PauseSystem(bool paused)
@@ -1239,9 +1236,6 @@ bool System::BootSystem(SystemBootParameters parameters)
     return false;
   }
 
-  // Allow controller analog mode for EXEs and PSFs.
-  s_running_bios = s_running_game_path.empty() && exe_boot.empty() && psf_boot.empty();
-
   UpdateControllers();
   UpdateMemoryCardTypes();
   UpdateMultitaps();
@@ -1510,7 +1504,7 @@ void System::ClearRunningGame()
   s_running_game_serial.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
-  s_running_bios = false;
+  s_running_unknown_game = false;
   s_cheat_list.reset();
   s_state = State::Shutdown;
 
@@ -3053,6 +3047,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_running_game_path.clear();
   s_running_game_serial.clear();
   s_running_game_title.clear();
+  s_running_unknown_game = true;
 
   if (path && std::strlen(path) > 0)
   {
@@ -3070,6 +3065,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       {
         s_running_game_serial = entry->serial;
         s_running_game_title = entry->title;
+        s_running_unknown_game = false;
       }
       else
       {
