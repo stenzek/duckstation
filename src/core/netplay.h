@@ -9,8 +9,15 @@ enum : s32
 {
   // Maximum number of emulated controllers.
   MAX_PLAYERS = 2,
+
   // Maximum netplay prediction frames
   MAX_ROLLBACK_FRAMES = 8,
+
+  // Maximum length of a nickname
+  MAX_NICKNAME_LENGTH = 128,
+
+  // Maximum name of password for session
+  MAX_SESSION_PASSWORD_LENGTH = 128,
 };
 
 enum : u8
@@ -29,14 +36,14 @@ bool IsActive();
 
 /// Frees up resources associated with the current netplay session.
 /// Should only be called by System::ShutdownSystem().
-void CloseSession();
+void SystemDestroyed();
 
 /// Runs the VM and netplay loop. when the netplay loop cancels it switches to normal execute mode.
 void ExecuteNetplay();
 
 void CollectInput(u32 slot, u32 bind, float value);
 
-void SendMsg(std::string msg);
+void SendChatMessage(const std::string_view& msg);
 
 s32 GetPing();
 u32 GetMaxPrediction();

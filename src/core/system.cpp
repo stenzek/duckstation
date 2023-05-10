@@ -3757,7 +3757,7 @@ void System::ShutdownSystem(bool save_resume_state)
     return;
 
   if (Netplay::IsActive())
-    Netplay::CloseSession();
+    Netplay::SystemDestroyed();
 
   if (save_resume_state)
     SaveResumeState();

@@ -97,7 +97,7 @@ void ImGuiManager::DrawNetplayMessages()
   const float spacing = 5.0f * scale;
   const float msg_spacing = 2.0f * scale;
   ImFont* font = ImGuiManager::GetFixedFont();
-  float position_y = io.DisplaySize.y - margin - ((spacing + font->FontSize) * 2.0f) - font->FontSize;
+  float position_y = io.DisplaySize.y - margin - (100.0f * scale) - font->FontSize - spacing;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
   // drop expired messages.. because of the reverse iteration below, we can't do it in there :/
@@ -121,11 +121,9 @@ void ImGuiManager::DrawNetplayMessages()
     const char* text_end = text_start + iter->first.length();
     const ImVec2 text_size = font->CalcTextSizeA(font->FontSize, io.DisplaySize.x, 0.0f, text_start, text_end, nullptr);
 
-    dl->AddText(font, font->FontSize,
-                ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),
+    dl->AddText(font, font->FontSize, ImVec2(margin + shadow_offset, position_y + shadow_offset),
                 IM_COL32(0, 0, 0, shadow_alpha), text_start, text_end);
-    dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),
-                IM_COL32(255, 255, 255, alpha), text_start, text_end);
+    dl->AddText(font, font->FontSize, ImVec2(margin, position_y), IM_COL32(255, 255, 255, alpha), text_start, text_end);
 
     position_y -= text_size.y + msg_spacing;
   }
@@ -144,16 +142,13 @@ void ImGuiManager::DrawNetplayStats()
   const float margin = 10.0f * scale;
   const float spacing = 5.0f * scale;
   ImFont* font = ImGuiManager::GetFixedFont();
-  const float position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize - spacing - font->FontSize;
+  const float position_y = ImGui::GetIO().DisplaySize.y - margin - (100.0f * scale);
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  ImVec2 text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,
-                                         text.GetCharArray() + text.GetLength(), nullptr);
-  dl->AddText(font, font->FontSize,
-              ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),
-              IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());
-  dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),
-              IM_COL32(255, 255, 255, 255), text, text.GetCharArray() + text.GetLength());
+  dl->AddText(font, font->FontSize, ImVec2(margin + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
+              text, text.GetCharArray() + text.GetLength());
+  dl->AddText(font, font->FontSize, ImVec2(margin, position_y), IM_COL32(255, 255, 255, 255), text,
+              text.GetCharArray() + text.GetLength());
 }
 
 void ImGuiManager::DrawNetplayChatDialog()
@@ -178,7 +173,7 @@ void ImGuiManager::DrawNetplayChatDialog()
 
   // sending netplay message
   if (send_message && !s_netplay_chat_message.empty())
-    Netplay::SendMsg(s_netplay_chat_message);
+    Netplay::SendChatMessage(s_netplay_chat_message);
 
   const ImGuiIO& io = ImGui::GetIO();
   const ImGuiStyle& style = ImGui::GetStyle();
