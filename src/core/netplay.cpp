@@ -1315,9 +1315,10 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
     Log_ErrorPrint("Failed to Create Netplay Session!");
     System::ShutdownSystem(false);
   }
-  else
+  else if (IsHost())
   {
-    // Load savestate if available
+    // Load savestate if available and only when you are the host. 
+    // the other peers will get state from the host
     std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
     System::LoadState(save.c_str());
   }
