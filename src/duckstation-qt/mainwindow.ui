@@ -241,7 +241,6 @@
     <property name="title">
      <string>Netplay</string>
     </property>
-    <addaction name="actionSetupNetplaySession"/>
     <addaction name="separator"/>
     <addaction name="actionCreateNetplaySession"/>
     <addaction name="actionJoinNetplaySession"/>
@@ -984,11 +983,6 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader</string>
-   </property>
-  </action>
-  <action name="actionSetupNetplaySession">
-   <property name="text">
-    <string>Setup Session</string>
    </property>
   </action>
   <action name="actionCreateNetplaySession">

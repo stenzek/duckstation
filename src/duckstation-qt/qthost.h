@@ -187,10 +187,6 @@ public Q_SLOTS:
   void setCheatEnabled(quint32 index, bool enabled);
   void applyCheat(quint32 index);
   void reloadPostProcessingShaders();
-  void startNetplaySession(int local_handle, quint16 local_port, const QString& remote_addr, quint16 remote_port,
-                           int input_delay, const QString& game_path);
-  void stopNetplaySession();
-  void sendNetplayMessage(const QString& message);
   void createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password);
   void joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port, const QString& password);
 

@@ -42,7 +42,6 @@
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="memorycardeditordialog.cpp" />
     <ClCompile Include="netplaydialogs.cpp" />
-    <ClCompile Include="netplaywidget.cpp" />
     <ClCompile Include="postprocessingchainconfigwidget.cpp" />
     <ClCompile Include="postprocessingshaderconfigwidget.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
@@ -100,7 +99,6 @@
     <QtMoc Include="postprocessingshaderconfigwidget.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="mainwindow.h" />
-    <QtMoc Include="netplaywidget.h" />
     <QtMoc Include="qthost.h" />
     <QtMoc Include="foldersettingswidget.h" />
     <ClInclude Include="qtutils.h" />
@@ -132,9 +130,6 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="mainwindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="netplaywidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="settingsdialog.ui">
@@ -268,7 +263,6 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_netplaydialogs.cpp" />
-    <ClCompile Include="$(IntDir)moc_netplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
