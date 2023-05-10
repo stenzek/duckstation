@@ -622,6 +622,10 @@ void Netplay::PollEnet(Common::Timer::Value until_time)
     {
       HandleEnetEvent(&event);
 
+      // receiving can trigger sending
+      if (s_ggpo)
+        ggpo_network_idle(s_ggpo);
+
       // make sure we get all events
       current_time = Common::Timer::GetCurrentValue();
       continue;
@@ -1483,30 +1487,20 @@ void Netplay::Throttle()
   {
     const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
     s_next_frame_time += (diff / s_frame_period) * s_frame_period;
+    PollEnet(0);
     return;
   }
-  // Poll at 2ms throughout the sleep.
-  // This way the network traffic comes through as soon as possible.
-  const Common::Timer::Value sleep_period = Common::Timer::ConvertMillisecondsToValue(16);
-  while (s_state == SessionState::Running)
-  {
-    // TODO: make better, we can tell this function to stall until the next frame
-    PollEnet(0);
-    if (s_ggpo)
-    {
-      ggpo_network_idle(s_ggpo);
-      PollEnet(0);
-    }
 
+  // Poll at 1ms throughout the sleep.
+  // We need to send our ping requests through.
+  const Common::Timer::Value sleep_period = Common::Timer::ConvertMillisecondsToValue(2);
+  while (IsActive())
+  {
     current_time = Common::Timer::GetCurrentValue();
     if (current_time >= s_next_frame_time)
       break;
 
-    // Spin for the last millisecond.
-    if ((s_next_frame_time - current_time) <= sleep_period)
-      Common::Timer::BusyWait(s_next_frame_time - current_time);
-    else
-      Common::Timer::SleepUntil(current_time + sleep_period, false);
+    PollEnet(std::min(current_time + sleep_period, s_next_frame_time));
   }
 }
 
@@ -1531,7 +1525,6 @@ void Netplay::RunFrame()
   if (!s_ggpo)
     return;
   // housekeeping
-  ggpo_network_idle(s_ggpo);
   ggpo_idle(s_ggpo);
   // run game
   auto result = GGPO_OK;

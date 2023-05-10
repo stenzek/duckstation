@@ -2228,7 +2228,7 @@ int main(int argc, char* argv[])
     Host::RunOnCPUThread([]() {
       const bool first = (s_netplay_test == 0);
       if (!first)
-        QtHost::RunOnUIThread([]() { g_main_window->move(g_main_window->pos() + QPoint(500, 0)); });
+        QtHost::RunOnUIThread([]() { g_main_window->move(g_main_window->pos() + QPoint(1200, 0)); });
 
       const int h = first ? 1 : 2;
       const int nh = first ? 2 : 1;
