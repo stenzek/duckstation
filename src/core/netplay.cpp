@@ -1063,9 +1063,9 @@ void Netplay::HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* 
 
 void Netplay::HandleSessionMessage(s32 player_id, const ENetPacket* pkt)
 {
-  if (pkt->dataLength < sizeof(ControlMessageHeader))
+  if (pkt->dataLength < sizeof(SessionMessageHeader))
   {
-    Log_ErrorPrintf("Invalid control packet from player %d of size %zu", player_id, pkt->dataLength);
+    Log_ErrorPrintf("Invalid session packet from player %d of size %zu", player_id, pkt->dataLength);
     return;
   }
 
