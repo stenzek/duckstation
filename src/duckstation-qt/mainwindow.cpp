@@ -2416,6 +2416,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // If there's no VM, we can just exit as normal.
   if (!s_system_valid)
   {
+    saveGeometryToConfig();
     QMainWindow::closeEvent(event);
     return;
   }
