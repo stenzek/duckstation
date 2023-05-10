@@ -175,8 +175,10 @@ void ImGuiManager::DrawNetplayChatDialog()
   const bool close_chat =
     send_message || (s_netplay_chat_message.empty() && (ImGui::IsKeyPressed(ImGuiKey_Backspace)) ||
                      ImGui::IsKeyPressed(ImGuiKey_Escape));
+
+  // sending netplay message
   if (send_message && !s_netplay_chat_message.empty())
-    Netplay::SendMsg(s_netplay_chat_message.c_str());
+    Netplay::SendMsg(s_netplay_chat_message);
 
   const ImGuiIO& io = ImGui::GetIO();
   const ImGuiStyle& style = ImGui::GetStyle();

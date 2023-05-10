@@ -46,6 +46,7 @@ enum class ControlMessage : u32
   ConnectResponse,
   SynchronizeSession,
   SynchronizeComplete,
+  ChatMessage,
 };
 
 #pragma pack(push, 1)
@@ -94,6 +95,15 @@ struct ControlSynchronizeCompleteMessage
 
   static ControlMessage MessageType() { return ControlMessage::SynchronizeComplete; }
 };
+
+struct ControlChatMessage
+{
+  ControlMessageHeader header;
+
+  u32 chat_message_size;
+
+  static ControlMessage MessageType() { return ControlMessage::ChatMessage; }
+};
 #pragma pack(pop)
 
 using SaveStateBuffer = std::unique_ptr<System::MemorySaveState>;
@@ -141,6 +151,7 @@ static void HandleControlMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeSessionMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* pkt);
+static void HandleControlChatMessage(s32 player_id, const ENetPacket* pkt);
 
 // l = local, r = remote
 static bool CreateGGPOSession();
@@ -170,7 +181,6 @@ static void Throttle();
 
 // Desync Detection
 static void GenerateChecksumForFrame(int* checksum, int frame, unsigned char* buffer, int buffer_size);
-static void GenerateDesyncReport(s32 desync_frame);
 
 //////////////////////////////////////////////////////////////////////////
 // Variables
@@ -252,7 +262,6 @@ static bool SendControlPacket(s32 player_id, const PacketWrapper<T>& pkt)
   DebugAssert(player_id >= 0 && player_id < MAX_PLAYERS && s_peers[player_id].peer);
   return SendControlPacket<T>(s_peers[player_id].peer, pkt);
 }
-
 } // namespace Netplay
 
 // Netplay Impl
@@ -505,6 +514,10 @@ void Netplay::PollEnet(Common::Timer::Value until_time)
     const u32 enet_timeout = (current_time >= until_time) ?
                                0 :
                                static_cast<u32>(Common::Timer::ConvertValueToMilliseconds(until_time - current_time));
+
+    // make sure s_enet_host exists
+    Assert(s_enet_host);
+
     const int res = enet_host_service(s_enet_host, &event, enet_timeout);
     if (res > 0)
     {
@@ -514,7 +527,6 @@ void Netplay::PollEnet(Common::Timer::Value until_time)
       current_time = Common::Timer::GetCurrentValue();
       continue;
     }
-
     // exit once we're nonblocking
     current_time = Common::Timer::GetCurrentValue();
     if (enet_timeout == 0 || current_time >= until_time)
@@ -691,6 +703,10 @@ void Netplay::HandleControlMessage(s32 player_id, const ENetPacket* pkt)
 
     case ControlMessage::SynchronizeComplete:
       HandleSynchronizeCompleteMessage(player_id, pkt);
+      break;
+
+    case ControlMessage::ChatMessage:
+      HandleControlChatMessage(player_id, pkt);
       break;
 
     default:
@@ -1003,6 +1019,22 @@ void Netplay::HandleSynchronizeCompleteMessage(s32 player_id, const ENetPacket* 
   CheckForCompleteResynchronize();
 }
 
+void Netplay::HandleControlChatMessage(s32 player_id, const ENetPacket* pkt)
+{
+  const ControlChatMessage* msg = reinterpret_cast<const ControlChatMessage*>(pkt->data);
+  if (pkt->dataLength < sizeof(ControlChatMessage) ||
+      pkt->dataLength < (sizeof(ControlChatMessage) + msg->chat_message_size))
+  {
+    // invalid chat message. ignore.
+    return;
+  }
+
+  std::string message(pkt->data + sizeof(ControlChatMessage),
+                      pkt->data + sizeof(ControlChatMessage) + msg->chat_message_size);
+
+  Host::OnNetplayMessage(fmt::format("Player {}: {}", PlayerIdToGGPOHandle(player_id), message));
+}
+
 void Netplay::CheckForCompleteResynchronize()
 {
   if (s_synchronized_players == s_num_players)
@@ -1065,6 +1097,9 @@ void Netplay::UpdateThrottlePeriod()
 
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
+  // only activate timesync if its worth correcting.
+  if (std::abs(frame_delta) < 1.0f)
+    return;
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
   // otherwise we will keep spiraling into unplayable gameplay.
@@ -1140,37 +1175,6 @@ void Netplay::GenerateChecksumForFrame(int* checksum, int frame, unsigned char* 
   // Log_VerbosePrintf("Netplay Checksum: f:%d wf:%d c:%u", frame, frame % num_group_of_pages, *checksum);
 }
 
-void Netplay::GenerateDesyncReport(s32 desync_frame)
-{
-  std::string path = "\\netplaylogs\\desync_frame_" + std::to_string(desync_frame) + "_p" +
-                     std::to_string(s_local_handle) + "_" + System::GetRunningSerial() + "_.txt";
-  std::string filename = EmuFolders::Dumps + path;
-
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
-                                             BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
-  {
-    Log_VerbosePrint("desync log creation failed to create stream");
-    return;
-  }
-
-  if (!ByteStream::WriteBinaryToStream(stream.get(),
-                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
-                                       s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize()))
-  {
-    Log_VerbosePrint("desync log creation failed to write the stream");
-    stream->Discard();
-    return;
-  }
-  /* stream->Write(s_save_buffer_pool.back().get()->state_stream.get()->GetMemoryPointer(),
-                 s_save_buffer_pool.back().get()->state_stream.get()->GetMemorySize());*/
-
-  stream->Commit();
-
-  Log_VerbosePrintf("desync log created for frame %d", desync_frame);
-}
-
 void Netplay::AdvanceFrame()
 {
   ggpo_advance_frame(s_ggpo, 0);
@@ -1178,19 +1182,13 @@ void Netplay::AdvanceFrame()
 
 void Netplay::RunFrame()
 {
+  PollEnet(0);
+
+  if (!s_ggpo)
+    return;
   // housekeeping
-  // TODO: get rid of double polling
-  PollEnet(0);
-  if (!s_ggpo)
-    return;
-
   ggpo_network_idle(s_ggpo);
-  PollEnet(0);
-  if (!s_ggpo)
-    return;
-
   ggpo_idle(s_ggpo);
-
   // run game
   auto result = GGPO_OK;
   int disconnect_flags = 0;
@@ -1238,7 +1236,36 @@ Netplay::Input Netplay::ReadLocalInput()
   return inp;
 }
 
-void Netplay::SendMsg(const char* msg) {}
+void Netplay::SendMsg(std::string msg)
+{
+  ControlChatMessage header{};
+  const size_t msg_size = msg.size();
+
+  header.header.type = ControlMessage::ChatMessage;
+  header.header.size = sizeof(ControlChatMessage) + msg_size;
+  header.chat_message_size = msg_size;
+
+  ENetPacket* pkt = enet_packet_create(nullptr, sizeof(header) + msg_size, ENET_PACKET_FLAG_RELIABLE);
+  std::memcpy(pkt->data, &header, sizeof(header));
+  std::memcpy(pkt->data + sizeof(header), msg.c_str(), msg_size);
+
+  for (s32 i = 0; i < MAX_PLAYERS; i++)
+  {
+    if (!s_peers[i].peer)
+      continue;
+
+    const int err = enet_peer_send(s_peers[i].peer, ENET_CHANNEL_CONTROL, pkt);
+    if (err != 0)
+    {
+      // failed to send netplay message? just clean it up.
+      Log_ErrorPrint("Failed to send netplay message");
+      enet_packet_destroy(pkt);
+    }
+  }
+
+  // add own netplay message locally to netplay messages
+  Host::OnNetplayMessage(fmt::format("Player {}: {}", s_local_handle, msg));
+}
 
 GGPOErrorCode Netplay::SyncInput(Netplay::Input inputs[2], int* disconnect_flags)
 {
@@ -1288,9 +1315,10 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, std::string&
     Log_ErrorPrint("Failed to Create Netplay Session!");
     System::ShutdownSystem(false);
   }
-  else
+  else if (IsHost())
   {
-    // Load savestate if available
+    // Load savestate if available and only when you are the host. 
+    // the other peers will get state from the host
     std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
     System::LoadState(save.c_str());
   }
@@ -1377,8 +1405,7 @@ bool Netplay::NpAdvFrameCb(void* ctx, int flags)
 bool Netplay::NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame)
 {
   SaveStateBuffer our_buffer;
-  // min size is 2 because otherwise the desync logger doesnt have enough time to dump the state.
-  if (s_save_buffer_pool.size() < 2)
+  if (s_save_buffer_pool.empty())
   {
     our_buffer = std::make_unique<System::MemorySaveState>();
   }
@@ -1465,7 +1492,6 @@ bool Netplay::NpOnEventCb(void* ctx, GGPOEvent* ev)
                                          CurrentFrame(), ev->u.desync.nFrameOfDesync,
                                          CurrentFrame() - ev->u.desync.nFrameOfDesync, ev->u.desync.ourCheckSum,
                                          ev->u.desync.remoteChecksum));
-      GenerateDesyncReport(ev->u.desync.nFrameOfDesync);
       break;
     default:
       Host::OnNetplayMessage(fmt::format("Netplay Event Code: {}", static_cast<int>(ev->code)));

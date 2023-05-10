@@ -1079,12 +1079,6 @@ void EmuThread::startNetplaySession(int local_handle, quint16 local_port, const 
                               Q_ARG(quint16, remote_port), Q_ARG(int, input_delay), Q_ARG(const QString&, game_path));
     return;
   }
-  // disable block linking and disable rewind and runahead during a netplay session
-  g_settings.cpu_recompiler_block_linking = false;
-  g_settings.rewind_enable = false;
-  g_settings.runahead_frames = 0;
-
-  Log_WarningPrintf("Disabling block linking, runahead and rewind due to rollback.");
 
   auto remAddr = remote_addr.trimmed().toStdString();
   auto gamePath = game_path.trimmed().toStdString();
@@ -1101,7 +1095,8 @@ void EmuThread::sendNetplayMessage(const QString& message)
     QMetaObject::invokeMethod(this, "sendNetplayMessage", Qt::QueuedConnection, Q_ARG(const QString&, message));
     return;
   }
-  Netplay::SendMsg(message.toStdString().c_str());
+  // TODO REDO NETPLAY UI
+  // Netplay::SendMsg(message.toStdString().c_str());
 }
 
 void EmuThread::stopNetplaySession()
@@ -1713,14 +1708,6 @@ void EmuThread::updatePerformanceCounters()
       Q_ARG(const QString&, tr("Video: %1 FPS (%2%)").arg(vfps, 0, 'f', 0).arg(speed, 0, 'f', 0)));
     m_last_speed = speed;
     m_last_video_fps = vfps;
-  }
-
-  const s32 ping = Netplay::GetPing();
-  if (m_last_ping != ping)
-  {
-    QMetaObject::invokeMethod(g_main_window->getStatusPingWidget(), "setText", Qt::QueuedConnection,
-                              Q_ARG(const QString&, tr("Netplay Ping: %1 ").arg(ping, 0, 'f', 0)));
-    m_last_ping = ping;
   }
 }
 

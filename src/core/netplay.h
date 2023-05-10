@@ -8,7 +8,7 @@ namespace Netplay {
 enum : s32
 {
   // Maximum number of emulated controllers.
-  MAX_PLAYERS = 2, 
+  MAX_PLAYERS = 2,
   // Maximum netplay prediction frames
   MAX_ROLLBACK_FRAMES = 8,
 };
@@ -36,7 +36,7 @@ void ExecuteNetplay();
 
 void CollectInput(u32 slot, u32 bind, float value);
 
-void SendMsg(const char* msg);
+void SendMsg(std::string msg);
 
 s32 GetPing();
 u32 GetMaxPrediction();
