@@ -153,6 +153,8 @@ void Pad::Reset()
 {
   SoftReset();
 
+  s_last_memory_card_transfer_frame = 0;
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (s_controllers[i])
@@ -469,6 +471,9 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   }
   else
   {
+    if (sw.IsReading())
+      s_last_memory_card_transfer_frame = 0;
+
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
       if ((sw.GetVersion() < 50) && (i >= 2))
