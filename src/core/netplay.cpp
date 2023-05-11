@@ -1267,8 +1267,8 @@ void Netplay::UpdateResetState()
       {
         if (!IsValidPlayerId(i) || s_reset_players.test(i))
           continue;
-
-        if (s_peers[i].peer->state == ENET_PEER_STATE_CONNECTED)
+        // be sure to first check whether the peer is still valid.
+        if (s_peers[i].peer && s_peers[i].peer->state == ENET_PEER_STATE_CONNECTED)
           s_reset_players.set(i);
       }
 
@@ -1645,10 +1645,6 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
 void Netplay::TestNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
                                  s32 input_delay, std::string game_path)
 {
-  // dont want to start a session when theres already one going on.
-  if (IsActive())
-    return;
-
   const bool is_hosting = (local_handle == 1);
   if (!CreateSystem(std::move(game_path), is_hosting))
   {
@@ -1669,7 +1665,7 @@ void Netplay::TestNetplaySession(s32 local_handle, u16 local_port, const std::st
 bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
 {
   // TODO: Password
- 
+
   const s32 input_delay = 1;
 
   if (!Netplay::Start(true, std::move(nickname), std::string(), port, input_delay))
