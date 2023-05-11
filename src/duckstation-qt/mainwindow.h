@@ -16,7 +16,6 @@
 #include "displaywidget.h"
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
-#include <netplaywidget.h>
 
 class QLabel;
 class QThread;
@@ -169,7 +168,6 @@ private Q_SLOTS:
   void openCPUDebugger();
   void onCPUDebuggerClosed();
 
-  void onSetupNetplaySessionClicked();
   void onCreateNetplaySessionClicked();
   void onJoinNetplaySessionClicked();
 
@@ -278,7 +276,6 @@ private:
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
-  NetplayWidget* m_netplay_window = nullptr;
 
   std::string m_current_game_title;
   std::string m_current_game_serial;

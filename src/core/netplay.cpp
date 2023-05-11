@@ -1267,8 +1267,8 @@ void Netplay::UpdateResetState()
       {
         if (!IsValidPlayerId(i) || s_reset_players.test(i))
           continue;
-
-        if (s_peers[i].peer->state == ENET_PEER_STATE_CONNECTED)
+        // be sure to first check whether the peer is still valid.
+        if (s_peers[i].peer && s_peers[i].peer->state == ENET_PEER_STATE_CONNECTED)
           s_reset_players.set(i);
       }
 
@@ -1430,7 +1430,7 @@ void Netplay::SetSettings()
                       Settings::GetControllerTypeName(ControllerType::DigitalController));
   }
 
-  //si.SetStringValue("CPU", "ExecutionMode", "Interpreter");
+  // si.SetStringValue("CPU", "ExecutionMode", "Interpreter");
 
   // No runahead or rewind, that'd be a disaster.
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
@@ -1642,13 +1642,9 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
-                                  s32 input_delay, std::string game_path)
+void Netplay::TestNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
+                                 s32 input_delay, std::string game_path)
 {
-  // dont want to start a session when theres already one going on.
-  if (IsActive())
-    return;
-
   const bool is_hosting = (local_handle == 1);
   if (!CreateSystem(std::move(game_path), is_hosting))
   {
@@ -1664,22 +1660,6 @@ void Netplay::StartNetplaySession(s32 local_handle, u16 local_port, const std::s
     Log_ErrorPrint("Failed to Create Netplay Session!");
     System::ShutdownSystem(false);
   }
-  else if (IsHost())
-  {
-    // Load savestate if available and only when you are the host.
-    // the other peers will get state from the host
-    std::string save = EmuFolders::SaveStates + "/netplay/" + System::GetRunningSerial() + ".sav";
-    System::LoadState(save.c_str());
-  }
-}
-
-void Netplay::StopNetplaySession()
-{
-  if (!IsActive())
-    return;
-
-  // This will call back to us.
-  System::ShutdownSystem(false);
 }
 
 bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
@@ -1692,6 +1672,13 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
   {
     CloseSession();
     return false;
+  }
+  else if (IsHost())
+  {
+    // Load savestate if available and only when you are the host.
+    // the other peers will get state from the host
+    auto save_path = fmt::format("{}\\netplay\\{}.sav", EmuFolders::SaveStates, System::GetRunningSerial());
+    System::LoadState(save_path.c_str());
   }
 
   return true;

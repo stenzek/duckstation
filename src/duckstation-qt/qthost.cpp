@@ -1069,36 +1069,6 @@ void EmuThread::reloadPostProcessingShaders()
   System::ReloadPostProcessingShaders();
 }
 
-void EmuThread::startNetplaySession(int local_handle, quint16 local_port, const QString& remote_addr,
-                                    quint16 remote_port, int input_delay, const QString& game_path)
-{
-  if (!isOnThread())
-  {
-    QMetaObject::invokeMethod(this, "startNetplaySession", Qt::QueuedConnection, Q_ARG(int, local_handle),
-                              Q_ARG(quint16, local_port), Q_ARG(const QString&, remote_addr),
-                              Q_ARG(quint16, remote_port), Q_ARG(int, input_delay), Q_ARG(const QString&, game_path));
-    return;
-  }
-
-  auto remAddr = remote_addr.trimmed().toStdString();
-  auto gamePath = game_path.trimmed().toStdString();
-  Netplay::StartNetplaySession(local_handle, local_port, remAddr, remote_port, input_delay, gamePath);
-
-  // TODO: Fix this junk.. for some reason, it stays sleeping...
-  g_emu_thread->wakeThread();
-}
-
-void EmuThread::sendNetplayMessage(const QString& message)
-{
-  if (!isOnThread())
-  {
-    QMetaObject::invokeMethod(this, "sendNetplayMessage", Qt::QueuedConnection, Q_ARG(const QString&, message));
-    return;
-  }
-  // TODO REDO NETPLAY UI
-  // Netplay::SendMsg(message.toStdString().c_str());
-}
-
 void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password)
 {
   if (!isOnThread())
@@ -1136,16 +1106,6 @@ void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostn
 
   // TODO: Fix this junk.. for some reason, it stays sleeping...
   g_emu_thread->wakeThread();
-}
-
-void EmuThread::stopNetplaySession()
-{
-  if (!isOnThread())
-  {
-    QMetaObject::invokeMethod(this, "stopNetplaySession", Qt::QueuedConnection);
-    return;
-  }
-  Netplay::StopNetplaySession();
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)
@@ -2273,7 +2233,7 @@ int main(int argc, char* argv[])
       const int port_base = 31200;
       std::string remote = "127.0.0.1";
       std::string game = "D:\\PSX\\chd\\padtest.chd";
-      Netplay::StartNetplaySession(h, port_base + h, remote, port_base + nh, 1, game);
+      Netplay::TestNetplaySession(h, port_base + h, remote, port_base + nh, 1, game);
 
       // TODO: Fix this junk.. for some reason, it stays sleeping...
       g_emu_thread->wakeThread();

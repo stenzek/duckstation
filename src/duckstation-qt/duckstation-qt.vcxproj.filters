@@ -94,10 +94,9 @@
     <ClCompile Include="coverdownloaddialog.cpp" />
     <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
-    <ClCompile Include="netplaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
-    <ClCompile Include="$(IntDir)moc_netplaywidget.cpp" />
     <ClCompile Include="netplaydialogs.cpp" />
+    <ClCompile Include="$(IntDir)moc_netplaydialogs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -159,7 +158,6 @@
     <QtMoc Include="foldersettingswidget.h" />
     <QtMoc Include="coverdownloaddialog.h" />
     <QtMoc Include="colorpickerbutton.h" />
-    <QtMoc Include="netplaywidget.h" />
     <QtMoc Include="netplaydialogs.h" />
   </ItemGroup>
   <ItemGroup>
@@ -202,7 +200,6 @@
     <QtUi Include="controllerbindingwidget_mouse.ui" />
     <QtUi Include="coverdownloaddialog.ui" />
     <QtUi Include="controllerledsettingsdialog.ui" />
-    <QtUi Include="netplaywidget.ui" />
     <QtUi Include="createnetplaysessiondialog.ui" />
     <QtUi Include="joinnetplaysessiondialog.ui" />
   </ItemGroup>
