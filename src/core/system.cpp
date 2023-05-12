@@ -57,6 +57,7 @@
 #include <fstream>
 #include <limits>
 #include <thread>
+#include <frontend-common/game_list.h>
 Log_SetChannel(System);
 
 #ifdef _WIN32
@@ -1755,9 +1756,10 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
 
       g_settings.UpdateOverclockActive();
 
-      Host::AddFormattedOSDMessage(10.0f,
-                                   Host::TranslateString("OSDMessage", "WARNING: CPU overclock was changed to (%u%%) to match netplay savestate."),
-                                   g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u );
+      Host::AddFormattedOSDMessage(
+        10.0f,
+        Host::TranslateString("OSDMessage", "WARNING: CPU overclock was changed to (%u%%) to match netplay savestate."),
+        g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u);
     }
 
     UpdateOverclock();
@@ -1915,11 +1917,31 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display)
   std::unique_ptr<CDImage> media;
   if (header.media_filename_length > 0)
   {
-    media_filename.resize(header.media_filename_length);
-    if (!state->SeekAbsolute(header.offset_to_media_filename) ||
-        !state->Read2(media_filename.data(), header.media_filename_length))
+    // during netplay the media path of may be different for each user.
+    // for this case we want to find the right game path by using the serial.
+    // probably not optimal but using the gamesettings for now to find the filepath.
+    // only for non host players tho, since the host already knows which game theyre running.
+    if (Netplay::IsActive() && !Netplay::IsHost())
     {
-      return false;
+      std::string_view serial(header.serial);
+      auto entry = GameList::GetEntryBySerial(serial);
+
+      if (!entry)
+      {
+        Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "CD image %s [%s] was not found. Failed to load savestate."), header.title, header.serial);
+        return false;
+      }
+
+      media_filename = entry->path;
+    }
+    else
+    {
+      media_filename.resize(header.media_filename_length);
+      if (!state->SeekAbsolute(header.offset_to_media_filename) ||
+          !state->Read2(media_filename.data(), header.media_filename_length))
+      {
+        return false;
+      }
     }
 
     std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);

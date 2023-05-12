@@ -34,6 +34,7 @@ bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string 
 bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password);
 
 bool IsActive();
+bool IsHost();
 
 /// Frees up resources associated with the current netplay session.
 /// Should only be called by System::ShutdownSystem().

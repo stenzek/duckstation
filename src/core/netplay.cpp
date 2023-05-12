@@ -69,7 +69,6 @@ static void HandleEnetEvent(const ENetEvent* event);
 static void PollEnet(Common::Timer::Value until_time);
 
 // Player management
-static bool IsHost();
 static bool IsValidPlayerId(s32 player_id);
 static s32 GetFreePlayerId();
 static ENetPeer* GetPeerForPlayer(s32 player_id);
