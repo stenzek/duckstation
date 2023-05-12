@@ -1919,7 +1919,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display)
   {
     // during netplay the media path of may be different for each user.
     // for this case we want to find the right game path by using the serial.
-    // probably not optimal but using the gamesettings for now to find the filepath.
+    // probably not optimal but using the gamelist for now to find the filepath.
     // only for non host players tho, since the host already knows which game theyre running.
     if (Netplay::IsActive() && !Netplay::IsHost())
     {
