@@ -15,14 +15,14 @@
     <ClInclude Include="include\enet\win32.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="callbacks.c" />
-    <ClCompile Include="compress.c" />
-    <ClCompile Include="host.c" />
-    <ClCompile Include="list.c" />
-    <ClCompile Include="packet.c" />
-    <ClCompile Include="peer.c" />
-    <ClCompile Include="protocol.c" />
-    <ClCompile Include="win32.c" />
+    <ClCompile Include="src\callbacks.c" />
+    <ClCompile Include="src\compress.c" />
+    <ClCompile Include="src\host.c" />
+    <ClCompile Include="src\list.c" />
+    <ClCompile Include="src\packet.c" />
+    <ClCompile Include="src\peer.c" />
+    <ClCompile Include="src\protocol.c" />
+    <ClCompile Include="src\win32.c" />
   </ItemGroup>
   <Import Project="..\msvc\vsprops\StaticLibrary.props" />
   <ItemDefinitionGroup>

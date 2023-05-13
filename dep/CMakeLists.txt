@@ -18,6 +18,7 @@ add_subdirectory(tinyxml2)
 add_subdirectory(googletest)
 add_subdirectory(cpuinfo)
 add_subdirectory(fast_float)
+add_subdirectory(enet)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)
