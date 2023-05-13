@@ -113,6 +113,8 @@ set(SRCS
   memorycardsettingswidget.h
   memoryviewwidget.cpp
   memoryviewwidget.h
+  netplaydialogs.cpp
+  netplaydialogs.h
   postprocessingchainconfigwidget.cpp
   postprocessingchainconfigwidget.h
   postprocessingchainconfigwidget.ui
