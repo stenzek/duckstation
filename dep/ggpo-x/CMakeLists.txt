@@ -31,5 +31,6 @@ set(SRCS
 )
 
 add_library(ggpo-x ${SRCS})
+target_link_libraries(ggpo-x PRIVATE enet)
 target_include_directories(ggpo-x PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_include_directories(ggpo-x INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
