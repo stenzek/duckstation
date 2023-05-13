@@ -74,6 +74,8 @@ add_library(core
     multitap.h
     negcon.cpp
     negcon.h
+    netplay.cpp
+    hetplay.h
     pad.cpp
     pad.h
     pcdrv.cpp
