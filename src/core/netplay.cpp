@@ -41,6 +41,7 @@ struct Input
 
 // TODO: Might be a bit generous... should we move this to config?
 static constexpr float MAX_CONNECT_TIME = 15.0f;
+static constexpr u32 MAX_CONNECT_RETRIES = 4;
 static constexpr float MAX_CLOSE_TIME = 3.0f;
 
 static bool NpAdvFrameCb(void* ctx, int flags);
@@ -144,9 +145,10 @@ static s32 s_player_id = 0;
 static s32 s_num_players = 0;
 static u32 s_reset_cookie = 0;
 static std::bitset<MAX_PLAYERS> s_reset_players;
-static Common::Timer s_reset_start_time;
 static ENetAddress s_host_address;
+static Common::Timer s_reset_start_time;
 static Common::Timer s_last_host_connection_attempt;
+
 /// GGPO
 static std::string s_local_nickname;
 static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
@@ -968,17 +970,17 @@ void Netplay::UpdateConnectingState()
     return;
   }
 
-  // four peer to host connection attempts
-  // dividing by 5 because the last attempt will never happen.
-  if (s_last_host_connection_attempt.GetTimeSeconds() > MAX_CONNECT_TIME / 5 &&
+  // MAX_CONNECT_RETRIES peer to host connection attempts
+  // dividing by MAX_CONNECT_RETRIES + 1 because the last attempt will never happen.
+  if (s_last_host_connection_attempt.GetTimeSeconds() > MAX_CONNECT_TIME / (MAX_CONNECT_RETRIES + 1) &&
       s_peers[s_host_player_id].peer->state != ENetPeerState::ENET_PEER_STATE_CONNECTED)
   {
-    s_last_host_connection_attempt.Reset();
     // we want to do this because the peer might have initiated a connection
-    // too early while the host was still setting up. this gives the connection 4 tries within MAX_CONNECT_TIME to
-    // establish the connection
+    // too early while the host was still setting up. this gives the connection MAX_CONNECT_RETRIES tries within
+    // MAX_CONNECT_TIME to establish the connection
     enet_peer_reset(s_peers[s_host_player_id].peer);
     enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
+    s_last_host_connection_attempt.Reset();
   }
 
   // still waiting for connection to host..
