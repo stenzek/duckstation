@@ -75,7 +75,7 @@ add_library(core
     negcon.cpp
     negcon.h
     netplay.cpp
-    hetplay.h
+    netplay.h
     pad.cpp
     pad.h
     pcdrv.cpp
