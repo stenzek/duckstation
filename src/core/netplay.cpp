@@ -146,8 +146,7 @@ static u32 s_reset_cookie = 0;
 static std::bitset<MAX_PLAYERS> s_reset_players;
 static Common::Timer s_reset_start_time;
 static ENetAddress s_host_address;
-static Common::Timer s_last_host_conn_attempt;
-static u32 s_init_host_conn_count = 0;
+static Common::Timer s_last_host_connection_attempt;
 /// GGPO
 static std::string s_local_nickname;
 static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
@@ -371,7 +370,7 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   // Wait until we're connected to the main host. They'll send us back state to load and a full player list.
   s_state = SessionState::Connecting;
   s_reset_start_time.Reset();
-  s_last_host_conn_attempt.Reset();
+  s_last_host_connection_attempt.Reset();
   System::SetState(System::State::Paused);
   return true;
 }
@@ -971,12 +970,13 @@ void Netplay::UpdateConnectingState()
 
   // four peer to host connection attempts
   // dividing by 5 because the last attempt will never happen.
-  if (s_last_host_conn_attempt.GetTimeSeconds() > MAX_CONNECT_TIME / 5 &&
+  if (s_last_host_connection_attempt.GetTimeSeconds() > MAX_CONNECT_TIME / 5 &&
       s_peers[s_host_player_id].peer->state != ENetPeerState::ENET_PEER_STATE_CONNECTED)
   {
-    s_last_host_conn_attempt.Reset();
+    s_last_host_connection_attempt.Reset();
     // we want to do this because the peer might have initiated a connection
-    // too early while the host was still setting up. this gives the connection 4 tries within MAX_CONNECT_TIME to establish the connection
+    // too early while the host was still setting up. this gives the connection 4 tries within MAX_CONNECT_TIME to
+    // establish the connection
     enet_peer_reset(s_peers[s_host_player_id].peer);
     enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
   }
