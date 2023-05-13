@@ -19,6 +19,7 @@ add_subdirectory(googletest)
 add_subdirectory(cpuinfo)
 add_subdirectory(fast_float)
 add_subdirectory(enet)
+add_subdirectory(ggpo-x)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)
