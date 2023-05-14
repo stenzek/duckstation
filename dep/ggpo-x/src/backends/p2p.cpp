@@ -342,7 +342,7 @@ Peer2PeerBackend::AddLocalInput(GGPOPlayerHandle player,
        
        input.checksum = 0; 
        if (_confirmedCheckSumFrame >= 0) {
-           char buf[128];
+           // char buf[128];
            input.checksum = _pendingCheckSums.at(_confirmedCheckSumFrame);
            _confirmedCheckSums[_confirmedCheckSumFrame] = input.checksum;
            _pendingCheckSums.erase(_confirmedCheckSumFrame);
@@ -402,7 +402,7 @@ Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
     {
         auto max = _pendingCheckSums.rbegin()->first;
         auto diff = max - currentFrame;
-        maxDif = max(maxDif, diff);
+        maxDif = MAX(maxDif, diff);
         int oldChecksum = _pendingCheckSums[currentFrame];
         _pendingCheckSums[currentFrame] = cSum;
         //sprintf_s<256>(buf, "Replace local checksum for frame %d: %d with %d, newest frame is %d, max diff %d\n",

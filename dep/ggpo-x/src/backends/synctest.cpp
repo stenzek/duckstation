@@ -221,10 +221,12 @@ SyncTestBackend::EndLog()
 void
 SyncTestBackend::LogSaveStates(SavedInfo &info)
 {
+#ifdef WIN32
    char filename[MAX_PATH];
    sprintf_s(filename, ARRAY_SIZE(filename), "synclogs\\state-%04d-original.log", _sync.GetFrameCount());
    _callbacks.log_game_state(_callbacks.context, filename, (unsigned char *)info.buf, info.cbuf);
 
    sprintf_s(filename, ARRAY_SIZE(filename), "synclogs\\state-%04d-replay.log", _sync.GetFrameCount());
    _callbacks.log_game_state(_callbacks.context, filename, _sync.GetLastSavedFrame().buf, _sync.GetLastSavedFrame().cbuf);
+#endif // WIN32
 }

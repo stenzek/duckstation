@@ -217,7 +217,7 @@ UdpProtocol::NetworkIdle()
          msg->u.quality_report.ping = Platform::GetCurrentTimeMS();
          // encode frame advantage into a byte by multiplying the float by 10, and croppeing to 255 - any frame advantage
          // of 25 or more means catastrophe has already befallen us.
-         msg->u.quality_report.frame_advantage = (uint8)min(255.0f,(_timesync.LocalAdvantage()*10.f));
+         msg->u.quality_report.frame_advantage = (uint8)MIN(255.0f,(_timesync.LocalAdvantage()*10.f));
          SendMsg(msg);
          _state.running.last_quality_report_time = now;
       }
@@ -377,7 +377,7 @@ UdpProtocol::Log(const char *fmt, ...)
    size_t offset;
    va_list args;
 
-   sprintf_s(buf, ARRAY_SIZE(buf), "udpproto%d | ", _queue);
+   snprintf(buf, ARRAY_SIZE(buf), "udpproto%d | ", _queue);
    offset = strlen(buf);
    va_start(args, fmt);
    vsnprintf(buf + offset, ARRAY_SIZE(buf) - offset - 1, fmt, args);
