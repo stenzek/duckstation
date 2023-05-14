@@ -154,7 +154,7 @@ Peer2PeerBackend::DoPoll()
 
          Log("last confirmed frame in p2p backend is %d.\n", total_min_confirmed);
          if (total_min_confirmed >= 0) {
-            ASSERT(total_min_confirmed != INT_MAX);
+            ASSERT(total_min_confirmed != MAX_INT);
             if (_num_spectators > 0) {
                while (_next_spectator_frame <= total_min_confirmed) {
                   Log("pushing frame %d to spectators.\n", _next_spectator_frame);
@@ -523,12 +523,12 @@ Peer2PeerBackend::OnUdpProtocolPeerEvent(UdpProtocol::Event &evt, int queue)
          //   auto localChecksum = GetChecksumForConfirmedFrame(new_remote_frame);
          //   
            
-            if (checkSumFrame %120==0)
-            {
-                char buf[256];
-                sprintf_s<256>(buf, "Received checksum for frame %d, remote cs is %d\n", checkSumFrame, remoteChecksum);
-                //OutputDebugStringA(buf);
-            }
+            //if (checkSumFrame %120==0)
+            //{
+            //    char buf[256];
+            //    sprintf_s<256>(buf, "Received checksum for frame %d, remote cs is %d\n", checkSumFrame, remoteChecksum);
+            //    //OutputDebugStringA(buf);
+            //}
          }
          break;
    }
