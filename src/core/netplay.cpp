@@ -351,15 +351,12 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   s_player_id = -1;
 
   // Connect to host.
-  ENetAddress host_address;
-  host_address.port = static_cast<u16>(port);
-  if (enet_address_set_host(&host_address, remote_addr.c_str()) != 0)
+  s_host_address.port = static_cast<u16>(port);
+  if (enet_address_set_host(&s_host_address, remote_addr.c_str()) != 0)
   {
     Log_ErrorPrintf("Failed to parse host: '%s'", remote_addr.c_str());
     return false;
   }
-
-  s_host_address = host_address;
 
   s_peers[s_host_player_id].peer =
     enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));

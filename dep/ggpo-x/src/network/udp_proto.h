@@ -53,7 +53,7 @@ public:
          } network_interrupted;
       } u;
 
-      UdpProtocol::Event(Type t = Unknown) : type(t) { }
+      Event(Type t = Unknown) : type(t) { }
    };
 
 public:

@@ -172,13 +172,15 @@ SyncTestBackend::RaiseSyncError(const char *fmt, ...)
    char buf[1024];
    va_list args;
    va_start(args, fmt);
-   vsprintf_s(buf, ARRAY_SIZE(buf), fmt, args);
+   vsnprintf(buf, ARRAY_SIZE(buf), fmt, args);
    va_end(args);
 
    puts(buf);
-   OutputDebugStringA(buf);
    EndLog();
+#ifdef WIN32
+   OutputDebugStringA(buf);
    DebugBreak();
+#endif // WIN32
 }
 
 GGPOErrorCode
@@ -195,6 +197,7 @@ SyncTestBackend::BeginLog(int saving)
 {
    EndLog();
 
+#ifdef WIN32
    char filename[MAX_PATH];
    CreateDirectoryA("synclogs", NULL);
    sprintf_s(filename, ARRAY_SIZE(filename), "synclogs\\%s-%04d-%s.log",
@@ -203,6 +206,7 @@ SyncTestBackend::BeginLog(int saving)
            _rollingback ? "replay" : "original");
 
     fopen_s(&_logfp, filename, "w");
+#endif // WIN32
 }
 
 void

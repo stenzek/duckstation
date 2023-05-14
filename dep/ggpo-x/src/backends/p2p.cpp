@@ -97,17 +97,17 @@ void Peer2PeerBackend::CheckDesync()
                     info.u.desync.remoteChecksum = remoteChecksum;
                     _callbacks.on_event(_callbacks.context, &info);
 
-                    char buf[256];
-                    sprintf_s<256>(buf, "DESYNC Checksum frame %d, local: %d, remote %d, size of checksum maps: %d,%d", checkSumFrame, localChecksum, remoteChecksum, (int)_confirmedCheckSums.size(), (int)ep._remoteCheckSums.size());
+                    //  char buf[256];
+                    //  sprintf_s<256>(buf, "DESYNC Checksum frame %d, local: %d, remote %d, size of checksum maps: %d,%d", checkSumFrame, localChecksum, remoteChecksum, (int)_confirmedCheckSums.size(), (int)ep._remoteCheckSums.size());
                     //  OutputDebugStringA(buf);
                 }
 
-                if (checkSumFrame % 100 == 0)
-                {
-                    char buf[256];
-                    sprintf_s<256>(buf, "Checksum frame %d, local: %d, remote %d, size of checksum maps: %d,%d\n", checkSumFrame, localChecksum, remoteChecksum, (int)_confirmedCheckSums.size(), (int)ep._remoteCheckSums.size());
-                    //OutputDebugStringA(buf);
-                }
+                //if (checkSumFrame % 100 == 0)
+                //{
+                //    char buf[256];
+                //    sprintf_s<256>(buf, "Checksum frame %d, local: %d, remote %d, size of checksum maps: %d,%d\n", checkSumFrame, localChecksum, remoteChecksum, (int)_confirmedCheckSums.size(), (int)ep._remoteCheckSums.size());
+                //    //OutputDebugStringA(buf);
+                //}
             }
         }
         for (auto k : keysToRemove)
@@ -117,8 +117,8 @@ void Peer2PeerBackend::CheckDesync()
     }
     for (auto k : keysToRemove)
     {
-        char buf[256];
-        sprintf_s<256>(buf, "Erase checksums for frame %d\n",k);
+       // char buf[256];
+       // sprintf_s<256>(buf, "Erase checksums for frame %d\n",k);
        // OutputDebugStringA(buf);
         for (auto itr = _confirmedCheckSums.cbegin(); itr != _confirmedCheckSums.cend(); )
             itr = (itr->first <=k) ? _confirmedCheckSums.erase(itr) : std::next(itr);
@@ -346,8 +346,8 @@ Peer2PeerBackend::AddLocalInput(GGPOPlayerHandle player,
            input.checksum = _pendingCheckSums.at(_confirmedCheckSumFrame);
            _confirmedCheckSums[_confirmedCheckSumFrame] = input.checksum;
            _pendingCheckSums.erase(_confirmedCheckSumFrame);
-           sprintf_s<128>(buf, "Frame %d: Send checksum for frame %d, val %d\n", input.frame, _confirmedCheckSumFrame, input.checksum);
-           //OutputDebugStringA(buf);
+           // sprintf_s<128>(buf, "Frame %d: Send checksum for frame %d, val %d\n", input.frame, _confirmedCheckSumFrame, input.checksum);
+           // OutputDebugStringA(buf);
        }
       Log("setting local connect status for local queue %d to %d", queue, input.frame);
       _local_connect_status[queue].last_frame = input.frame;
@@ -405,29 +405,27 @@ Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
         maxDif = max(maxDif, diff);
         int oldChecksum = _pendingCheckSums[currentFrame];
         _pendingCheckSums[currentFrame] = cSum;
-        sprintf_s<256>(buf, "Replace local checksum for frame %d: %d with %d, newest frame is %d, max diff %d\n",
-                       currentFrame, oldChecksum, _pendingCheckSums[currentFrame], max, maxDif);
+        //sprintf_s<256>(buf, "Replace local checksum for frame %d: %d with %d, newest frame is %d, max diff %d\n",
+        //               currentFrame, oldChecksum, _pendingCheckSums[currentFrame], max, maxDif);
        
         if (currentFrame <= _confirmedCheckSumFrame)
         {
-            sprintf_s<256>(buf, "Changing frame %d in a rollback, but we've already sent frame %d\n", currentFrame, _confirmedCheckSumFrame);
-
-            OutputDebugStringA(buf);
-            throw std::exception(buf);
+            //sprintf_s<256>(buf, "Changing frame %d in a rollback, but we've already sent frame %d\n", currentFrame, _confirmedCheckSumFrame);
+            //OutputDebugStringA(buf);
+            throw std::exception();
         }
-        if (diff >= (_sync.MaxPredictionFrames())) {
-
-            sprintf_s<256>(buf, "diff is bigger than max prediction\n");
-
-              OutputDebugStringA(buf);
-            throw std::exception(buf);
+        if (diff >= (_sync.MaxPredictionFrames())) 
+        {
+            //sprintf_s<256>(buf, "diff is bigger than max prediction\n");
+            //  OutputDebugStringA(buf);
+            throw std::exception();
         }
     }
-    else
-    {
-        sprintf_s<256>(buf, "Added local checksum for frame %d: %d\n", currentFrame, cSum);
-       //OutputDebugStringA(buf);
-    }
+    //else
+    //{
+    //    sprintf_s<256>(buf, "Added local checksum for frame %d: %d\n", currentFrame, cSum);
+    //   //OutputDebugStringA(buf);
+    //}
 
     _pendingCheckSums[currentFrame] = cSum;
   
