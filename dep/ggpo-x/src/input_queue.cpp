@@ -311,7 +311,7 @@ InputQueue::Log(const char *fmt, ...)
    size_t offset;
    va_list args;
 
-   offset = sprintf_s(buf, ARRAY_SIZE(buf), "input q%d | ", _id);
+   offset = snprintf(buf, ARRAY_SIZE(buf), "input q%d | ", _id);
    va_start(args, fmt);
    vsnprintf(buf + offset, ARRAY_SIZE(buf) - offset - 1, fmt, args);
    buf[ARRAY_SIZE(buf)-1] = '\0';
