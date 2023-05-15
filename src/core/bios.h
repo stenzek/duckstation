@@ -81,6 +81,9 @@ std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
 /// BIOS image within 512KB and 4MB will be used.
 std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory);
 
+/// Returns a BIOS image which matches the specified hash.
+std::string FindBIOSPathWithHash(const char* directory, const BIOS::Hash& hash);
+
 /// Returns a list of filenames and descriptions for BIOS images in a directory.
 std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);
 

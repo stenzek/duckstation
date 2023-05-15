@@ -140,6 +140,7 @@
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="netplay.h" />
+    <ClInclude Include="netplay_packets.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="pcdrv.h" />

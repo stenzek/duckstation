@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "bios.h"
 #include "host.h"
 #include "types.h"
 
@@ -24,6 +25,7 @@ enum class ControlMessage : u32
 {
   // host->player
   ConnectResponse,
+  JoinResponse,
   Reset,
   ResumeSession,
   PlayerJoined,
@@ -31,7 +33,7 @@ enum class ControlMessage : u32
   CloseSession,
 
   // player->host
-  ConnectRequest,
+  JoinRequest,
   ResetComplete,
   ResetRequest,
 
@@ -53,7 +55,39 @@ struct ControlMessageHeader
   u32 size;
 };
 
-struct ConnectRequestMessage
+struct ConnectResponseMessage
+{
+  ControlMessageHeader header;
+
+  s32 num_players;
+  s32 max_players;
+  u64 game_hash;
+  u32 game_serial_length;
+  u32 game_title_length;
+  ConsoleRegion console_region;
+  BIOS::Hash bios_hash;
+  bool was_fast_booted;
+
+  // <char> * game_serial_length + game_title_length follows
+  // TODO: Include the settings overlays required to match the host config.
+
+  bool Validate() const { return static_cast<unsigned>(console_region) < static_cast<unsigned>(ConsoleRegion::Count); }
+
+  std::string_view GetGameSerial() const
+  {
+    return std::string_view(reinterpret_cast<const char*>(this) + sizeof(ConnectResponseMessage), game_serial_length);
+  }
+
+  std::string_view GetGameTitle() const
+  {
+    return std::string_view(reinterpret_cast<const char*>(this) + sizeof(ConnectResponseMessage) + game_serial_length,
+                            game_title_length);
+  }
+
+  static ControlMessage MessageType() { return ControlMessage::ConnectResponse; }
+};
+
+struct JoinRequestMessage
 {
   enum class Mode
   {
@@ -80,10 +114,10 @@ struct ConnectRequestMessage
     return std::string_view(session_password, len);
   }
 
-  static ControlMessage MessageType() { return ControlMessage::ConnectRequest; }
+  static ControlMessage MessageType() { return ControlMessage::JoinRequest; }
 };
 
-struct ConnectResponseMessage
+struct JoinResponseMessage
 {
   enum class Result : u32
   {
@@ -98,7 +132,7 @@ struct ConnectResponseMessage
   Result result;
   s32 player_id;
 
-  static ControlMessage MessageType() { return ControlMessage::ConnectResponse; }
+  static ControlMessage MessageType() { return ControlMessage::JoinResponse; }
 };
 
 struct ResetMessage

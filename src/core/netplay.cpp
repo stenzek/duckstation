@@ -1,4 +1,5 @@
 #include "netplay.h"
+#include "bios.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/gpu_texture.h"
@@ -13,9 +14,11 @@
 #include "netplay_packets.h"
 #include "pad.h"
 #include "save_state_version.h"
+#include "settings.h"
 #include "spu.h"
 #include "system.h"
 #include <bitset>
+#include <cinttypes>
 #include <deque>
 #include <gsl/span>
 #include <xxhash.h>
@@ -29,6 +32,9 @@ Log_SetChannel(Netplay);
 // TODO: windows.h getting picked up somewhere here...
 #include "enet/enet.h"
 #include "ggponet.h"
+
+// TODO: We don't want a core->frontend-common dependency. I'll move GameList to core at some point...
+#include "frontend-common/game_list.h"
 
 namespace Netplay {
 
@@ -57,7 +63,7 @@ static void SetInputs(Input inputs[2]);
 
 static void SetSettings();
 
-static bool CreateSystem(std::string game_path, bool hosting);
+static bool CreateDummySystem();
 static void CloseSessionWithError(const std::string_view& message);
 static void RequestCloseSession(CloseSessionMessage::Reason reason);
 
@@ -85,6 +91,7 @@ static void SendConnectRequest();
 static void HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt);
 static void HandleControlMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt);
+static void HandleJoinResponseMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleResetMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleResetCompleteMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleResumeSessionMessage(s32 player_id, const ENetPacket* pkt);
@@ -297,7 +304,7 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
       Log_ErrorPrintf("Can't host a netplay session without a valid VM");
       return false;
     }
-    else if (!is_hosting && !CreateSystem(std::string(), false))
+    else if (!is_hosting && !CreateDummySystem())
     {
       Log_ErrorPrintf("Failed to create VM for joining session");
       return false;
@@ -403,26 +410,15 @@ bool Netplay::IsActive()
   return (s_state >= SessionState::Initializing && s_state <= SessionState::Running);
 }
 
-bool Netplay::CreateSystem(std::string game_path, bool is_hosting)
+bool Netplay::CreateDummySystem()
 {
   // close system if its already running
   if (System::IsValid())
     System::ShutdownSystem(false);
 
   // fast boot the selected game and wait for the other player
-  auto param = SystemBootParameters(std::move(game_path));
-  param.override_fast_boot = true;
-  if (!System::BootSystem(param))
+  if (!System::BootSystem(SystemBootParameters()))
     return false;
-
-  if (is_hosting)
-  {
-    // Fast Forward to Game Start if needed.
-    SPU::SetAudioOutputMuted(true);
-    while (System::GetInternalFrameNumber() < 2)
-      System::RunFrame();
-    SPU::SetAudioOutputMuted(false);
-  }
 
   return true;
 }
@@ -589,7 +585,7 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
       if (player_id < 0)
       {
         // If it's a new connection, we need to handle connection request messages.
-        if (event->channelID == ENET_CHANNEL_CONTROL)
+        if (event->channelID == ENET_CHANNEL_CONTROL && IsHost())
           HandleMessageFromNewPeer(event->peer, event->packet);
         enet_packet_destroy(event->packet);
         return;
@@ -786,6 +782,10 @@ void Netplay::HandleControlMessage(s32 player_id, const ENetPacket* pkt)
       HandleConnectResponseMessage(player_id, pkt);
       break;
 
+    case ControlMessage::JoinResponse:
+      HandleJoinResponseMessage(player_id, pkt);
+      break;
+
     case ControlMessage::Reset:
       HandleResetMessage(player_id, pkt);
       break;
@@ -826,15 +826,125 @@ void Netplay::HandleControlMessage(s32 player_id, const ENetPacket* pkt)
 
 void Netplay::HandlePeerConnectionAsHost(ENetPeer* peer)
 {
-  // don't do anything until they send a connect request
   // TODO: we might want to put an idle timeout here...
   Log_InfoPrintf(fmt::format("New peer connection from {}", PeerAddressString(peer)).c_str());
+
+  // send them the session details
+  const std::string& game_title = System::GetGameTitle();
+  const std::string& game_serial = System::GetGameSerial();
+  auto pkt = NewControlPacket<ConnectResponseMessage>(
+    sizeof(ConnectResponseMessage) + static_cast<u32>(game_serial.length()) + static_cast<u32>(game_title.length()));
+  pkt->num_players = s_num_players;
+  pkt->max_players = MAX_PLAYERS;
+  pkt->console_region = System::GetRegion();
+  pkt->game_title_length = static_cast<u32>(game_title.length());
+  pkt->game_serial_length = static_cast<u32>(game_serial.length());
+  pkt->game_hash = System::GetGameHash();
+  pkt->bios_hash = System::GetBIOSHash();
+  pkt->was_fast_booted = System::WasFastBooted();
+  std::memcpy(pkt.pkt->data + sizeof(ConnectResponseMessage), game_serial.c_str(), pkt->game_serial_length);
+  std::memcpy(pkt.pkt->data + sizeof(ConnectResponseMessage) + pkt->game_serial_length, game_title.c_str(),
+              pkt->game_title_length);
+  SendControlPacket(peer, pkt);
+}
+
+void Netplay::HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt)
+{
+  const ConnectResponseMessage* msg = CheckReceivedPacket<ConnectResponseMessage>(-1, pkt);
+  if (!msg || player_id != s_host_player_id)
+  {
+    Log_ErrorPrintf("Received unexpected connect response from player %d", player_id);
+    return;
+  }
+
+  // ignore these messages when reconnecting
+  if (s_state != SessionState::Connecting)
+  {
+    Log_DevPrintf("Ignoring connect response because we're not initially connecting");
+    return;
+  }
+
+  if (!msg->Validate())
+  {
+    CloseSessionWithError(Host::TranslateStdString("Netplay", "Cannot join session: Invalid details recieved."));
+    return;
+  }
+
+  Log_InfoPrintf("Received session details from host: ");
+  Log_InfoPrintf("  Console Region: %s", Settings::GetConsoleRegionDisplayName(msg->console_region));
+  Log_InfoPrintf("  BIOS Hash: %s%s", msg->bios_hash.ToString().c_str(), msg->was_fast_booted ? " (fast booted)" : "");
+  Log_InfoPrintf("  Game Serial: %.*s", msg->game_serial_length, msg->GetGameSerial().data());
+  Log_InfoPrintf("  Game Title: %.*s", msg->game_title_length, msg->GetGameTitle().data());
+  Log_InfoPrintf("  Game Hash: %" PRIX64, msg->game_hash);
+
+  // Find a matching BIOS.
+  const std::string bios_path = BIOS::FindBIOSPathWithHash(EmuFolders::Bios.c_str(), msg->bios_hash);
+  if (bios_path.empty())
+  {
+    CloseSessionWithError(fmt::format(
+      Host::TranslateString("Netplay", "Cannot join session: Unable to find BIOS with hash {}.").GetCharArray(),
+      msg->bios_hash.ToString()));
+    return;
+  }
+
+  // Find the matching game.
+  const GameList::Entry* entry = GameList::GetEntryBySerialAndHash(msg->GetGameSerial(), msg->game_hash);
+  if (!entry)
+  {
+    CloseSessionWithError(fmt::format(
+      Host::TranslateString("Netplay", "Cannot join session: Unable to find game \"{}\".\nSerial: {}\nHash: {}")
+        .GetCharArray(),
+      msg->GetGameTitle(), msg->GetGameSerial(), System::GetGameHashId(msg->game_hash)));
+    return;
+  }
+
+  Log_InfoPrintf("Found matching BIOS: %s", bios_path.c_str());
+  Log_InfoPrintf("Found matching game: %s", entry->path.c_str());
+
+  // Reboot created system with host details.
+  if (!System::ReinitializeSystem(msg->console_region, bios_path.c_str(), entry->path.c_str(), msg->was_fast_booted))
+  {
+    CloseSessionWithError(Host::TranslateStdString("Netplay", "Cannot join session: Failed to reinitialize system."));
+    return;
+  }
+
+  // We're ready to go, send the connection request.
+  SendConnectRequest();
+}
+
+void Netplay::SendConnectRequest()
+{
+  DebugAssert(!IsHost());
+
+  Log_DevPrintf("Sending connect request to host with player id %d", s_player_id);
+
+  auto pkt = NewControlPacket<JoinRequestMessage>();
+  pkt->mode = JoinRequestMessage::Mode::Player;
+  pkt->requested_player_id = s_player_id;
+  std::memset(pkt->nickname, 0, sizeof(pkt->nickname));
+  std::memset(pkt->session_password, 0, sizeof(pkt->session_password));
+  StringUtil::Strlcpy(pkt->nickname, s_local_nickname, std::size(pkt->nickname));
+  SendControlPacket(s_peers[s_host_player_id].peer, pkt);
+}
+
+void Netplay::UpdateConnectingState()
+{
+  if (s_reset_start_time.GetTimeSeconds() >= MAX_CONNECT_TIME)
+  {
+    CloseSessionWithError(Host::TranslateStdString("Netplay", "Timed out connecting to server."));
+    return;
+  }
+
+  // still waiting for connection to host..
+  PollEnet(Common::Timer::GetCurrentValue() + Common::Timer::ConvertMillisecondsToValue(16));
+  Host::DisplayLoadingScreen("Connecting to host...");
+  Host::PumpMessagesOnCPUThread();
 }
 
 void Netplay::HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt)
 {
-  const ConnectRequestMessage* msg = CheckReceivedPacket<ConnectRequestMessage>(-1, pkt);
-  if (!msg || msg->header.type != ControlMessage::ConnectRequest)
+  const JoinRequestMessage* msg = CheckReceivedPacket<JoinRequestMessage>(-1, pkt);
+  if (!msg || msg->header.type != ControlMessage::JoinRequest)
   {
     Log_WarningPrintf("Received unknown packet from unknown player");
     enet_peer_reset(peer);
@@ -845,13 +955,13 @@ void Netplay::HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt)
                                msg->requested_player_id)
                      .c_str());
 
-  PacketWrapper<ConnectResponseMessage> response = NewControlPacket<ConnectResponseMessage>();
+  PacketWrapper<JoinResponseMessage> response = NewControlPacket<JoinResponseMessage>();
   response->player_id = -1;
 
   // TODO: Spectators shouldn't get assigned a real player ID, they should go into a separate peer list.
-  if (msg->mode != ConnectRequestMessage::Mode::Player)
+  if (msg->mode != JoinRequestMessage::Mode::Player)
   {
-    response->result = ConnectResponseMessage::Result::SessionClosed;
+    response->result = JoinResponseMessage::Result::SessionClosed;
     SendControlPacket(peer, response);
     return;
   }
@@ -862,7 +972,7 @@ void Netplay::HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt)
   if (msg->requested_player_id >= 0 && IsValidPlayerId(msg->requested_player_id))
   {
     Log_ErrorPrintf("Player ID %d is already in use, rejecting connection.", msg->requested_player_id);
-    response->result = ConnectResponseMessage::Result::PlayerIDInUse;
+    response->result = JoinResponseMessage::Result::PlayerIDInUse;
     SendControlPacket(peer, response);
     return;
   }
@@ -872,14 +982,14 @@ void Netplay::HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt)
   if (new_player_id < 0)
   {
     Log_ErrorPrintf("Server full, rejecting connection.");
-    response->result = ConnectResponseMessage::Result::ServerFull;
+    response->result = JoinResponseMessage::Result::ServerFull;
     SendControlPacket(peer, response);
     return;
   }
 
   Log_VerbosePrint(
     fmt::format("New connection from {} assigned to player ID {}", PeerAddressString(peer), new_player_id).c_str());
-  response->result = ConnectResponseMessage::Result::Success;
+  response->result = JoinResponseMessage::Result::Success;
   response->player_id = new_player_id;
   SendControlPacket(peer, response);
 
@@ -900,19 +1010,16 @@ void Netplay::HandlePeerConnectionAsNonHost(ENetPeer* peer, s32 claimed_player_i
 {
   if (s_state == SessionState::Connecting)
   {
-    if (peer == s_peers[s_host_player_id].peer)
-    {
-      SendConnectRequest();
-      return;
-    }
-    else
+    if (peer != s_peers[s_host_player_id].peer)
     {
       Log_ErrorPrintf(
         fmt::format("Unexpected connection from {} claiming player ID {}", PeerAddressString(peer), claimed_player_id)
           .c_str());
       enet_peer_disconnect_now(peer, 0);
-      return;
     }
+
+    // wait for session details
+    return;
   }
 
   Log_VerbosePrint(
@@ -942,45 +1049,16 @@ void Netplay::HandlePeerConnectionAsNonHost(ENetPeer* peer, s32 claimed_player_i
   s_peers[claimed_player_id].peer = peer;
 }
 
-void Netplay::SendConnectRequest()
-{
-  DebugAssert(!IsHost());
-
-  Log_DevPrintf("Sending connect request to host with player id %d", s_player_id);
-
-  auto pkt = NewControlPacket<ConnectRequestMessage>();
-  pkt->mode = ConnectRequestMessage::Mode::Player;
-  pkt->requested_player_id = s_player_id;
-  std::memset(pkt->nickname, 0, sizeof(pkt->nickname));
-  std::memset(pkt->session_password, 0, sizeof(pkt->session_password));
-  StringUtil::Strlcpy(pkt->nickname, s_local_nickname, std::size(pkt->nickname));
-  SendControlPacket(s_peers[s_host_player_id].peer, pkt);
-}
-
-void Netplay::UpdateConnectingState()
-{
-  if (s_reset_start_time.GetTimeSeconds() >= MAX_CONNECT_TIME)
-  {
-    CloseSessionWithError(Host::TranslateStdString("Netplay", "Timed out connecting to server."));
-    return;
-  }
-
-  // still waiting for connection to host..
-  PollEnet(Common::Timer::GetCurrentValue() + Common::Timer::ConvertMillisecondsToValue(16));
-  Host::DisplayLoadingScreen("Connecting to host...");
-  Host::PumpMessagesOnCPUThread();
-}
-
-void Netplay::HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt)
+void Netplay::HandleJoinResponseMessage(s32 player_id, const ENetPacket* pkt)
 {
   if (s_state != SessionState::Connecting)
   {
-    Log_ErrorPrintf("Received unexpected connect response from player %d", player_id);
+    Log_ErrorPrintf("Received unexpected join response from player %d", player_id);
     return;
   }
 
-  const ConnectResponseMessage* msg = CheckReceivedPacket<ConnectResponseMessage>(player_id, pkt);
-  if (msg->result != ConnectResponseMessage::Result::Success)
+  const JoinResponseMessage* msg = CheckReceivedPacket<JoinResponseMessage>(player_id, pkt);
+  if (msg->result != JoinResponseMessage::Result::Success)
   {
     CloseSessionWithError(
       fmt::format("Connection rejected by server with error code {}", static_cast<u32>(msg->result)));
@@ -1025,7 +1103,7 @@ void Netplay::Reset()
   // TODO: This save state has the bloody path to the disc in it. We need a new save state format.
   // We also want to use maximum compression.
   GrowableMemoryByteStream state(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!System::SaveStateToStream(&state, 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD))
+  if (!System::SaveStateToStream(&state, 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD, true))
     Panic("Failed to save state...");
 
   const u32 state_data_size = static_cast<u32>(state.GetPosition());
@@ -1086,7 +1164,7 @@ void Netplay::Reset()
   // having a different number of cycles.
   // CPU::CodeCache::Flush();
   state.SeekAbsolute(0);
-  if (!System::LoadStateFromStream(&state, true))
+  if (!System::LoadStateFromStream(&state, true, true))
     Panic("Failed to reload host state");
 
   s_state = SessionState::Resetting;
@@ -1177,7 +1255,7 @@ void Netplay::HandleResetMessage(s32 player_id, const ENetPacket* pkt)
   // Load state from packet.
   Log_VerbosePrintf("Loading state from host");
   ReadOnlyMemoryByteStream stream(pkt->data + sizeof(ResetMessage), msg->state_data_size);
-  if (!System::LoadStateFromStream(&stream, true))
+  if (!System::LoadStateFromStream(&stream, true, true))
     Panic("Failed to load state from host");
 
   s_state = SessionState::Resetting;
@@ -1429,8 +1507,24 @@ void Netplay::SetSettings()
     si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
                       Settings::GetControllerTypeName(ControllerType::DigitalController));
   }
+  for (u32 i = MAX_PLAYERS; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                      Settings::GetControllerTypeName(ControllerType::None));
+  }
+  // We want all players to have the same memory card contents.
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    si.SetStringValue("MemoryCards", fmt::format("Card{}Type", i + 1).c_str(),
+                      Settings::GetMemoryCardTypeName((i == 0) ? MemoryCardType::NonPersistent : MemoryCardType::None));
+  }
 
   // si.SetStringValue("CPU", "ExecutionMode", "Interpreter");
+
+  // BIOS patching must be the same.
+  si.SetBoolValue("BIOS", "PatchTTYEnable", false);
+  si.SetBoolValue("BIOS", "PatchFastBoot", true);
+  si.SetBoolValue("CDROM", "LoadImagePatches", false);
 
   // No runahead or rewind, that'd be a disaster.
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
@@ -1642,29 +1736,13 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-void Netplay::TestNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
-                                 s32 input_delay, std::string game_path)
-{
-  const bool is_hosting = (local_handle == 1);
-  if (!CreateSystem(std::move(game_path), is_hosting))
-  {
-    Log_ErrorPrintf("Failed to create system.");
-    return;
-  }
-
-  // create session
-  std::string nickname = fmt::format("NICKNAME{}", local_handle);
-  if (!Netplay::Start(is_hosting, std::move(nickname), remote_addr, is_hosting ? local_port : remote_port, input_delay))
-  {
-    // this'll call back to us to shut everything netplay-related down
-    Log_ErrorPrint("Failed to Create Netplay Session!");
-    System::ShutdownSystem(false);
-  }
-}
-
 bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
 {
   // TODO: Password
+
+  // TODO: This is going to blow away our memory cards, because for sync purposes we want all clients
+  // to have the same data, and we don't want to trash their local memcards. We should therefore load
+  // the memory cards for this game (based on game/global settings), and copy that to the temp card.
 
   const s32 input_delay = 1;
 
@@ -1673,13 +1751,11 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
     CloseSession();
     return false;
   }
-  else if (IsHost())
-  {
-    // Load savestate if available and only when you are the host.
-    // the other peers will get state from the host
-    auto save_path = fmt::format("{}\\netplay\\{}.sav", EmuFolders::SaveStates, System::GetGameSerial());
-    System::LoadState(save_path.c_str());
-  }
+
+  // Load savestate if available and only when you are the host.
+  // the other peers will get state from the host
+  auto save_path = fmt::format("{}\\netplay\\{}.sav", EmuFolders::SaveStates, System::GetGameSerial());
+  System::LoadState(save_path.c_str());
 
   return true;
 }

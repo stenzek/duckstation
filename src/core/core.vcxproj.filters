@@ -129,5 +129,6 @@
     <ClInclude Include="input_types.h" />
     <ClInclude Include="pcdrv.h" />
     <ClInclude Include="netplay.h" />
+    <ClInclude Include="netplay_packets.h" />
   </ItemGroup>
 </Project>

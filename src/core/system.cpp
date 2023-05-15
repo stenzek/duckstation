@@ -1364,6 +1364,44 @@ bool System::BootSystem(SystemBootParameters parameters)
   return true;
 }
 
+bool System::ReinitializeSystem(ConsoleRegion region, const char* bios_path, const char* media_path, bool fast_boot)
+{
+  std::optional<BIOS::Image> bios_image = FileSystem::ReadBinaryFile(bios_path);
+  if (!bios_image.has_value())
+  {
+    Log_ErrorPrintf("Failed to read replacement BIOS at '%s'", bios_path);
+    return false;
+  }
+
+  if (!InsertMedia(media_path))
+  {
+    Log_ErrorPrintf("Failed to insert media at '%s'", media_path);
+    return false;
+  }
+
+  // Replace the BIOS.
+  s_bios_hash = BIOS::GetImageHash(bios_image.value());
+  s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
+  if (s_bios_image_info)
+    Log_InfoPrintf("Replacing BIOS: %s", s_bios_image_info->description);
+  else
+    Log_WarningPrintf("Replacing with an unknown BIOS: %s", s_bios_hash.ToString().c_str());
+
+  std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
+
+  if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
+
+  s_was_fast_booted = false;
+  if (s_bios_image_info && s_bios_image_info->patch_compatible && fast_boot)
+  {
+    BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+    s_was_fast_booted = true;
+  }
+
+  return true;
+}
+
 bool System::Initialize(bool force_software_renderer)
 {
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
@@ -1942,7 +1980,7 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return ret;
 }
 
-bool System::LoadStateFromStream(ByteStream* state, bool update_display)
+bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ignore_media)
 {
   Assert(IsValid());
 
@@ -1971,89 +2009,92 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display)
     return false;
   }
 
-  Common::Error error;
-  std::string media_filename;
-  std::unique_ptr<CDImage> media;
-  if (header.media_filename_length > 0)
+  if (!ignore_media)
   {
-    media_filename.resize(header.media_filename_length);
-    if (!state->SeekAbsolute(header.offset_to_media_filename) ||
-        !state->Read2(media_filename.data(), header.media_filename_length))
+    Common::Error error;
+    std::string media_filename;
+    std::unique_ptr<CDImage> media;
+    if (header.media_filename_length > 0)
     {
-      return false;
-    }
-
-    std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
-    if (old_media && old_media->GetFileName() == media_filename)
-    {
-      Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
-      media = std::move(old_media);
-    }
-    else
-    {
-      media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
-      if (!media)
+      media_filename.resize(header.media_filename_length);
+      if (!state->SeekAbsolute(header.offset_to_media_filename) ||
+          !state->Read2(media_filename.data(), header.media_filename_length))
       {
-        if (old_media)
+        return false;
+      }
+
+      std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
+      if (old_media && old_media->GetFileName() == media_filename)
+      {
+        Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
+        media = std::move(old_media);
+      }
+      else
+      {
+        media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
+        if (!media)
         {
-          Host::AddFormattedOSDMessage(
-            30.0f,
-            Host::TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
-                                                "existing image '%s', this may result in instability."),
-            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
-          media = std::move(old_media);
-          header.media_subimage_index = media->GetCurrentSubImage();
-        }
-        else
-        {
-          Host::ReportFormattedErrorAsync(
-            "Error", Host::TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
-            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
-          return false;
+          if (old_media)
+          {
+            Host::AddFormattedOSDMessage(
+              30.0f,
+              Host::TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
+                                                  "existing image '%s', this may result in instability."),
+              media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
+            media = std::move(old_media);
+            header.media_subimage_index = media->GetCurrentSubImage();
+          }
+          else
+          {
+            Host::ReportFormattedErrorAsync(
+              "Error", Host::TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
+              media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
+            return false;
+          }
         }
       }
     }
-  }
 
-  UpdateRunningGame(media_filename.c_str(), media.get(), false);
+    UpdateRunningGame(media_filename.c_str(), media.get(), false);
 
-  if (media && header.version >= 51)
-  {
-    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
-    if (header.media_subimage_index >= num_subimages ||
-        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
-         !media->SwitchSubImage(header.media_subimage_index, &error)))
+    if (media && header.version >= 51)
     {
-      Host::ReportFormattedErrorAsync(
-        "Error",
-        Host::TranslateString("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
-        header.media_subimage_index + 1u, media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
-      return false;
+      const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
+      if (header.media_subimage_index >= num_subimages ||
+          (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
+           !media->SwitchSubImage(header.media_subimage_index, &error)))
+      {
+        Host::ReportFormattedErrorAsync(
+          "Error",
+          Host::TranslateString("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
+          header.media_subimage_index + 1u, media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
+        return false;
+      }
+      else
+      {
+        Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
+      }
+    }
+
+    CDROM::Reset();
+    if (media)
+    {
+      const DiscRegion region = GetRegionForImage(media.get());
+      CDROM::InsertMedia(std::move(media), region);
+      if (g_settings.cdrom_load_image_to_ram)
+        CDROM::PrecacheMedia();
     }
     else
     {
-      Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
+      CDROM::RemoveMedia(false);
     }
+
+    // ensure the correct card is loaded
+    if (g_settings.HasAnyPerGameMemoryCards())
+      UpdatePerGameMemoryCards();
   }
 
   ClearMemorySaveStates();
-
-  CDROM::Reset();
-  if (media)
-  {
-    const DiscRegion region = GetRegionForImage(media.get());
-    CDROM::InsertMedia(std::move(media), region);
-    if (g_settings.cdrom_load_image_to_ram)
-      CDROM::PrecacheMedia();
-  }
-  else
-  {
-    CDROM::RemoveMedia(false);
-  }
-
-  // ensure the correct card is loaded
-  if (g_settings.HasAnyPerGameMemoryCards())
-    UpdatePerGameMemoryCards();
 
 #ifdef WITH_CHEEVOS
   // Updating game/loading settings can turn on hardcore mode. Catch this.
@@ -2097,7 +2138,8 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display)
 }
 
 bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 */,
-                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/)
+                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/,
+                               bool ignore_media /* = false*/)
 {
   if (IsShutdown())
     return false;
@@ -2114,7 +2156,7 @@ bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 *
   StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
 
-  if (CDROM::HasMedia())
+  if (CDROM::HasMedia() && !ignore_media)
   {
     const std::string& media_filename = CDROM::GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());

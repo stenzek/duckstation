@@ -28,8 +28,6 @@ enum : u8
   NUM_ENET_CHANNELS,
 };
 
-void TestNetplaySession(s32 local_handle, u16 local_port, const std::string& remote_addr, u16 remote_port,
-                         s32 input_delay, std::string game_path);
 bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password);
 bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password);
 

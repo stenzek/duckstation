@@ -250,11 +250,12 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
 bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 {
+  const bool force_load = Netplay::IsActive();
   bool card_present_in_state = static_cast<bool>(s_memory_cards[i]);
 
   sw.Do(&card_present_in_state);
 
-  if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states)
+  if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states && !force_load)
   {
     Host::AddFormattedOSDMessage(
       20.0f,
@@ -269,7 +270,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 
   if (card_present_in_state)
   {
-    if (sw.IsReading() && !g_settings.load_devices_from_save_states)
+    if (sw.IsReading() && !g_settings.load_devices_from_save_states && !force_load)
     {
       // load memcard into a temporary: If the card datas match, take the one from the savestate
       // since it has other useful non-data state information. Otherwise take the user's card
@@ -281,7 +282,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       return false;
   }
 
-  if (sw.IsWriting())
+  if (sw.IsWriting() || force_load)
     return true; // all done as far as writes concerned.
 
   if (card_from_state)

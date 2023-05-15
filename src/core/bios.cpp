@@ -376,6 +376,35 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
   return fallback_image;
 }
 
+std::string BIOS::FindBIOSPathWithHash(const char* directory, const Hash& hash)
+{
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(directory, "*",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
+
+  std::string ret;
+
+  for (FILESYSTEM_FIND_DATA& fd : files)
+  {
+    if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
+      continue;
+
+    std::string full_path(Path::Combine(directory, fd.FileName));
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
+    if (!found_image)
+      continue;
+
+    const BIOS::Hash found_hash = GetImageHash(found_image.value());
+    if (found_hash == hash)
+    {
+      ret = std::move(full_path);
+      break;
+    }
+  }
+
+  return ret;
+}
+
 std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImagesInDirectory(const char* directory)
 {
   std::vector<std::pair<std::string, const ImageInfo*>> results;

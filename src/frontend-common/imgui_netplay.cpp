@@ -140,7 +140,6 @@ void ImGuiManager::DrawNetplayStats()
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = 1.0f * scale;
   const float margin = 10.0f * scale;
-  const float spacing = 5.0f * scale;
   ImFont* font = ImGuiManager::GetFixedFont();
   const float position_y = ImGui::GetIO().DisplaySize.y - margin - (100.0f * scale);
 

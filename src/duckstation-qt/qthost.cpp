@@ -1078,14 +1078,15 @@ void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint3
     return;
   }
 
+  // need a valid system to make a session
+  if (!System::IsValid())
+    return;
+
   if (!Netplay::CreateSession(nickname.toStdString(), port, max_players, password.toStdString()))
   {
     errorReported(tr("Netplay Error"), tr("Failed to create netplay session. The log may contain more information."));
     return;
   }
-
-  // TODO: Fix this junk.. for some reason, it stays sleeping...
-  g_emu_thread->wakeThread();
 }
 
 void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port,
@@ -1103,9 +1104,6 @@ void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostn
     errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
     return;
   }
-
-  // TODO: Fix this junk.. for some reason, it stays sleeping...
-  g_emu_thread->wakeThread();
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)
@@ -2228,15 +2226,22 @@ int main(int argc, char* argv[])
       const bool first = (s_netplay_test == 0);
       QtHost::RunOnUIThread([first]() { g_main_window->move(QPoint(first ? 300 : 1400, 500)); });
 
-      const int h = first ? 1 : 2;
-      const int nh = first ? 2 : 1;
-      const int port_base = 31200;
-      std::string remote = "127.0.0.1";
+      const int port = 31200;
+      const QString remote = QStringLiteral("127.0.0.1");
       std::string game = "D:\\PSX\\chd\\padtest.chd";
-      Netplay::TestNetplaySession(h, port_base + h, remote, port_base + nh, 1, game);
-
-      // TODO: Fix this junk.. for some reason, it stays sleeping...
-      g_emu_thread->wakeThread();
+      const QString nickname = QStringLiteral("NICKNAME%1").arg(s_netplay_test + 1);
+      if (first)
+      {
+        auto params = std::make_shared<SystemBootParameters>(std::move(game));
+        params->override_fast_boot = true;
+        params->fast_forward_to_first_frame = true;
+        g_emu_thread->bootSystem(std::move(params));
+        g_emu_thread->createNetplaySession(nickname, port, 2, QString());
+      }
+      else
+      {
+        g_emu_thread->joinNetplaySession(nickname, remote, port, QString());
+      }
     });
   }
 

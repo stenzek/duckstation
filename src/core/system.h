@@ -223,6 +223,7 @@ void ApplySettings(bool display_osd_messages);
 bool ReloadGameSettings(bool display_osd_messages);
 
 bool BootSystem(SystemBootParameters parameters);
+bool ReinitializeSystem(ConsoleRegion region, const char* bios_path, const char* media_path, bool fast_boot);
 void PauseSystem(bool paused);
 void ResetSystem();
 
@@ -239,8 +240,9 @@ struct MemorySaveState
 };
 bool SaveMemoryState(MemorySaveState* mss);
 bool LoadMemoryState(const MemorySaveState& mss);
-bool LoadStateFromStream(ByteStream* stream, bool update_display);
-bool SaveStateToStream(ByteStream* state, u32 screenshot_size = 256, u32 compression_method = 0);
+bool LoadStateFromStream(ByteStream* stream, bool update_display, bool ignore_media = false);
+bool SaveStateToStream(ByteStream* state, u32 screenshot_size = 256, u32 compression_method = 0,
+                       bool ignore_media = false);
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
