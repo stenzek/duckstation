@@ -590,6 +590,17 @@ const GameList::Entry* GameList::GetEntryBySerial(const std::string_view& serial
   return nullptr;
 }
 
+const GameList::Entry* GameList::GetEntryBySerialAndHash(const std::string_view& serial, u64 hash)
+{
+  for (const Entry& entry : s_entries)
+  {
+    if (entry.serial == serial && entry.hash == hash)
+      return &entry;
+  }
+
+  return nullptr;
+}
+
 u32 GameList::GetEntryCount()
 {
   return static_cast<u32>(s_entries.size());

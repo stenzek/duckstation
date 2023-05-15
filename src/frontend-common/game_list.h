@@ -71,6 +71,7 @@ std::unique_lock<std::recursive_mutex> GetLock();
 const Entry* GetEntryByIndex(u32 index);
 const Entry* GetEntryForPath(const char* path);
 const Entry* GetEntryBySerial(const std::string_view& serial);
+const Entry* GetEntryBySerialAndHash(const std::string_view& serial, u64 hash);
 u32 GetEntryCount();
 
 bool IsGameListLoaded();
