@@ -108,6 +108,7 @@ static void DoRunahead();
 static void DoMemorySaveStates();
 
 static bool Initialize(bool force_software_renderer);
+static bool FastForwardToFirstFrame();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
@@ -140,6 +141,7 @@ static std::string s_running_game_serial;
 static std::string s_running_game_title;
 static System::GameHash s_running_game_hash;
 static bool s_running_unknown_game;
+static bool s_was_fast_booted;
 
 static float s_throttle_frequency = 60.0f;
 static float s_target_speed = 1.0f;
@@ -331,6 +333,11 @@ bool System::IsRunningUnknownGame()
   return s_running_unknown_game;
 }
 
+bool System::WasFastBooted()
+{
+  return s_was_fast_booted;
+}
+
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
 {
   return s_bios_image_info;
@@ -520,7 +527,7 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
       pos++;
     }
   }
-  
+
   if (out_id)
   {
     if (id.empty())
@@ -635,7 +642,7 @@ std::string System::GetExecutableNameForImage(CDImage* cdi, bool strip_subdirect
 }
 
 bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name,
-  std::vector<u8>* out_executable_data)
+                                     std::vector<u8>* out_executable_data)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
@@ -644,7 +651,8 @@ bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_n
   return ReadExecutableFromImage(iso, out_executable_name, out_executable_data);
 }
 
-bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
+                                     std::vector<u8>* out_executable_data)
 {
   const std::string executable_path = GetExecutableNameForImage(iso, false);
   Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
@@ -1295,9 +1303,15 @@ bool System::BootSystem(SystemBootParameters parameters)
                                                                         g_settings.bios_patch_fast_boot))
   {
     if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    {
+      // TODO: Fast boot without patches...
       BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+      s_was_fast_booted = true;
+    }
     else
+    {
       Log_ErrorPrintf("Not patching fast boot, as BIOS is not patch compatible.");
+    }
   }
 
   // Good to go.
@@ -1336,6 +1350,9 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
+
+  if (parameters.fast_forward_to_first_frame)
+    FastForwardToFirstFrame();
 
   if (g_settings.audio_dump_on_boot)
     StartDumpingAudio();
@@ -1519,6 +1536,7 @@ void System::DestroySystem()
 
   s_bios_hash = {};
   s_bios_image_info = nullptr;
+  s_was_fast_booted = false;
 
   Host::OnSystemDestroyed();
 }
@@ -1538,6 +1556,24 @@ void System::ClearRunningGame()
 #ifdef WITH_CHEEVOS
   Achievements::GameChanged(s_running_game_path, nullptr);
 #endif
+}
+
+bool System::FastForwardToFirstFrame()
+{
+  // If we're taking more than 60 seconds to load the game, oof..
+  static constexpr u32 MAX_FRAMES_TO_SKIP = 30 * 60;
+  const u32 current_frame_number = s_frame_number;
+  const u32 current_internal_frame_number = s_internal_frame_number;
+
+  SPU::SetAudioOutputMuted(true);
+  while (s_internal_frame_number == current_internal_frame_number &&
+         (s_frame_number - current_frame_number) <= MAX_FRAMES_TO_SKIP)
+  {
+    System::RunFrame();
+  }
+  SPU::SetAudioOutputMuted(false);
+
+  return (s_internal_frame_number != current_internal_frame_number);
 }
 
 void System::Execute()

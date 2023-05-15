@@ -45,6 +45,7 @@ struct SystemBootParameters
   u32 media_playlist_index = 0;
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
+  bool fast_forward_to_first_frame = false;
 };
 
 struct SaveStateInfo
@@ -113,7 +114,6 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 std::string GetExecutableNameForImage(CDImage* cdi, bool strip_subdirectories);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
-bool IsValidGameImage(CDImage* cdi);
 std::string GetGameHashId(GameHash hash);
 bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash);
 DiscRegion GetRegionForSerial(std::string_view serial);
@@ -187,6 +187,7 @@ const std::string& GetGameSerial();
 const std::string& GetGameTitle();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
+bool WasFastBooted();
 
 const BIOS::ImageInfo* GetBIOSImageInfo();
 const BIOS::Hash& GetBIOSHash();
