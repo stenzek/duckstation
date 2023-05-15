@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "system.h"
@@ -82,7 +82,6 @@ static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(Byt
 static bool LoadEXE(const char* filename);
 
 static std::string GetExecutableNameForImage(ISOReader& iso, bool strip_subdirectories);
-
 static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
 
@@ -119,6 +118,7 @@ static void SetTimerResolutionIncreased(bool enabled);
 } // namespace System
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
+static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
@@ -138,6 +138,7 @@ static BIOS::Hash s_bios_hash = {};
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
 static std::string s_running_game_title;
+static System::GameHash s_running_game_hash;
 static bool s_running_unknown_game;
 
 static float s_throttle_frequency = 60.0f;
@@ -306,18 +307,23 @@ void System::IncrementInternalFrameNumber()
   s_internal_frame_number++;
 }
 
-const std::string& System::GetRunningPath()
+const std::string& System::GetDiscPath()
 {
   return s_running_game_path;
 }
-const std::string& System::GetRunningSerial()
+const std::string& System::GetGameSerial()
 {
   return s_running_game_serial;
 }
 
-const std::string& System::GetRunningTitle()
+const std::string& System::GetGameTitle()
 {
   return s_running_game_title;
+}
+
+System::GameHash System::GetGameHash()
+{
+  return s_running_game_hash;
 }
 
 bool System::IsRunningUnknownGame()
@@ -438,6 +444,7 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
 
     case DiscRegion::NTSC_U:
     case DiscRegion::Other:
+    case DiscRegion::NonPS1:
     default:
       return ConsoleRegion::NTSC_U;
 
@@ -446,70 +453,86 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
   }
 }
 
-std::string System::GetGameSerialForPath(const char* image_path, bool fallback_to_hash)
+std::string System::GetGameHashId(GameHash hash)
 {
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, false, nullptr);
-  if (!cdi)
-    return {};
-
-  return GetGameIdFromImage(cdi.get(), fallback_to_hash);
+  return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
 }
 
-std::string System::GetGameIdFromImage(CDImage* cdi, bool fallback_to_hash)
-{
-  std::string code(GetExecutableNameForImage(cdi));
-  if (!code.empty())
-  {
-    // SCES_123.45 -> SCES-12345
-    for (std::string::size_type pos = 0; pos < code.size();)
-    {
-      if (code[pos] == '.')
-      {
-        code.erase(pos, 1);
-        continue;
-      }
-
-      if (code[pos] == '_')
-        code[pos] = '-';
-      else
-        code[pos] = static_cast<char>(std::toupper(code[pos]));
-
-      pos++;
-    }
-
-    return code;
-  }
-
-  if (!fallback_to_hash)
-    return {};
-
-  return GetGameHashIdFromImage(cdi);
-}
-
-std::string System::GetGameHashIdFromImage(CDImage* cdi)
+bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
-    return {};
+  {
+    if (out_id)
+      out_id->clear();
+    if (out_hash)
+      *out_hash = 0;
+    return false;
+  }
 
+  std::string id;
   std::string exe_name;
   std::vector<u8> exe_buffer;
-  if (!ReadExecutableFromImage(cdi, &exe_name, &exe_buffer))
-    return {};
+  if (!ReadExecutableFromImage(iso, &exe_name, &exe_buffer))
+  {
+    if (out_id)
+      out_id->clear();
+    if (out_hash)
+      *out_hash = 0;
+    return false;
+  }
 
+  // Always compute the hash.
   const u32 track_1_length = cdi->GetTrackLength(1);
-
   XXH64_state_t* state = XXH64_createState();
   XXH64_reset(state, 0x4242D00C);
   XXH64_update(state, exe_name.c_str(), exe_name.size());
   XXH64_update(state, exe_buffer.data(), exe_buffer.size());
   XXH64_update(state, &iso.GetPVD(), sizeof(ISOReader::ISOPrimaryVolumeDescriptor));
   XXH64_update(state, &track_1_length, sizeof(track_1_length));
-  const u64 hash = XXH64_digest(state);
+  const GameHash hash = XXH64_digest(state);
   XXH64_freeState(state);
+  Log_DevPrintf("Hash for '%s' - %" PRIX64, exe_name.c_str(), hash);
 
-  Log_InfoPrintf("Hash for '%s' - %" PRIX64, exe_name.c_str(), hash);
-  return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
+  if (exe_name != FALLBACK_EXE_NAME)
+  {
+    // Strip off any subdirectories.
+    const std::string::size_type slash = exe_name.rfind('\\');
+    if (slash != std::string::npos)
+      id = std::string_view(exe_name).substr(slash + 1);
+    else
+      id = exe_name;
+
+    // SCES_123.45 -> SCES-12345
+    for (std::string::size_type pos = 0; pos < id.size();)
+    {
+      if (id[pos] == '.')
+      {
+        id.erase(pos, 1);
+        continue;
+      }
+
+      if (id[pos] == '_')
+        id[pos] = '-';
+      else
+        id[pos] = static_cast<char>(std::toupper(id[pos]));
+
+      pos++;
+    }
+  }
+  
+  if (out_id)
+  {
+    if (id.empty())
+      *out_id = GetGameHashId(hash);
+    else
+      *out_id = std::move(id);
+  }
+
+  if (out_hash)
+    *out_hash = hash;
+
+  return true;
 }
 
 std::string System::GetExecutableNameForImage(ISOReader& iso, bool strip_subdirectories)
@@ -517,7 +540,7 @@ std::string System::GetExecutableNameForImage(ISOReader& iso, bool strip_subdire
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
   if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data))
-    return {};
+    return FALLBACK_EXE_NAME;
 
   // Parse lines
   std::vector<std::pair<std::string, std::string>> lines;
@@ -559,7 +582,10 @@ std::string System::GetExecutableNameForImage(ISOReader& iso, bool strip_subdire
   auto iter = std::find_if(lines.begin(), lines.end(),
                            [](const auto& it) { return StringUtil::Strcasecmp(it.first.c_str(), "boot") == 0; });
   if (iter == lines.end())
-    return {};
+  {
+    // Fallback to PSX.EXE
+    return FALLBACK_EXE_NAME;
+  }
 
   std::string code = iter->second;
   std::string::size_type pos;
@@ -599,55 +625,42 @@ std::string System::GetExecutableNameForImage(ISOReader& iso, bool strip_subdire
   return code;
 }
 
-std::string System::GetExecutableNameForImage(CDImage* cdi)
+std::string System::GetExecutableNameForImage(CDImage* cdi, bool strip_subdirectories)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
     return {};
 
-  return GetExecutableNameForImage(iso, true);
-}
-
-bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
-                                     std::vector<u8>* out_executable_data)
-{
-  bool result = false;
-
-  std::string executable_path(GetExecutableNameForImage(iso, false));
-  Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
-  if (!executable_path.empty())
-  {
-    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
-    if (!result)
-      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_path.c_str());
-  }
-
-  if (!result)
-  {
-    // fallback to PSX.EXE
-    executable_path = "PSX.EXE";
-    result = iso.ReadFile(executable_path.c_str(), out_executable_data);
-    if (!result)
-      Log_ErrorPrint("Failed to read fallback PSX.EXE from disc");
-  }
-
-  if (!result)
-    return false;
-
-  if (out_executable_name)
-    *out_executable_name = std::move(executable_path);
-
-  return true;
+  return GetExecutableNameForImage(iso, strip_subdirectories);
 }
 
 bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name,
-                                     std::vector<u8>* out_executable_data)
+  std::vector<u8>* out_executable_data)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
     return false;
 
   return ReadExecutableFromImage(iso, out_executable_name, out_executable_data);
+}
+
+bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+{
+  const std::string executable_path = GetExecutableNameForImage(iso, false);
+  Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
+  if (!executable_path.empty() && out_executable_data)
+  {
+    if (!iso.ReadFile(executable_path.c_str(), out_executable_data))
+    {
+      Log_ErrorPrintf("Failed to read executable '%s' from disc", executable_path.c_str());
+      return false;
+    }
+  }
+
+  if (out_executable_name)
+    *out_executable_name = std::move(executable_path);
+
+  return true;
 }
 
 DiscRegion System::GetRegionForSerial(std::string_view serial)
@@ -696,15 +709,25 @@ DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
 
 DiscRegion System::GetRegionForImage(CDImage* cdi)
 {
-  DiscRegion system_area_region = GetRegionFromSystemArea(cdi);
+  const DiscRegion system_area_region = GetRegionFromSystemArea(cdi);
   if (system_area_region != DiscRegion::Other)
     return system_area_region;
 
-  std::string serial = GetGameIdFromImage(cdi, false);
-  if (serial.empty())
-    return DiscRegion::Other;
+  ISOReader iso;
+  if (!iso.Open(cdi, 1))
+    return DiscRegion::NonPS1;
 
-  return GetRegionForSerial(serial);
+  // The executable must exist, because this just returns PSX.EXE if it doesn't.
+  const std::string exename = GetExecutableNameForImage(iso, false);
+  if (exename.empty() || !iso.FileExists(exename.c_str()))
+    return DiscRegion::NonPS1;
+
+  // Strip off any subdirectories.
+  const std::string::size_type slash = exename.rfind('\\');
+  if (slash != std::string::npos)
+    return GetRegionForSerial(std::string_view(exename).substr(slash + 1));
+  else
+    return GetRegionForSerial(exename);
 }
 
 DiscRegion System::GetRegionForExe(const char* path)
@@ -1106,7 +1129,8 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   // Load CD image up and detect region.
   Common::Error error;
-  std::unique_ptr<CDImage> media;
+  std::unique_ptr<CDImage> disc;
+  DiscRegion disc_region = DiscRegion::NonPS1;
   std::string exe_boot;
   std::string psf_boot;
   if (!parameters.filename.empty())
@@ -1130,8 +1154,8 @@ bool System::BootSystem(SystemBootParameters parameters)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", parameters.filename.c_str());
-      media = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, &error);
-      if (!media)
+      disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, &error);
+      if (!disc)
       {
         Host::ReportErrorAsync("Error", fmt::format("Failed to load CD image '{}': {}",
                                                     Path::GetFileName(parameters.filename), error.GetCodeAndMessage()));
@@ -1142,7 +1166,7 @@ bool System::BootSystem(SystemBootParameters parameters)
 
       if (s_region == ConsoleRegion::Auto)
       {
-        const DiscRegion disc_region = GetRegionForImage(media.get());
+        disc_region = GetRegionForImage(disc.get());
         if (disc_region != DiscRegion::Other)
         {
           s_region = GetConsoleRegionForDiscRegion(disc_region);
@@ -1169,7 +1193,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   Log_InfoPrintf("Console Region: %s", Settings::GetConsoleRegionDisplayName(s_region));
 
   // Switch subimage.
-  if (media && parameters.media_playlist_index != 0 && !media->SwitchSubImage(parameters.media_playlist_index, &error))
+  if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, &error))
   {
     Host::ReportFormattedErrorAsync("Error", "Failed to switch to subimage %u in '%s': %s",
                                     parameters.media_playlist_index, parameters.filename.c_str(),
@@ -1180,7 +1204,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Update running game, this will apply settings as well.
-  UpdateRunningGame(media ? media->GetFileName().c_str() : parameters.filename.c_str(), media.get(), true);
+  UpdateRunningGame(disc ? disc->GetFileName().c_str() : parameters.filename.c_str(), disc.get(), true);
 
   if (!parameters.override_exe.empty())
   {
@@ -1198,7 +1222,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Check for SBI.
-  if (!CheckForSBIFile(media.get()))
+  if (!CheckForSBIFile(disc.get()))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1265,8 +1289,8 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Insert CD, and apply fastboot patch if enabled.
-  if (media)
-    CDROM::InsertMedia(std::move(media));
+  if (disc)
+    CDROM::InsertMedia(std::move(disc), disc_region);
   if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
                                                                         g_settings.bios_patch_fast_boot))
   {
@@ -1504,6 +1528,7 @@ void System::ClearRunningGame()
   s_running_game_serial.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
+  s_running_game_hash = 0;
   s_running_unknown_game = false;
   s_cheat_list.reset();
   s_state = State::Shutdown;
@@ -1980,7 +2005,8 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display)
   CDROM::Reset();
   if (media)
   {
-    CDROM::InsertMedia(std::move(media));
+    const DiscRegion region = GetRegionForImage(media.get());
+    CDROM::InsertMedia(std::move(media), region);
     if (g_settings.cdrom_load_image_to_ram)
       CDROM::PrecacheMedia();
   }
@@ -3013,8 +3039,9 @@ bool System::InsertMedia(const char* path)
     return false;
   }
 
+  const DiscRegion region = GetRegionForImage(image.get());
   UpdateRunningGame(path, image.get(), false);
-  CDROM::InsertMedia(std::move(image));
+  CDROM::InsertMedia(std::move(image), region);
   Log_InfoPrintf("Inserted media from %s (%s, %s)", s_running_game_path.c_str(), s_running_game_serial.c_str(),
                  s_running_game_title.c_str());
   if (g_settings.cdrom_load_image_to_ram)
@@ -3047,6 +3074,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_running_game_path.clear();
   s_running_game_serial.clear();
   s_running_game_title.clear();
+  s_running_game_hash = 0;
   s_running_unknown_game = true;
 
   if (path && std::strlen(path) > 0)
@@ -3060,7 +3088,10 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     }
     else if (image)
     {
-      const GameDatabase::Entry* entry = GameDatabase::GetEntryForDisc(image);
+      std::string id;
+      GetGameDetailsFromImage(image, &id, &s_running_game_hash);
+
+      const GameDatabase::Entry* entry = GameDatabase::GetEntryForId(id);
       if (entry)
       {
         s_running_game_serial = entry->serial;
@@ -3069,9 +3100,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       }
       else
       {
-        const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-        s_running_game_serial = GetGameIdFromImage(image, true);
-        s_running_game_title = Path::GetFileTitle(display_name);
+        s_running_game_serial = std::move(id);
+        s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
       }
 
       if (image->HasSubImages() && g_settings.memory_card_use_playlist_title)
@@ -3198,14 +3228,17 @@ bool System::SwitchMediaSubImage(u32 index)
     Host::AddFormattedOSDMessage(10.0f,
                                  Host::TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
                                  index + 1u, image->GetFileName().c_str(), error.GetCodeAndMessage().GetCharArray());
-    CDROM::InsertMedia(std::move(image));
+
+    const DiscRegion region = GetRegionForImage(image.get());
+    CDROM::InsertMedia(std::move(image), region);
     return false;
   }
 
   Host::AddFormattedOSDMessage(20.0f, Host::TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
                                image->GetSubImageMetadata(index, "title").c_str(), index + 1u,
                                image->GetMetadata("title").c_str());
-  CDROM::InsertMedia(std::move(image));
+  const DiscRegion region = GetRegionForImage(image.get());
+  CDROM::InsertMedia(std::move(image), region);
 
   ClearMemorySaveStates();
   return true;
@@ -3859,7 +3892,7 @@ bool System::StartDumpingAudio(const char* filename)
   std::string auto_filename;
   if (!filename)
   {
-    const auto& serial = System::GetRunningSerial();
+    const auto& serial = System::GetGameSerial();
     if (serial.empty())
     {
       auto_filename = Path::Combine(
@@ -3904,7 +3937,7 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = System::GetRunningSerial();
+    const auto& code = System::GetGameSerial();
     const char* extension = "png";
     if (code.empty())
     {
@@ -4098,7 +4131,7 @@ std::string System::GetCheatFileName()
 {
   std::string ret;
 
-  const std::string& title = System::GetRunningTitle();
+  const std::string& title = System::GetGameTitle();
   if (!title.empty())
     ret = Path::Combine(EmuFolders::Cheats, fmt::format("{}.cht", title.c_str()));
 

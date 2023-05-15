@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "game_database.h"
@@ -35,7 +35,6 @@ enum : u32
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
-static const Entry* GetEntryForId(const std::string_view& code);
 
 static bool LoadFromCache();
 static bool SaveToCache();
@@ -111,6 +110,9 @@ void GameDatabase::Unload()
 
 const GameDatabase::Entry* GameDatabase::GetEntryForId(const std::string_view& code)
 {
+  if (code.empty())
+    return nullptr;
+
   EnsureLoaded();
 
   auto iter = UnorderedStringMapFind(s_code_lookup, code);
@@ -144,7 +146,8 @@ std::string GameDatabase::GetSerialForPath(const char* path)
 
 const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
 {
-  std::string id(System::GetGameIdFromImage(image, false));
+  std::string id;
+  System::GetGameDetailsFromImage(image, &id, nullptr);
   if (!id.empty())
   {
     const Entry* entry = GetEntryForId(id);
@@ -152,15 +155,7 @@ const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
       return entry;
   }
 
-  std::string hash_id(System::GetGameHashIdFromImage(image));
-  if (!hash_id.empty())
-  {
-    const Entry* entry = GetEntryForId(hash_id);
-    if (entry)
-      return entry;
-  }
-
-  Log_WarningPrintf("No entry found for disc (exe code: '%s', hash code: '%s')", id.c_str(), hash_id.c_str());
+  Log_WarningPrintf("No entry found for disc '%s'", id.c_str());
   return nullptr;
 }
 
@@ -498,7 +493,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
                                 "Controller in port %u (%s) is not supported for %s.\nSupported controllers: "
                                 "%s\nPlease configure a supported controller from the list above."),
           i + 1u, Host::TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(ctype)).GetCharArray(),
-          System::GetRunningTitle().c_str(), supported_controller_string.GetCharArray());
+          System::GetGameTitle().c_str(), supported_controller_string.GetCharArray());
       }
     }
   }

@@ -570,8 +570,8 @@ void CommonHost::UpdateDiscordPresence(bool rich_presence_only)
   SmallString details_string;
   if (!System::IsShutdown())
   {
-    details_string.AppendFormattedString("%s (%s)", System::GetRunningTitle().c_str(),
-                                         System::GetRunningSerial().c_str());
+    details_string.AppendFormattedString("%s (%s)", System::GetGameTitle().c_str(),
+                                         System::GetGameSerial().c_str());
   }
   else
   {
@@ -635,7 +635,7 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   if (!System::IsValid())
     return;
 
-  if (!global && System::GetRunningSerial().empty())
+  if (!global && System::GetGameSerial().empty())
   {
     Host::AddKeyedOSDMessage("LoadState", TRANSLATABLE("OSDMessage", "Cannot load state for game without serial."),
                              5.0f);
@@ -643,7 +643,7 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   }
 
   std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                            System::GetGameSaveStateFileName(System::GetRunningSerial(), slot));
+                            System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
   if (!FileSystem::FileExists(path.c_str()))
   {
     Host::AddKeyedOSDMessage("LoadState",
@@ -659,7 +659,7 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   if (!System::IsValid())
     return;
 
-  if (!global && System::GetRunningSerial().empty())
+  if (!global && System::GetGameSerial().empty())
   {
     Host::AddKeyedOSDMessage("LoadState", TRANSLATABLE("OSDMessage", "Cannot save state for game without serial."),
                              5.0f);
@@ -667,7 +667,7 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   }
 
   std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                            System::GetGameSaveStateFileName(System::GetRunningSerial(), slot));
+                            System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
   System::SaveState(path.c_str(), g_settings.create_save_state_backups);
 }
 

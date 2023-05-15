@@ -293,3 +293,9 @@ bool ISOReader::ReadFile(const char* path, std::vector<u8>* data)
   data->resize(de->length_le);
   return true;
 }
+
+bool ISOReader::FileExists(const char* path)
+{
+  auto de = LocateFile(path);
+  return de.has_value();
+}

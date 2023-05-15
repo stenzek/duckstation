@@ -621,11 +621,11 @@ void SaveStateSelectorUI::RefreshList()
   if (System::IsShutdown())
     return;
 
-  if (!System::GetRunningSerial().empty())
+  if (!System::GetGameSerial().empty())
   {
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
-      std::string path(System::GetGameSaveStateFileName(System::GetRunningSerial(), i));
+      std::string path(System::GetGameSaveStateFileName(System::GetGameSerial(), i));
       std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
 
       ListEntry li;

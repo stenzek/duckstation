@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "game_list.h"
@@ -18,13 +18,14 @@
 #include "core/psf_loader.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "tinyxml2.h"
 #include "util/cd_image.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <ctime>
 #include <string_view>
-#include <tinyxml2.h>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 Log_SetChannel(GameList);
@@ -37,7 +38,7 @@ namespace GameList {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-  GAME_LIST_CACHE_VERSION = 32,
+  GAME_LIST_CACHE_VERSION = 33,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -54,6 +55,8 @@ struct PlayedTimeEntry
 
 using CacheMap = UnorderedStringMap<Entry>;
 using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
+
+static_assert(std::is_same_v<decltype(Entry::hash), System::GameHash>);
 
 static bool GetExeListEntry(const std::string& path, Entry* entry);
 static bool GetPsfListEntry(const std::string& path, Entry* entry);
@@ -204,8 +207,11 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   entry->type = EntryType::Disc;
   entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
+  std::string id;
+  System::GetGameDetailsFromImage(cdi.get(), &id, &entry->hash);
+
   // try the database first
-  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForDisc(cdi.get());
+  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForId(id);
   if (dentry)
   {
     // pull from database
@@ -227,7 +233,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 
     // no game code, so use the filename title
-    entry->serial = System::GetGameIdFromImage(cdi.get(), true);
+    entry->serial = std::move(id);
     entry->title = Path::GetFileTitle(display_name);
     entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
     entry->release_date = 0;
@@ -239,9 +245,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   }
 
   // region detection
-  entry->region = System::GetRegionFromSystemArea(cdi.get());
-  if (entry->region == DiscRegion::Other)
-    entry->region = System::GetRegionForSerial(entry->serial);
+  entry->region = System::GetRegionForImage(cdi.get());
 
   if (cdi->HasSubImages())
   {
@@ -310,12 +314,12 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     if (!stream->ReadU8(&type) || !stream->ReadU8(&region) || !stream->ReadSizePrefixedString(&path) ||
         !stream->ReadSizePrefixedString(&ge.serial) || !stream->ReadSizePrefixedString(&ge.title) ||
         !stream->ReadSizePrefixedString(&ge.genre) || !stream->ReadSizePrefixedString(&ge.publisher) ||
-        !stream->ReadSizePrefixedString(&ge.developer) || !stream->ReadU64(&ge.total_size) ||
-        !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !stream->ReadU64(&ge.release_date) ||
-        !stream->ReadU32(&ge.supported_controllers) || !stream->ReadU8(&ge.min_players) ||
-        !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) || !stream->ReadU8(&ge.max_blocks) ||
-        !stream->ReadU8(&compatibility_rating) || region >= static_cast<u8>(DiscRegion::Count) ||
-        type >= static_cast<u8>(EntryType::Count) ||
+        !stream->ReadSizePrefixedString(&ge.developer) || !stream->ReadU64(&ge.hash) ||
+        !stream->ReadU64(&ge.total_size) || !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) ||
+        !stream->ReadU64(&ge.release_date) || !stream->ReadU32(&ge.supported_controllers) ||
+        !stream->ReadU8(&ge.min_players) || !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) ||
+        !stream->ReadU8(&ge.max_blocks) || !stream->ReadU8(&compatibility_rating) ||
+        region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
         compatibility_rating >= static_cast<u8>(GameDatabase::CompatibilityRating::Count))
     {
       Log_WarningPrintf("Game list cache entry is corrupted");
@@ -348,6 +352,7 @@ bool GameList::WriteEntryToCache(const Entry* entry)
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->genre);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->publisher);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->developer);
+  result &= s_cache_write_stream->WriteU64(entry->hash);
   result &= s_cache_write_stream->WriteU64(entry->total_size);
   result &= s_cache_write_stream->WriteU64(entry->last_modified_time);
   result &= s_cache_write_stream->WriteU64(entry->release_date);
@@ -580,6 +585,17 @@ const GameList::Entry* GameList::GetEntryBySerial(const std::string_view& serial
     {
       return &entry;
     }
+  }
+
+  return nullptr;
+}
+
+const GameList::Entry* GameList::GetEntryBySerialAndHash(const std::string_view& serial, u64 hash)
+{
+  for (const Entry& entry : s_entries)
+  {
+    if (entry.serial == serial && entry.hash == hash)
+      return &entry;
   }
 
   return nullptr;

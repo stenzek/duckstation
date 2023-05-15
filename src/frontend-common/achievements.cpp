@@ -470,7 +470,7 @@ void Achievements::Initialize()
   s_logged_in = (!s_username.empty() && !s_api_token.empty());
 
   if (System::IsValid())
-    GameChanged(System::GetRunningPath(), nullptr);
+    GameChanged(System::GetDiscPath(), nullptr);
 }
 
 void Achievements::UpdateSettings(const Settings& old_config)
@@ -2142,7 +2142,7 @@ void Achievements::RAIntegration::RACallbackRebuildMenu()
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
-  StringUtil::Strlcpy(buf, System::GetRunningTitle(), 256);
+  StringUtil::Strlcpy(buf, System::GetGameTitle(), 256);
 }
 
 void Achievements::RAIntegration::RACallbackResetEmulator()

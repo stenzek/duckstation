@@ -1677,7 +1677,7 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
   {
     // Load savestate if available and only when you are the host.
     // the other peers will get state from the host
-    auto save_path = fmt::format("{}\\netplay\\{}.sav", EmuFolders::SaveStates, System::GetRunningSerial());
+    auto save_path = fmt::format("{}\\netplay\\{}.sav", EmuFolders::SaveStates, System::GetGameSerial());
     System::LoadState(save_path.c_str());
   }
 

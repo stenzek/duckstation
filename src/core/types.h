@@ -37,6 +37,7 @@ enum class DiscRegion : u8
   NTSC_U, // SCEA
   PAL,    // SCEE
   Other,
+  NonPS1,
   Count
 };
 
