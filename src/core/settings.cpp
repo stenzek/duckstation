@@ -788,10 +788,11 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
   return s_console_region_display_names[static_cast<int>(region)];
 }
 
-static std::array<const char*, 4> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other"}};
-static std::array<const char*, 4> s_disc_region_display_names = {
+static std::array<const char*, 5> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1"}};
+static std::array<const char*, 5> s_disc_region_display_names = {
   {TRANSLATABLE("DiscRegion", "NTSC-J (Japan)"), TRANSLATABLE("DiscRegion", "NTSC-U/C (US, Canada)"),
-   TRANSLATABLE("DiscRegion", "PAL (Europe, Australia)"), TRANSLATABLE("DiscRegion", "Other")}};
+   TRANSLATABLE("DiscRegion", "PAL (Europe, Australia)"), TRANSLATABLE("DiscRegion", "Other"),
+   TRANSLATABLE("DiscRegion", "Non-PS1")}};
 
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 {

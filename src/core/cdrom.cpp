@@ -296,7 +296,6 @@ static Command s_command = Command::None;
 static Command s_command_second_response = Command::None;
 static DriveState s_drive_state = DriveState::Idle;
 static DiscRegion s_disc_region = DiscRegion::Other;
-static bool s_ps1_disc = false;
 
 static StatusRegister s_status = {};
 static SecondaryStatusRegister s_secondary_status = {};
@@ -666,7 +665,7 @@ DiscRegion CDROM::GetDiscRegion()
 
 bool CDROM::IsMediaPS1Disc()
 {
-  return s_ps1_disc;
+  return (s_disc_region != DiscRegion::NonPS1);
 }
 
 bool CDROM::IsMediaAudioCD()
@@ -715,35 +714,21 @@ bool CDROM::CanReadMedia()
   return (s_drive_state != DriveState::ShellOpening && m_reader.HasMedia());
 }
 
-void CDROM::InsertMedia(std::unique_ptr<CDImage> media)
+void CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region)
 {
   if (CanReadMedia())
     RemoveMedia(true);
 
-  // check if it's a valid PS1 disc
-  std::string exe_name;
-  std::vector<u8> exe_buffer;
-  s_ps1_disc = System::ReadExecutableFromImage(media.get(), &exe_name, &exe_buffer);
+  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s",
+                  Settings::GetDiscRegionName(region), Settings::GetConsoleRegionName(System::GetRegion()));
 
-  if (s_ps1_disc)
-  {
-    // set the region from the system area of the disc
-    s_disc_region = System::GetRegionForImage(media.get());
-    Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s",
-                   Settings::GetDiscRegionName(s_disc_region), Settings::GetConsoleRegionName(System::GetRegion()));
-  }
-  else
-  {
-    s_disc_region = DiscRegion::Other;
-    Log_InfoPrint("Inserting new media, non-PS1 disc");
-  }
+  s_disc_region = region;
+  m_reader.SetMedia(std::move(media));
+  SetHoldPosition(0, true);
 
   // motor automatically spins up
   if (s_drive_state != DriveState::ShellOpening)
     StartMotor();
-
-  m_reader.SetMedia(std::move(media));
-  SetHoldPosition(0, true);
 }
 
 std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
@@ -764,8 +749,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   s_secondary_status.motor_on = false;
   s_secondary_status.shell_open = true;
   s_secondary_status.ClearActiveBits();
-  s_disc_region = DiscRegion::Other;
-  s_ps1_disc = false;
+  s_disc_region = DiscRegion::NonPS1;
 
   // If the drive was doing anything, we need to abort the command.
   ClearDriveState();
@@ -2683,7 +2667,7 @@ void CDROM::DoIDRead()
 
   static constexpr u32 REGION_STRING_LENGTH = 4;
   static constexpr std::array<std::array<u8, REGION_STRING_LENGTH>, static_cast<size_t>(DiscRegion::Count)>
-    region_strings = {{{'S', 'C', 'E', 'I'}, {'S', 'C', 'E', 'A'}, {'S', 'C', 'E', 'E'}, {0, 0, 0, 0}}};
+    region_strings = {{{'S', 'C', 'E', 'I'}, {'S', 'C', 'E', 'A'}, {'S', 'C', 'E', 'E'}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
   s_async_response_fifo.PushRange(region_strings[static_cast<u8>(s_disc_region)].data(), REGION_STRING_LENGTH);
 
   SetAsyncInterrupt((flags_byte != 0) ? Interrupt::Error : Interrupt::Complete);

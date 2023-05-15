@@ -1284,8 +1284,8 @@ void MainWindow::onViewGamePropertiesActionTriggered()
   if (!s_system_valid)
     return;
 
-  const std::string& path = System::GetRunningPath();
-  const std::string& serial = System::GetRunningSerial();
+  const std::string& path = System::GetDiscPath();
+  const std::string& serial = System::GetGameSerial();
   if (path.empty() || serial.empty())
     return;
 

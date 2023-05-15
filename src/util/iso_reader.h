@@ -143,6 +143,7 @@ public:
   std::vector<std::string> GetFilesInDirectory(const char* path);
 
   bool ReadFile(const char* path, std::vector<u8>* data);
+  bool FileExists(const char* path);
 
 private:
   bool ReadPVD();

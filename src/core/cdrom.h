@@ -25,7 +25,7 @@ bool IsMediaPS1Disc();
 bool IsMediaAudioCD();
 bool DoesMediaRegionMatchConsole();
 
-void InsertMedia(std::unique_ptr<CDImage> media);
+void InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region);
 std::unique_ptr<CDImage> RemoveMedia(bool for_disc_swap);
 bool PrecacheMedia();
 

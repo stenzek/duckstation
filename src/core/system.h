@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -88,6 +88,8 @@ enum class State
   Paused
 };
 
+using GameHash = u64;
+
 extern TickCount g_ticks_per_second;
 
 /// Returns true if the filename is a PlayStation executable we can inject.
@@ -105,12 +107,12 @@ bool IsSaveStateFilename(const std::string_view& path);
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 
-std::string GetExecutableNameForImage(CDImage* cdi);
+std::string GetExecutableNameForImage(CDImage* cdi, bool strip_subdirectories);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
-std::string GetGameHashIdFromImage(CDImage* cdi);
-std::string GetGameIdFromImage(CDImage* cdi, bool fallback_to_hash);
-std::string GetGameSerialForPath(const char* image_path, bool fallback_to_hash);
+bool IsValidGameImage(CDImage* cdi);
+std::string GetGameHashId(GameHash hash);
+bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash);
 DiscRegion GetRegionForSerial(std::string_view serial);
 DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
@@ -177,11 +179,12 @@ u32 GetInternalFrameNumber();
 void FrameDone();
 void IncrementInternalFrameNumber();
 
-const std::string& GetRunningPath();
-const std::string& GetRunningSerial();
-const std::string& GetRunningTitle();
-
+const std::string& GetDiscPath();
+const std::string& GetGameSerial();
+const std::string& GetGameTitle();
+GameHash GetGameHash();
 bool IsRunningUnknownGame();
+
 const BIOS::ImageInfo* GetBIOSImageInfo();
 const BIOS::Hash& GetBIOSHash();
 

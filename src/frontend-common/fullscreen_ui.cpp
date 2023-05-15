@@ -654,8 +654,8 @@ void FullscreenUI::OnRunningGameChanged()
   if (!IsInitialized())
     return;
 
-  const std::string& path = System::GetRunningPath();
-  const std::string& serial = System::GetRunningSerial();
+  const std::string& path = System::GetDiscPath();
+  const std::string& serial = System::GetGameSerial();
   if (!serial.empty())
     s_current_game_subtitle = fmt::format("{0} - {1}", serial, Path::GetFileName(path));
   else
@@ -963,7 +963,7 @@ void FullscreenUI::DoChangeDiscFromFile()
   };
 
   OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-                   std::string(Path::GetDirectory(System::GetRunningPath())));
+                   std::string(Path::GetDirectory(System::GetDiscPath())));
 }
 
 void FullscreenUI::DoChangeDisc()
@@ -1010,7 +1010,7 @@ void FullscreenUI::DoCheatsMenu()
   {
     if (!System::LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
     {
-      Host::AddKeyedOSDMessage("load_cheat_list", fmt::format("No cheats found for {}.", System::GetRunningTitle()),
+      Host::AddKeyedOSDMessage("load_cheat_list", fmt::format("No cheats found for {}.", System::GetGameTitle()),
                                10.0f);
       ReturnToMainWindow();
       return;
@@ -2325,14 +2325,14 @@ void FullscreenUI::SwitchToGameSettingsForSerial(const std::string_view& serial)
 
 void FullscreenUI::SwitchToGameSettings()
 {
-  if (System::GetRunningSerial().empty())
+  if (System::GetGameSerial().empty())
     return;
 
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetRunningPath().c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath().c_str());
   if (!entry)
   {
-    SwitchToGameSettingsForSerial(System::GetRunningSerial());
+    SwitchToGameSettingsForSerial(System::GetGameSerial());
     return;
   }
 
@@ -4561,12 +4561,12 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
   // title info
   {
-    const std::string& title = System::GetRunningTitle();
-    const std::string& serial = System::GetRunningSerial();
+    const std::string& title = System::GetGameTitle();
+    const std::string& serial = System::GetGameSerial();
 
     if (!serial.empty())
       buffer.Format("%s - ", serial.c_str());
-    buffer.AppendString(Path::GetFileName(System::GetRunningPath()));
+    buffer.AppendString(Path::GetFileName(System::GetDiscPath()));
 
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
@@ -4624,7 +4624,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
     DrawShadowedText(dl, g_large_font, time_pos, IM_COL32(255, 255, 255, 255), buffer.GetCharArray(),
                      buffer.GetCharArray() + buffer.GetLength());
 
-    const std::string& serial = System::GetRunningSerial();
+    const std::string& serial = System::GetGameSerial();
     if (!serial.empty())
     {
       const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(serial);
@@ -4674,7 +4674,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::None:
       {
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
-        const bool has_game = System::IsValid() && !System::GetRunningSerial().empty();
+        const bool has_game = System::IsValid() && !System::GetGameSerial().empty();
 
         if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
           ClosePauseMenu();
@@ -4698,7 +4698,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         }
 
         if (ActiveButton(ICON_FA_FROWN_OPEN " Cheat List", false,
-                         !System::GetRunningSerial().empty() && !Achievements::ChallengeModeActive()))
+                         !System::GetGameSerial().empty() && !Achievements::ChallengeModeActive()))
         {
           s_current_main_window = MainWindowType::None;
           DoCheatsMenu();
@@ -4944,7 +4944,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
   s_save_state_selector_game_path = {};
   s_save_state_selector_loading = is_loading;
   s_save_state_selector_resuming = false;
-  if (PopulateSaveStateListEntries(System::GetRunningTitle().c_str(), System::GetRunningSerial().c_str()) > 0)
+  if (PopulateSaveStateListEntries(System::GetGameTitle().c_str(), System::GetGameSerial().c_str()) > 0)
   {
     s_save_state_selector_open = true;
     return true;
@@ -5380,7 +5380,7 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
       return;
 
     std::string filename(global ? System::GetGlobalSaveStateFileName(slot) :
-                                  System::GetGameSaveStateFileName(System::GetRunningSerial(), slot));
+                                  System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
     System::SaveState(filename.c_str(), g_settings.create_save_state_backups);
   });
 }
@@ -6172,7 +6172,7 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame()
 {
   auto lock = GameList::GetLock();
 
-  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetRunningPath().c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath().c_str());
   if (!entry)
     return s_fallback_disc_texture.get();
 

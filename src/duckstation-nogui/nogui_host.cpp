@@ -657,7 +657,7 @@ bool NoGUIHost::AcquireHostDisplay(RenderAPI api)
   Assert(!g_host_display);
 
   g_nogui_window->ExecuteInMessageLoop([api]() {
-    if (g_nogui_window->CreatePlatformWindow(GetWindowTitle(System::GetRunningTitle())))
+    if (g_nogui_window->CreatePlatformWindow(GetWindowTitle(System::GetGameTitle())))
     {
       const std::optional<WindowInfo> wi(g_nogui_window->GetPlatformWindowInfo());
       if (wi.has_value())

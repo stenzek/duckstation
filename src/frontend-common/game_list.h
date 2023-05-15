@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -37,6 +37,7 @@ struct Entry
   std::string genre;
   std::string publisher;
   std::string developer;
+  u64 hash = 0;
   u64 total_size = 0;
   std::time_t last_modified_time = 0;
   std::time_t last_played_time = 0;

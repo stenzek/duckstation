@@ -848,6 +848,7 @@ QIcon GetIconForRegion(DiscRegion region)
     case DiscRegion::NTSC_U:
       return QIcon(QStringLiteral(":/icons/flag-uc.svg"));
     case DiscRegion::Other:
+    case DiscRegion::NonPS1:
     default:
       return QIcon::fromTheme(QStringLiteral("file-unknow-line"));
   }

@@ -1116,11 +1116,11 @@ void EmuThread::loadState(bool global, qint32 slot)
   }
 
   // shouldn't even get here if we don't have a running game
-  if (!global && System::GetRunningSerial().empty())
+  if (!global && System::GetGameSerial().empty())
     return;
 
   bootOrLoadState(global ? System::GetGlobalSaveStateFileName(slot) :
-                           System::GetGameSaveStateFileName(System::GetRunningSerial(), slot));
+                           System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
 }
 
 void EmuThread::saveState(const QString& filename, bool block_until_done /* = false */)
@@ -1147,11 +1147,11 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
     return;
   }
 
-  if (!global && System::GetRunningSerial().empty())
+  if (!global && System::GetGameSerial().empty())
     return;
 
   System::SaveState((global ? System::GetGlobalSaveStateFileName(slot) :
-                              System::GetGameSaveStateFileName(System::GetRunningSerial(), slot))
+                              System::GetGameSaveStateFileName(System::GetGameSerial(), slot))
                       .c_str(),
                     g_settings.create_save_state_backups);
 }
