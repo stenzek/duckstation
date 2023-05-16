@@ -64,14 +64,50 @@ struct ConnectResponseMessage
   u64 game_hash;
   u32 game_serial_length;
   u32 game_title_length;
-  ConsoleRegion console_region;
   BIOS::Hash bios_hash;
-  bool was_fast_booted;
+
+  struct
+  {
+    ConsoleRegion console_region;
+    CPUExecutionMode cpu_execution_mode;
+    u32 cpu_overclock_numerator;
+    u32 cpu_overclock_denominator;
+    bool cpu_overclock_enable;
+    bool cpu_recompiler_memory_exceptions;
+    bool cpu_recompiler_icache;
+    bool gpu_disable_interlacing;
+    bool gpu_force_ntsc_timings;
+    bool gpu_widescreen_hack;
+    bool gpu_pgxp_enable;
+    bool gpu_pgxp_culling;
+    bool gpu_pgxp_cpu;
+    bool gpu_pgxp_preserve_proj_fp;
+    bool cdrom_region_check;
+    bool disable_all_enhancements;
+    bool use_old_mdec_routines;
+    bool bios_patch_tty_enable;
+    bool was_fast_booted;
+    bool enable_8mb_ram;
+    DisplayAspectRatio display_aspect_ratio;
+    u16 display_aspect_ratio_custom_numerator;
+    u16 display_aspect_ratio_custom_denominator;
+    MultitapMode multitap_mode;
+    TickCount dma_max_slice_ticks;
+    TickCount dma_halt_ticks;
+    u32 gpu_fifo_size;
+    TickCount gpu_max_run_ahead;
+  } settings;
 
   // <char> * game_serial_length + game_title_length follows
   // TODO: Include the settings overlays required to match the host config.
 
-  bool Validate() const { return static_cast<unsigned>(console_region) < static_cast<unsigned>(ConsoleRegion::Count); }
+  bool Validate() const
+  {
+    return (static_cast<unsigned>(settings.console_region) < static_cast<unsigned>(ConsoleRegion::Count) &&
+            static_cast<unsigned>(settings.cpu_execution_mode) < static_cast<unsigned>(CPUExecutionMode::Count) &&
+            static_cast<unsigned>(settings.display_aspect_ratio) < static_cast<unsigned>(DisplayAspectRatio::Count) &&
+            static_cast<unsigned>(settings.multitap_mode) < static_cast<unsigned>(MultitapMode::Count));
+  }
 
   std::string_view GetGameSerial() const
   {

@@ -10,6 +10,7 @@
 #include "common/timer.h"
 #include "digital_controller.h"
 #include "host.h"
+#include "host_display.h"
 #include "host_settings.h"
 #include "netplay_packets.h"
 #include "pad.h"
@@ -62,7 +63,8 @@ static GGPOErrorCode AddLocalInput(Netplay::Input input);
 static GGPOErrorCode SyncInput(Input inputs[2], int* disconnect_flags);
 static void SetInputs(Input inputs[2]);
 
-static void SetSettings();
+static void SetSettings(const ConnectResponseMessage* msg);
+static void FillSettings(ConnectResponseMessage* msg);
 
 static bool CreateDummySystem();
 static void CloseSessionWithError(const std::string_view& message);
@@ -198,6 +200,8 @@ struct PacketWrapper
 
   ALWAYS_INLINE const T* operator->() const { return reinterpret_cast<const T*>(pkt->data); }
   ALWAYS_INLINE T* operator->() { return reinterpret_cast<T*>(pkt->data); }
+  ALWAYS_INLINE const T* operator&() const { return reinterpret_cast<const T*>(pkt->data); }
+  ALWAYS_INLINE T* operator&() { return reinterpret_cast<T*>(pkt->data); }
 };
 template<typename T>
 static PacketWrapper<T> NewWrappedPacket(u32 size = sizeof(T), u32 flags = 0)
@@ -300,23 +304,29 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   }
 
   // Need a system if we're hosting.
-  if (!System::IsValid())
+  if (is_hosting)
   {
-    if (is_hosting)
+    if (!System::IsValid())
     {
       Log_ErrorPrintf("Can't host a netplay session without a valid VM");
       return false;
     }
-    else if (!is_hosting && !CreateDummySystem())
+  }
+  else
+  {
+    // We shouldn't have a system, toss it if we do.
+    if (System::IsValid())
+      System::ShutdownSystem(false);
+
+    // But we need the display to show the connecting screen.
+    if (!Host::AcquireHostDisplay(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)))
     {
-      Log_ErrorPrintf("Failed to create VM for joining session");
+      Log_ErrorPrintf("Failed to get host display for netplay");
       return false;
     }
   }
 
   s_state = SessionState::Initializing;
-
-  SetSettings();
 
   if (!InitializeEnet())
   {
@@ -348,9 +358,11 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
     s_player_id = 0;
     s_num_players = 1;
     s_reset_players = 1;
+    s_peers[s_player_id].nickname = s_local_nickname;
     CreateGGPOSession();
     s_state = SessionState::Running;
     Log_InfoPrintf("Netplay session started as host on port %d.", port);
+    SetSettings(nullptr);
     System::SetState(System::State::Paused);
     return true;
   }
@@ -378,7 +390,6 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   s_state = SessionState::Connecting;
   s_reset_start_time.Reset();
   s_last_host_connection_attempt.Reset();
-  System::SetState(System::State::Paused);
   return true;
 }
 
@@ -496,6 +507,9 @@ void Netplay::RequestCloseSession(CloseSessionMessage::Reason reason)
     Host::DisplayLoadingScreen("Closing session");
     Host::PumpMessagesOnCPUThread();
   }
+
+  // toss host display, if we were still connecting, this'll be up
+  Host::ReleaseHostDisplay();
 }
 
 bool Netplay::InitializeEnet()
@@ -839,12 +853,12 @@ void Netplay::HandlePeerConnectionAsHost(ENetPeer* peer)
     sizeof(ConnectResponseMessage) + static_cast<u32>(game_serial.length()) + static_cast<u32>(game_title.length()));
   pkt->num_players = s_num_players;
   pkt->max_players = MAX_PLAYERS;
-  pkt->console_region = System::GetRegion();
   pkt->game_title_length = static_cast<u32>(game_title.length());
   pkt->game_serial_length = static_cast<u32>(game_serial.length());
   pkt->game_hash = System::GetGameHash();
   pkt->bios_hash = System::GetBIOSHash();
-  pkt->was_fast_booted = System::WasFastBooted();
+  FillSettings(&pkt);
+
   std::memcpy(pkt.pkt->data + sizeof(ConnectResponseMessage), game_serial.c_str(), pkt->game_serial_length);
   std::memcpy(pkt.pkt->data + sizeof(ConnectResponseMessage) + pkt->game_serial_length, game_title.c_str(),
               pkt->game_title_length);
@@ -874,14 +888,14 @@ void Netplay::HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt)
   }
 
   Log_InfoPrintf("Received session details from host: ");
-  Log_InfoPrintf("  Console Region: %s", Settings::GetConsoleRegionDisplayName(msg->console_region));
-  Log_InfoPrintf("  BIOS Hash: %s%s", msg->bios_hash.ToString().c_str(), msg->was_fast_booted ? " (fast booted)" : "");
+  Log_InfoPrintf("  Console Region: %s", Settings::GetConsoleRegionDisplayName(msg->settings.console_region));
+  Log_InfoPrintf("  BIOS Hash: %s%s", msg->bios_hash.ToString().c_str(), msg->settings.was_fast_booted ? " (fast booted)" : "");
   Log_InfoPrintf("  Game Serial: %.*s", msg->game_serial_length, msg->GetGameSerial().data());
   Log_InfoPrintf("  Game Title: %.*s", msg->game_title_length, msg->GetGameTitle().data());
   Log_InfoPrintf("  Game Hash: %" PRIX64, msg->game_hash);
 
   // Find a matching BIOS.
-  const std::string bios_path = BIOS::FindBIOSPathWithHash(EmuFolders::Bios.c_str(), msg->bios_hash);
+  std::string bios_path = BIOS::FindBIOSPathWithHash(EmuFolders::Bios.c_str(), msg->bios_hash);
   if (bios_path.empty())
   {
     CloseSessionWithError(fmt::format(
@@ -891,8 +905,14 @@ void Netplay::HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt)
   }
 
   // Find the matching game.
-  const GameList::Entry* entry = GameList::GetEntryBySerialAndHash(msg->GetGameSerial(), msg->game_hash);
-  if (!entry)
+  std::string game_path;
+  {
+    auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryBySerialAndHash(msg->GetGameSerial(), msg->game_hash);
+    if (entry)
+      game_path = entry->path;
+  }
+  if (game_path.empty())
   {
     CloseSessionWithError(fmt::format(
       Host::TranslateString("Netplay", "Cannot join session: Unable to find game \"{}\".\nSerial: {}\nHash: {}")
@@ -902,12 +922,19 @@ void Netplay::HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt)
   }
 
   Log_InfoPrintf("Found matching BIOS: %s", bios_path.c_str());
-  Log_InfoPrintf("Found matching game: %s", entry->path.c_str());
+  Log_InfoPrintf("Found matching game: %s", game_path.c_str());
 
-  // Reboot created system with host details.
-  if (!System::ReinitializeSystem(msg->console_region, bios_path.c_str(), entry->path.c_str(), msg->was_fast_booted))
+  // Apply settings from host.
+  SetSettings(msg);
+
+  // Create system with host details.
+  Assert(!System::IsValid());
+  SystemBootParameters params;
+  params.filename = std::move(game_path);
+  params.override_bios = std::move(bios_path);
+  if (!System::BootSystem(std::move(params)))
   {
-    CloseSessionWithError(Host::TranslateStdString("Netplay", "Cannot join session: Failed to reinitialize system."));
+    CloseSessionWithError(Host::TranslateStdString("Netplay", "Cannot join session: Failed to boot system."));
     return;
   }
 
@@ -1512,7 +1539,7 @@ void Netplay::HandleChatMessage(s32 player_id, const ENetPacket* pkt)
 // Settings Overlay
 //////////////////////////////////////////////////////////////////////////
 
-void Netplay::SetSettings()
+void Netplay::SetSettings(const ConnectResponseMessage* msg)
 {
   MemorySettingsInterface& si = s_settings_overlay;
 
@@ -1537,24 +1564,104 @@ void Netplay::SetSettings()
 
   // si.SetStringValue("CPU", "ExecutionMode", "Interpreter");
 
-  // BIOS patching must be the same.
-  si.SetBoolValue("BIOS", "PatchTTYEnable", false);
-  si.SetBoolValue("BIOS", "PatchFastBoot", true);
-  si.SetBoolValue("CDROM", "LoadImagePatches", false);
-
   // No runahead or rewind, that'd be a disaster.
   si.SetIntValue("Main", "RunaheadFrameCount", 0);
   si.SetBoolValue("Main", "RewindEnable", false);
 
   // no block linking, it degrades savestate loading performance
   si.SetBoolValue("CPU", "RecompilerBlockLinking", false);
-  // not sure its needed but enabled for now... TODO
+
+  // Turn off fastmem, it can affect determinism depending on when it was loaded.
+  si.SetBoolValue("CPU", "FastmemMode", Settings::GetCPUFastmemModeName(CPUFastmemMode::Disabled));
+
+  // SW renderer for readbacks ensures differences in host GPU don't affect downloads.
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
-  // TODO: PGXP should be the same as the host, as should overclock etc.
+  // No cheats.. yet. Need to serialize them, and that has security risks.
+  si.SetBoolValue("Main", "AutoLoadCheats", false);
+
+  // No PCDRV or texture replacements, they require local files.
+  si.SetBoolValue("PCDrv", "Enabled", false);
+  si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
+  si.SetBoolValue("CDROM", "LoadImagePatches", false);
+
+  // Disable achievements for now, we might be able to support them later though.
+  si.SetBoolValue("Cheevos", "Enabled", false);
+
+  // Settings from host.
+#define SELECT_SETTING(field) (msg ? msg->settings.field : g_settings.field)
+  si.SetStringValue("Console", "Region",
+                    Settings::GetConsoleRegionName(msg ? msg->settings.console_region : System::GetRegion()));
+  si.SetStringValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(SELECT_SETTING(cpu_execution_mode)));
+  si.SetBoolValue("CPU", "OverclockEnable", SELECT_SETTING(cpu_overclock_enable));
+  si.SetIntValue("CPU", "OverclockNumerator", SELECT_SETTING(cpu_overclock_numerator));
+  si.SetIntValue("CPU", "OverclockDenominator", SELECT_SETTING(cpu_overclock_denominator));
+  si.SetBoolValue("CPU", "RecompilerMemoryExceptions", SELECT_SETTING(cpu_recompiler_memory_exceptions));
+  si.SetBoolValue("CPU", "RecompilerICache", SELECT_SETTING(cpu_recompiler_icache));
+  si.SetBoolValue("GPU", "DisableInterlacing", SELECT_SETTING(gpu_disable_interlacing));
+  si.SetBoolValue("GPU", "ForceNTSCTimings", SELECT_SETTING(gpu_force_ntsc_timings));
+  si.SetBoolValue("GPU", "WidescreenHack", SELECT_SETTING(gpu_widescreen_hack));
+  si.SetBoolValue("GPU", "PGXPEnable", SELECT_SETTING(gpu_pgxp_enable));
+  si.SetBoolValue("GPU", "PGXPCulling", SELECT_SETTING(gpu_pgxp_culling));
+  si.SetBoolValue("GPU", "PGXPCPU", SELECT_SETTING(gpu_pgxp_cpu));
+  si.SetBoolValue("GPU", "PGXPPreserveProjFP", SELECT_SETTING(gpu_pgxp_preserve_proj_fp));
+  si.SetBoolValue("CDROM", "RegionCheck", SELECT_SETTING(cdrom_region_check));
+  si.SetBoolValue("Main", "DisableAllEnhancements", SELECT_SETTING(disable_all_enhancements));
+  si.SetBoolValue("Hacks", "UseOldMDECRoutines", SELECT_SETTING(use_old_mdec_routines));
+  si.SetBoolValue("BIOS", "PatchTTYEnable", SELECT_SETTING(bios_patch_tty_enable));
+  si.SetBoolValue("BIOS", "PatchFastBoot", msg ? msg->settings.was_fast_booted : System::WasFastBooted());
+  si.SetBoolValue("Console", "Enable8MBRAM", SELECT_SETTING(enable_8mb_ram));
+  si.SetStringValue(
+    "Display", "AspectRatio",
+    Settings::GetDisplayAspectRatioName(msg ? msg->settings.display_aspect_ratio :
+                                              (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow ?
+                                                 DisplayAspectRatio::Auto :
+                                                 g_settings.display_aspect_ratio)));
+  si.SetIntValue("Display", "CustomAspectRatioNumerator", SELECT_SETTING(display_aspect_ratio_custom_numerator));
+  si.GetIntValue("Display", "CustomAspectRatioDenominator", SELECT_SETTING(display_aspect_ratio_custom_denominator));
+  si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(SELECT_SETTING(multitap_mode)));
+  si.SetIntValue("Hacks", "DMAMaxSliceTicks", SELECT_SETTING(dma_max_slice_ticks));
+  si.SetIntValue("Hacks", "DMAHaltTicks", SELECT_SETTING(dma_halt_ticks));
+  si.SetIntValue("Hacks", "GPUFIFOSize", SELECT_SETTING(gpu_fifo_size));
+  si.SetIntValue("Hacks", "GPUMaxRunAhead", SELECT_SETTING(gpu_max_run_ahead));
+#undef SELECT_SETTING
 
   Host::Internal::SetNetplaySettingsLayer(&si);
   System::ApplySettings(false);
+}
+
+void Netplay::FillSettings(ConnectResponseMessage* msg)
+{
+#define FILL_SETTING(field) msg->settings.field = g_settings.field
+  msg->settings.console_region = System::GetRegion();
+  FILL_SETTING(cpu_execution_mode);
+  FILL_SETTING(cpu_overclock_enable);
+  FILL_SETTING(cpu_overclock_numerator);
+  FILL_SETTING(cpu_overclock_denominator);
+  FILL_SETTING(cpu_recompiler_memory_exceptions);
+  FILL_SETTING(cpu_recompiler_icache);
+  FILL_SETTING(gpu_disable_interlacing);
+  FILL_SETTING(gpu_force_ntsc_timings);
+  FILL_SETTING(gpu_widescreen_hack);
+  FILL_SETTING(gpu_pgxp_enable);
+  FILL_SETTING(gpu_pgxp_culling);
+  FILL_SETTING(gpu_pgxp_cpu);
+  FILL_SETTING(gpu_pgxp_preserve_proj_fp);
+  FILL_SETTING(cdrom_region_check);
+  FILL_SETTING(disable_all_enhancements);
+  FILL_SETTING(use_old_mdec_routines);
+  FILL_SETTING(bios_patch_tty_enable);
+  msg->settings.was_fast_booted = System::WasFastBooted();
+  FILL_SETTING(enable_8mb_ram);
+  FILL_SETTING(display_aspect_ratio);
+  FILL_SETTING(display_aspect_ratio_custom_numerator);
+  FILL_SETTING(display_aspect_ratio_custom_denominator);
+  FILL_SETTING(multitap_mode);
+  FILL_SETTING(dma_max_slice_ticks);
+  FILL_SETTING(dma_halt_ticks);
+  FILL_SETTING(gpu_fifo_size);
+  FILL_SETTING(gpu_max_run_ahead);
+#undef FILL_SETTING
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1801,7 +1908,8 @@ void Netplay::NetplayAdvanceFrame(Netplay::Input inputs[], int disconnect_flags)
 void Netplay::ExecuteNetplay()
 {
   // TODO: Fix this hackery to get out of the CPU loop...
-  System::SetState(System::State::Running);
+  if (System::IsValid())
+    System::SetState(System::State::Running);
 
   while (s_state != SessionState::Inactive)
   {

@@ -408,7 +408,9 @@ void EmuThread::applySettings(bool display_osd_messages /* = false */)
   }
 
   System::ApplySettings(display_osd_messages);
-  if (!FullscreenUI::IsInitialized() && System::IsPaused())
+  if (!FullscreenUI::IsInitialized() && !System::IsValid())
+    setInitialState(std::nullopt);
+  else if (!FullscreenUI::IsInitialized() && System::IsPaused())
     redrawDisplayWindow();
 }
 
@@ -1104,6 +1106,9 @@ void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostn
     errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
     return;
   }
+
+  // Exit the event loop, we'll take it from here.
+  g_emu_thread->wakeThread();
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)
@@ -1451,11 +1456,12 @@ void EmuThread::run()
   // bind buttons/axises
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
+  setInitialState(std::nullopt);
 
   // main loop
   while (!m_shutdown_flag)
   {
-    if (Netplay::IsActive() && System::IsValid())
+    if (Netplay::IsActive())
     {
       Netplay::ExecuteNetplay();
     }

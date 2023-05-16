@@ -39,6 +39,7 @@ struct SystemBootParameters
   std::string filename;
   std::string save_state;
   std::string override_exe;
+  std::string override_bios;
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
   std::optional<bool> override_start_paused;
@@ -223,7 +224,6 @@ void ApplySettings(bool display_osd_messages);
 bool ReloadGameSettings(bool display_osd_messages);
 
 bool BootSystem(SystemBootParameters parameters);
-bool ReinitializeSystem(ConsoleRegion region, const char* bios_path, const char* media_path, bool fast_boot);
 void PauseSystem(bool paused);
 void ResetSystem();
 

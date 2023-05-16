@@ -87,7 +87,7 @@ static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_
 
 static void StallCPU(TickCount ticks);
 
-static bool LoadBIOS();
+static bool LoadBIOS(const std::string& override_bios_path);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1251,7 +1251,7 @@ bool System::BootSystem(SystemBootParameters parameters)
 #endif
 
   // Load BIOS image.
-  if (!LoadBIOS())
+  if (!LoadBIOS(parameters.override_bios))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1360,44 +1360,6 @@ bool System::BootSystem(SystemBootParameters parameters)
   ResetPerformanceCounters();
   if (IsRunning())
     UpdateSpeedLimiterState();
-
-  return true;
-}
-
-bool System::ReinitializeSystem(ConsoleRegion region, const char* bios_path, const char* media_path, bool fast_boot)
-{
-  std::optional<BIOS::Image> bios_image = FileSystem::ReadBinaryFile(bios_path);
-  if (!bios_image.has_value())
-  {
-    Log_ErrorPrintf("Failed to read replacement BIOS at '%s'", bios_path);
-    return false;
-  }
-
-  if (!InsertMedia(media_path))
-  {
-    Log_ErrorPrintf("Failed to insert media at '%s'", media_path);
-    return false;
-  }
-
-  // Replace the BIOS.
-  s_bios_hash = BIOS::GetImageHash(bios_image.value());
-  s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
-  if (s_bios_image_info)
-    Log_InfoPrintf("Replacing BIOS: %s", s_bios_image_info->description);
-  else
-    Log_WarningPrintf("Replacing with an unknown BIOS: %s", s_bios_hash.ToString().c_str());
-
-  std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
-
-  if (s_bios_image_info && s_bios_image_info->patch_compatible)
-    BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
-
-  s_was_fast_booted = false;
-  if (s_bios_image_info && s_bios_image_info->patch_compatible && fast_boot)
-  {
-    BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
-    s_was_fast_booted = true;
-  }
 
   return true;
 }
@@ -1843,22 +1805,6 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
         Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
         100u);
 
-    // during netplay if a file savestate is loaded set
-    // the overclocks to the same value as the savestate
-    // file savestates are usually only loaded at game start
-    if (Netplay::IsActive() && !is_memory_state && cpu_overclock_active)
-    {
-      g_settings.cpu_overclock_enable = cpu_overclock_active;
-      g_settings.cpu_overclock_numerator = cpu_overclock_numerator;
-      g_settings.cpu_overclock_denominator = cpu_overclock_denominator;
-
-      g_settings.UpdateOverclockActive();
-
-      Host::AddFormattedOSDMessage(10.0f,
-                                   Host::TranslateString("OSDMessage", "WARNING: CPU overclock was changed to (%u%%) to match netplay savestate."),
-                                   g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u );
-    }
-
     UpdateOverclock();
   }
 
@@ -1892,9 +1838,10 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   return !sw.HasError();
 }
 
-bool System::LoadBIOS()
+bool System::LoadBIOS(const std::string& override_bios_path)
 {
-  std::optional<BIOS::Image> bios_image(BIOS::GetBIOSImage(s_region));
+  std::optional<BIOS::Image> bios_image(
+    override_bios_path.empty() ? BIOS::GetBIOSImage(s_region) : FileSystem::ReadBinaryFile(override_bios_path.c_str()));
   if (!bios_image.has_value())
   {
     Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Failed to load %s BIOS."),
