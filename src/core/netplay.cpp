@@ -48,6 +48,7 @@ struct Input
 // TODO: Might be a bit generous... should we move this to config?
 static constexpr float MAX_CONNECT_TIME = 15.0f;
 static constexpr float MAX_CLOSE_TIME = 3.0f;
+static constexpr u32 MAX_CONNECT_RETRIES = 4;
 
 static bool NpAdvFrameCb(void* ctx, int flags);
 static bool NpSaveFrameCb(void* ctx, unsigned char** buffer, int* len, int* checksum, int frame);
@@ -101,7 +102,7 @@ static void HandleDropPlayerMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleCloseSessionMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleChatMessage(s32 player_id, const ENetPacket* pkt);
 
-// l = local, r = remote
+// GGPO session.
 static void CreateGGPOSession();
 static void DestroyGGPOSession();
 static bool Start(bool is_hosting, std::string nickname, const std::string& remote_addr, s32 port, s32 ldelay);
@@ -146,6 +147,7 @@ struct Peer
   GGPOPlayerHandle ggpo_handle;
 };
 static ENetHost* s_enet_host = nullptr;
+static ENetAddress s_host_address;
 static std::array<Peer, MAX_PLAYERS> s_peers;
 static s32 s_host_player_id = 0;
 static s32 s_player_id = 0;
@@ -153,6 +155,7 @@ static s32 s_num_players = 0;
 static u32 s_reset_cookie = 0;
 static std::bitset<MAX_PLAYERS> s_reset_players;
 static Common::Timer s_reset_start_time;
+static Common::Timer s_last_host_connection_attempt;
 
 /// GGPO
 static std::string s_local_nickname;
@@ -356,16 +359,15 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   s_player_id = -1;
 
   // Connect to host.
-  ENetAddress host_address;
-  host_address.port = static_cast<u16>(port);
-  if (enet_address_set_host(&host_address, remote_addr.c_str()) != 0)
+  s_host_address.port = static_cast<u16>(port);
+  if (enet_address_set_host(&s_host_address, remote_addr.c_str()) != 0)
   {
     Log_ErrorPrintf("Failed to parse host: '%s'", remote_addr.c_str());
     return false;
   }
 
   s_peers[s_host_player_id].peer =
-    enet_host_connect(s_enet_host, &host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
+    enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
   if (!s_peers[s_host_player_id].peer)
   {
     Log_ErrorPrintf("Failed to start connection to host.");
@@ -375,6 +377,7 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   // Wait until we're connected to the main host. They'll send us back state to load and a full player list.
   s_state = SessionState::Connecting;
   s_reset_start_time.Reset();
+  s_last_host_connection_attempt.Reset();
   System::SetState(System::State::Paused);
   return true;
 }
@@ -933,6 +936,19 @@ void Netplay::UpdateConnectingState()
   {
     CloseSessionWithError(Host::TranslateStdString("Netplay", "Timed out connecting to server."));
     return;
+  }
+
+  // MAX_CONNECT_RETRIES peer to host connection attempts
+  // dividing by MAX_CONNECT_RETRIES + 1 because the last attempt will never happen.
+  if (s_last_host_connection_attempt.GetTimeSeconds() >= MAX_CONNECT_TIME / (MAX_CONNECT_RETRIES + 1) &&
+      s_peers[s_host_player_id].peer->state != ENetPeerState::ENET_PEER_STATE_CONNECTED)
+  {
+    // we want to do this because the peer might have initiated a connection
+    // too early while the host was still setting up. this gives the connection MAX_CONNECT_RETRIES tries within
+    // MAX_CONNECT_TIME to establish the connection
+    enet_peer_reset(s_peers[s_host_player_id].peer);
+    enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
+    s_last_host_connection_attempt.Reset();
   }
 
   // still waiting for connection to host..
