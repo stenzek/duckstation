@@ -1871,7 +1871,7 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
 
 bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
 {
-  s_local_session_password = password;
+  s_local_session_password = std::move(password);
 
   // TODO: This is going to blow away our memory cards, because for sync purposes we want all clients
   // to have the same data, and we don't want to trash their local memcards. We should therefore load
@@ -1896,7 +1896,8 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
 
 bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password)
 {
-  s_local_session_password = password;
+  s_local_session_password = std::move(password);
+
   // TODO: input delay. GGPO Should support changing it on the fly.
   const s32 input_delay = 1;
 
