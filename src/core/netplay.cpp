@@ -161,6 +161,7 @@ static Common::Timer s_last_host_connection_attempt;
 
 /// GGPO
 static std::string s_local_nickname;
+static std::string s_session_password;
 static GGPOPlayerHandle s_local_handle = GGPO_INVALID_HANDLE;
 static s32 s_local_delay = 0;
 static GGPONetworkStats s_last_net_stats{};
@@ -954,6 +955,7 @@ void Netplay::SendConnectRequest()
   std::memset(pkt->nickname, 0, sizeof(pkt->nickname));
   std::memset(pkt->session_password, 0, sizeof(pkt->session_password));
   StringUtil::Strlcpy(pkt->nickname, s_local_nickname, std::size(pkt->nickname));
+  StringUtil::Strlcpy(pkt->session_password, s_session_password, std::size(pkt->session_password));
   SendControlPacket(s_peers[s_host_player_id].peer, pkt);
 }
 
@@ -1000,6 +1002,14 @@ void Netplay::HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt)
 
   PacketWrapper<JoinResponseMessage> response = NewControlPacket<JoinResponseMessage>();
   response->player_id = -1;
+
+  // Gatekeep using the session password.
+  if (msg->GetSessionPassword() != s_session_password)
+  {
+    response->result = JoinResponseMessage::Result::InvalidPassword;
+    SendControlPacket(peer, response);
+    return;
+  }
 
   // TODO: Spectators shouldn't get assigned a real player ID, they should go into a separate peer list.
   if (msg->mode != JoinRequestMessage::Mode::Player)
@@ -1861,7 +1871,7 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
 
 bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
 {
-  // TODO: Password
+  s_session_password = password;
 
   // TODO: This is going to blow away our memory cards, because for sync purposes we want all clients
   // to have the same data, and we don't want to trash their local memcards. We should therefore load
@@ -1885,8 +1895,8 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
 
 bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password)
 {
-  // TODO: Password
-
+  s_session_password = password;
+  // TODO: input delay. GGPO Should support changing it on the fly.
   const s32 input_delay = 1;
 
   if (!Netplay::Start(false, std::move(nickname), hostname, port, input_delay))
