@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\msvc\vsprops\Configurations.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C51A346A-86B2-46DF-9BB3-D0AA7E5D8699}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="src\Generated\AccessedFlags.inc" />
+    <None Include="src\Generated\DecoderTables.inc" />
+    <None Include="src\Generated\EnumInstructionCategory.inc" />
+    <None Include="src\Generated\EnumISAExt.inc" />
+    <None Include="src\Generated\EnumISASet.inc" />
+    <None Include="src\Generated\EnumMnemonic.inc" />
+    <None Include="src\Generated\EnumRegister.inc" />
+    <None Include="src\Generated\FormatterStrings.inc" />
+    <None Include="src\Generated\GetRelInfo.inc" />
+    <None Include="src\Generated\InstructionDefinitions.inc" />
+    <None Include="src\Generated\InstructionEncodings.inc" />
+    <None Include="src\Generated\OperandDefinitions.inc" />
+    <None Include="src\Generated\RegisterClassLookup.inc" />
+    <None Include="src\Generated\RegisterLookup.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dependencies\zycore\src\Allocator.c" />
+    <ClCompile Include="dependencies\zycore\src\Format.c" />
+    <ClCompile Include="dependencies\zycore\src\String.c" />
+    <ClCompile Include="dependencies\zycore\src\Vector.c" />
+    <ClCompile Include="src\Decoder.c" />
+    <ClCompile Include="src\DecoderData.c" />
+    <ClCompile Include="src\Disassembler.c" />
+    <ClCompile Include="src\Formatter.c" />
+    <ClCompile Include="src\FormatterATT.c" />
+    <ClCompile Include="src\FormatterBase.c" />
+    <ClCompile Include="src\FormatterBuffer.c" />
+    <ClCompile Include="src\FormatterIntel.c" />
+    <ClCompile Include="src\MetaInfo.c" />
+    <ClCompile Include="src\Mnemonic.c" />
+    <ClCompile Include="src\Register.c" />
+    <ClCompile Include="src\Segment.c" />
+    <ClCompile Include="src\SharedData.c" />
+    <ClCompile Include="src\String.c" />
+    <ClCompile Include="src\Utils.c" />
+    <ClCompile Include="src\Zydis.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dependencies\zycore\include\Zycore\Allocator.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Comparison.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Defines.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Format.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\LibC.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Object.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Status.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\String.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Types.h" />
+    <ClInclude Include="dependencies\zycore\include\Zycore\Vector.h" />
+    <ClInclude Include="include\Zydis\Decoder.h" />
+    <ClInclude Include="include\Zydis\DecoderTypes.h" />
+    <ClInclude Include="include\Zydis\Defines.h" />
+    <ClInclude Include="include\Zydis\Disassembler.h" />
+    <ClInclude Include="include\Zydis\Formatter.h" />
+    <ClInclude Include="include\Zydis\FormatterBuffer.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumInstructionCategory.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumISAExt.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumISASet.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumMnemonic.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumRegister.h" />
+    <ClInclude Include="include\Zydis\Internal\DecoderData.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterATT.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterBase.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterIntel.h" />
+    <ClInclude Include="include\Zydis\Internal\SharedData.h" />
+    <ClInclude Include="include\Zydis\Internal\String.h" />
+    <ClInclude Include="include\Zydis\MetaInfo.h" />
+    <ClInclude Include="include\Zydis\Mnemonic.h" />
+    <ClInclude Include="include\Zydis\Register.h" />
+    <ClInclude Include="include\Zydis\Segment.h" />
+    <ClInclude Include="include\Zydis\SharedTypes.h" />
+    <ClInclude Include="include\Zydis\ShortString.h" />
+    <ClInclude Include="include\Zydis\Status.h" />
+    <ClInclude Include="include\Zydis\Utils.h" />
+    <ClInclude Include="include\Zydis\Zydis.h" />
+  </ItemGroup>
+  <Import Project="..\msvc\vsprops\StaticLibrary.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(ProjectDir)dependencies\zycore\src;$(ProjectDir)dependencies\zycore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="..\msvc\vsprops\Targets.props" />
+</Project>

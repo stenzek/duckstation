@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ZyCore">
+      <UniqueIdentifier>{95b9e9b0-f8de-4d80-8721-81653225ffaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated">
+      <UniqueIdentifier>{1c7f1a7c-95a1-447d-9d0a-35e413b20a8e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Generated\EncoderTables.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\EnumInstructionCategory.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\EnumISAExt.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\EnumISASet.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\EnumMnemonic.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\EnumRegister.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\FormatterStrings.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\GetRelInfo.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\InstructionDefinitions.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\InstructionEncodings.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\OperandDefinitions.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\RegisterClassLookup.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\RegisterLookup.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\AccessedFlags.inc">
+      <Filter>Generated</Filter>
+    </None>
+    <None Include="src\Generated\DecoderTables.inc">
+      <Filter>Generated</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\FormatterBase.c" />
+    <ClCompile Include="src\FormatterBuffer.c" />
+    <ClCompile Include="src\FormatterIntel.c" />
+    <ClCompile Include="src\MetaInfo.c" />
+    <ClCompile Include="src\Mnemonic.c" />
+    <ClCompile Include="src\Register.c" />
+    <ClCompile Include="src\Segment.c" />
+    <ClCompile Include="src\SharedData.c" />
+    <ClCompile Include="src\String.c" />
+    <ClCompile Include="src\Utils.c" />
+    <ClCompile Include="src\Zydis.c" />
+    <ClCompile Include="src\Decoder.c" />
+    <ClCompile Include="src\DecoderData.c" />
+    <ClCompile Include="src\Disassembler.c" />
+    <ClCompile Include="src\Encoder.c" />
+    <ClCompile Include="src\EncoderData.c" />
+    <ClCompile Include="src\Formatter.c" />
+    <ClCompile Include="src\FormatterATT.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Zydis\Formatter.h" />
+    <ClInclude Include="include\Zydis\FormatterBuffer.h" />
+    <ClInclude Include="include\Zydis\MetaInfo.h" />
+    <ClInclude Include="include\Zydis\Mnemonic.h" />
+    <ClInclude Include="include\Zydis\Register.h" />
+    <ClInclude Include="include\Zydis\Segment.h" />
+    <ClInclude Include="include\Zydis\SharedTypes.h" />
+    <ClInclude Include="include\Zydis\ShortString.h" />
+    <ClInclude Include="include\Zydis\Status.h" />
+    <ClInclude Include="include\Zydis\Utils.h" />
+    <ClInclude Include="include\Zydis\Zydis.h" />
+    <ClInclude Include="include\Zydis\Decoder.h" />
+    <ClInclude Include="include\Zydis\DecoderTypes.h" />
+    <ClInclude Include="include\Zydis\Defines.h" />
+    <ClInclude Include="include\Zydis\Disassembler.h" />
+    <ClInclude Include="include\Zydis\Encoder.h" />
+    <ClInclude Include="include\Zydis\Internal\EncoderData.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterATT.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterBase.h" />
+    <ClInclude Include="include\Zydis\Internal\FormatterIntel.h" />
+    <ClInclude Include="include\Zydis\Internal\SharedData.h" />
+    <ClInclude Include="include\Zydis\Internal\String.h" />
+    <ClInclude Include="include\Zydis\Internal\DecoderData.h" />
+    <ClInclude Include="include\Zydis\Generated\EnumISAExt.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Zydis\Generated\EnumISASet.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Zydis\Generated\EnumMnemonic.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Zydis\Generated\EnumRegister.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Zydis\Generated\EnumInstructionCategory.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
