@@ -1172,9 +1172,9 @@ bool System::BootSystem(SystemBootParameters parameters)
         return false;
       }
 
+      disc_region = GetRegionForImage(disc.get());
       if (s_region == ConsoleRegion::Auto)
       {
-        disc_region = GetRegionForImage(disc.get());
         if (disc_region != DiscRegion::Other)
         {
           s_region = GetConsoleRegionForDiscRegion(disc_region);
