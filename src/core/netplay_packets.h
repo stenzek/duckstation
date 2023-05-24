@@ -161,6 +161,7 @@ struct JoinResponseMessage
     ServerFull,
     PlayerIDInUse,
     SessionClosed,
+    InvalidPassword,
   };
 
   ControlMessageHeader header;
