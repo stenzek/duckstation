@@ -35,3 +35,7 @@ if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl)
 endif()
 
+if(${CPU_ARCH} STREQUAL "riscv64")
+  add_subdirectory(biscuit)
+  add_subdirectory(riscv-disas)
+endif()
