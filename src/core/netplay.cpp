@@ -159,6 +159,10 @@ static std::bitset<MAX_PLAYERS> s_reset_players;
 static Common::Timer s_reset_start_time;
 static Common::Timer s_last_host_connection_attempt;
 
+// Spectators
+static std::array<Peer, MAX_SPECTATORS> s_spectators;
+static bool s_local_spectating;
+
 /// GGPO
 static std::string s_local_nickname;
 static std::string s_local_session_password;
