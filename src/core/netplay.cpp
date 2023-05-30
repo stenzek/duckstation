@@ -1898,9 +1898,11 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
   return true;
 }
 
-bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password)
+bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating)
 {
   s_local_session_password = password;
+  s_local_spectating = spectating;
+
   // TODO: input delay. GGPO Should support changing it on the fly.
   const s32 input_delay = 1;
 
