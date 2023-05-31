@@ -2247,7 +2247,7 @@ int main(int argc, char* argv[])
       }
       else
       {
-        g_emu_thread->joinNetplaySession(nickname, remote, port, QString());
+        g_emu_thread->joinNetplaySession(nickname, remote, port, QString(), false);
       }
     });
   }

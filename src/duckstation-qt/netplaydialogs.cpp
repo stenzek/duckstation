@@ -85,7 +85,7 @@ void JoinNetplaySessionDialog::accept()
   const bool spectating = m_ui.spectating->isChecked();
   QDialog::accept();
 
-  g_emu_thread->joinNetplaySession(nickname.trimmed(), hostname.trimmed(), port, password);
+  g_emu_thread->joinNetplaySession(nickname.trimmed(), hostname.trimmed(), port, password, spectating);
 }
 
 bool JoinNetplaySessionDialog::validate()
