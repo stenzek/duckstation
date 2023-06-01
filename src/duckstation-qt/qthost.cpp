@@ -1065,6 +1065,17 @@ void EmuThread::reloadPostProcessingShaders()
   System::ReloadPostProcessingShaders();
 }
 
+void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "clearInputBindStateFromSource", Qt::QueuedConnection, Q_ARG(InputBindingKey, key));
+    return;
+  }
+
+  InputManager::ClearBindStateFromSource(key);
+}
+
 void EmuThread::runOnEmuThread(std::function<void()> callback)
 {
   callback();
