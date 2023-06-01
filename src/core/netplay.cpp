@@ -250,9 +250,10 @@ static bool SendControlPacket(s32 player_id, const PacketWrapper<T>& pkt)
   return SendControlPacket<T>(s_peers[player_id].peer, pkt);
 }
 template<typename T>
-static void SendControlPacketToAll(const PacketWrapper<T>& pkt)
+static void SendControlPacketToAll(const PacketWrapper<T>& pkt, bool send_to_spectators)
 {
-  for (s32 i = 0; i < MAX_PLAYERS + MAX_SPECTATORS; i++)
+  const s32 total_peers = send_to_spectators ? MAX_PLAYERS + MAX_SPECTATORS : MAX_PLAYERS;
+  for (s32 i = 0; i < total_peers; i++)
   {
     ENetPeer* peer_to_send = i < MAX_PLAYERS ? s_peers[i].peer : s_spectators[i - MAX_PLAYERS].peer;
     if (!peer_to_send)
@@ -353,6 +354,7 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
   s_local_delay = ldelay;
   s_reset_cookie = 0;
   s_reset_players.reset();
+  s_reset_spectators.reset();
 
   // If we're the host, we can just continue on our merry way, the others will join later.
   if (is_hosting)
@@ -360,7 +362,9 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
     // Starting session with a single player.
     s_player_id = 0;
     s_num_players = 1;
+    s_num_spectators = 0;
     s_reset_players = 1;
+    s_reset_spectators = 0;
     s_peers[s_player_id].nickname = s_local_nickname;
     CreateGGPOSession();
     s_state = SessionState::Running;
@@ -453,10 +457,16 @@ void Netplay::RequestCloseSession(CloseSessionMessage::Reason reason)
     // Notify everyone
     auto pkt = NewControlPacket<CloseSessionMessage>();
     pkt->reason = reason;
-    SendControlPacketToAll(pkt);
+    SendControlPacketToAll(pkt, true);
+    // close spectator connections
+    for (s32 i = 0; i < MAX_SPECTATORS; i++)
+    {
+      if (s_spectators[i].peer)
+        enet_peer_disconnect(s_spectators[i].peer, 0);
+    }
   }
 
-  // Close all connections
+  // Close player connections
   DestroyGGPOSession();
   for (s32 i = 0; i < MAX_PLAYERS; i++)
   {
@@ -488,7 +498,14 @@ void Netplay::RequestCloseSession(CloseSessionMessage::Reason reason)
         {
           const s32 player_id = GetPlayerIdForPeer(event.peer);
           if (player_id >= 0)
+          {
             s_peers[player_id].peer = nullptr;
+            return;
+          }
+
+          const s32 spectator_slot = GetSpectatorSlotForPeer(event.peer);
+          if (spectator_slot >= 0)
+            s_spectators[spectator_slot].peer = nullptr;
         }
         break;
 
@@ -544,6 +561,14 @@ void Netplay::ShutdownEnetHost()
     s_peers[i] = {};
   }
 
+  for (u32 i = 0; i < MAX_SPECTATORS; i++)
+  {
+    if (s_spectators[i].peer)
+      enet_peer_reset(s_spectators[i].peer);
+
+    s_spectators[i] = {};
+  }
+
   enet_host_destroy(s_enet_host);
   s_enet_host = nullptr;
 }
@@ -574,7 +599,9 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
 
     case ENET_EVENT_TYPE_DISCONNECT:
     {
+      const s32 spectator_slot = GetSpectatorSlotForPeer(event->peer);
       const s32 player_id = GetPlayerIdForPeer(event->peer);
+
       if (s_state == SessionState::Connecting)
       {
         Assert(player_id == s_host_player_id);
@@ -585,6 +612,12 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
       {
         // let the timeout deal with it
         Log_DevPrintf("Ignoring disconnection from %d while synchronizing", player_id);
+        return;
+      }
+
+      if (spectator_slot >= 0)
+      {
+        DropSpectator(spectator_slot, DropPlayerReason::DisconnectedFromHost);
         return;
       }
 
@@ -750,6 +783,28 @@ void Netplay::CreateGGPOSession()
   }
 
   ggpo_start_session(&s_ggpo, &cb, s_num_players, sizeof(Netplay::Input), MAX_ROLLBACK_FRAMES);
+
+  // if you are the host be sure to add the needed spectators to the session before the players 
+  // this way we prevent the session finishing to synchronize before adding the spectators.
+  if (IsHost())
+  {
+    for (s32 i = 0; i < MAX_SPECTATORS; i++)
+    {
+      // slot filled?
+      if (!s_spectators[i].peer)
+        continue;
+
+      GGPOErrorCode result;
+      GGPOPlayer player = {sizeof(GGPOPlayer)};
+
+      player.type = GGPO_PLAYERTYPE_SPECTATOR;
+      player.u.remote.peer = s_spectators[i].peer;
+      result = ggpo_add_player(s_ggpo, &player, &s_spectators[i].ggpo_handle);
+
+      // It's a new session, this should always succeed...
+      Assert(GGPO_SUCCEEDED(result));
+    }
+  }
 
   int player_num = 1;
   for (s32 i = 0; i < MAX_PLAYERS; i++)
@@ -1010,12 +1065,17 @@ void Netplay::DropSpectator(s32 slot_id, DropPlayerReason reason)
   DebugAssert(s_spectators[slot_id].peer);
   Log_InfoPrintf("Dropping Spectator %d: %s", slot_id, s_spectators[slot_id].nickname.c_str());
 
-  Host::OnNetplayMessage(fmt::format(Host::TranslateString("Netplay", "{} left the session: {}").GetCharArray(),
-                                     s_spectators[slot_id].nickname, DropPlayerReasonToString(reason)));
+  Host::OnNetplayMessage(
+    fmt::format(Host::TranslateString("Netplay", "Spectator {} left the session: {}").GetCharArray(), slot_id,
+                s_spectators[slot_id].nickname, DropPlayerReasonToString(reason)));
 
   enet_peer_disconnect_now(s_spectators[slot_id].peer, 0);
   s_spectators[slot_id] = {};
   s_num_spectators--;
+  // sadly we have to reset here. this really sucks for the active players since you dont really want to halt for a spectator.
+  // not resetting seems to be creating index out of bounds errors in the ringbuffer.
+  // TODO ? 
+  Reset();
 }
 
 void Netplay::UpdateConnectingState()
@@ -1336,6 +1396,10 @@ void Netplay::HandleResetMessage(s32 player_id, const ENetPacket* pkt)
   s_num_players = msg->num_players;
   for (s32 i = 0; i < MAX_PLAYERS; i++)
   {
+    // We are already connected to the host as a spectator we dont need any other connections
+    if (s_local_spectating)
+      continue;
+
     Peer& p = s_peers[i];
     if (msg->players[i].controller_port < 0)
     {
@@ -1464,13 +1528,14 @@ void Netplay::HandleResumeSessionMessage(s32 player_id, const ENetPacket* pkt)
 
 void Netplay::UpdateResetState()
 {
+  const s32 num_players = (s_local_spectating ? 1 : s_num_players);
   if (IsHost())
   {
-    if (static_cast<s32>(s_reset_players.count()) == s_num_players &&
+    if (static_cast<s32>(s_reset_players.count()) == num_players &&
         static_cast<s32>(s_reset_spectators.count()) == s_num_spectators)
     {
       Log_VerbosePrintf("All players and spectators synchronized, resuming!");
-      SendControlPacketToAll(NewControlPacket<ResumeSessionMessage>());
+      SendControlPacketToAll(NewControlPacket<ResumeSessionMessage>(), true);
       CreateGGPOSession();
       s_state = SessionState::Running;
       return;
@@ -1504,7 +1569,7 @@ void Netplay::UpdateResetState()
   }
   else
   {
-    if (static_cast<s32>(s_reset_players.count()) != s_num_players)
+    if (static_cast<s32>(s_reset_players.count()) != num_players)
     {
       for (s32 i = 0; i < MAX_PLAYERS; i++)
       {
@@ -1515,7 +1580,7 @@ void Netplay::UpdateResetState()
           s_reset_players.set(i);
       }
 
-      if (static_cast<s32>(s_reset_players.count()) == s_num_players)
+      if (static_cast<s32>(s_reset_players.count()) == num_players)
       {
         // now connected to all!
         Log_InfoPrintf("Connected to %d players, waiting for host...", s_num_players);
@@ -1533,11 +1598,11 @@ void Netplay::UpdateResetState()
     }
   }
 
-  Log_InfoPrintf("p:%d/s:%d", s_num_players, s_num_spectators);
+  // Log_InfoPrintf("p:%d/s:%d", num_players, s_num_spectators);
 
   const s32 min_progress = IsHost() ? static_cast<int>(s_reset_players.count() + s_reset_spectators.count()) :
                                       static_cast<int>(s_reset_players.count());
-  const s32 max_progress = IsHost() ? s_num_players + s_num_spectators : s_num_players;
+  const s32 max_progress = IsHost() ? s_num_players + s_num_spectators : num_players;
 
   PollEnet(Common::Timer::GetCurrentValue() + Common::Timer::ConvertMillisecondsToValue(16));
   Host::DisplayLoadingScreen("Netplay synchronizing", 0, min_progress, max_progress);
@@ -1572,7 +1637,7 @@ void Netplay::NotifyPlayerJoined(s32 player_id)
   {
     auto pkt = NewControlPacket<PlayerJoinedMessage>();
     pkt->player_id = player_id;
-    SendControlPacketToAll(pkt);
+    SendControlPacketToAll(pkt, false);
   }
 
   Host::OnNetplayMessage(
@@ -1616,7 +1681,7 @@ void Netplay::DropPlayer(s32 player_id, DropPlayerReason reason)
     auto pkt = NewControlPacket<DropPlayerMessage>();
     pkt->reason = reason;
     pkt->player_id = player_id;
-    SendControlPacketToAll(pkt);
+    SendControlPacketToAll(pkt, false);
 
     // resync with everyone who's left
     Reset();
@@ -1948,7 +2013,8 @@ void Netplay::SendChatMessage(const std::string_view& msg)
 
   auto pkt = NewControlPacket<ChatMessage>(sizeof(ChatMessage) + static_cast<u32>(msg.length()));
   std::memcpy(pkt.pkt->data + sizeof(ChatMessage), msg.data(), msg.length());
-  SendControlPacketToAll(pkt);
+  // TODO: turn chat on for spectators? it's kind of weird to handle. probably has to go through the host and be relayed to the players.
+  SendControlPacketToAll(pkt, false); 
 
   // add own netplay message locally to netplay messages
   ShowChatMessage(s_player_id, msg);

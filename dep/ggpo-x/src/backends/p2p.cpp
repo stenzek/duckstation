@@ -294,7 +294,7 @@ Peer2PeerBackend::AddPlayer(GGPOPlayer *player,
    }
 
    // no other players in this session?
-   if (player->type == GGPO_PLAYERTYPE_LOCAL && _num_players == 1)
+   if (player->type == GGPO_PLAYERTYPE_LOCAL && _num_players == 1 && _num_spectators == 0)
      _synchronizing = false;
 
    return GGPO_OK;

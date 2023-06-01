@@ -11,7 +11,7 @@ enum : s32
   MAX_PLAYERS = 2,
 
   // Maximum number of spectators allowed to watch the session.
-  MAX_SPECTATORS = 1,
+  MAX_SPECTATORS = 4,
 
   // Maximum netplay prediction frames
   MAX_ROLLBACK_FRAMES = 8,
