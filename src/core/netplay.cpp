@@ -1072,10 +1072,6 @@ void Netplay::DropSpectator(s32 slot_id, DropPlayerReason reason)
   enet_peer_disconnect_now(s_spectators[slot_id].peer, 0);
   s_spectators[slot_id] = {};
   s_num_spectators--;
-  // sadly we have to reset here. this really sucks for the active players since you dont really want to halt for a spectator.
-  // not resetting seems to be creating index out of bounds errors in the ringbuffer.
-  // TODO ? 
-  Reset();
 }
 
 void Netplay::UpdateConnectingState()

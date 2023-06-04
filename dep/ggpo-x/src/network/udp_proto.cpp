@@ -90,6 +90,14 @@ UdpProtocol::SendInput(GameInput &input)
           * (better, but still ug).  For the meantime, make this queue really big to decrease
           * the odds of this happening...
           */
+
+         // disconnect peer when threshold is reached.
+         if (_pending_output.size() == RINGBUFFSIZE - 1)
+         {
+           Disconnect();
+           return;
+         }
+
          _pending_output.push(input);
       }
       SendPendingOutput();
