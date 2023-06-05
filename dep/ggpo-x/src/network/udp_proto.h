@@ -8,8 +8,6 @@
 #ifndef _UDP_PROTO_H_
 #define _UDP_PROTO_H_
 
-#define RINGBUFFSIZE 64
-
 #include "enet/enet.h"
 #include "udp_msg.h"
 #include "game_input.h"
@@ -169,7 +167,7 @@ protected:
    /*
     * Packet loss...
     */
-   RingBuffer<GameInput, RINGBUFFSIZE>  _pending_output;
+   RingBuffer<GameInput, 64>  _pending_output;
    GameInput                  _last_received_input;
    GameInput                  _last_sent_input;
    GameInput                  _last_acked_input;
