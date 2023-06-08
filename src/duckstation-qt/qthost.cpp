@@ -1092,16 +1092,17 @@ void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint3
 }
 
 void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port,
-                                   const QString& password)
+                                   const QString& password, bool spectating)
 {
   if (!isOnThread())
   {
     QMetaObject::invokeMethod(this, "joinNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
-                              Q_ARG(const QString&, hostname), Q_ARG(qint32, port), Q_ARG(const QString&, password));
+                              Q_ARG(const QString&, hostname), Q_ARG(qint32, port), Q_ARG(const QString&, password),
+                              Q_ARG(bool, spectating));
     return;
   }
 
-  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString()))
+  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString(), spectating))
   {
     errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
     return;
@@ -2246,7 +2247,7 @@ int main(int argc, char* argv[])
       }
       else
       {
-        g_emu_thread->joinNetplaySession(nickname, remote, port, QString());
+        g_emu_thread->joinNetplaySession(nickname, remote, port, QString(), false);
       }
     });
   }

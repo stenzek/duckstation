@@ -10,6 +10,9 @@ enum : s32
   // Maximum number of emulated controllers.
   MAX_PLAYERS = 2,
 
+  // Maximum number of spectators allowed to watch the session.
+  MAX_SPECTATORS = 4,
+
   // Maximum netplay prediction frames
   MAX_ROLLBACK_FRAMES = 8,
 
@@ -29,7 +32,7 @@ enum : u8
 };
 
 bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password);
-bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password);
+bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating);
 
 bool IsActive();
 
