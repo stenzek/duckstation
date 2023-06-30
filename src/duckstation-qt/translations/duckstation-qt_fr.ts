@@ -6,7 +6,7 @@
     <message>
         <location filename="../aboutdialog.ui" line="14"/>
         <source>About DuckStation</source>
-        <translation>À propos de Duckstation</translation>
+        <translation>À propos de DuckStation</translation>
     </message>
     <message>
         <location filename="../aboutdialog.ui" line="101"/>
@@ -21,7 +21,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="34"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStation est un émulateur gratuit et open source simulant la console Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, qui se concentre sur la jouabilité, la vitesse et la maintenanibilité à long terme.</translation>
+        <translation>DuckStation est un émulateur gratuit et open source simulant la console Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, qui se concentre sur la jouabilité, la vitesse et la maintenabilité à long terme.</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="37"/>
@@ -195,7 +195,7 @@
     <message>
         <location filename="../achievementsettingswidget.ui" line="167"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation utilise RetroAchievements en tant que base de données de succès et pour suivre la progression. Pour utiliser les succès, veuillez vous inscrire sur &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Pour voir la liste des succès en jeu, pressez la touche raccourci pour &lt;span style=&quot; font-weight:600;&quot;&gt;Ouvrir menu pause&lt;/span&gt; et sélectionnez &lt;span style=&quot; font-weight:600;&quot;&gt;Succès&lt;/span&gt; depuis le menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="35"/>
@@ -298,88 +298,89 @@ Jeton de connexion généré sur %2.</translation>
     <message>
         <location filename="../../core/system.cpp" line="1023"/>
         <source>Loading state</source>
-        <translation type="unfinished"></translation>
+        <translation>Chargement de l&apos;état</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1245"/>
         <source>Resuming state</source>
-        <translation type="unfinished"></translation>
+        <translation>Reprise de l&apos;état</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2014"/>
         <source>Hardcore mode disabled by state switch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode Hardcore désactivé par la bascule d&apos;état.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="505"/>
         <source>Hardcore mode will be enabled on system reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le mode Hardcore sera activé sur réinitialisation du système.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="534"/>
         <source>Confirm Hardcore Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmation du mode Hardcore</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="535"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation type="unfinished"></translation>
+        <translation>{0} ne peut être fait quand le mode Hardcore est actif. Voulez-vous désactiver le mode Hardcore ? {0} sera annulé si vous sélectionnez Non.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="586"/>
         <source>Hardcore mode is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le mode Hardcore est maintenant activé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="587"/>
         <source>Hardcore mode is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le mode Hardcore est maintenant désactivé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1002"/>
         <source>{} (Hardcore Mode)</source>
-        <translation type="unfinished"></translation>
+        <translation>{} (mode Hardcore)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1010"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous avez remporté {} des {} succès, et {} des {} points.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1016"/>
         <source>This game has no achievements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ce jeu n&apos;a pas de succès.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/achievements.cpp" line="1772"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Votre score : {} (Meilleur : {})
+Position dans le classement : {} of {}</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="6953"/>
         <source>This game has {} leaderboards.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ce jeu a {} classements.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="6971"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation type="unfinished"></translation>
+        <translation>La soumission des scores est désactivée parce que le mode Hardcore est désactivé. Les classements sont en lecture seule.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="7006"/>
         <source>Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="7007"/>
         <source>Score</source>
-        <translation type="unfinished"></translation>
+        <translation>Score</translation>
     </message>
     <message>
         <location filename="../../frontend-common/fullscreen_ui.cpp" line="7063"/>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation>Téléchargement des données de classement, veuillez patienter...</translation>
     </message>
 </context>
 <context>
@@ -811,23 +812,23 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/analog_controller.cpp" line="112"/>
         <location filename="../../core/analog_controller.cpp" line="299"/>
         <source>Controller {} switched to analog mode.</source>
-        <translation>Manette {} changée en mode analogique.</translation>
+        <translation>Contrôleur {} changée en mode analogique.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="113"/>
         <location filename="../../core/analog_controller.cpp" line="300"/>
         <source>Controller {} switched to digital mode.</source>
-        <translation>Manette {} changée en mode digital.</translation>
+        <translation>Contrôleur {} changée en mode digital.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="315"/>
         <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Manette {} verrouillée en mode analogique par le jeu.</translation>
+        <translation>Contrôleur {} verrouillée en mode analogique par le jeu.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="316"/>
         <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Manette {} verrouillée en mode digital par le jeu.</translation>
+        <translation>Contrôleur {} verrouillée en mode digital par le jeu.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="831"/>
@@ -857,7 +858,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="838"/>
         <source>Forces the controller to analog mode when the console is reset/powered on.</source>
-        <translation>Force la manette en mode analogique quand la console est réinitialisée/mise sous tension.</translation>
+        <translation>Force le contrôleur en mode analogique quand la console est réinitialisée/mise sous tension.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="855"/>
@@ -954,13 +955,13 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/analog_joystick.cpp" line="62"/>
         <location filename="../../core/analog_joystick.cpp" line="238"/>
         <source>Controller %u switched to analog mode.</source>
-        <translation>La manette %u a basculé en mode analogique.</translation>
+        <translation>La contrôleur %u a basculé en mode analogique.</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="63"/>
         <location filename="../../core/analog_joystick.cpp" line="239"/>
         <source>Controller %u switched to digital mode.</source>
-        <translation>La manette %u a basculé en mode digital.</translation>
+        <translation>La contrôleur %u a basculé en mode digital.</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="377"/>
@@ -2613,7 +2614,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerbindingwidget.ui" line="32"/>
         <source>Controller Type</source>
-        <translation>Type de manette</translation>
+        <translation>Type de contrôleur</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="43"/>
@@ -2650,12 +2651,12 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="218"/>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
-        <translation>Êtes-vous sûr de vouloir vider tous les mappages pour cette manette ? Cette action ne peut être annulée.</translation>
+        <translation>Êtes-vous sûr de vouloir vider tous les mappages pour ce contrôleur ? Cette action ne peut être annulée.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="269"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Aucun mapage générique généré pour le périphérique &apos;%1&apos;. La manette/source peut ne pas supporter le mappage automatique.</translation>
+        <translation>Aucun mapage générique généré pour le périphérique &apos;%1&apos;. Le contrôleur/source peut ne pas supporter le mappage automatique.</translation>
     </message>
 </context>
 <context>
@@ -3297,12 +3298,12 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="83"/>
         <source>Controller Multitap</source>
-        <translation>Manette multiprise</translation>
+        <translation>Contrôleur multiprise</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="89"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
-        <translation>La multiprise permet de brancher jusqu&apos;à 8 manettes à la console. Chaque multiprise fournit 4 ports. La multiprise n&apos;est pas supportée pas tous les jeux.</translation>
+        <translation>La multiprise permet de brancher jusqu&apos;à 8 contrôleurs à la console. Chaque multiprise fournit 4 ports. La multiprise n&apos;est pas supportée pas tous les jeux.</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="99"/>
@@ -3337,7 +3338,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="38"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
-        <translation>La source DInput fournit un support pour les manettes qui ne supportent pas XInput. Passer plutôt par SDL pour ces manettes est recommandé.</translation>
+        <translation>La source DInput fournit un support pour les contrôleurs qui ne supportent pas XInput. Passer plutôt par SDL pour ces contrôleurs est recommandé.</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="48"/>
@@ -3352,7 +3353,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="139"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
-        <translation>La source d&apos;entrée SDL supporte la plupart des manettes, et fournit des fonctionnalités avancées pour DualShock 4 / manettes DualSense en mode Bluetooth (Vibration / contrôle LED).</translation>
+        <translation>La source d&apos;entrée SDL supporte la plupart des contrôleurs, et fournit des fonctionnalités avancées pour DualShock 4 / manettes DualSense en mode Bluetooth (Vibration / contrôle LED).</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="149"/>
@@ -3383,7 +3384,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="240"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
-        <translation>Utiliser l&apos;entrée brute améliore la précision quand vous assignez les sticks manette au poiteur de souris. Autorise l&apos;usage de multiples souris.</translation>
+        <translation>Utiliser l&apos;entrée brute améliore la précision quand vous assignez les sticks du contrôleur au poiteur de souris. Autorise l&apos;usage de multiples souris.</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="305"/>
@@ -3461,7 +3462,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="14"/>
         <source>Controller LED Settings</source>
-        <translation>Paramètres des LED de la manette</translation>
+        <translation>Paramètres des LED du contrôleur</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="20"/>
@@ -3546,7 +3547,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="412"/>
         <source>Frequency: </source>
-        <translation>Fréquence :</translation>
+        <translation>Fréquence : </translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="441"/>
@@ -3564,7 +3565,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="304"/>
         <source>Controller Port %1 Macros</source>
-        <translation>Macros du port manette %1</translation>
+        <translation>Macros du port contrôleur %1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="313"/>
@@ -3579,44 +3580,44 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <location filename="../controllersettingsdialog.ui" line="23"/>
         <source>Controller Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres du contrôleur</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="71"/>
         <source>Profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>Profil :</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="81"/>
         <source>New Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau profil</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="92"/>
         <source>Load Profile</source>
-        <translation type="unfinished">Charger un Profil</translation>
+        <translation>Charger profil</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="102"/>
         <source>Delete Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer profil</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="113"/>
         <location filename="../controllersettingsdialog.cpp" line="189"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurer par défaut</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="93"/>
         <location filename="../controllersettingsdialog.cpp" line="104"/>
         <source>Create Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer un profil d&apos;entrée</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="93"/>
         <source>Enter the name for the new input profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrez le nom pour le nouveau profil d&apos;entrée :</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="100"/>
@@ -3624,27 +3625,27 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
         <location filename="../controllersettingsdialog.cpp" line="177"/>
         <location filename="../controllersettingsdialog.cpp" line="474"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="100"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>Un profil du nom &apos;%1&apos; existe déjà.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="105"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous copier tous les mappages depuis le profil sélectionné vers le nouveau profil ? Sélectionner Non créera un profil totalement vide.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="134"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de sauvegarde du nouveau profil vers &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="144"/>
         <source>Load Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger profil d&apos;entrée</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="145"/>
@@ -3653,24 +3654,30 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir charger le profil d&apos;entrée nommé &apos;%1&apos; ?
+
+Tous les mappages globaux en cours seront supprimés, et les mappages du profil par défaut chargés.
+
+Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="166"/>
         <source>Delete Input Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer profil d&apos;entrée</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="167"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir supprimer le profil d&apos;entrée nommé &apos;%1&apos; ?
+
+Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="177"/>
         <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de suppression de &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="190"/>
@@ -3679,41 +3686,47 @@ You cannot undo this action.</source>
 All shared bindings and configuration will be lost, but your input profiles will remain.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir restaurer la configuration par défaut du contrôleur ?
+
+Tous les mappages et configurations partagés seront perdus, mais les profils d&apos;entrée resteront.
+
+Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="357"/>
         <source>Global Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres globaux</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="399"/>
         <location filename="../controllersettingsdialog.cpp" line="439"/>
         <source>Controller Port %1%2
 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Port contrôleur %1%2
+%3</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="400"/>
         <location filename="../controllersettingsdialog.cpp" line="440"/>
         <source>Controller Port %1
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Port contrôleur %1
+%2</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="410"/>
         <source>Hotkeys</source>
-        <translation type="unfinished"></translation>
+        <translation>Raccourcis</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="452"/>
         <source>Shared</source>
-        <translation type="unfinished"></translation>
+        <translation>Partagé</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.cpp" line="474"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le profil d&apos;entrée nommé &apos;%1&apos; est introuvable.</translation>
     </message>
 </context>
 <context>
@@ -3822,7 +3835,7 @@ You cannot undo this action.</source>
         <location filename="../../core/analog_joystick.cpp" line="403"/>
         <location filename="../../core/settings.cpp" line="1179"/>
         <source>Analog Joystick</source>
-        <translation type="unfinished"></translation>
+        <translation>Joystick analogique</translation>
     </message>
     <message>
         <source>Namco GunCon</source>
@@ -3844,18 +3857,18 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="873"/>
         <source>Analog Controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Contrôleur analogique</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="234"/>
         <location filename="../../core/settings.cpp" line="1180"/>
         <source>GunCon</source>
-        <translation type="unfinished"></translation>
+        <translation>GunCon</translation>
     </message>
     <message>
         <location filename="../../core/controller.cpp" line="17"/>
         <source>Not Connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Non-connecté</translation>
     </message>
 </context>
 <context>
@@ -3863,53 +3876,54 @@ You cannot undo this action.</source>
     <message>
         <location filename="../coverdownloaddialog.ui" line="14"/>
         <source>Download Covers</source>
-        <translation type="unfinished"></translation>
+        <translation>Télécharger des jaquettes</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="38"/>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation type="unfinished"></translation>
+        <translation>DuckStation peut automatiquement télécharger des jaquettes pour les jeux qui n&apos;en ont pas actuellement définie. Nous n&apos;hébergeons aucune jaquette, l&apos;utilisateur doit fournir sa propre source d&apos;images.</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Attention à ne pas traduire les variables !</translatorcomment>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dans la boîte ci-dessous, spécifiez les URLs depuis lesquelles télécharger des jaquettes, avec une URL de modèle par ligne. Les variables suivantes sont disponibles :&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Titre du jeu.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Nom composant le nom de fichier du jeu.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Numéro de série du jeu.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exemple :&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="63"/>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Par défaut, les jaquettes téléchargées sont sauvegardées avec le titre du jeu. Si cela est indésirable, vous pouvez cocher la case ci-dessous &quot;Utiliser les noms de série fichier&quot;. Utiliser les noms de série plûtot que les titres de jeux préviendra les conflits quand plusieurs régions pour un même jeu seront utilisées.</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="73"/>
         <source>Use Serial File Names</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les noms de série fichier</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="80"/>
         <source>Waiting to start...</source>
-        <translation type="unfinished"></translation>
+        <translation>En attente du démarrage...</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="95"/>
         <location filename="../coverdownloaddialog.cpp" line="83"/>
         <source>Start</source>
-        <translation type="unfinished">Start</translation>
+        <translation>Démarrer</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="105"/>
         <source>Close</source>
-        <translation type="unfinished">Fermer</translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.cpp" line="61"/>
         <source>Download complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Téléchargement fini.</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.cpp" line="83"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop</translation>
     </message>
 </context>
 <context>
@@ -3919,27 +3933,27 @@ You cannot undo this action.</source>
         <location filename="../debuggermodels.cpp" line="91"/>
         <location filename="../debuggermodels.cpp" line="106"/>
         <source>&lt;invalid&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;invalid&gt;</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="174"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="176"/>
         <source>Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>Bytes</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="178"/>
         <source>Instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruction</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="180"/>
         <source>Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Commentaire</translation>
     </message>
 </context>
 <context>
@@ -3947,42 +3961,42 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1823"/>
         <source>Added breakpoint at 0x%08X.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouté un point d&apos;arrêt à 0x%08%X.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1850"/>
         <source>Removed breakpoint at 0x%08X.</source>
-        <translation type="unfinished"></translation>
+        <translation>Enlevé le point d&apos;arrêt à 0x%08X.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1882"/>
         <source>0x%08X is not a call instruction.</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%08X n&apos;est pas une instruction d&apos;appel.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1893"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de franchir la double-branche à 0x%08X</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1900"/>
         <source>Stepping over to 0x%08X.</source>
-        <translation type="unfinished"></translation>
+        <translation>Franchissement vers 0x%08X.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1917"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation type="unfinished"></translation>
+        <translation>La lecture d&apos;instruction a échoué à %08X pendant la recherche de la fin de fonction.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1924"/>
         <source>Stepping out to 0x%08X.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sortie vers 0x%08X.</translation>
     </message>
     <message>
         <location filename="../../core/cpu_core.cpp" line="1931"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune instruction de retour trouvée après les instructions %u pour sortir à %08X.</translation>
     </message>
 </context>
 <context>
@@ -3990,12 +4004,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggermodels.cpp" line="355"/>
         <source>Register</source>
-        <translation type="unfinished"></translation>
+        <translation>Registre</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="357"/>
         <source>Value</source>
-        <translation type="unfinished">Valeur</translation>
+        <translation>Valeur</translation>
     </message>
 </context>
 <context>
@@ -4003,17 +4017,17 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggermodels.cpp" line="406"/>
         <source>&lt;invalid&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;invalid&gt;</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="422"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="424"/>
         <source>Value</source>
-        <translation type="unfinished">Valeur</translation>
+        <translation>Valeur</translation>
     </message>
 </context>
 <context>
@@ -4021,103 +4035,104 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="14"/>
         <source>CPU Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Débogueur CPU</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="31"/>
         <source>&amp;Debug</source>
-        <translation type="unfinished">&amp;Débug</translation>
+        <translation>&amp;Débug</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="51"/>
         <location filename="../debuggerwindow.ui" line="245"/>
         <source>Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>Points d&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="63"/>
         <source>toolBar</source>
-        <translation type="unfinished">Barre d&apos;Outils</translation>
+        <translatorcomment>Vu la tête du texte source, préférence à laisser tel-quel</translatorcomment>
+        <translation>toolBar</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="93"/>
         <source>Disassembly</source>
-        <translation type="unfinished"></translation>
+        <translation>Désassembleur</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="115"/>
         <source>Registers</source>
-        <translation type="unfinished"></translation>
+        <translation>Registres</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="146"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Mémoire</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="168"/>
         <source>RAM</source>
-        <translation type="unfinished"></translation>
+        <translation>RAM</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="178"/>
         <source>Scratchpad</source>
-        <translation type="unfinished"></translation>
+        <translation>Bloc-notes</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="185"/>
         <source>EXP1</source>
-        <translation type="unfinished"></translation>
+        <translation>EXP1</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="192"/>
         <source>BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="217"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Rechercher</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="265"/>
         <source>#</source>
-        <translation type="unfinished">#</translation>
+        <translation>#</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="270"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="275"/>
         <source>Hit Count</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de résultats</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="285"/>
         <source>Stack</source>
-        <translation type="unfinished"></translation>
+        <translation>Pile</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="308"/>
         <source>Pause/Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Pause/Continuer</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="311"/>
         <source>&amp;Pause/Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pause/Continuer</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="314"/>
         <source>F5</source>
-        <translation type="unfinished"></translation>
+        <translation>F5</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="323"/>
         <source>Step Into</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas-à-pas entrant</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="326"/>
@@ -4127,12 +4142,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="329"/>
         <source>F11</source>
-        <translation type="unfinished"></translation>
+        <translation>F11</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="338"/>
         <source>Step Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas-à-pas principal</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="341"/>
@@ -4142,12 +4157,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="344"/>
         <source>F10</source>
-        <translation type="unfinished"></translation>
+        <translation>F10</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="353"/>
         <source>Toggle Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le point d&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="356"/>
@@ -4158,7 +4173,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="359"/>
         <source>F9</source>
-        <translation type="unfinished"></translation>
+        <translation>F9</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="364"/>
@@ -4168,7 +4183,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="373"/>
         <source>Step Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas-à-pas sortant</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="376"/>
@@ -4178,12 +4193,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="379"/>
         <source>Ctrl+F11</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+F11</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="388"/>
         <source>Run To Cursor</source>
-        <translation type="unfinished"></translation>
+        <translation>Aller au curseur</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="391"/>
@@ -4194,12 +4209,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="394"/>
         <source>Ctrl+F10</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+F10</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="403"/>
         <source>Clear Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer les points d&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="406"/>
@@ -4209,12 +4224,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="409"/>
         <source>Ctrl+Del</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Del</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="418"/>
         <source>Add Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un point d&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="421"/>
@@ -4224,7 +4239,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="424"/>
         <source>Ctrl+F9</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+F9</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="433"/>
@@ -4239,126 +4254,127 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="439"/>
         <source>Ctrl+P</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+P</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="448"/>
         <source>Go To Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Aller à l&apos;adresse</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="451"/>
         <source>Go To &amp;Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Aller à l&apos;&amp;adresse</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="454"/>
         <source>Ctrl+G</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+G</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="463"/>
         <source>&amp;Dump Address</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Décharger l&apos;adresse</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="466"/>
         <source>Ctrl+D</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+D</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="475"/>
         <source>Trace</source>
-        <translation type="unfinished">Traceur</translation>
+        <translation>Trace</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="478"/>
         <source>&amp;Trace</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Trace</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="481"/>
         <source>Ctrl+T</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+T</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="98"/>
         <source>No address selected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune adresse sélectionnée.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="114"/>
         <location filename="../debuggerwindow.cpp" line="155"/>
         <source>Enter code address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer un code adresse :</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="124"/>
         <location filename="../qtutils.cpp" line="750"/>
         <source>Enter memory address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer une adresse mémoire :</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="137"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;enregistrement de la trace a débuté vers cpu_log.txt.
+Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="143"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;enregistrement vers cpu_log.tx s&apos;est arrêté.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="161"/>
         <source>A breakpoint already exists at this address.</source>
-        <translation type="unfinished"></translation>
+        <translation>Un point d&apos;arrêt existe déjà à cette adresse.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="209"/>
         <source>Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Débogueur</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="209"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;ajout d&apos;un point d&apos;arrêt de pas-à-pas sortant, êtes-vous dans une fonction valide ?</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="266"/>
         <source>View in &amp;Dump</source>
-        <translation type="unfinished"></translation>
+        <translation>Voir dans la &amp;décharge</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="269"/>
         <source>Follow Load/Store</source>
-        <translation type="unfinished"></translation>
+        <translation>Suivre le chargement/enregistrement</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="321"/>
         <location filename="../debuggerwindow.cpp" line="348"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation type="unfinished"></translation>
+        <translation>Motif de recherche invalide. Il devrait contenir des chiffres héxa ou des points d&apos;interrogation.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="360"/>
         <source>Pattern not found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Motif non-trouvé.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="376"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation type="unfinished"></translation>
+        <translation>Motif trouvé à l&apos;adresse 0x%1 (passé la fin de mémoire).</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="382"/>
         <source>Pattern found at 0x%1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Motif trouvé à l&apos;adresse 0x%1.</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="767"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse invalide. Elle devrait être en héxa (0x12345678 ou 12345678)</translation>
     </message>
 </context>
 <context>
@@ -4422,12 +4438,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="172"/>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation>Forcer le Mode Contrôleur Pop&apos;n</translation>
+        <translation>Forcer le mode contrôleur Pop&apos;n</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="173"/>
         <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
-        <translation type="unfinished"></translation>
+        <translation>Force le contrôleur digital à se comporter comme un contrôleur Pop&apos;n.</translation>
     </message>
 </context>
 <context>
@@ -4455,7 +4471,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="795"/>
         <source>Non-PS1</source>
-        <translation type="unfinished"></translation>
+        <translation>Non-PS1</translation>
     </message>
 </context>
 <context>
@@ -4463,17 +4479,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1098"/>
         <source>Left / Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Gauche / Haut</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1098"/>
         <source>Center</source>
-        <translation type="unfinished"></translation>
+        <translation>Centre</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1099"/>
         <source>Right / Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Droit / Bas</translation>
     </message>
 </context>
 <context>
@@ -4481,17 +4497,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1045"/>
         <source>Auto (Game Native)</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto (natif)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1045"/>
         <source>Auto (Match Window)</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto (dimensions fenêtre)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1046"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Personnalisé</translation>
     </message>
 </context>
 <context>
@@ -4527,39 +4543,39 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="38"/>
         <source>Renderer:</source>
-        <translation>Rendu:</translation>
+        <translation>Rendu :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="48"/>
         <source>Adapter:</source>
-        <translation>Adaptateur:</translation>
+        <translation>Adaptateur :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="58"/>
         <source>Fullscreen Mode:</source>
-        <translation>Mode Plein Ecran</translation>
+        <translation>Mode plein écran :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="77"/>
         <location filename="../displaysettingswidget.cpp" line="128"/>
         <source>Threaded Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>Rendu threadé</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="84"/>
         <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Threaded Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Présentation threadée</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="253"/>
         <source>Show GPU Usage</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher l&apos;usage GPU</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="260"/>
         <source>Show Settings Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les paramètres d&apos;overlay</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
@@ -4570,28 +4586,28 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.ui" line="103"/>
         <source>Screen Display</source>
-        <translation>Affichage à l&apos;Ecran</translation>
+        <translation>Affichage à l&apos;écran</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="109"/>
         <source>Aspect Ratio:</source>
-        <translation type="unfinished">Ratio d&apos;affichage :</translation>
+        <translation>Ratio d&apos;affichage :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="131"/>
         <source>:</source>
-        <translation type="unfinished"></translation>
+        <translation>:</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="150"/>
         <source>Crop:</source>
-        <translation type="unfinished">Rognage:</translation>
+        <translation>Rognage :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="179"/>
         <location filename="../displaysettingswidget.cpp" line="115"/>
         <source>Stretch To Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Étirer pour remplir</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="186"/>
@@ -4603,35 +4619,35 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="218"/>
         <location filename="../displaysettingswidget.cpp" line="142"/>
         <source>Show CPU Usage</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher l&apos;usage CPU</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="239"/>
         <location filename="../displaysettingswidget.cpp" line="147"/>
         <source>Show Controller Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les entrées contrôleur</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="172"/>
         <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Integer Upscaling</source>
-        <translation>Upscaling Complet</translation>
+        <translation>Upscaling entier</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="160"/>
         <source>Position:</source>
-        <translation type="unfinished"></translation>
+        <translation>Position :</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="193"/>
         <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Internal Resolution Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Résolution interne des captures d&apos;écran</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="205"/>
         <source>On-Screen Display</source>
-        <translation>Affichage à l&apos;Ecran</translation>
+        <translation>Affichage à l&apos;écran</translation>
     </message>
     <message>
         <source>Show Messages</source>
@@ -4641,7 +4657,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="232"/>
         <location filename="../displaysettingswidget.cpp" line="134"/>
         <source>Show FPS</source>
-        <translation>Afficher les FPS</translation>
+        <translation>Afficher les IPS</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="211"/>
@@ -4657,7 +4673,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.ui" line="246"/>
         <location filename="../displaysettingswidget.cpp" line="139"/>
         <source>Show Resolution</source>
-        <translation>Afficher la Résolution</translation>
+        <translation>Afficher la résolution</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="77"/>
@@ -4667,7 +4683,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="79"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="unfinished">Choisit le moteur vidéo à utiliser pour le rendu des visuels de la console/du jeu. &lt;br&gt;Selon votre système et votre matériel, des moteurs  matériels Direct3D 11 et OpenGL peuvent être disponibles. &lt;br&gt;Le rendu logiciel offre la meilleure compatibilité, mais est le plus lent et n&apos;offre aucune amélioration possible.</translation>
+        <translation>Choisis le moteur vidéo à utiliser pour le rendu des visuels de la console/du jeu. &lt;br&gt;Selon votre système et votre matériel, des moteurs matériels Direct3D 11 et OpenGL peuvent être disponibles. &lt;br&gt;Le rendu logiciel offre la meilleure compatibilité, mais est le plus lent et n&apos;offre aucune amélioration possible.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="83"/>
@@ -4688,27 +4704,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Fullscreen Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode plein écran</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="88"/>
         <source>Chooses the fullscreen resolution and frequency.</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisis la résolution plein écran et la fréquence.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="90"/>
         <source>Aspect Ratio</source>
-        <translation type="unfinished">Ratio d&apos;affichage</translation>
+        <translation>Ratio d&apos;affichage</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Position</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="unfinished"></translation>
+        <translation>Détermine la position à l&apos;écran quand des bordures noires doivent être ajoutées.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
@@ -4717,12 +4733,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="unfinished"></translation>
+        <translation>Change le ratio d&apos;affichage utilisé pour afficher la sortie console à l&apos;écran. Par défaut Auto(natif), qui ajuste automatiquement le ratio d&apos;affichage pour correspondre à la façon un jeu s&apos;affichait sur les TVs de cette période.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="95"/>
         <source>Crop Mode</source>
-        <translation type="unfinished">Mode Rognage</translation>
+        <translation>Mode rognage</translation>
     </message>
     <message>
         <source>Only Overscan Area</source>
@@ -4768,27 +4784,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="116"/>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remplis la fenêtre avec la zone d&apos;affichage active, peu importe le ratio d&apos;affichage.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="118"/>
         <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarde les captures d&apos;écran à la résolution interne et sans postprocessing. Si cette option est désactivée, les captures d&apos;écran seront prises à la résolution de la fenêtre. Les captures d&apos;écran en résolution interne peuvent être très volumineuses avec les grandes échelles de rendu.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="unfinished">Activer cette option pour faire correspondre le taux de rafraîchissement de DuckStation avec votre moniteur ou écran actuel. VSync est automatiquement désactivé lorsque ce n&apos;est pas possible (par exemple, si la vitesse n&apos;est pas de 100 %).</translation>
+        <translation>Activer cette option pour faire correspondre le taux de rafraîchissement de DuckStation avec votre moniteur ou écran actuel. La VSync est automatiquement désactivée lorsque ce n&apos;est pas possible (càd si la vitesse n&apos;est pas de 100%).</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="126"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Présente les images via un thread d&apos;arrière-plan quand l&apos;avance rapide ou la vsync sont désactivées. Cela peut sensiblement améliorer les performances avec le rendu Vulkan.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="129"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilise un second thread de dessin graphique. Actuellement seulement disponible pour le rendu logiciel, mais peut fournir une amélioration significative de la vitesse, et est sûr à utiliser.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="225"/>
@@ -4822,34 +4838,34 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../displaysettingswidget.cpp" line="140"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Affiche la résolution du jeu dans le coin supérieur-droit de l&apos;affichage.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="143"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage l&apos;usage du CPu de l&apos;hôte en se basant sur les threads dans le coin supérieur droit de l&apos;affichage. Cela n&apos;affiche pas l&apos;usage du CPU système émulé. Si une valeur est proche de 100% est affichée, cela signifie que le CPU de l&apos;hôte est probablement le goulôt d&apos;étranglement. Dans ce cas, vous devriez réduire les paramètres liés aux améliorations, comme l&apos;overclocking.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="148"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Affiche l&apos;état système du contrôleur courant dans le coin inférieur-gauche de l&apos;affichage.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="91"/>
         <location filename="../displaysettingswidget.cpp" line="152"/>
         <source>Use Blit Swap Chain</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser la chaîne d&apos;échange Blit</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="153"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilise le modèle de présentation blit plutôt que le retournement quand le rendu Direct3D 11 est utilisé. Cela résulte habituellement en des performances plus lentes, mais peut être requis pour certaines applications de streaming, ou pour déplafonner le taux d&apos;image sur certains systèmes.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <location filename="../displaysettingswidget.cpp" line="247"/>
         <source>Borderless Fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>Plein écran sans bordure</translation>
     </message>
 </context>
 <context>
@@ -4857,27 +4873,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emptygamelistwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Formulaire</translation>
+        <translation>Formulaire</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="33"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Aucun jeu dans les formats supportés n&apos;a été trouvé.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Veuillez ajouter un répertoire avec des jeux pour commencer.&lt;/p&gt;&lt;p&gt;Les jeux extraits dans les formats suivants seront scannés et listés :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="43"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation>TextLabel</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="68"/>
         <source>Add Game Directory...</source>
-        <translation type="unfinished">Ajouter un Répertoire de Jeu...</translation>
+        <translation>Ajouter un répertoire de jeu...</translation>
     </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="105"/>
         <source>Scan For New Games</source>
-        <translation type="unfinished"></translation>
+        <translation>Scanner pour des nouveaux jeux</translation>
     </message>
 </context>
 <context>
@@ -4885,12 +4901,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../qthost.cpp" line="536"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="536"/>
         <source>No resume save state found.</source>
-        <translation type="unfinished">Aucun résumé sur la sauvegarde d&apos;état n&apos;a été trouvé.</translation>
+        <translation>Aucun sauvegarde d&apos;état de reprise n&apos;a été trouvée.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1306"/>
@@ -4899,40 +4915,43 @@ Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>ID du jeu : %1
+Titre du jeu : %2
+Succès : %5 (%6)
+</translation>
     </message>
     <message numerus="yes">
         <location filename="../qthost.cpp" line="1312"/>
         <source>%n points</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n points</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1318"/>
         <source>Rich presence inactive or unsupported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Riche presence inactive ou non-supportée.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1322"/>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jeu non-chargé ou RetroAchievements indisponible.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1639"/>
         <source>%1x%2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1648"/>
         <source>Game: %1 FPS</source>
-        <translation type="unfinished"></translation>
+        <translation>Jeu : %1 IPS</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1658"/>
         <source>Video: %1 FPS (%2%)</source>
-        <translation type="unfinished"></translation>
+        <translation>Vidéo : %1 IPS (%2%)</translation>
     </message>
 </context>
 <context>
@@ -4940,246 +4959,247 @@ Achievements: %5 (%6)
     <message>
         <location filename="../emulationsettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Formulaire</translation>
+        <translation>Formulaire</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="32"/>
         <source>Speed Control</source>
-        <translation type="unfinished">Contrôle de la Vitesse</translation>
+        <translation>Contrôle de la vitesse</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="38"/>
         <source>Emulation Speed:</source>
-        <translation type="unfinished">Vitesse de l’Emulation</translation>
+        <translation>Vitesse de l’émulation :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="48"/>
         <source>Fast Forward Speed:</source>
-        <translation type="unfinished">Vitesse de l&apos;Avance Rapide</translation>
+        <translation>Vitesse de l&apos;avance rapide :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="58"/>
         <source>Turbo Speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse turbo :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="70"/>
         <location filename="../emulationsettingswidget.cpp" line="92"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Sync avec taux rafraîch. hôte</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="77"/>
         <location filename="../emulationsettingswidget.cpp" line="98"/>
         <source>Optimal Frame Pacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Rythme optimal d&apos;image</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="89"/>
         <source>Rewind/Runahead</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Laissé tel-quel</translatorcomment>
+        <translation>Rewind/Runahead</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="95"/>
         <source>Enable Rewinding</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer le rewinding</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="102"/>
         <source>Rewind Save Frequency:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fréquence de sauve :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="109"/>
         <source> Seconds</source>
-        <translation type="unfinished"></translation>
+        <translation> secondes</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="122"/>
         <source>Rewind Buffer Size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille du buffer :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="129"/>
         <source> Frames</source>
-        <translation type="unfinished"></translation>
+        <translation> images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="142"/>
         <source>Runahead:</source>
-        <translation type="unfinished"></translation>
+        <translation>Runahead :</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="150"/>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="155"/>
         <source>1 Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>1 image</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="160"/>
         <source>2 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>2 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="165"/>
         <source>3 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>3 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="170"/>
         <source>4 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>4 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="175"/>
         <source>5 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>5 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="180"/>
         <source>6 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>6 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="185"/>
         <source>7 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>7 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="190"/>
         <source>8 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>8 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="195"/>
         <source>9 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>9 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="200"/>
         <source>10 Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>10 images</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="208"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation>TextLabel</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="81"/>
         <source>Emulation Speed</source>
-        <translation type="unfinished">Vitesse de l&apos;Emulation</translation>
+        <translation>Vitesse de l&apos;émulation</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="82"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation type="unfinished">Définit la vitesse d&apos;émulation de la cible. Il n&apos;est pas garanti que cette vitesse sera atteinte, et si ce n&apos;est pas le cas, l&apos;émulateur fonctionnera aussi vite qu&apos;il le pourra.</translation>
+        <translation>Définis la vitesse d&apos;émulation de la cible. Il n&apos;est pas garanti que cette vitesse soit atteinte, et si ce n&apos;est pas le cas, l&apos;émulateur fonctionnera aussi vite qu&apos;il le pourra.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="85"/>
         <source>Fast Forward Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse d&apos;avance rapide</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="85"/>
         <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>User Preference</source>
-        <translation type="unfinished"></translation>
+        <translation>Préférence utilisateur</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="86"/>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Définis la vitesse d&apos;avance rapide. Cette vitesse sera utilisée quand le raccourci d&apos;avance rapide sera pressé/basculé.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>Turbo Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse turbo</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="89"/>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Définis la vitesse turbo. Cette vitesse sera utilisée quand le raccourci turbo sera pressé/basculé. Le turbo sera prioritaire sur l&apos;avance rapide si les deux raccourcis sont pressés/basculés.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="103"/>
         <source>Rewinding</source>
-        <translation type="unfinished"></translation>
+        <translation>Rewinding</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="92"/>
         <location filename="../emulationsettingswidget.cpp" line="98"/>
         <location filename="../emulationsettingswidget.cpp" line="103"/>
         <source>Unchecked</source>
-        <translation type="unfinished">Décoché</translation>
+        <translation>Décoché</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="93"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajuste la vitesse d&apos;émulation de façon à ce que le taux de rafraîchissement de la console corresponde à celui de l&apos;hôte quand les options de VSync et rééchantillonnage audio sont activées. Cela résulte en des animations possiblement plus lisses, au coût d&apos;une potentielle augmentation de la vitesse d&apos;émulation inférieure à 1%. Sync. avec le tx de rafraîch. de l&apos;hôte ne prendre effet que si le taux de rafraîchissement de la console est trop éloigné de celui de l&apos;hôte. Les utilisateurs avec un taux de rafraîchissement variable devraient désactiver cette option.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="99"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer cette option fera en sorte que chaque image que la console rend est affichée à l&apos;écran, pour un frame pacing optimal. Si vous avez des diffultés à maintenant la pleine vitesse, ou que vous avez des glitchs audio, essayez de désactiver cette option.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="104"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Activer le rewinding :&lt;/b&gt; Sauvegarde périodiquement l&apos;état de façon à pouvoir revenir sur ses erreurs en jeu.&lt;br&gt; &lt;b&gt;Fréquence de sauvegarde du rewind :&lt;/b&gt; Tous les combien un état sera crée. Les fréquences les plus élevées ont des prérequis systèmes plus grands.&lt;br&gt; &lt;b&gt;Taille du tampon du rewind :&lt;/b&gt; Combien de sauvegarde seront conservées pour le rewinding. Les valeurs plus élevées ont des prérequis mémoire plus grands.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Runahead</source>
-        <translation type="unfinished"></translation>
+        <translation>Runahead</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="111"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Simule le système en avance sur le temps et revient en arrière/rejoue pour réduire l&apos;input lag. Très haute configuration système requise.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="124"/>
         <source>Use Global Setting [Unlimited]</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le paramètre global [Illimité]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="126"/>
         <source>Use Global Setting [%1%]</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le paramètre global [%1%]</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="129"/>
         <source>Unlimited</source>
-        <translation type="unfinished">Illimité</translation>
+        <translation>Illimité</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="135"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
-        <translation type="unfinished"></translation>
+        <translation>%1% [%2 IPS (NTSC) / %3 IPS (PAL)]</translation>
     </message>
     <message numerus="yes">
         <location filename="../emulationsettingswidget.cpp" line="196"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Rewind pour %n image(s), durer %1 seconde(s) nécessitera jusqu&apos;à %2MB de RAM et %3MB de VRAM.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="207"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rewind est désactivé parce que le runahead est activé. Runahead augmentera significativement les prérequis système.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="213"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rewind est désactivé. Veuillez noter qu&apos;activer le rewind peut augmenter significativement les prérequis système.</translation>
     </message>
 </context>
 <context>
@@ -5224,39 +5244,39 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.ui" line="79"/>
         <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation type="unfinished"></translation>
+        <translation>Relectures du rendu logiciel (tourne en parallèle pour les transferts VRAM -&gt; CPU)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="86"/>
         <source>Downsampling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sous-échantillonnage :</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="99"/>
         <source>Display Enhancements</source>
-        <translation>Améliorations de l&apos;Affichage</translation>
+        <translation>Améliorations de l&apos;affichage</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="105"/>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation>Désactiver l&apos;Entrelacement (Forcer le Rendu/Scan progressif)</translation>
+        <translation>Désactiver l&apos;entrelacement (force le rendu/scan progressif)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="112"/>
         <location filename="../enhancementsettingswidget.cpp" line="80"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation>Forcer les Timings NTSC (60hz-en-PAL)</translation>
+        <translation>Forcer les timings NTSC (60hz-en-PAL)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="119"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation>Forcer le 4:3 pour l&apos;Affichage en 24-Bit (désactive l&apos;écran large pour les FMVs)</translation>
+        <translation>Forcer le 4:3 pour l&apos;affichage en 24-Bit (désactive l&apos;écran large pour les FMVs)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="126"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lissage chroma. pour l&apos;affichage 24-Bit (réduit l&apos;aspect bloc des coul. des FMV)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="136"/>
@@ -5267,25 +5287,25 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.ui" line="149"/>
         <location filename="../enhancementsettingswidget.cpp" line="115"/>
         <source>Perspective Correct Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Textures en perspective correcte</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="156"/>
         <location filename="../enhancementsettingswidget.cpp" line="109"/>
         <source>Geometry Correction</source>
-        <translation>Correction de la Géométrie</translation>
+        <translation>Correction de la géométrie</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="184"/>
         <location filename="../enhancementsettingswidget.cpp" line="119"/>
         <source>Perspective Correct Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleurs en perspective correcte</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="142"/>
         <location filename="../enhancementsettingswidget.cpp" line="112"/>
         <source>Culling Correction</source>
-        <translation>Correction du Culling</translation>
+        <translation>Correction du culling</translation>
     </message>
     <message>
         <source>Texture Correction</source>
@@ -5295,34 +5315,34 @@ Achievements: %5 (%6)
         <location filename="../enhancementsettingswidget.ui" line="177"/>
         <location filename="../enhancementsettingswidget.cpp" line="127"/>
         <source>Preserve Projection Precision</source>
-        <translation type="unfinished"></translation>
+        <translation>Préserver la précision de la projection</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="170"/>
         <location filename="../enhancementsettingswidget.cpp" line="123"/>
         <source>Depth Buffer (Low Compatibility)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampon de profondeur (faible compat.)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="163"/>
         <location filename="../enhancementsettingswidget.cpp" line="129"/>
         <source>CPU Mode (Very Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode CPU (très lent)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="55"/>
         <source>Downsampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Sous-échantillonnage</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="55"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="56"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sous-échantillonne l&apos;image rendu avant son affichage. Peut améliorer la qualité globale de l&apos;image dans les jeux mixtes 2D/3D, mais devrait être désactivé pour les jeux pur 3D. S&apos;applique uniquement aux rendus matériels.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
@@ -5390,62 +5410,62 @@ Achievements: %5 (%6)
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="89"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation type="unfinished"></translation>
+        <translation>Lissage chroma. pour les affichages 24-Bit</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="90"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lisse l&apos;aspect bloc entre les transitions de couleur pour les contenus 24-bit, habituellement les FMVs. S&apos;applique uniquement aux rendus matériels.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="93"/>
         <source>Texture Filtering</source>
-        <translation>Filtrage de Texture</translation>
+        <translation>Filtrage de texture</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="95"/>
         <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lisse l&apos;aspect bloc des textures magnifiées sur les objets 3D en utilisant du filtrage.&lt;br&gt;Aura un plus grand effet sur les grandes échelles de résolution. S&apos;applique uniquement aux rendus matériels.&lt;br&gt;Les modes de filtrage JINC2 et spécifiquement xBR sont très demandeurs, et peuvent ne pas valoir la peine pour la pénalité sur les performances.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="100"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mets à l&apos;échelle la position des vertices depuis l&apos;espace-écran vers un ratio d&apos;aspect écran large, essentiellement pour augmenter le champ de vision du 4:3 vers le ratio d&apos;aspect d&apos;affichage choisi pour les jeux 3D. &lt;br&gt;Pour les jeux 2D, ou les jeux qui ont des arrières-plans pré-rendus, cette amélioration ne fonctionne pas comme attendu. &lt;br&gt;&lt;b&gt;&lt;u&gt;Peut ne pas être compatible avec tous les jeux.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="105"/>
         <source>Use Software Renderer For Readbacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le rendu logiciel pour les relectures</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fait tourner le rendu logiciel en parallèle pour les relectures de la VRAM. Sur certains systèmes, cela peut donner de meilleures performances quand des améliorations graphiques sont utilisées avec le rendu matériel.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilise l&apos;interpolation fidèle à la perspective pour les coordonnées des textures, redressant les textures déformées. Requiert que la correction de géométrie soit active.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="120"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilise l&apos;interpolation fidèle à la perspective pour les couleurs des vertex, ce qui peut améliorer les visuels dans certains jeux, mais causer des erreurs de rendu dans d&apos;autres. Requiert que la correction de géométrie soit active.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="124"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="unfinished"></translation>
+        <translation>Essaye de réduire le Z-fighting polygonal en testant les pixels par rapport aux valeur de profondeur depuis PGXP. Faible compatibilité, mais peut marcher correctement dans certains jeux. Les autres jeux pourraient nécessiter un ajustement du seuil.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="128"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajoute une précision additionnelle à la post-projection des données PGXP. Peut améliorer les visuels dans certains jeux.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="130"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilise PGXP pour toutes les instructions, pas seulement les opérations mémoire. Nécessaire pour que PGXP corrige l&apos;oscillation dans certains jeux, mais à un coût sur les performances très élevé.</translation>
     </message>
     <message>
         <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
@@ -5480,12 +5500,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../foldersettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Formulaire</translation>
+        <translation>Formulaire</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="32"/>
         <source>Cache Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire de cache</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="41"/>
@@ -5493,7 +5513,7 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="121"/>
         <location filename="../foldersettingswidget.ui" line="161"/>
         <source>Browse...</source>
-        <translation type="unfinished">Parcourir...</translation>
+        <translation>Parcourir...</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="48"/>
@@ -5501,7 +5521,7 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="128"/>
         <location filename="../foldersettingswidget.ui" line="168"/>
         <source>Open...</source>
-        <translation type="unfinished">Ouvrir...</translation>
+        <translation>Ouvrir...</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="55"/>
@@ -5509,42 +5529,42 @@ Achievements: %5 (%6)
         <location filename="../foldersettingswidget.ui" line="135"/>
         <location filename="../foldersettingswidget.ui" line="175"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="62"/>
         <source>Used for storing shaders and game list data.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilisé pour stocker les shaders et les données de la liste des jeux.</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="72"/>
         <source>Covers Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire des jaquettes</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="102"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser pour stocker les jaquettes de la grille des jeux/UIs Big Picture.</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="112"/>
         <source>Screenshots Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire des captures d&apos;écran</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="142"/>
         <source>Used for screenshots.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilisé pour les captures d&apos;écran.</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="152"/>
         <source>Save States Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire des save states</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="182"/>
         <source>Used for storing save states.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilisé pour les save states.</translation>
     </message>
 </context>
 <context>
@@ -5552,17 +5572,17 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="988"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="988"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation type="unfinished"></translation>
+        <translation>Boîte (Sous-échantillonnage 3D/Tout lisser)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="989"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptif (Préserver 3D/Lisser 2D)</translation>
     </message>
 </context>
 <context>
@@ -5575,7 +5595,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="895"/>
         <source>Hardware (D3D12)</source>
-        <translation type="unfinished">Matériel (D3D11) {3D?} {12)?}</translation>
+        <translation>Matériel (D3D12)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="898"/>
@@ -5643,22 +5663,22 @@ Achievements: %5 (%6)
     <message>
         <location filename="../qtutils.cpp" line="705"/>
         <source>9x (for 4K)</source>
-        <translation type="unfinished">6x (pour le 1440p) {9x?} {4K?}</translation>
+        <translation>9x (pour le 4K)</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="738"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="741"/>
         <source>%1x MSAA</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x MSAA</translation>
     </message>
     <message>
         <location filename="../qtutils.cpp" line="744"/>
         <source>%1x SSAA</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x SSAA</translation>
     </message>
     <message>
         <source>9x</source>
@@ -5715,22 +5735,22 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="957"/>
         <source>JINC2 (Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (lent)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="958"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (lent, sans fusion des bords)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="959"/>
         <source>xBR (Very Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>xBR (très lent)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="960"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>xBR (très lent, sans fusion des bords)</translation>
     </message>
     <message>
         <source>JINC2</source>
@@ -5739,7 +5759,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="957"/>
         <source>Bilinear (No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilinéaire (sans fusion des bords)</translation>
     </message>
     <message>
         <source>xBR</source>
@@ -5751,72 +5771,72 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="105"/>
         <source>Disc</source>
-        <translation type="unfinished"></translation>
+        <translation>Disque</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="105"/>
         <source>PS-EXE</source>
-        <translation type="unfinished"></translation>
+        <translation>PS-EXE</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="105"/>
         <source>Playlist</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste de lecture</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="106"/>
         <source>PSF</source>
-        <translation type="unfinished"></translation>
+        <translation>PSF</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="967"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Jamais</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="984"/>
         <source>Today</source>
-        <translation type="unfinished"></translation>
+        <translation>Aujourd&apos;hui</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="989"/>
         <source>Yesterday</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1012"/>
         <source>{}h {}m</source>
-        <translation type="unfinished"></translation>
+        <translation>{}h {}m</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1014"/>
         <source>{}h {}m {}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}h {}m {}s</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1016"/>
         <source>{}m {}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}m {}s</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1018"/>
         <source>{}s</source>
-        <translation type="unfinished"></translation>
+        <translation>{}s</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1020"/>
         <source>None</source>
-        <translation type="unfinished">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1025"/>
         <source>{} hours</source>
-        <translation type="unfinished"></translation>
+        <translation>{} heures</translation>
     </message>
     <message>
         <location filename="../../frontend-common/game_list.cpp" line="1027"/>
         <source>{} minutes</source>
-        <translation type="unfinished"></translation>
+        <translation>{} minutes</translation>
     </message>
 </context>
 <context>
@@ -5866,7 +5886,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistmodel.cpp" line="606"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>Numéro de série</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="607"/>
@@ -5881,37 +5901,37 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistmodel.cpp" line="609"/>
         <source>Developer</source>
-        <translation type="unfinished">Développeur</translation>
+        <translation>Développeur</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="610"/>
         <source>Publisher</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditeur</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="611"/>
         <source>Genre</source>
-        <translation type="unfinished"></translation>
+        <translation>Genre</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="612"/>
         <source>Year</source>
-        <translation type="unfinished"></translation>
+        <translation>Année</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="613"/>
         <source>Players</source>
-        <translation type="unfinished"></translation>
+        <translation>Joueurs</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="614"/>
         <source>Time Played</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps joué</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="615"/>
         <source>Last Played</source>
-        <translation type="unfinished"></translation>
+        <translation>Joué dernièrement</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="616"/>
@@ -5956,7 +5976,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories (will be scanned for games)</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoires de recherche (seront scannés pour des jeux)</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="60"/>
@@ -5969,22 +5989,22 @@ Achievements: %5 (%6)
         <location filename="../gamelistsettingswidget.ui" line="135"/>
         <location filename="../gamelistsettingswidget.cpp" line="105"/>
         <source>Remove</source>
-        <translation>Enlever</translation>
+        <translation type="unfinished">Enlever</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="93"/>
         <source>Excluded Paths (will not be scanned)</source>
-        <translation type="unfinished"></translation>
+        <translation>Chemins à exclure (ne seront pas scannés)</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="171"/>
         <source>Scan For New Games</source>
-        <translation type="unfinished"></translation>
+        <translation>Chercher les nouveaux jeux</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="187"/>
         <source>Rescan All Games</source>
-        <translation type="unfinished"></translation>
+        <translation>Re-chercher tous les jeux</translation>
     </message>
     <message>
         <source>Scan New</source>
@@ -6025,7 +6045,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="151"/>
         <source>Select Path</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner un chemin</translation>
     </message>
     <message>
         <source>Download database from redump.org?</source>
@@ -6069,37 +6089,37 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../gamelistwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Formulaire</translation>
+        <translation>Formulaire</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="60"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste de jeux</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="83"/>
         <source>Game Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>Grille de jeux</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="106"/>
         <source>Show Titles</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les titres</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="169"/>
         <source>All Types</source>
-        <translation type="unfinished"></translation>
+        <translation>Tous les types</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="182"/>
         <source>All Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Toutes les régions</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.ui" line="200"/>
         <source>Search...</source>
-        <translation type="unfinished"></translation>
+        <translation>Rechercher...</translation>
     </message>
 </context>
 <context>
@@ -6416,7 +6436,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../core/game_database.cpp" line="53"/>
         <source>Force Software Renderer For Readbacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Forcer le rendu logiciel pour les relectures</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="54"/>
@@ -6461,12 +6481,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../core/game_database.cpp" line="62"/>
         <source>Disable PGXP Perspective Correct Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver les textures fidèles à la perspective PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="63"/>
         <source>Disable PGXP Perspective Correct Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver les couleurs fidèles à la perspective PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
@@ -6475,22 +6495,22 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../core/game_database.cpp" line="64"/>
         <source>Disable PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver le tampon de profondeur PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="65"/>
         <source>Force PGXP Vertex Cache</source>
-        <translation>Forcer le Cache Vertex de PGXP</translation>
+        <translation>Forcer le cache vertex PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="66"/>
         <source>Force PGXP CPU Mode</source>
-        <translation>Forcer le Mode CPU PGXP</translation>
+        <translation>Forcer le mode CPU PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="69"/>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation type="unfinished"></translation>
+        <translation>Forcer le recompilateur LUT Fastmem</translation>
     </message>
     <message>
         <source>Force Digital Controller</source>
@@ -6512,107 +6532,107 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../gamesummarywidget.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="unfinished">Dialogue</translation>
+        <translation>Dialogue</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="57"/>
         <source>Image Path:</source>
-        <translation type="unfinished">Chemin de l&apos;Image:</translation>
+        <translation>Chemin de l&apos;image :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="71"/>
         <source>Serial:</source>
-        <translation type="unfinished"></translation>
+        <translation>Numéro de série :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="88"/>
         <source>#</source>
-        <translation type="unfinished">#</translation>
+        <translation>#</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="93"/>
         <source>Mode</source>
-        <translation type="unfinished">Mode</translation>
+        <translation>Mode</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="98"/>
         <source>Start</source>
-        <translation type="unfinished">Start</translation>
+        <translation>Début</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="103"/>
         <source>Length</source>
-        <translation type="unfinished">Longueur</translation>
+        <translation>Longueur</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="108"/>
         <source>Hash</source>
-        <translation type="unfinished">Hash</translation>
+        <translation>Hashage</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="113"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Statut</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="121"/>
         <source>Region:</source>
-        <translation type="unfinished"></translation>
+        <translation>Région :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="128"/>
         <source>Developer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Développeur :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="135"/>
         <source>Controllers:</source>
-        <translation type="unfinished"></translation>
+        <translation>Contrôlleurs :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="142"/>
         <source>Tracks:</source>
-        <translation type="unfinished">Pistes:</translation>
+        <translation>Pistes :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="163"/>
         <source>Release Info:</source>
-        <translation type="unfinished"></translation>
+        <translation>Info. d&apos;édition :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="170"/>
         <source>Input Profile:</source>
-        <translation type="unfinished"></translation>
+        <translation>Profile d&apos;entrée :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="184"/>
         <source>Genre:</source>
-        <translation type="unfinished"></translation>
+        <translation>Genre :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="222"/>
         <source>Compute Hashes...</source>
-        <translation type="unfinished"></translation>
+        <translation>Calcul des hachages...</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="238"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Type :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="245"/>
         <source>Title:</source>
-        <translation type="unfinished">Titre:</translation>
+        <translation>Titre :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="259"/>
         <source>Compatibility:</source>
-        <translation type="unfinished">Compatibilité:</translation>
+        <translation>Compatibilité :</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="275"/>
         <source>Edit...</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditer...</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="64"/>
@@ -6625,82 +6645,83 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
         <location filename="../gamesummarywidget.cpp" line="126"/>
         <location filename="../gamesummarywidget.cpp" line="127"/>
         <source>Unknown</source>
-        <translation type="unfinished">Inconnu</translation>
+        <translation>Inconnu</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="66"/>
         <source>%1 (Published by %2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (édité par %2)</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="72"/>
         <source>Published by %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Édité par %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="79"/>
         <source>Released %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sorti %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="85"/>
         <source>%1-%2 players</source>
-        <translation type="unfinished"></translation>
+        <translation>%1-%2 joueurs</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="87"/>
         <source>%1 players</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 joueurs</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="94"/>
         <source>%1-%2 memory card blocks</source>
-        <translation type="unfinished"></translation>
+        <translation>%1-%2 blocs de carte mémoire</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="96"/>
         <source>%1 memory card blocks</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 blocs de carte mémoire</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="137"/>
         <source>Use Global Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser les paramètres globaux</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="179"/>
         <source>Track %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Piste %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="187"/>
         <source>&lt;not computed&gt;</source>
-        <translation type="unfinished">&lt;aucun calcul&gt;</translation>
+        <translation>&lt;non-calculé&gt;</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="215"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="215"/>
         <source>Failed to open CD image for hashing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;ouverture du CD pour hashage.</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="323"/>
         <source>Revision: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Révision : %1</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="323"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Sans Objet</translatorcomment>
+        <translation>S/O</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="348"/>
         <source>Search on Redump.org</source>
-        <translation type="unfinished"></translation>
+        <translation>Rechercher sur Redump.org</translation>
     </message>
 </context>
 <context>
@@ -6713,13 +6734,13 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
         <source>Behaviour</source>
-        <translation>Commportement</translation>
+        <translation>Comportement</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
         <location filename="../generalsettingswidget.cpp" line="53"/>
         <source>Confirm Power Off</source>
-        <translation>Confirmer l&apos;Arrêt</translation>
+        <translation>Confirmer l&apos;arrêt</translation>
     </message>
     <message>
         <source>Render To Main Window</source>
@@ -6729,77 +6750,78 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
         <location filename="../generalsettingswidget.ui" line="94"/>
         <location filename="../generalsettingswidget.cpp" line="70"/>
         <source>Pause On Start</source>
-        <translation>Pause au Démarrage</translation>
+        <translation>Pause au démarrage</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Pause On Focus Loss</source>
-        <translation>Pause sur la Perte de Focus</translation>
+        <translation>Pause sur la perte de focus</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="52"/>
         <source>Save State On Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder l&apos;état à l&apos;extinction</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="73"/>
         <source>Create Save State Backups</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer des sauvegardes des save states</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
         <location filename="../generalsettingswidget.cpp" line="64"/>
         <source>Inhibit Screensaver</source>
-        <translation type="unfinished"></translation>
+        <translation>Empêcher l&apos;économiseur d&apos;écran</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="108"/>
         <source>Compress Save States</source>
-        <translation type="unfinished"></translation>
+        <translation>Compresser les save states</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="118"/>
         <source>Game Display</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage de jeu</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="124"/>
         <location filename="../generalsettingswidget.cpp" line="59"/>
         <source>Start Fullscreen</source>
-        <translation>Démarrer en Plein Ecran</translation>
+        <translation>Démarrer en plein écran</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="56"/>
         <source>Save State On Exit</source>
-        <translation>Sauvegarder l&apos;Etat en Quittant</translation>
+        <translation>Sauvegarder l&apos;état en quittant</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="87"/>
         <location filename="../generalsettingswidget.cpp" line="76"/>
         <source>Load Devices From Save States</source>
-        <translation>Charger les Périphériques depuis les Sauvegardes d&apos;Etats</translation>
+        <translation>Charger les périphériques depuis les save states</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="131"/>
         <source>Double-Click Toggles Fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>Double-clic bascule le plein écran</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="138"/>
         <location filename="../generalsettingswidget.cpp" line="67"/>
         <source>Render To Separate Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Rendre dans une fenêtre séparée</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="145"/>
         <source>Hide Main Window When Running</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Abrégé pour que ça rentre dans la fenêtre</translatorcomment>
+        <translation>Masq. fen. principale qd lancé</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="152"/>
         <source>Disable Window Resizing</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver redimens. fenêtre</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="159"/>
@@ -6822,22 +6844,22 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.ui" line="169"/>
         <source>Automatic Updater</source>
-        <translation type="unfinished">Mise à jour automatique</translation>
+        <translation>Mise à jour automatique</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="175"/>
         <source>Update Channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal de MAJ :</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="185"/>
         <source>Current Version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Version courante :</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="221"/>
         <source>Check for Updates...</source>
-        <translation type="unfinished"></translation>
+        <translation>Vérifier les MAJs...</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
@@ -6889,8 +6911,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.cpp" line="54"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation>Détermine si un invité de commande sera affiché pour confirmer l&apos;arrêt de l&apos;émulateur/jeu lorsque la touche de raccourci est enfoncée.
-</translation>
+        <translation>Détermine si un invite de commande sera affiché pour confirmer l&apos;arrêt de l&apos;émulateur/jeu lorsque la touche de raccourci est enfoncée.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="57"/>
@@ -6915,17 +6936,17 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.cpp" line="62"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Masque le pointeur/curseur de souris quand l&apos;émulateur est en mode plein écran.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="65"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation type="unfinished"></translation>
+        <translation>Empêche l&apos;activation de l&apos;économiseur d&apos;écran et la mise en veille de l&apos;hôte quand l&apos;émulation tourne.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rends l&apos;affichage de la console simulée vers la fenêtre principâle de l&apos;application, par-dessus la liste de jeux. Si coché, l&apos;affichage sera rendu dans une fenêtre séparée.</translation>
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
@@ -6939,7 +6960,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.cpp" line="73"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mets en pause l&apos;émulateur quand vous minimisez la fenêtre ou basculez vers une autre application, et rétablit quand vous revenez.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="77"/>
@@ -6954,12 +6975,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../generalsettingswidget.cpp" line="85"/>
         <source>Automatically loads and applies cheats on game start.</source>
-        <translation type="unfinished"></translation>
+        <translation>Charge et applique automatiquement les codes de triche au démarrage d&apos;un jeu.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="110"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished">%1 (%2)</translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
@@ -7017,32 +7038,32 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../core/guncon.cpp" line="223"/>
         <source>Crosshair Image Path</source>
-        <translation type="unfinished">Chemin de l&apos;Image du Viseur</translation>
+        <translation>Chemin de l&apos;image du viseur</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="224"/>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="unfinished">Chemin d&apos;accès à une image à utiliser comme viseur/curseur.</translation>
+        <translation>Chemin d&apos;accès à une image à utiliser comme viseur/curseur.</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="225"/>
         <source>Crosshair Image Scale</source>
-        <translation type="unfinished">Echelle de l&apos;Image du Viseur</translation>
+        <translation>Échelle de l&apos;image du viseur</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="226"/>
         <source>Scale of crosshair image on screen.</source>
-        <translation type="unfinished">Échelle de l&apos;image du viseur à l&apos;écran.</translation>
+        <translation>Échelle de l&apos;image du viseur à l&apos;écran.</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="228"/>
         <source>X Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle X</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="229"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mets à l&apos;échelle les coordonnées X par rapport au centre de l&apos;écran.</translation>
     </message>
 </context>
 <context>
@@ -7098,7 +7119,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="797"/>
         <source>Toggle Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer les codes de triche</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="721"/>
@@ -7147,7 +7168,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="948"/>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le  tampon de profondeur PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="907"/>
@@ -7157,27 +7178,27 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="676"/>
         <source>Open Pause Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir le menu de pause</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="696"/>
         <source>Turbo</source>
-        <translation type="unfinished"></translation>
+        <translation>Turbo</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="702"/>
         <source>Toggle Turbo</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le turbo</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="735"/>
         <source>Open Achievement List</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir la liste des succès</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="748"/>
         <source>Open Leaderboard List</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir la liste du classement</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="762"/>
@@ -7192,77 +7213,77 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
         <location filename="../../frontend-common/common_host.cpp" line="850"/>
         <location filename="../../frontend-common/common_host.cpp" line="862"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Système</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="767"/>
         <source>Change Disc</source>
-        <translation type="unfinished">Changer le Disque</translation>
+        <translation>Changer le disque</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="777"/>
         <source>Swap Memory Card Slots</source>
-        <translation type="unfinished"></translation>
+        <translation>Échanger les emplacements de carte mémoire</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="790"/>
         <source>Rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>Rewind</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="803"/>
         <source>Toggle Patch Codes</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer les codes de patch</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="811"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le contrôle de vitesse de l&apos;horloge (overclocking)</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="839"/>
         <source>Increase Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Augmenter la vitesse d&apos;émulation</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="851"/>
         <source>Decrease Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Diminuer la vitesse d&apos;émulation</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="863"/>
         <source>Reset Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser la vitesse d&apos;émulation</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="913"/>
         <source>Decrease Resolution Scale</source>
-        <translation>Diminuer l&apos;Echelle de Résolution</translation>
+        <translation>Diminuer l&apos;échelle de résolution</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="919"/>
         <source>Toggle Post-Processing</source>
-        <translation>Basculer sur le Post Traitement</translation>
+        <translation>Basculer sur le post-traitement</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="925"/>
         <source>Reload Post Processing Shaders</source>
-        <translation>Recharger les Shaders du Post Traitement</translation>
+        <translation>Recharger les shaders du post-traitement</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="931"/>
         <source>Reload Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Recharger les remplacements de texture</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="941"/>
         <source>Toggle Widescreen</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le plein écran</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="968"/>
         <source>Toggle PGXP CPU Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculer le mode CPU PGXP</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1057"/>
@@ -7298,7 +7319,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1078"/>
         <source>Undo Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler chargement état</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1097"/>
@@ -7564,13 +7585,13 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../inputbindingdialog.cpp" line="23"/>
         <source>Close</source>
-        <translation type="unfinished">Fermer</translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.cpp" line="131"/>
         <location filename="../inputbindingdialog.cpp" line="147"/>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Pressez le Bouton/Axe...</translation>
+        <translation>Pressez le bouton/axe... [%1]</translation>
     </message>
 </context>
 <context>
@@ -7582,8 +7603,8 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message numerus="yes">
         <location filename="../inputbindingwidgets.cpp" line="65"/>
         <source>%n bindings</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n assignations</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -7599,17 +7620,17 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../inputbindingwidgets.cpp" line="446"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="447"/>
         <source>No devices with vibration motors were detected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun périphérique avec des moteurs de vibration déctecté.</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="453"/>
         <source>Select vibration motor for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez le moteur de vibration pour %1.</translation>
     </message>
 </context>
 <context>
@@ -7656,7 +7677,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../../core/settings.cpp" line="735"/>
         <source>Verbose</source>
-        <translation type="unfinished"></translation>
+        <translation>Verbeux</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="736"/>
@@ -7757,7 +7778,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="211"/>
         <source>&amp;Window Size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Taille de la fenêtre</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="232"/>
@@ -7772,7 +7793,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="291"/>
         <source>Start &amp;File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer le &amp;fichier...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="300"/>
@@ -7827,113 +7848,113 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="393"/>
         <source>B&amp;IOS</source>
-        <translation type="unfinished"></translation>
+        <translation>B&amp;IOS</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="402"/>
         <source>C&amp;onsole</source>
-        <translation type="unfinished"></translation>
+        <translation>C&amp;onsole</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="411"/>
         <source>E&amp;mulation</source>
-        <translation type="unfinished"></translation>
+        <translation>É&amp;mulation</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="420"/>
         <source>&amp;Controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Contrôleurs</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="429"/>
         <source>&amp;Hotkeys</source>
-        <translation type="unfinished"></translation>
+        <translation>Raccourcis</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="438"/>
         <source>&amp;Display</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="447"/>
         <source>&amp;Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>Améliorations</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="456"/>
         <source>&amp;Post-Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Post-traitement</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="551"/>
         <source>Audio</source>
-        <translation type="unfinished">Audio</translation>
+        <translation>Audio</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="560"/>
         <source>Achievements</source>
-        <translation type="unfinished"></translation>
+        <translation>Succès</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="569"/>
         <source>Folders</source>
-        <translation type="unfinished"></translation>
+        <translation>Dossiers</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="578"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste de jeux</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="587"/>
         <source>General</source>
-        <translation type="unfinished">Général</translation>
+        <translation>Général</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="596"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="614"/>
         <location filename="../mainwindow.ui" line="626"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètres</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="746"/>
         <source>Show CD-ROM State</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher état CD-ROM</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="796"/>
         <source>&amp;Memory Cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Cartes &amp;mémoire</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="893"/>
         <source>Enable GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer le serveur GDB</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="953"/>
         <source>Power Off &amp;Without Saving</source>
-        <translation type="unfinished"></translation>
+        <translation>Éteindre sans sauvegarder</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="962"/>
         <source>Start Big Picture Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer en mode Big Picture</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="971"/>
         <source>Big Picture</source>
-        <translation type="unfinished"></translation>
+        <translation>Big Picture</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="976"/>
         <source>Cover Downloader</source>
-        <translation type="unfinished"></translation>
+        <translation>Téléchargeur de jaquette</translation>
     </message>
     <message>
         <source>B&amp;IOS Settings...</source>
@@ -8032,7 +8053,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="605"/>
         <source>Add Game Directory...</source>
-        <translation>Ajouter un Répertoire de Jeu...</translation>
+        <translation>Ajouter un répertoire de jeu...</translation>
     </message>
     <message>
         <source>&amp;Settings...</source>
@@ -8041,12 +8062,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="634"/>
         <source>From File...</source>
-        <translation>Depuis le Fichier...</translation>
+        <translation>Depuis le fichier...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="639"/>
         <source>From Device...</source>
-        <translation type="unfinished"></translation>
+        <translation>Depuis le périphérique...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="644"/>
@@ -8056,17 +8077,17 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="649"/>
         <source>Remove Disc</source>
-        <translation>Enlever le Disque</translation>
+        <translation>Enlever le disque</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="654"/>
         <source>Resume State</source>
-        <translation>Résumer l&apos;Etat</translation>
+        <translation>Reprendre l&apos;état</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="659"/>
         <source>Global State</source>
-        <translation>Etat Complet</translation>
+        <translation>État complet</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="667"/>
@@ -8086,7 +8107,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="691"/>
         <source>Disable All Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactiver toutes les améliorations</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="699"/>
@@ -8111,12 +8132,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="725"/>
         <source>Dump VRAM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier la VRAM...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="730"/>
         <source>Dump SPU RAM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Copier la RAM SPU...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="738"/>
@@ -8145,7 +8166,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="778"/>
         <source>Show DMA State</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher l&apos;état DMA</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="787"/>
@@ -8175,7 +8196,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="830"/>
         <source>Lock Toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>Verrouiller la barre d&apos;outil</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="841"/>
@@ -8195,7 +8216,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="870"/>
         <source>Game &amp;Properties</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Propriétés de jeu</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="875"/>
@@ -8205,12 +8226,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.ui" line="880"/>
         <source>C&amp;heat Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestionnaire de triche</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="885"/>
         <source>CPU D&amp;ebugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Débogu&amp;eur CPU</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="902"/>
@@ -8264,7 +8285,7 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.cpp" line="57"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tous les types de fichier (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="232"/>
@@ -8273,12 +8294,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
         <location filename="../mainwindow.cpp" line="1085"/>
         <location filename="../mainwindow.cpp" line="1350"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="232"/>
         <source>Failed to get window info from widget</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la récupération des infos fenêtre depuis le widget</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="241"/>
@@ -8288,12 +8309,12 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.cpp" line="330"/>
         <source>Failed to get new window info from widget</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de récupération des infos de nouvelle fenêtre depuis le widget</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="601"/>
         <source>Paused</source>
-        <translation type="unfinished"></translation>
+        <translation>En pause</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="709"/>
@@ -8304,113 +8325,113 @@ Vous pourrez ainsi télécharger environ 4 mégaoctets via votre connexion Inter
     <message>
         <location filename="../mainwindow.cpp" line="724"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de trouver un périphérique CD-ROM. Veuillez vérifier que vous avez un lecteur CD-ROM connecté et les droits d&apos;accès.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="738"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished">%1 (%2)</translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="742"/>
         <source>Select disc drive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez un lecteur de disque :</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="808"/>
         <source>Resume (%1)</source>
-        <translation type="unfinished">Reprendre (%1)</translation>
+        <translation>Reprendre (%1)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="815"/>
         <location filename="../mainwindow.cpp" line="932"/>
         <location filename="../mainwindow.cpp" line="971"/>
         <source>Game Save %1 (%2)</source>
-        <translation type="unfinished">Sauvegarde du Jeu %1 (%2)</translation>
+        <translation>Sauvegarde du jeu %1 (%2)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="824"/>
         <source>Edit Memory Cards...</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditer les cartes mémoire...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="872"/>
         <source>Delete Save States...</source>
-        <translation type="unfinished">Effacer les Sauvegardes d&apos;Etats...</translation>
+        <translation>Effacer les sauvegardes d&apos;état...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="878"/>
         <source>Confirm Save State Deletion</source>
-        <translation type="unfinished">Confirmation la Suppression de la Sauvegarde d&apos;Etat</translation>
+        <translation>Confirmation de suppression de la sauvegarde d&apos;état</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="879"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
-        <translation type="unfinished">Êtes-vous sûr de vouloir supprimer tous les États sauf le %1 ?
+        <translation>Êtes-vous sûr de vouloir supprimer toutes les sauvegardes d&apos;état pour %1 ?
 
 Les sauvegardes ne seront pas récupérables.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="916"/>
         <source>Load From File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger depuis le fichier...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="918"/>
         <location filename="../mainwindow.cpp" line="960"/>
         <source>Select Save State File</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez un fichier de sauvegarde d&apos;état</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="918"/>
         <location filename="../mainwindow.cpp" line="960"/>
         <source>Save States (*.sav)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardes d&apos;état (*.sav)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="924"/>
         <source>Undo Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler chargement état</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="932"/>
         <location filename="../mainwindow.cpp" line="971"/>
         <source>Game Save %1 (Empty)</source>
-        <translation type="unfinished">Sauvegarde du Jeu %1 (Vide)</translation>
+        <translation>Sauvegarde du jeu %1 (vide)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="938"/>
         <location filename="../mainwindow.cpp" line="977"/>
         <source>Global Save %1 (%2)</source>
-        <translation type="unfinished">Sauvegarde Complète %1 (%2</translation>
+        <translation>Sauvegarde globale %1 (%2)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="938"/>
         <location filename="../mainwindow.cpp" line="977"/>
         <source>Global Save %1 (Empty)</source>
-        <translation type="unfinished">Sauvegarde Complète %1 (Vide)</translation>
+        <translation>Sauvegarde globale %1 (vide)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="955"/>
         <source>Save To File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder vers fichier...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1004"/>
         <source>&amp;Enabled Cheats</source>
-        <translation type="unfinished">&amp;Activation des triches</translation>
+        <translation>Activation des cod&amp;es de triche</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1006"/>
         <source>&amp;Apply Cheats</source>
-        <translation type="unfinished">&amp;Appliquer les triches</translation>
+        <translation>&amp;Appliquer les codes de triche</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1060"/>
         <source>Load Resume State</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger l&apos;état de reprise</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1061"/>
@@ -8419,63 +8440,67 @@ Les sauvegardes ne seront pas récupérables.</translation>
 %1.
 
 Do you want to load this state, or start from a fresh boot?</source>
-        <translation type="unfinished"></translation>
+        <translation>Une save state de reprise a été trouvée pour ce jeu, sauvegardée dans :
+
+%1.
+
+Voulez-vous charger cette save, ou démarrer normalement ?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1066"/>
         <source>Fresh Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrage normal</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1067"/>
         <source>Delete And Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer et démarrer</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1086"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la suppression du fichier de save state &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1143"/>
         <source>Confirm Disc Change</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmation de changement de disque</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1144"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
-        <translation type="unfinished"></translation>
+        <translation>Voulez-vous changer de disque; ou démarrer la nouvelle image (via une réinitialisation système) ?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1146"/>
         <source>Swap Disc</source>
-        <translation type="unfinished"></translation>
+        <translation>Changer de disque</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1147"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1148"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1167"/>
         <source>Start Disc</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer le disque</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1232"/>
         <location filename="../mainwindow.cpp" line="2703"/>
         <source>Cheat Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestionnaire de codes de triche</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1350"/>
         <source>You must select a disc to change discs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous devez sélectionner un disque pour changer de disque.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1389"/>
@@ -8510,17 +8535,17 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1425"/>
         <source>Boot and Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrer et déboguer</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1445"/>
         <source>Exclude From List</source>
-        <translation type="unfinished"></translation>
+        <translation>Exclure de la liste</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1448"/>
         <source>Reset Play Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser le temps de jeu</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1452"/>
@@ -8566,14 +8591,16 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1498"/>
         <source>Confirm Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmation de réinitialisation</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1499"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir réinitialiser le temps de jeu de &apos;%1&apos; ?
+
+Cette action ne peut pas être annulée.</translation>
     </message>
     <message>
         <source>Language changed. Please restart the application to apply.</source>
@@ -8582,7 +8609,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../mainwindow.cpp" line="1646"/>
         <source>%1x Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle %1x</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2054"/>
@@ -8595,12 +8622,12 @@ This action cannot be undone.</source>
         <location filename="../mainwindow.cpp" line="2054"/>
         <location filename="../mainwindow.cpp" line="2070"/>
         <source>Binary Files (*.bin)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers binaires (*.bin)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2062"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers binaires (*.bin);;Images PNG (*.png)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2086"/>
@@ -8630,17 +8657,17 @@ This action cannot be undone.</source>
     <message>
         <location filename="../mainwindow.cpp" line="2539"/>
         <source>Confirm Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmation d&apos;arrêt</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2540"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir arrêter la machine vituelle ?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2542"/>
         <source>Save State For Resume</source>
-        <translation type="unfinished"></translation>
+        <translation>Save state pour reprendre</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2618"/>
@@ -8648,28 +8675,28 @@ This action cannot be undone.</source>
         <location filename="../mainwindow.cpp" line="2643"/>
         <location filename="../mainwindow.cpp" line="2652"/>
         <source>Memory Card Not Found</source>
-        <translation type="unfinished"></translation>
+        <translation>Carte mémoire introuvable</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2619"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire &apos;%1&apos; n&apos;existe pas. Voulez-vous créer une carte mémoire vide ?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2624"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de création de la carte mémoire &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2644"/>
         <location filename="../mainwindow.cpp" line="2653"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire &apos;%1&apos; n&apos;a pas pu être trouvée. Essayez de démarrer le jeu et de sauvegarder pour la créer.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2701"/>
         <source>Do not show again</source>
-        <translation type="unfinished"></translation>
+        <translation>Ne plus montrer à l&apos;avenir</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2705"/>
@@ -8678,7 +8705,11 @@ This action cannot be undone.</source>
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
 
 Are you sure you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser des codes de triche peut avoir des effets inprévisibles sur les jeux, causant crashs, glitches graphiques, et sauvegardes corrompues. En utiliser le gestionnaire de codes de triche, vous êtes d&apos;accord qu&apos;il s&apos;agit d&apos;une configuration non-supportée, et nous ne vous fournirons pas d&apos;assistance quand les jeux casseront.
+
+Les codes de triche persistent à travers les save states même après avoir été dédsactivés, veuillez vou rappeler de réinitialiser/redémarrer le jeu après désactivation de tout code de triche.
+
+Êtes-vous sûr de vouloir continuer ?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2780"/>
@@ -8701,7 +8732,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.ui" line="14"/>
         <source>Memory Card Editor</source>
-        <translation>Edition de la Carte Mémoire</translation>
+        <translation>Éditeur de carte mémoire</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="44"/>
@@ -8713,7 +8744,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditordialog.ui" line="49"/>
         <location filename="../memorycardeditordialog.ui" line="203"/>
         <source>File Name</source>
-        <translation>Nom du Fichier</translation>
+        <translation>Nom du fichier</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="54"/>
@@ -8725,7 +8756,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditordialog.ui" line="64"/>
         <location filename="../memorycardeditordialog.ui" line="140"/>
         <source>Memory Card:</source>
-        <translation>Carte Mémoire:</translation>
+        <translation>Carte mémoire :</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="78"/>
@@ -8737,7 +8768,7 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditordialog.ui" line="89"/>
         <location filename="../memorycardeditordialog.ui" line="161"/>
         <source>Open...</source>
-        <translation type="unfinished">Ouvrir...</translation>
+        <translation>Ouvrir...</translation>
     </message>
     <message>
         <source>0 blocks used</source>
@@ -8746,7 +8777,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="117"/>
         <source>Import File...</source>
-        <translation type="unfinished"></translation>
+        <translation>Importer un fichier...</translation>
     </message>
     <message>
         <source>Import file...</source>
@@ -8770,17 +8801,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="15"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tous les types de carte mémoire (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="20"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers de sauvegarde unique (*.mcs);;Tous les fichiers (*.*)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="28"/>
         <source>Undelete File</source>
-        <translation type="unfinished"></translation>
+        <translation>Restaurer le fichier</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="29"/>
@@ -8835,17 +8866,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="48"/>
         <source>New Card...</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouvelle carte...</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="49"/>
         <source>Open Card...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir une carte...</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="116"/>
         <source>Format Card</source>
-        <translation type="unfinished"></translation>
+        <translation>Formater la carte</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="232"/>
@@ -8860,13 +8891,13 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="276"/>
         <source> (Deleted)</source>
-        <translation type="unfinished"></translation>
+        <translation> (supprimé)</translation>
     </message>
     <message numerus="yes">
         <location filename="../memorycardeditordialog.cpp" line="296"/>
         <source>%n block(s) free%1</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n bloc(s) libérés%1</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8888,7 +8919,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="407"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire de destination contient déjà un fichier de sauvegarde du même nom (%1) que celui que vous essayez de copier. Veuillez supprimer le fichier de carte mémoire de destination avant de copier.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="417"/>
@@ -8913,17 +8944,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="472"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la restauration du fichier %1. The fichier a peut-être été partiellement écrasé par une autre sauvegarde.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="487"/>
         <source>Select Single Savefile</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélection d&apos;un fichier de sauvegarde unique</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="500"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;export du fichier de sauvegarde %1. Vérifiez la log pour plus de détails.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="510"/>
@@ -8938,22 +8969,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="534"/>
         <source>Format memory card?</source>
-        <translation type="unfinished"></translation>
+        <translation>Formater la carte mémoire ?</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="535"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Formater la carte mémoire détruira toutes les sauvegardes, et elle ne seront pas récupérables. La carte mémoire qui va être formatée est située à &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="556"/>
         <source>Select Import Save File</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélection de fichier de sauvegarde d&apos;import</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="564"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec d&apos;import de la sauvegarde. Vérifiez s&apos;il y a assez de place sur la carte mémoire, ou si une sauvegarde existante avec le même nom n&apos;existe pas déjà.</translation>
     </message>
 </context>
 <context>
@@ -9009,43 +9040,43 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardsettingswidget.cpp" line="44"/>
         <location filename="../memorycardsettingswidget.cpp" line="148"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="45"/>
         <source>Open Directory...</source>
-        <translation type="unfinished">Ouvrir le Répertoire...</translation>
+        <translation>Ouvrir le répertoire...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="48"/>
         <source>Memory Card Directory:</source>
-        <translation type="unfinished"></translation>
+        <translation>Répertoire de carte mémoire :</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="61"/>
         <location filename="../memorycardsettingswidget.cpp" line="66"/>
         <source>Use Single Card For Sub-Images</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser une seule carte pour les sous-images</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="67"/>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation type="unfinished"></translation>
+        <translation>En utilisant un format multi-disque (m3u/pbp) et des cartes mémoire par jeu (titre), une carte mémoire unique sera utilisée pour tous les disques. Si décoché, une carte séparée sera utilisé par disque.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="76"/>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si l&apos;un des types de carte mémoire &quot;carte séparée par jeu&quot; est choisi, ces cartes mémoire seront sauvegardées dans le répertoire des cartes mémoire.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;éditeur de carte mémoire vous permet de déplacer les sauvegardes entres les cartes, ainsi que d&apos;importer des cartes dans d&apos;autres formats.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="94"/>
         <source>Memory Card Editor...</source>
-        <translation type="unfinished"></translation>
+        <translation>Éditeur de carte mémoire...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="153"/>
@@ -9073,12 +9104,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1211"/>
         <source>Separate Card Per Game (Serial)</source>
-        <translation type="unfinished"></translation>
+        <translation>Carte séparée par jeu (numéro de série)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1212"/>
         <source>Separate Card Per Game (Title)</source>
-        <translation type="unfinished"></translation>
+        <translation>Carte séparée par jeu (titre)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Game Code)</source>
@@ -9091,12 +9122,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1213"/>
         <source>Separate Card Per Game (File Title)</source>
-        <translation type="unfinished"></translation>
+        <translation>Carte séparée par jeu (titre de fichier)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1214"/>
         <source>Non-Persistent Card (Do Not Save)</source>
-        <translation type="unfinished"></translation>
+        <translation>Carte non-persistante (ne pas sauvegarder)</translation>
     </message>
 </context>
 <context>
@@ -9104,22 +9135,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1266"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1266"/>
         <source>Enable on Port 1 Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer uniquement sur le port 1</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1267"/>
         <source>Enable on Port 2 Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer uniquement sur le port 2</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1267"/>
         <source>Enable on Ports 1 and 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer sur les ports 1 et 2</translation>
     </message>
 </context>
 <context>
@@ -9206,22 +9237,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/negcon.cpp" line="258"/>
         <source>Steering Axis Deadzone</source>
-        <translation type="unfinished"></translation>
+        <translation>Zone morte de l&apos;axe de direction</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="259"/>
         <source>Sets deadzone size for steering axis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Définis la taille de la zone mort de l&apos;axe de direction.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="261"/>
         <source>Steering Axis Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>Sensitivité de l&apos;axe de direction</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="262"/>
         <source>Sets the steering axis scaling factor.</source>
-        <translation type="unfinished"></translation>
+        <translation>Définis le facteur d&apos;échelle de l&apos;axe de direction.</translation>
     </message>
 </context>
 <context>
@@ -9257,17 +9288,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/settings.cpp" line="671"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rewind n&apos;est pas supporté en 32-bit ARM sous Android.</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="678"/>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le runahead n&apos;est pas supporté en 32-bit ARM sous Android.</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="686"/>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rewind est désactivé car le runahead est activé.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
@@ -9322,48 +9353,48 @@ Are you sure you want to continue?</source>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="4137"/>
         <source>%n cheats are enabled. This may result in instability.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n codes de triche sont activés. Cela peut résulter en de l&apos;instabilité.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="4201"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Sauvegardé %n codes de triche vers &apos;%s&apos;.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4217"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimé la liste de codes de triche &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4352"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le hack écran large est maintenant activé, et le ratio d&apos;aspect est défini sur %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4360"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le hack d&apos;écran large est maintenant désactivé, et le ratio d&apos;aspect est défini sur %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4376"/>
         <source>Switching to %s renderer...</source>
-        <translation type="unfinished"></translation>
+        <translation>Bascule vers le rendu %s...</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="196"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
-        <translation type="unfinished"></translation>
+        <translation>La save state contient le type de contrôleur %s dans le port %u, mais %s est utilisé. Bascule.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="204"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
-        <translation type="unfinished"></translation>
+        <translation>Type de contrôleur %s dans le port %u incompatible, ignoré.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="298"/>
@@ -9378,7 +9409,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/pad.cpp" line="337"/>
         <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire %u est présente dans le système mais pas dans le save state. Rebranchement de la carte.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="259"/>
@@ -9428,81 +9459,81 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="962"/>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le tampon de profondeur PGXP est maintenant activé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="963"/>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le tampon de profondeur PGXP est maintenant désactivé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="935"/>
         <source>Texture replacements reloaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remplacements de texture rechargés.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="640"/>
         <source>Cannot load state for game without serial.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de charger l&apos;état poiur le jeu sans numéro de série.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="650"/>
         <source>No save state found in slot {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune save state trouvée dans l&apos;emplacement {}.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="664"/>
         <source>Cannot save state for game without serial.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de save state pour le jeu sans numéro de série.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="742"/>
         <source>Achievements are disabled or unavailable for  game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les succès sont désactivés ou indisponibles pour le jeu.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="755"/>
         <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les classements sont désactivés ou indisponibles pour le jeu.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="825"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
-        <translation type="unfinished"></translation>
+        <translation>Contrôle de la vitesse de l&apos;horloge CPU activé (%u%% / %.3f MHz).</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="832"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
-        <translation type="unfinished"></translation>
+        <translation>Contrôle de la vitesse de l&apos;horloge CPU désactivé (%.3f MHz).</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="845"/>
         <location filename="../../frontend-common/common_host.cpp" line="857"/>
         <location filename="../../frontend-common/common_host.cpp" line="869"/>
         <source>Emulation speed set to %u%%.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse d&apos;émulation définie à %u%%.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="982"/>
         <source>PGXP CPU mode is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le mode CPU PGXP est maintenant activé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="983"/>
         <source>PGXP CPU mode is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le mode CPU PGXP est maintenant désactivé.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1004"/>
         <source>Volume: Muted</source>
-        <translation>Volume : Muet</translation>
+        <translation>Volume : muet</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1009"/>
         <location filename="../../frontend-common/common_host.cpp" line="1036"/>
         <location filename="../../frontend-common/common_host.cpp" line="1052"/>
         <source>Volume: {}%</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume : {}%</translation>
     </message>
     <message>
         <source>Volume: %d%%</source>
@@ -9511,7 +9542,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1021"/>
         <source>CD Audio Muted.</source>
-        <translation>CD Audio Muet</translation>
+        <translation>CD Audio muet.</translation>
     </message>
     <message>
         <location filename="../../frontend-common/common_host.cpp" line="1022"/>
@@ -9525,22 +9556,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="3893"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Début décharge audio vers &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3898"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec du démarrage de la décharge audio vers &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3909"/>
         <source>Stopped dumping audio.</source>
-        <translation type="unfinished"></translation>
+        <translation>Arrêt décharge audio.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3939"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le fichier de capture d&apos;écran &apos;%s&apos; existe déjà.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3949"/>
@@ -9591,118 +9622,118 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="1041"/>
         <source>Loading state from &apos;{}&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>Chargement de l&apos;état depuis &apos;{}&apos;...</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1091"/>
         <source>Save State</source>
-        <translation type="unfinished">Sauvegarder un Etat</translation>
+        <translation>Sauvegarde de l&apos;état</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1099"/>
         <source>State saved to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>État sauvegardé vers &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1461"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Accélération de la vitesse de lecture CD-ROM définie à %ux (vitesse effective %ux). Cela peut causer de l&apos;instabilité.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1470"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Accélération de la recherche CD-ROM définie sur instantanée. Cela peut causer de l&apos;instabilité.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1477"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Accélération de la recherche CD-ROM définie sur %ux. Cela peut causer de l&apos;instabilité.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1663"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;initialisation du rendu %s, bascule vers le rendu logiciel.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1697"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cette save state a été créée avec une version différente du BIOS ou des options de patch. Cela peut causer de l&apos;instabilité.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1952"/>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>Éched de l&apos;ouverture de l&apos;image CD à partir de la save state &apos;%s&apos; : %s. Utilisation de l&apos;image existante &apos;%s&apos;, cela peut causer de l&apos;instabilité.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2522"/>
         <source>Rewinding is not enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rewinding n&apos;est pas activé.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2564"/>
         <source>No cheats are loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun code de triche chargé.</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="2572"/>
         <source>%n cheats are now active.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n codes de triches sont maintenant actifs.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="2573"/>
         <source>%n cheats are now inactive.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n codes de triche sont maintenant inactifs.</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2919"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ports de carte mémoire échangés. Les deux ports ont une carte mémoire.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2924"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ports de carte mémoire échangés. Le port 2 a une carte mémoire, le port 1 est vide.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2930"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ports de carte mémoire échangés. Le port 1 a une carte mémoire, le port 2 est vide.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2936"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ports de carte mémoire échangés. Aucun des deux ports n&apos;a de carte mémoire.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3021"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;ouverture de l&apos;image disque &apos;%s&apos; : %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3034"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
-        <translation type="unfinished"></translation>
+        <translation>Disque &apos;%s&apos; inséré (%s).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3213"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la bascule vers la sous-image %u dans &apos;%s&apos; : %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3221"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Basculé vers la sous-image %s (%u) dans &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3322"/>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les options du recompilateur ont changé, vidage de tous les blocs.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4282"/>
@@ -9747,7 +9778,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="267"/>
         <source>Using software renderer for readbacks based on game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Utilisation du rendu logiciel pour les relectures en se basant sur les paramètres de jeu.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="279"/>
@@ -9792,12 +9823,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="378"/>
         <source>PGXP perspective corrected textures disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Textures fidèles à la perspective PGXP désactivées par les paramètres du jeu.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="392"/>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleurs fidèles à la perspective PGXP désactivées par les paramètres du jeu.</translation>
     </message>
     <message>
         <source>PGXP texture correction disabled by game settings.</source>
@@ -9816,14 +9847,16 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="428"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampon de profondeur PGXP désactivé par les paramètres du jeu.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="492"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le contrôleur du port %u (%s) n&apos;est pas supproté pour %s.
+Contrôleurs supportés : %s
+Veuillez configurer un contrôleur appartenant à la liste ci-dessus.</translation>
     </message>
     <message>
         <source>Controller %u changed to digital by game settings.</source>
@@ -9840,92 +9873,92 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../mainwindow.cpp" line="437"/>
         <source>Acquired exclusive fullscreen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Obtenu le plein écran exclusif.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="441"/>
         <source>Failed to acquire exclusive fullscreen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échéc de l&apos;obtention du plein écran exclusif.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="625"/>
         <source>Lost exclusive fullscreen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Plein écran exclusif perdu.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="60"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le forçage du mode analogue est désactivé par les paramètre du jeu. Le contrôleur va démarrer en mode digital.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="80"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>MSAA %ux n&apos;est pas supporté, utilisation de %ux à la place.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="85"/>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>SSAA n&apos;est pas supporté, utilisation de MSAA à la place.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="90"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le filtre de texture &apos;%s&apos; n&apos;est pas supporté avec le rendu courant.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="98"/>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le sous-échantillonnage adaptif n&apos;est pas supporté avec le rendu courant, utilisation du filtre boîte à la place.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="170"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle de résolution définie sur %ux (affichage %ux %u, VRAM %ux %u)</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="180"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
-        <translation type="unfinished"></translation>
+        <translation>Anticrénelage multi-échantillonné défini sur %ux (SSAA).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="186"/>
         <source>Multisample anti-aliasing set to %ux.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anticrénelage multi-échantillonné défini sur %ux.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="250"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;échelle de résolution %ux n&apos;est pas supportée pour le lissage adaptif, utilisation de %ux.</translation>
     </message>
     <message>
         <location filename="../../core/cdrom.cpp" line="783"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Le pré-chargement d&apos;image CD n&apos;est pas disponible pour l&apos;image multi-disque &apos;%s&apos;</translation>
     </message>
     <message>
         <location filename="../../core/cdrom.cpp" line="791"/>
         <source>Precaching CD image failed, it may be unreliable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la mise en pré-cache de l&apos;image CD, cela peut être non-fiable.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="282"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire à &apos;%s&apos; ne peut être lue, formatage.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="327"/>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la sauvegarde de la carte mémoire vers &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="339"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardé la carte mémoire vers &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_opengl.cpp" line="1323"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le rendu OpenGL est indisponible, votre pilote ou matériel n&apos;est pas assez récent, OpenGL 3.1 ou OpenGL ES 3.1 est requis.</translation>
     </message>
 </context>
 <context>
@@ -9941,12 +9974,12 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="192"/>
         <source>Relative Mouse Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode souris relative</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="193"/>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Verrouille le curseur de la souris à la fenêtre, utile pour les jeux FPS.</translation>
     </message>
 </context>
 <context>
@@ -10050,7 +10083,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="27"/>
         <source>The current post-processing chain is invalid, it has been reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>La chaîne de post-traitement courante est invalide, elle a été réinitialisée.</translation>
     </message>
     <message>
         <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
@@ -10131,17 +10164,17 @@ L&apos;URL était : %1</translation>
     <message>
         <location filename="../qtprogresscallback.cpp" line="184"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="189"/>
         <source>Question</source>
-        <translation type="unfinished">Question</translation>
+        <translation>Question</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="195"/>
         <source>Information</source>
-        <translation type="unfinished">Information</translation>
+        <translation>Information</translation>
     </message>
 </context>
 <context>
@@ -10151,27 +10184,27 @@ L&apos;URL était : %1</translation>
         <location filename="../qthost.cpp" line="2100"/>
         <location filename="../qthost.cpp" line="2116"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2075"/>
         <source>File &apos;%1&apos; does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le fichier &apos;%1&apos; n&apos;existe pas.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2101"/>
         <source>The specified save state does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>La save state spécifiée n&apos;existe pas.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2117"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible d&apos;utiliser le mode sans-gui, parce qu&apos;aucun nom de fichier de démarrage n&apos;a été spécifié.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2118"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible d&apos;utiliser le mode batch, parce qu&apos;aucun nom de fichier de démarrage n&apos;a été spécifié.</translation>
     </message>
 </context>
 <context>
@@ -10254,27 +10287,27 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../qtprogresscallback.cpp" line="14"/>
         <source>DuckStation</source>
-        <translation type="unfinished">DuckStation</translation>
+        <translation>DuckStation</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="35"/>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="99"/>
         <source>Question</source>
-        <translation type="unfinished">Question</translation>
+        <translation>Question</translation>
     </message>
     <message>
         <location filename="../qtprogresscallback.cpp" line="105"/>
         <source>Information</source>
-        <translation type="unfinished">Information</translation>
+        <translation>Information</translation>
     </message>
 </context>
 <context>
@@ -10305,42 +10338,42 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="681"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="683"/>
         <source>Save</source>
-        <translation type="unfinished">Sauvegarder</translation>
+        <translation>Sauvegarder</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="685"/>
         <source>Select Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner précédent</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="687"/>
         <source>Select Next</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner suivant</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="744"/>
         <source>No Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas de save state</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="817"/>
         <source>Global Slot %d</source>
-        <translation type="unfinished"></translation>
+        <translation>Emplacement global %d</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="821"/>
         <source>Game Slot %d</source>
-        <translation type="unfinished"></translation>
+        <translation>Emplacement de jeu %d</translation>
     </message>
     <message>
         <location filename="../../frontend-common/imgui_overlays.cpp" line="825"/>
         <source>%s Slot %d</source>
-        <translation type="unfinished"></translation>
+        <translation>%s Emplacement %d</translation>
     </message>
 </context>
 <context>
@@ -10349,18 +10382,18 @@ Les sauvegardes ne seront pas récupérables.</translation>
         <location filename="../settingwidgetbinder.h" line="322"/>
         <location filename="../settingwidgetbinder.h" line="452"/>
         <source>Default: </source>
-        <translation type="unfinished"></translation>
+        <translation>Défaut :</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="421"/>
         <location filename="../settingwidgetbinder.h" line="551"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialiser</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1077"/>
         <source>Select folder for %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner le dossier pour %1</translation>
     </message>
 </context>
 <context>
@@ -10447,57 +10480,57 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="50"/>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation>Sommaire</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="52"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Sommaire&lt;/strong&gt;&lt;hr&gt;Cette page montre les informations à propos du jeu sélectionné, et vous permet de valider que votre disque a été correctement extrait.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="67"/>
         <source>General</source>
-        <translation type="unfinished">Général</translation>
+        <translation>Général</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="75"/>
         <source>Game List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste de jeux</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="77"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Paramètres de la liste de jeux&lt;/strong&gt;&lt;hr&gt;La liste ci-dessus montre les répertoires scannés par DuckStation pour peupler la liste de jeux. Les répertoires de recherche peuvent être ajoutés, supprimés ou basculés en récursif/non-récursif.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="82"/>
         <source>BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="84"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Paramètres de BIOS&lt;/strong&gt;&lt;hr&gt;Ces options contrôles quel BIOS est utilisé et comment il sera patché.&lt;br&gt;&lt;br&gt;Survolez une option à la souris pour de plus amples informations.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="86"/>
         <source>Console</source>
-        <translation type="unfinished">Console</translation>
+        <translation>Console</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="90"/>
         <source>Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>Émulation</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="92"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Paramètres d&apos;émulation&lt;/strong&gt;&lt;hr&gt;Ces options déterminent la vitesse et le comportement runahead du système.&lt;br&gt;&lt;br&gt;Survolez une option à la souris pour de plus amples informations.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="95"/>
         <source>Memory Cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Cartes mémoire</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="97"/>
@@ -10507,7 +10540,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="100"/>
         <source>Display</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
@@ -10517,7 +10550,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="105"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>Améliorations</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="107"/>
@@ -10527,7 +10560,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="113"/>
         <source>Post-Processing</source>
-        <translation type="unfinished"></translation>
+        <translation>Post-traitement</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="114"/>
@@ -10537,7 +10570,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="118"/>
         <source>Audio</source>
-        <translation type="unfinished">Audio</translation>
+        <translation>Audio</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="120"/>
@@ -10547,32 +10580,32 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="123"/>
         <source>Achievements</source>
-        <translation type="unfinished"></translation>
+        <translation>Succès</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="125"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Paramètres des succès&lt;/strong&gt;&lt;hr&gt;Ces options contrôlent RetroAchievements. Survolez une option à la souris pour de plus amples informations.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="145"/>
         <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation type="unfinished"></translation>
+        <translation>Cette build DuckStation n&apos;a pas été compilée avec le support de RetroAchievements.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="155"/>
         <source>Folders</source>
-        <translation type="unfinished"></translation>
+        <translation>Dossiers</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="157"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Paramètres de dossier&lt;/strong&gt;&lt;hr&gt;Ces options contrôlent où DuckStation sauvegardera ses fichiers de données lors de son exécution.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="160"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Avancé</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="162"/>
@@ -10582,12 +10615,12 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="219"/>
         <source>Confirm Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirmation de restauration des paramètres par défaut</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="220"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Êtes-vous sûr de vouloir restaurer les paramètres par défaut ? Toute préférence sera perdue.</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="236"/>
@@ -10597,23 +10630,23 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="505"/>
         <source>%1 [%2]</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 [%2]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="124"/>
         <source>Use Global Setting [Enabled]</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le paramétrage global [Activé]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="125"/>
         <source>Use Global Setting [Disabled]</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le paramétrage global [Désactivé]</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="133"/>
         <location filename="../settingwidgetbinder.h" line="149"/>
         <source>Use Global Setting [%1]</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser le paramétrage global [%1]</translation>
     </message>
 </context>
 <context>
@@ -10621,23 +10654,23 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../../core/system.cpp" line="1813"/>
         <source>Failed to load %s BIOS.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échech du chargement du BIOS %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1332"/>
         <location filename="../../core/system.cpp" line="3146"/>
         <source>Error</source>
-        <translation type="unfinished">Erreur</translation>
+        <translation>Erreur</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1333"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec du chargemement du fichier de save state &apos;{}&apos; pour démarrer.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1820"/>
         <source>Incorrect BIOS image size</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille de l&apos;image BIOS incorrecte</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1911"/>
@@ -10647,22 +10680,22 @@ Les sauvegardes ne seront pas récupérables.</translation>
     <message>
         <location filename="../../core/system.cpp" line="1920"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
-        <translation type="unfinished"></translation>
+        <translation>La save state est incompatible : la version maximale est %u, mais la version de la state est %u.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1961"/>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de l&apos;ouverture de l&apos;image CD &apos;%s&apos; utilisée par la save state %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1980"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la bascule vers la sous-image %u dans l&apos;image CD &apos;%s&apos; utilisée par la save state %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2846"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>La carte mémoire par-jeu ne peut être utilisée pour l&apos;emplacement %u car le jeu en cours n&apos;a pas de chemin. Utilisation de la carte partagée à la place.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3135"/>
@@ -10675,7 +10708,15 @@ The game will likely not run properly.
 Please check the README for instructions on how to add an SBI file.
 
 Do you wish to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous essayez de lancer le jeu protégé par libcrypt sans fichier SBI :
+
+%s : %s
+
+Le jeu va probablement mal tourner.
+
+Veuillez lire le README pour les instructions à propos de comment ajouter un fichier SBI.
+
+Voulez-vous continuer ?</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3148"/>
@@ -10686,7 +10727,13 @@ Do you wish to continue?</source>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous essayez de lancer le jeu protégé par libcrypt sans fichier SBI :
+
+%s : %s
+
+Votre vidage est incomplet, vous devez ajouter un fichier SBI pour faire tourner le jeu.
+
+Le nom du fichier SBI doit correspondre au nom de l&apos;image disque.</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
