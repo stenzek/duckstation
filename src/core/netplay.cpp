@@ -1769,7 +1769,7 @@ void Netplay::SetSettings(const ConnectResponseMessage* msg)
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", true);
 
   // No cheats.. yet. Need to serialize them, and that has security risks.
-  // si.SetBoolValue("Main", "AutoLoadCheats", false);
+  si.SetBoolValue("Main", "AutoLoadCheats", false);
 
   // No PCDRV or texture replacements, they require local files.
   si.SetBoolValue("PCDrv", "Enabled", false);
