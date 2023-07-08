@@ -60,12 +60,9 @@ GGPOErrorCode Peer2PeerBackend::AddSpectator(ENetPeer* peer)
    if (_num_spectators == GGPO_MAX_SPECTATORS) {
       return GGPO_ERRORCODE_TOO_MANY_SPECTATORS;
    }
-   /*
-    * Currently, we can only add spectators before the game starts.
-    */
-   if (!_synchronizing) {
-      return GGPO_ERRORCODE_INVALID_REQUEST;
-   }
+
+   _synchronizing = true;
+
    int queue = _num_spectators++;
 
    _spectators[queue].Init(peer, queue + 1000, _local_connect_status);
@@ -164,7 +161,7 @@ Peer2PeerBackend::DoPoll()
                   input.size = _input_size * _num_players;
                   _sync.GetConfirmedInputs(input.bits, _input_size * _num_players, _next_spectator_frame);
                   for (int i = 0; i < _num_spectators; i++) {
-                     _spectators[i].SendInput(input);
+                      _spectators[i].SendInput(input);
                   }
                   _next_spectator_frame++;
                }
@@ -721,6 +718,7 @@ Peer2PeerBackend::CheckInitialSync()
             return;
          }
       }
+
       for (i = 0; i < _num_spectators; i++) {
          if (_spectators[i].IsInitialized() && !_spectators[i].IsSynchronized()) {
             return;

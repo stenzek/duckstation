@@ -18,13 +18,6 @@ SpectatorBackend::SpectatorBackend(GGPOSessionCallbacks* cb, int num_players, in
    }
 
    /*
-    * Initialize the UDP port
-    */
-   // FIXME
-   //abort();
-   //_udp.Init(localport, &_poll, this);
-
-   /*
     * Init the host endpoint
     */
    _host.Init(peer, 0, NULL);

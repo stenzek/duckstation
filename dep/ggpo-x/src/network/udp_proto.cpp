@@ -63,7 +63,7 @@ int UdpProtocol::RemoteFrameDelay()const
 
 void UdpProtocol::Init(ENetPeer* peer, int queue, UdpMsg::connect_status *status)
 {  
-  _peer = peer;
+   _peer = peer;
    _queue = queue;
    _local_connect_status = status;
 
@@ -75,6 +75,12 @@ void UdpProtocol::Init(ENetPeer* peer, int queue, UdpMsg::connect_status *status
 void
 UdpProtocol::SendInput(GameInput &input)
 {
+   // when spectating and you hit the end of the buffer its time to acknowledge that the peer is dead.
+   if (_queue >= 1000 && _pending_output.size() >= 63) {
+      Disconnect();
+      return;
+   }
+
    if (_peer) {
       if (_current_state == Running) {
          /*
