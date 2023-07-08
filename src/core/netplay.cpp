@@ -1971,12 +1971,13 @@ void Netplay::RunFrame()
   if (GGPO_SUCCEEDED(result))
   {
     result = SyncInput(inputs, &disconnect_flags);
+    // check if you get stuck while spectating. if this is the case try to disconnect.
     if (s_local_spectating && result != GGPO_OK)
     {
       s_spectating_failed_count++;
       // after 5 seconds and still not spectating close since you are stuck.
       if (s_spectating_failed_count >= 300)
-        CloseSessionWithError("Failed to sync spectator. Please try again.");
+        CloseSessionWithError("Failed to sync spectator with host. Please try again.");
     }
 
     if (GGPO_SUCCEEDED(result))
