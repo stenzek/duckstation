@@ -169,6 +169,7 @@ static Common::Timer s_last_host_connection_attempt;
 static std::array<Peer, MAX_SPECTATORS> s_spectators;
 static std::bitset<MAX_SPECTATORS> s_reset_spectators;
 static s32 s_num_spectators = 0;
+static s32 s_spectating_failed_count = 0;
 static bool s_local_spectating;
 
 /// GGPO
@@ -848,6 +849,7 @@ void Netplay::DestroyGGPOSession()
   s_ggpo = nullptr;
   s_save_buffer_pool.clear();
   s_local_handle = GGPO_INVALID_HANDLE;
+  s_spectating_failed_count = 0;
 
   for (Peer& p : s_peers)
     p.ggpo_handle = GGPO_INVALID_HANDLE;
@@ -1072,10 +1074,6 @@ void Netplay::DropSpectator(s32 slot_id, DropPlayerReason reason)
   enet_peer_disconnect_now(s_spectators[slot_id].peer, 0);
   s_spectators[slot_id] = {};
   s_num_spectators--;
-  // sadly we have to reset here. this really sucks for the active players since you dont really want to halt for a spectator.
-  // not resetting seems to be creating index out of bounds errors in the ringbuffer.
-  // TODO ? 
-  Reset();
 }
 
 void Netplay::UpdateConnectingState()
@@ -1973,6 +1971,15 @@ void Netplay::RunFrame()
   if (GGPO_SUCCEEDED(result))
   {
     result = SyncInput(inputs, &disconnect_flags);
+    // check if you get stuck while spectating. if this is the case try to disconnect.
+    if (s_local_spectating && result != GGPO_OK)
+    {
+      s_spectating_failed_count++;
+      // after 5 seconds and still not spectating close since you are stuck.
+      if (s_spectating_failed_count >= 300)
+        CloseSessionWithError("Failed to sync spectator with host. Please try again.");
+    }
+
     if (GGPO_SUCCEEDED(result))
     {
       // enable again when rolling back done
