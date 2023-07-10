@@ -2060,7 +2060,7 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password)
+bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay)
 {
   s_local_session_password = std::move(password);
 
@@ -2068,10 +2068,7 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
   // to have the same data, and we don't want to trash their local memcards. We should therefore load
   // the memory cards for this game (based on game/global settings), and copy that to the temp card.
 
-  // TODO: input delay. GGPO Should support changing it on the fly.
-  const s32 input_delay = 1;
-
-  if (!Netplay::Start(true, std::move(nickname), std::string(), port, input_delay))
+  if (!Netplay::Start(true, std::move(nickname), std::string(), port, inputdelay))
   {
     CloseSession();
     return false;
@@ -2086,15 +2083,14 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
 }
 
 bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password,
-                          bool spectating)
+                          bool spectating, int inputdelay)
 {
   s_local_session_password = std::move(password);
   s_local_spectating = spectating;
-
-  // TODO: input delay. GGPO Should support changing it on the fly.
-  const s32 input_delay = 1;
-
-  if (!Netplay::Start(false, std::move(nickname), hostname, port, input_delay))
+  Log_InfoPrint("____________");
+  Log_InfoPrintf("INPUT DELAY: %d", inputdelay);
+  Log_InfoPrint("____________");
+  if (!Netplay::Start(false, std::move(nickname), hostname, port, inputdelay))
   {
     CloseSession();
     return false;

@@ -31,8 +31,8 @@ enum : u8
   NUM_ENET_CHANNELS,
 };
 
-bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password);
-bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating);
+bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay);
+bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating, int inputdelay);
 
 bool IsActive();
 
