@@ -2087,9 +2087,7 @@ bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32
 {
   s_local_session_password = std::move(password);
   s_local_spectating = spectating;
-  Log_InfoPrint("____________");
-  Log_InfoPrintf("INPUT DELAY: %d", inputdelay);
-  Log_InfoPrint("____________");
+
   if (!Netplay::Start(false, std::move(nickname), hostname, port, inputdelay))
   {
     CloseSession();
