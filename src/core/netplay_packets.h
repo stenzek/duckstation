@@ -26,6 +26,7 @@ enum class ControlMessage : u32
   // host->player
   ConnectResponse,
   JoinResponse,
+  PreReset,
   Reset,
   ResumeSession,
   PlayerJoined,
@@ -170,6 +171,13 @@ struct JoinResponseMessage
   s32 player_id;
 
   static ControlMessage MessageType() { return ControlMessage::JoinResponse; }
+};
+
+struct PreResetMessage
+{
+  ControlMessageHeader header;
+
+  static ControlMessage MessageType() { return ControlMessage::PreReset; }
 };
 
 struct ResetMessage
