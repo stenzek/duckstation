@@ -11,7 +11,7 @@
 #include <cmath>
 #include <iostream>
 static const int UDP_HEADER_SIZE = 28;     /* Size of IP + UDP headers */
-static const int NUM_SYNC_PACKETS = 5;
+static const int NUM_SYNC_PACKETS = 1;
 static const int SYNC_RETRY_INTERVAL = 2000;
 static const int SYNC_FIRST_RETRY_INTERVAL = 500;
 static const int RUNNING_RETRY_INTERVAL = 200;

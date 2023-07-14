@@ -197,6 +197,9 @@ GGPOErrorCode Peer2PeerBackend::NetworkIdle()
    for (UdpProtocol& udp : _endpoints)
       udp.NetworkIdle();
 
+   for (UdpProtocol& udp : _spectators)
+      udp.NetworkIdle();
+
    return GGPO_OK;
 }
 
@@ -657,15 +660,17 @@ Peer2PeerBackend::SetFrameDelay(GGPOPlayerHandle player, int delay)
    result = PlayerHandleToQueue(player, &queue);
    if (!GGPO_SUCCEEDED(result)) {
       return result;
-   } _sync.SetFrameDelay(queue, delay);
-   
-   for (int i = 0; i < _num_players; i++) {
-       if (_endpoints[i].IsInitialized()) {
-           _endpoints[i].SetFrameDelay(delay);
-          
-       }
-   }
-   ;
+   } 
+
+   _sync.SetFrameDelay(queue, delay);
+   //
+   //for (int i = 0; i < _num_players; i++) {
+   //    if (_endpoints[i].IsInitialized()) {
+   //        _endpoints[i].SetFrameDelay(delay);
+   //       
+   //    }
+   //}
+   //;
    return GGPO_OK; 
 }
 
