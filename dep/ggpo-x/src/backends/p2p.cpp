@@ -663,14 +663,14 @@ Peer2PeerBackend::SetFrameDelay(GGPOPlayerHandle player, int delay)
    } 
 
    _sync.SetFrameDelay(queue, delay);
-   //
-   //for (int i = 0; i < _num_players; i++) {
-   //    if (_endpoints[i].IsInitialized()) {
-   //        _endpoints[i].SetFrameDelay(delay);
-   //       
-   //    }
-   //}
-   //;
+
+   for (int i = 0; i < _num_players; i++) {
+       if (_endpoints[i].IsInitialized()) {
+           _endpoints[i].SetFrameDelay(delay);
+          
+       }
+   }
+
    return GGPO_OK; 
 }
 
