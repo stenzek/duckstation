@@ -77,6 +77,12 @@ void Host::OnNetplayMessage(std::string message)
                                                         Common::Timer::ConvertSecondsToValue(NETPLAY_MESSAGE_DURATION));
 }
 
+void Host::ClearNetplayMessages()
+{
+  while (s_netplay_messages.size() > 0)
+    s_netplay_messages.pop_front();
+}
+
 void ImGuiManager::RenderNetplayOverlays()
 {
   DrawNetplayMessages();

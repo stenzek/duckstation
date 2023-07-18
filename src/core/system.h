@@ -521,4 +521,5 @@ bool IsFullscreen();
 void SetFullscreen(bool enabled);
 // netplay
 void OnNetplayMessage(std::string message);
+void ClearNetplayMessages();
 } // namespace Host

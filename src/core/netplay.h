@@ -53,4 +53,6 @@ u32 GetMaxPrediction();
 /// Updates the throttle period, call when target emulation speed changes.
 void UpdateThrottlePeriod();
 
+void ToggleDesyncNotifications();
+
 } // namespace Netplay

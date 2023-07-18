@@ -148,6 +148,7 @@ static void GenerateChecksumForFrame(int* checksum, int frame, unsigned char* bu
 
 static MemorySettingsInterface s_settings_overlay;
 static SessionState s_state;
+static bool send_desync_notifications = false;
 
 /// Enet
 struct Peer
@@ -1933,10 +1934,18 @@ void Netplay::UpdateThrottlePeriod()
     Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(System::GetThrottleFrequency()) * s_target_speed));
 }
 
+void Netplay::ToggleDesyncNotifications()
+{
+  bool was_enabled = send_desync_notifications;
+  send_desync_notifications = send_desync_notifications ? false : true;
+  if (was_enabled)
+    Host::ClearNetplayMessages();
+}
+
 void Netplay::HandleTimeSyncEvent(float frame_delta, int update_interval)
 {
   // only activate timesync if its worth correcting.
-  if (std::abs(frame_delta) < 1.0f)
+  if (std::abs(frame_delta) < 1.75f)
     return;
   // Distribute the frame difference over the next N * 0.75 frames.
   // only part of the interval time is used since we want to come back to normal speed.
