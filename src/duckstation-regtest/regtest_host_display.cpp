@@ -176,8 +176,8 @@ bool RegTestHostDisplay::Render(bool skip_present)
   return true;
 }
 
-bool RegTestHostDisplay::RenderScreenshot(u32 width, u32 height, std::vector<u32>* out_pixels, u32* out_stride,
-                                          GPUTexture::Format* out_format)
+bool RegTestHostDisplay::RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect,
+                                          std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
 {
   return false;
 }
