@@ -1357,15 +1357,7 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
     }
 
     auto host_addr = std::string_view(rapidjson::Pointer("/host_info").Get(doc)->GetString());
-
-    // Log_InfoPrintf("host info: %s", host_addr.data());
-
     auto info = StringUtil::SplitNewString(host_addr, ':');
-
-    //for (size_t i = 0; i < info.size(); i++)
-    //{
-    //  Log_InfoPrintf("%s", info[i].data());
-    //}
 
     std::string_view host_ip = info[0];
     u16 host_port = static_cast<u16>(std::stoi(info[1].data()));
@@ -1391,7 +1383,33 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
   if (msg_type == "ClientLookupResponse")
   {
     // try to connect to the given client using the information supplied.
-    Log_InfoPrint("ClientLookupResponse!");
+    if (!doc.HasMember("client_info"))
+    {
+      Log_ErrorPrintf("Failed to retrieve client code from ClientLookupResponse");
+      return;
+    }
+
+    auto client_addr = std::string_view(rapidjson::Pointer("/client_info").Get(doc)->GetString());
+    auto info = StringUtil::SplitNewString(client_addr, ':');
+
+    std::string_view client_ip = info[0];
+    u16 client_port = static_cast<u16>(std::stoi(info[1].data()));
+
+    ENetAddress client_address;
+
+    client_address.port = client_port;
+    if (enet_address_set_host(&client_address, client_ip.data()) != 0)
+    {
+      Log_ErrorPrintf("Failed to parse client: '%s'", client_ip.data());
+      return;
+    }
+
+    if (!enet_host_connect(s_enet_host, &client_address, NUM_ENET_CHANNELS, 0))
+    {
+      Log_ErrorPrintf("Failed to start connection to client.");
+      return;
+    }
+
     return;
   }
 }
