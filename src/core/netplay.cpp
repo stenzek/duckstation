@@ -106,7 +106,6 @@ static void DropSpectator(s32 slot_id, DropPlayerReason reason);
 
 // Controlpackets
 static void HandleMessageFromNewPeer(ENetPeer* peer, const ENetPacket* pkt);
-static void HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt);
 static void HandleControlMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleConnectResponseMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleJoinResponseMessage(s32 player_id, const ENetPacket* pkt);
@@ -121,8 +120,10 @@ static void HandleCloseSessionMessage(s32 player_id, const ENetPacket* pkt);
 static void HandleChatMessage(s32 player_id, const ENetPacket* pkt);
 
 // Nat Traversal
+static void HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt);
 static bool SendTraversalRequest(const rapidjson::Document& request);
 static void SendTraversalHostRegisterRequest();
+static void SendTraversalHostLookupRequest();
 static void SendTraversalPingRequest();
 
 // GGPO session.
@@ -190,8 +191,9 @@ static s32 s_spectating_failed_count = 0;
 static bool s_local_spectating = false;
 
 // Nat Traversal
-static ENetAddress s_traversal_address;
 static ENetPeer* s_traversal_peer;
+static ENetAddress s_traversal_address;
+static std::string s_traversal_host_code;
 
 /// GGPO
 static std::string s_local_nickname;
@@ -370,6 +372,8 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
     Log_ErrorPrintf("Failed to create enet host.");
     return false;
   }
+  // temp testing
+  s_traversal_host_code = nickname;
 
   s_host_player_id = 0;
   s_local_nickname = std::move(nickname);
@@ -494,8 +498,10 @@ bool Netplay::CreateDummySystem()
 void Netplay::CloseSessionWithError(const std::string_view& message)
 {
   Host::ReportErrorAsync(Host::TranslateString("Netplay", "Netplay Error"), message);
-  enet_peer_disconnect_now(s_peers[s_host_player_id].peer, 0);
   s_state = SessionState::ClosingSession;
+
+  if (s_peers[s_host_player_id].peer)
+    enet_peer_disconnect_now(s_peers[s_host_player_id].peer, 0);
 }
 
 void Netplay::RequestCloseSession(CloseSessionMessage::Reason reason)
@@ -526,6 +532,10 @@ void Netplay::RequestCloseSession(CloseSessionMessage::Reason reason)
         enet_peer_disconnect_now(s_peers[i].peer, 0);
     }
   }
+
+  // close connection with traversal server if active
+  if (s_traversal_peer)
+    enet_peer_disconnect_now(s_traversal_peer, 0);
 
   // but wait for them to actually drop
   s_state = SessionState::ClosingSession;
@@ -620,6 +630,8 @@ void Netplay::ShutdownEnetHost()
     s_spectators[i] = {};
   }
 
+  s_traversal_peer = nullptr;
+
   enet_host_destroy(s_enet_host);
   s_enet_host = nullptr;
 }
@@ -645,6 +657,8 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
         Log_InfoPrintf("Traversal server connected: %s", PeerAddressString(event->peer).c_str());
         if (IsHost())
           SendTraversalHostRegisterRequest();
+        else
+          SendTraversalHostLookupRequest();
         return;
       }
 
@@ -1176,7 +1190,8 @@ void Netplay::UpdateConnectingState()
 
   // MAX_CONNECT_RETRIES peer to host connection attempts
   // dividing by MAX_CONNECT_RETRIES + 1 because the last attempt will never happen.
-  if (s_last_host_connection_attempt.GetTimeSeconds() >= MAX_CONNECT_TIME / (MAX_CONNECT_RETRIES + 1) &&
+  if (s_peers[s_host_player_id].peer &&
+      s_last_host_connection_attempt.GetTimeSeconds() >= MAX_CONNECT_TIME / (MAX_CONNECT_RETRIES + 1) &&
       s_peers[s_host_player_id].peer->state != ENetPeerState::ENET_PEER_STATE_CONNECTED)
   {
     // we want to do this because the peer might have initiated a connection
@@ -1314,15 +1329,62 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
 
   if (msg_type == "HostRegisterResponse")
   {
-    // todo save roomcode at a place visible to be used and shared by the host.
-    Log_InfoPrint("RegisterResponse!");
+    // TODO: show host code somewhere to share
+    if (!doc.HasMember("host_code"))
+    {
+      Log_InfoPrint("Failed to retrieve host code from HostRegisterResponse");
+      return;
+    }
+
+    s_traversal_host_code = rapidjson::Pointer("/host_code").Get(doc)->GetString();
+    Log_InfoPrintf("host code: %s", s_traversal_host_code.c_str());
+
     return;
   }
 
   if (msg_type == "HostLookupResponse")
   {
-    // todo set host information to the information given if it was a success.
-    Log_InfoPrint("HostLookupResponse!");
+    if (!doc.HasMember("success") || !rapidjson::Pointer("/success").Get(doc)->GetBool())
+    {
+      Log_ErrorPrintf("No host found with host code: %s", s_traversal_host_code.c_str());
+      return;
+    }
+
+    if (!doc.HasMember("host_info"))
+    {
+      Log_ErrorPrintf("Failed to retrieve host code from HostLookupResponse");
+      return;
+    }
+
+    auto host_addr = std::string_view(rapidjson::Pointer("/host_info").Get(doc)->GetString());
+
+    // Log_InfoPrintf("host info: %s", host_addr.data());
+
+    auto info = StringUtil::SplitNewString(host_addr, ':');
+
+    //for (size_t i = 0; i < info.size(); i++)
+    //{
+    //  Log_InfoPrintf("%s", info[i].data());
+    //}
+
+    std::string_view host_ip = info[0];
+    u16 host_port = static_cast<u16>(std::stoi(info[1].data()));
+
+    s_host_address.port = host_port;
+    if (enet_address_set_host(&s_host_address, host_ip.data()) != 0)
+    {
+      Log_ErrorPrintf("Failed to parse host: '%s'", host_ip.data());
+      return;
+    }
+
+    s_peers[s_host_player_id].peer =
+      enet_host_connect(s_enet_host, &s_host_address, NUM_ENET_CHANNELS, static_cast<u32>(s_player_id));
+    if (!s_peers[s_host_player_id].peer)
+    {
+      Log_ErrorPrintf("Failed to start connection to host.");
+      return;
+    }
+
     return;
   }
 
@@ -1923,6 +1985,16 @@ void Netplay::SendTraversalHostRegisterRequest()
 
   if (!SendTraversalRequest(request))
     Log_InfoPrint("Failed to send HostRegisterRequest to the traversal server");
+}
+
+void Netplay::SendTraversalHostLookupRequest()
+{
+  rapidjson::Document request;
+  rapidjson::Pointer("/msg_type").Set(request, "HostLookupRequest");
+  rapidjson::Pointer("/host_code").Set(request, s_traversal_host_code.c_str());
+
+  if (!SendTraversalRequest(request))
+    Log_InfoPrint("Failed to send HostLookupRequest to the traversal server");
 }
 
 void Netplay::SendTraversalPingRequest()
