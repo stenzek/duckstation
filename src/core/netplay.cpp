@@ -124,7 +124,7 @@ static void HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt);
 static bool SendTraversalRequest(const rapidjson::Document& request);
 static void SendTraversalHostRegisterRequest();
 static void SendTraversalHostLookupRequest();
-static void SendTraversalPingRequest(ENetPeer* peer);
+static void SendTraversalPingRequest();
 
 // GGPO session.
 static void CreateGGPOSession();
@@ -1321,7 +1321,7 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
 
   if (msg_type == "PingResponse")
   {
-    SendTraversalPingRequest(peer);
+    SendTraversalPingRequest();
     return;
   }
 
@@ -2017,7 +2017,7 @@ void Netplay::SendTraversalHostLookupRequest()
     Log_InfoPrint("Failed to send HostLookupRequest to the traversal server");
 }
 
-void Netplay::SendTraversalPingRequest(ENetPeer* peer)
+void Netplay::SendTraversalPingRequest()
 {
   rapidjson::Document request;
   rapidjson::Pointer("/msg_type").Set(request, "PingRequest");
