@@ -700,7 +700,7 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
     // Clear the state of all keyboard binds.
     // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
     // got the key release message, because it happened in another window which "stole" the event.
-    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+    g_emu_thread->clearInputBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
   }
   else
   {

@@ -313,7 +313,7 @@ void GPU::UpdateDMARequest()
 
     case BlitterState::ReadingVRAM:
       m_GPUSTAT.ready_to_send_vram = true;
-      m_GPUSTAT.ready_to_recieve_dma = false;
+      m_GPUSTAT.ready_to_recieve_dma = m_fifo.IsEmpty();
       break;
   }
 

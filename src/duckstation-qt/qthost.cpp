@@ -1114,6 +1114,17 @@ void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostn
   g_emu_thread->wakeThread();
 }
 
+void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "clearInputBindStateFromSource", Qt::QueuedConnection, Q_ARG(InputBindingKey, key));
+    return;
+  }
+
+  InputManager::ClearBindStateFromSource(key);
+}
+
 void EmuThread::runOnEmuThread(std::function<void()> callback)
 {
   callback();
