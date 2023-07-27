@@ -663,7 +663,7 @@ void Netplay::HandleEnetEvent(const ENetEvent* event)
         return;
       }
 
-      if (IsHost() && GetPlayerIdForPeer(event->peer) < 0)
+      if (IsHost())
         HandlePeerConnectionAsHost(event->peer);
       else
         HandlePeerConnectionAsNonHost(event->peer, static_cast<s32>(event->data));
