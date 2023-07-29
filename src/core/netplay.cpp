@@ -1310,12 +1310,12 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
   bool err = doc.Parse<0>(data).HasParseError();
   if (err || !doc.HasMember("msg_type"))
   {
-    Log_InfoPrintf("Failed to parse traversal server message");
+    Log_ErrorPrintf("Failed to parse traversal server message");
     return;
   }
 
   auto msg_type = std::string(rapidjson::Pointer("/msg_type").Get(doc)->GetString());
-  Log_InfoPrintf("Received message from traversal server %s", msg_type.c_str());
+  Log_VerbosePrintf("Received message from traversal server %s", msg_type.c_str());
 
   if (msg_type == "PingResponse")
   {
@@ -1328,13 +1328,15 @@ void Netplay::HandleTraversalMessage(ENetPeer* peer, const ENetPacket* pkt)
     // TODO: show host code somewhere to share
     if (!doc.HasMember("host_code"))
     {
-      Log_InfoPrint("Failed to retrieve host code from HostRegisterResponse");
+      Log_ErrorPrintf("Failed to retrieve host code from HostRegisterResponse");
       return;
     }
 
     s_traversal_host_code = rapidjson::Pointer("/host_code").Get(doc)->GetString();
-    Log_InfoPrintf("Host code: %s", s_traversal_host_code.c_str());
+    Host::OnNetplayMessage("Host code has been copied to clipboard");
+    Host::CopyTextToClipboard(s_traversal_host_code);
 
+    Log_VerbosePrintf("Host code: %s", s_traversal_host_code.c_str());
     return;
   }
 
