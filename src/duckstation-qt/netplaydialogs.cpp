@@ -86,7 +86,7 @@ JoinNetplaySessionDialog::~JoinNetplaySessionDialog() = default;
 
 void JoinNetplaySessionDialog::accept()
 {
-  const bool direct_mode = !m_ui.tabDirect->isHidden();
+  const bool direct_mode = m_ui.tabTraversal->isHidden();
   const bool valid = direct_mode ? validate() : validateTraversal();
   if (!valid)
     return;
@@ -125,5 +125,5 @@ bool JoinNetplaySessionDialog::validateTraversal()
 void JoinNetplaySessionDialog::updateState()
 {
   m_ui.buttonBox->button(QDialogButtonBox::Ok)
-    ->setEnabled(!m_ui.tabDirect->isHidden() ? validate() : validateTraversal());
+    ->setEnabled(m_ui.tabTraversal->isHidden() ? validate() : validateTraversal());
 }
