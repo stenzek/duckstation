@@ -38,9 +38,10 @@ void CreateNetplaySessionDialog::accept()
   const int inputdelay = m_ui.inputDelay->value();
   const QString& nickname = m_ui.nickname->text();
   const QString& password = m_ui.password->text();
+  const bool traversal = m_ui.traversal->isChecked();
   QDialog::accept();
 
-  g_emu_thread->createNetplaySession(nickname.trimmed(), port, players, password, inputdelay);
+  g_emu_thread->createNetplaySession(nickname.trimmed(), port, players, password, inputdelay, traversal);
 }
 
 bool CreateNetplaySessionDialog::validate()
@@ -64,9 +65,14 @@ JoinNetplaySessionDialog::JoinNetplaySessionDialog(QWidget* parent)
 
   connect(m_ui.port, &QSpinBox::valueChanged, this, &JoinNetplaySessionDialog::updateState);
   connect(m_ui.inputDelay, &QSpinBox::valueChanged, this, &JoinNetplaySessionDialog::updateState);
+  connect(m_ui.inputDelayTraversal, &QSpinBox::valueChanged, this, &JoinNetplaySessionDialog::updateState);
   connect(m_ui.nickname, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
+  connect(m_ui.nicknameTraversal, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
   connect(m_ui.password, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
+  connect(m_ui.passwordTraversal, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
   connect(m_ui.hostname, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
+  connect(m_ui.hostCode, &QLineEdit::textChanged, this, &JoinNetplaySessionDialog::updateState);
+  connect(m_ui.tabConnectMode, &QTabWidget::currentChanged, this, &JoinNetplaySessionDialog::updateState);
 
   connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QAbstractButton::clicked, this,
           &JoinNetplaySessionDialog::accept);
@@ -80,18 +86,22 @@ JoinNetplaySessionDialog::~JoinNetplaySessionDialog() = default;
 
 void JoinNetplaySessionDialog::accept()
 {
-  if (!validate())
+  const bool direct_mode = !m_ui.tabDirect->isHidden();
+  const bool valid = direct_mode ? validate() : validateTraversal();
+  if (!valid)
     return;
 
-  const int port = m_ui.port->value();
-  const int inputdelay = m_ui.inputDelay->value();
-  const QString& nickname = m_ui.nickname->text();
+  int port = m_ui.port->value();
+  int inputdelay = direct_mode ? m_ui.inputDelay->value() : m_ui.inputDelayTraversal->value();
+  const QString& nickname = direct_mode ? m_ui.nickname->text() : m_ui.nicknameTraversal->text();
+  const QString& password = direct_mode ? m_ui.password->text() : m_ui.passwordTraversal->text();
   const QString& hostname = m_ui.hostname->text();
-  const QString& password = m_ui.password->text();
+  const QString& hostcode = m_ui.hostCode->text();
   const bool spectating = m_ui.spectating->isChecked();
   QDialog::accept();
 
-  g_emu_thread->joinNetplaySession(nickname.trimmed(), hostname.trimmed(), port, password, spectating, inputdelay);
+  g_emu_thread->joinNetplaySession(nickname.trimmed(), hostname.trimmed(), port, password, spectating, inputdelay,
+                                   !direct_mode, hostcode.trimmed());
 }
 
 bool JoinNetplaySessionDialog::validate()
@@ -100,10 +110,20 @@ bool JoinNetplaySessionDialog::validate()
   const int inputdelay = m_ui.inputDelay->value();
   const QString& nickname = m_ui.nickname->text();
   const QString& hostname = m_ui.hostname->text();
-  return (!nickname.isEmpty() && !hostname.isEmpty() && port > 0 && port <= 65535 && inputdelay >= 0 && inputdelay <= 10);
+  return (!nickname.isEmpty() && !hostname.isEmpty() && port > 0 && port <= 65535 && inputdelay >= 0 &&
+          inputdelay <= 10);
+}
+
+bool JoinNetplaySessionDialog::validateTraversal()
+{
+  const int inputdelay = m_ui.inputDelayTraversal->value();
+  const QString& nickname = m_ui.nicknameTraversal->text();
+  const QString& hostcode = m_ui.hostCode->text();
+  return (!nickname.isEmpty() && !hostcode.isEmpty() && inputdelay >= 0 && inputdelay <= 10);
 }
 
 void JoinNetplaySessionDialog::updateState()
 {
-  m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(validate());
+  m_ui.buttonBox->button(QDialogButtonBox::Ok)
+    ->setEnabled(!m_ui.tabDirect->isHidden() ? validate() : validateTraversal());
 }

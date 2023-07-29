@@ -44,6 +44,7 @@ private Q_SLOTS:
 
 private:
   bool validate();
+  bool validateTraversal();
 
 private:
   Ui::JoinNetplaySessionDialog m_ui;

@@ -141,7 +141,12 @@ void ImGuiManager::DrawNetplayStats()
   // We'll probably want to draw a graph too..
 
   LargeString text;
-  text.AppendFmtString("Ping: {}", Netplay::GetPing());
+  text.AppendFmtString("Ping: {}\n", Netplay::GetPing());
+
+  // temporary show the hostcode here for now
+  auto hostcode = Netplay::GetHostCode();
+  if (!hostcode.empty())
+    text.AppendFmtString("Host Code: {}", hostcode);
 
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = 1.0f * scale;

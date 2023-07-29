@@ -31,8 +31,9 @@ enum : u8
   NUM_ENET_CHANNELS,
 };
 
-bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay);
-bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating, int inputdelay);
+bool CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay, bool traversal);
+bool JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password, bool spectating,
+                 int inputdelay, bool traversal, const std::string& hostcode);
 
 bool IsActive();
 
@@ -49,6 +50,7 @@ void SendChatMessage(const std::string_view& msg);
 
 s32 GetPing();
 u32 GetMaxPrediction();
+std::string_view GetHostCode();
 
 /// Updates the throttle period, call when target emulation speed changes.
 void UpdateThrottlePeriod();

@@ -129,7 +129,7 @@ static void SendTraversalPingRequest();
 // GGPO session.
 static void CreateGGPOSession();
 static void DestroyGGPOSession();
-static bool Start(bool is_hosting, std::string nickname, const std::string& remote_addr, s32 port, s32 ldelay, bool traversal = true);
+static bool Start(bool is_hosting, std::string nickname, const std::string& remote_addr, s32 port, s32 ldelay, bool traversal);
 static void CloseSession();
 
 // Host functions.
@@ -372,8 +372,6 @@ bool Netplay::Start(bool is_hosting, std::string nickname, const std::string& re
     Log_ErrorPrintf("Failed to create enet host.");
     return false;
   }
-  // temp testing
-  s_traversal_host_code = nickname;
 
   s_host_player_id = 0;
   s_local_nickname = std::move(nickname);
@@ -2359,6 +2357,11 @@ u32 Netplay::GetMaxPrediction()
   return MAX_ROLLBACK_FRAMES;
 }
 
+std::string_view Netplay::GetHostCode()
+{
+  return s_traversal_host_code;
+}
+
 void Netplay::SetInputs(Netplay::Input inputs[2])
 {
   for (u32 i = 0; i < 2; i++)
@@ -2370,7 +2373,7 @@ void Netplay::SetInputs(Netplay::Input inputs[2])
   }
 }
 
-bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay)
+bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std::string password, int inputdelay, bool traversal)
 {
   s_local_session_password = std::move(password);
 
@@ -2378,7 +2381,7 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
   // to have the same data, and we don't want to trash their local memcards. We should therefore load
   // the memory cards for this game (based on game/global settings), and copy that to the temp card.
 
-  if (!Netplay::Start(true, std::move(nickname), std::string(), port, inputdelay))
+  if (!Netplay::Start(true, std::move(nickname), std::string(), port, inputdelay, traversal))
   {
     CloseSession();
     return false;
@@ -2393,12 +2396,14 @@ bool Netplay::CreateSession(std::string nickname, s32 port, s32 max_players, std
 }
 
 bool Netplay::JoinSession(std::string nickname, const std::string& hostname, s32 port, std::string password,
-                          bool spectating, int inputdelay)
+                          bool spectating, int inputdelay, bool traversal, const std::string& hostcode)
 {
   s_local_session_password = std::move(password);
   s_local_spectating = spectating;
 
-  if (!Netplay::Start(false, std::move(nickname), hostname, port, inputdelay))
+  s_traversal_host_code = hostcode;
+
+  if (!Netplay::Start(false, std::move(nickname), hostname, port, inputdelay, traversal))
   {
     CloseSession();
     return false;

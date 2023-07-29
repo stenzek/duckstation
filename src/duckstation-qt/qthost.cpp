@@ -1071,13 +1071,13 @@ void EmuThread::reloadPostProcessingShaders()
   System::ReloadPostProcessingShaders();
 }
 
-void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password, int inputdelay)
+void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password, int inputdelay, bool traversal)
 {
   if (!isOnThread())
   {
     QMetaObject::invokeMethod(this, "createNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
                               Q_ARG(qint32, port), Q_ARG(qint32, max_players), Q_ARG(const QString&, password),
-                              Q_ARG(int, inputdelay));
+                              Q_ARG(int, inputdelay), Q_ARG(bool, traversal));
     return;
   }
 
@@ -1085,7 +1085,7 @@ void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint3
   if (!System::IsValid())
     return;
 
-  if (!Netplay::CreateSession(nickname.toStdString(), port, max_players, password.toStdString(), inputdelay))
+  if (!Netplay::CreateSession(nickname.toStdString(), port, max_players, password.toStdString(), inputdelay, traversal))
   {
     errorReported(tr("Netplay Error"), tr("Failed to create netplay session. The log may contain more information."));
     return;
@@ -1093,18 +1093,19 @@ void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint3
 }
 
 void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port,
-                                   const QString& password, bool spectating, int inputdelay)
+                                   const QString& password, bool spectating, int inputdelay, bool traversal,
+                                   const QString& hostcode)
 {
   if (!isOnThread())
   {
     QMetaObject::invokeMethod(this, "joinNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
                               Q_ARG(const QString&, hostname), Q_ARG(qint32, port), Q_ARG(const QString&, password),
-                              Q_ARG(bool, spectating), Q_ARG(int, inputdelay));
+                              Q_ARG(bool, spectating), Q_ARG(int, inputdelay), Q_ARG(bool, traversal),
+                              Q_ARG(const QString&, hostcode));
     return;
   }
 
-  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString(), spectating,
-                            inputdelay))
+  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString(), spectating, inputdelay, traversal, hostcode.toStdString()))
   {
     errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
     return;
@@ -2256,11 +2257,11 @@ int main(int argc, char* argv[])
         params->override_fast_boot = true;
         params->fast_forward_to_first_frame = true;
         g_emu_thread->bootSystem(std::move(params));
-        g_emu_thread->createNetplaySession(nickname, port, 2, QString(), 0);
+        g_emu_thread->createNetplaySession(nickname, port, 2, QString(), 0, false);
       }
       else
       {
-        g_emu_thread->joinNetplaySession(nickname, remote, port, QString(), false, 0);
+        g_emu_thread->joinNetplaySession(nickname, remote, port, QString(), false, 0, false, "");
       }
     });
   }
