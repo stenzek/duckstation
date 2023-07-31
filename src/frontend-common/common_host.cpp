@@ -678,10 +678,15 @@ DEFINE_HOTKEY("OpenPauseMenu", TRANSLATABLE("Hotkeys", "General"), TRANSLATABLE(
                 if (!pressed)
                   FullscreenUI::OpenPauseMenu();
 })
-DEFINE_HOTKEY("OpenNetplayChat", TRANSLATABLE("Hotkeys", "General"), TRANSLATABLE("Hotkeys", "Open Netplay Chat"),
+DEFINE_HOTKEY("OpenNetplayChat", TRANSLATABLE("Hotkeys", "Netplay"), TRANSLATABLE("Hotkeys", "Open Netplay Chat"),
               [](s32 pressed) {
                 if (!pressed)
                   ImGuiManager::OpenNetplayChat();
+              })
+DEFINE_HOTKEY("ToggleDesyncNotifications", TRANSLATABLE("Hotkeys", "Netplay"), TRANSLATABLE("Hotkeys", "Toggle Desync Notifications"),
+              [](s32 pressed) {
+                if (!pressed)
+                  Netplay::ToggleDesyncNotifications();
               })
 #endif
 
