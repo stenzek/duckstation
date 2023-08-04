@@ -675,7 +675,7 @@ bool HostDisplay::WriteScreenshotToFile(std::string filename, bool internal_reso
   u32 pixels_stride;
   GPUTexture::Format pixels_format;
   if (!RenderScreenshot(width, height,
-                        Common::Rectangle<s32>::FromExtents(draw_top, draw_left, draw_width, draw_height), &pixels,
+                        Common::Rectangle<s32>::FromExtents(draw_left, draw_top, draw_width, draw_height), &pixels,
                         &pixels_stride, &pixels_format))
   {
     Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
