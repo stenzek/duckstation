@@ -39,3 +39,7 @@ if(${CPU_ARCH} STREQUAL "riscv64")
   add_subdirectory(biscuit)
   add_subdirectory(riscv-disas)
 endif()
+
+if(APPLE)
+  add_subdirectory(spirv-cross)
+endif()
