@@ -2,12 +2,12 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
     <BinaryOutputDir>$(SolutionDir)bin\$(Platform)\</BinaryOutputDir>
-    <DSQTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\msvc\qt\6.1.0\msvc2019_64\</DSQTDIRDefault>
-    <DSQTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)dep\msvc\qt\6.3.1\msvc2022_arm64\</DSQTDIRDefault>
+    <DSQTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\msvc\qt\6.5.0\msvc2022_64\</DSQTDIRDefault>
+    <DSQTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)dep\msvc\qt\6.5.0\msvc2022_arm64\</DSQTDIRDefault>
     <DSQTDIR Condition="Exists('$(DSQTDIRDefault)') And ('$(DSQTDIR)'=='' Or !Exists('$(DSQTDIR)'))">$(DSQTDIRDefault)</DSQTDIR>
     <DSQTDIR Condition="Exists('$(DSQTDIR)') And !HasTrailingSlash('$(DSQTDIR)')">$(DSQTDIR)\</DSQTDIR>
-    <DSQTDIRHost Condition="'$(Platform)'!='ARM64'">$(SolutionDir)dep\msvc\qt\6.1.0\msvc2019_64\</DSQTDIRHost>
-    <DSQTDIRHost Condition="'$(Platform)'=='ARM64'">$(SolutionDir)dep\msvc\qt\6.3.1\msvc2022_64\</DSQTDIRHost>
+    <DSQTDIRHost Condition="'$(Platform)'!='ARM64'">$(SolutionDir)dep\msvc\qt\6.5.0\msvc2022_64\</DSQTDIRHost>
+    <DSQTDIRHost Condition="'$(Platform)'=='ARM64'">$(SolutionDir)dep\msvc\qt\6.5.0\msvc2022_64\</DSQTDIRHost>
     <DSQTDIRValid>false</DSQTDIRValid>
     <DSQTDIRValid Condition="Exists('$(DSQTDIR)')">true</DSQTDIRValid>
     <QtIncludeDir>$(DSQTDIR)include\</QtIncludeDir>

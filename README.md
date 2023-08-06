@@ -59,6 +59,10 @@ Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage format)
 
 ### Windows
 
+As of 2023/08/16, Preview releases of DuckStation **require Windows 10**. I have hit several issues in new features I am working on that are present in Qt 6.1, but not in 6.5.
+
+For now, this only applies to the **Preview** build, the "Latest Rolling Release" will still work on Windows 7/8/8.1 for now, with the disclaimer below. Once the new in-progress features are ready for widespread use, this build will move to legacy status.
+
 **Windows 10 is the only version of Windows supported by the developer.** Windows 7/8 may work, but is not supported. I am aware some users are still using Windows 7, but it is no longer supported by Microsoft and too much effort to get running on modern hardware. Game bugs are unlikely to be affected by the operating system, however performance issues should be verified on Windows 10 before reporting.
 
 To download:
