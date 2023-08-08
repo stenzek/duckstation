@@ -219,3 +219,7 @@ extern "C" {
 #define vkAcquireFullScreenExclusiveModeEXT ds_vkAcquireFullScreenExclusiveModeEXT
 #define vkReleaseFullScreenExclusiveModeEXT ds_vkReleaseFullScreenExclusiveModeEXT
 #endif
+
+// Vulkan 1.3 functions.
+#define vkGetDeviceBufferMemoryRequirements ds_vkGetDeviceBufferMemoryRequirements
+#define vkGetDeviceImageMemoryRequirements ds_vkGetDeviceImageMemoryRequirements

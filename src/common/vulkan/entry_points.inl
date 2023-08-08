@@ -233,4 +233,8 @@ VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 #endif
 
+// Vulkan 1.3 functions.
+VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceBufferMemoryRequirements, false)
+VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceImageMemoryRequirements, false)
+
 #endif // VULKAN_DEVICE_ENTRY_POINT

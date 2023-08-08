@@ -497,7 +497,7 @@ bool Vulkan::Texture::Update(u32 x, u32 y, u32 width, u32 height, u32 level, u32
     if (res != VK_SUCCESS)
     {
       LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
-      return VK_NULL_HANDLE;
+      return false;
     }
 
     // Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
