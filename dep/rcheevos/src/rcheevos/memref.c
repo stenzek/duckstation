@@ -95,6 +95,7 @@ int rc_parse_memref(const char** memaddr, char* size, unsigned* address) {
     switch (*aux++) {
       case 'f': case 'F': *size = RC_MEMSIZE_FLOAT; break;
       case 'm': case 'M': *size = RC_MEMSIZE_MBF32; break;
+      case 'l': case 'L': *size = RC_MEMSIZE_MBF32_LE; break;
 
       default:
         return RC_INVALID_FP_OPERAND;
@@ -201,6 +202,21 @@ static void rc_transform_memref_mbf32(rc_typed_value_t* value) {
   value->type = RC_VALUE_TYPE_FLOAT;
 }
 
+static void rc_transform_memref_mbf32_le(rc_typed_value_t* value) {
+  /* decodes a Microsoft Binary Format float */
+  /* Locomotive BASIC (CPC) uses MBF40, but in little endian format */
+  const unsigned mantissa = value->value.u32 & 0x007FFFFF;
+  const int exponent = (int)(value->value.u32 >> 24) - 129;
+  const int sign = (value->value.u32 & 0x00800000);
+
+  if (mantissa == 0 && exponent == -129)
+    value->value.f32 = (sign) ? -0.0f : 0.0f;
+  else
+    value->value.f32 = rc_build_float(mantissa, exponent, sign);
+
+  value->type = RC_VALUE_TYPE_FLOAT;
+}
+
 static const unsigned char rc_bits_set[16] = { 0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4 };
 
 void rc_transform_memref_value(rc_typed_value_t* value, char size) {
@@ -293,6 +309,10 @@ void rc_transform_memref_value(rc_typed_value_t* value, char size) {
       rc_transform_memref_mbf32(value);
       break;
 
+    case RC_MEMSIZE_MBF32_LE:
+      rc_transform_memref_mbf32_le(value);
+      break;
+
     default:
       break;
   }
@@ -319,6 +339,7 @@ static const unsigned rc_memref_masks[] = {
   0xffffffff, /* RC_MEMSIZE_32_BITS_BE */
   0xffffffff, /* RC_MEMSIZE_FLOAT      */
   0xffffffff, /* RC_MEMSIZE_MBF32      */
+  0xffffffff, /* RC_MEMSIZE_MBF32_LE   */
   0xffffffff  /* RC_MEMSIZE_VARIABLE   */
 };
 
@@ -354,6 +375,7 @@ static const char rc_memref_shared_sizes[] = {
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_32_BITS_BE */
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_FLOAT      */
   RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_MBF32      */
+  RC_MEMSIZE_32_BITS, /* RC_MEMSIZE_MBF32_LE   */
   RC_MEMSIZE_32_BITS  /* RC_MEMSIZE_VARIABLE   */
 };
 
@@ -365,7 +387,7 @@ char rc_memref_shared_size(char size) {
   return rc_memref_shared_sizes[index];
 }
 
-static unsigned rc_peek_value(unsigned address, char size, rc_peek_t peek, void* ud) {
+unsigned rc_peek_value(unsigned address, char size, rc_peek_t peek, void* ud) {
   if (!peek)
     return 0;
 
@@ -422,7 +444,7 @@ void rc_init_parse_state_memrefs(rc_parse_state_t* parse, rc_memref_t** memrefs)
   *memrefs = 0;
 }
 
-static unsigned rc_get_memref_value_value(rc_memref_value_t* memref, int operand_type) {
+static unsigned rc_get_memref_value_value(const rc_memref_value_t* memref, int operand_type) {
   switch (operand_type)
   {
     /* most common case explicitly first, even though it could be handled by default case.

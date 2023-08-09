@@ -159,6 +159,17 @@ void rc_destroy_parse_state(rc_parse_state_t* parse)
   }
 }
 
+unsigned rc_djb2(const char* input)
+{
+  unsigned result = 5381;
+  char c;
+
+  while ((c = *input++) != '\0')
+    result = ((result << 5) + result) + c; /* result = result * 33 + c */
+
+  return result;
+}
+
 const char* rc_error_str(int ret)
 {
   switch (ret) {
@@ -189,7 +200,12 @@ const char* rc_error_str(int ret)
     case RC_INVALID_COMPARISON: return "Invalid comparison";
     case RC_INVALID_STATE: return "Invalid state";
     case RC_INVALID_JSON: return "Invalid JSON";
-
+    case RC_API_FAILURE: return "API call failed";
+    case RC_LOGIN_REQUIRED: return "Login required";
+    case RC_NO_GAME_LOADED: return "No game loaded";
+    case RC_HARDCORE_DISABLED: return "Hardcore disabled";
+    case RC_ABORTED: return "Aborted";
+    case RC_NO_RESPONSE: return "No response";
     default: return "Unknown error";
   }
 }
