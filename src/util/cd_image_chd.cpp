@@ -7,14 +7,19 @@
 
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/platform.h"
+#include "common/string_util.h"
+
 #include "fmt/format.h"
 #include "libchdr/chd.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdio>
@@ -22,6 +27,7 @@
 #include <limits>
 #include <map>
 #include <optional>
+
 Log_SetChannel(CDImageCHD);
 
 static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
@@ -46,6 +52,7 @@ static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
     return std::nullopt;
 }
 
+namespace {
 class CDImageCHD : public CDImage
 {
 public:
@@ -66,12 +73,13 @@ private:
   enum : u32
   {
     CHD_CD_SECTOR_DATA_SIZE = 2352 + 96,
-    CHD_CD_TRACK_ALIGNMENT = 4
+    CHD_CD_TRACK_ALIGNMENT = 4,
+    MAX_PARENTS = 32 // Surely someone wouldn't be insane enough to go beyond this...
   };
 
+  chd_file* OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Common::Error* error, u32 recursion_level);
   bool ReadHunk(u32 hunk_index);
 
-  std::FILE* m_fp = nullptr;
   chd_file* m_chd = nullptr;
   u32 m_hunk_size = 0;
   u32 m_sectors_per_hunk = 0;
@@ -82,6 +90,7 @@ private:
 
   CDSubChannelReplacement m_sbi;
 };
+} // namespace
 
 CDImageCHD::CDImageCHD() = default;
 
@@ -89,15 +98,102 @@ CDImageCHD::~CDImageCHD()
 {
   if (m_chd)
     chd_close(m_chd);
-  if (m_fp)
-    std::fclose(m_fp);
+}
+
+chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Common::Error* error,
+                              u32 recursion_level)
+{
+  chd_file* chd;
+  chd_error err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, nullptr, &chd);
+  if (err == CHDERR_NONE)
+  {
+    // fp is now managed by libchdr
+    fp.release();
+    return chd;
+  }
+  else if (err != CHDERR_REQUIRES_PARENT)
+  {
+    Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
+    if (error)
+      error->SetMessage(chd_error_string(err));
+    return nullptr;
+  }
+
+  if (recursion_level >= MAX_PARENTS)
+  {
+    Log_ErrorPrintf("Failed to open CHD '%s': Too many parent files", filename);
+    if (error)
+      error->SetMessage("Too many parent files");
+    return nullptr;
+  }
+
+  // Need to get the sha1 to look for.
+  chd_header header;
+  err = chd_read_header_file(fp.get(), &header);
+  if (err != CHDERR_NONE)
+  {
+    Log_ErrorPrintf("Failed to read CHD header '%s': %s", filename, chd_error_string(err));
+    if (error)
+      error->SetMessage(chd_error_string(err));
+    return nullptr;
+  }
+
+  // Find a chd with a matching sha1 in the same directory.
+  // Have to do *.* and filter on the extension manually because Linux is case sensitive.
+  // We _could_ memoize the CHD headers here, but is anyone actually going to nest CHDs that deep?
+  chd_file* parent_chd = nullptr;
+  const std::string parent_dir(Path::GetDirectory(filename));
+  FileSystem::FindResultsArray parent_files;
+  FileSystem::FindFiles(parent_dir.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &parent_files);
+  for (FILESYSTEM_FIND_DATA& fd : parent_files)
+  {
+    if (StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), ".chd"))
+      continue;
+
+    auto parent_fp =
+      FileSystem::OpenManagedSharedCFile(fd.FileName.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+    if (!parent_fp)
+      continue;
+
+    chd_header parent_header;
+    err = chd_read_header_file(parent_fp.get(), &parent_header);
+    if (err != CHDERR_NONE || !chd_is_matching_parent(&header, &parent_header))
+      continue;
+
+    // Match! Open this one.
+    if ((parent_chd = OpenCHD(fd.FileName.c_str(), std::move(parent_fp), error, recursion_level + 1)) != nullptr)
+    {
+      Log_DevPrintf(fmt::format("Found parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename)).c_str());
+      break;
+    }
+  }
+  if (!parent_chd)
+  {
+    Log_ErrorPrintf("Failed to open CHD '%s': Failed to find parent CHD, it must be in the same directory.", filename);
+    if (error)
+      error->SetMessage("Failed to find parent CHD, it must be in the same directory.");
+    return nullptr;
+  }
+
+  // Now try re-opening with the parent.
+  err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, parent_chd, &chd);
+  if (err != CHDERR_NONE)
+  {
+    Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
+    if (error)
+      error->SetMessage(chd_error_string(err));
+    return nullptr;
+  }
+
+  // fp now owned by libchdr
+  fp.release();
+  return chd;
 }
 
 bool CDImageCHD::Open(const char* filename, Common::Error* error)
 {
-  Assert(!m_fp);
-  m_fp = FileSystem::OpenCFile(filename, "rb");
-  if (!m_fp)
+  auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite);
+  if (!fp)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': errno %d", filename, errno);
     if (error)
@@ -106,15 +202,9 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
     return false;
   }
 
-  chd_error err = chd_open_file(m_fp, CHD_OPEN_READ, nullptr, &m_chd);
-  if (err != CHDERR_NONE)
-  {
-    Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
-    if (error)
-      error->SetMessage(chd_error_string(err));
-
+  m_chd = OpenCHD(filename, std::move(fp), error, 0);
+  if (!m_chd)
     return false;
-  }
 
   const chd_header* header = chd_get_header(m_chd);
   m_hunk_size = header->hunkbytes;
@@ -146,8 +236,8 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
     u32 metadata_length;
 
     int track_num = 0, frames = 0, pregap_frames = 0, postgap_frames = 0;
-    err = chd_get_metadata(m_chd, CDROM_TRACK_METADATA2_TAG, num_tracks, metadata_str, sizeof(metadata_str),
-                           &metadata_length, nullptr, nullptr);
+    chd_error err = chd_get_metadata(m_chd, CDROM_TRACK_METADATA2_TAG, num_tracks, metadata_str, sizeof(metadata_str),
+                                     &metadata_length, nullptr, nullptr);
     if (err == CHDERR_NONE)
     {
       if (std::sscanf(metadata_str, CDROM_TRACK_METADATA2_FORMAT, &track_num, type_str, subtype_str, &frames,
