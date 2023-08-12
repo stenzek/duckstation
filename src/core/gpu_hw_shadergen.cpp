@@ -8,11 +8,13 @@
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool pgxp_depth,
-                                   bool disable_color_perspective, bool supports_dual_source_blend)
+                                   bool disable_color_perspective, bool round_upscale_coordinates,
+                                   bool supports_dual_source_blend)
   : ShaderGen(render_api, supports_dual_source_blend), m_resolution_scale(resolution_scale),
     m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
-    m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective)
+    m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective),
+    m_round_upscale_coordinates(round_upscale_coordinates)
 {
 }
 
@@ -657,6 +659,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filter != GPUTextureFilter::Nearest);
   DefineMacro(ss, "UV_LIMITS", m_uv_limits);
+  DefineMacro(ss, "ROUND_UPSCALE_COORDINATES", m_round_upscale_coordinates);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "PGXP_DEPTH", m_pgxp_depth);
 
@@ -715,6 +718,10 @@ uint2 ApplyUpscaledTextureWindow(uint2 coords)
 
 uint2 FloatToIntegerCoords(float2 coords)
 {
+  #if ROUND_UPSCALE_COORDINATES
+    return uint2(roundEven(coords));
+  #endif
+  
   // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
   // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
   return uint2((RESOLUTION_SCALE == 1u) ? roundEven(coords) : floor(coords));

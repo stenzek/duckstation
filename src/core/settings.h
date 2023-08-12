@@ -127,6 +127,7 @@ struct Settings
   s8 display_line_end_offset = 0;
   bool display_force_4_3_for_24bit = false;
   bool gpu_24bit_chroma_smoothing = false;
+  bool gpu_round_upscale_coordinates = false;
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_stretch = false;
