@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 
 #include <libchdr/chd.h>
 #include <libchdr/cdrom.h>
@@ -1733,30 +1734,60 @@ cleanup:
     memory
 -------------------------------------------------*/
 
-CHD_EXPORT chd_error chd_precache(chd_file *chd)
+CHD_EXPORT chd_error chd_precache(chd_file* chd)
 {
-	INT64 count;
-	UINT64 size;
+  return chd_precache_progress(chd, NULL, NULL);
+}
 
-	if (chd->file_cache == NULL)
-	{
-		size = core_fsize(chd->file);
-		if ((INT64)size <= 0)
-			return CHDERR_INVALID_DATA;
-		chd->file_cache = malloc(size);
-		if (chd->file_cache == NULL)
+CHD_EXPORT chd_error chd_precache_progress(chd_file* chd, void(*progress)(size_t pos, size_t total, void* param), void* param)
+{
+#define PRECACHE_CHUNK_SIZE 16 * 1024 * 1024
+
+  size_t count;
+  UINT64 size, done, req_count, last_update_done, update_interval;
+
+  if (chd->file_cache == NULL)
+  {
+    size = core_fsize(chd->file);
+    if ((INT64)size <= 0)
+      return CHDERR_INVALID_DATA;
+
+		if (size > SIZE_MAX)
 			return CHDERR_OUT_OF_MEMORY;
-		core_fseek(chd->file, 0, SEEK_SET);
-		count = core_fread(chd->file, chd->file_cache, size);
-		if (count != size)
-		{
-			free(chd->file_cache);
-			chd->file_cache = NULL;
-			return CHDERR_READ_ERROR;
-		}
-	}
 
-	return CHDERR_NONE;
+    chd->file_cache = malloc(size);
+    if (chd->file_cache == NULL)
+      return CHDERR_OUT_OF_MEMORY;
+    core_fseek(chd->file, 0, SEEK_SET);
+
+		done = 0;
+    last_update_done = 0;
+    update_interval = ((size + 99) / 100);
+
+		while (done < size)
+		{
+			req_count = size - done;
+			if (req_count > PRECACHE_CHUNK_SIZE)
+				req_count = PRECACHE_CHUNK_SIZE;
+
+			count = core_fread(chd->file, chd->file_cache + (size_t)done, (size_t)req_count);
+			if (count != (size_t)req_count)
+			{
+				free(chd->file_cache);
+				chd->file_cache = NULL;
+				return CHDERR_READ_ERROR;
+			}
+
+			done += req_count;
+			if (progress != NULL && (done - last_update_done) >= update_interval && done != size)
+			{
+				last_update_done = done;
+				progress(done, size, param);
+			}
+		}
+  }
+
+  return CHDERR_NONE;
 }
 
 /*-------------------------------------------------
