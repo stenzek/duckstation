@@ -204,6 +204,9 @@ extern "C" {
 
 #define CHD_CODEC_NONE 0
 #define CHD_CODEC_ZLIB				CHD_MAKE_TAG('z','l','i','b')
+#define CHD_CODEC_LZMA				CHD_MAKE_TAG('l','z','m','a')
+#define CHD_CODEC_HUFFMAN 			CHD_MAKE_TAG('h','u','f','f')
+#define CHD_CODEC_FLAC				CHD_MAKE_TAG('f','l','a','c')
 /* general codecs with CD frontend */
 #define CHD_CODEC_CD_ZLIB			CHD_MAKE_TAG('c','d','z','l')
 #define CHD_CODEC_CD_LZMA			CHD_MAKE_TAG('c','d','l','z')
@@ -370,12 +373,12 @@ struct _chd_verify_result
 /* chd_error chd_create_file(core_file *file, UINT64 logicalbytes, UINT32 hunkbytes, UINT32 compression, chd_file *parent); */
 
 /* open an existing CHD file */
-CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_file **chd);
 CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, chd_file **chd);
 
 /* precache underlying file */
 CHD_EXPORT chd_error chd_precache(chd_file *chd);
-CHD_EXPORT chd_error chd_precache_progress(chd_file* chd, void(*progress)(size_t pos, size_t total, void* param), void* param);
 
 /* close a CHD file */
 CHD_EXPORT void chd_close(chd_file *chd);

@@ -60,9 +60,10 @@ int flac_decoder_init(flac_decoder *decoder)
 
 void flac_decoder_free(flac_decoder* decoder)
 {
-	if ((decoder != NULL) && (decoder->decoder != NULL))
+	if ((decoder != NULL) && (decoder->decoder != NULL)) {
 		drflac_close(decoder->decoder);
-	decoder->decoder = NULL;
+		decoder->decoder = NULL;
+	}
 }
 
 /*-------------------------------------------------

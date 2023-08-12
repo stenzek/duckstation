@@ -320,7 +320,8 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
     static_cast<ProgressCallback*>(param)->SetProgressValue(std::min<u32>(percent, 100));
   };
 
-  if (chd_precache_progress(m_chd, callback, progress) != CHDERR_NONE)
+  //if (chd_precache_progress(m_chd, callback, progress) != CHDERR_NONE)
+  if (chd_precache(m_chd) != CHDERR_NONE)
     return CDImage::PrecacheResult::ReadError;
 
   m_precached = true;
