@@ -680,7 +680,8 @@ void Achievements::FrameUpdate()
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
-    RA_DoAchievementsFrame();
+    if (!System::IsPaused())
+      RA_DoAchievementsFrame();
     return;
   }
 #endif
@@ -690,7 +691,8 @@ void Achievements::FrameUpdate()
   if (HasActiveGame())
   {
     std::unique_lock lock(s_achievements_mutex);
-    rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &PeekMemory, nullptr, nullptr);
+    if (!System::IsPaused())
+      rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &PeekMemory, nullptr, nullptr);
     UpdateRichPresence();
 
     if (!IsTestModeActive())
