@@ -52,6 +52,8 @@ add_library(util
   postprocessing.h
   postprocessing_shader.cpp
   postprocessing_shader.h
+  postprocessing_shader_fx.cpp
+  postprocessing_shader_fx.h
   postprocessing_shader_glsl.cpp
   postprocessing_shader_glsl.h
   shadergen.cpp
@@ -69,7 +71,7 @@ add_library(util
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
-target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd)
+target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd reshadefx)
 
 if(ENABLE_CUBEB)
   target_sources(util PRIVATE

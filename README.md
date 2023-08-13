@@ -22,37 +22,37 @@ DuckStation features a fully-featured frontend built using Qt, as well as a full
 
 Other features include:
 
- - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
- - Hardware (D3D11, D3D12, OpenGL, Vulkan, Metal) and software rendering
- - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
- - PGXP for geometry precision, texture correction, and depth buffer emulation
- - Adaptive downsampling filter
- - Post processing shader chains
- - "Fast boot" for skipping BIOS splash/intro
- - Save state support
- - Windows, Linux, macOS support
+ - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64).
+ - Hardware (D3D11, D3D12, OpenGL, Vulkan, Metal) and software rendering.
+ - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.
+ - PGXP for geometry precision, texture correction, and depth buffer emulation.
+ - Adaptive downsampling filter.
+ - Post processing shader chains (GLSL and experimental Reshade FX).
+ - "Fast boot" for skipping BIOS splash/intro.
+ - Save state support.
+ - Windows, Linux, macOS support.
  - Supports bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
- - Direct booting of homebrew executables
- - Direct loading of Portable Sound Format (psf) files
- - Digital and analog controllers for input (rumble is forwarded to host)
- - Namco GunCon lightgun support (simulated with mouse)
- - NeGcon support
- - Qt and "Big Picture" UI
- - Automatic updates for Windows builds
- - Automatic content scanning - game titles/hashes are provided by redump.org
- - Optional automatic switching of memory cards for each game
- - Supports loading cheats from existing lists
- - Memory card editor and save importer
- - Emulated CPU overclocking
- - Integrated and remote debugging
- - Multitap controllers (up to 8 devices)
- - RetroAchievements
- - Automatic loading/applying of PPF patches
+ - Direct booting of homebrew executables.
+ - Direct loading of Portable Sound Format (psf) files.
+ - Digital and analog controllers for input (rumble is forwarded to host).
+ - Namco GunCon lightgun support (simulated with mouse).
+ - NeGcon support.
+ - Qt and "Big Picture" UI.
+ - Automatic updates for Windows builds.
+ - Automatic content scanning - game titles/hashes are provided by redump.org.
+ - Optional automatic switching of memory cards for each game.
+ - Supports loading cheats from existing lists.
+ - Memory card editor and save importer.
+ - Emulated CPU overclocking.
+ - Integrated and remote debugging.
+ - Multitap controllers (up to 8 devices).
+ - RetroAchievements.
+ - Automatic loading/applying of PPF patches.
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, or AArch64/ARMv8, otherwise you won't get a recompiler and it'll be slow.
  - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.1/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
- - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
+ - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
 Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage format), and Android ARMv7/ARMv8 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer, please speak to them for support, not us.

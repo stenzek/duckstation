@@ -64,6 +64,7 @@
     <ClInclude Include="platform_misc.h" />
     <ClInclude Include="postprocessing.h" />
     <ClInclude Include="postprocessing_shader.h" />
+    <ClInclude Include="postprocessing_shader_fx.h" />
     <ClInclude Include="postprocessing_shader_glsl.h" />
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="shadergen.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="postprocessing.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
+    <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="postprocessing_shader_glsl.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="shadergen.cpp" />
@@ -215,6 +217,9 @@
     <ProjectReference Include="..\..\dep\libchdr\libchdr.vcxproj">
       <Project>{425d6c99-d1c8-43c2-b8ac-4d7b1d941017}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\reshadefx\reshadefx.vcxproj">
+      <Project>{27b8d4bb-4f01-4432-bc14-9bf6ca458eee}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\soundtouch\soundtouch.vcxproj">
       <Project>{751d9f62-881c-454e-bce8-cb9cf5f1d22f}</Project>
     </ProjectReference>
@@ -238,6 +243,7 @@
   <Import Project="util.props" />
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\reshadefx\include</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
   </ItemDefinitionGroup>

@@ -632,9 +632,9 @@ private:
 			const unsigned int texture_dimension = info.type.texture_dimension();
 			code += "Texture" + std::to_string(texture_dimension) + "D<";
 			write_texture_format(code, tex_info.format);
-			code += "> __"     + info.unique_name + "_t : register(t" + std::to_string(info.binding) + "); \n";
+			code += "> __"     + info.unique_name + "_t : register( t0); \n";
 
-			code += "SamplerState __" + info.unique_name + "_s : register(s" + std::to_string(info.binding) + ");\n";
+			code += "SamplerState __" + info.unique_name + "_s : register( s0);\n";
 
 			code += "static const ";
 			write_type(code, info.type);

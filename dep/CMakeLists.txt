@@ -16,6 +16,7 @@ add_subdirectory(soundtouch)
 add_subdirectory(googletest)
 add_subdirectory(cpuinfo)
 add_subdirectory(fast_float)
+add_subdirectory(reshadefx)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)

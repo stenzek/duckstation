@@ -6,6 +6,7 @@
 #include "host.h"
 #include "imgui_manager.h"
 #include "postprocessing_shader.h"
+#include "postprocessing_shader_fx.h"
 #include "postprocessing_shader_glsl.h"
 
 // TODO: Remove me
@@ -175,6 +176,32 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     }
   }
 
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), "*.fx",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+  FileSystem::FindFiles(
+    Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")
+      .c_str(),
+    "*.fx", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY, &results);
+  for (FILESYSTEM_FIND_DATA& fd : results)
+  {
+    size_t pos = fd.FileName.rfind('.');
+    if (pos != std::string::npos && pos > 0)
+      fd.FileName.erase(pos);
+
+    // swap any backslashes for forward slashes so the config is cross-platform
+    for (size_t i = 0; i < fd.FileName.size(); i++)
+    {
+      if (fd.FileName[i] == '\\')
+        fd.FileName[i] = '/';
+    }
+
+    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
+    {
+      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [ReShade]"), fd.FileName);
+      names.emplace_back(std::move(display_name), std::move(fd.FileName));
+    }
+  }
+
   return names;
 }
 
@@ -333,7 +360,31 @@ void PostProcessing::SetEnabled(bool enabled)
 std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const std::string& shader_name,
                                                                          bool only_config, Error* error)
 {
-  std::string filename(Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name)));
+  std::string filename;
+  std::optional<std::string> resource_str;
+
+  // Try reshade first.
+  filename = Path::Combine(
+    EmuFolders::Shaders,
+    fmt::format("reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name));
+
+  // TODO: Won't work on Android. Who cares? All the homies are tired of demanding Android users.
+  if (!FileSystem::FileExists(filename.c_str()))
+  {
+    filename = Path::Combine(EmuFolders::Resources,
+                             fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR
+                                         "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx",
+                                         shader_name));
+  }
+
+  if (FileSystem::FileExists(filename.c_str()))
+  {
+    std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
+    if (shader->LoadFromFile(std::string(shader_name), filename.c_str(), only_config, error))
+      return shader;
+  }
+
+  filename = Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name));
   if (FileSystem::FileExists(filename.c_str()))
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
@@ -341,8 +392,8 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
       return shader;
   }
 
-  std::optional<std::string> resource_str(
-    Host::ReadResourceFileToString(fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name).c_str()));
+  resource_str =
+    Host::ReadResourceFileToString(fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name).c_str());
   if (resource_str.has_value())
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
