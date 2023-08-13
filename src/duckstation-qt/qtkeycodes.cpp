@@ -4,7 +4,7 @@
 #include "qtutils.h"
 #include "common/string_util.h"
 #include "fmt/format.h"
-#include "frontend-common/input_manager.h"
+#include "util/input_manager.h"
 #include <QtGui/QKeyEvent>
 
 struct KeyCodeName

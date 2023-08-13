@@ -178,7 +178,6 @@ struct Settings
   u32 gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;
   TickCount gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
 
-#ifdef WITH_CHEEVOS
   // achievements
   bool achievements_enabled = false;
   bool achievements_test_mode = false;
@@ -190,7 +189,6 @@ struct Settings
   bool achievements_notifications = true;
   bool achievements_sound_effects = true;
   bool achievements_primed_indicators = true;
-#endif
 
   struct DebugSettings
   {

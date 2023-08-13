@@ -4,7 +4,7 @@
 #pragma once
 
 #include "common/types.h"
-#include "core/host_display.h"
+#include "util/host_display.h"
 #include <functional>
 #include <memory>
 #include <optional>

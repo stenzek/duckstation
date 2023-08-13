@@ -2,6 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
+    <ClCompile Include="achievements.cpp" />
     <ClCompile Include="analog_controller.cpp" />
     <ClCompile Include="analog_joystick.cpp" />
     <ClCompile Include="bios.cpp" />
@@ -9,6 +10,7 @@
     <ClCompile Include="cdrom.cpp" />
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cheats.cpp" />
+    <ClCompile Include="common_host.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -32,7 +34,9 @@
     </ClCompile>
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="game_database.cpp" />
+    <ClCompile Include="game_list.cpp" />
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_d3d11.cpp" />
@@ -52,8 +56,9 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="host.cpp" />
-    <ClCompile Include="host_display.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
+    <ClCompile Include="host_settings.cpp" />
+    <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="libcrypt_serials.cpp" />
     <ClCompile Include="mdec.cpp" />
@@ -70,7 +75,6 @@
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="settings.cpp" />
-    <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
@@ -79,6 +83,7 @@
     <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="achievements_private.h" />
     <ClInclude Include="analog_controller.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="bios.h" />
@@ -87,6 +92,7 @@
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="achievements.h" />
+    <ClInclude Include="common_host.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cpu_disasm.h" />
@@ -104,7 +110,9 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="digital_controller.h" />
+    <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="game_database.h" />
+    <ClInclude Include="game_list.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="gpu_hw_d3d12.h" />
@@ -126,9 +134,9 @@
     </ClInclude>
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host.h" />
-    <ClInclude Include="host_display.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="host_settings.h" />
+    <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="input_types.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="libcrypt_serials.h" />
@@ -147,7 +155,6 @@
     <ClInclude Include="resources.h" />
     <ClInclude Include="save_state_version.h" />
     <ClInclude Include="settings.h" />
-    <ClInclude Include="shadergen.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="spu.h" />
@@ -158,6 +165,9 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\dep\discord-rpc\discord-rpc.vcxproj">
+      <Project>{4266505b-dbaf-484b-ab31-b53b9c8235b3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
@@ -184,6 +194,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
       <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\scmversion\scmversion.vcxproj">
+      <Project>{075ced82-6a20-46df-94c7-9624ac9ddbeb}</Project>
     </ProjectReference>
     <ProjectReference Include="..\util\util.vcxproj">
       <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>

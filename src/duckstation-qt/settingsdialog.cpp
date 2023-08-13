@@ -5,11 +5,8 @@
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "biossettingswidget.h"
-#include "common/assert.h"
-#include "common/file_system.h"
 #include "consolesettingswidget.h"
-#include "core/host.h"
-#include "core/host_settings.h"
+
 #include "displaysettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "enhancementsettingswidget.h"
@@ -21,13 +18,21 @@
 #include "memorycardsettingswidget.h"
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
+
+#include "core/host.h"
+#include "core/host_settings.h"
+
 #include "util/ini_settings_interface.h"
+
+#include "common/assert.h"
+#include "common/file_system.h"
+
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
 #ifdef WITH_CHEEVOS
 #include "achievementsettingswidget.h"
-#include "frontend-common/achievements.h"
+#include "core/achievements_private.h"
 #endif
 
 static QList<SettingsDialog*> s_open_game_properties_dialogs;

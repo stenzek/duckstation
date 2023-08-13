@@ -8,7 +8,7 @@
 #include "controllersettingwidgetbinder.h"
 #include "core/controller.h"
 #include "core/host_settings.h"
-#include "frontend-common/input_manager.h"
+#include "util/input_manager.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingsdialog.h"

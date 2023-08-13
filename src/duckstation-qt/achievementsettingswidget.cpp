@@ -3,13 +3,16 @@
 
 #include "achievementsettingswidget.h"
 #include "achievementlogindialog.h"
-#include "common/string_util.h"
-#include "core/system.h"
-#include "frontend-common/achievements.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+#include "core/achievements_private.h"
+#include "core/system.h"
+
+#include "common/string_util.h"
+
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 

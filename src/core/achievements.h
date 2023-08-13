@@ -4,6 +4,8 @@
 #pragma once
 #include "common/types.h"
 
+#include <string>
+
 class StateWrapper;
 class CDImage;
 

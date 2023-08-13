@@ -12,11 +12,11 @@
 
 // For enumerating adapters.
 #ifdef _WIN32
-#include "frontend-common/d3d11_host_display.h"
-#include "frontend-common/d3d12_host_display.h"
+#include "util/d3d11_host_display.h"
+#include "util/d3d12_host_display.h"
 #endif
 #ifdef WITH_VULKAN
-#include "frontend-common/vulkan_host_display.h"
+#include "util/vulkan_host_display.h"
 #endif
 
 DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* parent)

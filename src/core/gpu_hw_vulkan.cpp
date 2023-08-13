@@ -11,7 +11,7 @@
 #include "common/vulkan/shader_cache.h"
 #include "common/vulkan/util.h"
 #include "gpu_hw_shadergen.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "system.h"
 #include "util/state_wrapper.h"
 Log_SetChannel(GPU_HW_Vulkan);

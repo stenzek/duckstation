@@ -4,7 +4,7 @@
 #pragma once
 #include "common/heap_array.h"
 #include "gpu.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include <sstream>
 #include <string>
 #include <tuple>

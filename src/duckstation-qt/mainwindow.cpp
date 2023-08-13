@@ -5,20 +5,9 @@
 #include "aboutdialog.h"
 #include "autoupdaterdialog.h"
 #include "cheatmanagerdialog.h"
-#include "common/assert.h"
-#include "common/file_system.h"
-#include "common/log.h"
-#include "core/achievements.h"
-#include "core/host.h"
-#include "core/host_display.h"
-#include "core/memory_card.h"
-#include "core/settings.h"
-#include "core/system.h"
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
-#include "frontend-common/game_list.h"
-#include "frontend-common/platform_misc.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "memorycardeditordialog.h"
@@ -26,7 +15,21 @@
 #include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+#include "core/achievements.h"
+#include "core/game_list.h"
+#include "core/host.h"
+#include "core/memory_card.h"
+#include "core/settings.h"
+#include "core/system.h"
+
 #include "util/cd_image.h"
+#include "util/host_display.h"
+#include "util/platform_misc.h"
+
+#include "common/assert.h"
+#include "common/file_system.h"
+#include "common/log.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -44,7 +47,7 @@
 #include <cmath>
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/achievements.h"
+#include "core/achievements_private.h"
 #endif
 
 #ifdef _WIN32

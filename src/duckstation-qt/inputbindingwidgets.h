@@ -3,7 +3,7 @@
 
 #pragma once
 #include "common/types.h"
-#include "frontend-common/input_manager.h"
+#include "util/input_manager.h"
 #include <QtWidgets/QPushButton>
 #include <optional>
 

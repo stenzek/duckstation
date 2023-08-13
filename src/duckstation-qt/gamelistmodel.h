@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "core/game_database.h"
+#include "core/game_list.h"
+#include "core/types.h"
+
 #include "common/heterogeneous_containers.h"
 #include "common/lru_cache.h"
-#include "core/game_database.h"
-#include "core/types.h"
-#include "frontend-common/game_list.h"
+
 #include <QtCore/QAbstractTableModel>
 #include <QtGui/QPixmap>
 #include <algorithm>

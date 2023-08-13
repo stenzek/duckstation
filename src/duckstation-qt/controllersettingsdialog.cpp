@@ -8,7 +8,7 @@
 #include "controllerglobalsettingswidget.h"
 #include "core/controller.h"
 #include "core/host_settings.h"
-#include "frontend-common/input_manager.h"
+#include "util/input_manager.h"
 #include "hotkeysettingswidget.h"
 #include "qthost.h"
 #include "util/ini_settings_interface.h"

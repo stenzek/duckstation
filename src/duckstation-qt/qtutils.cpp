@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qtutils.h"
+
+#include "core/game_list.h"
+#include "core/system.h"
+
 #include "common/byte_stream.h"
 #include "common/make_array.h"
-#include "core/system.h"
-#include "frontend-common/game_list.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>

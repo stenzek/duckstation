@@ -2,7 +2,6 @@ add_subdirectory(common)
 add_subdirectory(util)
 add_subdirectory(core)
 add_subdirectory(scmversion)
-add_subdirectory(frontend-common)
 
 if(NOT ANDROID)
   add_subdirectory(common-tests)

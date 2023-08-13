@@ -6,7 +6,7 @@
 #include "common/bitutils.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "timing_event.h"

@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamelistsettingswidget.h"
-#include "common/assert.h"
-#include "common/file_system.h"
-#include "common/string_util.h"
-#include "frontend-common/game_list.h"
+#include "core/game_list.h"
 #include "gamelistsearchdirectoriesmodel.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+
+#include "common/assert.h"
+#include "common/file_system.h"
+#include "common/string_util.h"
+
 #include <QtCore/QAbstractTableModel>
 #include <QtCore/QDebug>
 #include <QtCore/QSettings>

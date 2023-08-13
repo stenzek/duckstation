@@ -8,7 +8,7 @@
 #include "common/threading.h"
 #include "core/host.h"
 #include "core/host_settings.h"
-#include "frontend-common/imgui_manager.h"
+#include "util/imgui_manager.h"
 #include "nogui_host.h"
 #include "resource.h"
 #include "win32_key_names.h"

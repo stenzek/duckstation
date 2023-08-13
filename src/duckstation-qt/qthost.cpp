@@ -2,6 +2,24 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qthost.h"
+#include "displaywidget.h"
+#include "mainwindow.h"
+#include "qtprogresscallback.h"
+#include "qtutils.h"
+
+#include "core/cheats.h"
+#include "core/controller.h"
+#include "core/fullscreen_ui.h"
+#include "core/game_database.h"
+#include "core/game_list.h"
+#include "core/gpu.h"
+#include "core/host.h"
+#include "core/host_settings.h"
+#include "core/imgui_overlays.h"
+#include "core/memory_card.h"
+#include "core/spu.h"
+#include "core/system.h"
+
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/crash_handler.h"
@@ -10,28 +28,16 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/window_info.h"
-#include "core/cheats.h"
-#include "core/controller.h"
-#include "core/game_database.h"
-#include "core/gpu.h"
-#include "core/host.h"
-#include "core/host_settings.h"
-#include "core/memory_card.h"
-#include "core/spu.h"
-#include "core/system.h"
-#include "displaywidget.h"
-#include "frontend-common/fullscreen_ui.h"
-#include "frontend-common/game_list.h"
-#include "frontend-common/imgui_manager.h"
-#include "frontend-common/imgui_overlays.h"
-#include "frontend-common/input_manager.h"
-#include "imgui.h"
-#include "mainwindow.h"
-#include "qtprogresscallback.h"
-#include "qtutils.h"
-#include "scmversion/scmversion.h"
+
 #include "util/audio_stream.h"
+#include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
+#include "util/input_manager.h"
+
+#include "scmversion/scmversion.h"
+
+#include "imgui.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
@@ -49,7 +55,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
-Log_SetChannel(EmuThread);
+
+Log_SetChannel(QtHost);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
@@ -57,7 +64,7 @@ Log_SetChannel(EmuThread);
 #endif
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/achievements.h"
+#include "core/achievements_private.h"
 #endif
 
 static constexpr u32 SETTINGS_VERSION = 3;
@@ -807,6 +814,7 @@ void EmuThread::releaseHostDisplay()
     return;
 
   CommonHost::ReleaseHostDisplayResources();
+  FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();
   g_host_display.reset();
   emit destroyDisplayRequested();

@@ -4,7 +4,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "fmt/format.h"
-#include "frontend-common/imgui_manager.h"
+#include "util/imgui_manager.h"
 #include "imgui.h"
 #include "qthost.h"
 #include <QtCore/QFile>

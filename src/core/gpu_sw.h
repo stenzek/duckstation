@@ -5,7 +5,7 @@
 #include "common/heap_array.h"
 #include "gpu.h"
 #include "gpu_sw_backend.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include <array>
 #include <memory>
 #include <vector>

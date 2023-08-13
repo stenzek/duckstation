@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "frontend-common/game_list.h"
 #include "ui_emptygamelistwidget.h"
 #include "ui_gamelistwidget.h"
+
+#include "core/game_list.h"
+
 #include <QtWidgets/QListView>
 #include <QtWidgets/QTableView>
 

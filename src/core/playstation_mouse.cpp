@@ -6,7 +6,7 @@
 #include "common/log.h"
 #include "gpu.h"
 #include "host.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "system.h"
 #include "util/state_wrapper.h"
 #include <array>

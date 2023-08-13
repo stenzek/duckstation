@@ -16,6 +16,8 @@ add_library(core
     cheats.h
     controller.cpp
     controller.h
+    common_host.cpp
+    common_host.h
     cpu_code_cache.cpp
     cpu_code_cache.h
     cpu_core.cpp
@@ -29,8 +31,12 @@ add_library(core
     digital_controller.h
     dma.cpp
     dma.h
+    fullscreen_ui.cpp
+    fullscreen_ui.h
     game_database.cpp
     game_database.h
+    game_list.cpp
+    game_list.h
     gdb_protocol.cpp
     gdb_protocol.h
     gpu.cpp
@@ -54,12 +60,13 @@ add_library(core
     gte_types.h
     host.cpp
     host.h
-    host_display.cpp
-    host_display.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
+    host_settings.cpp
     host_settings.h
     input_types.h
+    imgui_overlays.cpp
+    imgui_overlays.h
     interrupt_controller.cpp
     interrupt_controller.h
     libcrypt_serials.cpp
@@ -90,8 +97,6 @@ add_library(core
     settings.cpp
     settings.h
     shader_cache_version.h
-    shadergen.cpp
-    shadergen.h
     sio.cpp
     sio.h
     spu.cpp
@@ -181,5 +186,20 @@ else()
 endif()
 
 if(ENABLE_CHEEVOS)
-  target_compile_definitions(core PRIVATE -DWITH_CHEEVOS=1)
+  target_sources(core PRIVATE
+    achievements.cpp
+    achievements_private.h
+  )
+  target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
+  target_link_libraries(core PRIVATE rcheevos rapidjson)
 endif()
+
+if(ENABLE_DISCORD_PRESENCE)
+  target_compile_definitions(core PUBLIC -DWITH_DISCORD_PRESENCE=1)
+  target_link_libraries(core PRIVATE discord-rpc)
+endif()
+
+# Copy the provided data directory to the output directory.
+add_custom_command(TARGET core POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+)

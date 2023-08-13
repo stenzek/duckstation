@@ -25,7 +25,7 @@
 #include "gpu.h"
 #include "gte.h"
 #include "host.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "host_interface_progress_callback.h"
 #include "host_settings.h"
 #include "interrupt_controller.h"

@@ -170,7 +170,7 @@ qt6_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(duckstation-qt PRIVATE frontend-common core common imgui glad minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+target_link_libraries(duckstation-qt PRIVATE core common imgui glad minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
 
 if(WIN32)
   # We want a Windows subsystem application not console.

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "postprocessingchainconfigwidget.h"
-#include "frontend-common/postprocessing_chain.h"
 #include "postprocessingshaderconfigwidget.h"
 #include "qthost.h"
+#include "util/postprocessing_chain.h"
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>

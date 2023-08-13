@@ -2,6 +2,30 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "nogui_host.h"
+#include "nogui_platform.h"
+
+#include "scmversion/scmversion.h"
+
+#include "core/common_host.h"
+#include "core/controller.h"
+#include "core/fullscreen_ui.h"
+#include "core/game_list.h"
+#include "core/gpu.h"
+#include "core/host.h"
+#include "core/host_settings.h"
+#include "core/imgui_overlays.h"
+#include "core/settings.h"
+#include "core/system.h"
+
+#include "util/host_display.h"
+#include "util/imgui_manager.h"
+#include "util/ini_settings_interface.h"
+#include "util/input_manager.h"
+
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_stdlib.h"
+
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/crash_handler.h"
@@ -10,35 +34,17 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
-#include "core/controller.h"
-#include "core/gpu.h"
-#include "core/host.h"
-#include "core/host_display.h"
-#include "core/host_settings.h"
-#include "core/settings.h"
-#include "core/system.h"
-#include "frontend-common/common_host.h"
-#include "frontend-common/fullscreen_ui.h"
-#include "frontend-common/game_list.h"
-#include "frontend-common/icon.h"
-#include "frontend-common/imgui_manager.h"
-#include "frontend-common/imgui_overlays.h"
-#include "frontend-common/input_manager.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_stdlib.h"
-#include "nogui_platform.h"
-#include "scmversion/scmversion.h"
-#include "util/ini_settings_interface.h"
+
 #include <cinttypes>
 #include <cmath>
 #include <condition_variable>
 #include <csignal>
 #include <thread>
+
 Log_SetChannel(NoGUIHost);
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/achievements.h"
+#include "core/achievements_private.h"
 #endif
 
 #ifdef _WIN32
@@ -731,6 +737,7 @@ void NoGUIHost::ReleaseHostDisplay()
   InputManager::CloseSources();
 
   CommonHost::ReleaseHostDisplayResources();
+  FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();
   g_host_display.reset();
   g_nogui_window->ExecuteInMessageLoop([]() {

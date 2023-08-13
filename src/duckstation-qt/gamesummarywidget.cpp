@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamesummarywidget.h"
-#include "common/string_util.h"
-#include "core/game_database.h"
-#include "fmt/format.h"
-#include "frontend-common/game_list.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
 #include "settingsdialog.h"
+
+#include "core/game_database.h"
+#include "core/game_list.h"
+
+#include "common/string_util.h"
+
+#include "fmt/format.h"
+
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFuture>
 #include <QtWidgets/QMessageBox>

@@ -18,14 +18,11 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\frontend-common\frontend-common.vcxproj">
-      <Project>{6245dec8-d2da-47ee-a373-cbd6fcf3ece6}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\util\util.vcxproj">
       <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\dep\msvc\vsprops\ConsoleApplication.props" />
-  <Import Project="..\frontend-common\frontend-common.props" />
+  <Import Project="..\core\core.props" />
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

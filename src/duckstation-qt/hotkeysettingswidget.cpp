@@ -3,7 +3,7 @@
 
 #include "hotkeysettingswidget.h"
 #include "controllersettingsdialog.h"
-#include "frontend-common/input_manager.h"
+#include "util/input_manager.h"
 #include "inputbindingwidgets.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"

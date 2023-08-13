@@ -4,7 +4,7 @@
 #pragma once
 #include "common/types.h"
 #include "ui_postprocessingchainconfigwidget.h"
-#include "frontend-common/postprocessing_chain.h"
+#include "util/postprocessing_chain.h"
 #include <QtWidgets/QWidget>
 #include <optional>
 #include <memory>

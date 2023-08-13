@@ -7,7 +7,7 @@
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
-#include "frontend-common/sdl_input_source.h"
+#include "util/sdl_input_source.h"
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
   : QWidget(parent), m_dialog(dialog)

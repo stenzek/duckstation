@@ -8,7 +8,7 @@
 #include "common/timer.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_backend.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "shader_cache_version.h"
 #include "system.h"
 #include "util/state_wrapper.h"

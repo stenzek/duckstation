@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "audiosettingswidget.h"
-#include "core/spu.h"
-#include "frontend-common/common_host.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+#include "core/common_host.h"
+#include "core/spu.h"
+
 #include "util/audio_stream.h"
+
 #include <cmath>
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
@@ -107,8 +110,8 @@ void AudioSettingsWidget::updateDriverNames()
 #ifdef WITH_CUBEB
   if (backend == AudioBackend::Cubeb)
   {
-    names = CommonHost::GetCubebDriverNames();
-    devices = CommonHost::GetCubebOutputDevices(m_dialog->getEffectiveStringValue("Audio", "Driver", "").c_str());
+    names = AudioStream::GetCubebDriverNames();
+    devices = AudioStream::GetCubebOutputDevices(m_dialog->getEffectiveStringValue("Audio", "Driver", "").c_str());
   }
 #endif
 

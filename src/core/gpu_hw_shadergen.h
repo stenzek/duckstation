@@ -3,7 +3,7 @@
 
 #pragma once
 #include "gpu_hw.h"
-#include "shadergen.h"
+#include "util/shadergen.h"
 
 class GPU_HW_ShaderGen : public ShaderGen
 {

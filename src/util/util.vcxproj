@@ -5,18 +5,50 @@
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
+    <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="cue_parser.h" />
+    <ClInclude Include="d3d11_host_display.h" />
+    <ClInclude Include="d3d12_host_display.h" />
+    <ClInclude Include="dinput_source.h" />
+    <ClInclude Include="host_display.h" />
+    <ClInclude Include="imgui_fullscreen.h" />
+    <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="imgui_impl_dx12.h" />
+    <ClInclude Include="imgui_impl_opengl3.h">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_vulkan.h">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="ini_settings_interface.h" />
+    <ClInclude Include="input_manager.h" />
+    <ClInclude Include="input_source.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="jit_code_buffer.h" />
+    <ClInclude Include="opengl_host_display.h">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
+    <ClInclude Include="platform_misc.h" />
+    <ClInclude Include="postprocessing_chain.h" />
+    <ClInclude Include="postprocessing_shader.h" />
+    <ClInclude Include="postprocessing_shadergen.h" />
+    <ClInclude Include="sdl_input_source.h" />
+    <ClInclude Include="shadergen.h" />
     <ClInclude Include="shiftjis.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="cd_xa.h" />
+    <ClInclude Include="vulkan_host_display.h">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="wav_writer.h" />
+    <ClInclude Include="win32_raw_input_source.h" />
+    <ClInclude Include="xaudio2_audio_stream.h" />
+    <ClInclude Include="xinput_source.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="audio_stream.cpp" />
@@ -31,20 +63,58 @@
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />
+    <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />
+    <ClCompile Include="d3d11_host_display.cpp" />
+    <ClCompile Include="d3d12_host_display.cpp" />
+    <ClCompile Include="dinput_source.cpp" />
+    <ClCompile Include="host_display.cpp" />
+    <ClCompile Include="imgui_fullscreen.cpp" />
+    <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui_impl_dx12.cpp" />
+    <ClCompile Include="imgui_impl_opengl3.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
+    <ClCompile Include="input_manager.cpp" />
+    <ClCompile Include="input_source.cpp" />
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />
+    <ClCompile Include="opengl_host_display.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="platform_misc_win32.cpp" />
+    <ClCompile Include="postprocessing_chain.cpp" />
+    <ClCompile Include="postprocessing_shader.cpp" />
+    <ClCompile Include="postprocessing_shadergen.cpp" />
+    <ClCompile Include="sdl_input_source.cpp" />
+    <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="memory_arena.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
+    <ClCompile Include="vulkan_host_display.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="wav_writer.cpp" />
+    <ClCompile Include="win32_raw_input_source.cpp" />
+    <ClCompile Include="xaudio2_audio_stream.cpp" />
+    <ClCompile Include="xinput_source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">
+      <Project>{72f9423c-91ee-4487-aac6-555ed6f61aa1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
+      <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\libchdr\libchdr.vcxproj">
       <Project>{425d6c99-d1c8-43c2-b8ac-4d7b1d941017}</Project>
     </ProjectReference>

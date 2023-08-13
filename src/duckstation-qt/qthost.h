@@ -3,13 +3,13 @@
 
 #pragma once
 #include "core/host.h"
-#include "core/host_display.h"
+#include "util/host_display.h"
 #include "core/host_settings.h"
 #include "core/system.h"
 #include "core/types.h"
-#include "frontend-common/common_host.h"
-#include "frontend-common/game_list.h"
-#include "frontend-common/input_manager.h"
+#include "core/common_host.h"
+#include "core/game_list.h"
+#include "util/input_manager.h"
 #include "gdbserver.h"
 #include "qtutils.h"
 #include <QtCore/QByteArray>

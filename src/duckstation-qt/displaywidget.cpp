@@ -5,7 +5,7 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
-#include "frontend-common/imgui_manager.h"
+#include "util/imgui_manager.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"

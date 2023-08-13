@@ -8,7 +8,7 @@
 #include "common/string_util.h"
 #include "dma.h"
 #include "host.h"
-#include "host_display.h"
+#include "util/host_display.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
