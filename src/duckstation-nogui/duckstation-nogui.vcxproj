@@ -41,15 +41,24 @@
   <ItemGroup>
     <ResourceCompile Include="duckstation-nogui.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\frontend-common\frontend-common.vcxproj">
+      <Project>{6245dec8-d2da-47ee-a373-cbd6fcf3ece6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0A172B2E-DC67-49FC-A4C1-975F93C586C4}</ProjectGuid>
   </PropertyGroup>
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
   <Import Project="..\frontend-common\frontend-common.props" />
-  <ItemDefinitionGroup>
-    <Link>
-      <AdditionalDependencies>$(RootBuildDir)frontend-common\frontend-common.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

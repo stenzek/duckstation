@@ -157,6 +157,38 @@
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
+      <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\rainterface\rainterface.vcxproj" Condition="'$(Platform)'!='ARM64'">
+      <Project>{e4357877-d459-45c7-b8f6-dcbb587bb528}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
+      <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
+      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\tinyxml2\tinyxml2.vcxproj">
+      <Project>{933118a9-68c5-47b4-b151-b03c93961623}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\vixl\vixl.vcxproj" Condition="'$(Platform)'=='ARM64'">
+      <Project>{8906836e-f06e-46e8-b11a-74e5e8c7b8fb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\xxhash\xxhash.vcxproj">
+      <Project>{09553c96-9f39-49bf-8ae6-7acbd07c410c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\zlib\zlib.vcxproj">
+      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
+      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{868B98C8-65A1-494B-8346-250A73A48C0A}</ProjectGuid>
   </PropertyGroup>

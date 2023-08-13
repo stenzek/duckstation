@@ -78,6 +78,29 @@
     <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="xinput_source.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">
+      <Project>{72f9423c-91ee-4487-aac6-555ed6f61aa1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\discord-rpc\discord-rpc.vcxproj">
+      <Project>{4266505b-dbaf-484b-ab31-b53b9c8235b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
+      <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\simpleini\simpleini.vcxproj">
+      <Project>{3773f4cc-614e-4028-8595-22e08ca649e3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\tinyxml2\tinyxml2.vcxproj">
+      <Project>{933118a9-68c5-47b4-b151-b03c93961623}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\scmversion\scmversion.vcxproj">
+      <Project>{075ced82-6a20-46df-94c7-9624ac9ddbeb}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6245DEC8-D2DA-47EE-A373-CBD6FCF3ECE6}</ProjectGuid>
   </PropertyGroup>

@@ -196,6 +196,29 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dep\fmt\fmt.vcxproj">
+      <Project>{8be398e6-b882-4248-9065-fecc8728e038}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\glad\glad.vcxproj" Condition="'$(Platform)'!='ARM64'">
+      <Project>{43540154-9e1e-409c-834f-b84be5621388}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\glslang\glslang.vcxproj" Condition="'$(Platform)'!='ARM64'">
+      <Project>{7f909e29-4808-4bd9-a60c-56c51a3aaec2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
+      <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
+      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\zlib\zlib.vcxproj">
+      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
+      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE054E08-3799-4A59-A422-18259C105FFD}</ProjectGuid>
   </PropertyGroup>

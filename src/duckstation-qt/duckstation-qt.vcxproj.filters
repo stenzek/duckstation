@@ -94,6 +94,7 @@
     <ClCompile Include="coverdownloaddialog.cpp" />
     <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
+    <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />

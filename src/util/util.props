@@ -6,13 +6,7 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);SOUNDTOUCH_FLOAT_SAMPLES;SOUNDTOUCH_ALLOW_SSE;ST_NO_EXCEPTION_HANDLING=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include</AdditionalIncludeDirectories>
     </ClCompile>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup>
-    <Link>
-      <AdditionalDependencies>$(RootBuildDir)soundtouch\soundtouch.lib;$(RootBuildDir)simpleini\simpleini.lib;$(RootBuildDir)libchdr\libchdr.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
 </Project>

@@ -4,14 +4,13 @@
     <ClCompile>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">WITH_OPENGL=1;WITH_VULKAN=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\gsl\include;$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\gsl\include;$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">$(RootBuildDir)glad\glad.lib;$(RootBuildDir)glslang\glslang.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies>$(RootBuildDir)zstd\zstd.lib;$(RootBuildDir)fmt\fmt.lib;$(RootBuildDir)zlib\zlib.lib;$(RootBuildDir)minizip\minizip.lib;$(RootBuildDir)lzma\lzma.lib;d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

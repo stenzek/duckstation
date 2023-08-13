@@ -4,21 +4,9 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>$(RootBuildDir)core\core.lib;$(RootBuildDir)scmversion\scmversion.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup>
-    <ClCompile>
       <PreprocessorDefinitions>WITH_SDL2=1;WITH_DINPUT=1;WITH_DISCORD_PRESENCE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\discord-rpc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\discord-rpc\include</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>$(RootBuildDir)cubeb\cubeb.lib;$(RootBuildDir)discord-rpc\discord-rpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
 
   <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
