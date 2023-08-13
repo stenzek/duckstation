@@ -100,6 +100,7 @@ struct Settings
   bool gpu_use_software_renderer_for_readbacks = false;
   bool gpu_threaded_presentation = true;
   bool gpu_use_debug_device = false;
+  bool gpu_disable_shader_cache = false;
   bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = true;
@@ -401,7 +402,9 @@ struct Settings
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D12;
 #elif defined(_WIN32)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
-#elif defined(WITH_OPENGL) && (!defined(__APPLE__) || !defined(WITH_VULKAN))
+#elif defined(__APPLE__)
+  static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareMetal;
+#elif defined(WITH_OPENGL)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
 #elif defined(WITH_VULKAN)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareVulkan;

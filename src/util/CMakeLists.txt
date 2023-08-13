@@ -21,8 +21,12 @@ add_library(util
   cd_xa.h
   cue_parser.cpp
   cue_parser.h
-  host_display.cpp
-  host_display.h
+  gpu_device.cpp
+  gpu_device.h
+  gpu_shader_cache.cpp
+  gpu_shader_cache.h
+  gpu_texture.cpp
+  gpu_texture.h
   imgui_fullscreen.cpp
   imgui_fullscreen.h
   imgui_manager.cpp
@@ -46,8 +50,8 @@ add_library(util
   postprocessing_chain.h
   postprocessing_shader.cpp
   postprocessing_shader.h
-  postprocessing_shadergen.cpp
-  postprocessing_shadergen.h
+  postprocessing_shader_glsl.cpp
+  postprocessing_shader_glsl.h
   shadergen.cpp
   shadergen.h
   shiftjis.cpp
@@ -56,12 +60,14 @@ add_library(util
   state_wrapper.h
   wav_writer.cpp
   wav_writer.h
+  window_info.cpp
+  window_info.h
 )
 
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
-target_link_libraries(util PRIVATE stb libchdr zlib soundtouch)
+target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd)
 
 if(ENABLE_CUBEB)
   target_sources(util PRIVATE
@@ -72,23 +78,118 @@ if(ENABLE_CUBEB)
   target_link_libraries(util PRIVATE cubeb)
 endif()
 
+if(USE_X11)
+  target_compile_definitions(util PRIVATE "-DUSE_X11=1")
+  target_include_directories(util PRIVATE "${X11_INCLUDE_DIR}" "${X11_Xrandr_INCLUDE_PATH}")
+  target_link_libraries(util PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
+endif()
+
+if(USE_WAYLAND)
+  target_compile_definitions(util PRIVATE "-DUSE_WAYLAND=1")
+elseif(SUPPORTS_WAYLAND)
+  message(WARNING "Wayland support for renderers is disabled.\nDuckStation will FAIL to start on Wayland.")
+endif()
+
 if(ENABLE_OPENGL)
   target_sources(util PRIVATE
-    opengl_host_display.cpp
-    opengl_host_display.h
-    imgui_impl_opengl3.cpp
-    imgui_impl_opengl3.h
+    gl/context.cpp
+    gl/context.h
+    opengl_device.cpp
+    opengl_device.h
+    opengl_loader.h
+    opengl_pipeline.cpp
+    opengl_pipeline.h
+    opengl_stream_buffer.cpp
+    opengl_stream_buffer.h
+    opengl_texture.cpp
+    opengl_texture.h
   )
+  target_compile_definitions(util PUBLIC "WITH_OPENGL=1")
   target_link_libraries(util PRIVATE glad)
+
+  if(WIN32)
+    target_sources(util PRIVATE
+      gl/context_wgl.cpp
+      gl/context_wgl.h
+    )
+  endif()
+
+  if(LINUX OR FREEBSD OR ANDROID)
+    target_sources(util PRIVATE
+      gl/context_egl.cpp
+      gl/context_egl.h
+    )
+    target_compile_definitions(util PRIVATE "-DUSE_EGL=1")
+
+    if(USE_X11)
+      target_sources(util PRIVATE
+        gl/context_egl_x11.cpp
+        gl/context_egl_x11.h
+      )
+
+      # We set EGL_NO_X11 because otherwise X comes in with its macros and breaks
+      # a bunch of files from compiling, if we include the EGL headers. This just
+      # makes the data types opaque, we can still use it with X11 if needed.
+      target_compile_definitions(util PRIVATE "-DEGL_NO_X11=1")
+    endif()
+    if(USE_WAYLAND)
+      target_sources(util PRIVATE
+        gl/context_egl_wayland.cpp
+        gl/context_egl_wayland.h
+      )
+    endif()
+    if(ANDROID)
+      target_sources(util PRIVATE
+        gl/context_egl_android.cpp
+        gl/context_egl_android.h
+      )
+    endif()
+  endif()
+
+  if(APPLE)
+    target_sources(util PRIVATE
+      gl/context_agl.mm
+      gl/context_agl.h
+    )
+  endif()
+endif()
+
+if(ENABLE_VULKAN OR APPLE)
+  target_sources(util PRIVATE
+    spirv_compiler.cpp
+    spirv_compiler.h
+  )
+  target_link_libraries(util PRIVATE glslang)
+  if(APPLE)
+    target_link_libraries(util PRIVATE spirv-cross)
+  endif()
 endif()
 
 if(ENABLE_VULKAN)
   target_sources(util PRIVATE
-    imgui_impl_vulkan.cpp
-    imgui_impl_vulkan.h
-    vulkan_host_display.cpp
-    vulkan_host_display.h
+    vulkan_builders.cpp
+    vulkan_builders.h
+    vulkan_device.cpp
+    vulkan_device.h
+    vulkan_entry_points.h
+    vulkan_entry_points.inl
+    vulkan_loader.cpp
+    vulkan_loader.h
+    vulkan_pipeline.cpp
+    vulkan_pipeline.h
+    vulkan_stream_buffer.cpp
+    vulkan_stream_buffer.h
+    vulkan_swap_chain.cpp
+    vulkan_swap_chain.h
+    vulkan_texture.cpp
+    vulkan_texture.h
   )
+  target_compile_definitions(util PUBLIC "WITH_VULKAN=1")
+
+  if(APPLE)
+    # Needed for Vulkan Swap Chain.
+    target_link_libraries(util PRIVATE "objc")
+  endif()
 endif()
 
 if(SDL2_FOUND)
@@ -107,11 +208,6 @@ if(SDL2_FOUND)
   endif()
 endif()
 
-if(USE_X11)
-  target_compile_definitions(util PRIVATE "-DUSE_X11=1")
-  target_include_directories(util PRIVATE "${X11_INCLUDE_DIR}")
-endif()
-
 if(USE_DBUS)
 	target_compile_definitions(util PRIVATE USE_DBUS)
 	find_package(PkgConfig REQUIRED)
@@ -122,16 +218,8 @@ endif()
 
 if(WIN32)
   target_sources(util PRIVATE
-    d3d11_host_display.cpp
-    d3d11_host_display.h
-    d3d12_host_display.cpp
-    d3d12_host_display.h
     dinput_source.cpp
     dinput_source.h
-    imgui_impl_dx11.cpp
-    imgui_impl_dx11.h
-    imgui_impl_dx12.cpp
-    imgui_impl_dx12.h
     platform_misc_win32.cpp
     win32_raw_input_source.cpp
     win32_raw_input_source.h
@@ -140,13 +228,21 @@ if(WIN32)
     xinput_source.cpp
     xinput_source.h
   )
-  target_link_libraries(util PRIVATE d3d11.lib dxgi.lib winmm.lib)
+  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib)
 elseif(APPLE)
-  find_library(IOK_LIBRARY IOKit REQUIRED)
-  target_link_libraries(util PRIVATE "${IOK_LIBRARY}")
   target_sources(util PRIVATE
+    cocoa_tools.h
+    cocoa_tools.mm
+    metal_device.h
+    metal_device.mm
+    metal_stream_buffer.h
+    metal_stream_buffer.mm
     platform_misc_mac.mm
   )
+  find_library(IOK_LIBRARY IOKit REQUIRED)
+  find_library(METAL_LIBRARY Metal)
+  find_library(QUARTZCORE_LIBRARY QuartzCore)
+  target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY})
 elseif(NOT ANDROID)
   target_sources(util PRIVATE
     platform_misc_unix.cpp

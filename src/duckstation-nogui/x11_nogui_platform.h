@@ -48,6 +48,7 @@ public:
   void SetDefaultConfig(SettingsInterface& si) override;
 
   bool CreatePlatformWindow(std::string title) override;
+  bool HasPlatformWindow() const override;
   void DestroyPlatformWindow() override;
   std::optional<WindowInfo> GetPlatformWindowInfo() override;
   void SetPlatformWindowTitle(std::string title) override;

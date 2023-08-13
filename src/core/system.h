@@ -489,16 +489,18 @@ void PumpMessagesOnCPUThread();
 /// Requests a specific display window size.
 void RequestResizeHostDisplay(s32 width, s32 height);
 
-/// Requests shut down and exit of the hosting application. This may not actually exit,
-/// if the user cancels the shutdown confirmation.
-void RequestExit(bool allow_confirm);
-
 /// Requests shut down of the current virtual machine.
 void RequestSystemShutdown(bool allow_confirm, bool save_state);
 
-/// Returns true if the hosting application is currently fullscreen.
-bool IsFullscreen();
+/// Attempts to create the rendering device backend.
+bool CreateGPUDevice(RenderAPI api);
 
-/// Alters fullscreen state of hosting application.
-void SetFullscreen(bool enabled);
+/// Handles fullscreen transitions and such.
+void UpdateDisplayWindow();
+
+/// Called when the window is resized.
+void ResizeDisplayWindow(s32 width, s32 height, float scale);
+
+/// Destroys any active rendering device.
+void ReleaseGPUDevice();
 } // namespace Host

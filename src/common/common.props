@@ -2,15 +2,13 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">WITH_OPENGL=1;WITH_VULKAN=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\gsl\include;$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\stb\include;$(SolutionDir)dep\glslang;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\gsl\include;$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\stb\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib;winhttp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

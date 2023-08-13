@@ -67,14 +67,12 @@ if(USE_WAYLAND)
   )
 endif()
 
-if(USE_DRMKMS AND USE_EVDEV)
-  message(STATUS "Building VTY/DRM/KMS/EVDev NoGUI Platform.")
-  target_compile_definitions(duckstation-nogui PRIVATE "NOGUI_PLATFORM_VTY=1" "WITH_DRMKMS=1")
-  target_sources(duckstation-nogui PRIVATE 
-    vty_key_names.h
-    vty_nogui_platform.cpp
-    vty_nogui_platform.h
+if(APPLE)
+  message(STATUS "Building Cocoa NoGUI Platform.")
+  target_sources(duckstation-nogui PRIVATE
+    cocoa_key_names.h
+    cocoa_nogui_platform.mm
+    cocoa_nogui_platform.h
   )
-  target_include_directories(duckstation-nogui PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
-  target_link_libraries(duckstation-nogui PRIVATE ${LIBEVDEV_LIBRARIES})
 endif()
+

@@ -3,21 +3,25 @@
 
 #include "settings.h"
 #include "achievements.h"
+#include "controller.h"
+#include "host.h"
+#include "host_settings.h"
+#include "system.h"
+
+#include "util/gpu_device.h"
+
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "controller.h"
-#include "host.h"
-#include "host_settings.h"
-#include "system.h"
-#include "util/host_display.h"
+
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <numeric>
+
 Log_SetChannel(Settings);
 
 Settings g_settings;
@@ -204,6 +208,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
+  gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -440,6 +445,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
   si.SetIntValue("GPU", "Multisamples", static_cast<long>(gpu_multisamples));
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
+  si.SetBoolValue("GPU", "DisableShaderCache", gpu_disable_shader_cache);
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);
@@ -877,6 +883,9 @@ static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef _WIN32
   "D3D11", "D3D12",
 #endif
+#ifdef __APPLE__
+  "Metal",
+#endif
 #ifdef WITH_VULKAN
   "Vulkan",
 #endif
@@ -887,6 +896,9 @@ static constexpr auto s_gpu_renderer_names = make_array(
 static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef _WIN32
   TRANSLATE_NOOP("GPURenderer", "Hardware (D3D11)"), TRANSLATE_NOOP("GPURenderer", "Hardware (D3D12)"),
+#endif
+#ifdef __APPLE__
+  TRANSLATE_NOOP("GPURenderer", "Hardware (Metal)"),
 #endif
 #ifdef WITH_VULKAN
   TRANSLATE_NOOP("GPURenderer", "Hardware (Vulkan)"),
@@ -930,6 +942,9 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
     case GPURenderer::HardwareD3D12:
       return RenderAPI::D3D12;
 #endif
+#ifdef __APPLE__
+      return RenderAPI::Metal;
+#endif
 #ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
       return RenderAPI::Vulkan;
@@ -940,7 +955,7 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
 #endif
     case GPURenderer::Software:
     default:
-      return HostDisplay::GetPreferredAPI();
+      return GPUDevice::GetPreferredAPI();
   }
 }
 
@@ -1073,11 +1088,10 @@ float Settings::GetDisplayAspectRatioValue() const
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      if (!g_host_display)
+      if (!g_gpu_device)
         return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
 
-      return static_cast<float>(g_host_display->GetWindowWidth()) /
-             static_cast<float>(g_host_display->GetWindowHeight());
+      return static_cast<float>(g_gpu_device->GetWindowWidth()) / static_cast<float>(g_gpu_device->GetWindowHeight());
     }
 
     case DisplayAspectRatio::Custom:

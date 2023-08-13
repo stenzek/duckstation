@@ -24,7 +24,7 @@
 #include "core/system.h"
 
 #include "util/cd_image.h"
-#include "util/host_display.h"
+#include "util/gpu_device.h"
 #include "util/platform_misc.h"
 
 #include "common/assert.h"
@@ -218,77 +218,33 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 #endif
 
-bool MainWindow::createDisplay(bool fullscreen, bool render_to_main)
+std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
+                                                          bool surfaceless, bool use_main_window_pos)
 {
-  Log_DevPrintf("createDisplay(%u, %u)", static_cast<u32>(fullscreen), static_cast<u32>(render_to_main));
-
-  const std::string fullscreen_mode(Host::GetBaseStringSettingValue("GPU", "FullscreenMode", ""));
-  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && g_host_display->SupportsFullscreen());
-
-  createDisplayWidget(fullscreen, render_to_main, is_exclusive_fullscreen);
-
-  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
-  if (!wi.has_value())
-  {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
-    destroyDisplayWidget(true);
-    return false;
-  }
-
-  g_emu_thread->connectDisplaySignals(m_display_widget);
-
-  if (!g_host_display->CreateDevice(wi.value(), System::ShouldUseVSync()))
-  {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
-    destroyDisplayWidget(true);
-    return false;
-  }
-
-  m_display_created = true;
-
-  if (is_exclusive_fullscreen)
-    setDisplayFullscreen(fullscreen_mode);
-
-  updateWindowTitle();
-  updateWindowState();
-
-  m_ui.actionStartFullscreenUI->setEnabled(false);
-  m_ui.actionStartFullscreenUI2->setEnabled(false);
-
-  updateDisplayWidgetCursor();
-  updateDisplayRelatedActions(true, render_to_main, fullscreen);
-
-  m_display_widget->setFocus();
-
-  g_host_display->DoneCurrent();
-  return true;
-}
-
-bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless)
-{
-  Log_DevPrintf("updateDisplay() fullscreen=%s render_to_main=%s surfaceless=%s", fullscreen ? "true" : "false",
-                render_to_main ? "true" : "false", surfaceless ? "true" : "false");
+  Log_DevPrintf(
+    "acquireRenderWindow() recreate=%s fullscreen=%s render_to_main=%s surfaceless=%s use_main_window_pos=%s",
+    recreate_window ? "true" : "false", fullscreen ? "true" : "false", render_to_main ? "true" : "false",
+    surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
 
   QWidget* container =
     m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
   const bool is_fullscreen = isRenderingFullscreen();
   const bool is_rendering_to_main = isRenderingToMain();
-  const std::string fullscreen_mode(Host::GetBaseStringSettingValue("GPU", "FullscreenMode", ""));
-  const bool is_exclusive_fullscreen = (fullscreen && !fullscreen_mode.empty() && g_host_display->SupportsFullscreen());
   const bool changing_surfaceless = (!m_display_widget != surfaceless);
-  if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main && !changing_surfaceless)
-    return true;
+  if (m_display_created && !recreate_window && fullscreen == is_fullscreen && is_rendering_to_main == render_to_main &&
+      !changing_surfaceless)
+  {
+    return m_display_widget ? m_display_widget->getWindowInfo() : WindowInfo();
+  }
 
   // Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
   // .. except on Wayland, where everything tends to break if you don't recreate.
   const bool has_container = (m_display_container != nullptr);
   const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-  if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container &&
-      !needs_container && !changing_surfaceless)
+  if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main &&
+      has_container == needs_container && !needs_container && !changing_surfaceless)
   {
     Log_DevPrintf("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
-    if (g_host_display->IsFullscreen())
-      g_host_display->SetFullscreen(false, 0, 0, 0.0f);
 
     // since we don't destroy the display widget, we need to save it here
     if (!is_fullscreen && !is_rendering_to_main)
@@ -306,53 +262,48 @@ bool MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfac
 
     updateDisplayWidgetCursor();
     m_display_widget->setFocus();
+    updateWindowState();
 
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    return true;
+    return m_display_widget->getWindowInfo();
   }
 
-  g_host_display->DestroySurface();
-
-  destroyDisplayWidget(surfaceless || fullscreen);
+  destroyDisplayWidget(surfaceless);
+  m_display_created = true;
 
   // if we're going to surfaceless, we're done here
   if (surfaceless)
-  {
-    updateWindowState();
-    updateDisplayRelatedActions(false, render_to_main, fullscreen);
-    return true;
-  }
+    return WindowInfo();
 
-  createDisplayWidget(fullscreen, render_to_main, is_exclusive_fullscreen);
+  createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
+
+  // we need the surface visible.. this might be able to be replaced with something else
+  QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())
   {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to get new window info from widget"));
+    QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
     destroyDisplayWidget(true);
-    return false;
+    return std::nullopt;
   }
 
   g_emu_thread->connectDisplaySignals(m_display_widget);
 
-  if (!g_host_display->ChangeWindow(wi.value()))
-    Panic("Failed to recreate surface on new widget.");
-
-  if (is_exclusive_fullscreen)
-    setDisplayFullscreen(fullscreen_mode);
-
   updateWindowTitle();
   updateWindowState();
+
+  m_ui.actionStartFullscreenUI->setEnabled(false);
+  m_ui.actionStartFullscreenUI2->setEnabled(false);
+
   updateDisplayWidgetCursor();
   updateDisplayRelatedActions(true, render_to_main, fullscreen);
   m_display_widget->setFocus();
 
-  QSignalBlocker blocker(m_ui.actionFullscreen);
-  m_ui.actionFullscreen->setChecked(fullscreen);
-  return true;
+  return wi;
 }
 
-void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen)
+void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos)
 {
   // If we're rendering to main and were hidden (e.g. coming back from fullscreen),
   // make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
@@ -388,20 +339,21 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
     // and positioning has no effect anyway.
     if (!s_use_central_widget)
     {
-      if (isVisible())
+      if (isVisible() && g_emu_thread->shouldRenderToMain())
         container->move(pos());
       else
         restoreDisplayWindowGeometryFromConfig();
     }
 
-    if (!is_exclusive_fullscreen)
-      container->showFullScreen();
-    else
-      container->showNormal();
+    container->showFullScreen();
   }
   else if (!render_to_main)
   {
-    restoreDisplayWindowGeometryFromConfig();
+    // See lameland comment above.
+    if (use_main_window_pos && !s_use_central_widget)
+      container->move(pos());
+    else
+      restoreDisplayWindowGeometryFromConfig();
     container->showNormal();
   }
   else if (s_use_central_widget)
@@ -420,27 +372,13 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
     m_ui.mainContainer->setCurrentIndex(1);
   }
 
+  updateDisplayRelatedActions(true, render_to_main, fullscreen);
+
   // We need the surface visible.
   QGuiApplication::sync();
 }
 
-void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
-{
-  u32 width, height;
-  float refresh_rate;
-  bool result = false;
-
-  if (HostDisplay::ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate))
-  {
-    result = g_host_display->SetFullscreen(true, width, height, refresh_rate);
-    if (result)
-      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
-    else
-      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
-  }
-}
-
-void MainWindow::displaySizeRequested(qint32 width, qint32 height)
+void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 {
   if (!m_display_widget)
     return;
@@ -462,7 +400,7 @@ void MainWindow::displaySizeRequested(qint32 width, qint32 height)
   QtUtils::ResizePotentiallyFixedSizeWindow(this, width, height + extra_height);
 }
 
-void MainWindow::destroyDisplay()
+void MainWindow::releaseRenderWindow()
 {
   // Now we can safely destroy the display window.
   destroyDisplayWidget(true);
@@ -470,6 +408,8 @@ void MainWindow::destroyDisplay()
 
   updateDisplayRelatedActions(false, false, false);
 
+  m_ui.actionViewSystemDisplay->setEnabled(false);
+  m_ui.actionFullscreen->setEnabled(false);
   m_ui.actionStartFullscreenUI->setEnabled(true);
   m_ui.actionStartFullscreenUI2->setEnabled(true);
 }
@@ -532,7 +472,7 @@ void MainWindow::updateDisplayWidgetCursor()
 void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen)
 {
   // rendering to main, or switched to gamelist/grid
-  m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && g_host_display));
+  m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && g_gpu_device));
   m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
   m_ui.actionFullscreen->setEnabled(has_surface);
 
@@ -1842,10 +1782,10 @@ bool MainWindow::isShowingGameList() const
 
 bool MainWindow::isRenderingFullscreen() const
 {
-  if (!g_host_display || !m_display_widget)
+  if (!g_gpu_device || !m_display_widget)
     return false;
 
-  return getDisplayContainer()->isFullScreen() || g_host_display->IsFullscreen();
+  return getDisplayContainer()->isFullScreen();
 }
 
 bool MainWindow::isRenderingToMain() const
@@ -1999,12 +1939,11 @@ void MainWindow::connectSignals()
           Qt::QueuedConnection);
   connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError, Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::createDisplayRequested, this, &MainWindow::createDisplay,
+  connect(g_emu_thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::destroyDisplayRequested, this, &MainWindow::destroyDisplay);
-  connect(g_emu_thread, &EmuThread::updateDisplayRequested, this, &MainWindow::updateDisplay,
+  connect(g_emu_thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
+  connect(g_emu_thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::displaySizeRequested, this, &MainWindow::displaySizeRequested);
   connect(g_emu_thread, &EmuThread::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
   connect(g_emu_thread, &EmuThread::systemStarting, this, &MainWindow::onSystemStarting);
   connect(g_emu_thread, &EmuThread::systemStarted, this, &MainWindow::onSystemStarted);
@@ -2415,6 +2354,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   if (!s_system_valid)
   {
     saveGeometryToConfig();
+    g_emu_thread->stopFullscreenUI();
     QMainWindow::closeEvent(event);
     return;
   }

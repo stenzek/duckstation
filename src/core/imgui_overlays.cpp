@@ -13,7 +13,7 @@
 #include "system.h"
 
 #include "util/audio_stream.h"
-#include "util/host_display.h"
+#include "util/gpu_device.h"
 #include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
@@ -240,6 +240,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 
     if (g_settings.display_show_resolution)
     {
+      // TODO: this seems wrong?
       const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
@@ -317,7 +318,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 #endif
     }
 
-    if (g_settings.display_show_gpu && g_host_display->IsGPUTimingEnabled())
+    if (g_settings.display_show_gpu && g_gpu_device->IsGPUTimingEnabled())
     {
       text.Assign("GPU: ");
       FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
@@ -411,8 +412,9 @@ void ImGuiManager::DrawPerformanceOverlay()
 void ImGuiManager::DrawEnhancementsOverlay()
 {
   LargeString text;
-  text.AppendFmtString("{} {}", Settings::GetConsoleRegionName(System::GetRegion()),
-                       Settings::GetRendererName(g_gpu->GetRendererType()));
+  text.AppendFmtString("{} {}-{}", Settings::GetConsoleRegionName(System::GetRegion()),
+                       GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
+                       g_gpu->IsHardwareRenderer() ? "HW" : "SW");
 
   if (g_settings.rewind_enable)
     text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
@@ -722,19 +724,20 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   li->preview_texture.reset();
 
   // Might not have a display yet, we're called at startup..
-  if (g_host_display)
+  if (g_gpu_device)
   {
     if (ssi && !ssi->screenshot_data.empty())
     {
-      li->preview_texture =
-        g_host_display->CreateTexture(ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Format::RGBA8,
-                                      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
+      li->preview_texture = g_gpu_device->CreateTexture(
+        ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+        ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
     }
     else
     {
-      li->preview_texture = g_host_display->CreateTexture(
-        Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Format::RGBA8,
-        Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH, false);
+      li->preview_texture = g_gpu_device->CreateTexture(
+        Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
+        GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
+        false);
     }
 
     if (!li->preview_texture)
@@ -751,11 +754,12 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::str
   li->slot = slot;
   li->global = global;
 
-  if (g_host_display)
+  if (g_gpu_device)
   {
-    li->preview_texture = g_host_display->CreateTexture(
-      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Format::RGBA8,
-      Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH, false);
+    li->preview_texture = g_gpu_device->CreateTexture(
+      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
+      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
+      false);
     if (!li->preview_texture)
       Log_ErrorPrintf("Failed to upload save state image to GPU");
   }

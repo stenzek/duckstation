@@ -2,6 +2,16 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "controllersettingsdialog.h"
+#include "displaywidget.h"
+#include "settingsdialog.h"
+#include "ui_mainwindow.h"
+
+#include "core/types.h"
+
+#include "util/window_info.h"
+
 #include <QtCore/QThread>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
@@ -9,13 +19,6 @@
 #include <QtWidgets/QStackedWidget>
 #include <memory>
 #include <optional>
-
-#include "controllersettingsdialog.h"
-#include "common/window_info.h"
-#include "core/types.h"
-#include "displaywidget.h"
-#include "settingsdialog.h"
-#include "ui_mainwindow.h"
 
 class QLabel;
 class QThread;
@@ -29,7 +32,7 @@ class CheatManagerDialog;
 class DebuggerWindow;
 class MainWindow;
 
-class HostDisplay;
+class GPUDevice;
 namespace GameList {
 struct Entry;
 }
@@ -110,10 +113,11 @@ public Q_SLOTS:
 private Q_SLOTS:
   void reportError(const QString& title, const QString& message);
   bool confirmMessage(const QString& title, const QString& message);
-  bool createDisplay(bool fullscreen, bool render_to_main);
-  bool updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
-  void displaySizeRequested(qint32 width, qint32 height);
-  void destroyDisplay();
+
+  std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
+                                                bool surfaceless, bool use_main_window_pos);
+  void displayResizeRequested(qint32 width, qint32 height);
+  void releaseRenderWindow();
   void focusDisplayWidget();
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
 
@@ -208,11 +212,10 @@ private:
   void restoreGeometryFromConfig();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
-  void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
+  void createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos);
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
-  void setDisplayFullscreen(const std::string& fullscreen_mode);
 
   SettingsDialog* getSettingsDialog();
   void doSettings(const char* category = nullptr);

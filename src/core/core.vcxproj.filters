@@ -8,7 +8,6 @@
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gdb_protocol.cpp" />
     <ClCompile Include="gpu.cpp" />
-    <ClCompile Include="gpu_hw_opengl.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="cdrom.cpp" />
@@ -23,7 +22,6 @@
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
-    <ClCompile Include="gpu_hw_d3d11.cpp" />
     <ClCompile Include="bios.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
     <ClCompile Include="cpu_recompiler_register_cache.cpp" />
@@ -41,7 +39,6 @@
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="negcon.cpp" />
-    <ClCompile Include="gpu_hw_vulkan.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="pgxp.cpp" />
@@ -53,7 +50,6 @@
     <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
     <ClCompile Include="multitap.cpp" />
-    <ClCompile Include="gpu_hw_d3d12.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="game_database.cpp" />
     <ClCompile Include="pcdrv.cpp" />
@@ -74,7 +70,6 @@
     <ClInclude Include="bus.h" />
     <ClInclude Include="dma.h" />
     <ClInclude Include="gpu.h" />
-    <ClInclude Include="gpu_hw_opengl.h" />
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="interrupt_controller.h" />
     <ClInclude Include="cdrom.h" />
@@ -88,7 +83,6 @@
     <ClInclude Include="settings.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
-    <ClInclude Include="gpu_hw_d3d11.h" />
     <ClInclude Include="bios.h" />
     <ClInclude Include="cpu_recompiler_types.h" />
     <ClInclude Include="cpu_code_cache.h" />
@@ -104,7 +98,6 @@
     <ClInclude Include="guncon.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="negcon.h" />
-    <ClInclude Include="gpu_hw_vulkan.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="gte_types.h" />
@@ -117,9 +110,7 @@
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_sw_backend.h" />
     <ClInclude Include="texture_replacements.h" />
-    <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="multitap.h" />
-    <ClInclude Include="gpu_hw_d3d12.h" />
     <ClInclude Include="gdb_protocol.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="host_settings.h" />
@@ -132,5 +123,6 @@
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="common_host.h" />
     <ClInclude Include="achievements_private.h" />
+    <ClInclude Include="shader_cache_version.h" />
   </ItemGroup>
 </Project>

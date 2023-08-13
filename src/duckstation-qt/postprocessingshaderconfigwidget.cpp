@@ -8,10 +8,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSlider>
 
-using FrontendCommon::PostProcessingShader;
-
 PostProcessingShaderConfigWidget::PostProcessingShaderConfigWidget(QWidget* parent,
-                                                                   FrontendCommon::PostProcessingShader* shader)
+                                                                   PostProcessingShader* shader)
   : QWidget(parent), m_shader(shader)
 {
   createUi();
@@ -146,7 +144,7 @@ void PostProcessingShaderConfigWidget::onResetToDefaultsClicked()
 }
 
 PostProcessingShaderConfigDialog::PostProcessingShaderConfigDialog(QWidget* parent,
-                                                                   FrontendCommon::PostProcessingShader* shader)
+                                                                   PostProcessingShader* shader)
   : QDialog(parent)
 {
   setWindowTitle(tr("%1 Shader Options").arg(QString::fromStdString(shader->GetName())));

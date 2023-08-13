@@ -3,9 +3,6 @@
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
     <ClCompile Include="nogui_host.cpp" />
-    <ClCompile Include="vty_nogui_platform.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="wayland_nogui_platform.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -18,12 +15,6 @@
     <ClInclude Include="nogui_host.h" />
     <ClInclude Include="nogui_platform.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="vty_key_names.h">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vty_nogui_platform.h">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="wayland_nogui_platform.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>

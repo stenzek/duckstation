@@ -12,9 +12,9 @@
 
 #include "common/settings_interface.h"
 #include "common/types.h"
-#include "common/window_info.h"
 
 #include "core/input_types.h"
+#include "window_info.h"
 
 /// Class, or source of an input event.
 enum class InputSourceType : u32

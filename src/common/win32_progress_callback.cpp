@@ -4,7 +4,6 @@
 #include "win32_progress_callback.h"
 #include "common/log.h"
 #include <CommCtrl.h>
-#pragma comment(lib, "Comctl32.lib")
 Log_SetChannel(Win32ProgressCallback);
 
 Win32ProgressCallback::Win32ProgressCallback() : BaseProgressCallback()

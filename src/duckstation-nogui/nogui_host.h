@@ -3,7 +3,7 @@
 
 #pragma once
 #include "common/types.h"
-#include "core/system.h"
+
 #include <functional>
 #include <string>
 
@@ -11,9 +11,6 @@ namespace NoGUIHost {
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 void SetBatchMode(bool enabled);
-
-/// Starts the virtual machine.
-void StartSystem(SystemBootParameters params);
 
 /// Returns the application name and version, optionally including debug/devel config indicator.
 std::string GetAppNameAndVersion();

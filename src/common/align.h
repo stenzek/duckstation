@@ -3,6 +3,14 @@
 
 #pragma once
 
+#include "types.h"
+
+#include <cstdlib>
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
+
 namespace Common {
 template<typename T>
 constexpr bool IsAligned(T value, unsigned int alignment)
@@ -52,4 +60,30 @@ constexpr T PreviousPow2(T value)
   value |= (value >> 16);
   return value - (value >> 1);
 }
+
+ALWAYS_INLINE static void* AlignedMalloc(size_t size, size_t alignment)
+{
+#ifdef _MSC_VER
+  return _aligned_malloc(size, alignment);
+#else
+  // Unaligned sizes are slow on macOS.
+#ifdef __APPLE__
+    if (IsPow2(alignment))
+      size = (size + alignment - 1) & ~(alignment - 1);
+#endif
+  void* ret = nullptr;
+  posix_memalign(&ret, alignment, size);
+  return ret;
+#endif
+}
+
+ALWAYS_INLINE static void AlignedFree(void* ptr)
+{
+#ifdef _MSC_VER
+  _aligned_free(ptr);
+#else
+  free(ptr);
+#endif
+}
+
 } // namespace Common

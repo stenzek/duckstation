@@ -5,24 +5,6 @@
     <ClInclude Include="types.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="heap_array.h" />
-    <ClInclude Include="gl\program.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="gl\stream_buffer.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="gl\texture.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d11\stream_buffer.h">
-      <Filter>d3d11</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d11\texture.h">
-      <Filter>d3d11</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d11\shader_compiler.h">
-      <Filter>d3d11</Filter>
-    </ClInclude>
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="string.h" />
@@ -33,47 +15,10 @@
     <ClInclude Include="file_system.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="md5_digest.h" />
-    <ClInclude Include="d3d11\shader_cache.h">
-      <Filter>d3d11</Filter>
-    </ClInclude>
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="progress_callback.h" />
-    <ClInclude Include="gl\shader_cache.h">
-      <Filter>gl</Filter>
-    </ClInclude>
     <ClInclude Include="bitutils.h" />
-    <ClInclude Include="gl\context.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="gl\context_wgl.h">
-      <Filter>gl</Filter>
-    </ClInclude>
-    <ClInclude Include="window_info.h" />
-    <ClInclude Include="vulkan\texture.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\stream_buffer.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\shader_compiler.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\util.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\swap_chain.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="dimensional_array.h" />
-    <ClInclude Include="vulkan\context.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\builders.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\shader_cache.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="image.h" />
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="win32_progress_callback.h" />
@@ -86,40 +31,10 @@
     <ClInclude Include="easing.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="platform.h" />
-    <ClInclude Include="d3d12\staging_texture.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\stream_buffer.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\texture.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\context.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\descriptor_heap_manager.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\util.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
-    <ClInclude Include="d3d12\shader_cache.h">
-      <Filter>d3d12</Filter>
-    </ClInclude>
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
-    <ClInclude Include="vulkan\entry_points.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkan\loader.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="path.h" />
     <ClInclude Include="windows_headers.h" />
-    <ClInclude Include="gl\loader.h">
-      <Filter>gl</Filter>
-    </ClInclude>
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="heterogeneous_containers.h" />
@@ -128,28 +43,9 @@
     <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="sha1_digest.h" />
-    <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="fastjmp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gl\program.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="gl\stream_buffer.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="gl\texture.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d11\texture.cpp">
-      <Filter>d3d11</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d11\stream_buffer.cpp">
-      <Filter>d3d11</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d11\shader_compiler.cpp">
-      <Filter>d3d11</Filter>
-    </ClCompile>
     <ClCompile Include="string.cpp" />
     <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="log.cpp" />
@@ -158,43 +54,7 @@
     <ClCompile Include="file_system.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="md5_digest.cpp" />
-    <ClCompile Include="d3d11\shader_cache.cpp">
-      <Filter>d3d11</Filter>
-    </ClCompile>
     <ClCompile Include="progress_callback.cpp" />
-    <ClCompile Include="gl\shader_cache.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="gl\context_wgl.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="gl\context.cpp">
-      <Filter>gl</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\texture.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\context.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\stream_buffer.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\util.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\shader_compiler.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\swap_chain.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\builders.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkan\shader_cache.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="image.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
@@ -203,64 +63,21 @@
     </ClCompile>
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="window_info.cpp" />
-    <ClCompile Include="d3d12\staging_texture.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\stream_buffer.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\texture.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\context.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\descriptor_heap_manager.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\util.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
-    <ClCompile Include="d3d12\shader_cache.cpp">
-      <Filter>d3d12</Filter>
-    </ClCompile>
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
-    <ClCompile Include="vulkan\loader.cpp">
-      <Filter>vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
-    <ClCompile Include="gpu_texture.cpp" />
     <ClCompile Include="fastjmp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="gl">
-      <UniqueIdentifier>{52487c57-753d-4888-ba26-ed63ab51a234}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="d3d11">
-      <UniqueIdentifier>{30251086-81f3-44f5-add4-7ff9a24098ab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vulkan">
-      <UniqueIdentifier>{642ff5eb-af39-4aab-a42f-6eb8188a11d7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="thirdparty">
       <UniqueIdentifier>{fd4150b0-6f82-4251-ab23-34c25fbc5b5e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="d3d12">
-      <UniqueIdentifier>{358e11c4-34af-4169-9a66-ec66342a6a2f}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vulkan\entry_points.inl">
-      <Filter>vulkan</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="fastjmp_x86.asm" />

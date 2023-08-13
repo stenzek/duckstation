@@ -8,13 +8,14 @@
 #include <cstring>
 
 #ifdef WITH_OPENGL
-#include "common/gl/loader.h"
+#include "opengl_loader.h"
 #endif
 
 Log_SetChannel(ShaderGen);
 
 ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
   : m_render_api(render_api), m_glsl(render_api != RenderAPI::D3D11 && render_api != RenderAPI::D3D12),
+    m_spirv(render_api == RenderAPI::Vulkan || render_api == RenderAPI::Metal),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
 #if defined(WITH_OPENGL) || defined(WITH_VULKAN)
@@ -24,8 +25,8 @@ ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
     if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
       SetGLSLVersionString();
 
-    m_use_glsl_interface_blocks = (IsVulkan() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
-    m_use_glsl_binding_layout = (IsVulkan() || UseGLSLBindingLayout());
+    m_use_glsl_interface_blocks = (IsVulkan() || IsMetal() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+    m_use_glsl_binding_layout = (IsVulkan() || IsMetal() || UseGLSLBindingLayout());
 
     if (m_render_api == RenderAPI::OpenGL)
     {
@@ -109,7 +110,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 {
   if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
     ss << m_glsl_version_string << "\n\n";
-  else if (m_render_api == RenderAPI::Vulkan)
+  else if (m_spirv)
     ss << "#version 450 core\n\n";
 
 #ifdef WITH_OPENGL
@@ -157,6 +158,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_D3D11", m_render_api == RenderAPI::D3D11);
   DefineMacro(ss, "API_D3D12", m_render_api == RenderAPI::D3D12);
   DefineMacro(ss, "API_VULKAN", m_render_api == RenderAPI::Vulkan);
+  DefineMacro(ss, "API_METAL", m_render_api == RenderAPI::Metal);
 
 #ifdef WITH_OPENGL
   if (m_render_api == RenderAPI::OpenGLES)
@@ -208,7 +210,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define SAMPLE_TEXTURE_OFFSET(name, coords, offset) textureOffset(name, coords, offset)\n";
     ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) textureLod(name, coords, level)\n";
-    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLod(name, coords, level, offset)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLodOffset(name, coords, level, offset)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) texelFetch(name, coords, int(sample))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -264,6 +266,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   }
 
   ss << "\n";
+
+  m_has_uniform_buffer = false;
 }
 
 void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan)
@@ -271,9 +275,19 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
   if (IsVulkan())
   {
     if (push_constant_on_vulkan)
+    {
       ss << "layout(push_constant) uniform PushConstants\n";
+    }
     else
+    {
       ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
+      m_has_uniform_buffer = true;
+    }
+  }
+  else if (IsMetal())
+  {
+    ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
+    m_has_uniform_buffer = true;
   }
   else if (m_glsl)
   {
@@ -281,11 +295,15 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
       ss << "layout(std140, binding = 1) uniform UBOBlock\n";
     else
       ss << "layout(std140) uniform UBOBlock\n";
+
+    m_has_uniform_buffer = true;
   }
   else
   {
     ss << "cbuffer UBOBlock : register(b0)\n";
+    m_has_uniform_buffer = true;
   }
+
 }
 
 void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
@@ -304,7 +322,7 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
   if (m_glsl)
   {
     if (IsVulkan())
-      ss << "layout(set = 0, binding = " << (index + 1u) << ") ";
+      ss << "layout(set = " << (m_has_uniform_buffer ? 1 : 0) << ", binding = " << index << ") ";
     else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
@@ -343,7 +361,7 @@ const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool cent
 #else
   const bool shading_language_420pack = false;
 #endif
-  if (m_glsl && interface_block && (!IsVulkan() && !shading_language_420pack))
+  if (m_glsl && interface_block && (!m_spirv && !shading_language_420pack))
   {
     return (sample_interpolation ? (is_out ? "sample out " : "sample in ") :
                                    (centroid_interpolation ? (is_out ? "centroid out " : "centroid in ") : ""));
@@ -381,7 +399,7 @@ void ShaderGen::DeclareVertexEntryPoint(
     {
       const char* qualifier = GetInterpolationQualifier(true, msaa, ssaa, true);
 
-      if (IsVulkan())
+      if (m_spirv)
         ss << "layout(location = 0) ";
 
       ss << "out VertexData" << output_block_suffix << " {\n";
@@ -418,7 +436,7 @@ void ShaderGen::DeclareVertexEntryPoint(
     ss << "#define v_pos gl_Position\n\n";
     if (declare_vertex_id)
     {
-      if (IsVulkan())
+      if (m_spirv)
         ss << "#define v_id uint(gl_VertexIndex)\n";
       else
         ss << "#define v_id uint(gl_VertexID)\n";
@@ -475,7 +493,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
     {
       const char* qualifier = GetInterpolationQualifier(true, msaa, ssaa, false);
 
-      if (IsVulkan())
+      if (m_spirv)
         ss << "layout(location = 0) ";
 
       ss << "in VertexData {\n";
@@ -662,16 +680,74 @@ std::string ShaderGen::GenerateCopyFragmentShader()
   return ss.str();
 }
 
-std::string ShaderGen::GenerateSampleFragmentShader()
+std::string ShaderGen::GenerateDisplayVertexShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << R"(
+{
+  float2 pos = float2(float((v_id << 1) & 2u), float(v_id & 2u));
+  v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
+  v_pos = float4(pos * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+  #if API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateDisplayFragmentShader(bool set_alpha_to_one /* = false */)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
+  ss << "{\n";
+
+  if (set_alpha_to_one)
+    ss << "o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).rgb, 1.0f);";
+  else
+    ss << "o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);";
+
+  ss << "\n}\n";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateImGuiVertexShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, true);
+  DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0", "float4 a_col0"}, 1, 1, {}, false);
+  ss << R"(
+{
+  v_pos = mul(ProjectionMatrix, float4(a_pos, 0.f, 1.f));
+  v_col0 = a_col0;
+  v_tex0 = a_tex0;
+  #if API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateImGuiFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 1, 1, {}, false, 1);
 
   ss << R"(
 {
-  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+  o_col0 = v_col0 * SAMPLE_TEXTURE(samp0, v_tex0);
 }
 )";
 

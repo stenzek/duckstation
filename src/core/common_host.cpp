@@ -19,6 +19,7 @@
 #include "resources.h"
 #include "save_state_version.h"
 #include "settings.h"
+#include "shader_cache_version.h"
 #include "spu.h"
 #include "system.h"
 #include "texture_replacements.h"
@@ -27,7 +28,7 @@
 #include "scmversion/scmversion.h"
 
 #include "util/audio_stream.h"
-#include "util/host_display.h"
+#include "util/gpu_device.h"
 #include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -60,19 +61,9 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
-#include "util/d3d11_host_display.h"
-#include "util/d3d12_host_display.h"
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #include <mmsystem.h>
-#endif
-
-#ifdef WITH_OPENGL
-#include "util/opengl_host_display.h"
-#endif
-
-#ifdef WITH_VULKAN
-#include "util/vulkan_host_display.h"
 #endif
 
 Log_SetChannel(CommonHostInterface);
@@ -144,52 +135,89 @@ void CommonHost::PumpMessagesOnCPUThread()
 #endif
 }
 
-std::unique_ptr<HostDisplay> Host::CreateDisplayForAPI(RenderAPI api)
+bool Host::CreateGPUDevice(RenderAPI api)
 {
-  switch (api)
+  DebugAssert(!g_gpu_device);
+
+  Log_InfoPrintf("Trying to create a %s GPU device...", GPUDevice::RenderAPIToString(api));
+  g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
+
+  // TODO: FSUI should always use vsync..
+  const bool vsync = System::IsValid() ? System::ShouldUseVSync() : g_settings.video_sync_enabled;
+  if (!g_gpu_device || !g_gpu_device->Create(g_settings.gpu_adapter,
+                                             g_settings.gpu_disable_shader_cache ? std::string_view() :
+                                                                                   std::string_view(EmuFolders::Cache),
+                                             SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, vsync,
+                                             g_settings.gpu_threaded_presentation))
   {
-#ifdef WITH_VULKAN
-    case RenderAPI::Vulkan:
-      return std::make_unique<VulkanHostDisplay>();
-#endif
-
-#ifdef WITH_OPENGL
-    case RenderAPI::OpenGL:
-    case RenderAPI::OpenGLES:
-      return std::make_unique<OpenGLHostDisplay>();
-#endif
-
-#ifdef _WIN32
-    case RenderAPI::D3D12:
-      return std::make_unique<D3D12HostDisplay>();
-
-    case RenderAPI::D3D11:
-      return std::make_unique<D3D11HostDisplay>();
-#endif
-
-    default:
-#if defined(_WIN32) && defined(_M_ARM64)
-      return std::make_unique<D3D12HostDisplay>();
-#elif defined(_WIN32)
-      return std::make_unique<D3D11HostDisplay>();
-#elif defined(WITH_OPENGL)
-      return std::make_unique<OpenGLHostDisplay>();
-#elif defined(WITH_VULKAN)
-      return std::make_unique<VulkanHostDisplay>();
-#else
-      return {};
-#endif
+    Log_ErrorPrintf("Failed to initialize GPU device.");
+    if (g_gpu_device)
+      g_gpu_device->Destroy();
+    g_gpu_device.reset();
+    return false;
   }
-}
 
-bool CommonHost::CreateHostDisplayResources()
-{
+  if (!ImGuiManager::Initialize())
+  {
+    Log_ErrorPrintf("Failed to initialize ImGuiManager.");
+    g_gpu_device->Destroy();
+    g_gpu_device.reset();
+    return false;
+  }
+
   return true;
 }
 
-void CommonHost::ReleaseHostDisplayResources()
+void Host::UpdateDisplayWindow()
 {
+  if (!g_gpu_device)
+    return;
+
+  if (!g_gpu_device->UpdateWindow())
+  {
+    Host::ReportErrorAsync("Error", "Failed to change window after update. The log may contain more information.");
+    return;
+  }
+
+  ImGuiManager::WindowResized();
+
+  // If we're paused, re-present the current frame at the new window size.
+  if (System::IsValid() && System::IsPaused())
+    RenderDisplay(false);
+}
+
+void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
+{
+  if (!g_gpu_device)
+    return;
+
+  Log_DevPrintf("Display window resized to %dx%d", width, height);
+
+  g_gpu_device->ResizeWindow(width, height, scale);
+  ImGuiManager::WindowResized();
+
+  // If we're paused, re-present the current frame at the new window size.
+  if (System::IsValid())
+  {
+    if (System::IsPaused())
+      RenderDisplay(false);
+
+    System::HostDisplayResized();
+  }
+}
+
+void Host::ReleaseGPUDevice()
+{
+  if (!g_gpu_device)
+    return;
+
   SaveStateSelectorUI::DestroyTextures();
+  FullscreenUI::Shutdown();
+  ImGuiManager::Shutdown();
+
+  Log_InfoPrintf("Destroying %s GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+  g_gpu_device->Destroy();
+  g_gpu_device.reset();
 }
 
 #ifndef __ANDROID__
@@ -458,7 +486,10 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   }
   ImGui::End();
 
-  ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 50.0f : 30.0f) * scale), ImGuiCond_Always);
+  const float padding_and_rounding = 15.0f * scale;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
+  ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 80.0f : 50.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
                           ImGuiCond_Always, ImVec2(0.5f, 0.0f));
   if (ImGui::Begin("LoadingScreen", nullptr,
@@ -468,7 +499,17 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   {
     if (has_progress)
     {
-      ImGui::Text("%s: %d/%d", message, progress_value, progress_max);
+      ImGui::TextUnformatted(message);
+
+      TinyString buf;
+      buf.Fmt("{}/{}", progress_value, progress_max);
+
+      const ImVec2 prog_size = ImGui::CalcTextSize(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      ImGui::SameLine();
+      ImGui::SetCursorPosX(width - padding_and_rounding - prog_size.x);
+      ImGui::TextUnformatted(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
       ImGui::ProgressBar(static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min),
                          ImVec2(-1.0f, 0.0f), "");
       Log_InfoPrintf("%s: %d/%d", message, progress_value, progress_max);
@@ -482,9 +523,10 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
     }
   }
   ImGui::End();
+  ImGui::PopStyleVar(2);
 
   ImGui::EndFrame();
-  g_host_display->Render(false);
+  g_gpu_device->Render(false);
   ImGui::NewFrame();
 }
 
@@ -628,7 +670,6 @@ static void HotkeyModifyResolutionScale(s32 increment)
   {
     g_gpu->RestoreGraphicsAPIState();
     g_gpu->UpdateSettings();
-    g_gpu->ResetGraphicsAPIState();
     System::ClearMemorySaveStates();
     Host::InvalidateDisplay();
   }
@@ -888,7 +929,6 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   g_gpu->RestoreGraphicsAPIState();
                   g_gpu->UpdateSettings();
-                  g_gpu->ResetGraphicsAPIState();
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
@@ -957,7 +997,6 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 
                   g_gpu->RestoreGraphicsAPIState();
                   g_gpu->UpdateSettings();
-                  g_gpu->ResetGraphicsAPIState();
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
                                            g_settings.gpu_pgxp_depth_buffer ?
@@ -977,7 +1016,6 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
 
                   g_gpu->RestoreGraphicsAPIState();
                   g_gpu->UpdateSettings();
-                  g_gpu->ResetGraphicsAPIState();
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPCPU",
                                            g_settings.gpu_pgxp_cpu ?

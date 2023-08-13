@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/window_info.h"
+
+#include "util/window_info.h"
+
 #include "common/types.h"
+
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>

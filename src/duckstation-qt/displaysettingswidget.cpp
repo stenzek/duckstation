@@ -12,11 +12,11 @@
 
 // For enumerating adapters.
 #ifdef _WIN32
-#include "util/d3d11_host_display.h"
-#include "util/d3d12_host_display.h"
+#include "util/d3d11_device.h"
+#include "util/d3d12_device.h"
 #endif
 #ifdef WITH_VULKAN
-#include "util/vulkan_host_display.h"
+#include "util/vulkan_device.h"
 #endif
 
 DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* parent)
@@ -187,23 +187,28 @@ void DisplaySettingsWidget::setupAdditionalUi()
 
 void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
 {
-  HostDisplay::AdapterAndModeList aml;
+  GPUDevice::AdapterAndModeList aml;
   bool thread_supported = false;
   bool threaded_presentation_supported = false;
   switch (static_cast<GPURenderer>(m_ui.renderer->currentIndex()))
   {
 #ifdef _WIN32
     case GPURenderer::HardwareD3D11:
-      aml = D3D11HostDisplay::StaticGetAdapterAndModeList();
+      aml = D3D11Device::StaticGetAdapterAndModeList();
       break;
 
     case GPURenderer::HardwareD3D12:
-      aml = D3D12HostDisplay::StaticGetAdapterAndModeList();
+      aml = D3D12Device::StaticGetAdapterAndModeList();
+      break;
+#endif
+#ifdef __APPLE__
+    case GPURenderer::HardwareMetal:
+      aml = GPUDevice::WrapGetMetalAdapterAndModeList();
       break;
 #endif
 #ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
-      aml = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
+      aml = VulkanDevice::StaticGetAdapterAndModeList();
       threaded_presentation_supported = true;
       break;
 #endif

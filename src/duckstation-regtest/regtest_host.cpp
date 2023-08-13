@@ -14,7 +14,7 @@
 #include "core/host_settings.h"
 #include "core/system.h"
 #include "scmversion/scmversion.h"
-#include "util/host_display.h"
+#include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include <csignal>
@@ -88,6 +88,7 @@ bool RegTestHost::InitializeConfig()
   SettingsInterface& si = *s_base_settings_interface.get();
   g_settings.Save(si);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
+  si.SetBoolValue("GPU", "DisableShaderCache", true);
   si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::AnalogController));
   si.SetStringValue("Pad2", "Type", Settings::GetControllerTypeName(ControllerType::None));
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
@@ -288,58 +289,26 @@ void Host::SetFullscreen(bool enabled)
   //
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api)
+std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
   WindowInfo wi;
   wi.SetSurfaceless();
-
-  g_host_display = Host::CreateDisplayForAPI(api);
-  if (g_host_display && !g_host_display->CreateDevice(wi, false))
-  {
-    Log_ErrorPrintf("Failed to create host display.");
-    g_host_display.reset();
-    return false;
-  }
-
-  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize() ||
-      !CommonHost::CreateHostDisplayResources())
-  {
-    Log_ErrorPrintf("Failed to setup host display.");
-    ImGuiManager::Shutdown();
-    CommonHost::ReleaseHostDisplayResources();
-    g_host_display.reset();
-    return false;
-  }
-
-  return true;
+  return wi;
 }
 
-void Host::ReleaseHostDisplay()
+void Host::ReleaseRenderWindow()
 {
-  if (!g_host_display)
-    return;
-
-  CommonHost::ReleaseHostDisplayResources();
-  ImGuiManager::Shutdown();
-  g_host_display.reset();
+  //
 }
 
-void Host::RenderDisplay(bool skip_present)
+void Host::BeginPresentFrame()
 {
   const u32 frame = System::GetFrameNumber();
   if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame % s_frame_dump_interval) == 0))
   {
     std::string dump_filename(RegTestHost::GetFrameDumpFilename(frame));
-    g_host_display->WriteDisplayTextureToFile(std::move(dump_filename));
+    g_gpu_device->WriteDisplayTextureToFile(std::move(dump_filename));
   }
-
-  g_host_display->Render(true);
-  ImGuiManager::NewFrame();
-}
-
-void Host::InvalidateDisplay()
-{
-  //
 }
 
 void Host::OpenURL(const std::string_view& url)

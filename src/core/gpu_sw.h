@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/heap_array.h"
 #include "gpu.h"
 #include "gpu_sw_backend.h"
-#include "util/host_display.h"
+
+#include "util/gpu_device.h"
+
+#include "common/heap_array.h"
+
 #include <array>
 #include <memory>
 #include <vector>
 
-namespace Threading
-{
+namespace Threading {
 class Thread;
 }
 
@@ -25,8 +27,8 @@ public:
 
   ALWAYS_INLINE const GPU_SW_Backend& GetBackend() const { return m_backend; }
 
-  GPURenderer GetRendererType() const override;
   const Threading::Thread* GetSWThread() const override;
+  bool IsHardwareRenderer() const override;
 
   bool Initialize() override;
   bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;

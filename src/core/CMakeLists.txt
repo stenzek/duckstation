@@ -125,35 +125,6 @@ target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
 target_link_libraries(core PRIVATE stb xxhash imgui rapidjson)
 
-if(WIN32)
-  target_sources(core PRIVATE
-    gpu_hw_d3d12.cpp
-    gpu_hw_d3d12.h
-    gpu_hw_d3d11.cpp
-    gpu_hw_d3d11.h
-  )
-  target_link_libraries(core PRIVATE winmm.lib)
-endif()
-
-if(ENABLE_CUBEB)
-  target_compile_definitions(core PUBLIC "WITH_CUBEB=1")
-endif()
-
-if(ENABLE_OPENGL)
-  target_sources(core PRIVATE
-    gpu_hw_opengl.cpp
-    gpu_hw_opengl.h
-  )
-  target_link_libraries(core PRIVATE glad)
-endif()
-
-if(ENABLE_VULKAN)
-  target_sources(core PRIVATE
-    gpu_hw_vulkan.cpp
-    gpu_hw_vulkan.h
-  )
-endif()
-
 if(${CPU_ARCH} STREQUAL "x64")
   target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
   target_compile_definitions(core PUBLIC "WITH_RECOMPILER=1" "WITH_MMAP_FASTMEM=1")

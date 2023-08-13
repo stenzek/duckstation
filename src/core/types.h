@@ -62,6 +62,9 @@ enum class GPURenderer : u8
   HardwareD3D11,
   HardwareD3D12,
 #endif
+#ifdef __APPLE__
+  HardwareMetal,
+#endif
 #ifdef WITH_VULKAN
   HardwareVulkan,
 #endif

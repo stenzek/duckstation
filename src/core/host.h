@@ -101,6 +101,17 @@ void OpenURL(const std::string_view& url);
 /// Copies the provided text to the host's clipboard, if present.
 bool CopyTextToClipboard(const std::string_view& text);
 
+/// Requests shut down and exit of the hosting application. This may not actually exit,
+/// if the user cancels the shutdown confirmation.
+void RequestExit(bool allow_confirm);
+
+/// Called before drawing the OSD and other display elements.
+void BeginPresentFrame();
+
+/// Provided by the host; renders the display.
+void RenderDisplay(bool skip_present);
+void InvalidateDisplay();
+
 namespace Internal {
 /// Implementation to retrieve a translated string.
 s32 GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,

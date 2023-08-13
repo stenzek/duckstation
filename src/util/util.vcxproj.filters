@@ -16,19 +16,9 @@
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="cue_parser.h" />
     <ClInclude Include="ini_settings_interface.h" />
-    <ClInclude Include="host_display.h" />
     <ClInclude Include="shadergen.h" />
-    <ClInclude Include="postprocessing_shadergen.h" />
-    <ClInclude Include="vulkan_host_display.h" />
-    <ClInclude Include="d3d11_host_display.h" />
-    <ClInclude Include="d3d12_host_display.h" />
     <ClInclude Include="imgui_fullscreen.h" />
-    <ClInclude Include="imgui_impl_dx11.h" />
-    <ClInclude Include="imgui_impl_dx12.h" />
-    <ClInclude Include="imgui_impl_opengl3.h" />
-    <ClInclude Include="imgui_impl_vulkan.h" />
     <ClInclude Include="imgui_manager.h" />
-    <ClInclude Include="opengl_host_display.h" />
     <ClInclude Include="postprocessing_chain.h" />
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="input_source.h" />
@@ -40,6 +30,44 @@
     <ClInclude Include="dinput_source.h" />
     <ClInclude Include="input_manager.h" />
     <ClInclude Include="cubeb_audio_stream.h" />
+    <ClInclude Include="metal_stream_buffer.h" />
+    <ClInclude Include="opengl_device.h" />
+    <ClInclude Include="opengl_loader.h" />
+    <ClInclude Include="opengl_pipeline.h" />
+    <ClInclude Include="opengl_stream_buffer.h" />
+    <ClInclude Include="opengl_texture.h" />
+    <ClInclude Include="spirv_compiler.h" />
+    <ClInclude Include="vulkan_builders.h" />
+    <ClInclude Include="vulkan_device.h" />
+    <ClInclude Include="vulkan_entry_points.h" />
+    <ClInclude Include="vulkan_loader.h" />
+    <ClInclude Include="vulkan_pipeline.h" />
+    <ClInclude Include="vulkan_stream_buffer.h" />
+    <ClInclude Include="vulkan_swap_chain.h" />
+    <ClInclude Include="vulkan_texture.h" />
+    <ClInclude Include="window_info.h" />
+    <ClInclude Include="d3d_common.h" />
+    <ClInclude Include="d3d11_device.h" />
+    <ClInclude Include="d3d12_builders.h" />
+    <ClInclude Include="d3d12_descriptor_heap_manager.h" />
+    <ClInclude Include="d3d12_device.h" />
+    <ClInclude Include="d3d12_pipeline.h" />
+    <ClInclude Include="d3d12_stream_buffer.h" />
+    <ClInclude Include="d3d12_texture.h" />
+    <ClInclude Include="gpu_device.h" />
+    <ClInclude Include="gpu_shader_cache.h" />
+    <ClInclude Include="gpu_texture.h" />
+    <ClInclude Include="metal_device.h" />
+    <ClInclude Include="gl\context_wgl.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="gl\context.h">
+      <Filter>gl</Filter>
+    </ClInclude>
+    <ClInclude Include="postprocessing_shader_glsl.h" />
+    <ClInclude Include="d3d11_pipeline.h" />
+    <ClInclude Include="d3d11_stream_buffer.h" />
+    <ClInclude Include="d3d11_texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -66,21 +94,11 @@
     <ClCompile Include="cd_image_ppf.cpp" />
     <ClCompile Include="cd_image_device.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
-    <ClCompile Include="host_display.cpp" />
     <ClCompile Include="shadergen.cpp" />
-    <ClCompile Include="vulkan_host_display.cpp" />
-    <ClCompile Include="d3d11_host_display.cpp" />
-    <ClCompile Include="d3d12_host_display.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
-    <ClCompile Include="imgui_impl_dx11.cpp" />
-    <ClCompile Include="imgui_impl_dx12.cpp" />
-    <ClCompile Include="imgui_impl_opengl3.cpp" />
-    <ClCompile Include="imgui_impl_vulkan.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
-    <ClCompile Include="opengl_host_display.cpp" />
     <ClCompile Include="postprocessing_chain.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />
-    <ClCompile Include="postprocessing_shadergen.cpp" />
     <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
@@ -90,5 +108,44 @@
     <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="input_source.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
+    <ClCompile Include="opengl_device.cpp" />
+    <ClCompile Include="opengl_pipeline.cpp" />
+    <ClCompile Include="opengl_stream_buffer.cpp" />
+    <ClCompile Include="opengl_texture.cpp" />
+    <ClCompile Include="spirv_compiler.cpp" />
+    <ClCompile Include="vulkan_builders.cpp" />
+    <ClCompile Include="vulkan_device.cpp" />
+    <ClCompile Include="vulkan_loader.cpp" />
+    <ClCompile Include="vulkan_pipeline.cpp" />
+    <ClCompile Include="vulkan_stream_buffer.cpp" />
+    <ClCompile Include="vulkan_swap_chain.cpp" />
+    <ClCompile Include="vulkan_texture.cpp" />
+    <ClCompile Include="window_info.cpp" />
+    <ClCompile Include="d3d_common.cpp" />
+    <ClCompile Include="d3d11_device.cpp" />
+    <ClCompile Include="d3d12_builders.cpp" />
+    <ClCompile Include="d3d12_descriptor_heap_manager.cpp" />
+    <ClCompile Include="d3d12_device.cpp" />
+    <ClCompile Include="d3d12_pipeline.cpp" />
+    <ClCompile Include="d3d12_stream_buffer.cpp" />
+    <ClCompile Include="d3d12_texture.cpp" />
+    <ClCompile Include="gpu_device.cpp" />
+    <ClCompile Include="gpu_shader_cache.cpp" />
+    <ClCompile Include="gpu_texture.cpp" />
+    <ClCompile Include="gl\context_wgl.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="gl\context.cpp">
+      <Filter>gl</Filter>
+    </ClCompile>
+    <ClCompile Include="postprocessing_shader_glsl.cpp" />
+    <ClCompile Include="d3d11_pipeline.cpp" />
+    <ClCompile Include="d3d11_stream_buffer.cpp" />
+    <ClCompile Include="d3d11_texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="gl">
+      <UniqueIdentifier>{e637fc5b-2483-4a31-abc3-89a16d45c223}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

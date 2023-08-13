@@ -134,6 +134,11 @@ bool Win32NoGUIPlatform::CreatePlatformWindow(std::string title)
   return true;
 }
 
+bool Win32NoGUIPlatform::HasPlatformWindow() const
+{
+  return (m_hwnd != NULL);
+}
+
 void Win32NoGUIPlatform::DestroyPlatformWindow()
 {
   if (!m_hwnd)

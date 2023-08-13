@@ -99,6 +99,11 @@ bool X11NoGUIPlatform::CreatePlatformWindow(std::string title)
   return true;
 }
 
+bool X11NoGUIPlatform::HasPlatformWindow() const
+{
+  return m_window != 0;
+}
+
 void X11NoGUIPlatform::DestroyPlatformWindow()
 {
   m_window_info = {};

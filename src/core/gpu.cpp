@@ -8,13 +8,13 @@
 #include "common/string_util.h"
 #include "dma.h"
 #include "host.h"
-#include "util/host_display.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
+#include "util/gpu_device.h"
 #include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(GPU);
@@ -27,8 +27,8 @@ GPU::GPU() = default;
 
 GPU::~GPU()
 {
-  if (g_host_display)
-    g_host_display->SetGPUTimingEnabled(false);
+  if (g_gpu_device)
+    g_gpu_device->SetGPUTimingEnabled(false);
 }
 
 bool GPU::Initialize()
@@ -49,12 +49,12 @@ bool GPU::Initialize()
   UpdateCRTCConfig();
 
   if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty() &&
-      !g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
+      !g_gpu_device->SetPostProcessingChain(g_settings.display_post_process_chain))
   {
     Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
   }
 
-  g_host_display->SetGPUTimingEnabled(g_settings.display_show_gpu);
+  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
 
   return true;
 }
@@ -75,13 +75,7 @@ void GPU::UpdateSettings()
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
 
-  g_host_display->SetGPUTimingEnabled(g_settings.display_show_gpu);
-}
-
-bool GPU::IsHardwareRenderer()
-{
-  const GPURenderer renderer = GetRendererType();
-  return (renderer != GPURenderer::Software);
+  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
 }
 
 void GPU::CPUClockChanged()
@@ -89,7 +83,9 @@ void GPU::CPUClockChanged()
   UpdateCRTCConfig();
 }
 
-void GPU::UpdateResolutionScale() {}
+void GPU::UpdateResolutionScale()
+{
+}
 
 std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution(bool scaled /* = true */)
 {
@@ -168,6 +164,8 @@ void GPU::SoftReset()
 
 bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
+  FlushRender();
+
   if (sw.IsReading())
   {
     // perform a reset to discard all pending draws/fb state
@@ -293,9 +291,9 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   return !sw.HasError();
 }
 
-void GPU::ResetGraphicsAPIState() {}
-
-void GPU::RestoreGraphicsAPIState() {}
+void GPU::RestoreGraphicsAPIState()
+{
+}
 
 void GPU::UpdateDMARequest()
 {
@@ -980,8 +978,8 @@ void GPU::UpdateCommandTickEvent()
 bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, float x_scale, u32* out_tick,
                                                       u32* out_line) const
 {
-  auto [display_x, display_y] = g_host_display->ConvertWindowCoordinatesToDisplayCoordinates(
-    window_x, window_y, g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
+  auto [display_x, display_y] = g_gpu_device->ConvertWindowCoordinatesToDisplayCoordinates(
+    window_x, window_y, g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
 
   if (x_scale != 1.0f)
   {
@@ -1284,11 +1282,17 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
   }
 }
 
-void GPU::ClearDisplay() {}
+void GPU::ClearDisplay()
+{
+}
 
-void GPU::UpdateDisplay() {}
+void GPU::UpdateDisplay()
+{
+}
 
-void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height) {}
+void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
+{
+}
 
 void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
@@ -1446,9 +1450,13 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
   }
 }
 
-void GPU::DispatchRenderCommand() {}
+void GPU::DispatchRenderCommand()
+{
+}
 
-void GPU::FlushRender() {}
+void GPU::FlushRender()
+{
+}
 
 void GPU::SetDrawMode(u16 value)
 {
@@ -1687,4 +1695,6 @@ void GPU::DrawDebugStateWindow()
   ImGui::End();
 }
 
-void GPU::DrawRendererStats(bool is_idle_frame) {}
+void GPU::DrawRendererStats(bool is_idle_frame)
+{
+}

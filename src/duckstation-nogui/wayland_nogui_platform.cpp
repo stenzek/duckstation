@@ -150,6 +150,11 @@ bool WaylandNoGUIPlatform::CreatePlatformWindow(std::string title)
   return true;
 }
 
+bool WaylandNoGUIPlatform::HasPlatformWindow() const
+{
+  return (m_surface != nullptr);
+}
+
 void WaylandNoGUIPlatform::DestroyPlatformWindow()
 {
   m_window_info = {};

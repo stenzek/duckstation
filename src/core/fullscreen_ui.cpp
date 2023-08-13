@@ -18,10 +18,10 @@
 #include "resources.h"
 #include "settings.h"
 #include "system.h"
-#include "util/host_display.h"
 
 #include "scmversion/scmversion.h"
 
+#include "util/gpu_device.h"
 #include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -404,7 +404,7 @@ static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 static std::vector<std::string> s_graphics_adapter_list_cache;
 static std::vector<std::string> s_fullscreen_mode_list_cache;
-static FrontendCommon::PostProcessingChain s_postprocessing_chain;
+static PostProcessingChain s_postprocessing_chain;
 static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 static std::atomic_bool s_settings_changed{false};
 static std::atomic_bool s_game_settings_changed{false};
@@ -2394,7 +2394,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-  HostDisplay::AdapterAndModeList ml(g_host_display->GetAdapterAndModeList());
+  GPUDevice::AdapterAndModeList ml(g_gpu_device->GetAdapterAndModeList());
   s_graphics_adapter_list_cache = std::move(ml.adapter_names);
   s_fullscreen_mode_list_cache = std::move(ml.fullscreen_modes);
   s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), FSUI_STR("Borderless Fullscreen"));
@@ -3653,7 +3653,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                           adapter.has_value() ? (adapter->empty() ? FSUI_CSTR("Default") : adapter->c_str()) :
                                                 FSUI_CSTR("Use Global Setting")))
   {
-    HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
+    GPUDevice::AdapterAndModeList aml(g_gpu_device->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.adapter_names.size() + 2);
@@ -3698,7 +3698,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
         fsmode.has_value() ? (fsmode->empty() ? FSUI_CSTR("Borderless Fullscreen") : fsmode->c_str()) :
                              FSUI_CSTR("Use Global Setting")))
   {
-    HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
+    GPUDevice::AdapterAndModeList aml(g_gpu_device->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.fullscreen_modes.size() + 2);
@@ -3939,7 +3939,7 @@ void FullscreenUI::SavePostProcessingChain()
   const std::string config(s_postprocessing_chain.GetConfigString());
   bsi->SetStringValue("Display", "PostProcessChain", config.c_str());
   if (bsi->GetBoolValue("Display", "PostProcessing", false))
-    g_host_display->SetPostProcessingChain(config);
+    g_gpu_device->SetPostProcessingChain(config);
   if (IsEditingGameSettings(bsi))
   {
     s_game_settings_interface->Save();
@@ -3975,7 +3975,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                  bsi->GetBoolValue("Display", "PostProcessing", false)))
   {
     const std::string chain(bsi->GetStringValue("Display", "PostProcessChain", ""));
-    g_host_display->SetPostProcessingChain(chain);
+    g_gpu_device->SetPostProcessingChain(chain);
     if (chain.empty())
       ShowToast(std::string(), FSUI_STR("Post-processing chain is empty."));
     else
@@ -3987,7 +3987,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), FSUI_CSTR("Adds a new shader to the chain.")))
   {
     ImGuiFullscreen::ChoiceDialogOptions options;
-    for (std::string& name : FrontendCommon::PostProcessingChain::GetAvailableShaderNames())
+    for (std::string& name : PostProcessingChain::GetAvailableShaderNames())
       options.emplace_back(std::move(name), false);
 
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), false, std::move(options),
@@ -4034,8 +4034,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   for (u32 stage_index = 0; stage_index < s_postprocessing_chain.GetStageCount(); stage_index++)
   {
     ImGui::PushID(stage_index);
-    FrontendCommon::PostProcessingShader& stage = s_postprocessing_chain.GetShaderStage(stage_index);
-    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, stage.GetName());
+    PostProcessingShader* stage = s_postprocessing_chain.GetShaderStage(stage_index);
+    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, stage->GetName());
     MenuHeading(str);
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_TIMES, "Remove From Chain"), FSUI_CSTR("Removes this shader from the chain.")))
@@ -4059,11 +4059,11 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       postprocessing_action_index = stage_index;
     }
 
-    for (FrontendCommon::PostProcessingShader::Option& opt : stage.GetOptions())
+    for (PostProcessingShader::Option& opt : stage->GetOptions())
     {
       switch (opt.type)
       {
-        case FrontendCommon::PostProcessingShader::Option::Type::Bool:
+        case PostProcessingShader::Option::Type::Bool:
         {
           bool value = (opt.value[0].int_value != 0);
           tstr.Fmt(ICON_FA_COGS "{}", opt.ui_name);
@@ -4078,7 +4078,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         }
         break;
 
-        case FrontendCommon::PostProcessingShader::Option::Type::Float:
+        case PostProcessingShader::Option::Type::Float:
         {
           tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
@@ -4181,7 +4181,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         }
         break;
 
-        case FrontendCommon::PostProcessingShader::Option::Type::Int:
+        case PostProcessingShader::Option::Type::Int:
         {
           tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
@@ -4293,9 +4293,9 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   {
     case POSTPROCESSING_ACTION_REMOVE:
     {
-      FrontendCommon::PostProcessingShader& stage = s_postprocessing_chain.GetShaderStage(postprocessing_action_index);
+      PostProcessingShader* stage = s_postprocessing_chain.GetShaderStage(postprocessing_action_index);
       ShowToast(std::string(),
-                fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, stage.GetName()));
+                fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, stage->GetName()));
       s_postprocessing_chain.RemoveStage(postprocessing_action_index);
       SavePostProcessingChain();
     }
@@ -4598,7 +4598,9 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::DrawAchievementsLoginWindow() {}
+void FullscreenUI::DrawAchievementsLoginWindow()
+{
+}
 
 #endif
 
@@ -5016,15 +5018,16 @@ void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const Ext
   li->preview_texture.reset();
   if (ssi && !ssi->screenshot_data.empty())
   {
-    li->preview_texture =
-      g_host_display->CreateTexture(ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Format::RGBA8,
-                                    ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
+    li->preview_texture = g_gpu_device->CreateTexture(
+      ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
   }
   else
   {
-    li->preview_texture = g_host_display->CreateTexture(
-      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Format::RGBA8,
-      Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH, false);
+    li->preview_texture = g_gpu_device->CreateTexture(
+      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
+      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
+      false);
   }
 
   if (!li->preview_texture)

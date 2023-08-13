@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "host.h"
+#include "common_host.h"
+#include "fullscreen_ui.h"
+#include "imgui_overlays.h"
+
+#include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 
 #include "common/assert.h"
 #include "common/heterogeneous_containers.h"
@@ -154,4 +160,32 @@ void Host::ReportFormattedDebuggerMessage(const char* format, ...)
   va_end(ap);
 
   ReportDebuggerMessage(message);
+}
+
+void Host::RenderDisplay(bool skip_present)
+{
+  Host::BeginPresentFrame();
+
+  // acquire for IO.MousePos.
+  std::atomic_thread_fence(std::memory_order_acquire);
+
+  if (!skip_present)
+  {
+    FullscreenUI::Render();
+    ImGuiManager::RenderTextOverlays();
+    ImGuiManager::RenderOSDMessages();
+  }
+
+  // Debug windows are always rendered, otherwise mouse input breaks on skip.
+  ImGuiManager::RenderOverlayWindows();
+  ImGuiManager::RenderDebugWindows();
+
+  g_gpu_device->Render(skip_present);
+
+  ImGuiManager::NewFrame();
+}
+
+void Host::InvalidateDisplay()
+{
+  RenderDisplay(false);
 }

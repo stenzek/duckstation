@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "postprocessing_shader.h"
+
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "shadergen.h"
+
 #include <cctype>
 #include <cstring>
 #include <sstream>
+
 Log_SetChannel(PostProcessingShader);
 
-namespace FrontendCommon {
-
-void ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value)
+void PostProcessingShader::ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value)
 {
   size_t key_start = 0;
   while (key_start < line.size() && std::isspace(line[key_start]))
@@ -49,7 +49,7 @@ void ParseKeyValue(const std::string_view& line, std::string_view* key, std::str
 }
 
 template<typename T>
-u32 ParseVector(const std::string_view& line, PostProcessingShader::Option::ValueVector* values)
+u32 PostProcessingShader::ParseVector(const std::string_view& line, PostProcessingShader::Option::ValueVector* values)
 {
   u32 index = 0;
   size_t start = 0;
@@ -88,46 +88,22 @@ u32 ParseVector(const std::string_view& line, PostProcessingShader::Option::Valu
   return size;
 }
 
+template u32 PostProcessingShader::ParseVector<s32>(const std::string_view& line,
+                                                    PostProcessingShader::Option::ValueVector* values);
+template u32 PostProcessingShader::ParseVector<float>(const std::string_view& line,
+                                                      PostProcessingShader::Option::ValueVector* values);
+
 PostProcessingShader::PostProcessingShader() = default;
 
-PostProcessingShader::PostProcessingShader(std::string name, std::string code) : m_name(name), m_code(code)
-{
-  LoadOptions();
-}
-
-PostProcessingShader::PostProcessingShader(const PostProcessingShader& copy)
-  : m_name(copy.m_name), m_code(copy.m_code), m_options(copy.m_options)
-{
-}
-
-PostProcessingShader::PostProcessingShader(PostProcessingShader& move)
-  : m_name(std::move(move.m_name)), m_code(std::move(move.m_code)), m_options(std::move(move.m_options))
+PostProcessingShader::PostProcessingShader(std::string name) : m_name(std::move(name))
 {
 }
 
 PostProcessingShader::~PostProcessingShader() = default;
 
-bool PostProcessingShader::LoadFromFile(std::string name, const char* filename)
-{
-  std::optional<std::string> code = FileSystem::ReadFileToString(filename);
-  if (!code.has_value() || code->empty())
-    return false;
-
-  return LoadFromString(std::move(name), code.value());
-}
-
-bool PostProcessingShader::LoadFromString(std::string name, std::string code)
-{
-  m_name = std::move(name);
-  m_code = std::move(code);
-  m_options.clear();
-  LoadOptions();
-  return true;
-}
-
 bool PostProcessingShader::IsValid() const
 {
-  return !m_name.empty() && !m_code.empty();
+  return false;
 }
 
 const PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const std::string_view& name) const
@@ -141,7 +117,7 @@ const PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const 
   return nullptr;
 }
 
-FrontendCommon::PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const std::string_view& name)
+PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const std::string_view& name)
 {
   for (Option& option : m_options)
   {
@@ -237,202 +213,3 @@ void PostProcessingShader::SetConfigString(const std::string_view& str)
     last_sep = next_sep + 1;
   }
 }
-
-bool PostProcessingShader::UsePushConstants() const
-{
-  return GetUniformsSize() <= PUSH_CONSTANT_SIZE_THRESHOLD;
-}
-
-u32 PostProcessingShader::GetUniformsSize() const
-{
-  // lazy packing. todo improve.
-  return sizeof(CommonUniforms) + (sizeof(Option::ValueVector) * static_cast<u32>(m_options.size()));
-}
-
-void PostProcessingShader::FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height, s32 texture_view_x,
-                                             s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
-                                             u32 window_width, u32 window_height, s32 original_width,
-                                             s32 original_height, float time) const
-{
-  CommonUniforms* common = static_cast<CommonUniforms*>(buffer);
-
-  const float rcp_texture_width = 1.0f / static_cast<float>(texture_width);
-  const float rcp_texture_height = 1.0f / static_cast<float>(texture_height);
-  common->src_rect[0] = static_cast<float>(texture_view_x) * rcp_texture_width;
-  common->src_rect[1] = static_cast<float>(texture_view_y) * rcp_texture_height;
-  common->src_rect[2] = (static_cast<float>(texture_view_x + texture_view_width - 1)) * rcp_texture_width;
-  common->src_rect[3] = (static_cast<float>(texture_view_y + texture_view_height - 1)) * rcp_texture_height;
-  common->src_size[0] = (static_cast<float>(texture_view_width)) * rcp_texture_width;
-  common->src_size[1] = (static_cast<float>(texture_view_height)) * rcp_texture_height;
-  common->resolution[0] = static_cast<float>(texture_width);
-  common->resolution[1] = static_cast<float>(texture_height);
-  common->rcp_resolution[0] = rcp_texture_width;
-  common->rcp_resolution[1] = rcp_texture_height;
-  common->window_resolution[0] = static_cast<float>(window_width);
-  common->window_resolution[1] = static_cast<float>(window_height);
-  common->rcp_window_resolution[0] = 1.0f / static_cast<float>(window_width);
-  common->rcp_window_resolution[1] = 1.0f / static_cast<float>(window_height);
-
-  // pad the "original size" relative to the positioning on the screen
-  const float view_scale_x = static_cast<float>(original_width) / static_cast<float>(texture_view_width);
-  const float view_scale_y = static_cast<float>(original_height) / static_cast<float>(texture_view_height);
-  const s32 view_pad_x = texture_view_x + (texture_width - texture_view_width - texture_view_x);
-  const s32 view_pad_y = texture_view_y + (texture_height - texture_view_height - texture_view_y);
-  common->original_size[0] = static_cast<float>(original_width);
-  common->original_size[1] = static_cast<float>(original_height);
-  common->padded_original_size[0] = common->original_size[0] + static_cast<float>(view_pad_x) * view_scale_x;
-  common->padded_original_size[1] = common->original_size[1] + static_cast<float>(view_pad_y) * view_scale_y;
-
-  common->time = time;
-
-  u8* option_values = reinterpret_cast<u8*>(common + 1);
-  for (const Option& option : m_options)
-  {
-    std::memcpy(option_values, option.value.data(), sizeof(Option::ValueVector));
-    option_values += sizeof(Option::ValueVector);
-  }
-}
-
-FrontendCommon::PostProcessingShader& PostProcessingShader::operator=(const PostProcessingShader& copy)
-{
-  m_name = copy.m_name;
-  m_code = copy.m_code;
-  m_options = copy.m_options;
-  return *this;
-}
-
-FrontendCommon::PostProcessingShader& PostProcessingShader::operator=(PostProcessingShader& move)
-{
-  m_name = std::move(move.m_name);
-  m_code = std::move(move.m_code);
-  m_options = std::move(move.m_options);
-  return *this;
-}
-
-void PostProcessingShader::LoadOptions()
-{
-  // Adapted from Dolphin's PostProcessingConfiguration::LoadOptions().
-  constexpr char config_start_delimiter[] = "[configuration]";
-  constexpr char config_end_delimiter[] = "[/configuration]";
-  size_t configuration_start = m_code.find(config_start_delimiter);
-  size_t configuration_end = m_code.find(config_end_delimiter);
-  if (configuration_start == std::string::npos || configuration_end == std::string::npos)
-  {
-    // Issue loading configuration or there isn't one.
-    return;
-  }
-
-  std::string configuration_string =
-    m_code.substr(configuration_start + std::strlen(config_start_delimiter),
-                  configuration_end - configuration_start - std::strlen(config_start_delimiter));
-
-  std::istringstream in(configuration_string);
-
-  Option current_option = {};
-  while (!in.eof())
-  {
-    std::string line_str;
-    if (std::getline(in, line_str))
-    {
-      std::string_view line_view = line_str;
-
-      // Check for CRLF eol and convert it to LF
-      if (!line_view.empty() && line_view.at(line_view.size() - 1) == '\r')
-        line_view.remove_suffix(1);
-
-      if (line_view.empty())
-        continue;
-
-      if (line_view[0] == '[')
-      {
-        size_t endpos = line_view.find("]");
-        if (endpos != std::string::npos)
-        {
-          if (current_option.type != Option::Type::Invalid)
-          {
-            current_option.value = current_option.default_value;
-            if (current_option.ui_name.empty())
-              current_option.ui_name = current_option.name;
-
-            if (!current_option.name.empty() && current_option.vector_size > 0)
-              m_options.push_back(std::move(current_option));
-
-            current_option = {};
-          }
-
-          // New section!
-          std::string_view sub = line_view.substr(1, endpos - 1);
-          if (sub == "OptionBool")
-            current_option.type = Option::Type::Bool;
-          else if (sub == "OptionRangeFloat")
-            current_option.type = Option::Type::Float;
-          else if (sub == "OptionRangeInteger")
-            current_option.type = Option::Type::Int;
-          else
-            Log_ErrorPrintf("Invalid option type: '%s'", line_str.c_str());
-
-          continue;
-        }
-      }
-
-      if (current_option.type == Option::Type::Invalid)
-        continue;
-
-      std::string_view key, value;
-      ParseKeyValue(line_view, &key, &value);
-      if (!key.empty() && !value.empty())
-      {
-        if (key == "GUIName")
-        {
-          current_option.ui_name = value;
-        }
-        else if (key == "OptionName")
-        {
-          current_option.name = value;
-        }
-        else if (key == "DependentOption")
-        {
-          current_option.dependent_option = value;
-        }
-        else if (key == "MinValue" || key == "MaxValue" || key == "DefaultValue" || key == "StepAmount")
-        {
-          Option::ValueVector* dst_array;
-          if (key == "MinValue")
-            dst_array = &current_option.min_value;
-          else if (key == "MaxValue")
-            dst_array = &current_option.max_value;
-          else if (key == "DefaultValue")
-            dst_array = &current_option.default_value;
-          else // if (key == "StepAmount")
-            dst_array = &current_option.step_value;
-
-          u32 size = 0;
-          if (current_option.type == Option::Type::Bool)
-            (*dst_array)[size++].int_value = StringUtil::FromChars<bool>(value).value_or(false) ? 1 : 0;
-          else if (current_option.type == Option::Type::Float)
-            size = ParseVector<float>(value, dst_array);
-          else if (current_option.type == Option::Type::Int)
-            size = ParseVector<s32>(value, dst_array);
-
-          current_option.vector_size =
-            (current_option.vector_size == 0) ? size : std::min(current_option.vector_size, size);
-        }
-        else
-        {
-          Log_ErrorPrintf("Invalid option key: '%s'", line_str.c_str());
-        }
-      }
-    }
-  }
-
-  if (current_option.type != Option::Type::Invalid && !current_option.name.empty() && current_option.vector_size > 0)
-  {
-    current_option.value = current_option.default_value;
-    if (current_option.ui_name.empty())
-      current_option.ui_name = current_option.name;
-
-    m_options.push_back(std::move(current_option));
-  }
-}
-
-} // namespace FrontendCommon

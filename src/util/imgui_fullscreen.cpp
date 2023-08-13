@@ -15,8 +15,8 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "common/timer.h"
+#include "gpu_device.h"
 #include "core/host.h"
-#include "host_display.h"
 #include "fmt/core.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
@@ -267,8 +267,9 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 
 std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
-  std::unique_ptr<GPUTexture> texture = g_host_display->CreateTexture(
-    image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+  std::unique_ptr<GPUTexture> texture =
+    g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                                  GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
     Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());

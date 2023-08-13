@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "guncon.h"
-#include "common/assert.h"
-#include "common/log.h"
 #include "gpu.h"
 #include "host.h"
 #include "resources.h"
 #include "system.h"
-#include "util/host_display.h"
+
+#include "util/gpu_device.h"
 #include "util/state_wrapper.h"
+
+#include "common/assert.h"
+#include "common/log.h"
+
 #include <array>
+
 Log_SetChannel(GunCon);
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Button::Count)> s_button_indices = {{13, 3, 14}};
@@ -177,8 +181,8 @@ bool GunCon::Transfer(const u8 data_in, u8* data_out)
 void GunCon::UpdatePosition()
 {
   // get screen coordinates
-  const s32 mouse_x = g_host_display->GetMousePositionX();
-  const s32 mouse_y = g_host_display->GetMousePositionY();
+  const s32 mouse_x = g_gpu_device->GetMousePositionX();
+  const s32 mouse_y = g_gpu_device->GetMousePositionY();
 
   // are we within the active display area?
   u32 tick, line;

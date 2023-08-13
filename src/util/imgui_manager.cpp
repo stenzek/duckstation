@@ -8,9 +8,8 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "core/gpu.h"
+#include "gpu_device.h"
 #include "core/host.h"
-#include "host_display.h"
 #include "core/system.h"
 #include "fmt/format.h"
 #include "imgui.h"
@@ -82,7 +81,7 @@ bool ImGuiManager::Initialize()
   }
 
   s_global_scale =
-    std::max(g_host_display->GetWindowScale() * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
+    std::max(g_gpu_device->GetWindowScale() * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
 
   ImGui::CreateContext();
 
@@ -100,24 +99,16 @@ bool ImGuiManager::Initialize()
 #endif
 
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-  io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
-  io.DisplaySize.y = static_cast<float>(g_host_display->GetWindowHeight());
+  io.DisplaySize.x = static_cast<float>(g_gpu_device->GetWindowWidth());
+  io.DisplaySize.y = static_cast<float>(g_gpu_device->GetWindowHeight());
 
   SetKeyMap();
   SetStyle();
 
-  if (!g_host_display->CreateImGuiContext())
-  {
-    Panic("Failed to create ImGui device context");
-    g_host_display->DestroyImGuiContext();
-    ImGui::DestroyContext();
-    return false;
-  }
 
-  if (!AddImGuiFonts(false) || !g_host_display->UpdateImGuiFontTexture())
+  if (!AddImGuiFonts(false) || !g_gpu_device->UpdateImGuiFontTexture())
   {
     Panic("Failed to create ImGui font text");
-    g_host_display->DestroyImGuiContext();
     ImGui::DestroyContext();
     return false;
   }
@@ -131,8 +122,6 @@ bool ImGuiManager::Initialize()
 
 void ImGuiManager::Shutdown()
 {
-  if (g_host_display)
-    g_host_display->DestroyImGuiContext();
   if (ImGui::GetCurrentContext())
     ImGui::DestroyContext();
 
@@ -145,8 +134,8 @@ void ImGuiManager::Shutdown()
 
 void ImGuiManager::WindowResized()
 {
-  const u32 new_width = g_host_display ? g_host_display->GetWindowWidth() : 0;
-  const u32 new_height = g_host_display ? g_host_display->GetWindowHeight() : 0;
+  const u32 new_width = g_gpu_device ? g_gpu_device->GetWindowWidth() : 0;
+  const u32 new_height = g_gpu_device ? g_gpu_device->GetWindowHeight() : 0;
 
   ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
@@ -159,7 +148,7 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::UpdateScale()
 {
-  const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
+  const float window_scale = g_gpu_device ? g_gpu_device->GetWindowScale() : 1.0f;
   const float scale = std::max(window_scale * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
 
   if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
@@ -178,7 +167,7 @@ void ImGuiManager::UpdateScale()
   if (!AddImGuiFonts(HasFullscreenFonts()))
     Panic("Failed to create ImGui font text");
 
-  if (!g_host_display->UpdateImGuiFontTexture())
+  if (!g_gpu_device->UpdateImGuiFontTexture())
     Panic("Failed to recreate font texture after scale+resize");
 
   NewFrame();
@@ -533,7 +522,7 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
     AddImGuiFonts(false);
   }
 
-  g_host_display->UpdateImGuiFontTexture();
+  g_gpu_device->UpdateImGuiFontTexture();
   NewFrame();
 
   return HasFullscreenFonts();
@@ -563,10 +552,10 @@ void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
-	if (!key.empty())
-		Log_InfoPrintf("OSD [%s]: %s", key.c_str(), message.c_str());
-	else
-		Log_InfoPrintf("OSD: %s", message.c_str());
+  if (!key.empty())
+    Log_InfoPrintf("OSD [%s]: %s", key.c_str(), message.c_str());
+  else
+    Log_InfoPrintf("OSD: %s", message.c_str());
 
   OSDMessage msg;
   msg.key = std::move(key);

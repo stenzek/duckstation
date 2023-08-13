@@ -35,8 +35,6 @@ void OnSystemPaused();
 void OnSystemResumed();
 void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name);
 void PumpMessagesOnCPUThread();
-bool CreateHostDisplayResources();
-void ReleaseHostDisplayResources();
 
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();

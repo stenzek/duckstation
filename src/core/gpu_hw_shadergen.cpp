@@ -1162,6 +1162,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
     ss << "layout(std430";
     if (IsVulkan())
       ss << ", set = 0, binding = 0";
+    else if (IsMetal())
+      ss << ", set = 0, binding = 1";
     else if (m_use_glsl_binding_layout)
       ss << ", binding = 0";
 
@@ -1327,13 +1329,37 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
   return ss.str();
 }
 
+void GPU_HW_ShaderGen::WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss)
+{
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float u_lod"}, true);
+}
+
+std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleVertexShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteAdaptiveDownsampleUniformBuffer(ss);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << R"(
+{
+  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
+  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+  v_tex0 = u_uv_min + (u_uv_max - u_uv_min) * v_tex0;
+  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass)
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
+  WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
-  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution"}, true);
   DefineMacro(ss, "FIRST_PASS", first_pass);
 
   // mipmap_energy.glsl ported from parallel-rsx.
@@ -1368,16 +1394,16 @@ float4 get_bias(float4 c00, float4 c01, float4 c10, float4 c11)
 {
   float2 uv = v_tex0 - (u_rcp_resolution * 0.25);
 #ifdef FIRST_PASS
-   vec3 c00 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 0)).rgb;
-   vec3 c01 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 1)).rgb;
-   vec3 c10 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 0)).rgb;
-   vec3 c11 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 1)).rgb;
+   vec3 c00 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 0)).rgb;
+   vec3 c01 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 1)).rgb;
+   vec3 c10 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 0)).rgb;
+   vec3 c11 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 1)).rgb;
    o_col0 = get_bias(c00, c01, c10, c11);
 #else
-   vec4 c00 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 0));
-   vec4 c01 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(0, 1));
-   vec4 c10 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 0));
-   vec4 c11 = SAMPLE_TEXTURE_OFFSET(samp0, uv, int2(1, 1));
+   vec4 c00 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 0));
+   vec4 c01 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 1));
+   vec4 c10 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 0));
+   vec4 c11 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 1));
    o_col0 = get_bias(c00, c01, c10, c11);
 #endif
 }
@@ -1391,9 +1417,8 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
+  WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
-  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float sample_level"},
-                       true);
 
   // mipmap_blur.glsl ported from parallel-rsx.
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);

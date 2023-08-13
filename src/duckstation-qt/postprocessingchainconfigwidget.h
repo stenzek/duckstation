@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/types.h"
 #include "ui_postprocessingchainconfigwidget.h"
+
 #include "util/postprocessing_chain.h"
+
+#include "common/types.h"
+
 #include <QtWidgets/QWidget>
-#include <optional>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 namespace FrontendCommon {
@@ -22,7 +25,7 @@ public:
   PostProcessingChainConfigWidget(QWidget* parent);
   ~PostProcessingChainConfigWidget();
 
-  ALWAYS_INLINE FrontendCommon::PostProcessingChain& getChain() { return m_chain; }
+  ALWAYS_INLINE PostProcessingChain& getChain() { return m_chain; }
 
   bool setConfigString(const std::string_view& config_string);
   void setOptionsButtonVisible(bool visible);
@@ -51,5 +54,5 @@ private:
 
   Ui::PostProcessingChainConfigWidget m_ui;
 
-  FrontendCommon::PostProcessingChain m_chain;
+  PostProcessingChain m_chain;
 };

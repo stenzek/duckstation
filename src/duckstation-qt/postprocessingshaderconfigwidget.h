@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "util/postprocessing_shader.h"
+
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QWidget>
 
@@ -13,7 +15,7 @@ class PostProcessingShaderConfigWidget : public QWidget
   Q_OBJECT
 
 public:
-  PostProcessingShaderConfigWidget(QWidget* parent, FrontendCommon::PostProcessingShader* shader);
+  PostProcessingShaderConfigWidget(QWidget* parent, PostProcessingShader* shader);
   ~PostProcessingShaderConfigWidget();
 
   QGridLayout* getLayout() { return m_layout; }
@@ -28,7 +30,7 @@ private Q_SLOTS:
 protected:
   void createUi();
 
-  FrontendCommon::PostProcessingShader* m_shader;
+  PostProcessingShader* m_shader;
   QGridLayout* m_layout;
 };
 
@@ -37,7 +39,7 @@ class PostProcessingShaderConfigDialog : public QDialog
   Q_OBJECT
 
 public:
-  PostProcessingShaderConfigDialog(QWidget* parent, FrontendCommon::PostProcessingShader* shader);
+  PostProcessingShaderConfigDialog(QWidget* parent, PostProcessingShader* shader);
   ~PostProcessingShaderConfigDialog();
 
 Q_SIGNALS:

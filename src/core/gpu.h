@@ -17,13 +17,12 @@
 
 class StateWrapper;
 
-class HostDisplay;
+class GPUDevice;
 class GPUTexture;
 
 class TimingEvent;
 
-namespace Threading
-{
+namespace Threading {
 class Thread;
 }
 
@@ -80,21 +79,20 @@ public:
   GPU();
   virtual ~GPU();
 
-  virtual GPURenderer GetRendererType() const = 0;
   virtual const Threading::Thread* GetSWThread() const = 0;
+  virtual bool IsHardwareRenderer() const = 0;
 
   virtual bool Initialize();
   virtual void Reset(bool clear_vram);
   virtual bool DoState(StateWrapper& sw, GPUTexture** save_to_texture, bool update_display);
 
   // Graphics API state reset/restore - call when drawing the UI etc.
-  virtual void ResetGraphicsAPIState();
+  // TODO: replace with "invalidate cached state"
   virtual void RestoreGraphicsAPIState();
 
   // Render statistics debug window.
   void DrawDebugStateWindow();
 
-  bool IsHardwareRenderer();
   void CPUClockChanged();
 
   // MMIO access
@@ -161,25 +159,7 @@ public:
   float ComputeVerticalFrequency() const;
   float GetDisplayAspectRatio() const;
 
-#ifdef _WIN32
-  // gpu_hw_d3d11.cpp
-  static std::unique_ptr<GPU> CreateHardwareD3D11Renderer();
-
-  // gpu_hw_d3d12.cpp
-  static std::unique_ptr<GPU> CreateHardwareD3D12Renderer();
-#endif
-
-#ifdef WITH_OPENGL
-  // gpu_hw_opengl.cpp
-  static std::unique_ptr<GPU> CreateHardwareOpenGLRenderer();
-#endif
-
-#ifdef WITH_VULKAN
-  // gpu_hw_vulkan.cpp
-  static std::unique_ptr<GPU> CreateHardwareVulkanRenderer();
-#endif
-
-  // gpu_sw.cpp
+  static std::unique_ptr<GPU> CreateHardwareRenderer();
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
@@ -191,6 +171,9 @@ public:
 
   // Dumps raw VRAM to a file.
   bool DumpVRAMToFile(const char* filename);
+
+  // Ensures all buffered vertices are drawn.
+  virtual void FlushRender();
 
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
@@ -291,7 +274,6 @@ protected:
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand();
-  virtual void FlushRender();
   virtual void ClearDisplay();
   virtual void UpdateDisplay();
   virtual void DrawRendererStats(bool is_idle_frame);

@@ -4,7 +4,9 @@
 #include "postprocessingchainconfigwidget.h"
 #include "postprocessingshaderconfigwidget.h"
 #include "qthost.h"
+
 #include "util/postprocessing_chain.h"
+
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -71,9 +73,9 @@ void PostProcessingChainConfigWidget::updateList()
 
   for (u32 i = 0; i < m_chain.GetStageCount(); i++)
   {
-    const FrontendCommon::PostProcessingShader& shader = m_chain.GetShaderStage(i);
+    const PostProcessingShader* shader = m_chain.GetShaderStage(i);
 
-    QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(shader.GetName()), m_ui.shaders);
+    QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(shader->GetName()), m_ui.shaders);
     item->setData(Qt::UserRole, QVariant(i));
   }
 
@@ -94,7 +96,7 @@ void PostProcessingChainConfigWidget::updateButtonStates(std::optional<u32> inde
   m_ui.clear->setEnabled(!m_chain.IsEmpty());
   // m_ui.reload->setEnabled(!m_chain.IsEmpty());
   m_ui.shaderSettings->setEnabled(index.has_value() && (index.value() < m_chain.GetStageCount()) &&
-                                  m_chain.GetShaderStage(index.value()).HasOptions());
+                                  m_chain.GetShaderStage(index.value())->HasOptions());
 
   if (index.has_value())
   {
@@ -112,7 +114,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
 {
   QMenu menu;
 
-  const std::vector<std::string> shaders(FrontendCommon::PostProcessingChain::GetAvailableShaderNames());
+  const std::vector<std::string> shaders(PostProcessingChain::GetAvailableShaderNames());
   if (shaders.empty())
   {
     menu.addAction(tr("No Shaders Available"))->setEnabled(false);
@@ -198,7 +200,7 @@ void PostProcessingChainConfigWidget::onShaderConfigButtonClicked()
   std::optional<u32> index = getSelectedIndex();
   if (index.has_value() && index.value() < m_chain.GetStageCount())
   {
-    PostProcessingShaderConfigDialog shader_config(this, &m_chain.GetShaderStage(index.value()));
+    PostProcessingShaderConfigDialog shader_config(this, m_chain.GetShaderStage(index.value()));
     connect(&shader_config, &PostProcessingShaderConfigDialog::configChanged, [this]() { configChanged(); });
     shader_config.exec();
   }

@@ -10,8 +10,6 @@
 #include <algorithm>
 Log_SetChannel(HTTPDownloaderWinHttp);
 
-#pragma comment(lib, "winhttp.lib")
-
 namespace Common {
 
 HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader() {}

@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_sw_backend.h"
+#include "system.h"
+
+#include "util/gpu_device.h"
+
 #include "common/assert.h"
 #include "common/log.h"
-#include "gpu_sw_backend.h"
-#include "util/host_display.h"
-#include "system.h"
+
 #include <algorithm>
 Log_SetChannel(GPU_SW_Backend);
 

@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gte.h"
-#include "common/assert.h"
-#include "common/bitutils.h"
+
 #include "cpu_core.h"
 #include "cpu_core_private.h"
-#include "util/host_display.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "timing_event.h"
+
+#include "util/gpu_device.h"
 #include "util/state_wrapper.h"
+
+#include "common/assert.h"
+#include "common/bitutils.h"
+
 #include <algorithm>
 #include <array>
 #include <numeric>
@@ -190,14 +194,14 @@ void UpdateAspectRatio()
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      if (!g_host_display)
+      if (!g_gpu_device)
       {
         s_aspect_ratio = DisplayAspectRatio::R4_3;
         return;
       }
 
-      num = g_host_display->GetWindowWidth();
-      denom = g_host_display->GetWindowHeight();
+      num = g_gpu_device->GetWindowWidth();
+      denom = g_gpu_device->GetWindowHeight();
     }
     break;
 

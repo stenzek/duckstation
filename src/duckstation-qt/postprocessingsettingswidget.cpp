@@ -71,11 +71,11 @@ void PostProcessingSettingsWidget::updateShaderConfigPanel(s32 index)
   if (index < 0)
     return;
 
-  FrontendCommon::PostProcessingShader& shader = m_ui.widget->getChain().GetShaderStage(static_cast<u32>(index));
-  if (!shader.HasOptions())
+  PostProcessingShader* shader = m_ui.widget->getChain().GetShaderStage(static_cast<u32>(index));
+  if (!shader->HasOptions())
     return;
 
-  m_shader_config = new PostProcessingShaderConfigWidget(m_ui.scrollArea, &shader);
+  m_shader_config = new PostProcessingShaderConfigWidget(m_ui.scrollArea, shader);
   connect(m_shader_config, &PostProcessingShaderConfigWidget::configChanged,
           [this]() { onConfigChanged(m_ui.widget->getChain().GetConfigString()); });
   m_ui.scrollArea->setWidget(m_shader_config);

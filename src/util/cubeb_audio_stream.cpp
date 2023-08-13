@@ -15,7 +15,6 @@ Log_SetChannel(CubebAudioStream);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <objbase.h>
-#pragma comment(lib, "Ole32.lib")
 #endif
 
 static void StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state);

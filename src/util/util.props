@@ -6,16 +6,20 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);SOUNDTOUCH_FLOAT_SAMPLES;SOUNDTOUCH_ALLOW_SSE;ST_NO_EXCEPTION_HANDLING=1</PreprocessorDefinitions>
       <PreprocessorDefinitions>WITH_CUBEB=1;WITH_SDL2=1;WITH_DINPUT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);WITH_OPENGL=1;WITH_VULKAN=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\stb\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\glslang</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>d3dcompiler.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;Dwmapi.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">%(AdditionalDependencies);opengl32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
   <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
+  <Import Project="..\..\dep\msvc\winpixeventruntime\WinPixEventRuntime.props" />
 </Project>
