@@ -212,6 +212,8 @@ enum huffman_error huffman_import_tree_rle(struct huffman_decoder* decoder, stru
 			else
 			{
 				int repcount = bitstream_read(bitbuf, numbits) + 3;
+				if (repcount + curnode > decoder->numcodes)
+					return HUFFERR_INVALID_DATA;
 				while (repcount--)
 					decoder->huffnode[curnode++].numbits = nodebits;
 			}

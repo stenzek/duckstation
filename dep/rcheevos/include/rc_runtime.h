@@ -88,9 +88,12 @@ typedef struct rc_runtime_t {
 
   rc_value_t* variables;
   rc_value_t** next_variable;
+
+  char owns_self;
 }
 rc_runtime_t;
 
+rc_runtime_t* rc_runtime_alloc(void);
 void rc_runtime_init(rc_runtime_t* runtime);
 void rc_runtime_destroy(rc_runtime_t* runtime);
 
@@ -121,7 +124,8 @@ enum {
   RC_RUNTIME_EVENT_LBOARD_TRIGGERED,
   RC_RUNTIME_EVENT_ACHIEVEMENT_DISABLED,
   RC_RUNTIME_EVENT_LBOARD_DISABLED,
-  RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED
+  RC_RUNTIME_EVENT_ACHIEVEMENT_UNPRIMED,
+  RC_RUNTIME_EVENT_ACHIEVEMENT_PROGRESS_UPDATED
 };
 
 typedef struct rc_runtime_event_t {

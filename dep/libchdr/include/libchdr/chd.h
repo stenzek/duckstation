@@ -48,6 +48,7 @@ extern "C" {
 
 #include <libchdr/coretypes.h>
 #include <libchdr/chdconfig.h>
+#include <stdbool.h>
 
 /***************************************************************************
 
@@ -204,6 +205,9 @@ extern "C" {
 
 #define CHD_CODEC_NONE 0
 #define CHD_CODEC_ZLIB				CHD_MAKE_TAG('z','l','i','b')
+#define CHD_CODEC_LZMA				CHD_MAKE_TAG('l','z','m','a')
+#define CHD_CODEC_HUFFMAN 			CHD_MAKE_TAG('h','u','f','f')
+#define CHD_CODEC_FLAC				CHD_MAKE_TAG('f','l','a','c')
 /* general codecs with CD frontend */
 #define CHD_CODEC_CD_ZLIB			CHD_MAKE_TAG('c','d','z','l')
 #define CHD_CODEC_CD_LZMA			CHD_MAKE_TAG('c','d','l','z')
@@ -253,6 +257,7 @@ extern "C" {
 /* CHD open values */
 #define CHD_OPEN_READ				1
 #define CHD_OPEN_READWRITE			2
+#define CHD_OPEN_TRANSFER_FILE 4 /* Freeing of the FILE* is now libchdr's responsibility if open was successful */
 
 /* error types */
 enum _chd_error
@@ -370,7 +375,8 @@ struct _chd_verify_result
 /* chd_error chd_create_file(core_file *file, UINT64 logicalbytes, UINT32 hunkbytes, UINT32 compression, chd_file *parent); */
 
 /* open an existing CHD file */
-CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *parent, chd_file **chd);
+CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_file **chd);
 CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, chd_file **chd);
 
 /* precache underlying file */
@@ -394,7 +400,10 @@ CHD_EXPORT const char *chd_error_string(chd_error err);
 CHD_EXPORT const chd_header *chd_get_header(chd_file *chd);
 
 /* read CHD header data from file into the pointed struct */
+CHD_EXPORT chd_error chd_read_header_core_file(core_file *file, chd_header *header);
+CHD_EXPORT chd_error chd_read_header_file(FILE *file, chd_header *header);
 CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header);
+CHD_EXPORT bool chd_is_matching_parent(const chd_header* header, const chd_header* parent_header);
 
 
 

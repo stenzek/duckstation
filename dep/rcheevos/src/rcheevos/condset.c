@@ -84,6 +84,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
         switch ((*next)->oper)
         {
           case RC_OPERATOR_AND:
+          case RC_OPERATOR_XOR:
           case RC_OPERATOR_DIV:
           case RC_OPERATOR_MULT:
           case RC_OPERATOR_NONE:
@@ -209,8 +210,7 @@ static int rc_test_condset_internal(rc_condset_t* self, int processing_pause, rc
 
       case RC_CONDITION_SUB_SOURCE:
         rc_evaluate_condition_value(&value, condition, eval_state);
-        rc_typed_value_convert(&value, RC_VALUE_TYPE_SIGNED);
-        value.value.i32 = -value.value.i32;
+        rc_typed_value_negate(&value);
         rc_typed_value_add(&eval_state->add_value, &value);
         eval_state->add_address = 0;
         continue;

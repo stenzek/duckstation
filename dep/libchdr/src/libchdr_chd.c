@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <limits.h>
 
 #include <libchdr/chd.h>
 #include <libchdr/cdrom.h>
@@ -227,6 +228,12 @@ struct _lzma_codec_data
 	lzma_allocator	allocator;
 };
 
+typedef struct _huff_codec_data huff_codec_data;
+struct _huff_codec_data
+{
+	struct huffman_decoder* decoder;
+};
+
 /* codec-private data for the CDZL codec */
 typedef struct _cdzl_codec_data cdzl_codec_data;
 struct _cdzl_codec_data {
@@ -249,6 +256,14 @@ struct _cdlz_codec_data {
 	uint8_t*			buffer;
 };
 
+/* codec-private data for the FLAC codec */
+typedef struct _flac_codec_data flac_codec_data;
+struct _flac_codec_data {
+	/* internal state */
+	int		native_endian;
+	flac_decoder	decoder;
+};
+
 /* codec-private data for the CDFL codec */
 typedef struct _cdfl_codec_data cdfl_codec_data;
 struct _cdfl_codec_data {
@@ -267,7 +282,6 @@ struct _chd_file
 	UINT32					cookie;			/* cookie, should equal COOKIE_VALUE */
 
 	core_file *				file;			/* handle to the open core file */
-	UINT8					owns_file;		/* flag indicating if this file should be closed on chd_close() */
 	chd_header				header;			/* header, extracted from file */
 
 	chd_file *				parent;			/* pointer to parent file, or NULL */
@@ -286,6 +300,9 @@ struct _chd_file
 	const codec_interface *	codecintf[4];	/* interface to the codec */
 
 	zlib_codec_data			zlib_codec_data;		/* zlib codec data */
+	lzma_codec_data			lzma_codec_data;		/* lzma codec data */
+	huff_codec_data			huff_codec_data;		/* huff codec data */
+	flac_codec_data			flac_codec_data;		/* flac codec data */
 	cdzl_codec_data			cdzl_codec_data;		/* cdzl codec data */
 	cdlz_codec_data			cdlz_codec_data;		/* cdlz codec data */
 	cdfl_codec_data			cdfl_codec_data;		/* cdfl codec data */
@@ -308,6 +325,14 @@ static const UINT8 nullsha1[CHD_SHA1_BYTES] = { 0 };
 /***************************************************************************
     PROTOTYPES
 ***************************************************************************/
+
+/* core_file wrappers over stdio */
+static core_file *core_stdio_fopen(char const *path);
+static UINT64 core_stdio_fsize(core_file *file);
+static size_t core_stdio_fread(void *ptr, size_t size, size_t nmemb, core_file *file);
+static int core_stdio_fclose(core_file *file);
+static int core_stdio_fclose_nonowner(core_file *file); // alternate fclose used by chd_open_file
+static int core_stdio_fseek(core_file* file, INT64 offset, int whence);
 
 /* internal header operations */
 static chd_error header_validate(const chd_header *header);
@@ -337,6 +362,16 @@ static void zlib_allocator_free(voidpf opaque);
 static chd_error lzma_codec_init(void *codec, uint32_t hunkbytes);
 static void lzma_codec_free(void *codec);
 static chd_error lzma_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
+/* huff compression codec */
+static chd_error huff_codec_init(void *codec, uint32_t hunkbytes);
+static void huff_codec_free(void *codec);
+static chd_error huff_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
+/* flac compression codec */
+static chd_error flac_codec_init(void *codec, uint32_t hunkbytes);
+static void flac_codec_free(void *codec);
+static chd_error flac_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
 /* cdzl compression codec */
 static chd_error cdzl_codec_init(void* codec, uint32_t hunkbytes);
@@ -750,23 +785,120 @@ static chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t
 }
 
 /***************************************************************************
+ *  HUFFMAN DECOMPRESSOR
+ ***************************************************************************
+ */
+
+static chd_error huff_codec_init(void* codec, uint32_t hunkbytes)
+{
+	huff_codec_data* huff_codec = (huff_codec_data*) codec;
+	huff_codec->decoder = create_huffman_decoder(256, 16);
+	return CHDERR_NONE;
+}
+
+static void huff_codec_free(void *codec)
+{
+	huff_codec_data* huff_codec = (huff_codec_data*) codec;
+	delete_huffman_decoder(huff_codec->decoder);
+}
+
+static chd_error huff_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen)
+{
+	huff_codec_data* huff_codec = (huff_codec_data*) codec;
+	struct bitstream* bitbuf = create_bitstream(src, complen);
+
+	// first import the tree
+	enum huffman_error err = huffman_import_tree_huffman(huff_codec->decoder, bitbuf);
+	if (err != HUFFERR_NONE)
+	{
+		free(bitbuf);
+		return err;
+	}
+
+	// then decode the data
+	for (uint32_t cur = 0; cur < destlen; cur++)
+		dest[cur] = huffman_decode_one(huff_codec->decoder, bitbuf);
+	bitstream_flush(bitbuf);
+	chd_error result = bitstream_overflow(bitbuf) ? CHDERR_DECOMPRESSION_ERROR : CHDERR_NONE;
+
+	free(bitbuf);
+	return result;
+}
+ 
+/***************************************************************************
  *  CD FLAC DECOMPRESSOR
  ***************************************************************************
  */
 
 /*------------------------------------------------------
- *  cdfl_codec_blocksize - return the optimal block size
+ *  flac_codec_blocksize - return the optimal block size
  *------------------------------------------------------
  */
 
-static uint32_t cdfl_codec_blocksize(uint32_t bytes)
+static uint32_t flac_codec_blocksize(uint32_t bytes)
 {
 	/* determine FLAC block size, which must be 16-65535
 	 * clamp to 2k since that's supposed to be the sweet spot */
-	uint32_t hunkbytes = bytes / 4;
-	while (hunkbytes > 2048)
-		hunkbytes /= 2;
-	return hunkbytes;
+	uint32_t blocksize = bytes / 4;
+	while (blocksize > 2048)
+		blocksize /= 2;
+	return blocksize;
+}
+
+static chd_error flac_codec_init(void *codec, uint32_t hunkbytes)
+{
+	uint16_t native_endian = 0;
+	flac_codec_data *flac = (flac_codec_data*)codec;
+
+	/* make sure the CHD's hunk size is an even multiple of the sample size */
+	if (hunkbytes % 4 != 0)
+		return CHDERR_CODEC_ERROR;
+
+	/* determine whether we want native or swapped samples */
+	*(uint8_t *)(&native_endian) = 1;
+	flac->native_endian = (native_endian & 1);
+
+	/* flac decoder init */
+	if (flac_decoder_init(&flac->decoder))
+		return CHDERR_OUT_OF_MEMORY;
+
+	return CHDERR_NONE;
+}
+
+static void flac_codec_free(void *codec)
+{
+	flac_codec_data *flac = (flac_codec_data*)codec;
+	flac_decoder_free(&flac->decoder);
+}
+
+static chd_error flac_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen)
+{
+	flac_codec_data *flac = (flac_codec_data*)codec;
+	int swap_endian;
+
+	if (src[0] == 'L')
+		swap_endian = !flac->native_endian;
+	else if (src[0] == 'B')
+		swap_endian = flac->native_endian;
+	else
+		return CHDERR_DECOMPRESSION_ERROR;
+
+	if (!flac_decoder_reset(&flac->decoder, 44100, 2, flac_codec_blocksize(destlen), src + 1, complen - 1))
+		return CHDERR_DECOMPRESSION_ERROR;
+	if (!flac_decoder_decode_interleaved(&flac->decoder, (int16_t *)(dest), destlen/4, swap_endian))
+		return CHDERR_DECOMPRESSION_ERROR;
+	flac_decoder_finish(&flac->decoder);
+
+	return CHDERR_NONE;
+}
+
+static uint32_t cdfl_codec_blocksize(uint32_t bytes)
+{
+	// for CDs it seems that CD_MAX_SECTOR_DATA is the right target
+	uint32_t blocksize = bytes / 4;
+	while (blocksize > CD_MAX_SECTOR_DATA)
+		blocksize /= 2;
+	return blocksize;
 }
 
 static chd_error cdfl_codec_init(void *codec, uint32_t hunkbytes)
@@ -901,6 +1033,39 @@ static const codec_interface codec_interfaces[] =
 		zlib_codec_init,
 		zlib_codec_free,
 		zlib_codec_decompress,
+		NULL
+	},
+
+	/* V5 lzma compression */
+	{
+		CHD_CODEC_LZMA,
+		"lzma (LZMA)",
+		FALSE,
+		lzma_codec_init,
+		lzma_codec_free,
+		lzma_codec_decompress,
+		NULL
+	},
+
+	/* V5 huffman compression */
+	{
+		CHD_CODEC_HUFFMAN,
+		"Huffman",
+		FALSE,
+		huff_codec_init,
+		huff_codec_free,
+		huff_codec_decompress,
+		NULL
+	},
+
+	/* V5 flac compression */
+	{
+		CHD_CODEC_FLAC,
+		"flac (FLAC)",
+		FALSE,
+		flac_codec_init,
+		flac_codec_free,
+		flac_codec_decompress,
 		NULL
 	},
 
@@ -1185,6 +1350,8 @@ static chd_error decompress_v5_map(chd_file* chd, chd_header* header)
 	if (!chd_compressed(header))
 	{
 		header->rawmap = (uint8_t*)malloc(rawmapsize);
+		if (header->rawmap == NULL)
+			return CHDERR_OUT_OF_MEMORY;
 		core_fseek(chd->file, header->mapoffset, SEEK_SET);
 		result = core_fread(chd->file, header->rawmap, rawmapsize);
 		return CHDERR_NONE;
@@ -1202,10 +1369,18 @@ static chd_error decompress_v5_map(chd_file* chd, chd_header* header)
 
 	/* now read the map */
 	compressed_ptr = (uint8_t*)malloc(sizeof(uint8_t) * mapbytes);
+	if (compressed_ptr == NULL)
+		return CHDERR_OUT_OF_MEMORY;
 	core_fseek(chd->file, header->mapoffset + 16, SEEK_SET);
 	result = core_fread(chd->file, compressed_ptr, mapbytes);
 	bitbuf = create_bitstream(compressed_ptr, sizeof(uint8_t) * mapbytes);
 	header->rawmap = (uint8_t*)malloc(rawmapsize);
+	if (header->rawmap == NULL)
+	{
+		free(compressed_ptr);
+		free(bitbuf);
+		return CHDERR_OUT_OF_MEMORY;
+	}
 
 	/* first decode the compression types */
 	decoder = create_huffman_decoder(16, 8);
@@ -1343,7 +1518,30 @@ static inline void map_extract_old(const UINT8 *base, map_entry *entry, UINT32 h
     chd_open_file - open a CHD file for access
 -------------------------------------------------*/
 
-CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, chd_file **chd)
+CHD_EXPORT chd_error chd_open_file(FILE *file, int mode, chd_file *parent, chd_file **chd) {
+	core_file *stream = malloc(sizeof(core_file));
+	if (!stream)
+		return CHDERR_OUT_OF_MEMORY;
+	stream->argp = file;
+	stream->fsize = core_stdio_fsize;
+	stream->fread = core_stdio_fread;
+	stream->fclose = core_stdio_fclose_nonowner;
+	stream->fseek = core_stdio_fseek;
+
+	chd_error err = chd_open_core_file(stream, mode, parent, chd);
+	if (err != CHDERR_NONE)
+		return err;
+
+	// swap out the fclose so that we close it on chd clost
+	stream->fclose = core_stdio_fclose;
+	return CHDERR_NONE;
+}
+
+/*-------------------------------------------------
+    chd_open_core_file - open a CHD file for access
+-------------------------------------------------*/
+
+CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *parent, chd_file **chd)
 {
 	chd_file *newchd = NULL;
 	chd_error err;
@@ -1492,6 +1690,18 @@ CHD_EXPORT chd_error chd_open_file(core_file *file, int mode, chd_file *parent, 
 						codec = &newchd->zlib_codec_data;
 						break;
 
+					case CHD_CODEC_LZMA:
+						codec = &newchd->lzma_codec_data;
+						break;
+
+					case CHD_CODEC_HUFFMAN:
+						codec = &newchd->huff_codec_data;
+						break;
+
+					case CHD_CODEC_FLAC:
+						codec = &newchd->flac_codec_data;
+						break;
+
 					case CHD_CODEC_CD_ZLIB:
 						codec = &newchd->cdzl_codec_data;
 						break;
@@ -1532,33 +1742,33 @@ cleanup:
 
 CHD_EXPORT chd_error chd_precache(chd_file* chd)
 {
-	return chd_precache_progress(chd, NULL, NULL);
+  return chd_precache_progress(chd, NULL, NULL);
 }
 
-CHD_EXPORT chd_error chd_precache_progress(chd_file *chd, void(*progress)(size_t pos, size_t total, void* param), void* param)
+CHD_EXPORT chd_error chd_precache_progress(chd_file* chd, void(*progress)(size_t pos, size_t total, void* param), void* param)
 {
 #define PRECACHE_CHUNK_SIZE 16 * 1024 * 1024
 
-#ifdef _MSC_VER
-	size_t size, done, req_count, count, last_update_done, update_interval;
-#else
-	ssize_t size, done, req_count, count, last_update_done, update_interval;
-#endif
+  size_t count;
+  UINT64 size, done, req_count, last_update_done, update_interval;
 
-	if (chd->file_cache == NULL)
-	{
-		core_fseek(chd->file, 0, SEEK_END);
-		size = core_ftell(chd->file);
-		if (size <= 0)
-			return CHDERR_INVALID_DATA;
-		chd->file_cache = malloc(size);
-		if (chd->file_cache == NULL)
+  if (chd->file_cache == NULL)
+  {
+    size = core_fsize(chd->file);
+    if ((INT64)size <= 0)
+      return CHDERR_INVALID_DATA;
+
+		if (size > SIZE_MAX)
 			return CHDERR_OUT_OF_MEMORY;
-		core_fseek(chd->file, 0, SEEK_SET);
+
+    chd->file_cache = malloc(size);
+    if (chd->file_cache == NULL)
+      return CHDERR_OUT_OF_MEMORY;
+    core_fseek(chd->file, 0, SEEK_SET);
 
 		done = 0;
-		last_update_done = 0;
-		update_interval = ((size + 99) / 100);
+    last_update_done = 0;
+    update_interval = ((size + 99) / 100);
 
 		while (done < size)
 		{
@@ -1566,8 +1776,8 @@ CHD_EXPORT chd_error chd_precache_progress(chd_file *chd, void(*progress)(size_t
 			if (req_count > PRECACHE_CHUNK_SIZE)
 				req_count = PRECACHE_CHUNK_SIZE;
 
-			count = core_fread(chd->file, chd->file_cache + done, req_count);
-			if (count != req_count)
+			count = core_fread(chd->file, chd->file_cache + (size_t)done, (size_t)req_count);
+			if (count != (size_t)req_count)
 			{
 				free(chd->file_cache);
 				chd->file_cache = NULL;
@@ -1581,9 +1791,9 @@ CHD_EXPORT chd_error chd_precache_progress(chd_file *chd, void(*progress)(size_t
 				progress(done, size, param);
 			}
 		}
-	}
+  }
 
-	return CHDERR_NONE;
+  return CHDERR_NONE;
 }
 
 /*-------------------------------------------------
@@ -1614,7 +1824,7 @@ CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, 
 	}
 
 	/* open the file */
-	file = core_fopen(filename);
+	file = core_stdio_fopen(filename);
 	if (file == 0)
 	{
 		err = CHDERR_FILE_NOT_FOUND;
@@ -1622,12 +1832,7 @@ CHD_EXPORT chd_error chd_open(const char *filename, int mode, chd_file *parent, 
 	}
 
 	/* now open the CHD */
-	err = chd_open_file(file, mode, parent, chd);
-	if (err != CHDERR_NONE)
-		goto cleanup;
-
-	/* we now own this file */
-	(*chd)->owns_file = TRUE;
+	return chd_open_core_file(file, mode, parent, chd);
 
 cleanup:
 	if ((err != CHDERR_NONE) && (file != NULL))
@@ -1664,16 +1869,28 @@ CHD_EXPORT void chd_close(chd_file *chd)
 
 			switch (chd->codecintf[i]->compression)
 			{
-				case CHD_CODEC_CD_LZMA:
-					codec = &chd->cdlz_codec_data;
-					break;
-
 				case CHD_CODEC_ZLIB:
 					codec = &chd->zlib_codec_data;
 					break;
 
+				case CHD_CODEC_LZMA:
+					codec = &chd->lzma_codec_data;
+					break;
+
+				case CHD_CODEC_HUFFMAN:
+					codec = &chd->huff_codec_data;
+					break;
+
+				case CHD_CODEC_FLAC:
+					codec = &chd->flac_codec_data;
+					break;
+
 				case CHD_CODEC_CD_ZLIB:
 					codec = &chd->cdzl_codec_data;
+					break;
+
+				case CHD_CODEC_CD_LZMA:
+					codec = &chd->cdlz_codec_data;
 					break;
 
 				case CHD_CODEC_CD_FLAC:
@@ -1709,7 +1926,7 @@ CHD_EXPORT void chd_close(chd_file *chd)
 		free(chd->map);
 
 	/* close the file */
-	if (chd->owns_file && chd->file != NULL)
+	if (chd->file != NULL)
 		core_fclose(chd->file);
 
 #ifdef NEED_CACHE_HUNK
@@ -1798,35 +2015,66 @@ CHD_EXPORT const chd_header *chd_get_header(chd_file *chd)
     chd_read_header - read CHD header data
 	from file into the pointed struct
 -------------------------------------------------*/
-CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header)
+CHD_EXPORT chd_error chd_read_header_core_file(core_file* file, chd_header* header)
 {
-	chd_error err = CHDERR_NONE;
 	chd_file chd;
-
-	/* punt if NULL */
-	if (filename == NULL || header == NULL)
-		EARLY_EXIT(err = CHDERR_INVALID_PARAMETER);
-
-	/* open the file */
-	chd.file = core_fopen(filename);
-	if (chd.file == NULL)
-		EARLY_EXIT(err = CHDERR_FILE_NOT_FOUND);
+	chd.file = file;
 
 	/* attempt to read the header */
-	err = header_read(&chd, header);
+	const chd_error err = header_read(&chd, header);
 	if (err != CHDERR_NONE)
-		EARLY_EXIT(err);
+		return err;
 
 	/* validate the header */
-	err = header_validate(header);
-	if (err != CHDERR_NONE)
-		EARLY_EXIT(err);
+	return header_validate(header);
+}
 
-cleanup:
-	if (chd.file != NULL)
-		core_fclose(chd.file);
+CHD_EXPORT chd_error chd_read_header_file(FILE *file, chd_header *header)
+{
+  core_file stream;
+  stream.argp = file;
+  stream.fsize = core_stdio_fsize;
+  stream.fread = core_stdio_fread;
+  stream.fclose = core_stdio_fclose_nonowner;
+  stream.fseek = core_stdio_fseek;
 
+	return chd_read_header_core_file(&stream, header);
+}
+
+CHD_EXPORT chd_error chd_read_header(const char *filename, chd_header *header)
+{
+	if (filename == NULL)
+		return CHDERR_INVALID_PARAMETER;
+
+	core_file* file = core_stdio_fopen(filename);
+	if (file == NULL)
+		return CHDERR_FILE_NOT_FOUND;
+
+	chd_error err = chd_read_header_core_file(file, header);
+	
+	core_fclose(file);
 	return err;
+}
+
+CHD_EXPORT bool chd_is_matching_parent(const chd_header* header, const chd_header* parent_header)
+{
+  /* check MD5 if it isn't empty */
+  if (memcmp(nullmd5, header->parentmd5, sizeof(header->parentmd5)) != 0 &&
+      memcmp(nullmd5, parent_header->md5, sizeof(parent_header->md5)) != 0 &&
+      memcmp(parent_header->md5, header->parentmd5, sizeof(header->parentmd5)) != 0)
+	{
+		return false;
+	}
+
+  /* check SHA1 if it isn't empty */
+  if (memcmp(nullsha1, header->parentsha1, sizeof(header->parentsha1)) != 0 &&
+      memcmp(nullsha1, parent_header->sha1, sizeof(parent_header->sha1)) != 0 &&
+      memcmp(parent_header->sha1, header->parentsha1, sizeof(header->parentsha1)) != 0)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 /***************************************************************************
@@ -2096,6 +2344,8 @@ static chd_error header_read(chd_file *chd, chd_header *header)
 		header->logicalbytes = (UINT64)header->obsolete_cylinders * (UINT64)header->obsolete_heads * (UINT64)header->obsolete_sectors * (UINT64)seclen;
 		header->hunkbytes = seclen * header->obsolete_hunksize;
 		header->unitbytes          = header_guess_unitbytes(chd);
+		if (header->unitbytes == 0)
+			return CHDERR_INVALID_DATA;
 		header->unitcount          = (header->logicalbytes + header->unitbytes - 1) / header->unitbytes;
 		header->metaoffset = 0;
 	}
@@ -2110,6 +2360,8 @@ static chd_error header_read(chd_file *chd, chd_header *header)
 		memcpy(header->parentmd5, &rawheader[60], CHD_MD5_BYTES);
 		header->hunkbytes    = get_bigendian_uint32(&rawheader[76]);
 		header->unitbytes    = header_guess_unitbytes(chd);
+		if (header->unitbytes == 0)
+			return CHDERR_INVALID_DATA;
 		header->unitcount    = (header->logicalbytes + header->unitbytes - 1) / header->unitbytes;
 		memcpy(header->sha1, &rawheader[80], CHD_SHA1_BYTES);
 		memcpy(header->parentsha1, &rawheader[100], CHD_SHA1_BYTES);
@@ -2123,6 +2375,8 @@ static chd_error header_read(chd_file *chd, chd_header *header)
 		header->metaoffset   = get_bigendian_uint64(&rawheader[36]);
 		header->hunkbytes    = get_bigendian_uint32(&rawheader[44]);
 		header->unitbytes    = header_guess_unitbytes(chd);
+		if (header->unitbytes == 0)
+			return CHDERR_INVALID_DATA;
 		header->unitcount    = (header->logicalbytes + header->unitbytes - 1) / header->unitbytes;
 		memcpy(header->sha1, &rawheader[48], CHD_SHA1_BYTES);
 		memcpy(header->parentsha1, &rawheader[68], CHD_SHA1_BYTES);
@@ -2141,8 +2395,12 @@ static chd_error header_read(chd_file *chd, chd_header *header)
 		header->mapoffset       = get_bigendian_uint64(&rawheader[40]);
 		header->metaoffset      = get_bigendian_uint64(&rawheader[48]);
 		header->hunkbytes       = get_bigendian_uint32(&rawheader[56]);
+		if (header->hunkbytes == 0)
+			return CHDERR_INVALID_DATA;
 		header->hunkcount       = (header->logicalbytes + header->hunkbytes - 1) / header->hunkbytes;
 		header->unitbytes       = get_bigendian_uint32(&rawheader[60]);
+		if (header->unitbytes == 0)
+			return CHDERR_INVALID_DATA;
 		header->unitcount       = (header->logicalbytes + header->unitbytes - 1) / header->unitbytes;
 		memcpy(header->sha1, &rawheader[84], CHD_SHA1_BYTES);
 		memcpy(header->parentsha1, &rawheader[104], CHD_SHA1_BYTES);
@@ -2382,16 +2640,28 @@ static chd_error hunk_read_into_memory(chd_file *chd, UINT32 hunknum, UINT8 *des
 					return CHDERR_READ_ERROR;
 				switch (chd->codecintf[rawmap[0]]->compression)
 				{
-					case CHD_CODEC_CD_LZMA:
-						codec = &chd->cdlz_codec_data;
-						break;
-
 					case CHD_CODEC_ZLIB:
 						codec = &chd->zlib_codec_data;
 						break;
 
+					case CHD_CODEC_LZMA:
+						codec = &chd->lzma_codec_data;
+						break;
+
+					case CHD_CODEC_HUFFMAN:
+						codec = &chd->huff_codec_data;
+						break;
+
+					case CHD_CODEC_FLAC:
+						codec = &chd->flac_codec_data;
+						break;
+
 					case CHD_CODEC_CD_ZLIB:
 						codec = &chd->cdzl_codec_data;
+						break;
+
+					case CHD_CODEC_CD_LZMA:
+						codec = &chd->cdlz_codec_data;
 						break;
 
 					case CHD_CODEC_CD_FLAC:
@@ -2625,10 +2895,6 @@ static chd_error zlib_codec_init(void *codec, uint32_t hunkbytes)
 	else
 		err = CHDERR_NONE;
 
-	/* handle an error */
-	if (err != CHDERR_NONE)
-		free(data);
-
 	return err;
 }
 
@@ -2767,4 +3033,88 @@ static void zlib_allocator_free(voidpf opaque)
 	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
 		if (alloc->allocptr[i])
 			free(alloc->allocptr[i]);
+}
+
+/*-------------------------------------------------
+	core_stdio_fopen - core_file wrapper over fopen
+-------------------------------------------------*/
+static core_file *core_stdio_fopen(char const *path) {
+	core_file *file = malloc(sizeof(core_file));
+	if (!file)
+		return NULL;
+	if (!(file->argp = fopen(path, "rb"))) {
+		free(file);
+		return NULL;
+	}
+	file->fsize = core_stdio_fsize;
+	file->fread = core_stdio_fread;
+	file->fclose = core_stdio_fclose;
+	file->fseek = core_stdio_fseek;
+	return file;
+}
+
+/*-------------------------------------------------
+	core_stdio_fsize - core_file function for
+	getting file size with stdio
+-------------------------------------------------*/
+static UINT64 core_stdio_fsize(core_file *file) {
+#if defined USE_LIBRETRO_VFS
+	#define core_stdio_fseek_impl fseek
+	#define core_stdio_ftell_impl ftell
+#elif defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WIN64__)
+	#define core_stdio_fseek_impl _fseeki64
+	#define core_stdio_ftell_impl _ftelli64
+#elif defined(_LARGEFILE_SOURCE) && defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64
+	#define core_stdio_fseek_impl fseeko64
+	#define core_stdio_ftell_impl ftello64
+#elif defined(__PS3__) && !defined(__PSL1GHT__) || defined(__SWITCH__) || defined(__vita__)
+	#define core_stdio_fseek_impl(x,y,z) fseek(x,(off_t)y,z)
+	#define core_stdio_ftell_impl(x) (off_t)ftell(x)
+#else
+	#define core_stdio_fseek_impl fseeko
+	#define core_stdio_ftell_impl ftello
+#endif
+	FILE *fp;
+	UINT64 p, rv;
+	fp = (FILE*)file->argp;
+
+	p = core_stdio_ftell_impl(fp);
+	core_stdio_fseek_impl(fp, 0, SEEK_END);
+	rv = core_stdio_ftell_impl(fp);
+	core_stdio_fseek_impl(fp, p, SEEK_SET);
+	return rv;
+}
+
+/*-------------------------------------------------
+	core_stdio_fread - core_file wrapper over fread
+-------------------------------------------------*/
+static size_t core_stdio_fread(void *ptr, size_t size, size_t nmemb, core_file *file) {
+	return fread(ptr, size, nmemb, (FILE*)file->argp);
+}
+
+/*-------------------------------------------------
+	core_stdio_fclose - core_file wrapper over fclose
+-------------------------------------------------*/
+static int core_stdio_fclose(core_file *file) {
+	int err = fclose((FILE*)file->argp);
+	if (err == 0)
+		free(file);
+	return err;
+}
+
+/*-------------------------------------------------
+	core_stdio_fclose_nonowner - don't call fclose because
+		we don't own the underlying file, but do free the
+		core_file because libchdr did allocate that itself.
+-------------------------------------------------*/
+static int core_stdio_fclose_nonowner(core_file *file) {
+	free(file);
+	return 0;
+}
+
+/*-------------------------------------------------
+	core_stdio_fseek - core_file wrapper over fclose
+-------------------------------------------------*/
+static int core_stdio_fseek(core_file* file, INT64 offset, int whence) {
+	return core_stdio_fseek_impl((FILE*)file->argp, offset, whence);
 }

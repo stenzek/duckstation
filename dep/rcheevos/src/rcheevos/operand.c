@@ -59,6 +59,8 @@ static int rc_parse_operand_lua(rc_operand_t* self, const char** memaddr, rc_par
     self->value.luafunc = luaL_ref(parse->L, LUA_REGISTRYINDEX);
   }
 
+#else
+  (void)parse;
 #endif /* RC_DISABLE_LUA */
 
   self->type = RC_OPERAND_LUA;
@@ -300,6 +302,7 @@ int rc_operand_is_float_memref(const rc_operand_t* self) {
   switch (self->size) {
     case RC_MEMSIZE_FLOAT:
     case RC_MEMSIZE_MBF32:
+    case RC_MEMSIZE_MBF32_LE:
       return 1;
 
     default:
@@ -317,6 +320,13 @@ int rc_operand_is_memref(const rc_operand_t* self) {
     default:
       return 1;
   }
+}
+
+int rc_operand_is_float(const rc_operand_t* self) {
+  if (self->type == RC_OPERAND_FP)
+    return 1;
+
+  return rc_operand_is_float_memref(self);
 }
 
 unsigned rc_transform_operand_value(unsigned value, const rc_operand_t* self) {
