@@ -8,6 +8,7 @@
 #include "effect_codegen.hpp"
 #include <cctype> // std::toupper
 #include <cassert>
+#include <limits>
 #include <functional>
 #include <string_view>
 

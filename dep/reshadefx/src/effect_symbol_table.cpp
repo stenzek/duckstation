@@ -5,7 +5,11 @@
 
 #include "effect_symbol_table.hpp"
 #include <cassert>
+#ifndef __APPLE__
 #include <malloc.h> // alloca
+#else
+#include <alloca.h>
+#endif
 #include <algorithm> // std::upper_bound, std::sort
 #include <functional> // std::greater
 
