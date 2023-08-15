@@ -901,9 +901,10 @@ void GPU::CRTCTickEvent(TickCount ticks)
         InterruptController::InterruptRequest(InterruptController::IRQ::VBLANK);
 
         // flush any pending draws and "scan out" the image
+        // TODO: move present in here I guess
         FlushRender();
         UpdateDisplay();
-        System::FrameDone();
+        TimingEvents::SetFrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
         if (m_GPUSTAT.InInterleaved480iMode())

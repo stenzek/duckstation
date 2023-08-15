@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "win32_nogui_platform.h"
@@ -161,7 +161,7 @@ std::optional<WindowInfo> Win32NoGUIPlatform::GetPlatformWindowInfo()
     return std::nullopt;
 
   RECT rc = {};
-  GetWindowRect(m_hwnd, &rc);
+  GetClientRect(m_hwnd, &rc);
 
   WindowInfo wi;
   wi.surface_width = static_cast<u32>(rc.right - rc.left);
@@ -338,7 +338,7 @@ LRESULT CALLBACK Win32NoGUIPlatform::WndProc(HWND hwnd, UINT msg, WPARAM wParam,
         const WCHAR utf16[1] = {static_cast<WCHAR>(wParam)};
         char utf8[8] = {};
         const int utf8_len = WideCharToMultiByte(CP_UTF8, 0, utf16, static_cast<int>(std::size(utf16)), utf8,
-                                                 static_cast<int>(sizeof(utf8)) - 1, nullptr, nullptr);
+                                                 static_cast<int>(sizeof(utf8) - 1), nullptr, nullptr);
         if (utf8_len > 0)
         {
           utf8[utf8_len] = 0;

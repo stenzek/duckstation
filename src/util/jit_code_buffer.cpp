@@ -209,7 +209,7 @@ void JitCodeBuffer::CommitCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(CPU_AARCH32) || defined(CPU_AARCH64)
+#if defined(CPU_AARCH32) || defined(CPU_AARCH64) || defined(CPU_RISCV64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_code_ptr, length);
 #endif
@@ -224,7 +224,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
   if (length == 0)
     return;
 
-#if defined(CPU_AARCH32) || defined(CPU_AARCH64)
+#if defined(CPU_AARCH32) || defined(CPU_AARCH64) || defined(CPU_RISCV64)
   // ARM instruction and data caches are not coherent, we need to flush after every block.
   FlushInstructionCache(m_free_far_code_ptr, length);
 #endif

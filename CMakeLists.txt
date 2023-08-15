@@ -239,6 +239,8 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
   endif()
+elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
+  set(CPU_ARCH "riscv64")
 else()
   message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()

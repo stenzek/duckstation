@@ -108,8 +108,7 @@ static PGXP_value CP0_reg[32];
 #define CPU_Lo CPU_reg[33]
 
 // GTE registers
-static PGXP_value GTE_data_reg[32];
-static PGXP_value GTE_ctrl_reg[32];
+static PGXP_value GTE_regs[64];
 
 static PGXP_value* Mem = nullptr;
 static PGXP_value* vertexCache = nullptr;
@@ -274,8 +273,7 @@ void Initialize()
   std::memset(CPU_reg, 0, sizeof(CPU_reg));
   std::memset(CP0_reg, 0, sizeof(CP0_reg));
 
-  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
-  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+  std::memset(GTE_regs, 0, sizeof(GTE_regs));
 
   if (!Mem)
   {
@@ -306,8 +304,7 @@ void Reset()
   std::memset(CPU_reg, 0, sizeof(CPU_reg));
   std::memset(CP0_reg, 0, sizeof(CP0_reg));
 
-  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
-  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+  std::memset(GTE_regs, 0, sizeof(GTE_regs));
 
   if (Mem)
     std::memset(Mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
@@ -329,8 +326,7 @@ void Shutdown()
     Mem = nullptr;
   }
 
-  std::memset(GTE_data_reg, 0, sizeof(GTE_data_reg));
-  std::memset(GTE_ctrl_reg, 0, sizeof(GTE_ctrl_reg));
+  std::memset(GTE_regs, 0, sizeof(GTE_regs));
 
   std::memset(CPU_reg, 0, sizeof(CPU_reg));
   std::memset(CP0_reg, 0, sizeof(CP0_reg));
@@ -344,18 +340,19 @@ void Shutdown()
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
 #define imm(_instr) (_instr & 0xFFFF) // The immediate part of the instruction register
+#define cop2idx(_instr) (((_instr >> 11) & 0x1F) | ((_instr >> 17) & 0x20))
 
-#define SX0 (GTE_data_reg[12].x)
-#define SY0 (GTE_data_reg[12].y)
-#define SX1 (GTE_data_reg[13].x)
-#define SY1 (GTE_data_reg[13].y)
-#define SX2 (GTE_data_reg[14].x)
-#define SY2 (GTE_data_reg[14].y)
+#define SX0 (GTE_regs[12].x)
+#define SY0 (GTE_regs[12].y)
+#define SX1 (GTE_regs[13].x)
+#define SY1 (GTE_regs[13].y)
+#define SX2 (GTE_regs[14].x)
+#define SY2 (GTE_regs[14].y)
 
-#define SXY0 (GTE_data_reg[12])
-#define SXY1 (GTE_data_reg[13])
-#define SXY2 (GTE_data_reg[14])
-#define SXYP (GTE_data_reg[15])
+#define SXY0 (GTE_regs[12])
+#define SXY1 (GTE_regs[13])
+#define SXY2 (GTE_regs[14])
+#define SXYP (GTE_regs[15])
 
 void GTE_PushSXYZ2f(float x, float y, float z, u32 v)
 {
@@ -428,49 +425,35 @@ static void PGXP_MTC2_int(PGXP_value value, u32 reg)
       return;
   }
 
-  GTE_data_reg[reg] = value;
+  GTE_regs[reg] = value;
 }
 
 ////////////////////////////////////
 // Data transfer tracking
 ////////////////////////////////////
 
-void CPU_MFC2(u32 instr, u32 rtVal, u32 rdVal)
+void CPU_MFC2(u32 instr, u32 rdVal)
 {
   // CPU[Rt] = GTE_D[Rd]
-  Validate(&GTE_data_reg[rd(instr)], rdVal);
-  CPU_reg[rt(instr)] = GTE_data_reg[rd(instr)];
-  CPU_reg[rt(instr)].value = rtVal;
+  const u32 idx = cop2idx(instr);
+  Validate(&GTE_regs[idx], rdVal);
+  CPU_reg[rt(instr)] = GTE_regs[idx];
+  CPU_reg[rt(instr)].value = rdVal;
 }
 
-void CPU_MTC2(u32 instr, u32 rdVal, u32 rtVal)
+void CPU_MTC2(u32 instr, u32 rtVal)
 {
   // GTE_D[Rd] = CPU[Rt]
+  const u32 idx = cop2idx(instr);
   Validate(&CPU_reg[rt(instr)], rtVal);
-  PGXP_MTC2_int(CPU_reg[rt(instr)], rd(instr));
-  GTE_data_reg[rd(instr)].value = rdVal;
-}
-
-void CPU_CFC2(u32 instr, u32 rtVal, u32 rdVal)
-{
-  // CPU[Rt] = GTE_C[Rd]
-  Validate(&GTE_ctrl_reg[rd(instr)], rdVal);
-  CPU_reg[rt(instr)] = GTE_ctrl_reg[rd(instr)];
-  CPU_reg[rt(instr)].value = rtVal;
-}
-
-void CPU_CTC2(u32 instr, u32 rdVal, u32 rtVal)
-{
-  // GTE_C[Rd] = CPU[Rt]
-  Validate(&CPU_reg[rt(instr)], rtVal);
-  GTE_ctrl_reg[rd(instr)] = CPU_reg[rt(instr)];
-  GTE_ctrl_reg[rd(instr)].value = rdVal;
+  PGXP_MTC2_int(CPU_reg[rt(instr)], idx);
+  GTE_regs[idx].value = rtVal;
 }
 
 ////////////////////////////////////
 // Memory Access
 ////////////////////////////////////
-void CPU_LWC2(u32 instr, u32 rtVal, u32 addr)
+void CPU_LWC2(u32 instr, u32 addr, u32 rtVal)
 {
   // GTE_D[Rt] = Mem[addr]
   PGXP_value val;
@@ -478,11 +461,11 @@ void CPU_LWC2(u32 instr, u32 rtVal, u32 addr)
   PGXP_MTC2_int(val, rt(instr));
 }
 
-void CPU_SWC2(u32 instr, u32 rtVal, u32 addr)
+void CPU_SWC2(u32 instr, u32 addr, u32 rtVal)
 {
   //  Mem[addr] = GTE_D[Rt]
-  Validate(&GTE_data_reg[rt(instr)], rtVal);
-  WriteMem(&GTE_data_reg[rt(instr)], addr);
+  Validate(&GTE_regs[rt(instr)], rtVal);
+  WriteMem(&GTE_regs[rt(instr)], addr);
 }
 
 ALWAYS_INLINE_RELEASE void PGXP_CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex)
@@ -575,29 +558,29 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 #define imm_sext(_instr)                                                                                               \
   static_cast<s32>(static_cast<s16>(_instr & 0xFFFF)) // The immediate part of the instruction register
 
-void CPU_LW(u32 instr, u32 rtVal, u32 addr)
+void CPU_LW(u32 instr, u32 addr, u32 rtVal)
 {
   // Rt = Mem[Rs + Im]
   ValidateAndCopyMem(&CPU_reg[rt(instr)], addr, rtVal);
 }
 
-void CPU_LBx(u32 instr, u32 rtVal, u32 addr)
+void CPU_LBx(u32 instr, u32 addr, u32 rtVal)
 {
   CPU_reg[rt(instr)] = PGXP_value_invalid;
 }
 
-void CPU_LHx(u32 instr, u32 rtVal, u32 addr)
+void CPU_LHx(u32 instr, u32 addr, u32 rtVal)
 {
   // Rt = Mem[Rs + Im] (sign/zero extended)
   ValidateAndCopyMem16(&CPU_reg[rt(instr)], addr, rtVal, 1);
 }
 
-void CPU_SB(u32 instr, u8 rtVal, u32 addr)
+void CPU_SB(u32 instr, u32 addr, u32 rtVal)
 {
   WriteMem(&PGXP_value_invalid, addr);
 }
 
-void CPU_SH(u32 instr, u16 rtVal, u32 addr)
+void CPU_SH(u32 instr, u32 addr, u32 rtVal)
 {
   PGXP_value* val = &CPU_reg[rt(instr)];
 
@@ -606,7 +589,7 @@ void CPU_SH(u32 instr, u16 rtVal, u32 addr)
   WriteMem16(val, addr);
 }
 
-void CPU_SW(u32 instr, u32 rtVal, u32 addr)
+void CPU_SW(u32 instr, u32 addr, u32 rtVal)
 {
   // Mem[Rs + Im] = Rt
   PGXP_value* val = &CPU_reg[rt(instr)];
@@ -1587,10 +1570,10 @@ void CPU_MFHI(u32 instr, u32 hiVal)
   CPU_reg[rd(instr)] = CPU_Hi;
 }
 
-void CPU_MTHI(u32 instr, u32 rdVal)
+void CPU_MTHI(u32 instr, u32 rsVal)
 {
   // Hi = Rd
-  Validate(&CPU_reg[rd(instr)], rdVal);
+  Validate(&CPU_reg[rs(instr)], rsVal);
 
   CPU_Hi = CPU_reg[rd(instr)];
 }
@@ -1603,10 +1586,10 @@ void CPU_MFLO(u32 instr, u32 loVal)
   CPU_reg[rd(instr)] = CPU_Lo;
 }
 
-void CPU_MTLO(u32 instr, u32 rdVal)
+void CPU_MTLO(u32 instr, u32 rsVal)
 {
   // Lo = Rd
-  Validate(&CPU_reg[rd(instr)], rdVal);
+  Validate(&CPU_reg[rs(instr)], rsVal);
 
   CPU_Lo = CPU_reg[rd(instr)];
 }

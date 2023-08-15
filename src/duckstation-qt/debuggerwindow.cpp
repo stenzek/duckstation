@@ -58,13 +58,13 @@ void DebuggerWindow::refreshAll()
   m_stack_model->invalidateView();
   m_ui.memoryView->repaint();
 
-  m_code_model->setPC(CPU::g_state.regs.pc);
+  m_code_model->setPC(CPU::g_state.pc);
   scrollToPC();
 }
 
 void DebuggerWindow::scrollToPC()
 {
-  return scrollToCodeAddress(CPU::g_state.regs.pc);
+  return scrollToCodeAddress(CPU::g_state.pc);
 }
 
 void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address)

@@ -34,24 +34,22 @@ int GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
 
 // Data transfer tracking
-void CPU_MFC2(u32 instr, u32 rtVal, u32 rdVal); // copy GTE data reg to GPR reg (MFC2)
-void CPU_MTC2(u32 instr, u32 rdVal, u32 rtVal); // copy GPR reg to GTE data reg (MTC2)
-void CPU_CFC2(u32 instr, u32 rtVal, u32 rdVal); // copy GTE ctrl reg to GPR reg (CFC2)
-void CPU_CTC2(u32 instr, u32 rdVal, u32 rtVal); // copy GPR reg to GTE ctrl reg (CTC2)
+void CPU_MFC2(u32 instr, u32 rdVal); // copy GTE data reg to GPR reg (MFC2)
+void CPU_MTC2(u32 instr, u32 rtVal); // copy GPR reg to GTE data reg (MTC2)
 // Memory Access
-void CPU_LWC2(u32 instr, u32 rtVal, u32 addr); // copy memory to GTE reg
-void CPU_SWC2(u32 instr, u32 rtVal, u32 addr); // copy GTE reg to memory
+void CPU_LWC2(u32 instr, u32 addr, u32 rtVal); // copy memory to GTE reg
+void CPU_SWC2(u32 instr, u32 addr, u32 rtVal); // copy GTE reg to memory
 
 bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y,
                       float* out_w);
 
 // -- CPU functions
-void CPU_LW(u32 instr, u32 rtVal, u32 addr);
-void CPU_LHx(u32 instr, u32 rtVal, u32 addr);
-void CPU_LBx(u32 instr, u32 rtVal, u32 addr);
-void CPU_SB(u32 instr, u8 rtVal, u32 addr);
-void CPU_SH(u32 instr, u16 rtVal, u32 addr);
-void CPU_SW(u32 instr, u32 rtVal, u32 addr);
+void CPU_LW(u32 instr, u32 addr, u32 rtVal);
+void CPU_LHx(u32 instr, u32 addr, u32 rtVal);
+void CPU_LBx(u32 instr, u32 addr, u32 rtVal);
+void CPU_SB(u32 instr, u32 addr, u32 rtVal);
+void CPU_SH(u32 instr, u32 addr, u32 rtVal);
+void CPU_SW(u32 instr, u32 addr, u32 rtVal);
 void CPU_MOVE(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
@@ -93,9 +91,9 @@ void CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal);
 
 // Move registers
 void CPU_MFHI(u32 instr, u32 hiVal);
-void CPU_MTHI(u32 instr, u32 rdVal);
+void CPU_MTHI(u32 instr, u32 rsVal);
 void CPU_MFLO(u32 instr, u32 loVal);
-void CPU_MTLO(u32 instr, u32 rdVal);
+void CPU_MTLO(u32 instr, u32 rsVal);
 
 // CP0 Data transfer tracking
 void CPU_MFC0(u32 instr, u32 rdVal);

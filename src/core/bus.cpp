@@ -21,6 +21,7 @@
 #include "sio.h"
 #include "spu.h"
 #include "timers.h"
+#include "timing_event.h"
 #include "util/state_wrapper.h"
 #include <cstdio>
 #include <tuple>
@@ -1418,7 +1419,7 @@ TickCount GetICacheFillTicks(VirtualMemoryAddress address)
 
 void CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks)
 {
-  VirtualMemoryAddress current_pc = g_state.regs.pc & ICACHE_TAG_ADDRESS_MASK;
+  VirtualMemoryAddress current_pc = g_state.pc & ICACHE_TAG_ADDRESS_MASK;
   if (IsCachedAddress(current_pc))
   {
     TickCount ticks = 0;
@@ -1541,9 +1542,19 @@ ALWAYS_INLINE static TickCount DoScratchpadAccess(PhysicalMemoryAddress address,
 }
 
 template<MemoryAccessType type, MemoryAccessSize size>
-static ALWAYS_INLINE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value)
+static ALWAYS_INLINE_RELEASE TickCount DoMemoryAccess(VirtualMemoryAddress address, u32& value)
 {
   using namespace Bus;
+
+#if 0
+  if (type == MemoryAccessType::Write && address == 0x80113028)
+  {
+    if ((TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks) == 5051485)
+      __debugbreak();
+
+    Log_WarningPrintf("VAL %08X @ %u", value, (TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks));
+  }
+#endif
 
   switch (address >> 29)
   {
@@ -1723,9 +1734,9 @@ static bool DoAlignmentCheck(VirtualMemoryAddress address)
 
 bool FetchInstruction()
 {
-  DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
+  DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
 
-  const PhysicalMemoryAddress address = g_state.regs.npc;
+  const PhysicalMemoryAddress address = g_state.npc;
   switch (address >> 29)
   {
     case 0x00: // KUSEG 0M-512M
@@ -1764,16 +1775,16 @@ bool FetchInstruction()
     }
   }
 
-  g_state.regs.pc = g_state.regs.npc;
-  g_state.regs.npc += sizeof(g_state.next_instruction.bits);
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
   return true;
 }
 
 bool FetchInstructionForInterpreterFallback()
 {
-  DebugAssert(Common::IsAlignedPow2(g_state.regs.npc, 4));
+  DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
 
-  const PhysicalMemoryAddress address = g_state.regs.npc;
+  const PhysicalMemoryAddress address = g_state.npc;
   switch (address >> 29)
   {
     case 0x00: // KUSEG 0M-512M
@@ -1801,8 +1812,8 @@ bool FetchInstructionForInterpreterFallback()
     }
   }
 
-  g_state.regs.pc = g_state.regs.npc;
-  g_state.regs.npc += sizeof(g_state.next_instruction.bits);
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
   return true;
 }
 

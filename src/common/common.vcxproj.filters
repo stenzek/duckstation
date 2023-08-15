@@ -129,6 +129,7 @@
     <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="sha1_digest.h" />
     <ClInclude Include="gpu_texture.h" />
+    <ClInclude Include="fastjmp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gl\program.cpp">
@@ -234,6 +235,7 @@
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="gpu_texture.cpp" />
+    <ClCompile Include="fastjmp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
@@ -259,5 +261,11 @@
     <None Include="vulkan\entry_points.inl">
       <Filter>vulkan</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="fastjmp_x86.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <MARMASM Include="fastjmp_arm.asm" />
   </ItemGroup>
 </Project>

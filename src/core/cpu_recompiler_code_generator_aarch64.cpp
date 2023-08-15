@@ -30,9 +30,6 @@ constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 
 constexpr u64 FUNCTION_STACK_SIZE =
   FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE + FUNCTION_CALL_SHADOW_SPACE;
 
-// PC we return to after the end of the block
-static void* s_dispatcher_return_address;
-
 static s64 GetPCDisplacement(const void* current, const void* target)
 {
   Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(current), 4));
@@ -256,7 +253,6 @@ void CodeGenerator::EmitExceptionExit()
   m_register_cache.PopCalleeSavedRegisters(false);
 
   m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  // m_emit->b(GetPCDisplacement(GetCurrentCodePointer(), s_dispatcher_return_address));
   m_emit->Ret();
 }
 
@@ -2278,62 +2274,16 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
 
   EmitLoadGlobalAddress(RCPUPTR, &g_state);
 
-  a64::Label frame_done_loop;
-  a64::Label exit_dispatcher;
-  m_emit->Bind(&frame_done_loop);
-
-  // if frame_done goto exit_dispatcher
-  m_emit->ldrb(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, frame_done)));
-  m_emit->tbnz(a64::w8, 0, &exit_dispatcher);
-
-  // x8 <- sr
-  a64::Label no_interrupt;
-  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, cop0_regs.sr.bits)));
-
-  // if Iec == 0 then goto no_interrupt
-  m_emit->tbz(a64::w8, 0, &no_interrupt);
-
-  // x9 <- cause
-  // x8 (sr) & cause
-  m_emit->ldr(a64::w9, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, cop0_regs.cause.bits)));
-  m_emit->and_(a64::w8, a64::w8, a64::w9);
-
-  // ((sr & cause) & 0xff00) == 0 goto no_interrupt
-  m_emit->tst(a64::w8, 0xFF00);
-  m_emit->b(&no_interrupt, a64::eq);
-
-  // we have an interrupt
-  EmitCall(reinterpret_cast<const void*>(&DispatchInterrupt));
-
-  // no interrupt or we just serviced it
-  m_emit->Bind(&no_interrupt);
-
-  // TimingEvents::UpdateCPUDowncount:
-  // x8 <- head event->downcount
-  // downcount <- x8
-  EmitLoadGlobalAddress(8, TimingEvents::GetHeadEventPtr());
-  m_emit->ldr(a64::x8, a64::MemOperand(a64::x8));
-  m_emit->ldr(a64::w8, a64::MemOperand(a64::x8, offsetof(TimingEvent, m_downcount)));
-  m_emit->str(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, downcount)));
+  a64::Label event_test;
+  m_emit->b(&event_test);
 
   // main dispatch loop
   a64::Label main_loop;
   m_emit->Bind(&main_loop);
-  s_dispatcher_return_address = GetCurrentCodePointer();
-
-  // w8 <- pending_ticks
-  // w9 <- downcount
-  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pending_ticks)));
-  m_emit->ldr(a64::w9, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, downcount)));
-
-  // while downcount < pending_ticks
-  a64::Label downcount_hit;
-  m_emit->cmp(a64::w8, a64::w9);
-  m_emit->b(&downcount_hit, a64::ge);
 
   // time to lookup the block
   // w8 <- pc
-  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, regs.pc)));
+  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pc)));
 
   // x9 <- s_fast_map[pc >> 16]
   EmitLoadGlobalAddress(10, CodeCache::GetFastMapPointer());
@@ -2345,21 +2295,20 @@ CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
   m_emit->ldr(a64::x8, a64::MemOperand(a64::x9, a64::x8, a64::LSL, 3));
   m_emit->blr(a64::x8);
 
-  // end while
-  m_emit->Bind(&downcount_hit);
-
-  // check events then for frame done
+  // w8 <- pending_ticks
+  // w9 <- downcount
   m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pending_ticks)));
-  EmitLoadGlobalAddress(9, TimingEvents::GetHeadEventPtr());
-  m_emit->ldr(a64::x9, a64::MemOperand(a64::x9));
-  m_emit->ldr(a64::w9, a64::MemOperand(a64::x9, offsetof(TimingEvent, m_downcount)));
+  m_emit->ldr(a64::w9, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, downcount)));
+
+  // while downcount < pending_ticks
   m_emit->cmp(a64::w8, a64::w9);
-  m_emit->b(&frame_done_loop, a64::lt);
+  m_emit->b(&main_loop, a64::lt);
+
+  m_emit->Bind(&event_test);
   EmitCall(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
-  m_emit->b(&frame_done_loop);
+  m_emit->b(&main_loop);
 
   // all done
-  m_emit->Bind(&exit_dispatcher);
   RestoreStackAfterCall(stack_adjust);
   m_register_cache.PopCalleeSavedRegisters(true);
   m_emit->add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);

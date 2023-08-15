@@ -88,4 +88,7 @@ if(${CPU_ARCH} STREQUAL "aarch64")
   )
 endif()
 
-
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  message("Enabling vixl debug assertions")
+  target_compile_definitions(vixl PUBLIC VIXL_DEBUG)
+endif()

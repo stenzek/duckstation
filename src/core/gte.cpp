@@ -4,13 +4,13 @@
 #include "gte.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
-#include "util/state_wrapper.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "host_display.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "timing_event.h"
+#include "util/state_wrapper.h"
 #include <algorithm>
 #include <array>
 #include <numeric>
@@ -471,11 +471,12 @@ ALWAYS_INLINE static u32 UNRDivide(u32 lhs, u32 rhs)
   return std::min<u32>(0x1FFFF, result);
 }
 
-static void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+static void MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
+#define M(i, j) M_[((i)*3) + (j)]
 #define dot3(i)                                                                                                        \
-  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][0]) * s64(Vx)) + (s64(M[i][1]) * s64(Vy))) +      \
-                                  (s64(M[i][2]) * s64(Vz)),                                                            \
+  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M(i, 0)) * s64(Vx)) + (s64(M(i, 1)) * s64(Vy))) +      \
+                                  (s64(M(i, 2)) * s64(Vz)),                                                            \
                                 shift, lm)
 
   dot3(0);
@@ -483,15 +484,17 @@ static void MulMatVec(const s16 M[3][3], const s16 Vx, const s16 Vy, const s16 V
   dot3(2);
 
 #undef dot3
+#undef M
 }
 
-static void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+static void MulMatVec(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
+#define M(i, j) M_[((i)*3) + (j)]
 #define dot3(i)                                                                                                        \
   TruncateAndSetMACAndIR<i + 1>(                                                                                       \
-    SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx))) +              \
-                               (s64(M[i][1]) * s64(Vy))) +                                                             \
-      (s64(M[i][2]) * s64(Vz)),                                                                                        \
+    SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(T[i]) << 12) + (s64(M(i, 0)) * s64(Vx))) +              \
+                               (s64(M(i, 1)) * s64(Vy))) +                                                             \
+      (s64(M(i, 2)) * s64(Vz)),                                                                                        \
     shift, lm)
 
   dot3(0);
@@ -499,19 +502,20 @@ static void MulMatVec(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16
   dot3(2);
 
 #undef dot3
+#undef M
 }
 
-static void MulMatVecBuggy(const s16 M[3][3], const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift,
-                           bool lm)
+static void MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
+#define M(i, j) M_[((i)*3) + (j)]
 #define dot3(i)                                                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
     TruncateAndSetIR<i + 1>(static_cast<s32>(SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>(                    \
-                                               (s64(T[i]) << 12) + (s64(M[i][0]) * s64(Vx)))) >>                       \
+                                               (s64(T[i]) << 12) + (s64(M(i, 0)) * s64(Vx)))) >>                       \
                                              shift),                                                                   \
                             false);                                                                                    \
-    TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M[i][1]) * s64(Vy))) + (s64(M[i][2]) * s64(Vz)),     \
+    TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M(i, 1)) * s64(Vy))) + (s64(M(i, 2)) * s64(Vz)),     \
                                   shift, lm);                                                                          \
   } while (0)
 
@@ -520,82 +524,50 @@ static void MulMatVecBuggy(const s16 M[3][3], const s32 T[3], const s16 Vx, cons
   dot3(2);
 
 #undef dot3
+#undef M
 }
 
 static void Execute_MVMVA(Instruction inst)
 {
   REGS.FLAG.Clear();
 
-  // TODO: Remove memcpy..
-  s16 M[3][3];
-  switch (inst.mvmva_multiply_matrix)
+  static constexpr const s16* M_lookup[4] = {&REGS.RT[0][0], &REGS.LLM[0][0], &REGS.LCM[0][0], nullptr};
+  static constexpr const s16* V_lookup[4][3] = {
+    {&REGS.V0[0], &REGS.V0[1], &REGS.V0[2]},
+    {&REGS.V1[0], &REGS.V1[1], &REGS.V1[2]},
+    {&REGS.V2[0], &REGS.V2[1], &REGS.V2[2]},
+    {&REGS.IR1, &REGS.IR2, &REGS.IR3},
+  };
+  static constexpr const s32 zero_T[3] = {};
+  static constexpr const s32* T_lookup[4] = {REGS.TR, REGS.BK, REGS.FC, zero_T};
+
+  const s16* M = M_lookup[inst.mvmva_multiply_matrix];
+  const s16* const* const V = V_lookup[inst.mvmva_multiply_vector];
+  const s32* const T = T_lookup[inst.mvmva_translation_vector];
+  s16 buggy_M[3][3];
+
+  if (!M)
   {
-    case 0:
-      std::memcpy(M, REGS.RT, sizeof(s16) * 3 * 3);
-      break;
-    case 1:
-      std::memcpy(M, REGS.LLM, sizeof(s16) * 3 * 3);
-      break;
-    case 2:
-      std::memcpy(M, REGS.LCM, sizeof(s16) * 3 * 3);
-      break;
-    default:
-    {
-      // buggy
-      M[0][0] = -static_cast<s16>(ZeroExtend16(REGS.RGBC[0]) << 4);
-      M[0][1] = static_cast<s16>(ZeroExtend16(REGS.RGBC[0]) << 4);
-      M[0][2] = REGS.IR0;
-      M[1][0] = REGS.RT[0][2];
-      M[1][1] = REGS.RT[0][2];
-      M[1][2] = REGS.RT[0][2];
-      M[2][0] = REGS.RT[1][1];
-      M[2][1] = REGS.RT[1][1];
-      M[2][2] = REGS.RT[1][1];
-    }
-    break;
+    // buggy
+    buggy_M[0][0] = -static_cast<s16>(ZeroExtend16(REGS.RGBC[0]) << 4);
+    buggy_M[0][1] = static_cast<s16>(ZeroExtend16(REGS.RGBC[0]) << 4);
+    buggy_M[0][2] = REGS.IR0;
+    buggy_M[1][0] = REGS.RT[0][2];
+    buggy_M[1][1] = REGS.RT[0][2];
+    buggy_M[1][2] = REGS.RT[0][2];
+    buggy_M[2][0] = REGS.RT[1][1];
+    buggy_M[2][1] = REGS.RT[1][1];
+    buggy_M[2][2] = REGS.RT[1][1];
+    M = &buggy_M[0][0];
   }
 
-  s16 Vx, Vy, Vz;
-  switch (inst.mvmva_multiply_vector)
-  {
-    case 0:
-      Vx = REGS.V0[0];
-      Vy = REGS.V0[1];
-      Vz = REGS.V0[2];
-      break;
-    case 1:
-      Vx = REGS.V1[0];
-      Vy = REGS.V1[1];
-      Vz = REGS.V1[2];
-      break;
-    case 2:
-      Vx = REGS.V2[0];
-      Vy = REGS.V2[1];
-      Vz = REGS.V2[2];
-      break;
-    default:
-      Vx = REGS.IR1;
-      Vy = REGS.IR2;
-      Vz = REGS.IR3;
-      break;
-  }
-
-  static const s32 zero_T[3] = {};
-  switch (inst.mvmva_translation_vector)
-  {
-    case 0:
-      MulMatVec(M, REGS.TR, Vx, Vy, Vz, inst.GetShift(), inst.lm);
-      break;
-    case 1:
-      MulMatVec(M, REGS.BK, Vx, Vy, Vz, inst.GetShift(), inst.lm);
-      break;
-    case 2:
-      MulMatVecBuggy(M, REGS.FC, Vx, Vy, Vz, inst.GetShift(), inst.lm);
-      break;
-    default:
-      MulMatVec(M, zero_T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
-      break;
-  }
+  const s16 Vx = *V[0];
+  const s16 Vy = *V[1];
+  const s16 Vz = *V[2];
+  if (inst.mvmva_translation_vector != 2)
+    MulMatVec(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
+  else
+    MulMatVecBuggy(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
 
   REGS.FLAG.UpdateError();
 }
@@ -874,10 +846,10 @@ static ALWAYS_INLINE void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3
 static void NCS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
-  MulMatVec(REGS.LLM, V[0], V[1], V[2], shift, lm);
+  MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  MulMatVec(REGS.LCM, REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
+  MulMatVec(&REGS.LCM[0][0], REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
 
   // Color FIFO = [MAC1/16,MAC2/16,MAC3/16,CODE], [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
   PushRGBFromMAC();
@@ -909,10 +881,10 @@ static void Execute_NCT(Instruction inst)
 static void NCCS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
-  MulMatVec(REGS.LLM, V[0], V[1], V[2], shift, lm);
+  MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  MulMatVec(REGS.LCM, REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
+  MulMatVec(&REGS.LCM[0][0], REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
 
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for NCDx/NCCx
   // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)       ;<--- for NCDx/NCCx
@@ -950,10 +922,10 @@ static void Execute_NCCT(Instruction inst)
 static void NCDS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
-  MulMatVec(REGS.LLM, V[0], V[1], V[2], shift, lm);
+  MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  MulMatVec(REGS.LCM, REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
+  MulMatVec(&REGS.LCM[0][0], REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
 
   // No need to assign these to MAC[1-3], as it'll never overflow.
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4          ;<--- for NCDx/NCCx
@@ -999,7 +971,7 @@ static void Execute_CC(Instruction inst)
   const bool lm = inst.lm;
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  MulMatVec(REGS.LCM, REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
+  MulMatVec(&REGS.LCM[0][0], REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
 
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4
   // [MAC1,MAC2,MAC3] = [MAC1,MAC2,MAC3] SAR (sf*12)
@@ -1021,7 +993,7 @@ static void Execute_CDP(Instruction inst)
   const bool lm = inst.lm;
 
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (BK*1000h + LCM*IR) SAR (sf*12)
-  MulMatVec(REGS.LCM, REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
+  MulMatVec(&REGS.LCM[0][0], REGS.BK, REGS.IR1, REGS.IR2, REGS.IR3, shift, lm);
 
   // No need to assign these to MAC[1-3], as it'll never overflow.
   // [MAC1,MAC2,MAC3] = [R*IR1,G*IR2,B*IR3] SHL 4

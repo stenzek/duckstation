@@ -93,6 +93,8 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
 /// Serialization.
 bool DoState(StateWrapper& sw);
 
+bool IsRunningEvents();
+void SetFrameDone();
 void RunEvents();
 
 void UpdateCPUDowncount();

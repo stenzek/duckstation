@@ -12,6 +12,8 @@ add_library(common
   dimensional_array.h
   error.cpp
   error.h
+  fastjmp.cpp
+  fastjmp.h
   fifo_queue.h
   file_system.cpp
   file_system.h
@@ -97,6 +99,14 @@ if(WIN32)
     windows_headers.h
   )
   target_link_libraries(common PRIVATE d3dcompiler.lib)
+
+  if(${CPU_ARCH} STREQUAL "x64")
+    enable_language(ASM_MASM)
+    target_sources(common PRIVATE fastjmp_x86.asm)
+  elseif(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
+    enable_language(ASM_MARMASM)
+    target_sources(common PRIVATE fastjmp_arm.asm)
+  endif()
 endif()
 
 if(NOT WIN32 AND NOT ANDROID)

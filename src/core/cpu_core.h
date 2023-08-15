@@ -56,7 +56,9 @@ struct State
 
   Registers regs = {};
   Cop0Registers cop0_regs = {};
-  Instruction next_instruction = {};
+
+  u32 pc;  // at execution time: the address of the next instruction to execute (already fetched)
+  u32 npc; // at execution time: the address of the next instruction to fetch
 
   // address of the instruction currently being executed
   Instruction current_instruction = {};
@@ -66,15 +68,14 @@ struct State
   bool next_instruction_is_branch_delay_slot = false;
   bool branch_was_taken = false;
   bool exception_raised = false;
-  bool interrupt_delay = false;
-  bool frame_done = false;
 
   // load delays
   Reg load_delay_reg = Reg::count;
-  u32 load_delay_value = 0;
   Reg next_load_delay_reg = Reg::count;
+  u32 load_delay_value = 0;
   u32 next_load_delay_value = 0;
 
+  Instruction next_instruction = {};
   CacheControl cache_control{0};
 
   // GTE registers are stored here so we can access them on ARM with a single instruction
@@ -95,7 +96,6 @@ struct State
 };
 
 extern State g_state;
-extern bool g_using_interpreter;
 
 void Initialize();
 void Shutdown();
@@ -106,38 +106,37 @@ void UpdateFastmemBase();
 
 /// Executes interpreter loop.
 void Execute();
-void ExecuteDebug();
 void SingleStep();
 
 // Forces an early exit from the CPU dispatcher.
-void ForceDispatcherExit();
+void ExitExecution();
 
-ALWAYS_INLINE Registers& GetRegs()
+ALWAYS_INLINE static Registers& GetRegs()
 {
   return g_state.regs;
 }
 
-ALWAYS_INLINE TickCount GetPendingTicks()
+ALWAYS_INLINE static TickCount GetPendingTicks()
 {
   return g_state.pending_ticks;
 }
-ALWAYS_INLINE void ResetPendingTicks()
+ALWAYS_INLINE static void ResetPendingTicks()
 {
   g_state.gte_completion_tick =
     (g_state.pending_ticks < g_state.gte_completion_tick) ? (g_state.gte_completion_tick - g_state.pending_ticks) : 0;
   g_state.pending_ticks = 0;
 }
-ALWAYS_INLINE void AddPendingTicks(TickCount ticks)
+ALWAYS_INLINE static void AddPendingTicks(TickCount ticks)
 {
   g_state.pending_ticks += ticks;
 }
 
 // state helpers
-ALWAYS_INLINE bool InUserMode()
+ALWAYS_INLINE static bool InUserMode()
 {
   return g_state.cop0_regs.sr.KUc;
 }
-ALWAYS_INLINE bool InKernelMode()
+ALWAYS_INLINE static bool InKernelMode()
 {
   return !g_state.cop0_regs.sr.KUc;
 }

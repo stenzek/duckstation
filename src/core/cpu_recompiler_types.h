@@ -130,6 +130,13 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 // Alignment of code stoarge.
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
+#elif defined(CPU_RISCV64)
+
+using HostReg = unsigned;
+
+// Alignment of code stoarge.
+constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
+
 #else
 
 using HostReg = int;

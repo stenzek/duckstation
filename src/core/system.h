@@ -42,6 +42,7 @@ struct SystemBootParameters
   u32 media_playlist_index = 0;
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
+  bool fast_forward_to_first_frame = false;
 };
 
 struct SaveStateInfo
@@ -85,7 +86,8 @@ enum class State
   Shutdown,
   Starting,
   Running,
-  Paused
+  Paused,
+  Stopping,
 };
 
 using GameHash = u64;
@@ -110,7 +112,6 @@ ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
 std::string GetExecutableNameForImage(CDImage* cdi, bool strip_subdirectories);
 bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std::vector<u8>* out_executable_data);
 
-bool IsValidGameImage(CDImage* cdi);
 std::string GetGameHashId(GameHash hash);
 bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash);
 DiscRegion GetRegionForSerial(std::string_view serial);
@@ -129,6 +130,7 @@ std::string GetInputProfilePath(const std::string_view& name);
 State GetState();
 void SetState(State new_state);
 bool IsRunning();
+bool IsExecutionInterrupted();
 bool IsPaused();
 bool IsShutdown();
 bool IsValid();
@@ -176,14 +178,15 @@ bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_loader 
 
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
-void FrameDone();
 void IncrementInternalFrameNumber();
+void FrameDone();
 
 const std::string& GetDiscPath();
 const std::string& GetGameSerial();
 const std::string& GetGameTitle();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
+bool WasFastBooted();
 
 const BIOS::ImageInfo* GetBIOSImageInfo();
 const BIOS::Hash& GetBIOSHash();
@@ -237,8 +240,6 @@ void RecreateSystem();
 bool RecreateGPU(GPURenderer renderer, bool force_recreate_display = false, bool update_display = true);
 
 void SingleStepCPU();
-void RunFrame();
-void RunFrames();
 
 /// Sets target emulation speed.
 float GetTargetSpeed();
@@ -249,9 +250,6 @@ void SetThrottleFrequency(float frequency);
 /// Updates the throttle period, call when target emulation speed changes.
 void UpdateThrottlePeriod();
 void ResetThrottler();
-
-/// Throttles the system, i.e. sleeps until it's time to execute the next frame.
-void Throttle();
 
 void UpdatePerformanceCounters();
 void ResetPerformanceCounters();

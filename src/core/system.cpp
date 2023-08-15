@@ -103,20 +103,21 @@ static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
-static void DoRunFrame();
 static bool CreateGPU(GPURenderer renderer);
 static bool SaveUndoLoadState();
+
+/// Throttles the system, i.e. sleeps until it's time to execute the next frame.
+static void Throttle();
 
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
 static void DoRewind();
 
 static void SaveRunaheadState();
-static void DoRunahead();
-
-static void DoMemorySaveStates();
+static bool DoRunahead();
 
 static bool Initialize(bool force_software_renderer);
+static bool FastForwardToFirstFrame();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
@@ -149,12 +150,16 @@ static std::string s_running_game_serial;
 static std::string s_running_game_title;
 static System::GameHash s_running_game_hash;
 static bool s_running_unknown_game;
+static bool s_was_fast_booted;
 
 static float s_throttle_frequency = 60.0f;
 static float s_target_speed = 1.0f;
 static Common::Timer::Value s_frame_period = 0;
 static Common::Timer::Value s_next_frame_time = 0;
+static bool s_last_frame_skipped = false;
 
+static bool s_system_executing = false;
+static bool s_system_interrupted = false;
 static bool s_frame_step_request = false;
 static bool s_fast_forward_enabled = false;
 static bool s_turbo_enabled = false;
@@ -208,6 +213,7 @@ static bool s_rewinding_first_save = false;
 static std::deque<MemorySaveState> s_runahead_states;
 static bool s_runahead_replay_pending = false;
 static u32 s_runahead_frames = 0;
+static u32 s_runahead_replay_frames = 0;
 
 static TinyString GetTimestampStringForFileName()
 {
@@ -227,14 +233,16 @@ void System::SetState(State new_state)
   Assert(s_state == State::Paused || s_state == State::Running);
   Assert(new_state == State::Paused || new_state == State::Running);
   s_state = new_state;
-
-  if (new_state == State::Paused)
-    CPU::ForceDispatcherExit();
 }
 
 bool System::IsRunning()
 {
   return s_state == State::Running;
+}
+
+bool System::IsExecutionInterrupted()
+{
+  return s_state != State::Running || s_system_interrupted;
 }
 
 bool System::IsPaused()
@@ -304,18 +312,6 @@ u32 System::GetInternalFrameNumber()
   return s_internal_frame_number;
 }
 
-void System::FrameDone()
-{
-  s_frame_number++;
-  CPU::g_state.frame_done = true;
-  CPU::g_state.downcount = 0;
-}
-
-void System::IncrementInternalFrameNumber()
-{
-  s_internal_frame_number++;
-}
-
 const std::string& System::GetDiscPath()
 {
   return s_running_game_path;
@@ -338,6 +334,11 @@ System::GameHash System::GetGameHash()
 bool System::IsRunningUnknownGame()
 {
   return s_running_unknown_game;
+}
+
+bool System::WasFastBooted()
+{
+  return s_was_fast_booted;
 }
 
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
@@ -529,7 +530,7 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
       pos++;
     }
   }
-  
+
   if (out_id)
   {
     if (id.empty())
@@ -644,7 +645,7 @@ std::string System::GetExecutableNameForImage(CDImage* cdi, bool strip_subdirect
 }
 
 bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name,
-  std::vector<u8>* out_executable_data)
+                                     std::vector<u8>* out_executable_data)
 {
   ISOReader iso;
   if (!iso.Open(cdi, 1))
@@ -653,7 +654,8 @@ bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_n
   return ReadExecutableFromImage(iso, out_executable_name, out_executable_data);
 }
 
-bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name, std::vector<u8>* out_executable_data)
+bool System::ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
+                                     std::vector<u8>* out_executable_data)
 {
   const std::string executable_path = GetExecutableNameForImage(iso, false);
   Log_DevPrintf("Executable path: '%s'", executable_path.c_str());
@@ -886,7 +888,11 @@ void System::ApplySettings(bool display_osd_messages)
   Host::CheckForSettingsChanges(old_config);
 
   if (IsValid())
+  {
     ResetPerformanceCounters();
+    if (s_system_executing)
+      s_system_interrupted = true;
+  }
 }
 
 bool System::ReloadGameSettings(bool display_osd_messages)
@@ -1304,9 +1310,15 @@ bool System::BootSystem(SystemBootParameters parameters)
                                                                         g_settings.bios_patch_fast_boot))
   {
     if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    {
+      // TODO: Fast boot without patches...
       BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+      s_was_fast_booted = true;
+    }
     else
+    {
       Log_ErrorPrintf("Not patching fast boot, as BIOS is not patch compatible.");
+    }
   }
 
   // Good to go.
@@ -1346,6 +1358,9 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
+  if (parameters.fast_forward_to_first_frame)
+    FastForwardToFirstFrame();
+
   if (g_settings.audio_dump_on_boot)
     StartDumpingAudio();
 
@@ -1369,6 +1384,10 @@ bool System::Initialize(bool force_software_renderer)
   s_next_frame_time = 0;
   s_turbo_enabled = false;
   s_fast_forward_enabled = false;
+
+  s_rewind_load_frequency = -1;
+  s_rewind_load_counter = -1;
+  s_rewinding_first_save = true;
 
   s_average_frame_time_accumulator = 0.0f;
   s_minimum_frame_time_accumulator = 0.0f;
@@ -1488,6 +1507,7 @@ bool System::Initialize(bool force_software_renderer)
 
 void System::DestroySystem()
 {
+  DebugAssert(!s_system_executing);
   if (s_state == State::Shutdown)
     return;
 
@@ -1528,6 +1548,10 @@ void System::DestroySystem()
 
   s_bios_hash = {};
   s_bios_image_info = nullptr;
+  s_was_fast_booted = false;
+  s_cheat_list.reset();
+
+  s_state = State::Shutdown;
 
   Host::OnSystemDestroyed();
 }
@@ -1539,8 +1563,6 @@ void System::ClearRunningGame()
   s_running_game_title.clear();
   s_running_game_hash = 0;
   s_running_unknown_game = false;
-  s_cheat_list.reset();
-  s_state = State::Shutdown;
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 
@@ -1549,25 +1571,124 @@ void System::ClearRunningGame()
 #endif
 }
 
+bool System::FastForwardToFirstFrame()
+{
+  // If we're taking more than 60 seconds to load the game, oof..
+  static constexpr u32 MAX_FRAMES_TO_SKIP = 30 * 60;
+  const u32 current_frame_number = s_frame_number;
+  const u32 current_internal_frame_number = s_internal_frame_number;
+
+  SPU::SetAudioOutputMuted(true);
+  while (s_internal_frame_number == current_internal_frame_number &&
+         (s_frame_number - current_frame_number) <= MAX_FRAMES_TO_SKIP)
+  {
+    Panic("Fixme");
+    // System::RunFrame();
+  }
+  SPU::SetAudioOutputMuted(false);
+
+  return (s_internal_frame_number != current_internal_frame_number);
+}
+
 void System::Execute()
 {
-  while (System::IsRunning())
+  for (;;)
   {
-    if (s_display_all_frames)
-      System::RunFrame();
-    else
-      System::RunFrames();
-
-    // this can shut us down
-    Host::PumpMessagesOnCPUThread();
-    if (!IsValid())
-      return;
-
-    if (s_frame_step_request)
+    switch (s_state)
     {
-      s_frame_step_request = false;
-      PauseSystem(true);
+      case State::Running:
+      {
+        s_system_executing = true;
+
+        // TODO: Purge reset/restore
+        g_gpu->RestoreGraphicsAPIState();
+
+        if (s_rewind_load_counter >= 0)
+          DoRewind();
+        else
+          CPU::Execute();
+
+        g_gpu->ResetGraphicsAPIState();
+
+        s_system_executing = false;
+        continue;
+      }
+
+      case State::Stopping:
+      {
+        DestroySystem();
+        return;
+      }
+
+      case State::Paused:
+      default:
+        return;
     }
+  }
+}
+
+void System::FrameDone()
+{
+  s_frame_number++;
+
+  // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
+  SPU::GeneratePendingSamples();
+
+  if (s_cheat_list)
+    s_cheat_list->Apply();
+
+  if (s_frame_step_request)
+  {
+    s_frame_step_request = false;
+    PauseSystem(true);
+  }
+
+  // Save states for rewind and runahead.
+  if (s_rewind_save_counter >= 0)
+  {
+    if (s_rewind_save_counter == 0)
+    {
+      SaveRewindState();
+      s_rewind_save_counter = s_rewind_save_frequency;
+    }
+    else
+    {
+      s_rewind_save_counter--;
+    }
+  }
+  else if (s_runahead_frames > 0)
+  {
+    // We don't want to poll during replay, because otherwise we'll lose frames.
+    if (s_runahead_replay_frames == 0)
+    {
+      // For runahead, poll input early, that way we can use the remainder of this frame to replay.
+      // *technically* this means higher input latency (by less than a frame), but runahead itself
+      // counter-acts that.
+      Host::PumpMessagesOnCPUThread();
+      if (IsExecutionInterrupted())
+      {
+        s_system_interrupted = false;
+        CPU::ExitExecution();
+        return;
+      }
+    }
+
+    if (DoRunahead())
+    {
+      // running ahead, get it done as soon as possible
+      return;
+    }
+
+    SaveRunaheadState();
+  }
+
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (current_time < s_next_frame_time || s_display_all_frames || s_last_frame_skipped)
+  {
+    s_last_frame_skipped = false;
+
+    // TODO: Purge reset/restore
+    g_gpu->ResetGraphicsAPIState();
 
     const bool skip_present = g_host_display->ShouldSkipDisplayingFrame();
     Host::RenderDisplay(skip_present);
@@ -1577,14 +1698,109 @@ void System::Execute()
       s_presents_since_last_update++;
     }
 
-    if (s_throttler_enabled)
-      System::Throttle();
-
-    // Update perf counters *after* throttling, we want to measure from start-of-frame
-    // to start-of-frame, not end-of-frame to end-of-frame (will be noisy due to different
-    // amounts of computation happening in each frame).
-    System::UpdatePerformanceCounters();
+    g_gpu->RestoreGraphicsAPIState();
   }
+  else if (current_time >= s_next_frame_time)
+  {
+    Log_DebugPrintf("Skipping displaying frame");
+    s_last_frame_skipped = true;
+  }
+
+  if (s_throttler_enabled && !IsExecutionInterrupted())
+    Throttle();
+
+  // Input poll already done above
+  if (s_runahead_frames == 0)
+  {
+    Host::PumpMessagesOnCPUThread();
+
+    if (IsExecutionInterrupted())
+    {
+      s_system_interrupted = false;
+      CPU::ExitExecution();
+      return;
+    }
+  }
+
+  // Update perf counters *after* throttling, we want to measure from start-of-frame
+  // to start-of-frame, not end-of-frame to end-of-frame (will be noisy due to different
+  // amounts of computation happening in each frame).
+  System::UpdatePerformanceCounters();
+}
+
+void System::SetThrottleFrequency(float frequency)
+{
+  if (s_throttle_frequency == frequency)
+    return;
+
+  s_throttle_frequency = frequency;
+  UpdateThrottlePeriod();
+}
+
+void System::UpdateThrottlePeriod()
+{
+  if (s_target_speed > std::numeric_limits<double>::epsilon())
+  {
+    const double target_speed = std::max(static_cast<double>(s_target_speed), std::numeric_limits<double>::epsilon());
+    s_frame_period =
+      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_throttle_frequency) * target_speed));
+  }
+  else
+  {
+    s_frame_period = 1;
+  }
+
+  ResetThrottler();
+}
+
+void System::ResetThrottler()
+{
+  s_next_frame_time = Common::Timer::GetCurrentValue() + s_frame_period;
+}
+
+void System::Throttle()
+{
+  // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
+  // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
+  // hundreds of frames when we resume.
+  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (current_time > s_next_frame_time)
+  {
+    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
+    s_next_frame_time += (diff / s_frame_period) * s_frame_period + s_frame_period;
+    return;
+  }
+
+  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
+  // Linux also seems to do a much better job of waking up at the requested time.
+#if !defined(__linux__) && !defined(__ANDROID__)
+  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_all_frames);
+#else
+  Common::Timer::SleepUntil(s_next_frame_time, false);
+#endif
+
+  s_next_frame_time += s_frame_period;
+}
+
+void System::SingleStepCPU()
+{
+  s_frame_timer.Reset();
+  s_system_executing = true;
+
+  g_gpu->RestoreGraphicsAPIState();
+
+  CPU::SingleStep();
+
+  SPU::GeneratePendingSamples();
+
+  g_gpu->ResetGraphicsAPIState();
+
+  s_system_executing = false;
+}
+
+void System::IncrementInternalFrameNumber()
+{
+  s_internal_frame_number++;
 }
 
 void System::RecreateSystem()
@@ -2163,157 +2379,9 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
   return true;
 }
 
-void System::SingleStepCPU()
-{
-  const u32 old_frame_number = s_frame_number;
-
-  s_frame_timer.Reset();
-
-  g_gpu->RestoreGraphicsAPIState();
-
-  CPU::SingleStep();
-
-  SPU::GeneratePendingSamples();
-
-  if (s_frame_number != old_frame_number && s_cheat_list)
-    s_cheat_list->Apply();
-
-  g_gpu->ResetGraphicsAPIState();
-}
-
-void System::DoRunFrame()
-{
-  g_gpu->RestoreGraphicsAPIState();
-
-  if (CPU::g_state.use_debug_dispatcher)
-  {
-    CPU::ExecuteDebug();
-  }
-  else
-  {
-    switch (g_settings.cpu_execution_mode)
-    {
-      case CPUExecutionMode::Recompiler:
-#ifdef WITH_RECOMPILER
-        CPU::CodeCache::ExecuteRecompiler();
-#else
-        CPU::CodeCache::Execute();
-#endif
-        break;
-
-      case CPUExecutionMode::CachedInterpreter:
-        CPU::CodeCache::Execute();
-        break;
-
-      case CPUExecutionMode::Interpreter:
-      default:
-        CPU::Execute();
-        break;
-    }
-  }
-
-  // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
-  SPU::GeneratePendingSamples();
-
-  if (s_cheat_list)
-    s_cheat_list->Apply();
-
-  g_gpu->ResetGraphicsAPIState();
-}
-
-void System::RunFrame()
-{
-  if (s_rewind_load_counter >= 0)
-  {
-    DoRewind();
-    return;
-  }
-
-  if (s_runahead_frames > 0)
-    DoRunahead();
-
-  DoRunFrame();
-
-  s_next_frame_time += s_frame_period;
-
-  if (s_memory_saves_enabled)
-    DoMemorySaveStates();
-}
-
 float System::GetTargetSpeed()
 {
   return s_target_speed;
-}
-
-void System::SetThrottleFrequency(float frequency)
-{
-  s_throttle_frequency = frequency;
-  UpdateThrottlePeriod();
-}
-
-void System::UpdateThrottlePeriod()
-{
-  if (s_target_speed > std::numeric_limits<double>::epsilon())
-  {
-    const double target_speed = std::max(static_cast<double>(s_target_speed), std::numeric_limits<double>::epsilon());
-    s_frame_period =
-      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_throttle_frequency) * target_speed));
-  }
-  else
-  {
-    s_frame_period = 1;
-  }
-
-  ResetThrottler();
-}
-
-void System::ResetThrottler()
-{
-  s_next_frame_time = Common::Timer::GetCurrentValue();
-}
-
-void System::Throttle()
-{
-  // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
-  // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
-  // hundreds of frames when we resume.
-  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
-  if (current_time > s_next_frame_time)
-  {
-    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
-    s_next_frame_time += (diff / s_frame_period) * s_frame_period;
-    return;
-  }
-
-  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
-  // Linux also seems to do a much better job of waking up at the requested time.
-#if !defined(__linux__) && !defined(__ANDROID__)
-  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_all_frames);
-#else
-  Common::Timer::SleepUntil(s_next_frame_time, false);
-#endif
-}
-
-void System::RunFrames()
-{
-  // If we're running more than this in a single loop... we're in for a bad time.
-  const u32 max_frames_to_run = 2;
-  u32 frames_run = 0;
-
-  Common::Timer::Value value = Common::Timer::GetCurrentValue();
-  while (frames_run < max_frames_to_run)
-  {
-    if (value < s_next_frame_time)
-      break;
-
-    RunFrame();
-    frames_run++;
-
-    value = Common::Timer::GetCurrentValue();
-  }
-
-  if (frames_run != 1)
-    Log_VerbosePrintf("Ran %u frames in a single host frame", frames_run);
 }
 
 void System::UpdatePerformanceCounters()
@@ -3625,18 +3693,22 @@ void System::SetRewinding(bool enabled)
 {
   if (enabled)
   {
+    const bool was_enabled = IsRewinding();
+
     // Try to rewind at the replay speed, or one per second maximum.
     const float load_frequency = std::min(g_settings.rewind_save_frequency, 1.0f);
     s_rewind_load_frequency = static_cast<s32>(std::ceil(load_frequency * s_throttle_frequency));
     s_rewind_load_counter = 0;
+
+    if (!was_enabled && s_system_executing)
+      s_system_interrupted = true;
   }
   else
   {
     s_rewind_load_frequency = -1;
     s_rewind_load_counter = -1;
+    s_rewinding_first_save = true;
   }
-
-  s_rewinding_first_save = true;
 }
 
 void System::DoRewind()
@@ -3655,6 +3727,15 @@ void System::DoRewind()
   }
 
   s_next_frame_time += s_frame_period;
+
+  // TODO: Purge reset/restore
+  g_gpu->ResetGraphicsAPIState();
+  Host::RenderDisplay(false);
+  g_gpu->RestoreGraphicsAPIState();
+
+  Host::PumpMessagesOnCPUThread();
+
+  Throttle();
 }
 
 void System::SaveRunaheadState()
@@ -3676,84 +3757,70 @@ void System::SaveRunaheadState()
   s_runahead_states.push_back(std::move(mss));
 }
 
-void System::DoRunahead()
+bool System::DoRunahead()
 {
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Common::Timer timer;
-  Log_DevPrintf("runahead starting at frame %u", s_frame_number);
+  static Common::Timer replay_timer;
 #endif
 
   if (s_runahead_replay_pending)
   {
+#ifdef PROFILE_MEMORY_SAVE_STATES
+    Log_DevPrintf("runahead starting at frame %u", s_frame_number);
+    replay_timer.Reset();
+#endif
+
     // we need to replay and catch up - load the state,
     s_runahead_replay_pending = false;
     if (s_runahead_states.empty() || !LoadMemoryState(s_runahead_states.front()))
     {
       s_runahead_states.clear();
-      return;
+      return false;
     }
+
+    // figure out how many frames we need to run to catch up
+    s_runahead_replay_frames = static_cast<u32>(s_runahead_states.size());
 
     // and throw away all the states, forcing us to catch up below
-    // TODO: can we leave one frame here and run, avoiding the extra save?
     s_runahead_states.clear();
 
-#ifdef PROFILE_MEMORY_SAVE_STATES
-    Log_VerbosePrintf("Rewound to frame %u, took %.2f ms", s_frame_number, timer.GetTimeMilliseconds());
-#endif
-  }
-
-  // run the frames with no audio
-  s32 frames_to_run = static_cast<s32>(s_runahead_frames) - static_cast<s32>(s_runahead_states.size());
-  if (frames_to_run > 0)
-  {
-    Common::Timer timer2;
-#ifdef PROFILE_MEMORY_SAVE_STATES
-    const s32 temp = frames_to_run;
-#endif
-
+    // run the frames with no audio
     SPU::SetAudioOutputMuted(true);
 
-    while (frames_to_run > 0)
-    {
-      DoRunFrame();
-      SaveRunaheadState();
-      frames_to_run--;
-    }
+#ifdef PROFILE_MEMORY_SAVE_STATES
+    Log_VerbosePrintf("Rewound to frame %u, took %.2f ms", s_frame_number, replay_timer.GetTimeMilliseconds());
+#endif
 
-    SPU::SetAudioOutputMuted(false);
+    // we don't want to save the frame we just loaded. but we are "one frame ahead", because the frame we just tossed
+    // was never saved, so return but don't decrement the counter
+    return true;
+  }
+  else if (s_runahead_replay_frames == 0)
+  {
+    return false;
+  }
+
+  s_runahead_replay_frames--;
+  if (s_runahead_replay_frames > 0)
+  {
+    // keep running ahead
+    SaveRunaheadState();
+    return true;
+  }
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-    Log_VerbosePrintf("Running %d frames to catch up took %.2f ms", temp, timer2.GetTimeMilliseconds());
+  Log_VerbosePrintf("Running %d frames to catch up took %.2f ms", s_runahead_frames,
+                    replay_timer.GetTimeMilliseconds());
 #endif
-  }
-  else
-  {
-    // save this frame
-    SaveRunaheadState();
-  }
+
+  // we're all caught up. this frame gets saved in DoMemoryStates().
+  SPU::SetAudioOutputMuted(false);
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_DevPrintf("runahead ending at frame %u, took %.2f ms", s_frame_number, timer.GetTimeMilliseconds());
+  Log_DevPrintf("runahead ending at frame %u, took %.2f ms", s_frame_number, replay_timer.GetTimeMilliseconds());
 #endif
-}
 
-void System::DoMemorySaveStates()
-{
-  if (s_rewind_save_counter >= 0)
-  {
-    if (s_rewind_save_counter == 0)
-    {
-      SaveRewindState();
-      s_rewind_save_counter = s_rewind_save_frequency;
-    }
-    else
-    {
-      s_rewind_save_counter--;
-    }
-  }
-
-  if (s_runahead_frames > 0)
-    SaveRunaheadState();
+  return false;
 }
 
 void System::SetRunaheadReplayFlag()
@@ -3776,7 +3843,10 @@ void System::ShutdownSystem(bool save_resume_state)
   if (save_resume_state)
     SaveResumeState();
 
-  DestroySystem();
+  if (s_system_executing)
+    s_state = State::Stopping;
+  else
+    DestroySystem();
 }
 
 bool System::CanUndoLoadState()

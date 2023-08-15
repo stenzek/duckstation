@@ -65,6 +65,13 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 
+// [[noreturn]] which can be used on function pointers.
+#ifdef _MSC_VER
+// __declspec(noreturn) produces error C3829.
+#define NORETURN_FUNCTION_POINTER
+#else
+#define NORETURN_FUNCTION_POINTER __attribute__((noreturn))
+#endif
 
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead

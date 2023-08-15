@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "x11_nogui_platform.h"
@@ -24,7 +24,7 @@ X11NoGUIPlatform::~X11NoGUIPlatform()
 bool X11NoGUIPlatform::Initialize()
 {
   const int res = XInitThreads();
-  if (res != 0)
+  if (res == 0)
     Log_WarningPrintf("XInitThreads() returned %d, things might not be stable.", res);
 
   m_display = XOpenDisplay(nullptr);
@@ -34,6 +34,7 @@ bool X11NoGUIPlatform::Initialize()
     return false;
   }
 
+  InitializeKeyMap();
   return true;
 }
 
@@ -68,7 +69,7 @@ bool X11NoGUIPlatform::CreatePlatformWindow(std::string title)
                                    window_height, 0, 0, BlackPixel(m_display, 0));
     if (!m_window)
     {
-      Log_ErrorPrintf("Failed to create X window");
+      Log_ErrorPrint("Failed to create X window");
       return false;
     }
 
@@ -92,7 +93,6 @@ bool X11NoGUIPlatform::CreatePlatformWindow(std::string title)
     XMapRaised(m_display, m_window);
     XFlush(m_display);
     XSync(m_display, True);
-    InitializeKeyMap();
   }
 
   ProcessXEvents();
@@ -144,15 +144,15 @@ void X11NoGUIPlatform::InitializeKeyMap()
     if (keysym == NoSymbol)
       continue;
 
-    KeySym upper_sym;
-    XConvertCase(keysym, &keysym, &upper_sym);
+    KeySym upper_keysym;
+    XConvertCase(keysym, &keysym, &upper_keysym);
 
     // Would this fail?
-    const char* keyname = XKeysymToString(keysym);
+    const char* keyname = XKeysymToString(upper_keysym);
     if (!keyname)
       continue;
 
-    m_key_map.emplace(static_cast<s32>(keysym), keyname);
+    m_key_map.emplace(static_cast<s32>(upper_keysym), keyname);
   }
 }
 
@@ -160,7 +160,7 @@ std::optional<u32> X11NoGUIPlatform::ConvertHostKeyboardStringToCode(const std::
 {
   for (const auto& it : m_key_map)
   {
-    if (StringUtil::Strncasecmp(it.second.c_str(), str.data(), str.length()) == 0)
+    if (str == it.second)
       return it.first;
   }
 
@@ -175,7 +175,7 @@ std::optional<std::string> X11NoGUIPlatform::ConvertHostKeyboardCodeToString(u32
 
 void X11NoGUIPlatform::ProcessXEvents()
 {
-  XLockDisplay(m_display);
+  XDisplayLocker locker(m_display);
 
   for (int num_events = XPending(m_display); num_events > 0; num_events--)
   {
@@ -186,19 +186,30 @@ void X11NoGUIPlatform::ProcessXEvents()
       case KeyPress:
       case KeyRelease:
       {
-        const KeySym sym = XLookupKeysym(&event.xkey, 0);
+        KeySym sym = XLookupKeysym(&event.xkey, 0);
         if (sym != NoSymbol)
-          NoGUIHost::ProcessPlatformKeyEvent(static_cast<s32>(sym), (event.type == KeyPress));
+        {
+          KeySym upper_sym = sym;
+          XConvertCase(sym, &sym, &upper_sym);
+          NoGUIHost::ProcessPlatformKeyEvent(static_cast<s32>(upper_sym), (event.type == KeyPress));
+        }
       }
       break;
 
       case ButtonPress:
       case ButtonRelease:
       {
-        if (event.xbutton.button >= Button1)
+        if (event.xbutton.button >= Button4 && event.xbutton.button <= Button5)
         {
-          NoGUIHost::ProcessPlatformMouseButtonEvent(static_cast<s32>(event.xbutton.button - Button1),
-                                                     event.type == ButtonPress);
+          // Button 4/5 are mouse wheel events on X, apparently...
+          NoGUIHost::ProcessPlatformMouseWheelEvent(0.0f, (event.xbutton.button == Button4) ? 1.0f : -1.0f);
+        }
+        else if (event.xbutton.button >= Button1)
+        {
+          // Swap middle and right buttons.
+          const u32 xbutton = event.xbutton.button;
+          const u32 mapped_button = (xbutton == Button3) ? 1 : (xbutton == Button2 ? 2 : (xbutton - Button1));
+          NoGUIHost::ProcessPlatformMouseButtonEvent(mapped_button, event.type == ButtonPress);
         }
       }
       break;
@@ -241,8 +252,6 @@ void X11NoGUIPlatform::ProcessXEvents()
         break;
     }
   }
-
-  XUnlockDisplay(m_display);
 }
 
 void X11NoGUIPlatform::RunMessageLoop()

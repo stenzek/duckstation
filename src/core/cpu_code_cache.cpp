@@ -8,6 +8,7 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
+#include "cpu_recompiler_types.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
@@ -16,6 +17,8 @@ Log_SetChannel(CPU::CodeCache);
 #ifdef WITH_RECOMPILER
 #include "cpu_recompiler_code_generator.h"
 #endif
+
+#include <zlib.h>
 
 namespace CPU::CodeCache {
 
@@ -50,6 +53,10 @@ alignas(Recompiler::CODE_STORAGE_ALIGNMENT) static u8
 #endif
 
 static JitCodeBuffer s_code_buffer;
+
+#endif
+
+#ifdef WITH_RECOMPILER
 static FastMapTable s_fast_map[FAST_MAP_TABLE_COUNT];
 static std::unique_ptr<CodeBlock::HostCodePointer[]> s_fast_map_pointers;
 
@@ -253,12 +260,19 @@ void Initialize()
     {
       Panic("Failed to initialize code space");
     }
+  }
+#endif
 
     AllocateFastMap();
 
+
+#ifdef WITH_RECOMPILER
+  if (g_settings.IsUsingRecompiler())
+  {
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
 
+    AllocateFastMap();
     CompileDispatcher();
     ResetFastMap();
   }
@@ -293,22 +307,13 @@ void Shutdown()
 }
 
 template<PGXPMode pgxp_mode>
-static void ExecuteImpl()
+[[noreturn]] static void ExecuteImpl()
 {
   CodeBlockKey next_block_key;
 
-  g_using_interpreter = false;
-  g_state.frame_done = false;
-
-  while (!g_state.frame_done)
+  for (;;)
   {
-    if (HasPendingInterrupt())
-    {
-      SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
-      DispatchInterrupt();
-    }
-
-    TimingEvents::UpdateCPUDowncount();
+    TimingEvents::RunEvents();
 
     next_block_key = GetNextBlockKey();
     while (g_state.pending_ticks < g_state.downcount)
@@ -384,27 +389,10 @@ static void ExecuteImpl()
         }
       }
     }
-
-    TimingEvents::RunEvents();
   }
 
   // in case we switch to interpreter...
-  g_state.regs.npc = g_state.regs.pc;
-}
-
-void Execute()
-{
-  if (g_settings.gpu_pgxp_enable)
-  {
-    if (g_settings.gpu_pgxp_cpu)
-      ExecuteImpl<PGXPMode::CPU>();
-    else
-      ExecuteImpl<PGXPMode::Memory>();
-  }
-  else
-  {
-    ExecuteImpl<PGXPMode::Disabled>();
-  }
+  g_state.npc = g_state.pc;
 }
 
 #ifdef WITH_RECOMPILER
@@ -430,21 +418,15 @@ FastMapTable* GetFastMapPointer()
   return s_fast_map;
 }
 
-void ExecuteRecompiler()
+[[noreturn]] static void ExecuteRecompiler()
 {
-  g_using_interpreter = false;
-  g_state.frame_done = false;
-
 #if 0
-  while (!g_state.frame_done)
+  for (;;)
   {
     if (HasPendingInterrupt())
-    {
-      SafeReadInstruction(g_state.regs.pc, &g_state.next_instruction.bits);
       DispatchInterrupt();
-    }
 
-    TimingEvents::UpdateCPUDowncount();
+    TimingEvents::RunEvents();
 
     while (g_state.pending_ticks < g_state.downcount)
     {
@@ -452,18 +434,50 @@ void ExecuteRecompiler()
       LogCurrentState();
 #endif
 
-      const u32 pc = g_state.regs.pc;
+      const u32 pc = g_state.pc;
       s_single_block_asm_dispatcher(s_fast_map[pc >> 16][pc >> 2]);
     }
-
-    TimingEvents::RunEvents();
   }
 #else
   s_asm_dispatcher();
 #endif
+}
 
-  // in case we switch to interpreter...
-  g_state.regs.npc = g_state.regs.pc;
+#endif
+
+[[noreturn]] void Execute()
+{
+  switch (g_settings.cpu_execution_mode)
+  {
+#ifdef WITH_RECOMPILER
+    case CPUExecutionMode::Recompiler:
+      ExecuteRecompiler();
+      break;
+#endif
+
+    default:
+    {
+      if (g_settings.gpu_pgxp_enable)
+      {
+        if (g_settings.gpu_pgxp_cpu)
+          ExecuteImpl<PGXPMode::CPU>();
+        else
+          ExecuteImpl<PGXPMode::Memory>();
+      }
+      else
+      {
+        ExecuteImpl<PGXPMode::Disabled>();
+      }
+    }
+    break;
+  }
+}
+
+#if defined(WITH_RECOMPILER)
+
+JitCodeBuffer& GetCodeBuffer()
+{
+  return s_code_buffer;
 }
 
 #endif
@@ -473,13 +487,14 @@ void Reinitialize()
   ClearState();
 
 #ifdef WITH_RECOMPILER
-
   ShutdownFastmem();
+#endif
+
+#if defined(WITH_RECOMPILER)
   s_code_buffer.Destroy();
 
   if (g_settings.IsUsingRecompiler())
   {
-
 #ifdef USE_STATIC_CODE_BUFFER
     if (!s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE,
                                   RECOMPILER_GUARD_SIZE))
@@ -489,7 +504,12 @@ void Reinitialize()
     {
       Panic("Failed to initialize code space");
     }
+  }
+#endif
 
+#ifdef WITH_RECOMPILER
+  if (g_settings.IsUsingRecompiler())
+  {
     if (g_settings.IsUsingFastmem() && !InitializeFastmem())
       Panic("Failed to initialize fastmem");
 
@@ -509,25 +529,40 @@ void Flush()
 #endif
 }
 
+#ifndef _MSC_VER
+void __debugbreak() {}
+#endif
+
 void LogCurrentState()
 {
+#if 0
+  if ((TimingEvents::GetGlobalTickCounter() + GetPendingTicks()) == 2546728915)
+    __debugbreak();
+#endif
+#if 0
+  if ((TimingEvents::GetGlobalTickCounter() + GetPendingTicks()) < 2546729174)
+    return;
+#endif
+
   const auto& regs = g_state.regs;
-  WriteToExecutionLog("tick=%u pc=%08X zero=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
-                      "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
-                      "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
-                      "ldv=%08X\n",
-                      TimingEvents::GetGlobalTickCounter() + GetPendingTicks(), regs.pc, regs.zero, regs.at, regs.v0,
-                      regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5,
-                      regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8,
-                      regs.t9, regs.k0, regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,
-                      (g_state.next_load_delay_reg == Reg::count) ? "NONE" : GetRegName(g_state.next_load_delay_reg),
-                      (g_state.next_load_delay_reg == Reg::count) ? 0 : g_state.next_load_delay_value);
+  WriteToExecutionLog(
+    "tick=%u dc=%u/%u pc=%08X at=%08X v0=%08X v1=%08X a0=%08X a1=%08X a2=%08X a3=%08X t0=%08X "
+    "t1=%08X t2=%08X t3=%08X t4=%08X t5=%08X t6=%08X t7=%08X s0=%08X s1=%08X s2=%08X s3=%08X s4=%08X "
+    "s5=%08X s6=%08X s7=%08X t8=%08X t9=%08X k0=%08X k1=%08X gp=%08X sp=%08X fp=%08X ra=%08X ldr=%s "
+    "ldv=%08X cause=%08X sr=%08X gte=%08X\n",
+    TimingEvents::GetGlobalTickCounter() + GetPendingTicks(), g_state.pending_ticks, g_state.downcount, g_state.pc,
+    regs.at, regs.v0, regs.v1, regs.a0, regs.a1, regs.a2, regs.a3, regs.t0, regs.t1, regs.t2, regs.t3, regs.t4, regs.t5,
+    regs.t6, regs.t7, regs.s0, regs.s1, regs.s2, regs.s3, regs.s4, regs.s5, regs.s6, regs.s7, regs.t8, regs.t9, regs.k0,
+    regs.k1, regs.gp, regs.sp, regs.fp, regs.ra,
+    (g_state.next_load_delay_reg == Reg::count) ? "NONE" : GetRegName(g_state.next_load_delay_reg),
+    (g_state.next_load_delay_reg == Reg::count) ? 0 : g_state.next_load_delay_value, g_state.cop0_regs.cause.bits,
+    g_state.cop0_regs.sr.bits, static_cast<u32>(crc32(0, (const Bytef*)&g_state.gte_regs, sizeof(g_state.gte_regs))));
 }
 
 CodeBlockKey GetNextBlockKey()
 {
   CodeBlockKey key = {};
-  key.SetPC(g_state.regs.pc);
+  key.SetPC(g_state.pc);
   key.user_mode = InUserMode();
   return key;
 }
@@ -836,7 +871,7 @@ void FastCompileBlockFunction()
 
 void InvalidCodeFunction()
 {
-  Log_ErrorPrintf("Trying to execute invalid code at 0x%08X", g_state.regs.pc);
+  Log_ErrorPrintf("Trying to execute invalid code at 0x%08X", g_state.pc);
   if (g_settings.gpu_pgxp_enable)
   {
     if (g_settings.gpu_pgxp_cpu)
@@ -1249,7 +1284,7 @@ void CPU::Recompiler::Thunks::ResolveBranch(CodeBlock* block, void* host_pc, voi
 
 void CPU::Recompiler::Thunks::LogPC(u32 pc)
 {
-#if 0
+#if 1
   CPU::CodeCache::LogCurrentState();
 #endif
 #if 0
