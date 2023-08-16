@@ -554,6 +554,7 @@ private:
 
 		define_name<naming::unique>(info.id, info.unique_name);
 
+#if 0
 		if (_shader_model >= 40)
 		{
 			info.binding = _module.num_texture_bindings;
@@ -577,6 +578,7 @@ private:
 			write_texture_format(code, info.format);
 			code += "> __srgb" + info.unique_name + " : register(t" + std::to_string(info.binding + 1) + "); \n";
 		}
+#endif
 
 		_module.textures.push_back(info);
 
@@ -592,6 +594,7 @@ private:
 
 		if (_shader_model >= 40)
 		{
+#if 0
 			// Try and reuse a sampler binding with the same sampler description
 			const auto existing_sampler = std::find_if(_module.samplers.begin(), _module.samplers.end(),
 				[&info](const auto &it) {
@@ -620,6 +623,23 @@ private:
 			code += "static const ";
 			write_type(code, info.type);
 			code += ' ' + id_to_name(info.id) + " = { " + (info.srgb ? "__srgb" : "__") + info.texture_name + ", __s" + std::to_string(info.binding) + " };\n";
+#else
+			info.binding = _module.num_sampler_bindings++;
+			info.texture_binding = ~0u; // Unset texture binding
+
+			write_location(code, loc);
+
+			const unsigned int texture_dimension = info.type.texture_dimension();
+			code += "Texture" + std::to_string(texture_dimension) + "D<";
+			write_texture_format(code, tex_info.format);
+			code += "> __"     + info.unique_name + "_t : register(t" + std::to_string(info.binding) + "); \n";
+
+			code += "SamplerState __" + info.unique_name + "_s : register(s" + std::to_string(info.binding) + ");\n";
+
+			code += "static const ";
+			write_type(code, info.type);
+			code += ' ' + id_to_name(info.id) + " = { __" + info.unique_name + "_t, __" + info.unique_name + "_s };\n";
+#endif
 		}
 		else
 		{
