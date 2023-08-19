@@ -355,7 +355,7 @@ protected:
   SmoothingUBOData GetSmoothingUBO(u32 level, u32 left, u32 top, u32 width, u32 height, u32 tex_width,
                                    u32 tex_height) const;
 
-  HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
+  FixedHeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
   std::unique_ptr<GPU_SW_Backend> m_sw_renderer;
 
   BatchVertex* m_batch_start_vertex_ptr = nullptr;

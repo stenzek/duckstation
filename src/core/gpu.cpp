@@ -269,7 +269,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
     if (sw.IsReading())
     {
       // Still need a temporary here.
-      HeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
+      FixedHeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
       sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
       UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
     }

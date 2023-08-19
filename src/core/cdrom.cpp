@@ -351,7 +351,7 @@ static HeapFIFOQueue<u8, DATA_FIFO_SIZE> s_data_fifo;
 
 struct SectorBuffer
 {
-  HeapArray<u8, RAW_SECTOR_OUTPUT_SIZE> data;
+  FixedHeapArray<u8, RAW_SECTOR_OUTPUT_SIZE> data;
   u32 size;
 };
 

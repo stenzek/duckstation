@@ -117,7 +117,7 @@ public:
   }
 
   template<typename T, size_t N>
-  void Do(HeapArray<T, N>* data)
+  void Do(FixedHeapArray<T, N>* data)
   {
     DoArray(data->data(), data->size());
   }

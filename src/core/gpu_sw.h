@@ -60,7 +60,7 @@ protected:
 
   GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format);
 
-  HeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_display_texture_buffer;
+  FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_display_texture_buffer;
   GPUTexture::Format m_16bit_display_format = GPUTexture::Format::RGB565;
   GPUTexture::Format m_24bit_display_format = GPUTexture::Format::RGBA8;
   std::unique_ptr<GPUTexture> m_display_texture;

@@ -85,7 +85,7 @@ protected:
     THRESHOLD_TO_WAKE_GPU = 256
   };
 
-  HeapArray<u8, COMMAND_QUEUE_SIZE> m_command_fifo_data;
+  FixedHeapArray<u8, COMMAND_QUEUE_SIZE> m_command_fifo_data;
   alignas(64) std::atomic<u32> m_command_fifo_read_ptr{0};
   alignas(64) std::atomic<u32> m_command_fifo_write_ptr{0};
 };
