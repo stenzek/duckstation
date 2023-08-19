@@ -65,12 +65,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
   }
 
   dialog->registerWidgetHelp(
-    m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
+    m_ui.audioBackend, tr("Audio Backend"), tr("Cubeb"),
     tr("The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the "
        "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio "
        "output."));
   dialog->registerWidgetHelp(
-    m_ui.outputLatencyMS, tr("Output Latency"), QStringLiteral("50 ms"),
+    m_ui.outputLatencyMS, tr("Output Latency"), tr("50 ms"),
     tr("The buffer size determines the size of the chunks of audio which will be pulled by the "
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
