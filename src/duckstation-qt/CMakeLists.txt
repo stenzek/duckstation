@@ -156,6 +156,7 @@ set(TS_FILES
   translations/duckstation-qt_he.ts
   translations/duckstation-qt_it.ts
   translations/duckstation-qt_ja.ts
+  translations/duckstation-qt_ko.ts
   translations/duckstation-qt_nl.ts
   translations/duckstation-qt_pl.ts
   translations/duckstation-qt_pt-br.ts

@@ -260,5 +260,8 @@
     <QtTs Include="translations\duckstation-qt_pl.ts">
       <Filter>translations</Filter>
     </QtTs>
+    <QtTs Include="translations\duckstation-qt_ko.ts">
+      <Filter>translations</Filter>
+    </QtTs>
   </ItemGroup>
 </Project>

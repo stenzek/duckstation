@@ -4,9 +4,9 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "fmt/format.h"
-#include "util/imgui_manager.h"
 #include "imgui.h"
 #include "qthost.h"
+#include "util/imgui_manager.h"
 #include <QtCore/QFile>
 #include <QtCore/QTranslator>
 #include <QtGui/QGuiApplication>
@@ -134,6 +134,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
           {QStringLiteral("Français"), QStringLiteral("fr")},
           {QStringLiteral("עברית"), QStringLiteral("he")},
           {QStringLiteral("日本語"), QStringLiteral("ja")},
+          {QStringLiteral("한국어"), QStringLiteral("ko")},
           {QStringLiteral("Italiano"), QStringLiteral("it")},
           {QStringLiteral("Nederlands"), QStringLiteral("nl")},
           {QStringLiteral("Polski"), QStringLiteral("pl")},
