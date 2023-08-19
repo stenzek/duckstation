@@ -149,20 +149,22 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
     name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 
-  BUTTON("Up", "D-Pad Up", DigitalController::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", "D-Pad Right", DigitalController::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", "D-Pad Down", DigitalController::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", "D-Pad Left", DigitalController::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Triangle", "Triangle", DigitalController::Button::Triangle, GenericInputBinding::Triangle),
-  BUTTON("Circle", "Circle", DigitalController::Button::Circle, GenericInputBinding::Circle),
-  BUTTON("Cross", "Cross", DigitalController::Button::Cross, GenericInputBinding::Cross),
-  BUTTON("Square", "Square", DigitalController::Button::Square, GenericInputBinding::Square),
-  BUTTON("Select", "Select", DigitalController::Button::Select, GenericInputBinding::Select),
-  BUTTON("Start", "Start", DigitalController::Button::Start, GenericInputBinding::Start),
-  BUTTON("L1", "L1", DigitalController::Button::L1, GenericInputBinding::L1),
-  BUTTON("R1", "R1", DigitalController::Button::R1, GenericInputBinding::R1),
-  BUTTON("L2", "L2", DigitalController::Button::L2, GenericInputBinding::L2),
-  BUTTON("R2", "R2", DigitalController::Button::R2, GenericInputBinding::R2),
+  // clang-format off
+  BUTTON("Up", TRANSLATE_NOOP("DigitalController", "D-Pad Up"), DigitalController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("DigitalController", "D-Pad Right"), DigitalController::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("DigitalController", "D-Pad Down"), DigitalController::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("DigitalController", "D-Pad Left"), DigitalController::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", TRANSLATE_NOOP("DigitalController", "Triangle"), DigitalController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", TRANSLATE_NOOP("DigitalController", "Circle"), DigitalController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", TRANSLATE_NOOP("DigitalController", "Cross"), DigitalController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", TRANSLATE_NOOP("DigitalController", "Square"), DigitalController::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", TRANSLATE_NOOP("DigitalController", "Select"), DigitalController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("DigitalController", "Start"), DigitalController::Button::Start, GenericInputBinding::Start),
+  BUTTON("L1", TRANSLATE_NOOP("DigitalController", "L1"), DigitalController::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", TRANSLATE_NOOP("DigitalController", "R1"), DigitalController::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", TRANSLATE_NOOP("DigitalController", "L2"), DigitalController::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", TRANSLATE_NOOP("DigitalController", "R2"), DigitalController::Button::R2, GenericInputBinding::R2),
+  // clang-format on
 
 #undef BUTTON
 };

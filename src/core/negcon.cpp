@@ -236,19 +236,21 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
       InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
-  BUTTON("Up", "D-Pad Up", NeGcon::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", "D-Pad Right", NeGcon::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", "D-Pad Down", NeGcon::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", "D-Pad Left", NeGcon::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Start", "Start", NeGcon::Button::Start, GenericInputBinding::Start),
-  BUTTON("A", "A Button", NeGcon::Button::A, GenericInputBinding::Circle),
-  BUTTON("B", "B Button", NeGcon::Button::B, GenericInputBinding::Triangle),
-  AXIS("I", "I Button", NeGcon::HalfAxis::I, GenericInputBinding::R2),
-  AXIS("II", "II Button", NeGcon::HalfAxis::II, GenericInputBinding::L2),
-  AXIS("L", "Left Trigger", NeGcon::HalfAxis::L, GenericInputBinding::L1),
-  BUTTON("R", "Right Trigger", NeGcon::Button::R, GenericInputBinding::R1),
-  AXIS("SteeringLeft", "Steering (Twist) Left", NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", "Steering (Twist) Right", NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  // clang-format off
+  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), NeGcon::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), NeGcon::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), NeGcon::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), NeGcon::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"), NeGcon::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), NeGcon::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), NeGcon::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), NeGcon::HalfAxis::I, GenericInputBinding::R2),
+  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), NeGcon::HalfAxis::II, GenericInputBinding::L2),
+  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), NeGcon::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), NeGcon::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  // clang-format on
 
 #undef AXIS
 #undef BUTTON

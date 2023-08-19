@@ -6,9 +6,9 @@
 #include "common/log.h"
 #include "gpu.h"
 #include "host.h"
-#include "util/host_display.h"
 #include "resources.h"
 #include "system.h"
+#include "util/host_display.h"
 #include "util/state_wrapper.h"
 #include <array>
 Log_SetChannel(GunCon);
@@ -211,10 +211,12 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
     name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 
-  BUTTON("Trigger", "Trigger", GunCon::Button::Trigger, GenericInputBinding::R2),
-  BUTTON("ShootOffscreen", "ShootOffscreen", GunCon::Button::ShootOffscreen, GenericInputBinding::L2),
-  BUTTON("A", "A", GunCon::Button::A, GenericInputBinding::Cross),
-  BUTTON("B", "B", GunCon::Button::B, GenericInputBinding::Circle),
+  // clang-format off
+  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), GunCon::Button::Trigger, GenericInputBinding::R2),
+  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), GunCon::Button::ShootOffscreen, GenericInputBinding::L2),
+  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), GunCon::Button::A, GenericInputBinding::Cross),
+  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), GunCon::Button::B, GenericInputBinding::Circle),
+// clang-format on
 
 #undef BUTTON
 };

@@ -182,8 +182,10 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
     name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
   }
 
-  BUTTON("Left", "Left Button", PlayStationMouse::Button::Left, GenericInputBinding::Cross),
-  BUTTON("Right", "Right Button", PlayStationMouse::Button::Right, GenericInputBinding::Circle),
+  // clang-format off
+  BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), PlayStationMouse::Button::Left, GenericInputBinding::Cross),
+  BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), PlayStationMouse::Button::Right, GenericInputBinding::Circle),
+  // clang-format on
 
 #undef BUTTON
 };
