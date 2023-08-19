@@ -82,10 +82,8 @@ def check_regression_test(baselinedir, testdir, name):
             write("<tr><td><img src=\"{}\" /></td><td><img src=\"{}\" /></td></tr>".format(imguri1, imguri2))
             write("</table>")
             num_diff += 1
-            if (num_diff >= 3):
-                return False
 
-    return True
+    return (num_diff > 0)
 
 
 def check_regression_tests(baselinedir, testdir):

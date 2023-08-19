@@ -5,11 +5,7 @@
     <ProjectGuid>{3029310E-4211-4C87-801A-72E130A648EF}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="regtest_host_display.cpp" />
     <ClCompile Include="regtest_host.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="regtest_host_display.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\common\common.vcxproj">

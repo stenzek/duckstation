@@ -1,6 +1,4 @@
 add_executable(duckstation-regtest
-  regtest_host_display.cpp
-  regtest_host_display.h
   regtest_host.cpp
 )
 

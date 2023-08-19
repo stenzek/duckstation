@@ -2,9 +2,5 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="regtest_host.cpp" />
-    <ClCompile Include="regtest_host_display.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="regtest_host_display.h" />
   </ItemGroup>
 </Project>

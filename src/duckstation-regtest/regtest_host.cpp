@@ -8,21 +8,21 @@
 #include "common/memory_settings_interface.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "core/common_host.h"
+#include "core/game_list.h"
 #include "core/host.h"
-#include "core/host_display.h"
 #include "core/host_settings.h"
 #include "core/system.h"
-#include "frontend-common/common_host.h"
-#include "frontend-common/game_list.h"
-#include "frontend-common/input_manager.h"
-#include "regtest_host_display.h"
 #include "scmversion/scmversion.h"
+#include "util/host_display.h"
+#include "util/imgui_manager.h"
+#include "util/input_manager.h"
 #include <csignal>
 #include <cstdio>
 Log_SetChannel(RegTestHost);
 
 #ifdef WITH_CHEEVOS
-#include "frontend-common/achievements.h"
+#include "core/achievements_private.h"
 #endif
 
 namespace RegTestHost {
@@ -43,7 +43,6 @@ static u32 s_frames_to_run = 60 * 60;
 static u32 s_frame_dump_interval = 0;
 static std::string s_dump_base_directory;
 static std::string s_dump_game_directory;
-static GPURenderer s_renderer_to_use = GPURenderer::Software;
 
 bool RegTestHost::SetFolders()
 {
@@ -289,12 +288,37 @@ void Host::SetFullscreen(bool enabled)
 
 bool Host::AcquireHostDisplay(RenderAPI api)
 {
-  g_host_display = std::make_unique<RegTestHostDisplay>();
+  WindowInfo wi;
+  wi.SetSurfaceless();
+
+  g_host_display = Host::CreateDisplayForAPI(api);
+  if (g_host_display && !g_host_display->CreateDevice(wi, false))
+  {
+    Log_ErrorPrintf("Failed to create host display.");
+    g_host_display.reset();
+    return false;
+  }
+
+  if (!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize() ||
+      !CommonHost::CreateHostDisplayResources())
+  {
+    Log_ErrorPrintf("Failed to setup host display.");
+    ImGuiManager::Shutdown();
+    CommonHost::ReleaseHostDisplayResources();
+    g_host_display.reset();
+    return false;
+  }
+
   return true;
 }
 
 void Host::ReleaseHostDisplay()
 {
+  if (!g_host_display)
+    return;
+
+  CommonHost::ReleaseHostDisplayResources();
+  ImGuiManager::Shutdown();
   g_host_display.reset();
 }
 
@@ -306,6 +330,9 @@ void Host::RenderDisplay(bool skip_present)
     std::string dump_filename(RegTestHost::GetFrameDumpFilename(frame));
     g_host_display->WriteDisplayTextureToFile(std::move(dump_filename));
   }
+
+  g_host_display->Render(true);
+  ImGuiManager::NewFrame();
 }
 
 void Host::InvalidateDisplay()
