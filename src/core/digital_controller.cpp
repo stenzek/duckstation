@@ -169,12 +169,12 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "ForcePopnControllerMode",
-   TRANSLATABLE("DigitalController", "Force Pop'n Controller Mode"),
-   TRANSLATABLE("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}};
+   TRANSLATE_NOOP("DigitalController", "Force Pop'n Controller Mode"),
+   TRANSLATE_NOOP("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}};
 
 const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
                                                             "DigitalController",
-                                                            TRANSLATABLE("ControllerType", "Digital Controller"),
+                                                            TRANSLATE_NOOP("ControllerType", "Digital Controller"),
                                                             s_binding_info,
                                                             countof(s_binding_info),
                                                             s_settings,

@@ -22,9 +22,9 @@
 #include <utility>
 
 static constexpr std::array<const char*, 6> s_size_strings = {
-  {TRANSLATABLE("CheatManagerDialog", "Byte"), TRANSLATABLE("CheatManagerDialog", "Halfword"),
-   TRANSLATABLE("CheatManagerDialog", "Word"), TRANSLATABLE("CheatManagerDialog", "Signed Byte"),
-   TRANSLATABLE("CheatManagerDialog", "Signed Halfword"), TRANSLATABLE("CheatManagerDialog", "Signed Word")}};
+  {TRANSLATE_NOOP("CheatManagerDialog", "Byte"), TRANSLATE_NOOP("CheatManagerDialog", "Halfword"),
+   TRANSLATE_NOOP("CheatManagerDialog", "Word"), TRANSLATE_NOOP("CheatManagerDialog", "Signed Byte"),
+   TRANSLATE_NOOP("CheatManagerDialog", "Signed Halfword"), TRANSLATE_NOOP("CheatManagerDialog", "Signed Word")}};
 
 static QString formatHexValue(u32 value, u8 size)
 {

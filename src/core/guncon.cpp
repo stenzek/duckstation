@@ -220,18 +220,18 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 };
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATABLE("GunCon", "Crosshair Image Path"),
-   TRANSLATABLE("GunCon", "Path to an image to use as a crosshair/cursor.")},
-  {SettingInfo::Type::Float, "CrosshairScale", TRANSLATABLE("GunCon", "Crosshair Image Scale"),
-   TRANSLATABLE("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
+  {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATE_NOOP("GunCon", "Crosshair Image Path"),
+   TRANSLATE_NOOP("GunCon", "Path to an image to use as a crosshair/cursor.")},
+  {SettingInfo::Type::Float, "CrosshairScale", TRANSLATE_NOOP("GunCon", "Crosshair Image Scale"),
+   TRANSLATE_NOOP("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
    100.0f},
-  {SettingInfo::Type::Float, "XScale", TRANSLATABLE("GunCon", "X Scale"),
-   TRANSLATABLE("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
+  {SettingInfo::Type::Float, "XScale", TRANSLATE_NOOP("GunCon", "X Scale"),
+   TRANSLATE_NOOP("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
    "%.0f%%", nullptr, 100.0f}};
 
 const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
                                                  "GunCon",
-                                                 TRANSLATABLE("ControllerType", "GunCon"),
+                                                 TRANSLATE_NOOP("ControllerType", "GunCon"),
                                                  s_binding_info,
                                                  countof(s_binding_info),
                                                  s_settings,

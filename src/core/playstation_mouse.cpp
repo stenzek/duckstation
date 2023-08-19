@@ -189,13 +189,13 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 };
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATABLE("PlayStationMouse", "Relative Mouse Mode"),
-   TRANSLATABLE("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false"},
+  {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATE_NOOP("PlayStationMouse", "Relative Mouse Mode"),
+   TRANSLATE_NOOP("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false"},
 };
 
 const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,
                                                            "PlayStationMouse",
-                                                           TRANSLATABLE("ControllerType", "PlayStation Mouse"),
+                                                           TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
                                                            s_binding_info,
                                                            countof(s_binding_info),
                                                            s_settings,

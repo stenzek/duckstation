@@ -187,12 +187,12 @@ const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
 const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating rating)
 {
   static constexpr std::array<const char*, static_cast<size_t>(CompatibilityRating::Count)> names = {
-    {TRANSLATABLE("GameListCompatibilityRating", "Unknown"),
-     TRANSLATABLE("GameListCompatibilityRating", "Doesn't Boot"),
-     TRANSLATABLE("GameListCompatibilityRating", "Crashes In Intro"),
-     TRANSLATABLE("GameListCompatibilityRating", "Crashes In-Game"),
-     TRANSLATABLE("GameListCompatibilityRating", "Graphical/Audio Issues"),
-     TRANSLATABLE("GameListCompatibilityRating", "No Issues")}};
+    {TRANSLATE_NOOP("GameListCompatibilityRating", "Unknown"),
+     TRANSLATE_NOOP("GameListCompatibilityRating", "Doesn't Boot"),
+     TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In Intro"),
+     TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In-Game"),
+     TRANSLATE_NOOP("GameListCompatibilityRating", "Graphical/Audio Issues"),
+     TRANSLATE_NOOP("GameListCompatibilityRating", "No Issues")}};
   return (rating >= CompatibilityRating::Unknown && rating < CompatibilityRating::Count) ?
            names[static_cast<int>(rating)] :
            "";

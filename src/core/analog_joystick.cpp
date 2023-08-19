@@ -374,33 +374,33 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const char* s_invert_settings[] = {TRANSLATABLE("AnalogJoystick", "Not Inverted"),
-                                          TRANSLATABLE("AnalogJoystick", "Invert Left/Right"),
-                                          TRANSLATABLE("AnalogJoystick", "Invert Up/Down"),
-                                          TRANSLATABLE("AnalogJoystick", "Invert Left/Right + Up/Down"), nullptr};
+static const char* s_invert_settings[] = {TRANSLATE_NOOP("AnalogJoystick", "Not Inverted"),
+                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right"),
+                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Up/Down"),
+                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right + Up/Down"), nullptr};
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogJoystick", "Analog Deadzone"),
-   TRANSLATABLE("AnalogJoystick",
+  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogJoystick", "Analog Deadzone"),
+   TRANSLATE_NOOP("AnalogJoystick",
                 "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "1.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogJoystick", "Analog Sensitivity"),
-   TRANSLATABLE(
+  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("AnalogJoystick", "Analog Sensitivity"),
+   TRANSLATE_NOOP(
      "AnalogJoystick",
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("AnalogJoystick", "Invert Left Stick"),
-   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
+  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("AnalogJoystick", "Invert Left Stick"),
+   TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
    s_invert_settings, 0.0f},
-  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("AnalogJoystick", "Invert Right Stick"),
-   TRANSLATABLE("AnalogJoystick", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr, nullptr,
+  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATE_NOOP("AnalogJoystick", "Invert Right Stick"),
+   TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr, nullptr,
    s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJoystick,
                                                          "AnalogJoystick",
-                                                         TRANSLATABLE("ControllerType", "Analog Joystick"),
+                                                         TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
                                                          s_binding_info,
                                                          countof(s_binding_info),
                                                          s_settings,

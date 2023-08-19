@@ -20,10 +20,14 @@ enum class AudioStretchMode : u8;
 class AudioStream;
 class CDImage;
 
-/// Marks a core string as being translatable.
-#define TRANSLATABLE(context, str) str
+namespace Host {  
+/// Typical durations for OSD messages.
+static constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
+static constexpr float OSD_ERROR_DURATION = 15.0f;
+static constexpr float OSD_WARNING_DURATION = 10.0f;
+static constexpr float OSD_INFO_DURATION = 5.0f;
+static constexpr float OSD_QUICK_DURATION = 2.5f;
 
-namespace Host {
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.
 std::optional<std::vector<u8>> ReadResourceFile(const char* filename);
@@ -37,6 +41,22 @@ std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
 /// Translates a string to the current language.
 TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
 std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
+
+/// Returns a localized version of the specified string within the specified context.
+/// The pointer is guaranteed to be valid until the next language change.
+const char* TranslateToCString(const std::string_view& context, const std::string_view& msg);
+
+/// Returns a localized version of the specified string within the specified context.
+/// The view is guaranteed to be valid until the next language change.
+/// NOTE: When passing this to fmt, positional arguments should be used in the base string, as
+/// not all locales follow the same word ordering.
+std::string_view TranslateToStringView(const std::string_view& context, const std::string_view& msg);
+
+/// Returns a localized version of the specified string within the specified context.
+std::string TranslateToString(const std::string_view& context, const std::string_view& msg);
+
+/// Clears the translation cache. All previously used strings should be considered invalid.
+void ClearTranslationCache();
 
 std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
                                                u32 latency_ms, AudioStretchMode stretch);
@@ -85,3 +105,12 @@ void OpenURL(const std::string_view& url);
 /// Copies the provided text to the host's clipboard, if present.
 bool CopyTextToClipboard(const std::string_view& text);
 } // namespace Host
+
+// Helper macros for retrieving translated strings.
+#define TRANSLATE(context, msg) Host::TranslateToCString(context, msg)
+#define TRANSLATE_SV(context, msg) Host::TranslateToStringView(context, msg)
+#define TRANSLATE_STR(context, msg) Host::TranslateToString(context, msg)
+#define TRANSLATE_FS(context, msg) fmt::runtime(Host::TranslateToStringView(context, msg))
+
+// Does not translate the string at runtime, but allows the UI to in its own way.
+#define TRANSLATE_NOOP(context, msg) msg

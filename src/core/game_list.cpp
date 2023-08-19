@@ -105,8 +105,8 @@ const char* GameList::GetEntryTypeName(EntryType type)
 const char* GameList::GetEntryTypeDisplayName(EntryType type)
 {
   static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
-    {TRANSLATABLE("GameList", "Disc"), TRANSLATABLE("GameList", "PS-EXE"), TRANSLATABLE("GameList", "Playlist"),
-     TRANSLATABLE("GameList", "PSF")}};
+    {TRANSLATE_NOOP("GameList", "Disc"), TRANSLATE_NOOP("GameList", "PS-EXE"), TRANSLATE_NOOP("GameList", "Playlist"),
+     TRANSLATE_NOOP("GameList", "PSF")}};
   return names[static_cast<int>(type)];
 }
 

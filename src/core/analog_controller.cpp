@@ -828,49 +828,49 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const char* s_invert_settings[] = {TRANSLATABLE("AnalogController", "Not Inverted"),
-                                          TRANSLATABLE("AnalogController", "Invert Left/Right"),
-                                          TRANSLATABLE("AnalogController", "Invert Up/Down"),
-                                          TRANSLATABLE("AnalogController", "Invert Left/Right + Up/Down"), nullptr};
+static const char* s_invert_settings[] = {TRANSLATE_NOOP("AnalogController", "Not Inverted"),
+                                          TRANSLATE_NOOP("AnalogController", "Invert Left/Right"),
+                                          TRANSLATE_NOOP("AnalogController", "Invert Up/Down"),
+                                          TRANSLATE_NOOP("AnalogController", "Invert Left/Right + Up/Down"), nullptr};
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("AnalogController", "Force Analog Mode on Reset"),
-   TRANSLATABLE("AnalogController", "Forces the controller to analog mode when the console is reset/powered on."),
+  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("AnalogController", "Force Analog Mode on Reset"),
+   TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the console is reset/powered on."),
    "true"},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
-   TRANSLATABLE("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
-   TRANSLATABLE("AnalogController",
+   TRANSLATE_NOOP("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
+   TRANSLATE_NOOP("AnalogController",
                 "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
    "true"},
-  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("AnalogController", "Analog Deadzone"),
-   TRANSLATABLE("AnalogController",
+  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogController", "Analog Deadzone"),
+   TRANSLATE_NOOP("AnalogController",
                 "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "0.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("AnalogController", "Analog Sensitivity"),
-   TRANSLATABLE(
+  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("AnalogController", "Analog Sensitivity"),
+   TRANSLATE_NOOP(
      "AnalogController",
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATABLE("AnalogController", "Button/Trigger Deadzone"),
-   TRANSLATABLE("AnalogController", "Sets the deadzone for activating buttons/triggers, "
+  {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("AnalogController", "Button/Trigger Deadzone"),
+   TRANSLATE_NOOP("AnalogController", "Sets the deadzone for activating buttons/triggers, "
                                     "i.e. the fraction of the trigger which will be ignored."),
    "0.25", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("AnalogController", "Vibration Bias"),
-   TRANSLATABLE("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
+  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATE_NOOP("AnalogController", "Vibration Bias"),
+   TRANSLATE_NOOP("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
                                     "functioning, try increasing this value."),
    "8", "0", "255", "1", "%d", nullptr, 1.0f},
-  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("AnalogController", "Invert Left Stick"),
-   TRANSLATABLE("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
+  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("AnalogController", "Invert Left Stick"),
+   TRANSLATE_NOOP("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
    s_invert_settings, 0.0f},
-  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("AnalogController", "Invert Right Stick"),
-   TRANSLATABLE("AnalogController", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
+  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATE_NOOP("AnalogController", "Invert Right Stick"),
+   TRANSLATE_NOOP("AnalogController", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
    nullptr, s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
                                                            "AnalogController",
-                                                           TRANSLATABLE("ControllerType", "Analog Controller"),
+                                                           TRANSLATE_NOOP("ControllerType", "Analog Controller"),
                                                            s_binding_info,
                                                            countof(s_binding_info),
                                                            s_settings,

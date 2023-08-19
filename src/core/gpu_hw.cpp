@@ -77,7 +77,7 @@ bool GPU_HW::Initialize()
   if (m_multisamples != g_settings.gpu_multisamples)
   {
     Host::AddFormattedOSDMessage(20.0f,
-                                 Host::TranslateString("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
+                                 TRANSLATE("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
                                  g_settings.gpu_multisamples, m_multisamples);
   }
   if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
@@ -87,7 +87,7 @@ bool GPU_HW::Initialize()
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
   {
     Host::AddFormattedOSDMessage(
-      20.0f, Host::TranslateString("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
+      20.0f, TRANSLATE("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
       Settings::GetTextureFilterDisplayName(m_texture_filtering));
     m_texture_filtering = GPUTextureFilter::Nearest;
   }

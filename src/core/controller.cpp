@@ -14,7 +14,7 @@
 
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
-                                                       TRANSLATABLE("ControllerType", "Not Connected"),
+                                                       TRANSLATE_NOOP("ControllerType", "Not Connected"),
                                                        nullptr,
                                                        0,
                                                        nullptr,

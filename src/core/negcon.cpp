@@ -255,17 +255,17 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 };
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGcon", "Steering Axis Deadzone"),
-   TRANSLATABLE("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%",
+  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGcon", "Steering Axis Deadzone"),
+   TRANSLATE_NOOP("NeGcon", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%",
    nullptr, 100.0f},
-  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATABLE("NeGcon", "Steering Axis Sensitivity"),
-   TRANSLATABLE("NeGcon", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
+  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATE_NOOP("NeGcon", "Steering Axis Sensitivity"),
+   TRANSLATE_NOOP("NeGcon", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
    nullptr, 100.0f},
 };
 
 const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
                                                  "NeGcon",
-                                                 TRANSLATABLE("ControllerType", "NeGcon"),
+                                                 TRANSLATE_NOOP("ControllerType", "NeGcon"),
                                                  s_binding_info,
                                                  countof(s_binding_info),
                                                  s_settings,

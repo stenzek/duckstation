@@ -17,7 +17,7 @@ static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
 static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorDialog", "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)");
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
-  TRANSLATABLE("MemoryCardEditorDialog", "Single Save Files (*.mcs);;All Files (*.*)");
+  TRANSLATE_NOOP("MemoryCardEditorDialog", "Single Save Files (*.mcs);;All Files (*.*)");
 
 MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent)
 {
