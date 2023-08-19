@@ -921,9 +921,6 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
     }
   }
 
-  if (entry->serial == "SCES-02105")
-    __debugbreak();
-
   const auto traits = value.FindMember("traits");
   if (traits != value.MemberEnd())
   {
