@@ -60,26 +60,26 @@ public:
 
   const Track* GetTrack(u32 n) const;
 
-  bool Parse(std::FILE* fp, Common::Error* error);
+  bool Parse(std::FILE* fp, Error* error);
 
 private:
   Track* GetMutableTrack(u32 n);
 
-  void SetError(u32 line_number, Common::Error* error, const char* format, ...);
+  void SetError(u32 line_number, Error* error, const char* format, ...);
 
   static std::string_view GetToken(const char*& line);
   static std::optional<MSF> GetMSF(const std::string_view& token);
 
-  bool ParseLine(const char* line, u32 line_number, Common::Error* error);
+  bool ParseLine(const char* line, u32 line_number, Error* error);
 
-  bool HandleFileCommand(const char* line, u32 line_number, Common::Error* error);
-  bool HandleTrackCommand(const char* line, u32 line_number, Common::Error* error);
-  bool HandleIndexCommand(const char* line, u32 line_number, Common::Error* error);
-  bool HandlePregapCommand(const char* line, u32 line_number, Common::Error* error);
-  bool HandleFlagCommand(const char* line, u32 line_number, Common::Error* error);
+  bool HandleFileCommand(const char* line, u32 line_number, Error* error);
+  bool HandleTrackCommand(const char* line, u32 line_number, Error* error);
+  bool HandleIndexCommand(const char* line, u32 line_number, Error* error);
+  bool HandlePregapCommand(const char* line, u32 line_number, Error* error);
+  bool HandleFlagCommand(const char* line, u32 line_number, Error* error);
 
-  bool CompleteLastTrack(u32 line_number, Common::Error* error);
-  bool SetTrackLengths(u32 line_number, Common::Error* error);
+  bool CompleteLastTrack(u32 line_number, Error* error);
+  bool SetTrackLengths(u32 line_number, Error* error);
 
   std::vector<Track> m_tracks;
   std::optional<std::string> m_current_file;

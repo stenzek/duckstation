@@ -38,7 +38,7 @@ static s32 GetFreeFileHandle()
   }
 
   const s32 index = static_cast<s32>(s_files.size());
-  s_files.emplace_back(nullptr, [](std::FILE*) {});
+  s_files.emplace_back(nullptr, FileSystem::FileDeleter());
   return index;
 }
 

@@ -45,7 +45,7 @@ Track* File::GetMutableTrack(u32 n)
   return nullptr;
 }
 
-bool File::Parse(std::FILE* fp, Common::Error* error)
+bool File::Parse(std::FILE* fp, Error* error)
 {
   char line[1024];
   u32 line_number = 1;
@@ -66,7 +66,7 @@ bool File::Parse(std::FILE* fp, Common::Error* error)
   return true;
 }
 
-void File::SetError(u32 line_number, Common::Error* error, const char* format, ...)
+void File::SetError(u32 line_number, Error* error, const char* format, ...)
 {
   std::va_list ap;
   SmallString str;
@@ -75,9 +75,7 @@ void File::SetError(u32 line_number, Common::Error* error, const char* format, .
   va_end(ap);
 
   Log_ErrorPrintf("Cue parse error at line %u: %s", line_number, str.GetCharArray());
-
-  if (error)
-    error->SetFormattedMessage("Cue parse error at line %u: %s", line_number, str.GetCharArray());
+  Error::SetString(error, fmt::format("Cue parse error at line {}: {}", line_number, str));
 }
 
 std::string_view File::GetToken(const char*& line)
@@ -166,7 +164,7 @@ std::optional<MSF> File::GetMSF(const std::string_view& token)
   return ret;
 }
 
-bool File::ParseLine(const char* line, u32 line_number, Common::Error* error)
+bool File::ParseLine(const char* line, u32 line_number, Error* error)
 {
   const std::string_view command(GetToken(line));
   if (command.empty())
@@ -210,7 +208,7 @@ bool File::ParseLine(const char* line, u32 line_number, Common::Error* error)
   return false;
 }
 
-bool File::HandleFileCommand(const char* line, u32 line_number, Common::Error* error)
+bool File::HandleFileCommand(const char* line, u32 line_number, Error* error)
 {
   const std::string_view filename(GetToken(line));
   const std::string_view mode(GetToken(line));
@@ -232,7 +230,7 @@ bool File::HandleFileCommand(const char* line, u32 line_number, Common::Error* e
   return true;
 }
 
-bool File::HandleTrackCommand(const char* line, u32 line_number, Common::Error* error)
+bool File::HandleTrackCommand(const char* line, u32 line_number, Error* error)
 {
   if (!CompleteLastTrack(line_number, error))
     return false;
@@ -288,7 +286,7 @@ bool File::HandleTrackCommand(const char* line, u32 line_number, Common::Error* 
   return true;
 }
 
-bool File::HandleIndexCommand(const char* line, u32 line_number, Common::Error* error)
+bool File::HandleIndexCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -334,7 +332,7 @@ bool File::HandleIndexCommand(const char* line, u32 line_number, Common::Error* 
   return true;
 }
 
-bool File::HandlePregapCommand(const char* line, u32 line_number, Common::Error* error)
+bool File::HandlePregapCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -366,7 +364,7 @@ bool File::HandlePregapCommand(const char* line, u32 line_number, Common::Error*
   return true;
 }
 
-bool File::HandleFlagCommand(const char* line, u32 line_number, Common::Error* error)
+bool File::HandleFlagCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -395,7 +393,7 @@ bool File::HandleFlagCommand(const char* line, u32 line_number, Common::Error* e
   return true;
 }
 
-bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
+bool File::CompleteLastTrack(u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
     return true;
@@ -436,7 +434,7 @@ bool File::CompleteLastTrack(u32 line_number, Common::Error* error)
   return true;
 }
 
-bool File::SetTrackLengths(u32 line_number, Common::Error* error)
+bool File::SetTrackLengths(u32 line_number, Error* error)
 {
   for (const Track& track : m_tracks)
   {

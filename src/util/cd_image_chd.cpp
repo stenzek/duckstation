@@ -59,7 +59,7 @@ public:
   CDImageCHD();
   ~CDImageCHD() override;
 
-  bool Open(const char* filename, Common::Error* error);
+  bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
@@ -77,7 +77,7 @@ private:
     MAX_PARENTS = 32 // Surely someone wouldn't be insane enough to go beyond this...
   };
 
-  chd_file* OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Common::Error* error, u32 recursion_level);
+  chd_file* OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
   bool ReadHunk(u32 hunk_index);
 
   chd_file* m_chd = nullptr;
@@ -100,8 +100,7 @@ CDImageCHD::~CDImageCHD()
     chd_close(m_chd);
 }
 
-chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Common::Error* error,
-                              u32 recursion_level)
+chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
   chd_file* chd;
   chd_error err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, nullptr, &chd);
@@ -114,16 +113,14 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
   else if (err != CHDERR_REQUIRES_PARENT)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
-    if (error)
-      error->SetMessage(chd_error_string(err));
+    Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
 
   if (recursion_level >= MAX_PARENTS)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': Too many parent files", filename);
-    if (error)
-      error->SetMessage("Too many parent files");
+    Error::SetString(error, "Too many parent files");
     return nullptr;
   }
 
@@ -133,8 +130,7 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
   if (err != CHDERR_NONE)
   {
     Log_ErrorPrintf("Failed to read CHD header '%s': %s", filename, chd_error_string(err));
-    if (error)
-      error->SetMessage(chd_error_string(err));
+    Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
 
@@ -163,15 +159,16 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
     // Match! Open this one.
     if ((parent_chd = OpenCHD(fd.FileName.c_str(), std::move(parent_fp), error, recursion_level + 1)) != nullptr)
     {
-      Log_DevPrintf(fmt::format("Found parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename)).c_str());
+      Log_DevPrintf(
+        fmt::format("Found parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename))
+          .c_str());
       break;
     }
   }
   if (!parent_chd)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': Failed to find parent CHD, it must be in the same directory.", filename);
-    if (error)
-      error->SetMessage("Failed to find parent CHD, it must be in the same directory.");
+    Error::SetString(error, "Failed to find parent CHD, it must be in the same directory.");
     return nullptr;
   }
 
@@ -180,8 +177,7 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
   if (err != CHDERR_NONE)
   {
     Log_ErrorPrintf("Failed to open CHD '%s': %s", filename, chd_error_string(err));
-    if (error)
-      error->SetMessage(chd_error_string(err));
+    Error::SetString(error, chd_error_string(err));
     return nullptr;
   }
 
@@ -190,7 +186,7 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
   return chd;
 }
 
-bool CDImageCHD::Open(const char* filename, Common::Error* error)
+bool CDImageCHD::Open(const char* filename, Error* error)
 {
   auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite);
   if (!fp)
@@ -211,9 +207,8 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
   if ((m_hunk_size % CHD_CD_SECTOR_DATA_SIZE) != 0)
   {
     Log_ErrorPrintf("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_CD_SECTOR_DATA_SIZE);
-    if (error)
-      error->SetFormattedMessage("Hunk size (%u) is not a multiple of %u", m_hunk_size, CHD_CD_SECTOR_DATA_SIZE);
-
+    Error::SetString(error, fmt::format("Hunk size ({}) is not a multiple of {}", m_hunk_size,
+                                        static_cast<u32>(CHD_CD_SECTOR_DATA_SIZE)));
     return false;
   }
 
@@ -244,9 +239,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
                       &pregap_frames, pgtype_str, pgsub_str, &postgap_frames) != 8)
       {
         Log_ErrorPrintf("Invalid track v2 metadata: '%s'", metadata_str);
-        if (error)
-          error->SetFormattedMessage("Invalid track v2 metadata: '%s'", metadata_str);
-
+        Error::SetString(error, fmt::format("Invalid track v2 metadata: '{}'", metadata_str));
         return false;
       }
     }
@@ -264,9 +257,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
       if (std::sscanf(metadata_str, CDROM_TRACK_METADATA_FORMAT, &track_num, type_str, subtype_str, &frames) != 4)
       {
         Log_ErrorPrintf("Invalid track metadata: '%s'", metadata_str);
-        if (error)
-          error->SetFormattedMessage("Invalid track v2 metadata: '%s'", metadata_str);
-
+        Error::SetString(error, fmt::format("Invalid track v2 metadata: '{}'", metadata_str));
         return false;
       }
     }
@@ -275,12 +266,8 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
     {
       Log_ErrorPrintf("Incorrect track number at index %d, expected %d got %d", num_tracks, (num_tracks + 1),
                       track_num);
-      if (error)
-      {
-        error->SetFormattedMessage("Incorrect track number at index %d, expected %d got %d", num_tracks,
-                                   (num_tracks + 1), track_num);
-      }
-
+      Error::SetString(error, fmt::format("Incorrect track number at index {}, expected {} got {}", num_tracks,
+                                          (num_tracks + 1), track_num));
       return false;
     }
 
@@ -288,9 +275,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
     if (!mode.has_value())
     {
       Log_ErrorPrintf("Invalid track mode: '%s'", type_str);
-      if (error)
-        error->SetFormattedMessage("Invalid track mode: '%s'", type_str);
-
+      Error::SetString(error, fmt::format("Invalid track mode: '{}'", type_str));
       return false;
     }
 
@@ -321,9 +306,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
         if (pregap_frames > frames)
         {
           Log_ErrorPrintf("Pregap length %u exceeds track length %u", pregap_frames, frames);
-          if (error)
-            error->SetFormattedMessage("Pregap length %u exceeds track length %u", pregap_frames, frames);
-
+          Error::SetString(error, fmt::format("Pregap length {} exceeds track length {}", pregap_frames, frames));
           return false;
         }
 
@@ -368,9 +351,7 @@ bool CDImageCHD::Open(const char* filename, Common::Error* error)
   if (m_tracks.empty())
   {
     Log_ErrorPrintf("File '%s' contains no tracks", filename);
-    if (error)
-      error->SetFormattedMessage("File '%s' contains no tracks", filename);
-
+    Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
     return false;
   }
 
@@ -497,7 +478,7 @@ bool CDImageCHD::ReadHunk(u32 hunk_index)
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Error* error)
 {
   std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>();
   if (!image->Open(filename, error))

@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "types.h"
+
 #include <cstdio>
 #include <ctime>
 #include <memory>
@@ -10,6 +12,8 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
+
+class Error;
 
 #ifdef _WIN32
 #define FS_OSPATH_SEPARATOR_CHARACTER '\\'
@@ -87,15 +91,25 @@ bool DeleteFile(const char* path);
 /// Rename file
 bool RenamePath(const char* OldPath, const char* NewPath);
 
+/// Deleter functor for managed file pointers
+struct FileDeleter
+{
+  ALWAYS_INLINE void operator()(std::FILE* fp)
+  {
+    if (fp)
+      std::fclose(fp);
+  }
+};
+
 /// open files
-using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
-ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode);
-std::FILE* OpenCFile(const char* filename, const char* mode);
+using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
+ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
+std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 s64 FTell64(std::FILE* fp);
 s64 FSize64(std::FILE* fp);
 
-int OpenFDFile(const char* filename, int flags, int mode);
+int OpenFDFile(const char* filename, int flags, int mode, Error* error = nullptr);
 
 /// Sharing modes for OpenSharedCFile().
 enum class FileShareMode
@@ -108,8 +122,9 @@ enum class FileShareMode
 
 /// Opens a file in shareable mode (where other processes can access it concurrently).
 /// Only has an effect on Windows systems.
-ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
-std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode);
+ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode,
+                                       Error* error = nullptr);
+std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error = nullptr);
 
 /// Abstracts a POSIX file lock.
 #ifndef _WIN32

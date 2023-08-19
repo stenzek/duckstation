@@ -3,9 +3,11 @@
 
 #include "file_system.h"
 #include "assert.h"
+#include "error.h"
 #include "log.h"
 #include "path.h"
 #include "string_util.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -587,7 +589,7 @@ std::string Path::Combine(const std::string_view& base, const std::string_view& 
   return ret;
 }
 
-std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
+std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
 {
 #ifdef _WIN32
   const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -595,23 +597,34 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
   if (!wfilename.empty() && !wmode.empty())
   {
     std::FILE* fp;
-    if (_wfopen_s(&fp, wfilename.c_str(), wmode.c_str()) != 0)
+    const errno_t err = _wfopen_s(&fp, wfilename.c_str(), wmode.c_str());
+    if (err != 0)
+    {
+      Error::SetErrno(error, err);
       return nullptr;
+    }
 
     return fp;
   }
 
   std::FILE* fp;
-  if (fopen_s(&fp, filename, mode) != 0)
+  const errno_t err = fopen_s(&fp, filename, mode);
+  if (err != 0)
+  {
+    Error::SetErrno(error, err);
     return nullptr;
+  }
 
   return fp;
 #else
-  return std::fopen(filename, mode);
+  std::FILE* fp = std::fopen(filename, mode);
+  if (!fp)
+    Error::SetErrno(error, errno);
+  return fp;
 #endif
 }
 
-int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
+int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
   const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -620,18 +633,21 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
 
   return -1;
 #else
-  return open(filename, flags, mode);
+  const int fd = open(filename, flags, mode);
+  if (fd < 0)
+    Error::SetErrno(error, errno);
+  return fd;
 #endif
 }
 
 #endif
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
-  return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
+  return ManagedCFilePtr(OpenCFile(filename, mode, error));
 }
 
-std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
   const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -661,16 +677,20 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
   if (fp)
     return fp;
 
+  Error::SetErrno(error, errno);
   return nullptr;
 #else
-  return std::fopen(filename, mode);
+  std::FILE* fp = std::fopen(filename, mode);
+  if (!fp)
+    Error::SetErrno(error, errno);
+  return fp;
 #endif
 }
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode,
-                                                               FileShareMode share_mode)
+                                                               FileShareMode share_mode, Error* error)
 {
-  return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode), [](std::FILE* fp) { std::fclose(fp); });
+  return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error));
 }
 
 int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)

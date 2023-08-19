@@ -21,7 +21,7 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
   return sizes[static_cast<u32>(mode)];
 }
 
-std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches, Error* error)
 {
   const char* extension;
 
@@ -94,10 +94,7 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
     {
       image = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(image));
       if (!image)
-      {
-        if (error)
-          error->SetFormattedMessage("Failed to apply ppf patch from '%s'.", ppf_filename.c_str());
-      }
+        Error::SetString(error, fmt::format("Failed to apply ppf patch from '{}'.", ppf_filename));
     }
   }
 
@@ -343,7 +340,7 @@ u32 CDImage::GetCurrentSubImage() const
   return 0;
 }
 
-bool CDImage::SwitchSubImage(u32 index, Common::Error* error)
+bool CDImage::SwitchSubImage(u32 index, Error* error)
 {
   return false;
 }

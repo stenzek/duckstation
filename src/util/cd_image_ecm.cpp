@@ -164,7 +164,7 @@ public:
   CDImageEcm();
   ~CDImageEcm() override;
 
-  bool Open(const char* filename, Common::Error* error);
+  bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
@@ -224,7 +224,7 @@ CDImageEcm::~CDImageEcm()
     std::fclose(m_fp);
 }
 
-bool CDImageEcm::Open(const char* filename, Common::Error* error)
+bool CDImageEcm::Open(const char* filename, Error* error)
 {
   m_filename = filename;
   m_fp = FileSystem::OpenCFile(filename, "rb");
@@ -253,9 +253,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
       header[3] != 0)
   {
     Log_ErrorPrintf("Failed to read/invalid header");
-    if (error)
-      error->SetMessage("Failed to read/invalid header");
-
+    Error::SetString(error, "Failed to read/invalid header");
     return false;
   }
 
@@ -269,9 +267,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
     if (bits == EOF)
     {
       Log_ErrorPrintf("Unexpected EOF after %zu chunks", m_data_map.size());
-      if (error)
-        error->SetFormattedMessage("Unexpected EOF after %zu chunks", m_data_map.size());
-
+      Error::SetString(error, fmt::format("Unexpected EOF after {} chunks", m_data_map.size()));
       return false;
     }
 
@@ -285,9 +281,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
       if (bits == EOF)
       {
         Log_ErrorPrintf("Unexpected EOF after %zu chunks", m_data_map.size());
-        if (error)
-          error->SetFormattedMessage("Unexpected EOF after %zu chunks", m_data_map.size());
-
+        Error::SetString(error, fmt::format("Unexpected EOF after {} chunks", m_data_map.size()));
         return false;
       }
 
@@ -305,9 +299,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
     if (count >= 0x80000000u)
     {
       Log_ErrorPrintf("Corrupted header after %zu chunks", m_data_map.size());
-      if (error)
-        error->SetFormattedMessage("Corrupted header after %zu chunks", m_data_map.size());
-
+      Error::SetString(error, fmt::format("Corrupted header after {} chunks", m_data_map.size()));
       return false;
     }
 
@@ -324,8 +316,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
         if (static_cast<s64>(file_offset) > file_size)
         {
           Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
-          if (error)
-            error->SetFormattedMessage("Out of file bounds after %zu chunks", m_data_map.size());
+          Error::SetString(error, fmt::format("Out of file bounds after {} chunks", m_data_map.size()));
         }
       }
     }
@@ -342,8 +333,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
         if (static_cast<s64>(file_offset) > file_size)
         {
           Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
-          if (error)
-            error->SetFormattedMessage("Out of file bounds after %zu chunks", m_data_map.size());
+          Error::SetString(error, fmt::format("Out of file bounds after {} chunks", m_data_map.size()));
         }
       }
     }
@@ -351,9 +341,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
     if (std::fseek(m_fp, file_offset, SEEK_SET) != 0)
     {
       Log_ErrorPrintf("Failed to seek to offset %u after %zu chunks", file_offset, m_data_map.size());
-      if (error)
-        error->SetFormattedMessage("Failed to seek to offset %u after %zu chunks", file_offset, m_data_map.size());
-
+      Error::SetString(error, fmt::format("Failed to seek to offset {} after {} chunks", file_offset, m_data_map.size()));
       return false;
     }
   }
@@ -361,9 +349,7 @@ bool CDImageEcm::Open(const char* filename, Common::Error* error)
   if (m_data_map.empty())
   {
     Log_ErrorPrintf("No data in image '%s'", filename);
-    if (error)
-      error->SetFormattedMessage("No data in image '%s'", filename);
-
+    Error::SetString(error, fmt::format("No data in image '{}'", filename));
     return false;
   }
 
@@ -549,7 +535,7 @@ bool CDImageEcm::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenEcmImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenEcmImage(const char* filename, Error* error)
 {
   std::unique_ptr<CDImageEcm> image = std::make_unique<CDImageEcm>();
   if (!image->Open(filename, error))

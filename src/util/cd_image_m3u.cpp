@@ -20,7 +20,7 @@ public:
   CDImageM3u();
   ~CDImageM3u() override;
 
-  bool Open(const char* path, bool apply_patches, Common::Error* Error);
+  bool Open(const char* path, bool apply_patches, Error* Error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
@@ -29,7 +29,7 @@ public:
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
   std::string GetSubImageMetadata(u32 index, const std::string_view& type) const override;
-  bool SwitchSubImage(u32 index, Common::Error* error) override;
+  bool SwitchSubImage(u32 index, Error* error) override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -52,7 +52,7 @@ CDImageM3u::CDImageM3u() = default;
 
 CDImageM3u::~CDImageM3u() = default;
 
-bool CDImageM3u::Open(const char* path, bool apply_patches, Common::Error* error)
+bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
 {
   std::FILE* fp = FileSystem::OpenCFile(path, "rb");
   if (!fp)
@@ -62,8 +62,7 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Common::Error* error
   std::fclose(fp);
   if (!m3u_file.has_value() || m3u_file->empty())
   {
-    if (error)
-      error->SetMessage("Failed to read M3u file");
+    Error::SetString(error, "Failed to read M3u file");
     return false;
   }
 
@@ -128,7 +127,7 @@ u32 CDImageM3u::GetCurrentSubImage() const
   return m_current_image_index;
 }
 
-bool CDImageM3u::SwitchSubImage(u32 index, Common::Error* error)
+bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
 {
   if (index >= m_entries.size())
     return false;
@@ -175,7 +174,7 @@ bool CDImageM3u::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return m_current_image->ReadSubChannelQ(subq, index, lba_in_index);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, bool apply_patches, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, bool apply_patches, Error* error)
 {
   std::unique_ptr<CDImageM3u> image = std::make_unique<CDImageM3u>();
   if (!image->Open(filename, apply_patches, error))

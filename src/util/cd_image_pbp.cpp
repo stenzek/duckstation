@@ -27,7 +27,7 @@ public:
   CDImagePBP() = default;
   ~CDImagePBP() override;
 
-  bool Open(const char* filename, Common::Error* error);
+  bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
@@ -35,7 +35,7 @@ public:
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
-  bool SwitchSubImage(u32 index, Common::Error* error) override;
+  bool SwitchSubImage(u32 index, Error* error) override;
   std::string GetMetadata(const std::string_view& type) const override;
   std::string GetSubImageMetadata(u32 index, const std::string_view& type) const override;
 
@@ -61,12 +61,12 @@ private:
   bool LoadSFOIndexTable();
   bool LoadSFOTable();
 
-  bool IsValidEboot(Common::Error* error);
+  bool IsValidEboot(Error* error);
 
   bool InitDecompressionStream();
   bool DecompressBlock(const BlockInfo& block_info);
 
-  bool OpenDisc(u32 index, Common::Error* error);
+  bool OpenDisc(u32 index, Error* error);
 
   static const std::string* LookupStringSFOTableEntry(const char* key, const SFOTable& table);
 
@@ -277,7 +277,7 @@ bool CDImagePBP::LoadSFOTable()
   return true;
 }
 
-bool CDImagePBP::IsValidEboot(Common::Error* error)
+bool CDImagePBP::IsValidEboot(Error* error)
 {
   // Check some fields to make sure this is a valid PS1 EBOOT.PBP
 
@@ -288,16 +288,14 @@ bool CDImagePBP::IsValidEboot(Common::Error* error)
     if (!std::holds_alternative<u32>(data_value) || std::get<u32>(data_value) != 1)
     {
       Log_ErrorPrint("Invalid BOOTABLE value");
-      if (error)
-        error->SetMessage("Invalid BOOTABLE value");
+      Error::SetString(error, "Invalid BOOTABLE value");
       return false;
     }
   }
   else
   {
     Log_ErrorPrint("No BOOTABLE value found");
-    if (error)
-      error->SetMessage("No BOOTABLE value found");
+    Error::SetString(error, "No BOOTABLE value found");
     return false;
   }
 
@@ -308,23 +306,21 @@ bool CDImagePBP::IsValidEboot(Common::Error* error)
     if (!std::holds_alternative<std::string>(data_value) || std::get<std::string>(data_value) != "ME")
     {
       Log_ErrorPrint("Invalid CATEGORY value");
-      if (error)
-        error->SetMessage("Invalid CATEGORY value");
+      Error::SetString(error, "Invalid CATEGORY value");
       return false;
     }
   }
   else
   {
     Log_ErrorPrint("No CATEGORY value found");
-    if (error)
-      error->SetMessage("No CATEGORY value found");
+    Error::SetString(error, "No CATEGORY value found");
     return false;
   }
 
   return true;
 }
 
-bool CDImagePBP::Open(const char* filename, Common::Error* error)
+bool CDImagePBP::Open(const char* filename, Error* error)
 {
   if (!EndianHelper::HostIsLittleEndian())
   {
@@ -347,8 +343,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   if (!LoadPBPHeader())
   {
     Log_ErrorPrint("Failed to load PBP header");
-    if (error)
-      error->SetMessage("Failed to load PBP header");
+    Error::SetString(error, "Failed to load PBP header");
     return false;
   }
 
@@ -356,8 +351,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   if (!LoadSFOHeader())
   {
     Log_ErrorPrint("Failed to load SFO header");
-    if (error)
-      error->SetMessage("Failed to load SFO header");
+    Error::SetString(error, "Failed to load SFO header");
     return false;
   }
 
@@ -365,8 +359,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   if (!LoadSFOIndexTable())
   {
     Log_ErrorPrint("Failed to load SFO index table");
-    if (error)
-      error->SetMessage("Failed to load SFO index table");
+    Error::SetString(error, "Failed to load SFO index table");
     return false;
   }
 
@@ -374,8 +367,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   if (!LoadSFOTable())
   {
     Log_ErrorPrint("Failed to load SFO table");
-    if (error)
-      error->SetMessage("Failed to load SFO table");
+    Error::SetString(error, "Failed to load SFO table");
     return false;
   }
 
@@ -412,9 +404,7 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
       Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
-      if (error)
-        error->SetMessage("Encrypted PBP images are not supported");
-
+      Error::SetString(error, "Encrypted PBP images are not supported");
       return false;
     }
 
@@ -442,13 +432,12 @@ bool CDImagePBP::Open(const char* filename, Common::Error* error)
   return OpenDisc(0, error);
 }
 
-bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
+bool CDImagePBP::OpenDisc(u32 index, Error* error)
 {
   if (index >= m_disc_offsets.size())
   {
     Log_ErrorPrintf("File does not contain disc %u", index + 1);
-    if (error)
-      error->SetMessage(TinyString::FromFormat("File does not contain disc %u", index + 1));
+    Error::SetString(error, fmt::format("File does not contain disc {}", index + 1));
     return false;
   }
 
@@ -484,9 +473,7 @@ bool CDImagePBP::OpenDisc(u32 index, Common::Error* error)
   if (pgd_magic == 0x44475000) // "\0PGD"
   {
     Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
-    if (error)
-      error->SetMessage("Encrypted PBP images are not supported");
-
+    Error::SetString(error, "Encrypted PBP images are not supported");
     return false;
   }
 
@@ -867,7 +854,7 @@ u32 CDImagePBP::GetCurrentSubImage() const
   return m_current_disc;
 }
 
-bool CDImagePBP::SwitchSubImage(u32 index, Common::Error* error)
+bool CDImagePBP::SwitchSubImage(u32 index, Error* error)
 {
   if (index >= m_disc_offsets.size())
     return false;
@@ -895,7 +882,7 @@ std::string CDImagePBP::GetSubImageMetadata(u32 index, const std::string_view& t
   return CDImage::GetSubImageMetadata(index, type);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Common::Error* error)
+std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Error* error)
 {
   std::unique_ptr<CDImagePBP> image = std::make_unique<CDImagePBP>();
   if (!image->Open(filename, error))

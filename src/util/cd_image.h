@@ -11,9 +11,7 @@
 #include <tuple>
 #include <vector>
 
-namespace Common {
 class Error;
-}
 
 class CDImage
 {
@@ -220,15 +218,15 @@ public:
   static bool IsDeviceName(const char* filename);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename, bool allow_patches, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, bool apply_patches, Common::Error* error);
-  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Common::Error* error);
+  static std::unique_ptr<CDImage> Open(const char* filename, bool allow_patches, Error* error);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, bool apply_patches, Error* error);
+  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
   static std::unique_ptr<CDImage> OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
@@ -341,7 +339,7 @@ public:
   virtual u32 GetCurrentSubImage() const;
 
   // Changes the current sub-image. If this fails, the image state is unchanged.
-  virtual bool SwitchSubImage(u32 index, Common::Error* error);
+  virtual bool SwitchSubImage(u32 index, Error* error);
 
   // Retrieve sub-image metadata.
   virtual std::string GetSubImageMetadata(u32 index, const std::string_view& type) const;

@@ -1142,7 +1142,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   Host::OnSystemStarting();
 
   // Load CD image up and detect region.
-  Common::Error error;
+  Error error;
   std::unique_ptr<CDImage> disc;
   DiscRegion disc_region = DiscRegion::NonPS1;
   std::string exe_boot;
@@ -1172,7 +1172,7 @@ bool System::BootSystem(SystemBootParameters parameters)
       if (!disc)
       {
         Host::ReportErrorAsync("Error", fmt::format("Failed to load CD image '{}': {}",
-                                                    Path::GetFileName(parameters.filename), error.GetCodeAndMessage()));
+                                                    Path::GetFileName(parameters.filename), error.GetDescription()));
         s_state = State::Shutdown;
         Host::OnSystemDestroyed();
         return false;
@@ -1209,9 +1209,9 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Switch subimage.
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, &error))
   {
-    Host::ReportFormattedErrorAsync("Error", "Failed to switch to subimage %u in '%s': %s",
-                                    parameters.media_playlist_index, parameters.filename.c_str(),
-                                    error.GetCodeAndMessage().GetCharArray());
+    Host::ReportErrorAsync("Error",
+                           fmt::format("Failed to switch to subimage {] in '{}': {}", parameters.media_playlist_index,
+                                       parameters.filename, error.GetDescription()));
     s_state = State::Shutdown;
     Host::OnSystemDestroyed();
     return false;
@@ -2137,7 +2137,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
     return false;
   }
 
-  Common::Error error;
+  Error error;
   std::string media_filename;
   std::unique_ptr<CDImage> media;
   if (header.media_filename_length > 0)
@@ -2166,7 +2166,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
             30.0f,
             Host::TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
                                                 "existing image '%s', this may result in instability."),
-            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray(), old_media->GetFileName().c_str());
+            media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
           media = std::move(old_media);
           header.media_subimage_index = media->GetCurrentSubImage();
         }
@@ -2174,7 +2174,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
         {
           Host::ReportFormattedErrorAsync(
             "Error", Host::TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
-            media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
+            media_filename.c_str(), error.GetDescription().c_str());
           return false;
         }
       }
@@ -2193,7 +2193,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
       Host::ReportFormattedErrorAsync(
         "Error",
         Host::TranslateString("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
-        header.media_subimage_index + 1u, media_filename.c_str(), error.GetCodeAndMessage().GetCharArray());
+        header.media_subimage_index + 1u, media_filename.c_str(), error.GetDescription().c_str());
       return false;
     }
     else
@@ -3081,12 +3081,12 @@ std::string System::GetMediaFileName()
 
 bool System::InsertMedia(const char* path)
 {
-  Common::Error error;
+  Error error;
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   if (!image)
   {
     Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to open disc image '%s': %s."),
-                                 path, error.GetCodeAndMessage().GetCharArray());
+                                 path, error.GetDescription().c_str());
     return false;
   }
 
@@ -3272,12 +3272,12 @@ bool System::SwitchMediaSubImage(u32 index)
   std::unique_ptr<CDImage> image = CDROM::RemoveMedia(true);
   Assert(image);
 
-  Common::Error error;
+  Error error;
   if (!image->SwitchSubImage(index, &error))
   {
     Host::AddFormattedOSDMessage(10.0f,
                                  Host::TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
-                                 index + 1u, image->GetFileName().c_str(), error.GetCodeAndMessage().GetCharArray());
+                                 index + 1u, image->GetFileName().c_str(), error.GetDescription().c_str());
 
     const DiscRegion region = GetRegionForImage(image.get());
     CDROM::InsertMedia(std::move(image), region);
