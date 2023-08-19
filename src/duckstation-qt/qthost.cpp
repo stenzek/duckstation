@@ -629,7 +629,7 @@ void EmuThread::onDisplayWindowResized(int width, int height)
     if (m_is_exclusive_fullscreen && !g_host_display->IsFullscreen())
     {
       // we lost exclusive fullscreen, switch to borderless
-      Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Lost exclusive fullscreen."), 10.0f);
+      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Lost exclusive fullscreen."), 10.0f);
       m_is_exclusive_fullscreen = false;
       m_is_fullscreen = false;
       m_lost_exclusive_fullscreen = true;
@@ -1505,19 +1505,6 @@ void EmuThread::wakeThread()
     m_event_loop->quit();
   else
     QMetaObject::invokeMethod(m_event_loop, "quit", Qt::QueuedConnection);
-}
-
-TinyString Host::TranslateString(const char* context, const char* str, const char* disambiguation /*= nullptr*/,
-                                 int n /*= -1*/)
-{
-  const QByteArray bytes(qApp->translate(context, str, disambiguation, n).toUtf8());
-  return TinyString(bytes.constData(), bytes.size());
-}
-
-std::string Host::TranslateStdString(const char* context, const char* str, const char* disambiguation /*= nullptr*/,
-                                     int n /*= -1*/)
-{
-  return qApp->translate(context, str, disambiguation, n).toStdString();
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)

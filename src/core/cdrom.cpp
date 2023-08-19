@@ -780,7 +780,7 @@ bool CDROM::PrecacheMedia()
   if (m_reader.GetMedia()->HasSubImages() && m_reader.GetMedia()->GetSubImageCount() > 1)
   {
     Host::AddFormattedOSDMessage(
-      15.0f, Host::TranslateString("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
+      15.0f, TRANSLATE("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
       FileSystem::GetDisplayNameFromPath(m_reader.GetMedia()->GetFileName()).c_str());
     return false;
   }
@@ -788,7 +788,7 @@ bool CDROM::PrecacheMedia()
   HostInterfaceProgressCallback callback;
   if (!m_reader.Precache(&callback))
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Precaching CD image failed, it may be unreliable."),
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),
                         15.0f);
     return false;
   }

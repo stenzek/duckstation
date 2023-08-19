@@ -51,7 +51,7 @@ bool GPU::Initialize()
   if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty() &&
       !g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
   }
 
   g_host_display->SetGPUTimingEnabled(g_settings.display_show_gpu);

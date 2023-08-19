@@ -57,8 +57,8 @@ void AnalogController::Reset()
     {
       Host::AddIconOSDMessage(
         fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        Host::TranslateStdString(
-          "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
+        TRANSLATE_STR("OSDMessage",
+                      "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
     }
     else
@@ -106,14 +106,12 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        fmt::format((m_analog_mode ?
-                       Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
-                       Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
-                      .GetCharArray(),
-                    m_index + 1u),
-        5.0f);
+      Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                              fmt::format(m_analog_mode ?
+                                            TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
+                                            TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
+                                          m_index + 1u),
+                              5.0f);
     }
   }
   return true;
@@ -294,13 +292,12 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
   if (show_message)
   {
-    Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((enabled ? Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
-                             Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
-                    .GetCharArray(),
-                  m_index + 1u),
-      5.0f);
+    Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                            fmt::format(enabled ?
+                                          TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
+                                          TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
+                                        m_index + 1u),
+                            5.0f);
   }
   m_analog_mode = enabled;
 }
@@ -311,10 +308,9 @@ void AnalogController::ProcessAnalogModeToggle()
   {
     Host::AddIconOSDMessage(
       fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((m_analog_mode ?
-                     Host::TranslateString("AnalogController", "Controller {} is locked to analog mode by the game.") :
-                     Host::TranslateString("AnalogController", "Controller {} is locked to digital mode by the game."))
-                    .GetCharArray(),
+      fmt::format(m_analog_mode ?
+                    TRANSLATE_FS("AnalogController", "Controller {} is locked to analog mode by the game.") :
+                    TRANSLATE_FS("AnalogController", "Controller {} is locked to digital mode by the game."),
                   m_index + 1u),
       5.0f);
   }
@@ -840,11 +836,11 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
    TRANSLATE_NOOP("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
    TRANSLATE_NOOP("AnalogController",
-                "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
+                  "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
    "true"},
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogController", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogController",
-                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
+                  "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "0.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("AnalogController", "Analog Sensitivity"),
    TRANSLATE_NOOP(
@@ -854,15 +850,15 @@ static const SettingInfo s_settings[] = {
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("AnalogController", "Button/Trigger Deadzone"),
    TRANSLATE_NOOP("AnalogController", "Sets the deadzone for activating buttons/triggers, "
-                                    "i.e. the fraction of the trigger which will be ignored."),
+                                      "i.e. the fraction of the trigger which will be ignored."),
    "0.25", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Integer, "VibrationBias", TRANSLATE_NOOP("AnalogController", "Vibration Bias"),
    TRANSLATE_NOOP("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
-                                    "functioning, try increasing this value."),
+                                      "functioning, try increasing this value."),
    "8", "0", "255", "1", "%d", nullptr, 1.0f},
   {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("AnalogController", "Invert Left Stick"),
-   TRANSLATE_NOOP("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
-   s_invert_settings, 0.0f},
+   TRANSLATE_NOOP("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr,
+   nullptr, s_invert_settings, 0.0f},
   {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATE_NOOP("AnalogController", "Invert Right Stick"),
    TRANSLATE_NOOP("AnalogController", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
    nullptr, s_invert_settings, 0.0f},

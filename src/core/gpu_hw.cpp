@@ -82,7 +82,7 @@ bool GPU_HW::Initialize()
   }
   if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
   }
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
   {
@@ -95,7 +95,7 @@ bool GPU_HW::Initialize()
       g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive)
   {
     Host::AddOSDMessage(
-      Host::TranslateStdString(
+      TRANSLATE_STR(
         "OSDMessage", "Adaptive downsampling is not supported with the current renderer, using box filter instead."),
       20.0f);
   }
@@ -167,7 +167,7 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
   {
     Host::AddKeyedFormattedOSDMessage(
       "ResolutionScale", 10.0f,
-      Host::TranslateString("OSDMessage", "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)"), resolution_scale,
+      TRANSLATE("OSDMessage", "Resolution scale set to %ux (display %ux%u, VRAM %ux%u)"), resolution_scale,
       m_crtc_state.display_vram_width * resolution_scale, resolution_scale * m_crtc_state.display_vram_height,
       VRAM_WIDTH * resolution_scale, VRAM_HEIGHT * resolution_scale);
   }
@@ -177,13 +177,13 @@ void GPU_HW::UpdateHWSettings(bool* framebuffer_changed, bool* shaders_changed)
     if (per_sample_shading)
     {
       Host::AddKeyedFormattedOSDMessage(
-        "Multisampling", 10.0f, Host::TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."),
+        "Multisampling", 10.0f, TRANSLATE("OSDMessage", "Multisample anti-aliasing set to %ux (SSAA)."),
         multisamples);
     }
     else
     {
       Host::AddKeyedFormattedOSDMessage("Multisampling", 10.0f,
-                                        Host::TranslateString("OSDMessage", "Multisample anti-aliasing set to %ux."),
+                                        TRANSLATE("OSDMessage", "Multisample anti-aliasing set to %ux."),
                                         multisamples);
     }
   }
@@ -247,7 +247,7 @@ u32 GPU_HW::CalculateResolutionScale() const
     {
       Host::AddFormattedOSDMessage(
         10.0f,
-        Host::TranslateString("OSDMessage", "Resolution scale %ux not supported for adaptive smoothing, using %ux."),
+        TRANSLATE("OSDMessage", "Resolution scale %ux not supported for adaptive smoothing, using %ux."),
         scale, new_scale);
     }
 

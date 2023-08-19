@@ -20,7 +20,7 @@ enum class AudioStretchMode : u8;
 class AudioStream;
 class CDImage;
 
-namespace Host {  
+namespace Host {
 /// Typical durations for OSD messages.
 static constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
 static constexpr float OSD_ERROR_DURATION = 15.0f;
@@ -37,10 +37,6 @@ std::optional<std::string> ReadResourceFileToString(const char* filename);
 
 /// Returns the modified time of a resource.
 std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
-
-/// Translates a string to the current language.
-TinyString TranslateString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
-std::string TranslateStdString(const char* context, const char* str, const char* disambiguation = nullptr, int n = -1);
 
 /// Returns a localized version of the specified string within the specified context.
 /// The pointer is guaranteed to be valid until the next language change.
@@ -104,6 +100,12 @@ void OpenURL(const std::string_view& url);
 
 /// Copies the provided text to the host's clipboard, if present.
 bool CopyTextToClipboard(const std::string_view& text);
+
+namespace Internal {
+/// Implementation to retrieve a translated string.
+s32 GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
+                            size_t tbuf_space);
+} // namespace Internal
 } // namespace Host
 
 // Helper macros for retrieving translated strings.

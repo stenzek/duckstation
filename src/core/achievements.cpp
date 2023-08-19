@@ -505,8 +505,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
     else if (!s_challenge_mode && g_settings.achievements_challenge_mode)
     {
       ImGuiFullscreen::ShowToast(
-        std::string(), Host::TranslateStdString("Achievements", "Hardcore mode will be enabled on system reset."),
-        10.0f);
+        std::string(), TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."), 10.0f);
     }
   }
 
@@ -534,11 +533,9 @@ bool Achievements::ConfirmChallengeModeDisable(const char* trigger)
 
   // I really hope this doesn't deadlock :/
   const bool confirmed = Host::ConfirmMessage(
-    Host::TranslateString("Achievements", "Confirm Hardcore Mode"),
-    fmt::format(Host::TranslateString("Achievements",
-                                      "{0} cannot be performed while hardcore mode is active. Do you "
-                                      "want to disable hardcore mode? {0} will be cancelled if you select No.")
-                  .GetCharArray(),
+    TRANSLATE("Achievements", "Confirm Hardcore Mode"),
+    fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
+                                             "want to disable hardcore mode? {0} will be cancelled if you select No."),
                 trigger));
   if (!confirmed)
     return false;
@@ -586,8 +583,8 @@ void Achievements::SetChallengeMode(bool enabled)
   if (HasActiveGame())
   {
     ImGuiFullscreen::ShowToast(std::string(),
-                               enabled ? Host::TranslateStdString("Achievements", "Hardcore mode is now enabled.") :
-                                         Host::TranslateStdString("Achievements", "Hardcore mode is now disabled."),
+                               enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
+                                         TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
                                10.0f);
   }
 
@@ -1004,21 +1001,20 @@ void Achievements::DisplayAchievementSummary()
 {
   std::string title;
   if (ChallengeModeActive())
-    title = fmt::format(Host::TranslateString("Achievements", "{} (Hardcore Mode)").GetCharArray(), s_game_title);
+    title = fmt::format(TRANSLATE_FS("Achievements", "{} (Hardcore Mode)"), s_game_title);
   else
     title = s_game_title;
 
   std::string summary;
   if (GetAchievementCount() > 0)
   {
-    summary = fmt::format(
-      Host::TranslateString("Achievements", "You have earned {} of {} achievements, and {} of {} points.")
-        .GetCharArray(),
-      GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
+    summary = fmt::format(TRANSLATE_FS("Achievements", "You have earned {} of {} achievements, and {} of {} points."),
+                          GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(),
+                          GetMaximumPointsForGame());
   }
   else
   {
-    summary = Host::TranslateStdString("Achievements", "This game has no achievements.");
+    summary = TRANSLATE_STR("Achievements", "This game has no achievements.");
   }
   if (GetLeaderboardCount() > 0)
   {
@@ -1769,9 +1765,9 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, std::string conten
   rc_runtime_format_lboard_value(submitted_score, sizeof(submitted_score), response.submitted_score, lb->format);
   rc_runtime_format_lboard_value(best_score, sizeof(best_score), response.best_score, lb->format);
 
-  std::string summary = fmt::format(
-    Host::TranslateString("Achievements", "Your Score: {} (Best: {})\nLeaderboard Position: {} of {}").GetCharArray(),
-    submitted_score, best_score, response.new_rank, response.num_entries);
+  std::string summary =
+    fmt::format(TRANSLATE_FS("Achievements", "Your Score: {} (Best: {})\nLeaderboard Position: {} of {}"),
+                submitted_score, best_score, response.new_rank, response.num_entries);
 
   ImGuiFullscreen::AddNotification(10.0f, lb->title, std::move(summary), s_game_icon);
 

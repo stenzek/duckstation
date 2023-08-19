@@ -994,7 +994,7 @@ void System::ResetSystem()
   InternalReset();
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "System reset."));
+  Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "System reset."));
 }
 
 void System::PauseSystem(bool paused)
@@ -1025,7 +1025,7 @@ bool System::LoadState(const char* filename)
 
 #ifdef WITH_CHEEVOS
   if (Achievements::ChallengeModeActive() &&
-      !Achievements::ConfirmChallengeModeDisable(Host::TranslateString("Achievements", "Loading state")))
+      !Achievements::ConfirmChallengeModeDisable(TRANSLATE("Achievements", "Loading state")))
   {
     return false;
   }
@@ -1043,17 +1043,15 @@ bool System::LoadState(const char* filename)
     const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
     Host::AddIconOSDMessage(
       "load_state", ICON_FA_FOLDER_OPEN,
-      fmt::format(Host::TranslateString("OSDMessage", "Loading state from '{}'...").GetCharArray(),
-                  Path::GetFileName(display_name)),
-      5.0f);
+      fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(display_name)), 5.0f);
   }
 
   SaveUndoLoadState();
 
   if (!DoLoadState(stream.get(), false, true))
   {
-    Host::ReportFormattedErrorAsync(
-      "Load State Error", Host::TranslateString("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
+    Host::ReportFormattedErrorAsync("Load State Error",
+                                    TRANSLATE("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
 
     if (m_undo_load_state)
       UndoLoadState();
@@ -1093,17 +1091,16 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
                                                                           SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
   if (!result)
   {
-    Host::ReportFormattedErrorAsync(Host::TranslateString("OSDMessage", "Save State"),
-                                    Host::TranslateString("OSDMessage", "Saving state to '%s' failed."), filename);
+    Host::ReportFormattedErrorAsync(TRANSLATE("OSDMessage", "Save State"),
+                                    TRANSLATE("OSDMessage", "Saving state to '%s' failed."), filename);
     stream->Discard();
   }
   else
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
-    Host::AddIconOSDMessage("save_state", ICON_FA_SAVE,
-                            fmt::format(Host::TranslateString("OSDMessage", "State saved to '{}'.").GetCharArray(),
-                                        Path::GetFileName(display_name)),
-                            5.0f);
+    Host::AddIconOSDMessage(
+      "save_state", ICON_FA_SAVE,
+      fmt::format(TRANSLATE_FS("OSDMessage", "State saved to '{}'."), Path::GetFileName(display_name)), 5.0f);
     stream->Commit();
   }
 
@@ -1247,7 +1244,7 @@ bool System::BootSystem(SystemBootParameters parameters)
 #ifdef WITH_CHEEVOS
   // Check for resuming with hardcore mode.
   if (!parameters.save_state.empty() && Achievements::ChallengeModeActive() &&
-      !Achievements::ConfirmChallengeModeDisable(Host::TranslateString("Achievements", "Resuming state")))
+      !Achievements::ConfirmChallengeModeDisable(TRANSLATE("Achievements", "Resuming state")))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1340,9 +1337,8 @@ bool System::BootSystem(SystemBootParameters parameters)
     if (!stream)
     {
       Host::ReportErrorAsync(
-        Host::TranslateString("System", "Error"),
-        fmt::format(Host::TranslateString("System", "Failed to load save state file '{}' for booting.").GetCharArray(),
-                    parameters.save_state));
+        TRANSLATE("System", "Error"),
+        fmt::format(TRANSLATE_FS("System", "Failed to load save state file '{}' for booting."), parameters.save_state));
       DestroySystem();
       return false;
     }
@@ -1469,15 +1465,14 @@ bool System::Initialize(bool force_software_renderer)
   {
     Host::AddFormattedOSDMessage(
       WARNING_DURATION,
-      Host::TranslateString("OSDMessage", "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
+      TRANSLATE("OSDMessage", "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
   }
   if (g_settings.cdrom_read_speedup > 1)
   {
     Host::AddFormattedOSDMessage(
       WARNING_DURATION,
-      Host::TranslateString("OSDMessage",
-                            "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
+      TRANSLATE("OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
       g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
   }
   if (g_settings.cdrom_seek_speedup != 1)
@@ -1485,14 +1480,13 @@ bool System::Initialize(bool force_software_renderer)
     if (g_settings.cdrom_seek_speedup == 0)
     {
       Host::AddOSDMessage(
-        Host::TranslateStdString("OSDMessage", "CD-ROM seek speedup set to instant. This may result in instability."),
+        TRANSLATE_STR("OSDMessage", "CD-ROM seek speedup set to instant. This may result in instability."),
         WARNING_DURATION);
     }
     else
     {
       Host::AddFormattedOSDMessage(
-        WARNING_DURATION,
-        Host::TranslateString("OSDMessage", "CD-ROM seek speedup set to %ux. This may result in instability."),
+        WARNING_DURATION, TRANSLATE("OSDMessage", "CD-ROM seek speedup set to %ux. This may result in instability."),
         g_settings.cdrom_seek_speedup);
     }
   }
@@ -1874,8 +1868,7 @@ bool System::CreateGPU(GPURenderer renderer)
     Log_ErrorPrintf("Failed to initialize %s renderer, falling back to software renderer",
                     Settings::GetRendererName(renderer));
     Host::AddFormattedOSDMessage(
-      30.0f,
-      Host::TranslateString("OSDMessage", "Failed to initialize %s renderer, falling back to software renderer."),
+      30.0f, TRANSLATE("OSDMessage", "Failed to initialize %s renderer, falling back to software renderer."),
       Settings::GetRendererName(renderer));
     g_gpu.reset();
     g_gpu = GPU::CreateSoftwareRenderer();
@@ -1907,11 +1900,11 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     {
       Log_WarningPrintf("BIOS hash mismatch: System: %s | State: %s", s_bios_hash.ToString().c_str(),
                         bios_hash.ToString().c_str());
-      Host::AddKeyedOSDMessage(
-        "StateBIOSMismatch",
-        Host::TranslateStdString("OSDMessage", "This save state was created with a different BIOS version or patch "
-                                               "options. This may cause stability issues."),
-        10.0f);
+      Host::AddKeyedOSDMessage("StateBIOSMismatch",
+                               TRANSLATE_STR("OSDMessage",
+                                             "This save state was created with a different BIOS version or patch "
+                                             "options. This may cause stability issues."),
+                               10.0f);
     }
   }
 
@@ -1982,7 +1975,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddFormattedOSDMessage(
-      10.0f, Host::TranslateString("OSDMessage", "WARNING: CPU overclock (%u%%) was different in save state (%u%%)."),
+      10.0f, TRANSLATE("OSDMessage", "WARNING: CPU overclock (%u%%) was different in save state (%u%%)."),
       g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
       cpu_overclock_active ?
         Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
@@ -2025,14 +2018,14 @@ bool System::LoadBIOS()
   std::optional<BIOS::Image> bios_image(BIOS::GetBIOSImage(s_region));
   if (!bios_image.has_value())
   {
-    Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Failed to load %s BIOS."),
+    Host::ReportFormattedErrorAsync("Error", TRANSLATE("System", "Failed to load %s BIOS."),
                                     Settings::GetConsoleRegionName(s_region));
     return false;
   }
 
   if (bios_image->size() != static_cast<u32>(Bus::BIOS_SIZE))
   {
-    Host::ReportFormattedErrorAsync("Error", Host::TranslateString("System", "Incorrect BIOS image size"));
+    Host::ReportFormattedErrorAsync("Error", TRANSLATE("System", "Incorrect BIOS image size"));
     return false;
   }
 
@@ -2122,8 +2115,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (header.version < SAVE_STATE_MINIMUM_VERSION)
   {
     Host::ReportFormattedErrorAsync(
-      "Error",
-      Host::TranslateString("System", "Save state is incompatible: minimum version is %u but state is version %u."),
+      "Error", TRANSLATE("System", "Save state is incompatible: minimum version is %u but state is version %u."),
       SAVE_STATE_MINIMUM_VERSION, header.version);
     return false;
   }
@@ -2131,8 +2123,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (header.version > SAVE_STATE_VERSION)
   {
     Host::ReportFormattedErrorAsync(
-      "Error",
-      Host::TranslateString("System", "Save state is incompatible: maximum version is %u but state is version %u."),
+      "Error", TRANSLATE("System", "Save state is incompatible: maximum version is %u but state is version %u."),
       SAVE_STATE_VERSION, header.version);
     return false;
   }
@@ -2164,17 +2155,17 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
         {
           Host::AddFormattedOSDMessage(
             30.0f,
-            Host::TranslateString("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
-                                                "existing image '%s', this may result in instability."),
+            TRANSLATE("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
+                                    "existing image '%s', this may result in instability."),
             media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
           media = std::move(old_media);
           header.media_subimage_index = media->GetCurrentSubImage();
         }
         else
         {
-          Host::ReportFormattedErrorAsync(
-            "Error", Host::TranslateString("System", "Failed to open CD image '%s' used by save state: %s."),
-            media_filename.c_str(), error.GetDescription().c_str());
+          Host::ReportFormattedErrorAsync("Error",
+                                          TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
+                                          media_filename.c_str(), error.GetDescription().c_str());
           return false;
         }
       }
@@ -2191,8 +2182,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
          !media->SwitchSubImage(header.media_subimage_index, &error)))
     {
       Host::ReportFormattedErrorAsync(
-        "Error",
-        Host::TranslateString("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
+        "Error", TRANSLATE("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
         header.media_subimage_index + 1u, media_filename.c_str(), error.GetDescription().c_str());
       return false;
     }
@@ -2226,8 +2216,7 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   if (Achievements::ChallengeModeActive())
   {
     Host::AddKeyedOSDMessage("challenge_mode_reset",
-                             Host::TranslateStdString("Achievements", "Hardcore mode disabled by state switch."),
-                             10.0f);
+                             TRANSLATE_STR("Achievements", "Hardcore mode disabled by state switch."), 10.0f);
     Achievements::DisableChallengeMode();
   }
 #endif
@@ -2586,8 +2575,7 @@ void System::SetRewindState(bool enabled)
   if (!g_settings.rewind_enable)
   {
     if (enabled)
-      Host::AddKeyedOSDMessage("SetRewindState", Host::TranslateStdString("OSDMessage", "Rewinding is not enabled."),
-                               5.0f);
+      Host::AddKeyedOSDMessage("SetRewindState", TRANSLATE_STR("OSDMessage", "Rewinding is not enabled."), 5.0f);
 
     return;
   }
@@ -2628,7 +2616,7 @@ void System::DoToggleCheats()
   CheatList* cl = GetCheatList();
   if (!cl)
   {
-    Host::AddKeyedOSDMessage("ToggleCheats", Host::TranslateStdString("OSDMessage", "No cheats are loaded."), 10.0f);
+    Host::AddKeyedOSDMessage("ToggleCheats", TRANSLATE_STR("OSDMessage", "No cheats are loaded."), 10.0f);
     return;
   }
 
@@ -2636,8 +2624,8 @@ void System::DoToggleCheats()
   Host::AddKeyedOSDMessage(
     "ToggleCheats",
     cl->GetMasterEnable() ?
-      Host::TranslateStdString("OSDMessage", "%n cheats are now active.", "", cl->GetEnabledCodeCount()) :
-      Host::TranslateStdString("OSDMessage", "%n cheats are now inactive.", "", cl->GetEnabledCodeCount()),
+      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are now active."), cl->GetEnabledCodeCount()) :
+      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are now inactive."), cl->GetEnabledCodeCount()),
     10.0f);
 }
 
@@ -2871,11 +2859,11 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
     {
       if (s_running_game_serial.empty())
       {
-        Host::AddFormattedOSDMessage(
-          5.0f,
-          Host::TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
-                                          "game has no code. Using shared card instead."),
-          slot + 1u);
+        Host::AddFormattedOSDMessage(5.0f,
+                                     TRANSLATE("System",
+                                               "Per-game memory card cannot be used for slot %u as the running "
+                                               "game has no code. Using shared card instead."),
+                                     slot + 1u);
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
@@ -2888,11 +2876,11 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
     {
       if (s_running_game_title.empty())
       {
-        Host::AddFormattedOSDMessage(
-          5.0f,
-          Host::TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
-                                          "game has no title. Using shared card instead."),
-          slot + 1u);
+        Host::AddFormattedOSDMessage(5.0f,
+                                     TRANSLATE("System",
+                                               "Per-game memory card cannot be used for slot %u as the running "
+                                               "game has no title. Using shared card instead."),
+                                     slot + 1u);
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
@@ -2908,11 +2896,11 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
-        Host::AddFormattedOSDMessage(
-          5.0f,
-          Host::TranslateString("System", "Per-game memory card cannot be used for slot %u as the running "
-                                          "game has no path. Using shared card instead."),
-          slot + 1u);
+        Host::AddFormattedOSDMessage(5.0f,
+                                     TRANSLATE("System",
+                                               "Per-game memory card cannot be used for slot %u as the running "
+                                               "game has no path. Using shared card instead."),
+                                     slot + 1u);
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
@@ -2982,25 +2970,23 @@ void System::SwapMemoryCards()
 
   if (HasMemoryCard(0) && HasMemoryCard(1))
   {
-    Host::AddOSDMessage(
-      Host::TranslateStdString("OSDMessage", "Swapped memory card ports. Both ports have a memory card."), 10.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Both ports have a memory card."),
+                        10.0f);
   }
   else if (HasMemoryCard(1))
   {
     Host::AddOSDMessage(
-      Host::TranslateStdString("OSDMessage", "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."),
-      10.0f);
+      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."), 10.0f);
   }
   else if (HasMemoryCard(0))
   {
     Host::AddOSDMessage(
-      Host::TranslateStdString("OSDMessage", "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."),
-      10.0f);
+      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."), 10.0f);
   }
   else
   {
-    Host::AddOSDMessage(
-      Host::TranslateStdString("OSDMessage", "Swapped memory card ports. Neither port has a memory card."), 10.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Neither port has a memory card."),
+                        10.0f);
   }
 }
 
@@ -3085,8 +3071,8 @@ bool System::InsertMedia(const char* path)
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   if (!image)
   {
-    Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to open disc image '%s': %s."),
-                                 path, error.GetDescription().c_str());
+    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to open disc image '%s': %s."), path,
+                                 error.GetDescription().c_str());
     return false;
   }
 
@@ -3098,12 +3084,12 @@ bool System::InsertMedia(const char* path)
   if (g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
-  Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Inserted disc '%s' (%s)."),
-                               s_running_game_title.c_str(), s_running_game_serial.c_str());
+  Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Inserted disc '%s' (%s)."), s_running_game_title.c_str(),
+                               s_running_game_serial.c_str());
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
-    Host::AddOSDMessage(Host::TranslateStdString("System", "Game changed, reloading memory cards."), 10.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("System", "Game changed, reloading memory cards."), 10.0f);
     UpdatePerGameMemoryCards();
   }
 
@@ -3198,7 +3184,7 @@ bool System::CheckForSBIFile(CDImage* image)
     return Host::ConfirmMessage(
       "Confirm Unsupported Configuration",
       StringUtil::StdStringFromFormat(
-        Host::TranslateString(
+        TRANSLATE(
           "System",
           "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
           "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
@@ -3209,13 +3195,12 @@ bool System::CheckForSBIFile(CDImage* image)
   else
   {
     Host::ReportErrorAsync(
-      Host::TranslateString("System", "Error"),
+      TRANSLATE("System", "Error"),
       SmallString::FromFormat(
-        Host::TranslateString(
-          "System",
-          "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
-          "incomplete, you must add the SBI file to run this game. \n\n"
-          "The name of the SBI file must match the name of the disc image."),
+        TRANSLATE("System",
+                  "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
+                  "incomplete, you must add the SBI file to run this game. \n\n"
+                  "The name of the SBI file must match the name of the disc image."),
         s_running_game_serial.c_str(), s_running_game_title.c_str()));
     return false;
   }
@@ -3275,8 +3260,7 @@ bool System::SwitchMediaSubImage(u32 index)
   Error error;
   if (!image->SwitchSubImage(index, &error))
   {
-    Host::AddFormattedOSDMessage(10.0f,
-                                 Host::TranslateString("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
+    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to switch to subimage %u in '%s': %s."),
                                  index + 1u, image->GetFileName().c_str(), error.GetDescription().c_str());
 
     const DiscRegion region = GetRegionForImage(image.get());
@@ -3284,7 +3268,7 @@ bool System::SwitchMediaSubImage(u32 index)
     return false;
   }
 
-  Host::AddFormattedOSDMessage(20.0f, Host::TranslateString("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
+  Host::AddFormattedOSDMessage(20.0f, TRANSLATE("OSDMessage", "Switched to sub-image %s (%u) in '%s'."),
                                image->GetSubImageMetadata(index, "title").c_str(), index + 1u,
                                image->GetMetadata("title").c_str());
   const DiscRegion region = GetRegionForImage(image.get());
@@ -3326,7 +3310,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     const bool recreate_display = (g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
                                    g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation);
 
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Switching to %s%s GPU renderer."),
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Switching to %s%s GPU renderer."),
                                  Settings::GetRendererName(g_settings.gpu_renderer),
                                  g_settings.gpu_use_debug_device ? " (debug)" : "");
     RecreateGPU(g_settings.gpu_renderer, recreate_display);
@@ -3350,7 +3334,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
-        Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Switching to %s audio backend."),
+        Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Switching to %s audio backend."),
                                      Settings::GetAudioBackendName(g_settings.audio_backend));
       }
 
@@ -3372,10 +3356,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode ||
         g_settings.cpu_fastmem_mode != old_settings.cpu_fastmem_mode)
     {
-      Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Switching to %s CPU execution mode."),
-                                   Host::TranslateString("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(
-                                                                               g_settings.cpu_execution_mode))
-                                     .GetCharArray());
+      Host::AddOSDMessage(fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} CPU execution mode."),
+                                      TRANSLATE_SV("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(
+                                                                         g_settings.cpu_execution_mode))),
+                          5.0f);
       CPU::CodeCache::Reinitialize();
       CPU::ClearICache();
     }
@@ -3385,8 +3369,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
          g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache))
     {
-      Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Recompiler options changed, flushing all blocks."),
-                          5.0f);
+      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
 
       // changing memory exceptions can re-enable fastmem
       if (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
@@ -3450,8 +3433,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.IsUsingCodeCache())
       {
         Host::AddOSDMessage(g_settings.gpu_pgxp_enable ?
-                              Host::TranslateStdString("OSDMessage", "PGXP enabled, recompiling all blocks.") :
-                              Host::TranslateStdString("OSDMessage", "PGXP disabled, recompiling all blocks."),
+                              TRANSLATE_STR("OSDMessage", "PGXP enabled, recompiling all blocks.") :
+                              TRANSLATE_STR("OSDMessage", "PGXP disabled, recompiling all blocks."),
                             5.0f);
         CPU::CodeCache::Flush();
       }
@@ -3510,8 +3493,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty())
       {
         if (!g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
-          Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post processing shader chain."),
-                              20.0f);
+          Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
       }
       else
       {
@@ -3897,7 +3879,7 @@ bool System::SaveUndoLoadState()
   m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
   if (!InternalSaveState(m_undo_load_state.get()))
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to save undo load state."), 15.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to save undo load state."), 15.0f);
     m_undo_load_state.reset();
     return false;
   }
@@ -3958,13 +3940,12 @@ bool System::StartDumpingAudio(const char* filename)
 
   if (SPU::StartDumpingAudio(filename))
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Started dumping audio to '%s'."), filename);
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Started dumping audio to '%s'."), filename);
     return true;
   }
   else
   {
-    Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to start dumping audio to '%s'."),
-                                 filename);
+    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to start dumping audio to '%s'."), filename);
     return false;
   }
 }
@@ -3974,7 +3955,7 @@ void System::StopDumpingAudio()
   if (System::IsShutdown() || !SPU::StopDumpingAudio())
     return;
 
-  Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Stopped dumping audio."), 5.0f);
+  Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Stopped dumping audio."), 5.0f);
 }
 
 bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
@@ -4004,8 +3985,7 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
 
   if (FileSystem::FileExists(filename))
   {
-    Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Screenshot file '%s' already exists."),
-                                 filename);
+    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Screenshot file '%s' already exists."), filename);
     return false;
   }
 
@@ -4014,12 +3994,11 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
 
   if (!screenshot_saved)
   {
-    Host::AddFormattedOSDMessage(10.0f, Host::TranslateString("OSDMessage", "Failed to save screenshot to '%s'"),
-                                 filename);
+    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to save screenshot to '%s'"), filename);
     return false;
   }
 
-  Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Screenshot saved to '%s'."), filename);
+  Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Screenshot saved to '%s'."), filename);
   return true;
 }
 
@@ -4104,7 +4083,7 @@ std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(By
   if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
     ssi.title = StringUtil::StdStringFromFormat(
-      Host::TranslateString("CommonHostInterface", "Invalid version %u (%s version %u)"), header.version,
+      TRANSLATE("CommonHostInterface", "Invalid version %u (%s version %u)"), header.version,
       header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
       header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION);
     return ssi;
@@ -4195,16 +4174,16 @@ bool System::LoadCheatList(const char* filename)
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
   if (!cl->LoadFromFile(filename, CheatList::Format::Autodetect))
   {
-    Host::AddFormattedOSDMessage(15.0f, Host::TranslateString("OSDMessage", "Failed to load cheats from '%s'."),
-                                 filename);
+    Host::AddFormattedOSDMessage(15.0f, TRANSLATE("OSDMessage", "Failed to load cheats from '%s'."), filename);
     return false;
   }
 
   if (cl->GetEnabledCodeCount() > 0)
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "%n cheats are enabled. This may result in instability.",
-                                                 "", cl->GetEnabledCodeCount()),
-                        30.0f);
+    Host::AddOSDMessage(
+      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are enabled. This may result in instability."),
+                  cl->GetEnabledCodeCount()),
+      30.0f);
   }
 
   System::SetCheatList(std::move(cl));
@@ -4249,8 +4228,7 @@ bool System::SaveCheatList()
 
   if (!System::GetCheatList()->SaveToPCSXRFile(filename.c_str()))
   {
-    Host::AddFormattedOSDMessage(15.0f, Host::TranslateString("OSDMessage", "Failed to save cheat list to '%s'"),
-                                 filename.c_str());
+    Host::AddFormattedOSDMessage(15.0f, TRANSLATE("OSDMessage", "Failed to save cheat list to '%s'"), filename.c_str());
   }
 
   return true;
@@ -4266,8 +4244,7 @@ bool System::SaveCheatList(const char* filename)
 
   // This shouldn't be needed, but lupdate doesn't gather this string otherwise...
   const u32 code_count = System::GetCheatList()->GetCodeCount();
-  Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Saved %n cheats to '%s'.", "", code_count),
-                               filename);
+  Host::AddOSDMessage(fmt::format(TRANSLATE_FS("OSDMessage", "Saved {} cheats to '{}'."), code_count, filename), 5.0f);
   return true;
 }
 
@@ -4282,8 +4259,7 @@ bool System::DeleteCheatList()
     if (!FileSystem::DeleteFile(filename.c_str()))
       return false;
 
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Deleted cheat list '%s'."),
-                                 filename.c_str());
+    Host::AddOSDMessage(fmt::format(TRANSLATE_FS("OSDMessage", "Deleted cheat list '{}'."), filename), 5.0f);
   }
 
   System::SetCheatList(nullptr);
@@ -4325,13 +4301,11 @@ void System::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
 
   if (enabled)
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Cheat '%s' enabled."),
-                                 cc.description.c_str());
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Cheat '%s' enabled."), cc.description.c_str());
   }
   else
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Cheat '%s' disabled."),
-                                 cc.description.c_str());
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Cheat '%s' disabled."), cc.description.c_str());
   }
 
   if (save_to_file)
@@ -4347,12 +4321,11 @@ void System::ApplyCheatCode(u32 index)
   if (!cc.enabled)
   {
     cc.Apply();
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Applied cheat '%s'."),
-                                 cc.description.c_str());
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Applied cheat '%s'."), cc.description.c_str());
   }
   else
   {
-    Host::AddFormattedOSDMessage(5.0f, Host::TranslateString("OSDMessage", "Cheat '%s' is already enabled."),
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Cheat '%s' is already enabled."),
                                  cc.description.c_str());
   }
 }
@@ -4365,17 +4338,14 @@ void System::TogglePostProcessing()
   g_settings.display_post_processing = !g_settings.display_post_processing;
   if (g_settings.display_post_processing)
   {
-    Host::AddKeyedOSDMessage("PostProcessing",
-                             Host::TranslateStdString("OSDMessage", "Post-processing is now enabled."), 10.0f);
+    Host::AddKeyedOSDMessage("PostProcessing", TRANSLATE_STR("OSDMessage", "Post-processing is now enabled."), 10.0f);
 
     if (!g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
-      Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post processing shader chain."),
-                          20.0f);
+      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
   }
   else
   {
-    Host::AddKeyedOSDMessage("PostProcessing",
-                             Host::TranslateStdString("OSDMessage", "Post-processing is now disabled."), 10.0f);
+    Host::AddKeyedOSDMessage("PostProcessing", TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."), 10.0f);
     g_host_display->SetPostProcessingChain({});
   }
 }
@@ -4386,9 +4356,9 @@ void System::ReloadPostProcessingShaders()
     return;
 
   if (!g_host_display->SetPostProcessingChain(g_settings.display_post_process_chain))
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
   else
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
 }
 
 void System::ToggleWidescreen()
@@ -4415,19 +4385,20 @@ void System::ToggleWidescreen()
 
   if (g_settings.gpu_widescreen_hack)
   {
-    Host::AddKeyedFormattedOSDMessage(
-      "WidescreenHack", 5.0f,
-      Host::TranslateString("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to %s."),
-      Host::TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
-        .GetCharArray());
+    Host::AddKeyedOSDMessage(
+      "WidescreenHack",
+      fmt::format(
+        TRANSLATE_FS("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to {}."),
+        TRANSLATE("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))),
+      5.0f);
   }
   else
   {
-    Host::AddKeyedFormattedOSDMessage(
-      "WidescreenHack", 5.0f,
-      Host::TranslateString("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to %s."),
-      Host::TranslateString("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))
-        .GetCharArray());
+    Host::AddKeyedOSDMessage(
+      "WidescreenHack",
+      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to {}."),
+                  TRANSLATE("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio)),
+                  5.0f));
   }
 
   GTE::UpdateAspectRatio();
@@ -4440,8 +4411,7 @@ void System::ToggleSoftwareRendering()
 
   const GPURenderer new_renderer = g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  Host::AddKeyedFormattedOSDMessage("SoftwareRendering", 5.0f,
-                                    Host::TranslateString("OSDMessage", "Switching to %s renderer..."),
+  Host::AddKeyedFormattedOSDMessage("SoftwareRendering", 5.0f, TRANSLATE("OSDMessage", "Switching to %s renderer..."),
                                     Settings::GetRendererDisplayName(new_renderer));
   RecreateGPU(new_renderer);
   Host::InvalidateDisplay();

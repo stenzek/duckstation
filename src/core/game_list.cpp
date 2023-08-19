@@ -967,7 +967,7 @@ TinyString GameList::FormatTimestamp(std::time_t timestamp)
 
   if (timestamp == 0)
   {
-    ret = Host::TranslateString("GameList", "Never");
+    ret = TRANSLATE("GameList", "Never");
   }
   else
   {
@@ -984,12 +984,12 @@ TinyString GameList::FormatTimestamp(std::time_t timestamp)
 
     if (ctime.tm_year == ttime.tm_year && ctime.tm_yday == ttime.tm_yday)
     {
-      ret = Host::TranslateString("GameList", "Today");
+      ret = TRANSLATE("GameList", "Today");
     }
     else if ((ctime.tm_year == ttime.tm_year && ctime.tm_yday == (ttime.tm_yday + 1)) ||
              (ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
     {
-      ret = Host::TranslateString("GameList", "Yesterday");
+      ret = TRANSLATE("GameList", "Yesterday");
     }
     else
     {
@@ -1012,22 +1012,22 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   if (!long_format)
   {
     if (hours >= 100)
-      ret.Fmt(Host::TranslateString("GameList", "{}h {}m").GetCharArray(), hours, minutes);
+      ret.Fmt(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
     else if (hours > 0)
-      ret.Fmt(Host::TranslateString("GameList", "{}h {}m {}s").GetCharArray(), hours, minutes, seconds);
+      ret.Fmt(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
     else if (minutes > 0)
-      ret.Fmt(Host::TranslateString("GameList", "{}m {}s").GetCharArray(), minutes, seconds);
+      ret.Fmt(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
     else if (seconds > 0)
-      ret.Fmt(Host::TranslateString("GameList", "{}s").GetCharArray(), seconds);
+      ret.Fmt(TRANSLATE_FS("GameList", "{}s"), seconds);
     else
-      ret = Host::TranslateString("GameList", "None");
+      ret = TRANSLATE_SV("GameList", "None");
   }
   else
   {
     if (hours > 0)
-      ret = fmt::format(Host::TranslateString("GameList", "{} hours").GetCharArray(), hours);
+      ret = fmt::format(TRANSLATE_FS("GameList", "{} hours"), hours);
     else
-      ret = fmt::format(Host::TranslateString("GameList", "{} minutes").GetCharArray(), minutes);
+      ret = fmt::format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
   }
 
   return ret;

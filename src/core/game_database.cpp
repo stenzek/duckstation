@@ -228,7 +228,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
     {
       Host::AddKeyedOSDMessage("gamedb_force_interpreter",
-                               Host::TranslateStdString("OSDMessage", "CPU interpreter forced by game settings."),
+                               TRANSLATE_STR("OSDMessage", "CPU interpreter forced by game settings."),
                                osd_duration);
     }
 
@@ -240,7 +240,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_renderer != GPURenderer::Software)
     {
       Host::AddKeyedOSDMessage("gamedb_force_software",
-                               Host::TranslateStdString("OSDMessage", "Software renderer forced by game settings."),
+                               TRANSLATE_STR("OSDMessage", "Software renderer forced by game settings."),
                                osd_duration);
     }
 
@@ -253,7 +253,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_force_software_rb",
-        Host::TranslateStdString("OSDMessage", "Using software renderer for readbacks based on game settings."),
+        TRANSLATE_STR("OSDMessage", "Using software renderer for readbacks based on game settings."),
         osd_duration);
     }
 
@@ -265,7 +265,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_disable_interlacing)
     {
       Host::AddKeyedOSDMessage("gamedb_force_interlacing",
-                               Host::TranslateStdString("OSDMessage", "Interlacing forced by game settings."),
+                               TRANSLATE_STR("OSDMessage", "Interlacing forced by game settings."),
                                osd_duration);
     }
 
@@ -277,7 +277,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_true_color)
     {
       Host::AddKeyedOSDMessage("gamedb_disable_true_color",
-                               Host::TranslateStdString("OSDMessage", "True color disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "True color disabled by game settings."),
                                osd_duration);
     }
 
@@ -289,7 +289,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_resolution_scale > 1)
     {
       Host::AddKeyedOSDMessage("gamedb_disable_upscaling",
-                               Host::TranslateStdString("OSDMessage", "Upscaling disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "Upscaling disabled by game settings."),
                                osd_duration);
     }
 
@@ -301,7 +301,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_scaled_dithering)
     {
       Host::AddKeyedOSDMessage("gamedb_disable_scaled_dithering",
-                               Host::TranslateStdString("OSDMessage", "Scaled dithering disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "Scaled dithering disabled by game settings."),
                                osd_duration);
     }
 
@@ -314,7 +314,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
         (settings.display_aspect_ratio == DisplayAspectRatio::R16_9 || settings.gpu_widescreen_hack))
     {
       Host::AddKeyedOSDMessage("gamedb_disable_widescreen",
-                               Host::TranslateStdString("OSDMessage", "Widescreen disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "Widescreen disabled by game settings."),
                                osd_duration);
     }
 
@@ -328,7 +328,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_force_ntsc_timings",
-        Host::TranslateStdString("OSDMessage", "Forcing NTSC Timings disallowed by game settings."), osd_duration);
+        TRANSLATE_STR("OSDMessage", "Forcing NTSC Timings disallowed by game settings."), osd_duration);
     }
 
     settings.gpu_force_ntsc_timings = false;
@@ -340,7 +340,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp",
-        Host::TranslateStdString("OSDMessage", "PGXP geometry correction disabled by game settings."), osd_duration);
+        TRANSLATE_STR("OSDMessage", "PGXP geometry correction disabled by game settings."), osd_duration);
     }
 
     settings.gpu_pgxp_enable = false;
@@ -351,7 +351,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_culling)
     {
       Host::AddKeyedOSDMessage("gamedb_disable_pgxp_culling",
-                               Host::TranslateStdString("OSDMessage", "PGXP culling disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "PGXP culling disabled by game settings."),
                                osd_duration);
     }
 
@@ -364,7 +364,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp_texture",
-        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected textures disabled by game settings."),
+        TRANSLATE_STR("OSDMessage", "PGXP perspective corrected textures disabled by game settings."),
         osd_duration);
     }
 
@@ -378,7 +378,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     {
       Host::AddKeyedOSDMessage(
         "gamedb_disable_pgxp_texture",
-        Host::TranslateStdString("OSDMessage", "PGXP perspective corrected colors disabled by game settings."),
+        TRANSLATE_STR("OSDMessage", "PGXP perspective corrected colors disabled by game settings."),
         osd_duration);
     }
 
@@ -390,7 +390,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_vertex_cache)
     {
       Host::AddKeyedOSDMessage("gamedb_force_pgxp_vertex_cache",
-                               Host::TranslateStdString("OSDMessage", "PGXP vertex cache forced by game settings."),
+                               TRANSLATE_STR("OSDMessage", "PGXP vertex cache forced by game settings."),
                                osd_duration);
     }
 
@@ -402,7 +402,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_cpu)
     {
       Host::AddKeyedOSDMessage("gamedb_force_pgxp_cpu",
-                               Host::TranslateStdString("OSDMessage", "PGXP CPU mode forced by game settings."),
+                               TRANSLATE_STR("OSDMessage", "PGXP CPU mode forced by game settings."),
                                osd_duration);
     }
 
@@ -414,7 +414,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_depth_buffer)
     {
       Host::AddKeyedOSDMessage("gamedb_disable_pgxp_depth",
-                               Host::TranslateStdString("OSDMessage", "PGXP Depth Buffer disabled by game settings."),
+                               TRANSLATE_STR("OSDMessage", "PGXP Depth Buffer disabled by game settings."),
                                osd_duration);
     }
 
@@ -473,15 +473,15 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
             supported_controller_string.AppendString(", ");
 
           supported_controller_string.AppendString(
-            Host::TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(supported_ctype)));
+            TRANSLATE("ControllerType", Settings::GetControllerTypeDisplayName(supported_ctype)));
         }
 
         Host::AddKeyedFormattedOSDMessage(
           "gamedb_controller_unsupported", 30.0f,
-          Host::TranslateString("OSDMessage",
+          TRANSLATE("OSDMessage",
                                 "Controller in port %u (%s) is not supported for %s.\nSupported controllers: "
                                 "%s\nPlease configure a supported controller from the list above."),
-          i + 1u, Host::TranslateString("ControllerType", Settings::GetControllerTypeDisplayName(ctype)).GetCharArray(),
+          i + 1u, TRANSLATE("ControllerType", Settings::GetControllerTypeDisplayName(ctype)),
           System::GetGameTitle().c_str(), supported_controller_string.GetCharArray());
       }
     }

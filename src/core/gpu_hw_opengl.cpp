@@ -1320,7 +1320,7 @@ std::unique_ptr<GPU> GPU::CreateHardwareOpenGLRenderer()
                                     (g_host_display->GetRenderAPI() == RenderAPI::OpenGLES && GLAD_GL_ES_VERSION_3_1));
   if (!opengl_is_available)
   {
-    Host::AddOSDMessage(Host::TranslateStdString("OSDMessage",
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage",
                                                  "OpenGL renderer unavailable, your driver or hardware is not "
                                                  "recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required."),
                         20.0f);

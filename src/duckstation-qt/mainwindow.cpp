@@ -434,13 +434,9 @@ void MainWindow::setDisplayFullscreen(const std::string& fullscreen_mode)
   {
     result = g_host_display->SetFullscreen(true, width, height, refresh_rate);
     if (result)
-    {
-      Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
-    }
+      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Acquired exclusive fullscreen."), 10.0f);
     else
-    {
-      Host::AddOSDMessage(Host::TranslateStdString("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
-    }
+      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to acquire exclusive fullscreen."), 10.0f);
   }
 }
 

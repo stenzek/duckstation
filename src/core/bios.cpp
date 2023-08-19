@@ -303,7 +303,7 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region)
   if (!image.has_value())
   {
     Host::ReportFormattedErrorAsync(
-      "Error", Host::TranslateString("HostInterface", "Failed to load configured BIOS file '%s'"), bios_name.c_str());
+      "Error", TRANSLATE("HostInterface", "Failed to load configured BIOS file '%s'"), bios_name.c_str());
     return std::nullopt;
   }
 
@@ -358,7 +358,7 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
   if (!fallback_image.has_value())
   {
     Host::ReportFormattedErrorAsync("Error",
-                                    Host::TranslateString("HostInterface", "No BIOS image found for %s region"),
+                                    TRANSLATE("HostInterface", "No BIOS image found for %s region"),
                                     Settings::GetConsoleRegionDisplayName(region));
     return std::nullopt;
   }

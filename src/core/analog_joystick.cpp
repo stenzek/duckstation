@@ -59,8 +59,8 @@ bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
   {
     Host::AddFormattedOSDMessage(5.0f,
                                  m_analog_mode ?
-                                   Host::TranslateString("AnalogJoystick", "Controller %u switched to analog mode.") :
-                                   Host::TranslateString("AnalogJoystick", "Controller %u switched to digital mode."),
+                                   TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
+                                   TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
                                  m_index + 1u);
   }
   return true;
@@ -235,8 +235,8 @@ void AnalogJoystick::ToggleAnalogMode()
   Log_InfoPrintf("Joystick %u switched to %s mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddFormattedOSDMessage(5.0f,
                                m_analog_mode ?
-                                 Host::TranslateString("AnalogJoystick", "Controller %u switched to analog mode.") :
-                                 Host::TranslateString("AnalogJoystick", "Controller %u switched to digital mode."),
+                                 TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
+                                 TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
                                m_index + 1u);
 }
 

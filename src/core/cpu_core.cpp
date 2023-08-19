@@ -1829,7 +1829,7 @@ bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
 
   if (!auto_clear)
   {
-    Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Added breakpoint at 0x%08X."),
+    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Added breakpoint at 0x%08X."),
                                          address);
   }
 
@@ -1856,7 +1856,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address)
   if (it == s_breakpoints.end())
     return false;
 
-  Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Removed breakpoint at 0x%08X."),
+  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Removed breakpoint at 0x%08X."),
                                        address);
 
   s_breakpoints.erase(it);
@@ -1888,7 +1888,7 @@ bool AddStepOverBreakpoint()
 
   if (!IsCallInstruction(inst))
   {
-    Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "0x%08X is not a call instruction."),
+    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "0x%08X is not a call instruction."),
                                          g_state.pc);
     return false;
   }
@@ -1899,14 +1899,14 @@ bool AddStepOverBreakpoint()
   if (IsBranchInstruction(inst))
   {
     Host::ReportFormattedDebuggerMessage(
-      Host::TranslateString("DebuggerMessage", "Can't step over double branch at 0x%08X"), g_state.pc);
+      TRANSLATE("DebuggerMessage", "Can't step over double branch at 0x%08X"), g_state.pc);
     return false;
   }
 
   // skip the delay slot
   bp_pc += sizeof(Instruction);
 
-  Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
 
   return AddBreakpoint(bp_pc, true);
 }
@@ -1923,21 +1923,21 @@ bool AddStepOutBreakpoint(u32 max_instructions_to_search)
     if (!SafeReadInstruction(ret_pc, &inst.bits))
     {
       Host::ReportFormattedDebuggerMessage(
-        Host::TranslateString("DebuggerMessage", "Instruction read failed at %08X while searching for function end."),
+        TRANSLATE("DebuggerMessage", "Instruction read failed at %08X while searching for function end."),
         ret_pc);
       return false;
     }
 
     if (IsReturnInstruction(inst))
     {
-      Host::ReportFormattedDebuggerMessage(Host::TranslateString("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+      Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
 
       return AddBreakpoint(ret_pc, true);
     }
   }
 
   Host::ReportFormattedDebuggerMessage(
-    Host::TranslateString("DebuggerMessage", "No return instruction found after %u instructions for step-out at %08X."),
+    TRANSLATE("DebuggerMessage", "No return instruction found after %u instructions for step-out at %08X."),
     max_instructions_to_search, g_state.pc);
 
   return false;

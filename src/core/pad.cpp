@@ -193,7 +193,7 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     {
       Host::AddFormattedOSDMessage(
         10.0f,
-        Host::TranslateString("OSDMessage",
+        TRANSLATE("OSDMessage",
                               "Save state contains controller type %s in port %u, but %s is used. Switching."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u,
         Settings::GetControllerTypeName(controller_type));
@@ -201,7 +201,7 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     else
     {
       Host::AddFormattedOSDMessage(
-        10.0f, Host::TranslateString("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+        10.0f, TRANSLATE("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u);
     }
 
@@ -256,7 +256,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   {
     Host::AddFormattedOSDMessage(
       20.0f,
-      Host::TranslateString("OSDMessage",
+      TRANSLATE("OSDMessage",
                             "Memory card %u present in save state but not in system. Creating temporary card."),
       i + 1u);
     s_memory_cards[i] = MemoryCard::Create();
@@ -295,7 +295,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       {
         Host::AddFormattedOSDMessage(
           20.0f,
-          Host::TranslateString("OSDMessage",
+          TRANSLATE("OSDMessage",
                                 "Memory card %u from save state does match current card data. Simulating replugging."),
           i + 1u);
 
@@ -313,7 +313,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     {
       Host::AddFormattedOSDMessage(
         20.0f,
-        Host::TranslateString("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
+        TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
         i + 1u);
     }
 
@@ -326,7 +326,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     {
       Host::AddFormattedOSDMessage(
         20.0f,
-        Host::TranslateString("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
+        TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
         i + 1u);
       s_memory_cards[i].reset();
     }
@@ -334,7 +334,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     {
       Host::AddFormattedOSDMessage(
         20.0f,
-        Host::TranslateString("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
+        TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
         i + 1u);
       s_memory_cards[i]->Reset();
     }

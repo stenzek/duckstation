@@ -4510,9 +4510,10 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawFloatRangeSetting(bsi, "Display FPS Limit",
                         "Limits how many frames are displayed to the screen. These frames are still rendered.",
                         "Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
-  DrawToggleSetting(bsi, "Stretch Display Vertically",
-                    "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.",
-                    "Display", "StretchVertically", false);
+  DrawToggleSetting(
+    bsi, "Stretch Display Vertically",
+    "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.", "Display",
+    "StretchVertically", false);
 
   MenuHeading("PGXP Settings");
 
@@ -6955,8 +6956,7 @@ void FullscreenUI::DrawLeaderboardsWindow()
       }
       else
       {
-        text.Fmt(Host::TranslateString("Achievements", "This game has {} leaderboards.").GetCharArray(),
-                 leaderboard_count);
+        text.Fmt(TRANSLATE_FS("Achievements", "This game has {} leaderboards."), leaderboard_count);
       }
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
@@ -6973,8 +6973,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
         ImGui::RenderTextClipped(
           hardcore_warning_bb.Min, hardcore_warning_bb.Max,
-          Host::TranslateString(
-            "Achievements", "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."),
+          TRANSLATE("Achievements",
+                    "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."),
           nullptr, nullptr, ImVec2(0.0f, 0.0f), &hardcore_warning_bb);
       }
 
@@ -7008,8 +7008,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
         const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         ImGui::RenderTextClipped(score_bb.Min, score_bb.Max,
                                  lboard != nullptr && Achievements::IsLeaderboardTimeType(*lboard) ?
-                                   Host::TranslateString("Achievements", "Time") :
-                                   Host::TranslateString("Achievements", "Score"),
+                                   TRANSLATE("Achievements", "Time") :
+                                   TRANSLATE("Achievements", "Score"),
                                  nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
 
         ImGui::PopFont();
@@ -7065,8 +7065,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
         const ImVec2 pos_min(0.0f, heading_height);
         const ImVec2 pos_max(display_size.x, display_size.y);
         ImGui::RenderTextClipped(pos_min, pos_max,
-                                 Host::TranslateString("Achievements", "Downloading leaderboard data, please wait..."),
-                                 nullptr, nullptr, ImVec2(0.5f, 0.5f));
+                                 TRANSLATE("Achievements", "Downloading leaderboard data, please wait..."), nullptr,
+                                 nullptr, ImVec2(0.5f, 0.5f));
 
         ImGui::PopFont();
       }

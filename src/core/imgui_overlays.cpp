@@ -681,13 +681,13 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
   };
 
   s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
-                                      Host::TranslateStdString("SaveStateSelectorUI", "Load"));
+                                      TRANSLATE_STR("SaveStateSelectorUI", "Load"));
   s_save_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
-                                      Host::TranslateStdString("SaveStateSelectorUI", "Save"));
+                                      TRANSLATE_STR("SaveStateSelectorUI", "Save"));
   s_prev_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
-                                      Host::TranslateStdString("SaveStateSelectorUI", "Select Previous"));
+                                      TRANSLATE_STR("SaveStateSelectorUI", "Select Previous"));
   s_next_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
-                                      Host::TranslateStdString("SaveStateSelectorUI", "Select Next"));
+                                      TRANSLATE_STR("SaveStateSelectorUI", "Select Next"));
 }
 
 void SaveStateSelectorUI::SelectNextSlot()
@@ -744,7 +744,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
 
 void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot, bool global)
 {
-  li->title = Host::TranslateStdString("SaveStateSelectorUI", "No Save State");
+  li->title = TRANSLATE_STR("SaveStateSelectorUI", "No Save State");
   std::string().swap(li->serial);
   li->path = std::move(path);
   std::string().swap(li->formatted_timestamp);
@@ -817,15 +817,15 @@ void SaveStateSelectorUI::Draw()
 
         if (entry.global)
         {
-          ImGui::Text(Host::TranslateString("SaveStateSelectorUI", "Global Slot %d"), entry.slot);
+          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "Global Slot %d"), entry.slot);
         }
         else if (entry.serial.empty())
         {
-          ImGui::Text(Host::TranslateString("SaveStateSelectorUI", "Game Slot %d"), entry.slot);
+          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "Game Slot %d"), entry.slot);
         }
         else
         {
-          ImGui::Text(Host::TranslateString("SaveStateSelectorUI", "%s Slot %d"), entry.serial.c_str(), entry.slot);
+          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "%s Slot %d"), entry.serial.c_str(), entry.slot);
         }
         ImGui::TextUnformatted(entry.title.c_str());
         ImGui::TextUnformatted(entry.formatted_timestamp.c_str());

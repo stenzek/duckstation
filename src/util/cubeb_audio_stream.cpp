@@ -253,7 +253,7 @@ std::vector<std::string> AudioStream::GetCubebDriverNames()
 std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebOutputDevices(const char* driver)
 {
   std::vector<std::pair<std::string, std::string>> ret;
-  ret.emplace_back(std::string(), Host::TranslateStdString("CommonHost", "Default Output Device"));
+  ret.emplace_back(std::string(), TRANSLATE_STR("CommonHost", "Default Output Device"));
 
   cubeb* context;
   int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);

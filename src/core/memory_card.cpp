@@ -278,9 +278,8 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   if (!mc->LoadFromFile())
   {
     Log_InfoPrintf("Memory card at '%s' could not be read, formatting.", mc->m_filename.c_str());
-    Host::AddFormattedOSDMessage(
-      5.0f, Host::TranslateString("OSDMessage", "Memory card at '%s' could not be read, formatting."),
-      mc->m_filename.c_str());
+    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Memory card at '%s' could not be read, formatting."),
+                                 mc->m_filename.c_str());
     mc->Format();
   }
 
@@ -324,8 +323,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
     {
       Host::AddIconOSDMessage(
         std::move(osd_key), ICON_FA_SD_CARD,
-        fmt::format(Host::TranslateString("OSDMessage", "Failed to save memory card to '{}'.").GetCharArray(),
-                    Path::GetFileName(display_name)),
+        fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save memory card to '{}'."), Path::GetFileName(display_name)),
         20.0f);
     }
 
@@ -336,9 +334,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     Host::AddIconOSDMessage(
       std::move(osd_key), ICON_FA_SD_CARD,
-      fmt::format(Host::TranslateString("OSDMessage", "Saved memory card to '{}'.").GetCharArray(),
-                  Path::GetFileName(display_name)),
-      5.0f);
+      fmt::format(TRANSLATE_FS("OSDMessage", "Saved memory card to '{}'."), Path::GetFileName(display_name)), 5.0f);
   }
 
   return true;

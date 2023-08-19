@@ -575,8 +575,7 @@ void CommonHost::UpdateDiscordPresence(bool rich_presence_only)
   SmallString details_string;
   if (!System::IsShutdown())
   {
-    details_string.AppendFormattedString("%s (%s)", System::GetGameTitle().c_str(),
-                                         System::GetGameSerial().c_str());
+    details_string.AppendFormattedString("%s (%s)", System::GetGameTitle().c_str(), System::GetGameSerial().c_str());
   }
   else
   {
@@ -692,8 +691,8 @@ DEFINE_HOTKEY("FastForward", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOO
                 System::SetFastForwardEnabled(pressed > 0);
               })
 
-DEFINE_HOTKEY("ToggleFastForward", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Toggle Fast Forward"),
-              [](s32 pressed) {
+DEFINE_HOTKEY("ToggleFastForward", TRANSLATE_NOOP("Hotkeys", "General"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Fast Forward"), [](s32 pressed) {
                 if (!pressed)
                   System::SetFastForwardEnabled(!System::IsFastForwardEnabled());
               })
@@ -737,28 +736,26 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
               })
 
 #if !defined(__ANDROID__) && defined(WITH_CHEEVOS)
-DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Achievement List"),
-              [](s32 pressed) {
+DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"),
+              TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
                 if (!pressed)
                 {
                   if (!FullscreenUI::OpenAchievementsWindow())
                   {
                     Host::AddOSDMessage(
-                      Host::TranslateStdString("OSDMessage", "Achievements are disabled or unavailable for  game."),
-                      10.0f);
+                      TRANSLATE_STR("OSDMessage", "Achievements are disabled or unavailable for  game."), 10.0f);
                   }
                 }
               })
 
-DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"),
-              [](s32 pressed) {
+DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"),
+              TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"), [](s32 pressed) {
                 if (!pressed)
                 {
                   if (!FullscreenUI::OpenLeaderboardsWindow())
                   {
                     Host::AddOSDMessage(
-                      Host::TranslateStdString("OSDMessage", "Leaderboards are disabled or unavailable for  game."),
-                      10.0f);
+                      TRANSLATE_STR("OSDMessage", "Leaderboards are disabled or unavailable for  game."), 10.0f);
                   }
                 }
               })
@@ -769,27 +766,29 @@ DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotk
     Host::RunOnCPUThread(System::ResetSystem);
 })
 
-DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"), [](s32 pressed) {
-  if (!pressed && System::IsValid() && System::HasMediaSubImages())
-  {
-    const u32 current = System::GetMediaSubImageIndex();
-    const u32 next = (current + 1) % System::GetMediaSubImageCount();
-    if (current != next)
-      Host::RunOnCPUThread([next]() { System::SwitchMediaSubImage(next); });
-  }
-})
-
-DEFINE_HOTKEY("SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"),
+DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
               [](s32 pressed) {
+                if (!pressed && System::IsValid() && System::HasMediaSubImages())
+                {
+                  const u32 current = System::GetMediaSubImageIndex();
+                  const u32 next = (current + 1) % System::GetMediaSubImageCount();
+                  if (current != next)
+                    Host::RunOnCPUThread([next]() { System::SwitchMediaSubImage(next); });
+                }
+              })
+
+DEFINE_HOTKEY("SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"),
+              TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"), [](s32 pressed) {
                 if (!pressed)
                   System::SwapMemoryCards();
               })
 
 #ifndef __ANDROID__
-DEFINE_HOTKEY("FrameStep", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Step"), [](s32 pressed) {
-  if (!pressed)
-    System::DoFrameStep();
-})
+DEFINE_HOTKEY("FrameStep", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Step"),
+              [](s32 pressed) {
+                if (!pressed)
+                  System::DoFrameStep();
+              })
 #endif
 
 DEFINE_HOTKEY("Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"), [](s32 pressed) {
@@ -827,14 +826,14 @@ DEFINE_HOTKEY("ToggleOverclocking", TRANSLATE_NOOP("Hotkeys", "System"),
                       ((static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0) / 1000000.0;
                     Host::AddKeyedFormattedOSDMessage(
                       "ToggleOverclocking", 5.0f,
-                      Host::TranslateString("OSDMessage", "CPU clock speed control enabled (%u%% / %.3f MHz)."),
-                      percent, clock_speed);
+                      TRANSLATE("OSDMessage", "CPU clock speed control enabled (%u%% / %.3f MHz)."), percent,
+                      clock_speed);
                   }
                   else
                   {
                     Host::AddKeyedFormattedOSDMessage(
                       "ToggleOverclocking", 5.0f,
-                      Host::TranslateString("OSDMessage", "CPU clock speed control disabled (%.3f MHz)."),
+                      TRANSLATE("OSDMessage", "CPU clock speed control disabled (%.3f MHz)."),
                       static_cast<double>(System::MASTER_CLOCK) / 1000000.0);
                   }
                 }
@@ -847,7 +846,7 @@ DEFINE_HOTKEY("IncreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                   g_settings.emulation_speed += 0.1f;
                   System::UpdateSpeedLimiterState();
                   Host::AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
-                                                    Host::TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                    TRANSLATE("OSDMessage", "Emulation speed set to %u%%."),
                                                     static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
                 }
               })
@@ -859,7 +858,7 @@ DEFINE_HOTKEY("DecreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                   g_settings.emulation_speed = std::max(g_settings.emulation_speed - 0.1f, 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
-                                                    Host::TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                    TRANSLATE("OSDMessage", "Emulation speed set to %u%%."),
                                                     static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
                 }
               })
@@ -871,7 +870,7 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                   g_settings.emulation_speed = Host::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f);
                   System::UpdateSpeedLimiterState();
                   Host::AddKeyedFormattedOSDMessage("EmulationSpeedChange", 5.0f,
-                                                    Host::TranslateString("OSDMessage", "Emulation speed set to %u%%."),
+                                                    TRANSLATE("OSDMessage", "Emulation speed set to %u%%."),
                                                     static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f)));
                 }
               })
@@ -893,8 +892,8 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
-                                             Host::TranslateStdString("OSDMessage", "PGXP is now enabled.") :
-                                             Host::TranslateStdString("OSDMessage", "PGXP is now disabled."),
+                                             TRANSLATE_STR("OSDMessage", "PGXP is now enabled.") :
+                                             TRANSLATE_STR("OSDMessage", "PGXP is now disabled."),
                                            5.0f);
 
                   if (g_settings.gpu_pgxp_enable)
@@ -937,8 +936,7 @@ DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics")
                 if (!pressed && System::IsValid())
                 {
                   Host::AddKeyedOSDMessage("ReloadTextureReplacements",
-                                           Host::TranslateStdString("OSDMessage", "Texture replacements reloaded."),
-                                           10.0f);
+                                           TRANSLATE_STR("OSDMessage", "Texture replacements reloaded."), 10.0f);
                   g_texture_replacements.Reload();
                 }
               })
@@ -961,12 +959,11 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   g_gpu->UpdateSettings();
                   g_gpu->ResetGraphicsAPIState();
                   System::ClearMemorySaveStates();
-                  Host::AddKeyedOSDMessage(
-                    "TogglePGXPDepth",
-                    g_settings.gpu_pgxp_depth_buffer ?
-                      Host::TranslateStdString("OSDMessage", "PGXP Depth Buffer is now enabled.") :
-                      Host::TranslateStdString("OSDMessage", "PGXP Depth Buffer is now disabled."),
-                    5.0f);
+                  Host::AddKeyedOSDMessage("TogglePGXPDepth",
+                                           g_settings.gpu_pgxp_depth_buffer ?
+                                             TRANSLATE_STR("OSDMessage", "PGXP Depth Buffer is now enabled.") :
+                                             TRANSLATE_STR("OSDMessage", "PGXP Depth Buffer is now disabled."),
+                                           5.0f);
                 }
               })
 
@@ -984,8 +981,8 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPCPU",
                                            g_settings.gpu_pgxp_cpu ?
-                                             Host::TranslateStdString("OSDMessage", "PGXP CPU mode is now enabled.") :
-                                             Host::TranslateStdString("OSDMessage", "PGXP CPU mode is now disabled."),
+                                             TRANSLATE_STR("OSDMessage", "PGXP CPU mode is now enabled.") :
+                                             TRANSLATE_STR("OSDMessage", "PGXP CPU mode is now disabled."),
                                            5.0f);
 
                   PGXP::Shutdown();
@@ -997,25 +994,25 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                 }
               })
 
-DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
-  if (!pressed && System::IsValid())
-  {
-    g_settings.audio_output_muted = !g_settings.audio_output_muted;
-    const s32 volume = System::GetAudioOutputVolume();
-    SPU::GetOutputStream()->SetOutputVolume(volume);
-    if (g_settings.audio_output_muted)
-    {
-      Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_MUTE,
-                              Host::TranslateStdString("OSDMessage", "Volume: Muted"), 5.0f);
-    }
-    else
-    {
-      Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
-                              fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume),
-                              5.0f);
-    }
-  }
-})
+DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
+              [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                {
+                  g_settings.audio_output_muted = !g_settings.audio_output_muted;
+                  const s32 volume = System::GetAudioOutputVolume();
+                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  if (g_settings.audio_output_muted)
+                  {
+                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_MUTE,
+                                            TRANSLATE_STR("OSDMessage", "Volume: Muted"), 5.0f);
+                  }
+                  else
+                  {
+                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                                            fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
+                  }
+                }
+              })
 DEFINE_HOTKEY("AudioCDAudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle CD Audio Mute"),
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
@@ -1023,25 +1020,25 @@ DEFINE_HOTKEY("AudioCDAudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_
                   g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
                   Host::AddIconOSDMessage(
                     "AudioControlHotkey", g_settings.cdrom_mute_cd_audio ? ICON_FA_VOLUME_MUTE : ICON_FA_VOLUME_UP,
-                    g_settings.cdrom_mute_cd_audio ? Host::TranslateStdString("OSDMessage", "CD Audio Muted.") :
-                                                     Host::TranslateStdString("OSDMessage", "CD Audio Unmuted."),
+                    g_settings.cdrom_mute_cd_audio ? TRANSLATE_STR("OSDMessage", "CD Audio Muted.") :
+                                                     TRANSLATE_STR("OSDMessage", "CD Audio Unmuted."),
                     2.0f);
                 }
               })
-DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Volume Up"), [](s32 pressed) {
-  if (!pressed && System::IsValid())
-  {
-    g_settings.audio_output_muted = false;
+DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Volume Up"),
+              [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                {
+                  g_settings.audio_output_muted = false;
 
-    const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
-    g_settings.audio_output_volume = volume;
-    g_settings.audio_fast_forward_volume = volume;
-    SPU::GetOutputStream()->SetOutputVolume(volume);
-    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
-                            fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume),
-                            5.0f);
-  }
-})
+                  const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
+                  g_settings.audio_output_volume = volume;
+                  g_settings.audio_fast_forward_volume = volume;
+                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                                          fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
+                }
+              })
 DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Volume Down"),
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
@@ -1052,9 +1049,8 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
                   SPU::GetOutputStream()->SetOutputVolume(volume);
-                  Host::AddIconOSDMessage(
-                    "AudioControlHotkey", ICON_FA_VOLUME_DOWN,
-                    fmt::format(Host::TranslateString("OSDMessage", "Volume: {}%").GetCharArray(), volume), 5.0f);
+                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_DOWN,
+                                          fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
                 }
               })
 
@@ -1087,13 +1083,13 @@ DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLA
               })
 
 #define MAKE_LOAD_STATE_HOTKEY(global, slot, name)                                                                     \
-  DEFINE_HOTKEY(global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATABLE("Hotkeys", "Save States"),      \
+  DEFINE_HOTKEY(global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
                     Host::RunOnCPUThread([]() { HotkeyLoadStateSlot(global, slot); });                                 \
                 })
 #define MAKE_SAVE_STATE_HOTKEY(global, slot, name)                                                                     \
-  DEFINE_HOTKEY(global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATABLE("Hotkeys", "Save States"),      \
+  DEFINE_HOTKEY(global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
                     Host::RunOnCPUThread([]() { HotkeySaveStateSlot(global, slot); });                                 \

@@ -142,14 +142,16 @@ void Host::ReportDebuggerMessage(const std::string_view& message)
   Log_ErrorPrintf("ReportDebuggerMessage: %.*s", static_cast<int>(message.size()), message.data());
 }
 
-TinyString Host::TranslateString(const char* context, const char* str, const char* disambiguation, int n)
+s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
+                                            size_t tbuf_space)
 {
-  return str;
-}
+  if (msg.size() > tbuf_space)
+    return -1;
+  else if (msg.empty())
+    return 0;
 
-std::string Host::TranslateStdString(const char* context, const char* str, const char* disambiguation, int n)
-{
-  return str;
+  std::memcpy(tbuf, msg.data(), msg.size());
+  return static_cast<s32>(msg.size());
 }
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)

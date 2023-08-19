@@ -644,7 +644,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       {
         Host::AddKeyedOSDMessage(
           "pgxp_disabled_sw",
-          Host::TranslateStdString("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."),
+          TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."),
           10.0f);
       }
       g_settings.gpu_pgxp_enable = false;
@@ -664,14 +664,14 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   {
     Host::AddKeyedOSDMessage(
       "rewind_disabled_android",
-      Host::TranslateStdString("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
+      TRANSLATE_STR("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
     g_settings.rewind_enable = false;
   }
   if (g_settings.IsRunaheadEnabled())
   {
     Host::AddKeyedOSDMessage(
       "rewind_disabled_android",
-      Host::TranslateStdString("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."), 30.0f);
+      TRANSLATE_STR("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."), 30.0f);
     g_settings.runahead_frames = 0;
   }
 #endif
@@ -679,7 +679,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
   {
     Host::AddKeyedOSDMessage("rewind_disabled_android",
-                             Host::TranslateStdString("OSDMessage", "Rewind is disabled because runahead is enabled."),
+                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
                              10.0f);
     g_settings.rewind_enable = false;
   }
