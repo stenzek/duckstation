@@ -15,7 +15,7 @@ class CDImage;
 struct Settings;
 
 namespace GameDatabase {
-enum class CompatibilityRating : u32
+enum class CompatibilityRating : u8
 {
   Unknown = 0,
   DoesntBoot = 1,
@@ -47,6 +47,7 @@ enum class Trait : u32
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
   ForceRecompilerLUTFastmem,
+  IsLibCryptProtected,
 
   Count
 };
@@ -94,7 +95,6 @@ std::string GetSerialForDisc(CDImage* image);
 std::string GetSerialForPath(const char* path);
 
 const char* GetTraitName(Trait trait);
-const char* GetTraitDisplayName(Trait trait);
 
 const char* GetCompatibilityRatingName(CompatibilityRating rating);
 const char* GetCompatibilityRatingDisplayName(CompatibilityRating rating);

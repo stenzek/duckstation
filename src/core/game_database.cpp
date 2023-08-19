@@ -13,7 +13,6 @@
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
 #include "system.h"
-#include "tinyxml2.h"
 #include "util/cd_image.h"
 #include <iomanip>
 #include <memory>
@@ -24,14 +23,13 @@ Log_SetChannel(GameDatabase);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #endif
-#include "SimpleIni.h"
 
 namespace GameDatabase {
 
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 2,
+  GAME_DATABASE_CACHE_VERSION = 3,
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
@@ -42,31 +40,29 @@ static bool SaveToCache();
 static bool LoadGameDBJson();
 static bool ParseJsonEntry(Entry* entry, const rapidjson::Value& value);
 static bool ParseJsonCodes(u32 index, const rapidjson::Value& value);
-static bool LoadGameSettingsIni();
-static bool ParseGameSettingsIniEntry(const CSimpleIniA& ini, const char* section);
-static bool LoadGameCompatibilityXml();
 static bool LoadTrackHashes();
 
-std::array<std::pair<const char*, const char*>, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
-  {"ForceInterpreter", TRANSLATABLE("GameSettingsTrait", "Force Interpreter")},
-  {"ForceSoftwareRenderer", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer")},
-  {"ForceSoftwareRendererForReadbacks", TRANSLATABLE("GameSettingsTrait", "Force Software Renderer For Readbacks")},
-  {"ForceInterlacing", TRANSLATABLE("GameSettingsTrait", "Force Interlacing")},
-  {"DisableTrueColor", TRANSLATABLE("GameSettingsTrait", "Disable True Color")},
-  {"DisableUpscaling", TRANSLATABLE("GameSettingsTrait", "Disable Upscaling")},
-  {"DisableScaledDithering", TRANSLATABLE("GameSettingsTrait", "Disable Scaled Dithering")},
-  {"DisableForceNTSCTimings", TRANSLATABLE("GameSettingsTrait", "Disallow Forcing NTSC Timings")},
-  {"DisableWidescreen", TRANSLATABLE("GameSettingsTrait", "Disable Widescreen")},
-  {"DisablePGXP", TRANSLATABLE("GameSettingsTrait", "Disable PGXP")},
-  {"DisablePGXPCulling", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Culling")},
-  {"DisablePGXPTextureCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Perspective Correct Textures")},
-  {"DisablePGXPColorCorrection", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Perspective Correct Colors")},
-  {"DisablePGXPDepthBuffer", TRANSLATABLE("GameSettingsTrait", "Disable PGXP Depth Buffer")},
-  {"ForcePGXPVertexCache", TRANSLATABLE("GameSettingsTrait", "Force PGXP Vertex Cache")},
-  {"ForcePGXPCPUMode", TRANSLATABLE("GameSettingsTrait", "Force PGXP CPU Mode")},
-  {"ForceRecompilerMemoryExceptions", TRANSLATABLE("GameSettingsTrait", "Force Recompiler Memory Exceptions")},
-  {"ForceRecompilerICache", TRANSLATABLE("GameSettingsTrait", "Force Recompiler ICache")},
-  {"ForceRecompilerLUTFastmem", TRANSLATABLE("GameSettingsTrait", "Force Recompiler LUT Fastmem")},
+std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
+  "ForceInterpreter",
+  "ForceSoftwareRenderer",
+  "ForceSoftwareRendererForReadbacks",
+  "ForceInterlacing",
+  "DisableTrueColor",
+  "DisableUpscaling",
+  "DisableScaledDithering",
+  "DisableForceNTSCTimings",
+  "DisableWidescreen",
+  "DisablePGXP",
+  "DisablePGXPCulling",
+  "DisablePGXPTextureCorrection",
+  "DisablePGXPColorCorrection",
+  "DisablePGXPDepthBuffer",
+  "ForcePGXPVertexCache",
+  "ForcePGXPCPUMode",
+  "ForceRecompilerMemoryExceptions",
+  "ForceRecompilerICache",
+  "ForceRecompilerLUTFastmem",
+  "IsLibCryptProtected",
 }};
 
 static bool s_loaded = false;
@@ -93,8 +89,6 @@ void GameDatabase::EnsureLoaded()
     s_code_lookup = {};
 
     LoadGameDBJson();
-    LoadGameSettingsIni();
-    LoadGameCompatibilityXml();
     SaveToCache();
   }
 
@@ -180,13 +174,7 @@ GameDatabase::Entry* GameDatabase::GetMutableEntry(const std::string_view& seria
 const char* GameDatabase::GetTraitName(Trait trait)
 {
   DebugAssert(trait < Trait::Count);
-  return s_trait_names[static_cast<u32>(trait)].first;
-}
-
-const char* GameDatabase::GetTraitDisplayName(Trait trait)
-{
-  DebugAssert(trait < Trait::Count);
-  return s_trait_names[static_cast<u32>(trait)].second;
+  return s_trait_names[static_cast<u32>(trait)];
 }
 
 const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
@@ -263,9 +251,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     if (display_osd_messages && settings.gpu_renderer != GPURenderer::Software)
     {
-      Host::AddKeyedOSDMessage("gamedb_force_software_rb",
-                               Host::TranslateStdString("OSDMessage", "Using software renderer for readbacks based on game settings."),
-                               osd_duration);
+      Host::AddKeyedOSDMessage(
+        "gamedb_force_software_rb",
+        Host::TranslateStdString("OSDMessage", "Using software renderer for readbacks based on game settings."),
+        osd_duration);
     }
 
     settings.gpu_use_software_renderer_for_readbacks = true;
@@ -716,6 +705,18 @@ static bool GetStringFromObject(const rapidjson::Value& object, const char* key,
   return true;
 }
 
+static bool GetBoolFromObject(const rapidjson::Value& object, const char* key, bool* dest)
+{
+  *dest = false;
+
+  auto member = object.FindMember(key);
+  if (member == object.MemberEnd() || !member->value.IsBool())
+    return false;
+
+  *dest = member->value.GetBool();
+  return true;
+}
+
 template<typename T>
 static bool GetUIntFromObject(const rapidjson::Value& object, const char* key, T* dest)
 {
@@ -746,9 +747,38 @@ static bool GetArrayOfStringsFromObject(const rapidjson::Value& object, const ch
   return true;
 }
 
+template<typename T>
+static std::optional<T> GetOptionalIntFromObject(const rapidjson::Value& object, const char* key)
+{
+  auto member = object.FindMember(key);
+  if (member == object.MemberEnd() || !member->value.IsInt())
+    return std::nullopt;
+
+  return static_cast<T>(member->value.GetInt());
+}
+
+template<typename T>
+static std::optional<T> GetOptionalUIntFromObject(const rapidjson::Value& object, const char* key)
+{
+  auto member = object.FindMember(key);
+  if (member == object.MemberEnd() || !member->value.IsUint())
+    return std::nullopt;
+
+  return static_cast<T>(member->value.GetUint());
+}
+
+static std::optional<float> GetOptionalFloatFromObject(const rapidjson::Value& object, const char* key)
+{
+  auto member = object.FindMember(key);
+  if (member == object.MemberEnd() || !member->value.IsFloat())
+    return std::nullopt;
+
+  return member->value.GetFloat();
+}
+
 bool GameDatabase::LoadGameDBJson()
 {
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("database/gamedb.json"));
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json"));
   if (!gamedb_data.has_value())
   {
     Log_ErrorPrintf("Failed to read game database");
@@ -837,7 +867,7 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
   }
 
   entry->supported_controllers = ~0u;
-  auto controllers = value.FindMember("controllers");
+  const auto controllers = value.FindMember("controllers");
   if (controllers != value.MemberEnd())
   {
     if (controllers->value.IsArray())
@@ -870,6 +900,57 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
     else
     {
       Log_WarningPrintf("controllers is not an array");
+    }
+  }
+
+  const auto compatibility = value.FindMember("compatibility");
+  if (compatibility != value.MemberEnd())
+  {
+    if (compatibility->value.IsObject())
+    {
+      u32 rating;
+      if (GetUIntFromObject(compatibility->value, "rating", &rating) &&
+          rating < static_cast<u32>(CompatibilityRating::Count))
+      {
+        entry->compatibility = static_cast<CompatibilityRating>(rating);
+      }
+    }
+    else
+    {
+      Log_WarningPrintf("compatibility is not an object");
+    }
+  }
+
+  if (entry->serial == "SCES-02105")
+    __debugbreak();
+
+  const auto traits = value.FindMember("traits");
+  if (traits != value.MemberEnd())
+  {
+    if (traits->value.IsObject())
+    {
+      const auto& traitsobj = traits->value;
+      for (u32 trait = 0; trait < static_cast<u32>(Trait::Count); trait++)
+      {
+        bool bvalue;
+        if (GetBoolFromObject(traitsobj, s_trait_names[trait], &bvalue) && bvalue)
+          entry->traits[trait] = bvalue;
+      }
+
+      entry->display_active_start_offset = GetOptionalIntFromObject<s16>(traitsobj, "DisplayActiveStartOffset");
+      entry->display_active_end_offset = GetOptionalIntFromObject<s16>(traitsobj, "DisplayActiveEndOffset");
+      entry->display_line_start_offset = GetOptionalIntFromObject<s8>(traitsobj, "DisplayLineStartOffset");
+      entry->display_line_end_offset = GetOptionalIntFromObject<s8>(traitsobj, "DisplayLineEndOffset");
+      entry->dma_max_slice_ticks = GetOptionalUIntFromObject<u32>(traitsobj, "DMAMaxSliceTicks");
+      entry->dma_halt_ticks = GetOptionalUIntFromObject<u32>(traitsobj, "DMAHaltTicks");
+      entry->gpu_fifo_size = GetOptionalUIntFromObject<u32>(traitsobj, "GPUFIFOSize");
+      entry->gpu_max_run_ahead = GetOptionalUIntFromObject<u32>(traitsobj, "GPUMaxRunAhead");
+      entry->gpu_pgxp_tolerance = GetOptionalFloatFromObject(traitsobj, "GPUPGXPTolerance");
+      entry->gpu_pgxp_depth_threshold = GetOptionalFloatFromObject(traitsobj, "GPUPGXPDepthThreshold");
+    }
+    else
+    {
+      Log_WarningPrintf("traits is not an object");
     }
   }
 
@@ -915,151 +996,6 @@ bool GameDatabase::ParseJsonCodes(u32 index, const rapidjson::Value& value)
   return (added > 0);
 }
 
-bool GameDatabase::LoadGameSettingsIni()
-{
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("database/gamesettings.ini"));
-  if (!gamedb_data.has_value())
-  {
-    Log_ErrorPrintf("Failed to read gamesettings database");
-    return false;
-  }
-
-  CSimpleIniA ini;
-  SI_Error err = ini.LoadData(gamedb_data->data(), gamedb_data->size());
-  if (err != SI_OK)
-  {
-    Log_ErrorPrintf("Failed to parse game settings ini: %d", static_cast<int>(err));
-    return false;
-  }
-
-  std::list<CSimpleIniA::Entry> sections;
-  ini.GetAllSections(sections);
-  for (const CSimpleIniA::Entry& section_entry : sections)
-    ParseGameSettingsIniEntry(ini, section_entry.pItem);
-
-  Log_InfoPrintf("Loaded %zu gamesettings entries", sections.size());
-  return true;
-}
-
-bool GameDatabase::ParseGameSettingsIniEntry(const CSimpleIniA& ini, const char* section)
-{
-  Entry* entry = GetMutableEntry(section);
-  if (!entry)
-  {
-    Log_ErrorPrintf("Unknown game serial '%s' in gamesettings", section);
-    return false;
-  }
-
-  for (u32 trait = 0; trait < static_cast<u32>(Trait::Count); trait++)
-  {
-    if (ini.GetBoolValue(section, s_trait_names[trait].first, false))
-      entry->traits[trait] = true;
-  }
-
-  long lvalue = ini.GetLongValue(section, "DisplayActiveStartOffset", 0);
-  if (lvalue != 0)
-    entry->display_active_start_offset = static_cast<s16>(lvalue);
-  lvalue = ini.GetLongValue(section, "DisplayActiveEndOffset", 0);
-  if (lvalue != 0)
-    entry->display_active_end_offset = static_cast<s16>(lvalue);
-  lvalue = ini.GetLongValue(section, "DisplayLineStartOffset", 0);
-  if (lvalue != 0)
-    entry->display_line_start_offset = static_cast<s8>(lvalue);
-  lvalue = ini.GetLongValue(section, "DisplayLineEndOffset", 0);
-  if (lvalue != 0)
-    entry->display_line_end_offset = static_cast<s8>(lvalue);
-  lvalue = ini.GetLongValue(section, "DMAMaxSliceTicks", 0);
-  if (lvalue > 0)
-    entry->dma_max_slice_ticks = static_cast<u32>(lvalue);
-  lvalue = ini.GetLongValue(section, "DMAHaltTicks", 0);
-  if (lvalue > 0)
-    entry->dma_halt_ticks = static_cast<u32>(lvalue);
-  lvalue = ini.GetLongValue(section, "GPUFIFOSize", 0);
-  if (lvalue > 0)
-    entry->gpu_fifo_size = static_cast<u32>(lvalue);
-  lvalue = ini.GetLongValue(section, "GPUMaxRunAhead", 0);
-  if (lvalue > 0)
-    entry->gpu_max_run_ahead = static_cast<u32>(lvalue);
-  float fvalue = static_cast<float>(ini.GetDoubleValue(section, "GPUPGXPTolerance", -1.0f));
-  if (fvalue >= 0.0f)
-    entry->gpu_pgxp_tolerance = fvalue;
-  fvalue = static_cast<float>(ini.GetDoubleValue(section, "GPUPGXPDepthThreshold", -1.0f));
-  if (fvalue > 0.0f)
-    entry->gpu_pgxp_depth_threshold = fvalue;
-
-  return true;
-}
-
-class CompatibilityListVisitor final : public tinyxml2::XMLVisitor
-{
-public:
-  ALWAYS_INLINE u32 GetCount() const { return m_count; }
-
-  bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute) override
-  {
-    // recurse into gamelist
-    if (StringUtil::Strcasecmp(element.Name(), "compatibility-list") == 0)
-      return true;
-
-    if (StringUtil::Strcasecmp(element.Name(), "entry") != 0)
-      return false;
-
-    const char* attr = element.Attribute("code");
-    std::string code(attr ? attr : "");
-    const u32 compatibility = static_cast<u32>(element.IntAttribute("compatibility"));
-
-    if (code.empty() || compatibility >= static_cast<u32>(GameDatabase::CompatibilityRating::Count))
-    {
-      Log_ErrorPrintf("Missing child node at line %d", element.GetLineNum());
-      return false;
-    }
-
-    GameDatabase::Entry* entry = GameDatabase::GetMutableEntry(code);
-    if (!entry)
-    {
-      Log_ErrorPrintf("Unknown serial in compatibility list: '%s'", code.c_str());
-      return false;
-    }
-
-    entry->compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility);
-    m_count++;
-    return false;
-  }
-
-private:
-  u32 m_count = 0;
-};
-
-bool GameDatabase::LoadGameCompatibilityXml()
-{
-  std::optional<std::string> xml(Host::ReadResourceFileToString("database/compatibility.xml"));
-  if (!xml.has_value())
-  {
-    Log_ErrorPrintf("Failed to load compatibility.xml from package");
-    return false;
-  }
-
-  tinyxml2::XMLDocument doc;
-  tinyxml2::XMLError error = doc.Parse(xml->c_str(), xml->size());
-  if (error != tinyxml2::XML_SUCCESS)
-  {
-    Log_ErrorPrintf("Failed to parse compatibility list: %s", tinyxml2::XMLDocument::ErrorIDToName(error));
-    return false;
-  }
-
-  const tinyxml2::XMLElement* datafile_elem = doc.FirstChildElement("compatibility-list");
-  if (!datafile_elem)
-  {
-    Log_ErrorPrintf("Failed to get compatibility-list element");
-    return false;
-  }
-
-  CompatibilityListVisitor visitor;
-  datafile_elem->Accept(&visitor);
-  Log_InfoPrintf("Loaded %u entries from compatibility list", visitor.GetCount());
-  return true;
-}
-
 void GameDatabase::EnsureTrackHashesMapLoaded()
 {
   if (s_track_hashes_loaded)
@@ -1071,7 +1007,7 @@ void GameDatabase::EnsureTrackHashesMapLoaded()
 
 bool GameDatabase::LoadTrackHashes()
 {
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("database/gamedb.json"));
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json"));
   if (!gamedb_data.has_value())
   {
     Log_ErrorPrintf("Failed to read game database");

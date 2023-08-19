@@ -51,7 +51,6 @@
     <ClCompile Include="cpu_recompiler_code_generator_aarch32.cpp" />
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
-    <ClCompile Include="libcrypt_serials.cpp" />
     <ClCompile Include="texture_replacements.cpp" />
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="gpu_hw_d3d12.cpp" />
@@ -117,7 +116,6 @@
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_sw_backend.h" />
-    <ClInclude Include="libcrypt_serials.h" />
     <ClInclude Include="texture_replacements.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="multitap.h" />

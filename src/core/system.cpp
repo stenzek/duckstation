@@ -25,11 +25,9 @@
 #include "gpu.h"
 #include "gte.h"
 #include "host.h"
-#include "util/host_display.h"
 #include "host_interface_progress_callback.h"
 #include "host_settings.h"
 #include "interrupt_controller.h"
-#include "libcrypt_serials.h"
 #include "mdec.h"
 #include "memory_card.h"
 #include "multitap.h"
@@ -44,6 +42,7 @@
 #include "timers.h"
 #include "util/audio_stream.h"
 #include "util/cd_image.h"
+#include "util/host_display.h"
 #include "util/ini_settings_interface.h"
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
@@ -148,8 +147,8 @@ static BIOS::Hash s_bios_hash = {};
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
 static std::string s_running_game_title;
+static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
-static bool s_running_unknown_game;
 static bool s_was_fast_booted;
 
 static float s_throttle_frequency = 60.0f;
@@ -333,7 +332,7 @@ System::GameHash System::GetGameHash()
 
 bool System::IsRunningUnknownGame()
 {
-  return s_running_unknown_game;
+  return !s_running_game_entry;
 }
 
 bool System::WasFastBooted()
@@ -1561,8 +1560,8 @@ void System::ClearRunningGame()
   s_running_game_serial.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
+  s_running_game_entry = nullptr;
   s_running_game_hash = 0;
-  s_running_unknown_game = false;
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 
@@ -3126,8 +3125,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_running_game_path.clear();
   s_running_game_serial.clear();
   s_running_game_title.clear();
+  s_running_game_entry = nullptr;
   s_running_game_hash = 0;
-  s_running_unknown_game = true;
 
   if (path && std::strlen(path) > 0)
   {
@@ -3143,12 +3142,11 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       std::string id;
       GetGameDetailsFromImage(image, &id, &s_running_game_hash);
 
-      const GameDatabase::Entry* entry = GameDatabase::GetEntryForId(id);
-      if (entry)
+      s_running_game_entry = GameDatabase::GetEntryForId(id);
+      if (s_running_game_entry)
       {
-        s_running_game_serial = entry->serial;
-        s_running_game_title = entry->title;
-        s_running_unknown_game = false;
+        s_running_game_serial = s_running_game_entry->serial;
+        s_running_game_title = s_running_game_entry->title;
       }
       else
       {
@@ -3186,7 +3184,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
 
 bool System::CheckForSBIFile(CDImage* image)
 {
-  if (s_running_game_serial.empty() || !LibcryptGameList::IsLibcryptGameCode(s_running_game_serial) || !image ||
+  if (!s_running_game_entry || !s_running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) || !image ||
       image->HasNonStandardSubchannel())
   {
     return true;

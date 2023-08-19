@@ -26,7 +26,7 @@ class QUrl;
 enum class ConsoleRegion;
 enum class DiscRegion : u8;
 namespace GameDatabase {
-enum class CompatibilityRating : u32;
+enum class CompatibilityRating : u8;
 }
 namespace GameList {
 enum class EntryType;

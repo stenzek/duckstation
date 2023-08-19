@@ -22,8 +22,6 @@
 #include "common/progress_callback.h"
 #include "common/string_util.h"
 
-#include "tinyxml2.h"
-
 #include <algorithm>
 #include <array>
 #include <cctype>
