@@ -8124,7 +8124,7 @@ Deseja carregar e continuar a partir desde dado ?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7862"/>
         <source>OSD Scale</source>
-        <translation>Escala de mensagens OSD</translation>
+        <translation>Tamanho das mensagens em tela</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7863"/>
