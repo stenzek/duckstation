@@ -66,12 +66,12 @@ enum class Condition : u8
 
 #if defined(CPU_X64)
 
-using HostReg = Xbyak::Operand::Code;
+using HostReg = unsigned;
 using CodeEmitter = Xbyak::CodeGenerator;
 using LabelType = Xbyak::Label;
 enum : u32
 {
-  HostReg_Count = 15
+  HostReg_Count = 16
 };
 constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
 constexpr RegSize HostPointerSize = RegSize_64;
