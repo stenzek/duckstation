@@ -71,7 +71,7 @@ using CodeEmitter = Xbyak::CodeGenerator;
 using LabelType = Xbyak::Label;
 enum : u32
 {
-  HostReg_Count = 16
+  HostReg_Count = 15
 };
 constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
 constexpr RegSize HostPointerSize = RegSize_64;
