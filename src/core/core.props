@@ -13,6 +13,8 @@
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\rainterface</AdditionalIncludeDirectories>
       
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\xbyak\xbyak</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">XBYAK_NO_EXCEPTION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\vixl\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>

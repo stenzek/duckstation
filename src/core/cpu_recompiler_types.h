@@ -66,7 +66,7 @@ enum class Condition : u8
 
 #if defined(CPU_X64)
 
-using HostReg = Xbyak::Operand::Code;
+using HostReg = unsigned;
 using CodeEmitter = Xbyak::CodeGenerator;
 using LabelType = Xbyak::Label;
 enum : u32

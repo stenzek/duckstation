@@ -1,5 +1,5 @@
 
-    C++用x86(IA-32), x64(AMD64, x86-64) JITアセンブラ Xbyak 5.41
+    C++用x86(IA-32), x64(AMD64, x86-64) JITアセンブラ Xbyak 6.73
 
 -----------------------------------------------------------------------------
 ◎概要
@@ -22,21 +22,21 @@
     Intel Mac
     などで動作確認をしています。
 
-※ Xbyakはデフォルトでand(), or(), xor(), not()関数を使います。
-gccではそれらを演算子として解釈してしまうため、-fno-operator-namesオプションを追加してコンパイルしてください。
-あるいはXBYAK_NO_OP_NAMESを定義してand_(), or_(), xor_(), not_()を使ってください。
-and_(), or_(), xor_(), not_()はXBYAK_NO_OP_NAMESされていないときでも使えます。
+※ and, orなどの代わりにand_, or_を使用してください。
+and, orなどを使いたい場合は-fno-operator-namesをgcc/clangに指定してください。
 
 -----------------------------------------------------------------------------
 ◎準備
 xbyak.h
 xbyak_bin2hex.h
-xbyak_mnemonic.h
 これらを同一のパスに入れてインクルードパスに追加してください。
 
 Linuxではmake installで/usr/local/include/xbyakにコピーされます。
 -----------------------------------------------------------------------------
 ◎下位互換性の破れ
+* push byte, immまたはpush word, immが下位8bit, 16bitにキャストした値を使うように変更。
+* (Windows) `<winsock2.h>`をincludeしなくなったので必要なら明示的にincludeしてください。
+* XBYAK_USE_MMAP_ALLOCATORがデフォルトで有効になりました。従来の方式にする場合はXBYAK_DONT_USE_MMAP_ALLOCATORを定義してください。
 * Xbyak::Errorの型をenumからclassに変更
 ** 従来のenumの値をとるにはintにキャストしてください。
 * (古い)Reg32eクラスを(新しい)Reg32eとRegExpに分ける。
@@ -46,6 +46,13 @@ Linuxではmake installで/usr/local/include/xbyakにコピーされます。
 -----------------------------------------------------------------------------
 ◎新機能
 
+例外なしモード追加
+XBYAK_NO_EXCEPTIONを定義してコンパイルするとgcc/clangで-fno-exceptionsオプションでコンパイルできます。
+エラーは例外の代わりに`Xbyak::GetError()`で通達されます。
+この値が0でなければ何か問題が発生しています。
+この値は自動的に変更されないので`Xbyak::ClearError()`でリセットしてください。
+`CodeGenerator::reset()`は`ClearError()`を呼びます。
+
 MmapAllocator追加
 これはUnix系OSでのみの仕様です。XBYAK_USE_MMAP_ALLOCATORを使うと利用できます。
 デフォルトのAllocatorはメモリ確保時にposix_memalignを使います。
@@ -54,7 +61,6 @@ map countの最大値は/proc/sys/vm/max_map_countに書かれています。
 デフォルトでは3万個ほどのXbyak::CodeGeneratorインスタンスを生成するとエラーになります。
 test/mprotect_test.cppで確認できます。
 これを避けるためにはmmapを使うMmapAllocatorを使ってください。
-将来この挙動がデフォルトになるかもしれません。
 
 
 AutoGrowモード追加
@@ -155,15 +161,20 @@ vcvtpd2dq xmm19, [eax+32]{1to4}         --> vcvtpd2dq(xmm19, yword_b [eax+32]); 
 
 vfpclassps k5{k3}, zword [rax+64], 5    --> vfpclassps(k5|k3, zword [rax+64], 5); // specify m512
 vfpclasspd k5{k3}, [rax+64]{1to2}, 5    --> vfpclasspd(k5|k3, xword_b [rax+64], 5); // broadcast 64-bit to 128-bit
-vfpclassps k5{k3}, [rax+64]{1to4}, 5    --> vfpclassps(k5|k3, xword_b [rax+64], 5); // broadcast 32-bit to 128-bit
+vfpclassps k5{k3}, [rax+64]{1to4}, 5    --> vfpclassps(k5|k3, xword_b [rax+64], 5); // broadcast 64-bit to 256-bit
 
-
+vpdpbusd(xm0, xm1, xm2); // default encoding is EVEX
+vpdpbusd(xm0, xm1, xm2, EvexEncoding); // same as the above
+vpdpbusd(xm0, xm1, xm2, VexEncoding); // VEX encoding
+setDefaultEncoding(VexEncoding); // default encoding is VEX
+vpdpbusd(xm0, xm1, xm2); // VEX encoding
 注意
 * k1, ..., k7 は新しいopmaskレジスタです。
 * z, sae, rn-sae, rd-sae, ru-sae, rz-saeの代わりにT_z, T_sae, T_rn_sae, T_rd_sae, T_ru_sae, T_rz_saeを使ってください。
 * `k4 | k3`と`k3 | k4`は意味が異なります。
 * {1toX}の代わりにptr_bを使ってください。Xは自動的に決まります。
 * 一部の命令はメモリサイズを指定するためにxword/yword/zword(_b)を使ってください。
+* setDefaultEncoding()でencoding省略時のEVEX/VEXを設定できます。
 
 ・ラベル
 
@@ -245,8 +256,8 @@ void func2()
 
 更にラベルの割り当てを行うassignL(dstLabel, srcLabel)という命令も追加されました。
 
-      Label label1, label2;
-    L(label1);
+      Label label2;
+    Label label1 = L(); // Label label1; L(label1);と同じ意味
       ...
       jmp(label2);
       ...
@@ -266,6 +277,24 @@ Label label;
 assert(label.getAddress(), 0);
 L(label);
 assert(label.getAddress(), getCurr());
+```
+
+4. farジャンプ
+
+`jmp(mem, T_FAR)`, `call(mem, T_FAR)`, `retf()`をサポートします。
+サイズを明示するために`ptr`の代わりに`word|dword|qword`を利用してください。
+
+32bit
+```
+jmp(word[eax], T_FAR);  // jmp m16:16(FF /5)
+jmp(dword[eax], T_FAR); // jmp m16:32(FF /5)
+```
+
+64bit
+```
+jmp(word[rax], T_FAR);  // jmp m16:16(FF /5)
+jmp(dword[rax], T_FAR); // jmp m16:32(FF /5)
+jmp(qword[rax], T_FAR); // jmp m16:64(REX.W FF /5)
 ```
 
 ・Xbyak::CodeGenerator()コンストラクタインタフェース
@@ -309,6 +338,41 @@ bool CodeArray::protect(const void *addr, size_t size, bool canExec);
 */
 uint8 *CodeArray::getAlignedAddress(uint8 *addr, size_t alignedSize = ALIGN_SIZE);
 
+・read/execモード
+デフォルトのCodeGeneratorはコンストラクト時にJIT用の領域をread/write/execモードに設定して利用します。
+コード生成時はread/writeでコード実行時にはread/execにしたい場合、次のようにしてください。
+
+struct Code : Xbyak::CodeGenerator {
+    Code()
+        : Xbyak::CodeGenerator(4096, Xbyak::DontUseProtect) // JIT領域をread/writeのままコード生成
+    {
+        mov(eax, 123);
+        ret();
+    }
+};
+
+Code c;
+c.setProtectModeRE(); // read/execモードに変更
+// JIT領域を実行
+
+AutoGrowの場合はreadyの代わりにreadyRE()を読んでください。
+
+struct Code : Xbyak::CodeGenerator {
+    Code()
+        : Xbyak::CodeGenerator(4096, Xbyak::AutoGrow) // JIT領域をread/writeのままコード生成
+    {
+        mov(eax, 123);
+        ret();
+    }
+};
+
+Code c;
+c.readyRE(); // read/exeモードに変更
+// JIT領域を実行
+
+setProtectModeRW()を呼ぶと領域が元のread/execモードに戻ります。
+
+
 その他詳細は各種サンプルを参照してください。
 -----------------------------------------------------------------------------
 ◎マクロ
@@ -335,14 +399,104 @@ http://opensource.org/licenses/BSD-3-Clause
 sample/{echo,hello}.bfは http://www.kmonos.net/alang/etc/brainfuck.php から
 いただきました。
 
-test/cybozu/以下のファイルはcybozulib(https://github.com/herumi/cybozulib/)
-の一部を使っています。cybozulibはBSD-3-Clauseライセンスです。
-cybozulibは単体テストでのみ利用されていて、xbyak/ディレクトリ以下のヘッダ
-ファイルはcybozulibとは独立に利用できます。
-
 -----------------------------------------------------------------------------
 ◎履歴
 
+2023/08/07 ver 6.73 sha512/sm3/sm4/avx-vnni-int16追加
+2023/08/02 ver 6.72 xabort, xbegin, xend追加
+2023/07/27 ver 6.71 Allocatorでhuge pageを考慮する。
+2023/07/05 ver 6.70 vpclmulqdqのailas追加
+2023/06/27 ver 6.69.2 `TypeT operator|`にconstexpr追加(thanks to Wunkolo)
+2023/03/23 ver 6.69.1 xsave判定追加(thanks to Wunkolo)
+2023/02/20 ver 6.69 util::CpuがAMD対応 UINTR命令対応
+2022/12/07 ver 6.68 prefetchit{0,1}サポート
+2022/11/30 ver 6.67 CMPccXADDサポート
+2022/11/25 ver 6.66 RAO-INTサポート
+2022/11/22 ver 6.65 x32動作確認
+2022/11/04 ver 6.64 vmov*命令をmaskつきアドレッシング対応修正
+2022/10/06 ver 6.63 AVX-IFMA用のvpmadd52{h,l}uq対応
+2022/10/05          amx_fp16/avx_vnni_int8/avx_ne_convertt対応とsetDefaultEncoding()追加
+2022/09/15 ver 6.62 serialize追加
+2022/08/02 ver 6.61.1 noexceptはVisual Studio 2015以降対応
+2022/07/29 ver 6.61 movzx eax, ahがエラーになるのを修正
+2022/06/16 ver 6.60.2 GFNI, VAES, VPCLMULQDQの判定修正
+2022/06/15 ver 6.60.1 Visual Studio /O0でXbyak::util::Cpuがリンクエラーになるのに対応
+2022/06/06 ver 6.60 バージョンのつけ方を数値が戻らないように変更
+2022/06/01 ver 6.06 Cpu::TypeクラスのリファクタリングとXBYAK_USE_MEMFDが定義されたときのMmapAllocatorの改善
+2022/05/20 ver 6.052 Cpu::operator==()を正しく定義
+2022/05/13 ver 6.051 XYBAK_NO_EXCEPTIONを定義したときのCpuクラスのコンパイルエラー修正
+2022/05/12 ver 6.05 movdiri, movdir64b, clwb, cldemoteを追加
+2022/04/05 ver 6.04 tpause, umonitor, umwaitを追加
+2022/03/08 ver 6.03 MmapAllocatorがmemfd用のユーザ定義文字列をサポート
+2022/01/28 ver 6.02 dispacementの32bit範囲チェックの厳密化
+2021/12/14 ver 6.01 T_FAR jump/callとretfをサポート
+2021/09/14 ver 6.00 AVX512-FP16を完全サポート
+2021/09/09 ver 5.997 vrndscale*を{sae}をサポートするよう修正
+2021/09/03 ver 5.996 v{add,sub,mul,div,max,min}{sd,ss}をT_rd_saeなどをサポートするよう修正
+2021/08/15 ver 5.995 Linux上でXBYAK_USE_MEMFDが定義されたなら/proc/self/mapsにラベル追加
+2021/06/17 ver 5.994 マスクレジスタ用のvcmpXX{ps,pd,ss,sd}のalias追加
+2021/06/06 ver 5.993 gather/scatterのレジスタの組み合わせの厳密なチェック
+2021/05/09 ver 5.992 endbr32とendbr64のサポート
+2020/11/16 ver 5.991 g++-5のC++14でconstexpr機能の抑制
+2020/10/19 ver 5.99 VNNI命令サポート(Thanks to akharito)
+2020/10/17 ver 5.98 [scale * reg]のサポート
+2020/09/08 ver 5.97 uint32などをuint32_tに置換
+2020/08/28 ver 5.95 レジスタクラスのコンストラクタがconstexprに対応(C++14以降)
+2020/08/04 ver 5.941 `CodeGenerator::reset()`が`ClearError()`を呼ぶように変更
+2020/07/28 ver 5.94 #include <winsock2.h>の削除 (only windows)
+2020/07/21 ver 5.93 例外なしモード追加
+2020/06/30 ver 5.92 Intel AMX命令サポート (Thanks to nshustrov)
+2020/06/19 ver 5.913 32ビット環境でXBYAK64を定義したときのmov(r64, imm64)を修正
+2020/06/19 ver 5.912 macOSの古いXcodeでもMAP_JITを有効にする(Thanks to rsdubtso)
+2020/05/10 ver 5.911 Linux/macOSでXBYAK_USE_MMAP_ALLOCATORがデフォルト有効になる
+2020/04/20 ver 5.91 マスクレジスタk0を受け入れる(マスクをしない)
+2020/04/09 ver 5.90 kmov{b,w,d,q}がサポートされないレジスタを受けると例外を投げる
+2020/02/26 ver 5.891 zm0のtype修正
+2020/01/03 ver 5.89 vfpclasspdの処理エラー修正
+2019/12/20 ver 5.88 Windowsでのコンパイルエラー修正
+2019/12/19 ver 5.87 未定義ラベルへのjmp命令のデフォルト挙動をT_NEARにするsetDefaultJmpNEAR()を追加
+2019/12/13 ver 5.86 [変更] -fno-operator-namesが指定されたときは5.84以前の挙動に戻す
+2019/12/07 ver 5.85 mmapにMAP_JITフラグを追加(macOS mojave以上)
+2019/11/29 ver 5.84 [変更] XBYAK_USE_OP_NAMESが定義されていない限りXBYAK_NO_OP_NAMESが定義されるように変更
+2019/10/12 ver 5.83 exit(1)の除去
+2019/09/23 ver 5.82 monitorx, mwaitx, clzero対応 (thanks to MagurosanTeam)
+2019/09/14 ver 5.81 いくつかの一般命令をサポート
+2019/08/01 ver 5.802 AVX512_BF16判定修正 (thanks to vpirogov)
+2019/05/27 support vp2intersectd, vp2intersectq (not tested)
+2019/05/26 ver 5.80 support vcvtne2ps2bf16, vcvtneps2bf16, vdpbf16ps
+2019/04/27 ver 5.79 vcmppd/vcmppsのptr_b対応忘れ(thanks to jkopinsky)
+2019/04/15 ver 5.78 Reg::changeBit()のリファクタリング(thanks to MerryMage)
+2019/03/06 ver 5.77 LLCキャッシュを共有数CPU数の修整(by densamoilov)
+2019/01/17 ver 5.76 Cpu::getNumCores()追加(by shelleygoel)
+2018/10/31 ver 5.751 互換性のためにXbyak::CastToの復元
+2018/10/29 ver 5.75 LabelManagerのデストラクタでLabelから参照を切り離す
+2018/10/21 ver 5.74 RegRip +/intの形をサポート Xbyak::CastToを削除
+2018/10/15 util::StackFrameでmovの代わりにpush/popを使う
+2018/09/19 ver 5.73 vpslld, vpslldq, vpsllwなどの(reg, mem, imm8)に対するevexエンコーディング修整
+2018/09/19 ver 5.72 fix the encoding of vinsertps for disp8N(Thanks to petercaday)
+2018/08/27 ver 5.71 新しいlabelインスタンスを返すL()を追加
+2018/08/27 ver 5.70 read/exec設定のためのsetProtectMode()とDontUseProtectの追加
+2018/08/24 ver 5.68 indexが16以上のVSIBエンコーディングのバグ修正(thanks to petercaday)
+2018/08/14 ver 5.67 Addressクラス内のmutableを削除 ; fix setCacheHierarchy for cloud vm
+2018/07/26 ver 5.661 mingw64対応
+2018/07/24 ver 5.66 protect()のmodeにCodeArray::PROTECT_REを追加
+2018/06/26 ver 5.65 fix push(qword [mem])
+2018/03/07 ver 5.64 Cpu()の中でzero divisionが出ることがあるのを修正
+2018/02/14 ver 5.63 Cpu::setCacheHierarchy()の修正とclang<3.9のためのEvexModifierZero修正(thanks to mgouicem)
+2018/02/13 ver 5.62 Cpu::setCacheHierarchy() by mgouicem and rsdubtso
+2018/02/07 ver 5.61 vmov*がmem{k}{z}形式対応(忘れてた)
+2018/01/24 ver 5.601 xword, ywordなどをXbyak::util名前空間に追加
+2018/01/05 ver 5.60 Ice lake系命令対応(319433-030.pdf)
+2017/08/22 ver 5.53 mpxエンコーディングバグ修正, bnd()プレフィクス追加
+2017/08/18 ver 5.52 align修正(thanks to MerryMage)
+2017/08/17 ver 5.51 multi-byte nop追加 align()はそれを使用する(thanks to inolen)
+2017/08/08 ver 5.50 mpx追加(thanks to magurosan)
+2017/08/08 ver 5.45 sha追加(thanks to magurosan)
+2017/08/08 ver 5.44 prefetchw追加(thanks to rsdubtso)
+2017/07/12 ver 5.432 PVS-studioの警告を減らす
+2017/07/09 ver 5.431 hasRex()修正 (影響なし) (thanks to drillsar)
+2017/05/14 ver 5.43 CodeGenerator::resetSize()修正(thanks to gibbed)
+2017/05/13 ver 5.42 movs{b,w,d,q}追加
 2017/01/26 ver 5.41 prefetcwt1追加とscale == 0対応(thanks to rsdubtso)
 2016/12/14 ver 5.40 Labelが示すアドレスを取得するLabel::getAddress()追加
 2016/12/07 ver 5.34 disp8N時の負のオフセット処理の修正(thanks to rsdubtso)
@@ -458,7 +612,3 @@ cybozulibは単体テストでのみ利用されていて、xbyak/ディレク�
 ◎著作権者
 
 光成滋生(MITSUNARI Shigeo, herumi@nifty.com)
-
----
-$Revision: 1.56 $
-$Date: 2010/04/16 11:58:22 $

@@ -226,10 +226,7 @@ endif()
 
 
 # We don't need exceptions, disable them to save a bit of code size.
-# Except xbyak still uses them :(
-if(NOT ("${CPU_ARCH}" STREQUAL "x86" OR "${CPU_ARCH}" STREQUAL "x64"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 
 
 # Write binaries to a seperate directory.
