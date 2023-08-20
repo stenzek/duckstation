@@ -11,9 +11,9 @@
 #include "common/string_util.h"
 #include "controller.h"
 #include "host.h"
-#include "util/host_display.h"
 #include "host_settings.h"
 #include "system.h"
+#include "util/host_display.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -644,8 +644,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       {
         Host::AddKeyedOSDMessage(
           "pgxp_disabled_sw",
-          TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."),
-          10.0f);
+          TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
       }
       g_settings.gpu_pgxp_enable = false;
     }
@@ -662,16 +661,15 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 #if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
   if (g_settings.rewind_enable)
   {
-    Host::AddKeyedOSDMessage(
-      "rewind_disabled_android",
-      TRANSLATE_STR("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
+    Host::AddKeyedOSDMessage("rewind_disabled_android",
+                             TRANSLATE_STR("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
     g_settings.rewind_enable = false;
   }
   if (g_settings.IsRunaheadEnabled())
   {
-    Host::AddKeyedOSDMessage(
-      "rewind_disabled_android",
-      TRANSLATE_STR("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."), 30.0f);
+    Host::AddKeyedOSDMessage("rewind_disabled_android",
+                             TRANSLATE_STR("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."),
+                             30.0f);
     g_settings.runahead_frames = 0;
   }
 #endif
@@ -679,8 +677,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
   {
     Host::AddKeyedOSDMessage("rewind_disabled_android",
-                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
-                             10.0f);
+                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."), 10.0f);
     g_settings.rewind_enable = false;
   }
 
@@ -728,8 +725,8 @@ static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
   {TRANSLATE_NOOP("LogLevel", "None"), TRANSLATE_NOOP("LogLevel", "Error"), TRANSLATE_NOOP("LogLevel", "Warning"),
    TRANSLATE_NOOP("LogLevel", "Performance"), TRANSLATE_NOOP("LogLevel", "Information"),
-   TRANSLATE_NOOP("LogLevel", "Verbose"), TRANSLATE_NOOP("LogLevel", "Developer"), TRANSLATE_NOOP("LogLevel", "Profile"),
-   TRANSLATE_NOOP("LogLevel", "Debug"), TRANSLATE_NOOP("LogLevel", "Trace")}};
+   TRANSLATE_NOOP("LogLevel", "Verbose"), TRANSLATE_NOOP("LogLevel", "Developer"),
+   TRANSLATE_NOOP("LogLevel", "Profile"), TRANSLATE_NOOP("LogLevel", "Debug"), TRANSLATE_NOOP("LogLevel", "Trace")}};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 {
@@ -752,13 +749,14 @@ const char* Settings::GetLogLevelName(LOGLEVEL level)
 
 const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
 {
-  return s_log_level_display_names[static_cast<int>(level)];
+  return Host::TranslateToCString("LogLevel", s_log_level_display_names[static_cast<int>(level)]);
 }
 
 static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
 static std::array<const char*, 4> s_console_region_display_names = {
   {TRANSLATE_NOOP("ConsoleRegion", "Auto-Detect"), TRANSLATE_NOOP("ConsoleRegion", "NTSC-J (Japan)"),
-   TRANSLATE_NOOP("ConsoleRegion", "NTSC-U/C (US, Canada)"), TRANSLATE_NOOP("ConsoleRegion", "PAL (Europe, Australia)")}};
+   TRANSLATE_NOOP("ConsoleRegion", "NTSC-U/C (US, Canada)"),
+   TRANSLATE_NOOP("ConsoleRegion", "PAL (Europe, Australia)")}};
 
 std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 {
@@ -781,7 +779,7 @@ const char* Settings::GetConsoleRegionName(ConsoleRegion region)
 
 const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 {
-  return s_console_region_display_names[static_cast<int>(region)];
+  return Host::TranslateToCString("ConsoleRegion", s_console_region_display_names[static_cast<int>(region)]);
 }
 
 static std::array<const char*, 5> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1"}};
@@ -811,7 +809,7 @@ const char* Settings::GetDiscRegionName(DiscRegion region)
 
 const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 {
-  return s_disc_region_display_names[static_cast<int>(region)];
+  return Host::TranslateToCString("DiscRegion", s_disc_region_display_names[static_cast<int>(region)]);
 }
 
 static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
@@ -841,7 +839,7 @@ const char* Settings::GetCPUExecutionModeName(CPUExecutionMode mode)
 
 const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
 {
-  return s_cpu_execution_mode_display_names[static_cast<u8>(mode)];
+  return Host::TranslateToCString("CPUExecutionMode", s_cpu_execution_mode_display_names[static_cast<u8>(mode)]);
 }
 
 static std::array<const char*, static_cast<u32>(CPUFastmemMode::Count)> s_cpu_fastmem_mode_names = {
@@ -872,7 +870,7 @@ const char* Settings::GetCPUFastmemModeName(CPUFastmemMode mode)
 
 const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
 {
-  return s_cpu_fastmem_mode_display_names[static_cast<u8>(mode)];
+  return Host::TranslateToCString("CPUFastmemMode", s_cpu_fastmem_mode_display_names[static_cast<u8>(mode)]);
 }
 
 static constexpr auto s_gpu_renderer_names = make_array(
@@ -919,7 +917,7 @@ const char* Settings::GetRendererName(GPURenderer renderer)
 
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
-  return s_gpu_renderer_display_names[static_cast<int>(renderer)];
+  return Host::TranslateToCString("GPURenderer", s_gpu_renderer_display_names[static_cast<int>(renderer)]);
 }
 
 RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
@@ -976,13 +974,14 @@ const char* Settings::GetTextureFilterName(GPUTextureFilter filter)
 
 const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 {
-  return s_texture_filter_display_names[static_cast<int>(filter)];
+  return Host::TranslateToCString("GPUTextureFilter", s_texture_filter_display_names[static_cast<int>(filter)]);
 }
 
 static constexpr auto s_downsample_mode_names = make_array("Disabled", "Box", "Adaptive");
-static constexpr auto s_downsample_mode_display_names = make_array(
-  TRANSLATE_NOOP("GPUDownsampleMode", "Disabled"), TRANSLATE_NOOP("GPUDownsampleMode", "Box (Downsample 3D/Smooth All)"),
-  TRANSLATE_NOOP("GPUDownsampleMode", "Adaptive (Preserve 3D/Smooth 2D)"));
+static constexpr auto s_downsample_mode_display_names =
+  make_array(TRANSLATE_NOOP("GPUDownsampleMode", "Disabled"),
+             TRANSLATE_NOOP("GPUDownsampleMode", "Box (Downsample 3D/Smooth All)"),
+             TRANSLATE_NOOP("GPUDownsampleMode", "Adaptive (Preserve 3D/Smooth 2D)"));
 
 std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(const char* str)
 {
@@ -1005,7 +1004,7 @@ const char* Settings::GetDownsampleModeName(GPUDownsampleMode mode)
 
 const char* Settings::GetDownsampleModeDisplayName(GPUDownsampleMode mode)
 {
-  return s_downsample_mode_display_names[static_cast<int>(mode)];
+  return Host::TranslateToCString("GPUDownsampleMode", s_downsample_mode_display_names[static_cast<int>(mode)]);
 }
 
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
@@ -1034,12 +1033,13 @@ const char* Settings::GetDisplayCropModeName(DisplayCropMode crop_mode)
 
 const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 {
-  return s_display_crop_mode_display_names[static_cast<int>(crop_mode)];
+  return Host::TranslateToCString("DisplayCropMode", s_display_crop_mode_display_names[static_cast<int>(crop_mode)]);
 }
 
 static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
-  {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"), TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Match Window)"),
-   TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3", "16:9", "19:9", "20:9", "PAR 1:1"}};
+  {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"),
+   TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Match Window)"), TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3",
+   "16:9", "19:9", "20:9", "PAR 1:1"}};
 static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
   {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
 
@@ -1060,6 +1060,11 @@ std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* 
 const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
 {
   return s_display_aspect_ratio_names[static_cast<int>(ar)];
+}
+
+const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
+{
+  return Host::TranslateToCString("DisplayAspectRatio", s_display_aspect_ratio_names[static_cast<int>(ar)]);
 }
 
 float Settings::GetDisplayAspectRatioValue() const
@@ -1165,16 +1170,16 @@ const char* Settings::GetAudioBackendName(AudioBackend backend)
 
 const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
 {
-  return s_audio_backend_display_names[static_cast<int>(backend)];
+  return Host::TranslateToCString("AudioBackend", s_audio_backend_display_names[static_cast<int>(backend)]);
 }
 
 static std::array<const char*, 7> s_controller_type_names = {
   {"None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon"}};
 static std::array<const char*, 7> s_controller_display_names = {
   {TRANSLATE_NOOP("ControllerType", "None"), TRANSLATE_NOOP("ControllerType", "Digital Controller"),
-   TRANSLATE_NOOP("ControllerType", "Analog Controller (DualShock)"), TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
-   TRANSLATE_NOOP("ControllerType", "GunCon"), TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
-   TRANSLATE_NOOP("ControllerType", "NeGcon")}};
+   TRANSLATE_NOOP("ControllerType", "Analog Controller (DualShock)"),
+   TRANSLATE_NOOP("ControllerType", "Analog Joystick"), TRANSLATE_NOOP("ControllerType", "GunCon"),
+   TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"), TRANSLATE_NOOP("ControllerType", "NeGcon")}};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
 {
@@ -1197,7 +1202,7 @@ const char* Settings::GetControllerTypeName(ControllerType type)
 
 const char* Settings::GetControllerTypeDisplayName(ControllerType type)
 {
-  return s_controller_display_names[static_cast<int>(type)];
+  return Host::TranslateToCString("ControllerType", s_controller_display_names[static_cast<int>(type)]);
 }
 
 static std::array<const char*, 6> s_memory_card_type_names = {
@@ -1230,7 +1235,7 @@ const char* Settings::GetMemoryCardTypeName(MemoryCardType type)
 
 const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 {
-  return s_memory_card_type_display_names[static_cast<int>(type)];
+  return Host::TranslateToCString("MemoryCardType", s_memory_card_type_display_names[static_cast<int>(type)]);
 }
 
 std::string Settings::GetDefaultSharedMemoryCardName(u32 slot)
@@ -1283,7 +1288,7 @@ const char* Settings::GetMultitapModeName(MultitapMode mode)
 
 const char* Settings::GetMultitapModeDisplayName(MultitapMode mode)
 {
-  return s_multitap_enable_mode_display_names[static_cast<size_t>(mode)];
+  return Host::TranslateToCString("MultitapMode", s_multitap_enable_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 std::string EmuFolders::AppRoot;

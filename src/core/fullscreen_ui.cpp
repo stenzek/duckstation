@@ -3826,7 +3826,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
   DrawEnumSetting(bsi, FSUI_CSTR("Aspect Ratio"),
                   FSUI_CSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
                   "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
-                  &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioName,
+                  &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
                   DisplayAspectRatio::Count);
 
   DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),

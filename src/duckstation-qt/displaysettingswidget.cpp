@@ -74,8 +74,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
   onAspectRatioChanged();
 
   dialog->registerWidgetHelp(
-    m_ui.renderer, tr("Renderer"),
-    qApp->translate("GPURenderer", Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER)),
+    m_ui.renderer, tr("Renderer"), QString::fromUtf8(Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER)),
     tr("Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
        "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best "
        "compatibility, but is the slowest and does not offer any enhancements."));
@@ -88,19 +87,19 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
                              tr("Chooses the fullscreen resolution and frequency."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
-    qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
+    QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
        "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
     m_ui.displayCropMode, tr("Crop Mode"),
-    qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(Settings::DEFAULT_DISPLAY_CROP_MODE)),
+    QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(Settings::DEFAULT_DISPLAY_CROP_MODE)),
     tr("Determines how much of the area typically not visible on a consumer TV set to crop/hide. <br>"
        "Some games display content in the overscan area, or use it for screen effects. <br>May "
        "not display correctly with the \"All Borders\" setting. \"Only Overscan\" offers a good "
        "compromise between stability and hiding black borders."));
   dialog->registerWidgetHelp(
     m_ui.displayAlignment, tr("Position"),
-    qApp->translate("DisplayCropMode", Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
+    QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
     tr("Determines the position on the screen when black borders must be added."));
   dialog->registerWidgetHelp(m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
                              tr("Uses bilinear texture filtering when displaying the console's framebuffer to the "
@@ -164,26 +163,25 @@ void DisplaySettingsWidget::setupAdditionalUi()
 {
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
   {
-    m_ui.renderer->addItem(
-      qApp->translate("GPURenderer", Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
     m_ui.displayAspectRatio->addItem(
-      qApp->translate("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(static_cast<DisplayAspectRatio>(i))));
+      QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(static_cast<DisplayAspectRatio>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     m_ui.displayCropMode->addItem(
-      qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAlignment::Count); i++)
   {
     m_ui.displayAlignment->addItem(
-      qApp->translate("DisplayAlignment", Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
+      QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
   }
 }
 

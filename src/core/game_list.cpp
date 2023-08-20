@@ -107,7 +107,7 @@ const char* GameList::GetEntryTypeDisplayName(EntryType type)
   static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
     {TRANSLATE_NOOP("GameList", "Disc"), TRANSLATE_NOOP("GameList", "PS-EXE"), TRANSLATE_NOOP("GameList", "Playlist"),
      TRANSLATE_NOOP("GameList", "PSF")}};
-  return names[static_cast<int>(type)];
+  return Host::TranslateToCString("GameList", names[static_cast<int>(type)]);
 }
 
 bool GameList::IsGameListLoaded()

@@ -112,7 +112,7 @@ template<typename T>
 static QComboBox* addChoiceTweakOption(SettingsDialog* dialog, QTableWidget* table, QString name, std::string section,
                                        std::string key, std::optional<T> (*parse_callback)(const char*),
                                        const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
-                                       const char* tr_context, u32 num_values, T default_value)
+                                       u32 num_values, T default_value)
 {
   const int row = table->rowCount();
 
@@ -124,7 +124,7 @@ static QComboBox* addChoiceTweakOption(SettingsDialog* dialog, QTableWidget* tab
 
   QComboBox* cb = new QComboBox(table);
   for (u32 i = 0; i < num_values; i++)
-    cb->addItem(qApp->translate(tr_context, get_display_callback(static_cast<T>(i))));
+    cb->addItem(QString::fromUtf8(get_display_callback(static_cast<T>(i))));
 
   if (!section.empty() || !key.empty())
   {
@@ -229,7 +229,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
-    m_ui.logLevel->addItem(qApp->translate("LogLevel", Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+    m_ui.logLevel->addItem(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.logLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
                                                &Settings::GetLogLevelName, Settings::DEFAULT_LOG_LEVEL);
@@ -303,8 +303,8 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "RecompilerBlockLinking", true);
   addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
                        "FastmemMode", Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
-                       Settings::GetCPUFastmemModeDisplayName, "CPUFastmemMode",
-                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
+                       Settings::GetCPUFastmemModeDisplayName, static_cast<u32>(CPUFastmemMode::Count),
+                       Settings::DEFAULT_CPU_FASTMEM_MODE);
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Use Old MDEC Routines"), "Hacks", "UseOldMDECRoutines",
                         false);

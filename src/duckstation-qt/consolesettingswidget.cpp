@@ -18,15 +18,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* pa
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
-  {
-    m_ui.region->addItem(
-      qApp->translate("ConsoleRegion", Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
-  }
+    m_ui.region->addItem(QString::fromUtf8(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
     m_ui.cpuExecutionMode->addItem(
-      qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
+      QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
   }
 
   static constexpr float TIME_PER_SECTOR_DOUBLE_SPEED = 1000.0f / 150.0f;

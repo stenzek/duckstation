@@ -91,7 +91,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
                                 "Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"),
-    qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),
+    QString::fromUtf8(Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),
     tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
        "greater effect on higher resolution scales. Only applies to the hardware renderers. <br>The JINC2 and "
        "especially xBR filtering modes are very demanding, and may not be worth the speed penalty."));
@@ -148,13 +148,13 @@ void EnhancementSettingsWidget::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
   {
     m_ui.textureFiltering->addItem(
-      qApp->translate("GPUTextureFilter", Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
   {
     m_ui.gpuDownsampleMode->addItem(
-      qApp->translate("GPUDownsampleMode", Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
+      QString::fromUtf8(Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
   }
 }
 

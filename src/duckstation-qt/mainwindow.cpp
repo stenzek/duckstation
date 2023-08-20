@@ -1567,8 +1567,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
     const CPUExecutionMode mode = static_cast<CPUExecutionMode>(i);
-    QAction* action = m_ui.menuCPUExecutionMode->addAction(
-      qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(mode)));
+    QAction* action =
+      m_ui.menuCPUExecutionMode->addAction(QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, mode]() {
       Host::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
@@ -1582,8 +1582,7 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
   {
     const GPURenderer renderer = static_cast<GPURenderer>(i);
-    QAction* action =
-      m_ui.menuRenderer->addAction(qApp->translate("GPURenderer", Settings::GetRendererDisplayName(renderer)));
+    QAction* action = m_ui.menuRenderer->addAction(QString::fromUtf8(Settings::GetRendererDisplayName(renderer)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, renderer]() {
       Host::SetBaseStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer));
@@ -1597,8 +1596,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
   {
     const DisplayCropMode crop_mode = static_cast<DisplayCropMode>(i);
-    QAction* action = m_ui.menuCropMode->addAction(
-      qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(crop_mode)));
+    QAction* action =
+      m_ui.menuCropMode->addAction(QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(crop_mode)));
     action->setCheckable(true);
     connect(action, &QAction::triggered, [this, crop_mode]() {
       Host::SetBaseStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
@@ -2335,8 +2334,8 @@ void MainWindow::updateDebugMenuCPUExecutionMode()
   if (!current_mode.has_value())
     return;
 
-  const QString current_mode_display_name(
-    qApp->translate("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(current_mode.value())));
+  const QString current_mode_display_name =
+    QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(current_mode.value()));
   for (QObject* obj : m_ui.menuCPUExecutionMode->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);
@@ -2353,8 +2352,8 @@ void MainWindow::updateDebugMenuGPURenderer()
   if (!current_renderer.has_value())
     return;
 
-  const QString current_renderer_display_name(
-    qApp->translate("GPURenderer", Settings::GetRendererDisplayName(current_renderer.value())));
+  const QString current_renderer_display_name =
+    QString::fromUtf8(Settings::GetRendererDisplayName(current_renderer.value()));
   for (QObject* obj : m_ui.menuRenderer->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);
@@ -2370,8 +2369,8 @@ void MainWindow::updateDebugMenuCropMode()
   if (!current_crop_mode.has_value())
     return;
 
-  const QString current_crop_mode_display_name(
-    qApp->translate("DisplayCropMode", Settings::GetDisplayCropModeDisplayName(current_crop_mode.value())));
+  const QString current_crop_mode_display_name =
+    QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(current_crop_mode.value()));
   for (QObject* obj : m_ui.menuCropMode->children())
   {
     QAction* action = qobject_cast<QAction*>(obj);

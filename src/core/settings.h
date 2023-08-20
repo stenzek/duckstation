@@ -374,6 +374,7 @@ struct Settings
 
   static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(const char* str);
   static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
+  static const char* GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar);
 
   static std::optional<DisplayAlignment> ParseDisplayAlignment(const char* str);
   static const char* GetDisplayAlignmentName(DisplayAlignment alignment);

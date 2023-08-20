@@ -19,10 +19,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
-  {
-    m_ui.audioBackend->addItem(
-      qApp->translate("AudioBackend", Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
-  }
+    m_ui.audioBackend->addItem(QString::fromUtf8(Settings::GetAudioBackendDisplayName(static_cast<AudioBackend>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend", &Settings::ParseAudioBackend,
                                                &Settings::GetAudioBackendName, Settings::DEFAULT_AUDIO_BACKEND);

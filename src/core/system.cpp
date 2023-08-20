@@ -4387,9 +4387,8 @@ void System::ToggleWidescreen()
   {
     Host::AddKeyedOSDMessage(
       "WidescreenHack",
-      fmt::format(
-        TRANSLATE_FS("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to {}."),
-        TRANSLATE("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio))),
+      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to {}."),
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)),
       5.0f);
   }
   else
@@ -4397,8 +4396,7 @@ void System::ToggleWidescreen()
     Host::AddKeyedOSDMessage(
       "WidescreenHack",
       fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to {}."),
-                  TRANSLATE("DisplayAspectRatio", Settings::GetDisplayAspectRatioName(g_settings.display_aspect_ratio)),
-                  5.0f));
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio), 5.0f));
   }
 
   GTE::UpdateAspectRatio();

@@ -34,14 +34,14 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   for (u32 i = 0; i < static_cast<u32>(DiscRegion::Count); i++)
   {
     m_ui.region->addItem(QtUtils::GetIconForRegion(static_cast<DiscRegion>(i)),
-                         qApp->translate("DiscRegion", Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(i))));
+                         QString::fromUtf8(Settings::GetDiscRegionDisplayName(static_cast<DiscRegion>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
   {
     m_ui.compatibility->addItem(QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)),
-                                qApp->translate("GameListCompatibilityRating", GameDatabase::GetCompatibilityRatingDisplayName(
-                                                                  static_cast<GameDatabase::CompatibilityRating>(i))));
+                                QString::fromUtf8(GameDatabase::GetCompatibilityRatingDisplayName(
+                                  static_cast<GameDatabase::CompatibilityRating>(i))));
   }
 
   populateUi(path, serial, region, entry);
@@ -113,8 +113,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
         {
           if (!controllers.isEmpty())
             controllers.append(", ");
-          controllers.append(
-            qApp->translate("ControllerType", Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i))));
+          controllers.append(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i)));
         }
       }
     }
