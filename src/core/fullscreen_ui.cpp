@@ -57,6 +57,27 @@ Log_SetChannel(FullscreenUI);
 #include "achievements_private.h"
 #endif
 
+#define TR_CONTEXT "FullscreenUI"
+
+namespace {
+template<size_t L>
+class IconStackString : public StackString<L>
+{
+public:
+  ALWAYS_INLINE IconStackString(const char* icon, const char* str)
+  {
+    StackString<L>::Fmt("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
+  }
+};
+} // namespace
+
+#define FSUI_ICONSTR(icon, str) IconStackString<128>(icon, str).GetCharArray()
+#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str)
+#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str)
+#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str)
+#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str))
+#define FSUI_NSTR(str) str
+
 using ImGuiFullscreen::g_large_font;
 using ImGuiFullscreen::g_layout_padding_left;
 using ImGuiFullscreen::g_layout_padding_top;
@@ -896,7 +917,7 @@ void FullscreenUI::DoResume()
   std::string path(System::GetMostRecentResumeSaveStatePath());
   if (path.empty())
   {
-    ShowToast({}, "No resume save state found.");
+    ShowToast({}, FSUI_CSTR("No resume save state found."));
     return;
   }
 
@@ -913,7 +934,8 @@ void FullscreenUI::DoStartFile()
     CloseFileSelector();
   };
 
-  OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters());
+  OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
+                   GetDiscImageFilters());
 }
 
 void FullscreenUI::DoStartBIOS()
@@ -954,7 +976,8 @@ void FullscreenUI::DoChangeDiscFromFile()
     {
       if (!GameList::IsScannableFilename(path))
       {
-        ShowToast({}, fmt::format("{} is not a valid disc image.", FileSystem::GetDisplayNameFromPath(path)));
+        ShowToast({},
+                  fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
       }
       else
       {
@@ -967,8 +990,8 @@ void FullscreenUI::DoChangeDiscFromFile()
     ReturnToMainWindow();
   };
 
-  OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-                   std::string(Path::GetDirectory(System::GetDiscPath())));
+  OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
+                   GetDiscImageFilters(), std::string(Path::GetDirectory(System::GetDiscPath())));
 }
 
 void FullscreenUI::DoChangeDisc()
@@ -1005,7 +1028,8 @@ void FullscreenUI::DoChangeDisc()
     ReturnToMainWindow();
   };
 
-  OpenChoiceDialog(ICON_FA_COMPACT_DISC " Select Disc Image", true, std::move(options), std::move(callback));
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+                   std::move(callback));
 }
 
 void FullscreenUI::DoCheatsMenu()
@@ -1015,8 +1039,8 @@ void FullscreenUI::DoCheatsMenu()
   {
     if (!System::LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
     {
-      Host::AddKeyedOSDMessage("load_cheat_list", fmt::format("No cheats found for {}.", System::GetGameTitle()),
-                               10.0f);
+      Host::AddKeyedOSDMessage("load_cheat_list",
+                               fmt::format(FSUI_FSTR("No cheats found for {}."), System::GetGameTitle()), 10.0f);
       ReturnToMainWindow();
       return;
     }
@@ -1047,7 +1071,7 @@ void FullscreenUI::DoCheatsMenu()
     else
       System::SetCheatCodeState(static_cast<u32>(index), checked, true);
   };
-  OpenChoiceDialog(ICON_FA_FROWN " Cheat List", true, std::move(options), std::move(callback));
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FROWN, "Cheat List"), true, std::move(options), std::move(callback));
 }
 
 void FullscreenUI::DoToggleAnalogMode()
@@ -1115,36 +1139,40 @@ void FullscreenUI::DrawLandingWindow()
 
     BeginMenuButtons(7, 0.5f);
 
-    if (MenuButton(ICON_FA_LIST " Game List", "Launch a game from images scanned from your game directories."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_LIST, "Game List"),
+                   FSUI_CSTR("Launch a game from images scanned from your game directories.")))
     {
       SwitchToGameList();
     }
 
-    if (MenuButton(ICON_FA_PLAY_CIRCLE " Resume", "Starts the console from where it was before it was last closed."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_PLAY_CIRCLE, "Resume"),
+                   FSUI_CSTR("Starts the console from where it was before it was last closed.")))
     {
       System::GetMostRecentResumeSaveStatePath();
       DoResume();
     }
 
-    if (MenuButton(ICON_FA_FOLDER_OPEN " Start File", "Launch a game by selecting a file/disc image."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Start File"),
+                   FSUI_CSTR("Launch a game by selecting a file/disc image.")))
     {
       DoStartFile();
     }
 
-    if (MenuButton(ICON_FA_TOOLBOX " Start BIOS", "Start the console without any disc inserted."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_TOOLBOX, "Start BIOS"),
+                   FSUI_CSTR("Start the console without any disc inserted.")))
     {
       DoStartBIOS();
     }
 
-    if (MenuButton(ICON_FA_UNDO " Load State", "Loads a global save state."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), FSUI_CSTR("Loads a global save state.")))
     {
       OpenSaveStateSelector(true);
     }
 
-    if (MenuButton(ICON_FA_SLIDERS_H " Settings", "Change settings for the emulator."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), FSUI_CSTR("Change settings for the emulator.")))
       SwitchToSettings();
 
-    if (MenuButton(ICON_FA_SIGN_OUT_ALT " Exit", "Exits the program."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_SIGN_OUT_ALT, "Exit"), FSUI_CSTR("Exits the program.")))
     {
       DoRequestExit();
     }
@@ -1306,17 +1334,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     switch (type)
     {
       case InputBindingInfo::Type::Button:
-        title = fmt::format(ICON_FA_DOT_CIRCLE " {}", display_name);
+        title = fmt::format(ICON_FA_DOT_CIRCLE "{}", display_name);
         break;
       case InputBindingInfo::Type::Axis:
       case InputBindingInfo::Type::HalfAxis:
-        title = fmt::format(ICON_FA_BULLSEYE " {}", display_name);
+        title = fmt::format(ICON_FA_BULLSEYE "{}", display_name);
         break;
       case InputBindingInfo::Type::Motor:
-        title = fmt::format(ICON_FA_BELL " {}", display_name);
+        title = fmt::format(ICON_FA_BELL "{}", display_name);
         break;
       case InputBindingInfo::Type::Macro:
-        title = fmt::format(ICON_FA_PIZZA_SLICE " {}", display_name);
+        title = fmt::format(ICON_FA_PIZZA_SLICE "{}", display_name);
         break;
       default:
         title = display_name;
@@ -1331,8 +1359,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   const std::string value(bsi->GetStringValue(section, name));
   ImGui::PushFont(g_medium_font);
-  ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? "No Binding" : value.c_str(), nullptr,
-                           nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+  ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
+                           nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
   ImGui::PopFont();
 
   if (clicked)
@@ -1452,7 +1480,7 @@ void FullscreenUI::DrawInputBindingWindow()
     return;
   }
 
-  const char* title = ICON_FA_GAMEPAD " Set Input Binding";
+  const char* title = FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding");
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(title);
@@ -1467,10 +1495,11 @@ void FullscreenUI::DrawInputBindingWindow()
   if (ImGui::BeginPopupModal(title, nullptr,
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs))
   {
-    ImGui::TextWrapped("Setting %s binding %s.", s_input_binding_section.c_str(), s_input_binding_display_name.c_str());
-    ImGui::TextUnformatted("Push a controller button or axis now.");
+    ImGui::TextWrapped(
+      SmallString::FromFmt(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section, s_input_binding_display_name));
+    ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
     ImGui::NewLine();
-    ImGui::Text("Timing out in %.0f seconds...", time_remaining);
+    ImGui::Text(FSUI_CSTR("Timing out in %.0f seconds..."), time_remaining);
     ImGui::EndPopup();
   }
 
@@ -1524,16 +1553,17 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
   const int index = value.has_value() ? (value.value() - option_offset) : std::numeric_limits<int>::min();
-  const char* value_text = (value.has_value()) ?
-                             ((index < 0 || static_cast<size_t>(index) >= option_count) ? "Unknown" : options[index]) :
-                             "Use Global Setting";
+  const char* value_text =
+    (value.has_value()) ?
+      ((index < 0 || static_cast<size_t>(index) >= option_count) ? FSUI_CSTR("Unknown") : options[index]) :
+      FSUI_CSTR("Use Global Setting");
 
   if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
     if (game_settings)
-      cd_options.emplace_back("Use Global Setting", !value.has_value());
+      cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
       cd_options.emplace_back(options[i], (i == static_cast<size_t>(index)));
     OpenChoiceDialog(title, false, std::move(cd_options),
@@ -1571,7 +1601,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
   const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) :
-                                                   std::string("Use Global Setting"));
+                                                   FSUI_STR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -1606,7 +1636,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
     }
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                 ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
     }
@@ -1628,7 +1659,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
   const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) :
-                                                   std::string("Use Global Setting"));
+                                                   FSUI_STR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -1666,7 +1697,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     }
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                 ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
     }
@@ -1688,7 +1720,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
   const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) :
-                                                   std::string("Use Global Setting"));
+                                                   FSUI_STR("Use Global Setting"));
 
   static bool manual_input = false;
 
@@ -1795,7 +1827,8 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
       SetSettingsChanged(bsi);
     }
 
-    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                 ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
     }
@@ -1939,7 +1972,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   if (value.has_value())
     value_text.Format(format, value.value());
   else
-    value_text = "Use Global Setting";
+    value_text = FSUI_VSTR("Use Global Setting");
 
   static bool manual_input = false;
 
@@ -2040,7 +2073,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
       SetSettingsChanged(bsi);
     }
 
-    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                 ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
     }
@@ -2140,13 +2174,13 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 
   if (MenuButtonWithValue(title, summary,
                           typed_value.has_value() ? to_display_string_function(typed_value.value()) :
-                                                    "Use Global Setting",
+                                                    FSUI_CSTR("Use Global Setting"),
                           enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
     if (game_settings)
-      cd_options.emplace_back("Use Global Setting", !value.has_value());
+      cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
@@ -2206,14 +2240,14 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
   }
 
   if (MenuButtonWithValue(title, summary,
-                          value.has_value() ? ((index < option_count) ? options[index] : "Unknown") :
-                                              "Use Global Setting",
+                          value.has_value() ? ((index < option_count) ? options[index] : FSUI_CSTR("Unknown")) :
+                                              FSUI_CSTR("Use Global Setting"),
                           enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
     if (game_settings)
-      cd_options.emplace_back("Use Global Setting", !value.has_value());
+      cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
       cd_options.emplace_back(options[i], (value.has_value() && i == static_cast<size_t>(index)));
     OpenChoiceDialog(title, false, std::move(cd_options),
@@ -2274,7 +2308,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
   std::vector<std::pair<std::string, std::string>> devices(InputManager::EnumerateDevices());
   if (devices.empty())
   {
-    ShowToast({}, "Automatic mapping failed, no devices are available.");
+    ShowToast({}, FSUI_STR("Automatic mapping failed, no devices are available."));
     return;
   }
 
@@ -2287,7 +2321,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
     names.push_back(std::move(name));
     options.emplace_back(std::move(display_name), false);
   }
-  OpenChoiceDialog("Select Device", false, std::move(options),
+  OpenChoiceDialog(FSUI_CSTR("Select Device"), false, std::move(options),
                    [port, names = std::move(names)](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
@@ -2300,8 +2334,8 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
                      SetSettingsChanged(bsi);
 
                      // and the toast needs to happen on the UI thread.
-                     ShowToast({}, result ? fmt::format("Automatic mapping completed for {}.", name) :
-                                            fmt::format("Automatic mapping failed for {}.", name));
+                     ShowToast({}, result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
+                                            fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
                      CloseChoiceDialog();
                    });
 }
@@ -2363,7 +2397,7 @@ void FullscreenUI::PopulateGraphicsAdapterList()
   HostDisplay::AdapterAndModeList ml(g_host_display->GetAdapterAndModeList());
   s_graphics_adapter_list_cache = std::move(ml.adapter_names);
   s_fullscreen_mode_list_cache = std::move(ml.fullscreen_modes);
-  s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), "Borderless Fullscreen");
+  s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), FSUI_STR("Borderless Fullscreen"));
 }
 
 void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
@@ -2385,7 +2419,7 @@ void FullscreenUI::DoCopyGameSettings()
   temp_settings.Save(*s_game_settings_interface);
   SetSettingsChanged(s_game_settings_interface.get());
 
-  ShowToast("Game Settings Copied", fmt::format("Game settings initialized with global settings for '{}'.",
+  ShowToast("Game Settings Copied", fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
                                                 Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
@@ -2400,7 +2434,7 @@ void FullscreenUI::DoClearGameSettings()
 
   SetSettingsChanged(s_game_settings_interface.get());
 
-  ShowToast("Game Settings Cleared", fmt::format("Game settings have been cleared for '{}'.",
+  ShowToast("Game Settings Cleared", fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
                                                  Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
@@ -2434,9 +2468,11 @@ void FullscreenUI::DrawSettingsWindow()
       SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
-      {"Summary", "Interface Settings", "Console Settings", "Emulation Settings", "BIOS Settings",
-       "Controller Settings", "Hotkey Settings", "Memory Card Settings", "Display Settings", "Post-Processing Settings",
-       "Audio Settings", "Achievements Settings", "Advanced Settings"}};
+      {FSUI_NSTR("Summary"), FSUI_NSTR("Interface Settings"), FSUI_NSTR("Console Settings"),
+       FSUI_NSTR("Emulation Settings"), FSUI_NSTR("BIOS Settings"), FSUI_NSTR("Controller Settings"),
+       FSUI_NSTR("Hotkey Settings"), FSUI_NSTR("Memory Card Settings"), FSUI_NSTR("Display Settings"),
+       FSUI_NSTR("Post-Processing Settings"), FSUI_NSTR("Audio Settings"), FSUI_NSTR("Achievements Settings"),
+       FSUI_NSTR("Advanced Settings")}};
 
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
@@ -2475,7 +2511,7 @@ void FullscreenUI::DrawSettingsWindow()
     if (s_game_settings_entry)
       NavTitle(s_game_settings_entry->title.c_str());
     else
-      NavTitle(titles[static_cast<u32>(pages[index])]);
+      NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]));
 
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
@@ -2572,46 +2608,53 @@ void FullscreenUI::DrawSummarySettingsPage()
 {
   BeginMenuButtons();
 
-  MenuHeading("Details");
+  MenuHeading(FSUI_CSTR("Details"));
 
   if (s_game_settings_entry)
   {
-    if (MenuButton(ICON_FA_WINDOW_MAXIMIZE " Title", s_game_settings_entry->title.c_str(), true))
-      CopyTextToClipboard("Game title copied to clipboard.", s_game_settings_entry->title);
-    if (MenuButton(ICON_FA_PAGER " Serial", s_game_settings_entry->serial.c_str(), true))
-      CopyTextToClipboard("Game serial copied to clipboard.", s_game_settings_entry->serial);
-    if (MenuButton(ICON_FA_COMPACT_DISC " Type", GameList::GetEntryTypeDisplayName(s_game_settings_entry->type), true))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), s_game_settings_entry->title.c_str(), true))
+      CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->title);
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_PAGER, "Serial"), s_game_settings_entry->serial.c_str(), true))
+      CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_game_settings_entry->serial);
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Type"),
+                   GameList::GetEntryTypeDisplayName(s_game_settings_entry->type), true))
     {
-      CopyTextToClipboard("Game type copied to clipboard.",
+      CopyTextToClipboard(FSUI_STR("Game type copied to clipboard."),
                           GameList::GetEntryTypeDisplayName(s_game_settings_entry->type));
     }
-    if (MenuButton(ICON_FA_BOX " Region", Settings::GetDiscRegionDisplayName(s_game_settings_entry->region), true))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_BOX, "Region"),
+                   Settings::GetDiscRegionDisplayName(s_game_settings_entry->region), true))
     {
-      CopyTextToClipboard("Game region copied to clipboard.",
+      CopyTextToClipboard(FSUI_STR("Game region copied to clipboard."),
                           Settings::GetDiscRegionDisplayName(s_game_settings_entry->region));
     }
-    if (MenuButton(ICON_FA_STAR " Compatibility Rating",
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_STAR, "Compatibility Rating"),
                    GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility), true))
     {
-      CopyTextToClipboard("Game compatibility rating copied to clipboard.",
+      CopyTextToClipboard(FSUI_STR("Game compatibility rating copied to clipboard."),
                           GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility));
     }
-    if (MenuButton(ICON_FA_FOLDER_OPEN " Path", s_game_settings_entry->path.c_str(), true))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Path"), s_game_settings_entry->path.c_str(), true))
     {
-      CopyTextToClipboard("Game path copied to clipboard.", s_game_settings_entry->path);
+      CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_game_settings_entry->path);
     }
   }
   else
   {
-    MenuButton(ICON_FA_BAN " Details unavailable for game not scanned in game list.", "");
+    MenuButton(FSUI_ICONSTR(ICON_FA_BAN, "Details unavailable for game not scanned in game list."), "");
   }
 
-  MenuHeading("Options");
+  MenuHeading(FSUI_CSTR("Options"));
 
-  if (MenuButton(ICON_FA_COPY " Copy Settings", "Copies the current global settings to this game."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_COPY, "Copy Settings"),
+                 FSUI_CSTR("Copies the current global settings to this game.")))
+  {
     DoCopyGameSettings();
-  if (MenuButton(ICON_FA_TRASH " Clear Settings", "Clears all settings set for this game."))
+  }
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Settings"), FSUI_CSTR("Clears all settings set for this game.")))
+  {
     DoClearGameSettings();
+  }
 
   EndMenuButtons();
 }
@@ -2622,87 +2665,97 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Behavior");
+  MenuHeading(FSUI_CSTR("Behavior"));
 
-  DrawToggleSetting(bsi, ICON_FA_PAUSE " Pause On Start", "Pauses the emulator when a game is started.", "Main",
-                    "StartPaused", false);
-  DrawToggleSetting(bsi, ICON_FA_VIDEO " Pause On Focus Loss",
-                    "Pauses the emulator when you minimize the window or switch to another "
-                    "application, and unpauses when you switch back.",
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"),
+                    FSUI_CSTR("Pauses the emulator when a game is started."), "Main", "StartPaused", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Pause On Focus Loss"),
+                    FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another "
+                              "application, and unpauses when you switch back."),
                     "Main", "PauseOnFocusLoss", false);
-  DrawToggleSetting(bsi, ICON_FA_WINDOW_MAXIMIZE " Pause On Menu",
-                    "Pauses the emulator when you open the quick menu, and unpauses when you close it.", "Main",
-                    "PauseOnMenu", true);
-  DrawToggleSetting(bsi, ICON_FA_POWER_OFF " Confirm Power Off",
-                    "Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
-                    "when the hotkey is pressed.",
-                    "Main", "ConfirmPowerOff", true);
-  DrawToggleSetting(bsi, ICON_FA_SAVE " Save State On Exit",
-                    "Automatically saves the emulator state when powering down or exiting. You can then "
-                    "resume directly from where you left off next time.",
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Pause On Menu"),
+                    FSUI_CSTR("Pauses the emulator when you open the quick menu, and unpauses when you close it."),
+                    "Main", "PauseOnMenu", true);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
+    FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
+              "when the hotkey is pressed."),
+    "Main", "ConfirmPowerOff", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Save State On Exit"),
+                    FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
+                              "resume directly from where you left off next time."),
                     "Main", "SaveStateOnExit", true);
-  DrawToggleSetting(bsi, ICON_FA_TV " Start Fullscreen",
-                    "Automatically switches to fullscreen mode when the program is started.", "Main", "StartFullscreen",
-                    false);
-  DrawToggleSetting(bsi, ICON_FA_MOUSE " Double-Click Toggles Fullscreen",
-                    "Switches between full screen and windowed when the window is double-clicked.", "Main",
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Start Fullscreen"),
+                    FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
+                    "StartFullscreen", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE, "Double-Click Toggles Fullscreen"),
+                    FSUI_CSTR("Switches between full screen and windowed when the window is double-clicked."), "Main",
                     "DoubleClickTogglesFullscreen", true);
   DrawToggleSetting(bsi, ICON_FA_MOUSE_POINTER "Hide Cursor In Fullscreen",
-                    "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.", "Main",
+                    FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "Main",
                     "HideCursorInFullscreen", true);
-  DrawToggleSetting(bsi, ICON_FA_MAGIC " Inhibit Screensaver",
-                    "Prevents the screen saver from activating and the host from sleeping while emulation is running.",
-                    "Main", "InhibitScreensaver", true);
-  DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Load Devices From Save States",
-                    "When enabled, memory cards and controllers will be overwritten when save states are loaded.",
-                    "Main", "LoadDevicesFromSaveStates", false);
-  DrawToggleSetting(bsi, ICON_FA_COGS " Apply Per-Game Settings",
-                    "When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.",
-                    "Main", "ApplyGameSettings", true);
-  DrawToggleSetting(bsi, ICON_FA_FROWN " Automatically Load Cheats",
-                    "Automatically loads and applies cheats on game start.", "Main", "AutoLoadCheats", true);
-  if (DrawToggleSetting(bsi, ICON_FA_PAINT_BRUSH " Use Light Theme",
-                        "Uses a light coloured theme instead of the default dark theme.", "Main",
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
+    FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
+    "Main", "InhibitScreensaver", true);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Load Devices From Save States"),
+    FSUI_CSTR("When enabled, memory cards and controllers will be overwritten when save states are loaded."), "Main",
+    "LoadDevicesFromSaveStates", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_COGS, "Apply Per-Game Settings"),
+    FSUI_CSTR("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled."),
+    "Main", "ApplyGameSettings", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FROWN, "Automatically Load Cheats"),
+                    FSUI_CSTR("Automatically loads and applies cheats on game start."), "Main", "AutoLoadCheats", true);
+  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Use Light Theme"),
+                        FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "Main",
                         "UseLightFullscreenUITheme", false))
   {
     ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
   }
 
 #ifdef WITH_DISCORD_PRESENCE
-  MenuHeading("Integration");
-  DrawToggleSetting(bsi, ICON_FA_CHARGING_STATION " Enable Discord Presence",
+  MenuHeading(FSUI_CSTR("Integration"));
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
                     "Shows the game you are currently playing as part of your profile on Discord.", "Main",
                     "EnableDiscordPresence", false);
 #endif
 
-  MenuHeading("On-Screen Display");
-  DrawIntSpinBoxSetting(bsi, ICON_FA_SEARCH " OSD Scale",
-                        "Determines how large the on-screen messages and monitor are.", "Display", "OSDScale", 100, 25,
-                        500, 1, "%d%%");
-  DrawToggleSetting(bsi, ICON_FA_LIST " Show OSD Messages", "Shows on-screen-display messages when events occur.",
-                    "Display", "ShowOSDMessages", true);
+  MenuHeading(FSUI_CSTR("On-Screen Display"));
+  DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
+                        FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "Display",
+                        "OSDScale", 100, 25, 500, 1, "%d%%");
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show OSD Messages"),
+                    FSUI_CSTR("Shows on-screen-display messages when events occur."), "Display", "ShowOSDMessages",
+                    true);
   DrawToggleSetting(
-    bsi, ICON_FA_CLOCK " Show Speed",
-    "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.",
+    bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show Speed"),
+    FSUI_CSTR(
+      "Shows the current emulation speed of the system in the top-right corner of the display as a percentage."),
     "Display", "ShowSpeed", false);
-  DrawToggleSetting(bsi, ICON_FA_RULER " Show FPS",
-                    "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right "
-                    "corner of the display.",
-                    "Display", "ShowFPS", false);
-  DrawToggleSetting(bsi, ICON_FA_BATTERY_HALF " Show CPU Usage",
-                    "Shows the host's CPU usage based on threads in the top-right corner of the display.", "Display",
-                    "ShowCPU", false);
-  DrawToggleSetting(bsi, ICON_FA_SPINNER " Show GPU Usage",
-                    "Shows the host's GPU usage in the top-right corner of the display.", "Display", "ShowGPU", false);
-  DrawToggleSetting(bsi, ICON_FA_RULER_HORIZONTAL " Show Frame Times",
-                    "Shows a visual history of frame times in the upper-left corner of the display.", "Display",
-                    "ShowFrameTimes", false);
-  DrawToggleSetting(bsi, ICON_FA_RULER_VERTICAL " Show Resolution",
-                    "Shows the current rendering resolution of the system in the top-right corner of the display.",
-                    "Display", "ShowResolution", false);
-  DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Controller Input",
-                    "Shows the current controller state of the system in the bottom-left corner of the display.",
-                    "Display", "ShowInputs", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_RULER, "Show FPS"),
+    FSUI_CSTR("Shows the number of frames (or v-syncs) displayed per second by the system in the top-right "
+              "corner of the display."),
+    "Display", "ShowFPS", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
+                    FSUI_CSTR("Shows the host's CPU usage based on threads in the top-right corner of the display."),
+                    "Display", "ShowCPU", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SPINNER, "Show GPU Usage"),
+                    FSUI_CSTR("Shows the host's GPU usage in the top-right corner of the display."), "Display",
+                    "ShowGPU", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER_HORIZONTAL, "Show Frame Times"),
+                    FSUI_CSTR("Shows a visual history of frame times in the upper-left corner of the display."),
+                    "Display", "ShowFrameTimes", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_RULER_VERTICAL, "Show Resolution"),
+    FSUI_CSTR("Shows the current rendering resolution of the system in the top-right corner of the display."),
+    "Display", "ShowResolution", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Show Controller Input"),
+    FSUI_CSTR("Shows the current controller state of the system in the bottom-left corner of the display."), "Display",
+    "ShowInputs", false);
 
   EndMenuButtons();
 }
@@ -2716,7 +2769,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("BIOS Selection");
+  MenuHeading(FSUI_CSTR("BIOS Selection"));
 
   for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
   {
@@ -2725,23 +2778,23 @@ void FullscreenUI::DrawBIOSSettingsPage()
       continue;
 
     TinyString title;
-    title.Format("BIOS for %s", Settings::GetConsoleRegionName(region));
+    title.Fmt(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
 
     const std::optional<std::string> filename(bsi->GetOptionalStringValue(
       "BIOS", config_keys[i], game_settings ? std::nullopt : std::optional<const char*>("")));
 
     if (MenuButtonWithValue(title,
-                            SmallString::FromFormat("BIOS to use when emulating %s consoles.",
-                                                    Settings::GetConsoleRegionDisplayName(region)),
-                            filename.has_value() ? (filename->empty() ? "Auto-Detect" : filename->c_str()) :
-                                                   "Use Global Setting"))
+                            SmallString::FromFmt(FSUI_FSTR("BIOS to use when emulating {} consoles."),
+                                                 Settings::GetConsoleRegionDisplayName(region)),
+                            filename.has_value() ? (filename->empty() ? FSUI_CSTR("Auto-Detect") : filename->c_str()) :
+                                                   FSUI_CSTR("Use Global Setting")))
     {
       ImGuiFullscreen::ChoiceDialogOptions options;
       auto images = BIOS::FindBIOSImagesInDirectory(EmuFolders::Bios.c_str());
       options.reserve(images.size() + 2);
       if (IsEditingGameSettings(bsi))
-        options.emplace_back("Use Global Setting", !filename.has_value());
-      options.emplace_back("Auto-Detect", filename.has_value() && filename->empty());
+        options.emplace_back(FSUI_STR("Use Global Setting"), !filename.has_value());
+      options.emplace_back(FSUI_STR("Auto-Detect"), filename.has_value() && filename->empty());
       for (auto& [path, info] : images)
       {
         const bool selected = (filename.has_value() && filename.value() == path);
@@ -2765,50 +2818,56 @@ void FullscreenUI::DrawBIOSSettingsPage()
     }
   }
 
-  DrawFolderSetting(bsi, "BIOS Directory", "BIOS", "SearchDirectory", EmuFolders::Bios);
+  DrawFolderSetting(bsi, FSUI_CSTR("BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
 
-  MenuHeading("Patches");
+  MenuHeading(FSUI_CSTR("Patches"));
 
-  DrawToggleSetting(bsi, "Enable Fast Boot", "Patches the BIOS to skip the boot animation. Safe to enable.", "BIOS",
-                    "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, "Enable TTY Output",
-                    "Patches the BIOS to log calls to printf(). Only use when debugging, can break games.", "BIOS",
-                    "PatchTTYEnable", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Fast Boot"),
+                    FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
+                    Settings::DEFAULT_FAST_BOOT_VALUE);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Output"),
+                    FSUI_CSTR("Patches the BIOS to log calls to printf(). Only use when debugging, can break games."),
+                    "BIOS", "PatchTTYEnable", false);
 
   EndMenuButtons();
 }
 
 void FullscreenUI::DrawConsoleSettingsPage()
 {
-  static constexpr auto cdrom_read_speeds =
-    make_array("None (Double Speed)", "2x (Quad Speed)", "3x (6x Speed)", "4x (8x Speed)", "5x (10x Speed)",
-               "6x (12x Speed)", "7x (14x Speed)", "8x (16x Speed)", "9x (18x Speed)", "10x (20x Speed)");
+  static constexpr auto cdrom_read_speeds = make_array(
+    FSUI_NSTR("None (Double Speed)"), FSUI_NSTR("2x (Quad Speed)"), FSUI_NSTR("3x (6x Speed)"),
+    FSUI_NSTR("4x (8x Speed)"), FSUI_NSTR("5x (10x Speed)"), FSUI_NSTR("6x (12x Speed)"), FSUI_NSTR("7x (14x Speed)"),
+    FSUI_NSTR("8x (16x Speed)"), FSUI_NSTR("9x (18x Speed)"), FSUI_NSTR("10x (20x Speed)"));
 
   static constexpr auto cdrom_seek_speeds =
-    make_array("Infinite/Instantaneous", "None (Normal Speed)", "2x", "3x", "4x", "5x", "6x", "7x", "8x", "9x", "10x");
+    make_array(FSUI_NSTR("Infinite/Instantaneous"), FSUI_NSTR("None (Normal Speed)"), FSUI_NSTR("2x"), FSUI_NSTR("3x"),
+               FSUI_NSTR("4x"), FSUI_NSTR("5x"), FSUI_NSTR("6x"), FSUI_NSTR("7x"), FSUI_NSTR("8x"), FSUI_NSTR("9x"),
+               FSUI_NSTR("10x"));
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
 
-  MenuHeading("Console Settings");
+  MenuHeading(FSUI_CSTR("Console Settings"));
 
-  DrawEnumSetting(bsi, "Region", "Determines the emulated hardware type.", "Console", "Region",
+  DrawEnumSetting(bsi, FSUI_CSTR("Region"), FSUI_CSTR("Determines the emulated hardware type."), "Console", "Region",
                   Settings::DEFAULT_CONSOLE_REGION, &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
                   &Settings::GetConsoleRegionDisplayName, ConsoleRegion::Count);
-  DrawToggleSetting(bsi, "Enable 8MB RAM",
-                    "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.",
-                    "Console", "Enable8MBRAM", false);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable 8MB RAM"),
+    FSUI_CSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),
+    "Console", "Enable8MBRAM", false);
 
-  MenuHeading("CPU Emulation");
+  MenuHeading(FSUI_CSTR("CPU Emulation"));
 
-  DrawEnumSetting(
-    bsi, "Execution Mode", "Determines how the emulated CPU executes instructions. Recompiler is recommended.", "CPU",
-    "ExecutionMode", Settings::DEFAULT_CPU_EXECUTION_MODE, &Settings::ParseCPUExecutionMode,
-    &Settings::GetCPUExecutionModeName, &Settings::GetCPUExecutionModeDisplayName, CPUExecutionMode::Count);
+  DrawEnumSetting(bsi, FSUI_CSTR("Execution Mode"), FSUI_CSTR("Determines how the emulated CPU executes instructions."),
+                  "CPU", "ExecutionMode", Settings::DEFAULT_CPU_EXECUTION_MODE, &Settings::ParseCPUExecutionMode,
+                  &Settings::GetCPUExecutionModeName, &Settings::GetCPUExecutionModeDisplayName,
+                  CPUExecutionMode::Count);
 
-  DrawToggleSetting(bsi, "Enable Overclocking", "When this option is chosen, the clock speed set below will be used.",
-                    "CPU", "OverclockEnable", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Overclocking"),
+                    FSUI_CSTR("When this option is chosen, the clock speed set below will be used."), "CPU",
+                    "OverclockEnable", false);
 
   const bool oc_enable = GetEffectiveBoolSetting(bsi, "CPU", "OverclockEnable", false);
   if (oc_enable)
@@ -2816,9 +2875,9 @@ void FullscreenUI::DrawConsoleSettingsPage()
     u32 oc_numerator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockNumerator", 1);
     u32 oc_denominator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockDenominator", 1);
     s32 oc_percent = static_cast<s32>(Settings::CPUOverclockFractionToPercent(oc_numerator, oc_denominator));
-    if (RangeButton("Overclocking Percentage",
-                    "Selects the percentage of the normal clock speed the emulated hardware will run at.", &oc_percent,
-                    10, 1000, 10, "%d%%"))
+    if (RangeButton(FSUI_CSTR("Overclocking Percentage"),
+                    FSUI_CSTR("Selects the percentage of the normal clock speed the emulated hardware will run at."),
+                    &oc_percent, 10, 1000, 10, "%d%%"))
     {
       Settings::CPUOverclockPercentToFraction(oc_percent, &oc_numerator, &oc_denominator);
       bsi->SetUIntValue("CPU", "OverclockNumerator", oc_numerator);
@@ -2827,36 +2886,39 @@ void FullscreenUI::DrawConsoleSettingsPage()
     }
   }
 
-  DrawToggleSetting(bsi, "Enable Recompiler ICache",
-                    "Makes games run closer to their console framerate, at a small cost to performance.", "CPU",
-                    "RecompilerICache", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Recompiler ICache"),
+                    FSUI_CSTR("Makes games run closer to their console framerate, at a small cost to performance."),
+                    "CPU", "RecompilerICache", false);
 
-  MenuHeading("CD-ROM Emulation");
+  MenuHeading(FSUI_CSTR("CD-ROM Emulation"));
 
   DrawIntListSetting(
-    bsi, "Read Speedup",
-    "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.",
+    bsi, FSUI_CSTR("Read Speedup"),
+    FSUI_CSTR(
+      "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others."),
     "CDROM", "ReadSpeedup", 1, cdrom_read_speeds.data(), cdrom_read_speeds.size(), 1);
   DrawIntListSetting(
-    bsi, "Seek Speedup",
-    "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.",
+    bsi, FSUI_CSTR("Seek Speedup"),
+    FSUI_CSTR(
+      "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others."),
     "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds.data(), cdrom_seek_speeds.size());
 
   DrawIntRangeSetting(
-    bsi, "Readahead Sectors",
-    "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.", "CDROM",
-    "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS, 0, 32, "%d sectors");
+    bsi, FSUI_CSTR("Readahead Sectors"),
+    FSUI_CSTR("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."),
+    "CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS, 0, 32, "%d sectors");
 
-  DrawToggleSetting(bsi, "Enable Region Check", "Simulates the region check present in original, unmodified consoles.",
-                    "CDROM", "RegionCheck", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Region Check"),
+                    FSUI_CSTR("Simulates the region check present in original, unmodified consoles."), "CDROM",
+                    "RegionCheck", false);
   DrawToggleSetting(
-    bsi, "Preload Images to RAM",
-    "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.", "CDROM",
-    "LoadImageToRAM", false);
+    bsi, FSUI_CSTR("Preload Images to RAM"),
+    FSUI_CSTR("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay."),
+    "CDROM", "LoadImageToRAM", false);
   DrawToggleSetting(
-    bsi, "Apply Image Patches",
-    "Automatically applies patches to disc images when they are present, currently only PPF is supported.", "CDROM",
-    "LoadImagePatches", false);
+    bsi, FSUI_CSTR("Apply Image Patches"),
+    FSUI_CSTR("Automatically applies patches to disc images when they are present, currently only PPF is supported."),
+    "CDROM", "LoadImagePatches", false);
 
   EndMenuButtons();
 }
@@ -2866,69 +2928,75 @@ void FullscreenUI::DrawEmulationSettingsPage()
   static constexpr auto emulation_speed_values =
     make_array(0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.5f, 3.0f,
                3.5f, 4.0f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f);
-  static constexpr auto emulation_speed_titles = make_array(
-    "Unlimited", "10% [6 FPS (NTSC) / 5 FPS (PAL)]", "20% [12 FPS (NTSC) / 10 FPS (PAL)]",
-    "30% [18 FPS (NTSC) / 15 FPS (PAL)]", "40% [24 FPS (NTSC) / 20 FPS (PAL)]", "50% [30 FPS (NTSC) / 25 FPS (PAL)]",
-    "60% [36 FPS (NTSC) / 30 FPS (PAL)]", "70% [42 FPS (NTSC) / 35 FPS (PAL)]", "80% [48 FPS (NTSC) / 40 FPS (PAL)]",
-    "90% [54 FPS (NTSC) / 45 FPS (PAL)]", "100% [60 FPS (NTSC) / 50 FPS (PAL)]", "125% [75 FPS (NTSC) / 62 FPS (PAL)]",
-    "150% [90 FPS (NTSC) / 75 FPS (PAL)]", "175% [105 FPS (NTSC) / 87 FPS (PAL)]",
-    "200% [120 FPS (NTSC) / 100 FPS (PAL)]", "250% [150 FPS (NTSC) / 125 FPS (PAL)]",
-    "300% [180 FPS (NTSC) / 150 FPS (PAL)]", "350% [210 FPS (NTSC) / 175 FPS (PAL)]",
-    "400% [240 FPS (NTSC) / 200 FPS (PAL)]", "450% [270 FPS (NTSC) / 225 FPS (PAL)]",
-    "500% [300 FPS (NTSC) / 250 FPS (PAL)]", "600% [360 FPS (NTSC) / 300 FPS (PAL)]",
-    "700% [420 FPS (NTSC) / 350 FPS (PAL)]", "800% [480 FPS (NTSC) / 400 FPS (PAL)]",
-    "900% [540 FPS (NTSC) / 450 FPS (PAL)]", "1000% [600 FPS (NTSC) / 500 FPS (PAL)]");
+  static constexpr auto emulation_speed_titles =
+    make_array(FSUI_NSTR("Unlimited"), "10% [6 FPS (NTSC) / 5 FPS (PAL)]",
+               FSUI_NSTR("20% [12 FPS (NTSC) / 10 FPS (PAL)]"), FSUI_NSTR("30% [18 FPS (NTSC) / 15 FPS (PAL)]"),
+               FSUI_NSTR("40% [24 FPS (NTSC) / 20 FPS (PAL)]"), FSUI_NSTR("50% [30 FPS (NTSC) / 25 FPS (PAL)]"),
+               FSUI_NSTR("60% [36 FPS (NTSC) / 30 FPS (PAL)]"), FSUI_NSTR("70% [42 FPS (NTSC) / 35 FPS (PAL)]"),
+               FSUI_NSTR("80% [48 FPS (NTSC) / 40 FPS (PAL)]"), FSUI_NSTR("90% [54 FPS (NTSC) / 45 FPS (PAL)]"),
+               FSUI_NSTR("100% [60 FPS (NTSC) / 50 FPS (PAL)]"), FSUI_NSTR("125% [75 FPS (NTSC) / 62 FPS (PAL)]"),
+               FSUI_NSTR("150% [90 FPS (NTSC) / 75 FPS (PAL)]"), FSUI_NSTR("175% [105 FPS (NTSC) / 87 FPS (PAL)]"),
+               FSUI_NSTR("200% [120 FPS (NTSC) / 100 FPS (PAL)]"), FSUI_NSTR("250% [150 FPS (NTSC) / 125 FPS (PAL)]"),
+               FSUI_NSTR("300% [180 FPS (NTSC) / 150 FPS (PAL)]"), FSUI_NSTR("350% [210 FPS (NTSC) / 175 FPS (PAL)]"),
+               FSUI_NSTR("400% [240 FPS (NTSC) / 200 FPS (PAL)]"), FSUI_NSTR("450% [270 FPS (NTSC) / 225 FPS (PAL)]"),
+               FSUI_NSTR("500% [300 FPS (NTSC) / 250 FPS (PAL)]"), FSUI_NSTR("600% [360 FPS (NTSC) / 300 FPS (PAL)]"),
+               FSUI_NSTR("700% [420 FPS (NTSC) / 350 FPS (PAL)]"), FSUI_NSTR("800% [480 FPS (NTSC) / 400 FPS (PAL)]"),
+               FSUI_NSTR("900% [540 FPS (NTSC) / 450 FPS (PAL)]"), FSUI_NSTR("1000% [600 FPS (NTSC) / 500 FPS (PAL)]"));
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
 
-  MenuHeading("Speed Control");
+  MenuHeading(FSUI_CSTR("Speed Control"));
   DrawFloatListSetting(
-    bsi, "Emulation Speed",
-    "Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.", "Main",
-    "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
+    bsi, FSUI_CSTR("Emulation Speed"),
+    FSUI_CSTR("Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems."),
+    "Main", "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size());
   DrawFloatListSetting(
-    bsi, "Fast Forward Speed",
-    "Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.", "Main",
-    "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
+    bsi, FSUI_CSTR("Fast Forward Speed"),
+    FSUI_CSTR("Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems."),
+    "Main", "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size());
-  DrawFloatListSetting(bsi, "Turbo Speed",
-                       "Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.",
-                       "Main", "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
-                       emulation_speed_titles.size());
+  DrawFloatListSetting(
+    bsi, FSUI_CSTR("Turbo Speed"),
+    FSUI_CSTR("Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems."), "Main",
+    "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(), emulation_speed_titles.size());
 
-  MenuHeading("Runahead/Rewind");
+  MenuHeading(FSUI_CSTR("Runahead/Rewind"));
 
-  DrawToggleSetting(bsi, "Enable Rewinding", "Saves state periodically so you can rewind any mistakes while playing.",
-                    "Main", "RewindEnable", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Rewinding"),
+                    FSUI_CSTR("Saves state periodically so you can rewind any mistakes while playing."), "Main",
+                    "RewindEnable", false);
   DrawFloatRangeSetting(
-    bsi, "Rewind Save Frequency",
-    "How often a rewind state will be created. Higher frequencies have greater system requirements.", "Main",
+    bsi, FSUI_CSTR("Rewind Save Frequency"),
+    FSUI_CSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
     "RewindFrequency", 10.0f, 0.0f, 3600.0f, "%.2f Seconds");
-  DrawIntRangeSetting(bsi, "Rewind Save Slots",
-                      "How many saves will be kept for rewinding. Higher values have greater memory requirements.",
-                      "Main", "RewindSaveSlots", 10, 1, 10000, "%d Frames");
+  DrawIntRangeSetting(
+    bsi, FSUI_CSTR("Rewind Save Slots"),
+    FSUI_CSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."), "Main",
+    "RewindSaveSlots", 10, 1, 10000, "%d Frames");
 
   const s32 runahead_frames = GetEffectiveIntSetting(bsi, "Main", "RunaheadFrameCount", 0);
   const bool runahead_enabled = (runahead_frames > 0);
   const bool rewind_enabled = GetEffectiveBoolSetting(bsi, "Main", "RewindEnable", false);
 
   static constexpr auto runahead_options =
-    make_array("Disabled", "1 Frame", "2 Frames", "3 Frames", "4 Frames", "5 Frames", "6 Frames", "7 Frames",
-               "8 Frames", "9 Frames", "10 Frames");
+    make_array(FSUI_NSTR("Disabled"), FSUI_NSTR("1 Frame"), FSUI_NSTR("2 Frames"), FSUI_NSTR("3 Frames"),
+               FSUI_NSTR("4 Frames"), FSUI_NSTR("5 Frames"), FSUI_NSTR("6 Frames"), FSUI_NSTR("7 Frames"),
+               FSUI_NSTR("8 Frames"), FSUI_NSTR("9 Frames"), FSUI_NSTR("10 Frames"));
 
   DrawIntListSetting(
-    bsi, "Runahead",
-    "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.",
+    bsi, FSUI_CSTR("Runahead"),
+    FSUI_CSTR(
+      "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."),
     "Main", "RunaheadFrameCount", 0, runahead_options.data(), runahead_options.size());
 
   TinyString rewind_summary;
   if (runahead_enabled)
   {
-    rewind_summary = "Rewind is disabled because runahead is enabled. Runahead will significantly increase "
-                     "system requirements.";
+    rewind_summary = FSUI_VSTR("Rewind is disabled because runahead is enabled. Runahead will significantly increase "
+                               "system requirements.");
   }
   else if (rewind_enabled)
   {
@@ -2940,14 +3008,14 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, &ram_usage, &vram_usage);
-    rewind_summary.Format("Rewind for %u frames, lasting %.2f seconds will require up to %" PRIu64
-                          "MB of RAM and %" PRIu64 "MB of VRAM.",
-                          rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
+    rewind_summary.Fmt(
+      FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM."),
+      rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
   }
   else
   {
-    rewind_summary =
-      "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.";
+    rewind_summary = FSUI_VSTR(
+      "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
   }
 
   ActiveButton(rewind_summary, false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
@@ -2963,7 +3031,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
   InputManager::CopyConfiguration(dsi, *ssi, true, true, false);
   SetSettingsChanged(dsi);
 
-  ShowToast(std::string(), "Per-game controller configuration initialized with global settings.");
+  ShowToast(std::string(), FSUI_STR("Per-game controller configuration initialized with global settings."));
 }
 
 void FullscreenUI::DoLoadInputProfile()
@@ -2971,7 +3039,7 @@ void FullscreenUI::DoLoadInputProfile()
   std::vector<std::string> profiles(InputManager::GetInputProfileNames());
   if (profiles.empty())
   {
-    ShowToast(std::string(), "No input profiles available.");
+    ShowToast(std::string(), FSUI_STR("No input profiles available."));
     return;
   }
 
@@ -2979,7 +3047,7 @@ void FullscreenUI::DoLoadInputProfile()
   coptions.reserve(profiles.size());
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(ICON_FA_FOLDER_OPEN " Load Profile", false, std::move(coptions),
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Profile"), false, std::move(coptions),
                    [](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
@@ -2987,7 +3055,7 @@ void FullscreenUI::DoLoadInputProfile()
                      INISettingsInterface ssi(System::GetInputProfilePath(title));
                      if (!ssi.Load())
                      {
-                       ShowToast(std::string(), fmt::format("Failed to load '{}'.", title));
+                       ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
                        CloseChoiceDialog();
                        return;
                      }
@@ -2996,7 +3064,7 @@ void FullscreenUI::DoLoadInputProfile()
                      SettingsInterface* dsi = GetEditingSettingsInterface();
                      InputManager::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
-                     ShowToast(std::string(), fmt::format("Input profile '{}' loaded.", title));
+                     ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' loaded."), title));
                      CloseChoiceDialog();
                    });
 }
@@ -3009,9 +3077,9 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
   SettingsInterface* ssi = GetEditingSettingsInterface();
   InputManager::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
   if (dsi.Save())
-    ShowToast(std::string(), fmt::format("Input profile '{}' saved.", name));
+    ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' saved."), name));
   else
-    ShowToast(std::string(), fmt::format("Failed to save input profile '{}'.", name));
+    ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save input profile '{}'."), name));
 }
 
 void FullscreenUI::DoSaveInputProfile()
@@ -3019,7 +3087,7 @@ void FullscreenUI::DoSaveInputProfile()
   std::vector<std::string> profiles(InputManager::GetInputProfileNames());
   if (profiles.empty())
   {
-    ShowToast(std::string(), "No input profiles available.");
+    ShowToast(std::string(), FSUI_STR("No input profiles available."));
     return;
   }
 
@@ -3028,26 +3096,28 @@ void FullscreenUI::DoSaveInputProfile()
   coptions.emplace_back("Create New...", false);
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(
-    ICON_FA_SAVE " Save Profile", false, std::move(coptions), [](s32 index, const std::string& title, bool checked) {
-      if (index < 0)
-        return;
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"), false, std::move(coptions),
+                   [](s32 index, const std::string& title, bool checked) {
+                     if (index < 0)
+                       return;
 
-      if (index > 0)
-      {
-        DoSaveInputProfile(title);
-        CloseChoiceDialog();
-        return;
-      }
+                     if (index > 0)
+                     {
+                       DoSaveInputProfile(title);
+                       CloseChoiceDialog();
+                       return;
+                     }
 
-      CloseChoiceDialog();
+                     CloseChoiceDialog();
 
-      OpenInputStringDialog(ICON_FA_SAVE " Save Profile", "Enter the name of the input profile you wish to create.",
-                            std::string(), ICON_FA_FOLDER_PLUS " Create", [](std::string title) {
-                              if (!title.empty())
-                                DoSaveInputProfile(title);
-                            });
-    });
+                     OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
+                                           FSUI_STR("Enter the name of the input profile you wish to create."),
+                                           std::string(), FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"),
+                                           [](std::string title) {
+                                             if (!title.empty())
+                                               DoSaveInputProfile(title);
+                                           });
+                   });
 }
 
 void FullscreenUI::ResetControllerSettings()
@@ -3055,7 +3125,7 @@ void FullscreenUI::ResetControllerSettings()
   SettingsInterface* dsi = GetEditingSettingsInterface();
 
   CommonHost::SetDefaultControllerSettings(*dsi);
-  ShowToast(std::string(), "Controller settings reset to default.");
+  ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
 }
 
 void FullscreenUI::DrawControllerSettingsPage()
@@ -3069,8 +3139,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   if (IsEditingGameSettings(bsi))
   {
-    if (DrawToggleSetting(bsi, ICON_FA_COG " Per-Game Configuration",
-                          "Uses game-specific settings for controllers for this game.", "Pad",
+    if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Per-Game Configuration"),
+                          FSUI_CSTR("Uses game-specific settings for controllers for this game."), "Pad",
                           "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
     {
       // did we just enable per-game for the first time?
@@ -3092,23 +3162,26 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   if (IsEditingGameSettings(bsi))
   {
-    if (MenuButton(ICON_FA_COPY " Copy Global Settings", "Copies the global controller configuration to this game."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_COPY, "Copy Global Settings"),
+                   FSUI_CSTR("Copies the global controller configuration to this game.")))
       CopyGlobalControllerSettingsToGame();
   }
   else
   {
-    if (MenuButton(ICON_FA_FOLDER_MINUS " Reset Settings",
-                   "Resets all configuration to defaults (including bindings)."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Settings"),
+                   FSUI_CSTR("Resets all configuration to defaults (including bindings).")))
     {
       ResetControllerSettings();
     }
   }
 
-  if (MenuButton(ICON_FA_FOLDER_OPEN " Load Profile", "Replaces these settings with a previously saved input profile."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Profile"),
+                 FSUI_CSTR("Replaces these settings with a previously saved input profile.")))
   {
     DoLoadInputProfile();
   }
-  if (MenuButton(ICON_FA_SAVE " Save Profile", "Stores the current settings to an input profile."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
+                 FSUI_CSTR("Stores the current settings to an input profile.")))
   {
     DoSaveInputProfile();
   }
@@ -3116,26 +3189,22 @@ void FullscreenUI::DrawControllerSettingsPage()
   MenuHeading("Input Sources");
 
 #ifdef WITH_SDL2
-  DrawToggleSetting(bsi, ICON_FA_COG " Enable SDL Input Source", "The SDL input source supports most controllers.",
-                    "InputSources", "SDL", true, true, false);
-  DrawToggleSetting(bsi, ICON_FA_WIFI " SDL DualShock 4 / DualSense Enhanced Mode",
-                    "Provides vibration and LED control support over Bluetooth.", "InputSources",
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable SDL Input Source"),
+                    FSUI_CSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
+                    false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
+                    FSUI_CSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
                     "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 #endif
-#ifdef WITH_EVDEV
-  DrawToggleSetting(bsi, ICON_FA_COG " Enable Evdev Input Source",
-                    "You can use evdev as a fallback if SDL doesn't work with your device.", "InputSources", "Evdev",
-                    false);
-#endif
 #ifdef _WIN32
-  DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
-                    "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.", "InputSources",
-                    "XInput", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable XInput Input Source"),
+                    FSUI_CSTR("The XInput source provides support for XBox 360/XBox One/XBox Series controllers."),
+                    "InputSources", "XInput", false);
 #endif
 
   MenuHeading("Multitap");
-  DrawEnumSetting(bsi, ICON_FA_PLUS_SQUARE " Multitap Mode",
-                  "Enables an additional three controller slots on each port. Not supported in all games.",
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Multitap Mode"),
+                  FSUI_CSTR("Enables an additional three controller slots on each port. Not supported in all games."),
                   "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE, &Settings::ParseMultitapModeName,
                   &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
 
@@ -3162,16 +3231,21 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (is_mtap_port && !mtap_enabled[mtap_port])
       continue;
 
-    MenuHeading((mtap_enabled[mtap_port] ?
-                   fmt::format(ICON_FA_PLUG " Controller Port {}{}", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-                   fmt::format(ICON_FA_PLUG " Controller Port {}", mtap_port + 1))
-                  .c_str());
+    if (mtap_enabled[mtap_port])
+    {
+      MenuHeading(TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1,
+                                      mtap_slot_names[mtap_slot]));
+    }
+    else
+    {
+      MenuHeading(TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
+    }
 
     const std::string section(fmt::format("Pad{}", global_slot + 1));
     const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
-    if (MenuButton(fmt::format(ICON_FA_GAMEPAD " Controller Type##type{}", global_slot).c_str(),
-                   ci ? ci->display_name : "Unknown"))
+    if (MenuButton(TinyString::FromFmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
+                   ci ? ci->display_name : FSUI_CSTR("Unknown")))
     {
       std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
       ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3180,7 +3254,8 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         options.emplace_back(std::move(it.second), type == it.first);
       }
-      OpenChoiceDialog(fmt::format("Port {} Controller Type", global_slot + 1).c_str(), false, std::move(options),
+      OpenChoiceDialog(TinyString::FromFmt(FSUI_FSTR("Port {} Controller Type"), global_slot + 1), false,
+                       std::move(options),
                        [game_settings, section,
                         raw_options = std::move(raw_options)](s32 index, const std::string& title, bool checked) {
                          if (index < 0)
@@ -3197,8 +3272,11 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (!ci || ci->num_bindings == 0)
       continue;
 
-    if (MenuButton(ICON_FA_MAGIC " Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_MAGIC, "Automatic Mapping"),
+                   FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
+    {
       StartAutomaticBinding(global_slot);
+    }
 
     for (u32 i = 0; i < ci->num_bindings; i++)
     {
@@ -3206,21 +3284,28 @@ void FullscreenUI::DrawControllerSettingsPage()
       DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, bi.display_name, true);
     }
 
-    MenuHeading((mtap_enabled[mtap_port] ? fmt::format(ICON_FA_MICROCHIP " Controller Port {}{} Macros", mtap_port + 1,
-                                                       mtap_slot_names[mtap_slot]) :
-                                           fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
-                  .c_str());
+    if (mtap_enabled[mtap_port])
+    {
+      MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {}{} Macros")),
+                                       mtap_port + 1, mtap_slot_names[mtap_slot]));
+    }
+    else
+    {
+      MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
+                                       mtap_port + 1));
+    }
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
-                             fmt::format("Macro{}", macro_index + 1).c_str(),
-                             fmt::format("Macro {} Trigger", macro_index + 1).c_str());
+                             TinyString::FromFmt("Macro{}", macro_index + 1),
+                             TinyString::FromFmt(FSUI_FSTR("Macro {} Trigger"), macro_index + 1));
 
       std::string binds_string(
         bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
-      if (MenuButton(fmt::format(ICON_FA_KEYBOARD " Macro {} Buttons", macro_index + 1).c_str(),
-                     binds_string.empty() ? "No Buttons Selected" : binds_string.c_str()))
+      if (MenuButton(
+            TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Macro {} Buttons")), macro_index + 1),
+            binds_string.empty() ? FSUI_CSTR("No Buttons Selected") : binds_string.c_str()))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
         ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3237,59 +3322,63 @@ void FullscreenUI::DrawControllerSettingsPage()
                                            [bi](const std::string_view& it) { return (it == bi.name); }));
         }
 
-        OpenChoiceDialog(fmt::format("Select Macro {} Binds", macro_index + 1).c_str(), true, std::move(options),
-                         [game_settings, section, macro_index, ci](s32 index, const std::string& title, bool checked) {
-                           // convert display name back to bind name
-                           std::string_view to_modify;
-                           for (u32 j = 0; j < ci->num_bindings; j++)
-                           {
-                             const Controller::ControllerBindingInfo& bi = ci->bindings[j];
-                             if (bi.display_name == title)
-                             {
-                               to_modify = bi.name;
-                               break;
-                             }
-                           }
-                           if (to_modify.empty())
-                           {
-                             // wtf?
-                             return;
-                           }
+        OpenChoiceDialog(
+          TinyString::FromFmt(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1), true, std::move(options),
+          [game_settings, section, macro_index, ci](s32 index, const std::string& title, bool checked) {
+            // convert display name back to bind name
+            std::string_view to_modify;
+            for (u32 j = 0; j < ci->num_bindings; j++)
+            {
+              const Controller::ControllerBindingInfo& bi = ci->bindings[j];
+              if (bi.display_name == title)
+              {
+                to_modify = bi.name;
+                break;
+              }
+            }
+            if (to_modify.empty())
+            {
+              // wtf?
+              return;
+            }
 
-                           auto lock = Host::GetSettingsLock();
-                           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                           const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
+            auto lock = Host::GetSettingsLock();
+            SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+            const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
 
-                           std::string binds_string(bsi->GetStringValue(section.c_str(), key.c_str()));
-                           std::vector<std::string_view> buttons_split(
-                             StringUtil::SplitString(binds_string, '&', true));
-                           auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
-                           if (checked)
-                           {
-                             if (it == buttons_split.end())
-                               buttons_split.push_back(to_modify);
-                           }
-                           else
-                           {
-                             if (it != buttons_split.end())
-                               buttons_split.erase(it);
-                           }
+            std::string binds_string(bsi->GetStringValue(section.c_str(), key.c_str()));
+            std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
+            auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
+            if (checked)
+            {
+              if (it == buttons_split.end())
+                buttons_split.push_back(to_modify);
+            }
+            else
+            {
+              if (it != buttons_split.end())
+                buttons_split.erase(it);
+            }
 
-                           binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
-                           if (binds_string.empty())
-                             bsi->DeleteValue(section.c_str(), key.c_str());
-                           else
-                             bsi->SetStringValue(section.c_str(), key.c_str(), binds_string.c_str());
-                         });
+            binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
+            if (binds_string.empty())
+              bsi->DeleteValue(section.c_str(), key.c_str());
+            else
+              bsi->SetStringValue(section.c_str(), key.c_str(), binds_string.c_str());
+          });
       }
 
       const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
-      const std::string freq_title(fmt::format(ICON_FA_LIGHTBULB " Macro {} Frequency", macro_index + 1));
+      const SmallString freq_title =
+        SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Macro {} Frequency")), macro_index + 1);
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
-      const std::string freq_summary((frequency == 0) ? std::string("Macro will not auto-toggle.") :
-                                                        fmt::format("Macro will toggle every {} frames.", frequency));
-      if (MenuButton(freq_title.c_str(), freq_summary.c_str()))
-        ImGui::OpenPopup(freq_title.c_str());
+      SmallString freq_summary;
+      if (frequency == 0)
+        freq_summary = FSUI_VSTR("Macro will not auto-toggle.");
+      else
+        freq_summary.Fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency);
+      if (MenuButton(freq_title, freq_summary))
+        ImGui::OpenPopup(freq_title);
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 
@@ -3299,11 +3388,12 @@ void FullscreenUI::DrawControllerSettingsPage()
                                                                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
-      if (ImGui::BeginPopupModal(freq_title.c_str(), nullptr,
+      if (ImGui::BeginPopupModal(freq_title, nullptr,
                                  ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
       {
         ImGui::SetNextItemWidth(LayoutScale(450.0f));
-        if (ImGui::SliderInt("##value", &frequency, 0, 60, "Toggle every %d frames", ImGuiSliderFlags_NoInput))
+        if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"),
+                             ImGuiSliderFlags_NoInput))
         {
           if (frequency == 0)
             bsi->DeleteValue(section.c_str(), freq_key.c_str());
@@ -3325,17 +3415,22 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     if (ci->num_settings > 0)
     {
-      MenuHeading(
-        (mtap_enabled[mtap_port] ?
-           fmt::format(ICON_FA_SLIDERS_H " Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-           fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
-          .c_str());
+      if (mtap_enabled[mtap_port])
+      {
+        MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {}{} Settings")),
+                                         mtap_port + 1, mtap_slot_names[mtap_slot]));
+      }
+      else
+      {
+        MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")),
+                                         mtap_port + 1));
+      }
 
       for (u32 i = 0; i < ci->num_settings; i++)
       {
         const SettingInfo& si = ci->settings[i];
         TinyString title;
-        title.Fmt(ICON_FA_COG " {}", si.display_name);
+        title.Fmt(ICON_FA_COG "{}", si.display_name);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
@@ -3399,11 +3494,13 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   BeginMenuButtons();
 
   MenuHeading("Settings and Operations");
-  if (MenuButton(ICON_FA_PLUS " Create Memory Card", "Creates a new memory card file or folder."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
+                 FSUI_CSTR("Creates a new memory card file or folder.")))
   {
     OpenInputStringDialog(
-      ICON_FA_PLUS " Create Memory Card", "Enter the name of the memory card you wish to create.",
-      "Card Name: ", ICON_FA_FOLDER_PLUS " Create", [](std::string memcard_name) {
+      FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
+      FSUI_CSTR("Enter the name of the memory card you wish to create."),
+      "Card Name: ", FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), [](std::string memcard_name) {
         if (memcard_name.empty())
           return;
 
@@ -3415,45 +3512,47 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
           if (!FileSystem::WriteBinaryFile(filename.c_str(), data.data(), data.size()))
           {
             FileSystem::DeleteFile(filename.c_str());
-            ShowToast(std::string(), fmt::format("Failed to create memory card '{}'.", memcard_name));
+            ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create memory card '{}'."), memcard_name));
           }
           else
           {
-            ShowToast(std::string(), fmt::format("Memory card '{}' created.", memcard_name));
+            ShowToast(std::string(), fmt::format(FSUI_FSTR("Memory card '{}' created."), memcard_name));
           }
         }
         else
         {
-          ShowToast(std::string(), fmt::format("A memory card with the name '{}' already exists.", memcard_name));
+          ShowToast(std::string(),
+                    fmt::format(FSUI_FSTR("A memory card with the name '{}' already exists."), memcard_name));
         }
       });
   }
 
-  DrawFolderSetting(bsi, ICON_FA_FOLDER_OPEN " Memory Card Directory", "MemoryCards", "Directory",
+  DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
 
-  if (!game_settings && MenuButton(ICON_FA_MAGIC " Reset Memory Card Directory",
-                                   "Resets memory card directory to default (user directory)."))
+  if (!game_settings && MenuButton(FSUI_ICONSTR(ICON_FA_MAGIC, "Reset Memory Card Directory"),
+                                   FSUI_CSTR("Resets memory card directory to default (user directory).")))
   {
     bsi->SetStringValue("MemoryCards", "Directory", "memcards");
     SetSettingsChanged(bsi);
   }
 
-  DrawToggleSetting(bsi, ICON_FA_SEARCH " Use Single Card For Sub-Images",
-                    "When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, "
-                    "use a single memory card for all discs.",
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "Use Single Card For Sub-Images"),
+                    FSUI_CSTR("When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, "
+                              "use a single memory card for all discs."),
                     "MemoryCards", "UsePlaylistTitle", true);
 
   for (u32 i = 0; i < 2; i++)
   {
-    MenuHeading(TinyString::FromFormat("Memory Card Port %u", i + 1));
+    MenuHeading(TinyString::FromFmt(FSUI_FSTR("Memory Card Port {}"), i + 1));
 
     const MemoryCardType default_type =
       (i == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
-    DrawEnumSetting(bsi, TinyString::FromFmt(ICON_FA_SD_CARD " Memory Card {} Type", i + 1),
-                    SmallString::FromFmt("Sets which sort of memory card image will be used for slot {}.", i + 1),
-                    "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName,
-                    &Settings::GetMemoryCardTypeName, &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
+    DrawEnumSetting(
+      bsi, TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SD_CARD, "Memory Card {} Type")), i + 1),
+      SmallString::FromFmt(FSUI_FSTR("Sets which sort of memory card image will be used for slot {}."), i + 1),
+      "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
+      &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
 
     const MemoryCardType effective_type =
       Settings::ParseMemoryCardTypeName(
@@ -3467,8 +3566,9 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                                    std::optional<const char*>((i == 0) ? "shared_card_1.mcd" : "shared_card_2.mcd")));
 
     TinyString title;
-    title.Fmt(ICON_FA_FILE " Shared Card Name##card_name_{}", i);
-    if (MenuButtonWithValue(title, "The selected memory card image will be used in shared mode for this slot.",
+    title.Fmt("{}##card_name_{}", FSUI_ICONSTR(ICON_FA_FILE, "Shared Card Name"), i);
+    if (MenuButtonWithValue(title,
+                            FSUI_CSTR("The selected memory card image will be used in shared mode for this slot."),
                             path_value.has_value() ? path_value->c_str() : "Use Global Setting", is_shared))
     {
       ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3520,19 +3620,23 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 void FullscreenUI::DrawDisplaySettingsPage()
 {
+  // TODO: Translation context
   static constexpr auto resolution_scales =
-    make_array("Automatic based on window size", "1x", "2x", "3x (for 720p)", "4x", "5x (for 1080p)", "6x (for 1440p)",
-               "7x", "8x", "9x (for 4K)", "10x", "11x", "12x", "13x", "14x", "15x", "16x");
+    make_array(FSUI_NSTR("Automatic based on window size"), FSUI_NSTR("1x"), FSUI_NSTR("2x"),
+               FSUI_NSTR("3x (for 720p)"), FSUI_NSTR("4x"), FSUI_NSTR("5x (for 1080p)"), FSUI_NSTR("6x (for 1440p)"),
+               FSUI_NSTR("7x"), FSUI_NSTR("8x"), FSUI_NSTR("9x (for 4K)"), FSUI_NSTR("10x"), FSUI_NSTR("11x"),
+               FSUI_NSTR("12x"), FSUI_NSTR("13x"), FSUI_NSTR("14x"), FSUI_NSTR("15x"), FSUI_NSTR("16x"));
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
 
-  MenuHeading("Device Settings");
+  MenuHeading(FSUI_CSTR("Device Settings"));
 
-  DrawEnumSetting(bsi, "GPU Renderer", "Chooses the backend to use for rendering the console/game visuals.", "GPU",
-                  "Renderer", Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
+  DrawEnumSetting(bsi, FSUI_CSTR("GPU Renderer"),
+                  FSUI_CSTR("Chooses the backend to use for rendering the console/game visuals."), "GPU", "Renderer",
+                  Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
                   &Settings::GetRendererDisplayName, GPURenderer::Count);
 
   const GPURenderer renderer =
@@ -3545,17 +3649,17 @@ void FullscreenUI::DrawDisplaySettingsPage()
   std::optional<std::string> adapter(
     bsi->GetOptionalStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>("")));
 
-  if (MenuButtonWithValue("GPU Adapter", "Selects the GPU to use for rendering.",
-                          adapter.has_value() ? (adapter->empty() ? "Default" : adapter->c_str()) :
-                                                "Use Global Setting"))
+  if (MenuButtonWithValue(FSUI_CSTR("GPU Adapter"), FSUI_CSTR("Selects the GPU to use for rendering."),
+                          adapter.has_value() ? (adapter->empty() ? FSUI_CSTR("Default") : adapter->c_str()) :
+                                                FSUI_CSTR("Use Global Setting")))
   {
     HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.adapter_names.size() + 2);
     if (game_settings)
-      options.emplace_back("Use Global Setting", !adapter.has_value());
-    options.emplace_back("Default", adapter.has_value() && adapter->empty());
+      options.emplace_back(FSUI_STR("Use Global Setting"), !adapter.has_value());
+    options.emplace_back(FSUI_STR("Default"), adapter.has_value() && adapter->empty());
     for (std::string& mode : aml.adapter_names)
     {
       const bool checked = (adapter.has_value() && mode == adapter.value());
@@ -3580,26 +3684,27 @@ void FullscreenUI::DrawDisplaySettingsPage()
       else
         bsi->SetStringValue("GPU", "Adapter", value);
       SetSettingsChanged(bsi);
-      ShowToast(std::string(), "GPU adapter will be applied after restarting.", 10.0f);
+      ShowToast(std::string(), FSUI_STR("GPU adapter will be applied after restarting."), 10.0f);
       CloseChoiceDialog();
     };
-    OpenChoiceDialog(ICON_FA_TV " GPU Adapter", false, std::move(options), std::move(callback));
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
   std::optional<std::string> fsmode(bsi->GetOptionalStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>("")));
 
-  if (MenuButtonWithValue("Fullscreen Resolution", "Selects the resolution to use in fullscreen modes.",
-                          fsmode.has_value() ? (fsmode->empty() ? "Borderless Fullscreen" : fsmode->c_str()) :
-                                               "Use Global Setting"))
+  if (MenuButtonWithValue(
+        FSUI_CSTR("Fullscreen Resolution"), FSUI_CSTR("Selects the resolution to use in fullscreen modes."),
+        fsmode.has_value() ? (fsmode->empty() ? FSUI_CSTR("Borderless Fullscreen") : fsmode->c_str()) :
+                             FSUI_CSTR("Use Global Setting")))
   {
     HostDisplay::AdapterAndModeList aml(g_host_display->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.fullscreen_modes.size() + 2);
     if (game_settings)
-      options.emplace_back("Use Global Setting", !fsmode.has_value());
-    options.emplace_back("Borderless Fullscreen", fsmode.has_value() && fsmode->empty());
+      options.emplace_back(FSUI_STR("Use Global Setting"), !fsmode.has_value());
+    options.emplace_back(FSUI_STR("Borderless Fullscreen"), fsmode.has_value() && fsmode->empty());
     for (std::string& mode : aml.fullscreen_modes)
     {
       const bool checked = (fsmode.has_value() && mode == fsmode.value());
@@ -3624,10 +3729,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
       else
         bsi->SetStringValue("GPU", "FullscreenMode", value);
       SetSettingsChanged(bsi);
-      ShowToast(std::string(), "Resolution change will be applied after restarting.", 10.0f);
+      ShowToast(std::string(), FSUI_STR("Resolution change will be applied after restarting."), 10.0f);
       CloseChoiceDialog();
     };
-    OpenChoiceDialog(ICON_FA_TV " Fullscreen Resolution", false, std::move(options), std::move(callback));
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options), std::move(callback));
   }
 
   switch (renderer)
@@ -3635,9 +3740,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
 #ifdef _WIN32
     case GPURenderer::HardwareD3D11:
     {
-      DrawToggleSetting(bsi, "Use Blit Swap Chain",
-                        "Uses a blit presentation model instead of flipping. This may be needed on some systems.",
-                        "Display", "UseBlitSwapChain", false);
+      DrawToggleSetting(
+        bsi, FSUI_CSTR("Use Blit Swap Chain"),
+        FSUI_CSTR("Uses a blit presentation model instead of flipping. This may be needed on some systems."), "Display",
+        "UseBlitSwapChain", false);
     }
     break;
 #endif
@@ -3645,18 +3751,18 @@ void FullscreenUI::DrawDisplaySettingsPage()
 #ifdef WITH_VULKAN
     case GPURenderer::HardwareVulkan:
     {
-      DrawToggleSetting(bsi, "Threaded Presentation",
-                        "Presents frames on a background thread when fast forwarding or vsync is disabled.", "GPU",
-                        "ThreadedPresentation", true);
+      DrawToggleSetting(bsi, FSUI_CSTR("Threaded Presentation"),
+                        FSUI_CSTR("Presents frames on a background thread when fast forwarding or vsync is disabled."),
+                        "GPU", "ThreadedPresentation", true);
     }
     break;
 #endif
 
     case GPURenderer::Software:
     {
-      DrawToggleSetting(bsi, "Threaded Rendering",
-                        "Uses a second thread for drawing graphics. Speed boost, and safe to use.", "GPU", "UseThread",
-                        true);
+      DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
+                        FSUI_CSTR("Uses a second thread for drawing graphics. Speed boost, and safe to use."), "GPU",
+                        "UseThread", true);
     }
     break;
 
@@ -3666,114 +3772,120 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   if (renderer != GPURenderer::Software)
   {
-    DrawToggleSetting(bsi, "Use Software Renderer For Readbacks",
-                      "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
-                      "in greater performance.",
-                      "GPU", "UseSoftwareRendererForReadbacks", false);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Use Software Renderer For Readbacks"),
+      FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
+                "in greater performance."),
+      "GPU", "UseSoftwareRendererForReadbacks", false);
   }
 
-  DrawToggleSetting(bsi, "Enable VSync",
-                    "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.",
-                    "Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
-
-  DrawToggleSetting(bsi, "Sync To Host Refresh Rate",
-                    "Adjusts the emulation speed so the console's refresh rate matches the host when VSync and Audio "
-                    "Resampling are enabled.",
-                    "Main", "SyncToHostRefreshRate", false);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable VSync"),
+    FSUI_CSTR("Synchronizes presentation of the console's frames to the host. Enable for smoother animations."),
+    "Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
 
   DrawToggleSetting(
-    bsi, "Optimal Frame Pacing",
-    "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.",
-    "Display", "DisplayAllFrames", false);
+    bsi, FSUI_CSTR("Sync To Host Refresh Rate"),
+    FSUI_CSTR("Adjusts the emulation speed so the console's refresh rate matches the host when VSync and Audio "
+              "Resampling are enabled."),
+    "Main", "SyncToHostRefreshRate", false);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Optimal Frame Pacing"),
+                    FSUI_CSTR("Ensures every frame generated is displayed for optimal pacing. Disable if you are "
+                              "having speed or sound issues."),
+                    "Display", "DisplayAllFrames", false);
 
   MenuHeading("Rendering");
 
   DrawIntListSetting(
-    bsi, "Internal Resolution Scale",
-    "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.", "GPU",
-    "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
+    bsi, FSUI_CSTR("Internal Resolution Scale"),
+    FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
+    "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
 
-  DrawEnumSetting(bsi, "Texture Filtering",
-                  "Smooths out the blockiness of magnified textures on 3D objects. Will have a greater effect "
-                  "on higher resolution scales. The JINC2 and especially xBR filtering modes are very demanding,"
-                  "and may not be worth the speed penalty.",
-                  "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                  &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count,
-                  is_hardware);
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Texture Filtering"), FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."),
+    "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
+    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count, is_hardware);
 
-  DrawToggleSetting(bsi, "True Color Rendering",
-                    "Disables dithering and uses the full 8 bits per channel of color information. May break "
-                    "rendering in some games.",
-                    "GPU", "TrueColor", true, is_hardware);
+  DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
+                    FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
+                    "TrueColor", true, is_hardware);
 
   DrawToggleSetting(bsi, "Widescreen Hack",
-                    "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.", "GPU",
-                    "WidescreenHack", false, is_hardware);
+                    FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
+                    "GPU", "WidescreenHack", false, is_hardware);
 
-  DrawToggleSetting(bsi, "PGXP Geometry Correction",
-                    "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
-                    "transfers.",
-                    "GPU", "PGXPEnable", false);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("PGXP Geometry Correction"),
+    FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
+              "transfers."),
+    "GPU", "PGXPEnable", false);
 
-  MenuHeading("Screen Display");
+  MenuHeading(FSUI_CSTR("Screen Display"));
 
-  DrawEnumSetting(bsi, "Aspect Ratio", "Changes the aspect ratio used to display the console's output to the screen.",
-                  "Display", "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
+  DrawEnumSetting(bsi, FSUI_CSTR("Aspect Ratio"),
+                  FSUI_CSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
+                  "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
                   &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioName,
                   DisplayAspectRatio::Count);
 
-  DrawEnumSetting(bsi, "Crop Mode",
-                  "Determines how much of the area typically not visible on a consumer TV set to crop/hide.", "Display",
-                  "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
+  DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),
+                  FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
+                  "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
                   &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
 
-  DrawEnumSetting(bsi, "Position", "Determines the position on the screen when black borders must be added.", "Display",
-                  "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
-                  &Settings::GetDisplayAlignmentDisplayName, &Settings::GetDisplayAlignmentDisplayName,
-                  DisplayAlignment::Count);
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Position"), FSUI_CSTR("Determines the position on the screen when black borders must be added."),
+    "Display", "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
+    &Settings::GetDisplayAlignmentDisplayName, &Settings::GetDisplayAlignmentDisplayName, DisplayAlignment::Count);
 
-  DrawEnumSetting(bsi, "Downsampling",
-                  "Downsamples the rendered image prior to displaying it. Can improve "
-                  "overall image quality in mixed 2D/3D games.",
+  DrawEnumSetting(bsi, FSUI_CSTR("Downsampling"),
+                  FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
+                            "overall image quality in mixed 2D/3D games."),
                   "GPU", "DownsampleMode", Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, &Settings::ParseDownsampleModeName,
                   &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
                   (renderer != GPURenderer::Software));
 
-  DrawToggleSetting(bsi, "Linear Upscaling",
-                    "Uses a bilinear filter when upscaling to display, smoothing out the image.", "Display",
+  DrawToggleSetting(bsi, FSUI_CSTR("Linear Upscaling"),
+                    FSUI_CSTR("Uses a bilinear filter when upscaling to display, smoothing out the image."), "Display",
                     "LinearFiltering", true);
 
-  DrawToggleSetting(bsi, "Integer Upscaling", "Adds padding to ensure pixels are a whole number in size.", "Display",
-                    "IntegerScaling", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Integer Upscaling"),
+                    FSUI_CSTR("Adds padding to ensure pixels are a whole number in size."), "Display", "IntegerScaling",
+                    false);
 
-  DrawToggleSetting(bsi, "Stretch To Fit",
-                    "Fills the window with the active display area, regardless of the aspect ratio.", "Display",
-                    "Stretch", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Stretch To Fit"),
+                    FSUI_CSTR("Fills the window with the active display area, regardless of the aspect ratio."),
+                    "Display", "Stretch", false);
 
-  DrawToggleSetting(bsi, "Internal Resolution Screenshots",
-                    "Saves screenshots at internal render resolution and without postprocessing.", "Display",
+  DrawToggleSetting(bsi, FSUI_CSTR("Internal Resolution Screenshots"),
+                    FSUI_CSTR("Saves screenshots at internal render resolution and without postprocessing."), "Display",
                     "InternalResolutionScreenshots", false);
 
-  MenuHeading("Enhancements");
-  DrawToggleSetting(bsi, "Scaled Dithering",
-                    "Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
-                    "Usually safe to enable.",
-                    "GPU", "ScaledDithering", true, is_hardware);
+  MenuHeading(FSUI_CSTR("Enhancements"));
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Scaled Dithering"),
+    FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
+              "Usually safe to enable."),
+    "GPU", "ScaledDithering", true, is_hardware);
 
-  DrawToggleSetting(bsi, "Disable Interlacing",
-                    "Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
-                    "but others will break.",
-                    "GPU", "DisableInterlacing", true);
-  DrawToggleSetting(bsi, "Force NTSC Timings",
-                    "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" "
-                    "speeds, while others will break.",
-                    "GPU", "ForceNTSCTimings", false);
-  DrawToggleSetting(bsi, "Force 4:3 For 24-Bit Display",
-                    "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.",
-                    "Display", "Force4_3For24Bit", false);
-  DrawToggleSetting(bsi, "Chroma Smoothing For 24-Bit Display",
-                    "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies "
-                    "to the hardware renderers.",
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Disable Interlacing"),
+    FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
+              "but others will break."),
+    "GPU", "DisableInterlacing", true);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Force NTSC Timings"),
+    FSUI_CSTR("Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" "
+              "speeds, while others will break."),
+    "GPU", "ForceNTSCTimings", false);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Force 4:3 For 24-Bit Display"),
+    FSUI_CSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
+    "Force4_3For24Bit", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Chroma Smoothing For 24-Bit Display"),
+                    FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only "
+                              "applies to the hardware renderers."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
   MenuHeading("PGXP (Precision Geometry Transform Pipeline)");
@@ -3782,32 +3894,35 @@ void FullscreenUI::DrawDisplaySettingsPage()
   const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
 
   DrawToggleSetting(
-    bsi, "Perspective Correct Textures",
-    "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.", "GPU",
-    "PGXPTextureCorrection", true, pgxp_enabled);
-  DrawToggleSetting(bsi, "Perspective Correct Colors",
-                    "Uses perspective-correct interpolation for colors, which can improve visuals in some games.",
-                    "GPU", "PGXPColorCorrection", false, pgxp_enabled);
-  DrawToggleSetting(bsi, "Culling Correction",
-                    "Increases the precision of polygon culling, reducing the number of holes in geometry.", "GPU",
-                    "PGXPCulling", true, pgxp_enabled);
-  DrawToggleSetting(bsi, "Preserve Projection Precision",
-                    "Adds additional precision to PGXP data post-projection. May improve visuals in some games.", "GPU",
-                    "PGXPPreserveProjFP", false, pgxp_enabled);
-  DrawToggleSetting(bsi, "Depth Buffer",
-                    "Reduces polygon Z-fighting through depth testing. Low compatibility with games.", "GPU",
+    bsi, FSUI_CSTR("Perspective Correct Textures"),
+    FSUI_CSTR("Uses perspective-correct interpolation for texture coordinates, straightening out warped textures."),
+    "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Perspective Correct Colors"),
+    FSUI_CSTR("Uses perspective-correct interpolation for colors, which can improve visuals in some games."), "GPU",
+    "PGXPColorCorrection", false, pgxp_enabled);
+  DrawToggleSetting(bsi, FSUI_CSTR("Culling Correction"),
+                    FSUI_CSTR("Increases the precision of polygon culling, reducing the number of holes in geometry."),
+                    "GPU", "PGXPCulling", true, pgxp_enabled);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Preserve Projection Precision"),
+    FSUI_CSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."), "GPU",
+    "PGXPPreserveProjFP", false, pgxp_enabled);
+  DrawToggleSetting(bsi, FSUI_CSTR("Depth Buffer"),
+                    FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."), "GPU",
                     "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
-  DrawToggleSetting(bsi, "CPU Mode", "Uses PGXP for all instructions, not just memory operations.", "GPU", "PGXPCPU",
-                    false, pgxp_enabled);
+  DrawToggleSetting(bsi, FSUI_CSTR("CPU Mode"),
+                    FSUI_CSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
+                    pgxp_enabled);
 
-  MenuHeading("Texture Replacements");
+  MenuHeading(FSUI_CSTR("Texture Replacements"));
 
-  DrawToggleSetting(bsi, "Enable VRAM Write Texture Replacement",
-                    "Enables the replacement of background textures in supported games.", "TextureReplacements",
-                    "EnableVRAMWriteReplacements", false);
-  DrawToggleSetting(bsi, "Preload Replacement Textures",
-                    "Loads all replacement texture to RAM, reducing stuttering at runtime.", "TextureReplacements",
-                    "PreloadTextures", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
+                    FSUI_CSTR("Enables the replacement of background textures in supported games."),
+                    "TextureReplacements", "EnableVRAMWriteReplacements", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
+                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
+                    "TextureReplacements", "PreloadTextures", false);
 
   EndMenuButtons();
 }
@@ -3849,62 +3964,64 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Controls");
+  MenuHeading(FSUI_CSTR("Controls"));
 
-  DrawToggleSetting(bsi, ICON_FA_MAGIC " Enable Post Processing",
-                    "If not enabled, the current post processing chain will be ignored.", "Display", "PostProcessing",
-                    false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Enable Post Processing"),
+                    FSUI_CSTR("If not enabled, the current post processing chain will be ignored."), "Display",
+                    "PostProcessing", false);
 
-  if (MenuButton(ICON_FA_SEARCH " Reload Shaders", "Reloads the shaders from disk, applying any changes.",
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH, "Reload Shaders"),
+                 FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("Display", "PostProcessing", false)))
   {
     const std::string chain(bsi->GetStringValue("Display", "PostProcessChain", ""));
     g_host_display->SetPostProcessingChain(chain);
     if (chain.empty())
-      ShowToast(std::string(), "Post-processing chain is empty.");
+      ShowToast(std::string(), FSUI_STR("Post-processing chain is empty."));
     else
-      ShowToast(std::string(), "Post-processing shaders reloaded.");
+      ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
   }
 
-  MenuHeading("Operations");
+  MenuHeading(FSUI_CSTR("Operations"));
 
-  if (MenuButton(ICON_FA_PLUS " Add Shader", "Adds a new shader to the chain."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), FSUI_CSTR("Adds a new shader to the chain.")))
   {
     ImGuiFullscreen::ChoiceDialogOptions options;
     for (std::string& name : FrontendCommon::PostProcessingChain::GetAvailableShaderNames())
       options.emplace_back(std::move(name), false);
 
-    OpenChoiceDialog(
-      ICON_FA_PLUS " Add Shader", false, std::move(options), [](s32 index, const std::string& title, bool checked) {
-        if (index < 0)
-          return;
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), false, std::move(options),
+                     [](s32 index, const std::string& title, bool checked) {
+                       if (index < 0)
+                         return;
 
-        if (s_postprocessing_chain.AddStage(title))
-        {
-          ShowToast(std::string(),
-                    fmt::format("Shader {} added as stage {}.", title, s_postprocessing_chain.GetStageCount()));
-          SavePostProcessingChain();
-        }
-        else
-        {
-          ShowToast(std::string(), fmt::format("Failed to load shader {}. It may be invalid.", title));
-        }
+                       if (s_postprocessing_chain.AddStage(title))
+                       {
+                         ShowToast(std::string(), fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
+                                                              s_postprocessing_chain.GetStageCount()));
+                         SavePostProcessingChain();
+                       }
+                       else
+                       {
+                         ShowToast(std::string(),
+                                   fmt::format(FSUI_FSTR("Failed to load shader {}. It may be invalid."), title));
+                       }
 
-        CloseChoiceDialog();
-      });
+                       CloseChoiceDialog();
+                     });
   }
 
-  if (MenuButton(ICON_FA_TIMES " Clear Shaders", "Clears a shader from the chain."))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_TIMES, "Clear Shaders"), FSUI_CSTR("Clears a shader from the chain.")))
   {
     OpenConfirmMessageDialog(
-      ICON_FA_TIMES " Clear Shaders",
-      "Are you sure you want to clear the current post-processing chain? All configuration will be lost.",
+      FSUI_ICONSTR(ICON_FA_TIMES, "Clear Shaders"),
+      FSUI_CSTR("Are you sure you want to clear the current post-processing chain? All configuration will be lost."),
       [](bool confirmed) {
         if (!confirmed)
           return;
 
         s_postprocessing_chain.ClearStages();
-        ShowToast(std::string(), "Post-processing chain cleared.");
+        ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
         SavePostProcessingChain();
       });
   }
@@ -3918,23 +4035,24 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   {
     ImGui::PushID(stage_index);
     FrontendCommon::PostProcessingShader& stage = s_postprocessing_chain.GetShaderStage(stage_index);
-    str.Fmt("Stage {}: {}", stage_index + 1, stage.GetName());
+    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, stage.GetName());
     MenuHeading(str);
 
-    if (MenuButton(ICON_FA_TIMES " Remove From Chain", "Removes this shader from the chain."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_TIMES, "Remove From Chain"), FSUI_CSTR("Removes this shader from the chain.")))
     {
       postprocessing_action = POSTPROCESSING_ACTION_REMOVE;
       postprocessing_action_index = stage_index;
     }
 
-    if (MenuButton(ICON_FA_ARROW_UP " Move Up", "Moves this shader higher in the chain, applying it earlier.",
-                   (stage_index > 0)))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_ARROW_UP, "Move Up"),
+                   FSUI_CSTR("Moves this shader higher in the chain, applying it earlier."), (stage_index > 0)))
     {
       postprocessing_action = POSTPROCESSING_ACTION_MOVE_UP;
       postprocessing_action_index = stage_index;
     }
 
-    if (MenuButton(ICON_FA_ARROW_DOWN " Move Down", "Moves this shader lower in the chain, applying it later.",
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Move Down"),
+                   FSUI_CSTR("Moves this shader lower in the chain, applying it later."),
                    (stage_index != (s_postprocessing_chain.GetStageCount() - 1))))
     {
       postprocessing_action = POSTPROCESSING_ACTION_MOVE_DOWN;
@@ -3948,9 +4066,11 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         case FrontendCommon::PostProcessingShader::Option::Type::Bool:
         {
           bool value = (opt.value[0].int_value != 0);
-          tstr.Fmt(ICON_FA_COGS " {}", opt.ui_name);
-          str.Fmt("Default: {}", (opt.default_value[0].int_value != 0) ? "Enabled" : "Disabled");
-          if (ToggleButton(tstr, str, &value))
+          tstr.Fmt(ICON_FA_COGS "{}", opt.ui_name);
+          if (ToggleButton(tstr,
+                           (opt.default_value[0].int_value != 0) ? FSUI_CSTR("Default: Enabled") :
+                                                                   FSUI_CSTR("Default: Disabled"),
+                           &value))
           {
             opt.value[0].int_value = (value != 0);
             SavePostProcessingChain();
@@ -3960,8 +4080,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         case FrontendCommon::PostProcessingShader::Option::Type::Float:
         {
-          tstr.Fmt(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
-          str.Fmt("Value: {} | Default: {} | Minimum: {} | Maximum: {}", opt.value[0].float_value,
+          tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
                   opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
@@ -4046,7 +4166,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 #endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
                                          ImVec2(0.5f, 0.0f)))
             {
               ImGui::CloseCurrentPopup();
@@ -4063,8 +4183,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         case FrontendCommon::PostProcessingShader::Option::Type::Int:
         {
-          tstr.Fmt(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
-          str.Fmt("Value: {} | Default: {} | Minimum: {} | Maximum: {}", opt.value[0].int_value,
+          tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
                   opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
@@ -4149,7 +4269,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 #endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
                                          ImVec2(0.5f, 0.0f)))
             {
               ImGui::CloseCurrentPopup();
@@ -4174,7 +4294,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     case POSTPROCESSING_ACTION_REMOVE:
     {
       FrontendCommon::PostProcessingShader& stage = s_postprocessing_chain.GetShaderStage(postprocessing_action_index);
-      ShowToast(std::string(), fmt::format("Removed stage {} ({}).", postprocessing_action_index + 1, stage.GetName()));
+      ShowToast(std::string(),
+                fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, stage.GetName()));
       s_postprocessing_chain.RemoveStage(postprocessing_action_index);
       SavePostProcessingChain();
     }
@@ -4206,36 +4327,40 @@ void FullscreenUI::DrawAudioSettingsPage()
 
   MenuHeading("Audio Control");
 
-  DrawIntRangeSetting(bsi, "Output Volume", "Controls the volume of the audio played on the host.", "Audio",
-                      "OutputVolume", 100, 0, 100, "%d%%");
-  DrawIntRangeSetting(bsi, "Fast Forward Volume",
-                      "Controls the volume of the audio played on the host when fast forwarding.", "Audio",
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
+                      FSUI_CSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
+                      0, 100, "%d%%");
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Fast Forward Volume"),
+                      FSUI_CSTR("Controls the volume of the audio played on the host when fast forwarding."), "Audio",
                       "FastForwardVolume", 100, 0, 100, "%d%%");
-  DrawToggleSetting(bsi, "Mute All Sound", "Prevents the emulator from producing any audible sound.", "Audio",
-                    "OutputMuted", false);
-  DrawToggleSetting(bsi, "Mute CD Audio",
-                    "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to "
-                    "disable background music in some games.",
+  DrawToggleSetting(bsi, FSUI_CSTR("Mute All Sound"),
+                    FSUI_CSTR("Prevents the emulator from producing any audible sound."), "Audio", "OutputMuted",
+                    false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Mute CD Audio"),
+                    FSUI_CSTR("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to "
+                              "disable background music in some games."),
                     "CDROM", "MuteCDAudio", false);
 
-  MenuHeading("Backend Settings");
+  MenuHeading(FSUI_CSTR("Backend Settings"));
 
-  DrawEnumSetting(bsi, "Audio Backend",
-                  "The audio backend determines how frames produced by the emulator are submitted to the host.",
-                  "Audio", "Backend", Settings::DEFAULT_AUDIO_BACKEND, &Settings::ParseAudioBackend,
-                  &Settings::GetAudioBackendName, &Settings::GetAudioBackendDisplayName, AudioBackend::Count);
-  DrawEnumSetting(bsi, "Stretch Mode", "Determines quality of audio when not running at 100% speed.", "Audio",
-                  "StretchMode", Settings::DEFAULT_AUDIO_STRETCH_MODE, &AudioStream::ParseStretchMode,
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Audio Backend"),
+    FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "Audio",
+    "Backend", Settings::DEFAULT_AUDIO_BACKEND, &Settings::ParseAudioBackend, &Settings::GetAudioBackendName,
+    &Settings::GetAudioBackendDisplayName, AudioBackend::Count);
+  DrawEnumSetting(bsi, FSUI_CSTR("Stretch Mode"),
+                  FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
+                  Settings::DEFAULT_AUDIO_STRETCH_MODE, &AudioStream::ParseStretchMode,
                   &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeDisplayName, AudioStretchMode::Count);
-  DrawIntRangeSetting(bsi, "Buffer Size",
-                      "Determines the amount of audio buffered before being pulled by the host API.", "Audio",
-                      "BufferMS", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
+                      FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
+                      "Audio", "BufferMS", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
 
   const u32 output_latency =
     GetEffectiveUIntSetting(bsi, "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
   bool output_latency_minimal = (output_latency == 0);
-  if (ToggleButton("Minimal Output Latency",
-                   "When enabled, the minimum supported output latency will be used for the host API.",
+  if (ToggleButton(FSUI_CSTR("Minimal Output Latency"),
+                   FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
                    &output_latency_minimal))
   {
     bsi->SetUIntValue("Audio", "OutputLatencyMS",
@@ -4244,10 +4369,11 @@ void FullscreenUI::DrawAudioSettingsPage()
   }
   if (!output_latency_minimal)
   {
-    DrawIntRangeSetting(bsi, "Output Latency",
-                        "Determines how much latency there is between the audio being picked up by the host API, and "
-                        "played through speakers.",
-                        "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
+    DrawIntRangeSetting(
+      bsi, FSUI_CSTR("Output Latency"),
+      FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
+                "played through speakers."),
+      "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
   }
 
   EndMenuButtons();
@@ -4261,8 +4387,10 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::IsUsingRAIntegration())
   {
     BeginMenuButtons();
-    ActiveButton(ICON_FA_BAN " RAIntegration is being used instead of the built-in achievements implementation.", false,
-                 false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(
+      FSUI_ICONSTR(ICON_FA_BAN,
+                   FSUI_CSTR("RAIntegration is being used instead of the built-in achievements implementation.")),
+      false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     EndMenuButtons();
     return;
   }
@@ -4277,78 +4405,87 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   BeginMenuButtons();
 
   MenuHeading("Settings");
-  DrawToggleSetting(bsi, ICON_FA_TROPHY " Enable Achievements",
-                    "When enabled and logged in, DuckStation will scan for achievements on startup.", "Cheevos",
-                    "Enabled", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Enable Achievements"),
+                    FSUI_CSTR("When enabled and logged in, DuckStation will scan for achievements on startup."),
+                    "Cheevos", "Enabled", false);
 
   const bool enabled = bsi->GetBoolValue("Cheevos", "Enabled", false);
   const bool challenge = bsi->GetBoolValue("Cheevos", "ChallengeMode", false);
 
-  DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS " Rich Presence",
-                    "When enabled, rich presence information will be collected and sent to the server where supported.",
-                    "Cheevos", "RichPresence", true, enabled);
-  if (DrawToggleSetting(bsi, ICON_FA_HARD_HAT " Hardcore Mode",
-                        "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, "
-                        "cheats, and slowdown functions.",
-                        "Cheevos", "ChallengeMode", false, enabled))
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_USER_FRIENDS, "Rich Presence"),
+    FSUI_CSTR("When enabled, rich presence information will be collected and sent to the server where supported."),
+    "Cheevos", "RichPresence", true, enabled);
+  if (DrawToggleSetting(
+        bsi, FSUI_ICONSTR(ICON_FA_HARD_HAT, "Hardcore Mode"),
+        FSUI_CSTR("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, "
+                  "cheats, and slowdown functions."),
+        "Cheevos", "ChallengeMode", false, enabled))
   {
     if (System::IsValid() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
       ShowToast(std::string(), "Hardcore mode will be enabled on next game restart.");
   }
-  DrawToggleSetting(bsi, ICON_FA_LIST_OL " Leaderboards",
-                    "Enables tracking and submission of leaderboards in supported games.", "Cheevos", "Leaderboards",
-                    true, enabled && challenge);
-  DrawToggleSetting(bsi, ICON_FA_INBOX " Show Notifications",
-                    "Displays popup messages on events such as achievement unlocks and leaderboard submissions.",
-                    "Cheevos", "Notifications", true, enabled);
-  DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Enable Sound Effects",
-                    "Plays sound effects for events such as achievement unlocks and leaderboard submissions.",
-                    "Cheevos", "SoundEffects", true, enabled);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST_OL, "Leaderboards"),
+                    FSUI_CSTR("Enables tracking and submission of leaderboards in supported games."), "Cheevos",
+                    "Leaderboards", true, enabled && challenge);
   DrawToggleSetting(
-    bsi, ICON_FA_MAGIC " Show Challenge Indicators",
-    "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.", "Cheevos",
-    "PrimedIndicators", true, enabled);
-  DrawToggleSetting(bsi, ICON_FA_MEDAL " Test Unofficial Achievements",
-                    "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "
-                    "tracked by RetroAchievements.",
-                    "Cheevos", "UnofficialTestMode", false, enabled);
-  DrawToggleSetting(bsi, ICON_FA_STETHOSCOPE " Test Mode",
-                    "When enabled, DuckStation will assume all achievements are locked and not send any unlock "
-                    "notifications to the server.",
-                    "Cheevos", "TestMode", false, enabled);
+    bsi, FSUI_ICONSTR(ICON_FA_INBOX, "Show Notifications"),
+    FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
+    "Notifications", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_HEADPHONES, "Enable Sound Effects"),
+    FSUI_CSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
+    "SoundEffects", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Show Challenge Indicators"),
+    FSUI_CSTR("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."),
+    "Cheevos", "PrimedIndicators", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_MEDAL, "Test Unofficial Achievements"),
+    FSUI_CSTR("When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "
+              "tracked by RetroAchievements."),
+    "Cheevos", "UnofficialTestMode", false, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_STETHOSCOPE, "Test Mode"),
+    FSUI_CSTR("When enabled, DuckStation will assume all achievements are locked and not send any unlock "
+              "notifications to the server."),
+    "Cheevos", "TestMode", false, enabled);
 
   MenuHeading("Account");
   if (Achievements::IsLoggedIn())
   {
     ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-    ActiveButton(SmallString::FromFormat(ICON_FA_USER " Username: %s", Achievements::GetUsername().c_str()), false,
-                 false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(
+      SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")), Achievements::GetUsername()),
+      false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     TinyString ts_string;
     ts_string.AppendFmtString(
       "{:%Y-%m-%d %H:%M:%S}",
       fmt::localtime(StringUtil::FromChars<u64>(bsi->GetStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
-    ActiveButton(SmallString::FromFormat(ICON_FA_CLOCK " Login token generated on %s", ts_string.GetCharArray()), false,
-                 false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")),
+                                      ts_string.GetCharArray()),
+                 false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     ImGui::PopStyleColor();
 
-    if (MenuButton(ICON_FA_KEY " Logout", "Logs out of RetroAchievements."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
     {
       Host::RunOnCPUThread([]() { Achievements::Logout(); });
     }
   }
   else if (Achievements::IsActive())
   {
-    ActiveButton(ICON_FA_USER " Not Logged In", false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), false, false,
+                 ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-    if (MenuButton(ICON_FA_KEY " Login", "Logs in to RetroAchievements."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
       ImGui::OpenPopup("Achievements Login");
 
     DrawAchievementsLoginWindow();
   }
   else
   {
-    ActiveButton(ICON_FA_USER " Achievements are disabled.", false, false,
+    ActiveButton(FSUI_ICONSTR(ICON_FA_USER, "Achievements are disabled."), false, false,
                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   }
 
@@ -4356,24 +4493,26 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::HasActiveGame())
   {
     ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-    ActiveButton(fmt::format(ICON_FA_BOOKMARK " Game ID: {}", Achievements::GetGameID()).c_str(), false, false,
-                 LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-    ActiveButton(fmt::format(ICON_FA_BOOK " Game Title: {}", Achievements::GetGameTitle()).c_str(), false, false,
-                 LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-    ActiveButton(fmt::format(ICON_FA_TROPHY " Achievements: {} ({} points)", Achievements::GetAchievementCount(),
-                             Achievements::GetMaximumPointsForGame())
+    ActiveButton(
+      fmt::format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game ID: {}")), Achievements::GetGameID()).c_str(),
+      false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(
+      fmt::format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOK, "Game Title: {}")), Achievements::GetGameTitle()).c_str(),
+      false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    ActiveButton(fmt::format(fmt::runtime(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements: {} ({} points)")),
+                             Achievements::GetAchievementCount(), Achievements::GetMaximumPointsForGame())
                    .c_str(),
                  false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     const std::string& rich_presence_string = Achievements::GetRichPresenceString();
     if (!rich_presence_string.empty())
     {
-      ActiveButton(fmt::format(ICON_FA_MAP " {}", rich_presence_string).c_str(), false, false,
+      ActiveButton(SmallString::FromFmt(ICON_FA_MAP "{}", rich_presence_string), false, false,
                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
     else
     {
-      ActiveButton(ICON_FA_MAP " Rich presence inactive or unsupported.", false, false,
+      ActiveButton(FSUI_ICONSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false, false,
                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
 
@@ -4381,7 +4520,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   }
   else
   {
-    ActiveButton(ICON_FA_BAN " Game not loaded or no RetroAchievements available.", false, false,
+    ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false, false,
                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   }
 
@@ -4401,21 +4540,21 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   if (ImGui::BeginPopupModal("Achievements Login", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
 
-    ImGui::TextWrapped("Please enter your user name and password for retroachievements.org.");
+    ImGui::TextWrapped(FSUI_CSTR("Please enter your user name and password for retroachievements.org."));
     ImGui::NewLine();
     ImGui::TextWrapped(
-      "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
+      FSUI_CSTR("Your password will not be saved in DuckStation, an access token will be generated and used instead."));
 
     ImGui::NewLine();
 
     static char username[256] = {};
     static char password[256] = {};
 
-    ImGui::Text("User Name: ");
+    ImGui::Text(FSUI_CSTR("User Name: "));
     ImGui::SameLine(LayoutScale(200.0f));
     ImGui::InputText("##username", username, sizeof(username));
 
-    ImGui::Text("Password: ");
+    ImGui::Text(FSUI_CSTR("Password: "));
     ImGui::SameLine(LayoutScale(200.0f));
     ImGui::InputText("##password", password, sizeof(password), ImGuiInputTextFlags_Password);
 
@@ -4425,7 +4564,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0);
 
-    if (ActiveButton(ICON_FA_KEY " Login", false, login_enabled))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), false, login_enabled))
     {
       Achievements::LoginAsync(username, password);
       std::memset(username, 0, sizeof(username));
@@ -4433,7 +4572,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
       ImGui::CloseCurrentPopup();
     }
 
-    if (ActiveButton(ICON_FA_TIMES " Cancel", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false))
     {
       std::memset(username, 0, sizeof(username));
       std::memset(password, 0, sizeof(password));
@@ -4454,7 +4593,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
   BeginMenuButtons();
-  ActiveButton(ICON_FA_BAN " This build was not compiled with RetroAchivements support.", false, false,
+  ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "This build was not compiled with RetroAchivements support."), false, false,
                ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
   EndMenuButtons();
 }
@@ -4469,90 +4608,100 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Logging Settings");
-  DrawEnumSetting(bsi, "Log Level", "Sets the verbosity of messages logged. Higher levels will log more messages.",
-                  "Logging", "LogLevel", Settings::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName,
-                  &Settings::GetLogLevelName, &Settings::GetLogLevelDisplayName, LOGLEVEL_COUNT);
-  DrawToggleSetting(bsi, "Log To System Console", "Logs messages to the console window.", "Logging", "LogToConsole",
-                    Settings::DEFAULT_LOG_TO_CONSOLE);
-  DrawToggleSetting(bsi, "Log To Debug Console", "Logs messages to the debug console where supported.", "Logging",
-                    "LogToDebug", false);
-  DrawToggleSetting(bsi, "Log To File", "Logs messages to duckstation.log in the user directory.", "Logging",
-                    "LogToFile", false);
+  MenuHeading(FSUI_CSTR("Logging Settings"));
+  DrawEnumSetting(bsi, FSUI_CSTR("Log Level"),
+                  FSUI_CSTR("Sets the verbosity of messages logged. Higher levels will log more messages."), "Logging",
+                  "LogLevel", Settings::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
+                  &Settings::GetLogLevelDisplayName, LOGLEVEL_COUNT);
+  DrawToggleSetting(bsi, FSUI_CSTR("Log To System Console"), FSUI_CSTR("Logs messages to the console window."),
+                    FSUI_CSTR("Logging"), "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE);
+  DrawToggleSetting(bsi, FSUI_CSTR("Log To Debug Console"),
+                    FSUI_CSTR("Logs messages to the debug console where supported."), "Logging", "LogToDebug", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Log To File"), FSUI_CSTR("Logs messages to duckstation.log in the user directory."),
+                    "Logging", "LogToFile", false);
 
-  MenuHeading("Debugging Settings");
+  MenuHeading(FSUI_CSTR("Debugging Settings"));
 
-  DrawToggleSetting(bsi, "Disable All Enhancements", "Temporarily disables all enhancements, useful when testing.",
-                    "Main", "DisableAllEnhancements", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Disable All Enhancements"),
+                    FSUI_CSTR("Temporarily disables all enhancements, useful when testing."), "Main",
+                    "DisableAllEnhancements", false);
 
-  DrawToggleSetting(bsi, "Use Debug GPU Device",
-                    "Enable debugging when supported by the host's renderer API. Only for developer use.", "GPU",
-                    "UseDebugDevice", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Use Debug GPU Device"),
+                    FSUI_CSTR("Enable debugging when supported by the host's renderer API. Only for developer use."),
+                    "GPU", "UseDebugDevice", false);
 
 #ifdef _WIN32
-  DrawToggleSetting(bsi, "Increase Timer Resolution", "Enables more precise frame pacing at the cost of battery life.",
-                    "Main", "IncreaseTimerResolution", true);
+  DrawToggleSetting(bsi, FSUI_CSTR("Increase Timer Resolution"),
+                    FSUI_CSTR("Enables more precise frame pacing at the cost of battery life."), "Main",
+                    "IncreaseTimerResolution", true);
 #endif
 
-  DrawToggleSetting(bsi, "Allow Booting Without SBI File",
-                    "Allows loading protected games without subchannel information.", "CDROM",
+  DrawToggleSetting(bsi, FSUI_CSTR("Allow Booting Without SBI File"),
+                    FSUI_CSTR("Allows loading protected games without subchannel information."), "CDROM",
                     "AllowBootingWithoutSBIFile", false);
 
-  DrawToggleSetting(bsi, "Create Save State Backups", "Renames existing save states when saving to a backup file.",
-                    "Main", "CreateSaveStateBackups", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Create Save State Backups"),
+                    FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
+                    "CreateSaveStateBackups", false);
 
-  MenuHeading("Display Settings");
-  DrawToggleSetting(bsi, "Show Status Indicators", "Shows persistent icons when turbo is active or when paused.",
-                    "Display", "ShowStatusIndicators", true);
-  DrawToggleSetting(bsi, "Show Enhancement Settings",
-                    "Shows enhancement settings in the bottom-right corner of the screen.", "Display",
+  MenuHeading(FSUI_CSTR("Display Settings"));
+  DrawToggleSetting(bsi, FSUI_CSTR("Show Status Indicators"),
+                    FSUI_CSTR("Shows persistent icons when turbo is active or when paused."), "Display",
+                    "ShowStatusIndicators", true);
+  DrawToggleSetting(bsi, FSUI_CSTR("Show Enhancement Settings"),
+                    FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
-  DrawFloatRangeSetting(bsi, "Display FPS Limit",
-                        "Limits how many frames are displayed to the screen. These frames are still rendered.",
-                        "Display", "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
+  DrawFloatRangeSetting(
+    bsi, FSUI_CSTR("Display FPS Limit"),
+    FSUI_CSTR("Limits how many frames are displayed to the screen. These frames are still rendered."), "Display",
+    "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
   DrawToggleSetting(
-    bsi, "Stretch Display Vertically",
-    "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.", "Display",
-    "StretchVertically", false);
+    bsi, FSUI_CSTR("Stretch Display Vertically"),
+    FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
+    "Display", "StretchVertically", false);
 
-  MenuHeading("PGXP Settings");
+  MenuHeading(FSUI_CSTR("PGXP Settings"));
 
   const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
 
-  DrawToggleSetting(bsi, "Enable PGXP Vertex Cache",
-                    "Uses screen positions to resolve PGXP data. May improve visuals in some games.", "GPU",
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable PGXP Vertex Cache"),
+                    FSUI_CSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."), "GPU",
                     "PGXPVertexCache", pgxp_enabled);
   DrawFloatRangeSetting(
-    bsi, "PGXP Geometry Tolerance",
-    "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.", "GPU",
-    "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
-  DrawFloatRangeSetting(bsi, "PGXP Depth Clear Threshold",
-                        "Sets a threshold for discarding the emulated depth buffer. May help in some games.", "GPU",
-                        "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f",
+    bsi, FSUI_CSTR("PGXP Geometry Tolerance"),
+    FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
+    "GPU", "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
+  DrawFloatRangeSetting(bsi, FSUI_CSTR("PGXP Depth Clear Threshold"),
+                        FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."),
+                        "GPU", "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f",
                         pgxp_enabled);
 
-  MenuHeading("Texture Dumping");
+  MenuHeading(FSUI_CSTR("Texture Dumping"));
 
-  DrawToggleSetting(bsi, "Dump Replaceable VRAM Writes", "Writes textures which can be replaced to the dump directory.",
-                    "TextureReplacements", "DumpVRAMWrites", false);
-  DrawToggleSetting(bsi, "Set VRAM Write Dump Alpha Channel", "Clears the mask/transparency bit in VRAM write dumps.",
-                    "TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
+  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaceable VRAM Writes"),
+                    FSUI_CSTR("Writes textures which can be replaced to the dump directory."), "TextureReplacements",
+                    "DumpVRAMWrites", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Set VRAM Write Dump Alpha Channel"),
+                    FSUI_CSTR("Clears the mask/transparency bit in VRAM write dumps."), "TextureReplacements",
+                    "DumpVRAMWriteForceAlphaChannel", true);
 
-  MenuHeading("CPU Emulation");
+  MenuHeading(FSUI_CSTR("CPU Emulation"));
 
-  DrawToggleSetting(bsi, "Enable Recompiler ICache",
-                    "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.",
-                    "CPU", "RecompilerICache", false);
-  DrawToggleSetting(bsi, "Enable Recompiler Memory Exceptions",
-                    "Enables alignment and bus exceptions. Not needed for any known games.", "CPU",
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable Recompiler ICache"),
+    FSUI_CSTR("Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast."), "CPU",
+    "RecompilerICache", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Recompiler Memory Exceptions"),
+                    FSUI_CSTR("Enables alignment and bus exceptions. Not needed for any known games."), "CPU",
                     "RecompilerMemoryExceptions", false);
-  DrawToggleSetting(bsi, "Enable Recompiler Block Linking",
-                    "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.",
-                    "CPU", "RecompilerBlockLinking", true);
-  DrawEnumSetting(bsi, "Recompiler Fast Memory Access",
-                  "Avoids calls to C++ code, significantly speeding up the recompiler.", "CPU", "FastmemMode",
-                  Settings::DEFAULT_CPU_FASTMEM_MODE, &Settings::ParseCPUFastmemMode, &Settings::GetCPUFastmemModeName,
-                  &Settings::GetCPUFastmemModeDisplayName, CPUFastmemMode::Count);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable Recompiler Block Linking"),
+    FSUI_CSTR("Performance enhancement - jumps directly between blocks instead of returning to the dispatcher."), "CPU",
+    "RecompilerBlockLinking", true);
+  DrawEnumSetting(bsi, FSUI_CSTR("Recompiler Fast Memory Access"),
+                  FSUI_CSTR("Avoids calls to C++ code, significantly speeding up the recompiler."), "CPU",
+                  "FastmemMode", Settings::DEFAULT_CPU_FASTMEM_MODE, &Settings::ParseCPUFastmemMode,
+                  &Settings::GetCPUFastmemModeName, &Settings::GetCPUFastmemModeDisplayName, CPUFastmemMode::Count);
 
   EndMenuButtons();
 }
@@ -4636,7 +4785,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(serial);
       const std::time_t session_time = static_cast<std::time_t>(CommonHost::GetSessionPlayedTime());
 
-      buffer.Fmt("Session: {}", GameList::FormatTimespan(session_time, true).GetStringView());
+      buffer.Fmt(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true).GetStringView());
       const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
                                                              -1.0f, buffer.GetCharArray(),
                                                              buffer.GetCharArray() + buffer.GetLength()));
@@ -4645,7 +4794,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       DrawShadowedText(dl, g_medium_font, session_pos, IM_COL32(255, 255, 255, 255), buffer.GetCharArray(),
                        buffer.GetCharArray() + buffer.GetLength());
 
-      buffer.Fmt("All Time: {}", GameList::FormatTimespan(cached_played_time + session_time, true).GetStringView());
+      buffer.Fmt(FSUI_FSTR("All Time: {}"),
+                 GameList::FormatTimespan(cached_played_time + session_time, true).GetStringView());
       const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
                                                            -1.0f, buffer.GetCharArray(),
                                                            buffer.GetCharArray() + buffer.GetLength()));
@@ -4682,47 +4832,47 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
         const bool has_game = System::IsValid() && !System::GetGameSerial().empty();
 
-        if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false) || WantsToCloseMenu())
           ClosePauseMenu();
 
-        if (ActiveButton(ICON_FA_FAST_FORWARD " Toggle Fast Forward", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Toggle Fast Forward"), false))
         {
           ClosePauseMenu();
           DoToggleFastForward();
         }
 
-        if (ActiveButton(ICON_FA_UNDO " Load State", false, has_game))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false, has_game))
         {
           if (OpenSaveStateSelector(true))
             s_current_main_window = MainWindowType::None;
         }
 
-        if (ActiveButton(ICON_FA_DOWNLOAD " Save State", false, has_game))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, has_game))
         {
           if (OpenSaveStateSelector(false))
             s_current_main_window = MainWindowType::None;
         }
 
-        if (ActiveButton(ICON_FA_FROWN_OPEN " Cheat List", false,
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_FROWN_OPEN, "Cheat List"), false,
                          !System::GetGameSerial().empty() && !Achievements::ChallengeModeActive()))
         {
           s_current_main_window = MainWindowType::None;
           DoCheatsMenu();
         }
 
-        if (ActiveButton(ICON_FA_GAMEPAD " Toggle Analog", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Toggle Analog"), false))
         {
           ClosePauseMenu();
           DoToggleAnalogMode();
         }
 
-        if (ActiveButton(ICON_FA_WRENCH " Game Properties", false, has_game))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, has_game))
         {
           SwitchToGameSettings();
         }
 
 #ifdef WITH_CHEEVOS
-        if (ActiveButton(ICON_FA_TROPHY " Achievements", false,
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false,
                          Achievements::HasActiveGame() && Achievements::SafeHasAchievementsOrLeaderboards()))
         {
           const auto lock = Achievements::GetLock();
@@ -4734,25 +4884,25 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
             OpenPauseSubMenu(PauseSubMenu::Achievements);
         }
 #else
-        ActiveButton(ICON_FA_TROPHY " Achievements", false, false);
+        ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false, false);
 #endif
 
-        if (ActiveButton(ICON_FA_CAMERA " Save Screenshot", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
         {
           System::SaveScreenshot();
           ClosePauseMenu();
         }
 
-        if (ActiveButton(ICON_FA_COMPACT_DISC " Change Disc", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
         {
           s_current_main_window = MainWindowType::None;
           DoChangeDisc();
         }
 
-        if (ActiveButton(ICON_FA_SLIDERS_H " Settings", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), false))
           SwitchToSettings();
 
-        if (ActiveButton(ICON_FA_POWER_OFF " Close Game", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), false))
         {
           // skip submenu when we can't save anyway
           if (!has_game)
@@ -4766,23 +4916,24 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::Exit:
       {
         if (just_focused)
-          ImGui::SetFocusID(ImGui::GetID(ICON_FA_POWER_OFF " Exit Without Saving"), ImGui::GetCurrentWindow());
+          ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving")),
+                            ImGui::GetCurrentWindow());
 
-        if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false))
         {
           OpenPauseSubMenu(PauseSubMenu::None);
         }
 
-        if (ActiveButton(ICON_FA_SYNC " Reset System", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
         {
           ClosePauseMenu();
           DoReset();
         }
 
-        if (ActiveButton(ICON_FA_SAVE " Exit And Save State", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State"), false))
           DoShutdown(true);
 
-        if (ActiveButton(ICON_FA_POWER_OFF " Exit Without Saving", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"), false))
           DoShutdown(false);
       }
       break;
@@ -4790,13 +4941,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #ifdef WITH_CHEEVOS
       case PauseSubMenu::Achievements:
       {
-        if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false))
           OpenPauseSubMenu(PauseSubMenu::None);
 
-        if (ActiveButton(ICON_FA_TROPHY " Achievements", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
           OpenAchievementsWindow();
 
-        if (ActiveButton(ICON_FA_STOPWATCH " Leaderboards", false))
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"), false))
           OpenLeaderboardsWindow();
       }
       break;
@@ -4817,9 +4968,11 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, const std::string& title,
                                                            const std::string& serial, s32 slot, bool global)
 {
-  li->title = (global || slot > 0) ? fmt::format("{0} Slot {1}##{0}_slot_{1}", global ? "Global" : "Game", slot) :
-                                     std::string("Quick Save");
-  li->summary = "No save present in this slot.";
+  li->title = (global || slot > 0) ? fmt::format(global ? FSUI_FSTR("Global Slot {0}##global_slot_{0}") :
+                                                          FSUI_FSTR("Game Slot {0}##game_slot_{0}"),
+                                                 slot) :
+                                     FSUI_STR("Quick Save");
+  li->summary = FSUI_STR("No save present in this slot.");
   li->path = {};
   li->timestamp = 0;
   li->slot = slot;
@@ -4841,14 +4994,14 @@ bool FullscreenUI::InitializeSaveStateListEntry(SaveStateListEntry* li, const st
 
   if (global)
   {
-    li->title = fmt::format("Global Slot {0} - {1}##global_slot_{0}", slot, ssi->serial);
+    li->title = fmt::format(FSUI_FSTR("Global Slot {0} - {1}##global_slot_{0}"), slot, ssi->serial);
   }
   else
   {
-    li->title = (slot > 0) ? fmt::format("Game Slot {0}##game_slot_{0}", slot) : std::string("Game Quick Save");
+    li->title = (slot > 0) ? fmt::format(FSUI_FSTR("Game Slot {0}##game_slot_{0}"), slot) : FSUI_STR("Game Quick Save");
   }
 
-  li->summary = fmt::format("Saved {:%c}", fmt::localtime(ssi->timestamp));
+  li->summary = fmt::format(FSUI_FSTR("Saved {:%c}"), fmt::localtime(ssi->timestamp));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
   li->path = std::move(filename);
@@ -4899,8 +5052,8 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
     {
       SaveStateListEntry li;
       PopulateSaveStateScreenshot(&li, &ssi.value());
-      li.title = "Undo Load State";
-      li.summary = "Restores the state of the system prior to the last state loaded.";
+      li.title = FSUI_STR("Undo Load State");
+      li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
       s_save_state_selector_slots.push_back(std::move(li));
     }
   }
@@ -4941,7 +5094,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
     }
   }
 
-  ShowToast({}, "No save states found.", 5.0f);
+  ShowToast({}, FSUI_STR("No save states found."), 5.0f);
   return false;
 }
 
@@ -4956,7 +5109,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
     return true;
   }
 
-  ShowToast({}, "No save states found.", 5.0f);
+  ShowToast({}, FSUI_STR("No save states found."), 5.0f);
   return false;
 }
 
@@ -4984,7 +5137,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
 
-  const char* window_title = is_loading ? "Load State" : "Save State";
+  const char* window_title = is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State");
   ImGui::OpenPopup(window_title);
 
   bool is_open = true;
@@ -5014,7 +5167,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     if (NavButton(ICON_FA_BACKWARD, true, true))
       CloseSaveStateSelector();
 
-    NavTitle(is_loading ? "Load State" : "Save State");
+    NavTitle(is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State"));
     EndNavBar();
     ImGui::EndChild();
   }
@@ -5169,8 +5322,9 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
             BeginMenuButtons();
 
-            if (ActiveButton(is_loading ? ICON_FA_FOLDER_OPEN " Load State" : ICON_FA_FOLDER_OPEN " Save State", false,
-                             true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+            if (ActiveButton(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
+                                          FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
+                             false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
             {
               if (is_loading)
                 DoLoadState(std::move(entry.path));
@@ -5181,16 +5335,17 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
               closed = true;
             }
 
-            if (ActiveButton(ICON_FA_FOLDER_MINUS " Delete Save", false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+            if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
+                             LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
             {
               if (!FileSystem::FileExists(entry.path.c_str()))
               {
-                ShowToast({}, fmt::format("{} does not exist.", ImGuiFullscreen::RemoveHash(entry.title)));
+                ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
                 is_open = true;
               }
               else if (FileSystem::DeleteFile(entry.path.c_str()))
               {
-                ShowToast({}, fmt::format("{} deleted.", ImGuiFullscreen::RemoveHash(entry.title)));
+                ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
                 s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
 
                 if (s_save_state_selector_slots.empty())
@@ -5205,12 +5360,13 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
               }
               else
               {
-                ShowToast({}, fmt::format("Failed to delete {}.", ImGuiFullscreen::RemoveHash(entry.title)));
+                ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
                 is_open = false;
               }
             }
 
-            if (ActiveButton(ICON_FA_WINDOW_CLOSE " Close Menu", false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+            if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
+                             LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
             {
               is_open = false;
             }
@@ -5283,18 +5439,20 @@ void FullscreenUI::DrawResumeStateSelector()
 {
   ImGui::SetNextWindowSize(LayoutScale(800.0f, 600.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  ImGui::OpenPopup("Load Resume State");
+  ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
-  if (ImGui::BeginPopupModal("Load Resume State", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  if (ImGui::BeginPopupModal(FSUI_CSTR("Load Resume State"), &is_open,
+                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
     const SaveStateListEntry& entry = s_save_state_selector_slots.front();
-    ImGui::TextWrapped("A resume save state created at %s was found.\n\nDo you want to load this save and continue?",
-                       TimeToPrintableString(entry.timestamp).c_str());
+    ImGui::TextWrapped(
+      FSUI_CSTR("A resume save state created at %s was found.\n\nDo you want to load this save and continue?"),
+      TimeToPrintableString(entry.timestamp).c_str());
 
     const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
     const float image_height = LayoutScale(250.0f);
@@ -5311,19 +5469,19 @@ void FullscreenUI::DrawResumeStateSelector()
 
     BeginMenuButtons();
 
-    if (ActiveButton(ICON_FA_PLAY " Load State", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Load State"), false))
     {
       DoStartPath(s_save_state_selector_game_path, std::move(entry.path));
       is_open = false;
     }
 
-    if (ActiveButton(ICON_FA_LIGHTBULB " Clean Boot", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot"), false))
     {
       DoStartPath(s_save_state_selector_game_path);
       is_open = false;
     }
 
-    if (ActiveButton(ICON_FA_FOLDER_MINUS " Delete State", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State"), false))
     {
       if (FileSystem::DeleteFile(entry.path.c_str()))
       {
@@ -5332,11 +5490,11 @@ void FullscreenUI::DrawResumeStateSelector()
       }
       else
       {
-        ShowToast(std::string(), "Failed to delete save state.");
+        ShowToast(std::string(), FSUI_STR("Failed to delete save state."));
       }
     }
 
-    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Cancel", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel"), false))
     {
       ImGui::CloseCurrentPopup();
       is_open = false;
@@ -5484,7 +5642,8 @@ void FullscreenUI::DrawGameListWindow()
   {
     static constexpr float ITEM_WIDTH = 25.0f;
     static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST, ICON_FA_COG};
-    static constexpr const char* titles[] = {"Game Grid", "Game List", "Game List Settings"};
+    static constexpr const char* titles[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List"),
+                                             FSUI_NSTR("Game List Settings")};
     static constexpr u32 count = static_cast<u32>(std::size(titles));
 
     BeginNavBar();
@@ -5505,7 +5664,7 @@ void FullscreenUI::DrawGameListWindow()
     if (NavButton(ICON_FA_BACKWARD, true, true))
       ReturnToMainWindow();
 
-    NavTitle(titles[static_cast<u32>(s_game_list_page)]);
+    NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_game_list_page)]));
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     for (u32 i = 0; i < count; i++)
@@ -5685,7 +5844,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       {
         std::string flag_texture(
           fmt::format("fullscreenui/{}.png", Settings::GetDiscRegionName(selected_entry->region)));
-        ImGui::TextUnformatted("Region: ");
+        ImGui::TextUnformatted(FSUI_CSTR("Region: "));
         ImGui::SameLine();
         ImGui::Image(GetCachedTextureAsync(flag_texture.c_str()), LayoutScale(23.0f, 16.0f));
         ImGui::SameLine();
@@ -5693,15 +5852,15 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       }
 
       // genre
-      ImGui::Text("Genre: %s", selected_entry->genre.c_str());
+      ImGui::Text(FSUI_CSTR("Genre: %s"), selected_entry->genre.c_str());
 
       // release date
       char release_date_str[64];
       selected_entry->GetReleaseDateString(release_date_str, sizeof(release_date_str));
-      ImGui::Text("Release Date: %s", release_date_str);
+      ImGui::Text(FSUI_CSTR("Release Date: %s"), release_date_str);
 
       // compatibility
-      ImGui::TextUnformatted("Compatibility: ");
+      ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));
       ImGui::SameLine();
       if (selected_entry->compatibility != GameDatabase::CompatibilityRating::Unknown)
       {
@@ -5712,18 +5871,20 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(selected_entry->compatibility));
 
       // play time
-      ImGui::Text("Time Played: %s", GameList::FormatTimespan(selected_entry->total_played_time).GetCharArray());
-      ImGui::Text("Last Played: %s", GameList::FormatTimestamp(selected_entry->last_played_time).GetCharArray());
+      ImGui::Text(FSUI_CSTR("Time Played: %s"),
+                  GameList::FormatTimespan(selected_entry->total_played_time).GetCharArray());
+      ImGui::Text(FSUI_CSTR("Last Played: %s"),
+                  GameList::FormatTimestamp(selected_entry->last_played_time).GetCharArray());
 
       // size
-      ImGui::Text("Size: %.2f MB", static_cast<float>(selected_entry->total_size) / 1048576.0f);
+      ImGui::Text(FSUI_CSTR("Size: %.2f MB"), static_cast<float>(selected_entry->total_size) / 1048576.0f);
 
       ImGui::PopFont();
     }
     else
     {
       // title
-      const char* title = "No Game Selected";
+      const char* title = FSUI_CSTR("No Game Selected");
       ImGui::PushFont(g_large_font);
       text_width = ImGui::CalcTextSize(title, nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
@@ -5865,14 +6026,14 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
   ImGuiFullscreen::ChoiceDialogOptions options = {
-    {ICON_FA_WRENCH " Game Properties", false},
-    {ICON_FA_PLAY " Resume Game", false},
-    {ICON_FA_UNDO " Load State", false},
-    {ICON_FA_COMPACT_DISC " Default Boot", false},
-    {ICON_FA_LIGHTBULB " Fast Boot", false},
-    {ICON_FA_MAGIC " Slow Boot", false},
-    {ICON_FA_FOLDER_MINUS " Reset Play Time", false},
-    {ICON_FA_WINDOW_CLOSE " Close Menu", false},
+    {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+    {FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
+    {FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
+    {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
+    {FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), false},
+    {FSUI_ICONSTR(ICON_FA_MAGIC, "Slow Boot"), false},
+    {FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Play Time"), false},
+    {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
   };
 
   OpenChoiceDialog(
@@ -5930,10 +6091,11 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   BeginMenuButtons();
 
-  MenuHeading("Search Directories");
-  if (MenuButton(ICON_FA_FOLDER_PLUS " Add Search Directory", "Adds a new directory to the game search list."))
+  MenuHeading(FSUI_CSTR("Search Directories"));
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"),
+                 FSUI_CSTR("Adds a new directory to the game search list.")))
   {
-    OpenFileSelector(ICON_FA_FOLDER_PLUS " Add Search Directory", true, [](const std::string& dir) {
+    OpenFileSelector(FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"), true, [](const std::string& dir) {
       if (!dir.empty())
       {
         auto lock = Host::GetSettingsLock();
@@ -5952,16 +6114,16 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   for (const auto& it : s_game_list_directories_cache)
   {
-    if (MenuButton(SmallString::FromFmt(ICON_FA_FOLDER " {}", it.first),
-                   it.second ? "Scanning Subdirectories" : "Not Scanning Subdirectories"))
+    if (MenuButton(SmallString::FromFmt(ICON_FA_FOLDER "{}", it.first),
+                   it.second ? FSUI_CSTR("Scanning Subdirectories") : FSUI_CSTR("Not Scanning Subdirectories")))
     {
       ImGuiFullscreen::ChoiceDialogOptions options = {
-        {ICON_FA_FOLDER_OPEN " Open in File Browser", false},
-        {it.second ? (ICON_FA_FOLDER_MINUS " Disable Subdirectory Scanning") :
-                     (ICON_FA_FOLDER_PLUS " Enable Subdirectory Scanning"),
+        {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open in File Browser"), false},
+        {it.second ? (FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Disable Subdirectory Scanning")) :
+                     (FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Enable Subdirectory Scanning")),
          false},
-        {ICON_FA_TIMES " Remove From List", false},
-        {ICON_FA_WINDOW_CLOSE " Close Menu", false},
+        {FSUI_ICONSTR(ICON_FA_TIMES, "Remove From List"), false},
+        {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
       };
 
       OpenChoiceDialog(it.first.c_str(), false, std::move(options),
@@ -6016,31 +6178,37 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   MenuHeading("List Settings");
   {
-    static constexpr const char* view_types[] = {"Game Grid", "Game List"};
-    static constexpr const char* sort_types[] = {"Type",        "Serial",      "Title", "File Title",
-                                                 "Time Played", "Last Played", "Size"};
+    static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
+    static constexpr const char* sort_types[] = {
+      FSUI_NSTR("Type"),        FSUI_NSTR("Serial"),      FSUI_NSTR("Title"), FSUI_NSTR("File Title"),
+      FSUI_NSTR("Time Played"), FSUI_NSTR("Last Played"), FSUI_NSTR("Size")};
 
-    DrawIntListSetting(bsi, ICON_FA_BORDER_ALL " Default View", "Sets which view the game list will open to.", "Main",
-                       "DefaultFullscreenUIGameView", 0, view_types, std::size(view_types));
-    DrawIntListSetting(bsi, ICON_FA_SORT " Sort By", "Determines which field the game list will be sorted by.", "Main",
-                       "FullscreenUIGameSort", 0, sort_types, std::size(sort_types));
-    DrawToggleSetting(bsi, ICON_FA_SORT_ALPHA_DOWN " Sort Reversed",
+    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
+                       "Sets which view the game list will open to.", "Main", "DefaultFullscreenUIGameView", 0,
+                       view_types, std::size(view_types));
+    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT, "Sort By"),
+                       "Determines which field the game list will be sorted by.", "Main", "FullscreenUIGameSort", 0,
+                       sort_types, std::size(sort_types));
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
                       "Reverses the game list sort order from the default (usually ascending to descending).", "Main",
                       "FullscreenUIGameSortReverse", false);
   }
 
-  MenuHeading("Cover Settings");
+  MenuHeading(FSUI_CSTR("Cover Settings"));
   {
-    DrawFolderSetting(bsi, ICON_FA_FOLDER " Covers Directory", "Folders", "Covers", EmuFolders::Covers);
-    if (MenuButton(ICON_FA_DOWNLOAD " Download Covers", "Downloads covers from a user-specified URL template."))
+    DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Covers Directory"), "Folders", "Covers", EmuFolders::Covers);
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Download Covers"),
+                   FSUI_CSTR("Downloads covers from a user-specified URL template.")))
       ImGui::OpenPopup("Download Covers");
   }
 
   MenuHeading("Operations");
   {
-    if (MenuButton(ICON_FA_SEARCH " Scan For New Games", "Identifies any new files added to the game directories."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH, "Scan For New Games"),
+                   FSUI_CSTR("Identifies any new files added to the game directories.")))
       Host::RefreshGameListAsync(false);
-    if (MenuButton(ICON_FA_SEARCH_PLUS " Rescan All Games", "Forces a full rescan of all games previously identified."))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH_PLUS, "Rescan All Games"),
+                   FSUI_CSTR("Forces a full rescan of all games previously identified.")))
       Host::RefreshGameListAsync(true);
   }
 
@@ -6062,18 +6230,17 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   bool is_open = true;
   if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    ImGui::TextWrapped("DuckStation can automatically download covers for games which do not currently have a cover "
-                       "set. We do not host any "
-                       "cover images, the user must provide their own source for images.");
-    ImGui::NewLine();
     ImGui::TextWrapped(
-      "In the form below, specify the URLs to download covers from, with one template URL per line. The following "
-      "variables are available:");
+      FSUI_CSTR("DuckStation can automatically download covers for games which do not currently have a cover set. We "
+                "do not host any cover images, the user must provide their own source for images."));
     ImGui::NewLine();
-    ImGui::TextWrapped("${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: "
-                       "Serial of the game.");
+    ImGui::TextWrapped(FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
+                                 "per line. The following variables are available:"));
     ImGui::NewLine();
-    ImGui::TextWrapped("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
+    ImGui::TextWrapped(FSUI_CSTR("${title}: Title of the game.\n${filetitle}: Name component of the game's "
+                                 "filename.\n${serial}: Serial of the game."));
+    ImGui::NewLine();
+    ImGui::TextWrapped(FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
     ImGui::NewLine();
 
     BeginMenuButtons();
@@ -6087,7 +6254,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
     static bool use_serial_names;
     ImGui::PushFont(g_medium_font);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
-    ImGui::Checkbox("Use Serial File Names", &use_serial_names);
+    ImGui::Checkbox(FSUI_CSTR("Use Serial File Names"), &use_serial_names);
     ImGui::PopStyleVar(1);
     ImGui::PopFont();
 
@@ -6095,7 +6262,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
 
     const bool download_enabled = (std::strlen(template_urls) > 0);
 
-    if (ActiveButton(ICON_FA_DOWNLOAD " Start Download", false, download_enabled))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), false, download_enabled))
     {
       StartAsyncOp(
         [urls = StringUtil::SplitNewString(template_urls, '\n'),
@@ -6114,7 +6281,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
       ImGui::CloseCurrentPopup();
     }
 
-    if (ActiveButton(ICON_FA_TIMES " Cancel", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false))
     {
       std::memset(template_urls, 0, sizeof(template_urls));
       use_serial_names = false;
@@ -6209,43 +6376,46 @@ void FullscreenUI::CopyTextToClipboard(std::string title, const std::string_view
   if (Host::CopyTextToClipboard(text))
     ShowToast(std::string(), std::move(title));
   else
-    ShowToast(std::string(), "Failed to copy text to clipboard.");
+    ShowToast(std::string(), FSUI_STR("Failed to copy text to clipboard."));
 }
 
 void FullscreenUI::DrawAboutWindow()
 {
   ImGui::SetNextWindowSize(LayoutScale(1000.0f, 510.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  ImGui::OpenPopup("About DuckStation");
+  ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
 
-  if (ImGui::BeginPopupModal("About DuckStation", &s_about_window_open,
+  if (ImGui::BeginPopupModal(FSUI_CSTR("About DuckStation"), &s_about_window_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    ImGui::TextWrapped("DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, "
-                       "focusing on playability, speed, and long-term maintainability.");
+    ImGui::TextWrapped(FSUI_CSTR("DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) "
+                                 "console, focusing on playability, speed, and long-term maintainability."));
     ImGui::NewLine();
-    ImGui::TextWrapped("Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
+    ImGui::TextWrapped(
+      FSUI_CSTR("Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md"));
     ImGui::NewLine();
-    ImGui::TextWrapped("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
+    ImGui::TextWrapped(
+      FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
     ImGui::NewLine();
-    ImGui::TextWrapped("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
-                       "Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
+    ImGui::TextWrapped(
+      FSUI_CSTR("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
+                "Limited. This software is not affiliated in any way with Sony Interactive Entertainment."));
 
     ImGui::NewLine();
 
     BeginMenuButtons();
-    if (ActiveButton(ICON_FA_GLOBE " GitHub Repository", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_GLOBE, "GitHub Repository"), false))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
-    if (ActiveButton(ICON_FA_BUG " Issue Tracker", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_BUG, "Issue Tracker"), false))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/issues");
-    if (ActiveButton(ICON_FA_COMMENT " Discord Server", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMMENT, "Discord Server"), false))
       ExitFullscreenAndOpenURL("https://discord.gg/Buktv3t");
 
-    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Close", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close"), false))
     {
       ImGui::CloseCurrentPopup();
       s_about_window_open = false;
@@ -6281,7 +6451,7 @@ bool FullscreenUI::DrawErrorWindow(const char* message)
 
     BeginMenuButtons();
 
-    if (ActiveButton(ICON_FA_WINDOW_CLOSE " Close", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close"), false))
     {
       ImGui::CloseCurrentPopup();
       is_open = false;
@@ -6322,13 +6492,13 @@ bool FullscreenUI::DrawConfirmWindow(const char* message, bool* result)
 
     bool done = false;
 
-    if (ActiveButton(ICON_FA_CHECK " Yes", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_CHECK, "Yes"), false))
     {
       *result = true;
       done = true;
     }
 
-    if (ActiveButton(ICON_FA_TIMES " No", false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "No"), false))
     {
       *result = false;
       done = true;
@@ -6399,8 +6569,10 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
   }
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
-  const auto points_text = TinyString::FromFmt("{} point{}", cheevo.points, cheevo.points != 1 ? "s" : "");
-  const ImVec2 points_template_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, "XXX points"));
+  const auto points_text =
+    TinyString::FromFmt((cheevo.points != 1) ? FSUI_FSTR("{} point") : FSUI_FSTR("{} points"), cheevo.points);
+  const ImVec2 points_template_size(
+    g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, FSUI_CSTR("XXX points")));
   const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f,
                                                         points_text.GetCharArray(),
                                                         points_text.GetCharArray() + points_text.GetLength()));
@@ -6523,7 +6695,7 @@ void FullscreenUI::DrawAchievementsWindow()
       text = Achievements::GetGameTitle();
 
       if (Achievements::ChallengeModeActive())
-        text += " (Hardcore Mode)";
+        text += FSUI_VSTR(" (Hardcore Mode)");
 
       top += g_large_font->FontSize + spacing;
 
@@ -6535,12 +6707,12 @@ void FullscreenUI::DrawAchievementsWindow()
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
       if (unlocked_count == achievement_count)
       {
-        text = fmt::format("You have unlocked all achievements and earned {} points!", total_points);
+        text = fmt::format(FSUI_FSTR("You have unlocked all achievements and earned {} points!"), total_points);
       }
       else
       {
-        text = fmt::format("You have unlocked {} of {} achievements, earning {} of {} possible points.", unlocked_count,
-                           achievement_count, current_points, total_points);
+        text = fmt::format(FSUI_FSTR("You have unlocked {} of {} achievements, earning {} of {} possible points."),
+                           unlocked_count, achievement_count, current_points, total_points);
       }
 
       top += g_medium_font->FontSize + spacing;
@@ -6580,7 +6752,7 @@ void FullscreenUI::DrawAchievementsWindow()
     static bool unlocked_achievements_collapsed = false;
 
     unlocked_achievements_collapsed ^= MenuHeadingButton(
-      "Unlocked Achievements", unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+      FSUI_CSTR("Unlocked Achievements"), unlocked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
     if (!unlocked_achievements_collapsed)
     {
       Achievements::EnumerateAchievements([](const Achievements::Achievement& cheevo) -> bool {
@@ -6595,7 +6767,7 @@ void FullscreenUI::DrawAchievementsWindow()
     {
       static bool locked_achievements_collapsed = false;
       locked_achievements_collapsed ^= MenuHeadingButton(
-        "Locked Achievements", locked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+        FSUI_CSTR("Locked Achievements"), locked_achievements_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
       if (!locked_achievements_collapsed)
       {
         Achievements::EnumerateAchievements([](const Achievements::Achievement& cheevo) -> bool {
@@ -6666,7 +6838,7 @@ void FullscreenUI::DrawPrimedAchievementsList()
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   dl->AddRectFilled(box_min, box_max, IM_COL32(0x21, 0x21, 0x21, 200), LayoutScale(10.0f));
   dl->AddText(font, font->FontSize, ImVec2(box_min.x + padding, box_min.y + padding), IM_COL32(255, 255, 255, 255),
-              "Active Challenge Achievements");
+              FSUI_CSTR("Active Challenge Achievements"));
 
   const float y_advance = image_size.y + spacing;
   const float acheivement_name_offset = (image_size.y - font->FontSize) / 2.0f;
@@ -7312,3 +7484,618 @@ void FullscreenUI::Render()
 }
 
 #endif // __ANDROID__
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Translation String Area
+// To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
+// of the file, then preprocess and generate a bunch of noops here to define the strings. Sadly that means
+// the view in Linguist is gonna suck, but you can search the file for the string for more context.
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if 0
+// TRANSLATION-STRING-AREA-BEGIN
+TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
+TRANSLATE_NOOP("FullscreenUI", "1 Frame");
+TRANSLATE_NOOP("FullscreenUI", "10 Frames");
+TRANSLATE_NOOP("FullscreenUI", "100% [60 FPS (NTSC) / 50 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "1000% [600 FPS (NTSC) / 500 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "10x");
+TRANSLATE_NOOP("FullscreenUI", "10x (20x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "11x");
+TRANSLATE_NOOP("FullscreenUI", "125% [75 FPS (NTSC) / 62 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "12x");
+TRANSLATE_NOOP("FullscreenUI", "13x");
+TRANSLATE_NOOP("FullscreenUI", "14x");
+TRANSLATE_NOOP("FullscreenUI", "150% [90 FPS (NTSC) / 75 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "15x");
+TRANSLATE_NOOP("FullscreenUI", "16x");
+TRANSLATE_NOOP("FullscreenUI", "175% [105 FPS (NTSC) / 87 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "1x");
+TRANSLATE_NOOP("FullscreenUI", "2 Frames");
+TRANSLATE_NOOP("FullscreenUI", "20% [12 FPS (NTSC) / 10 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "200% [120 FPS (NTSC) / 100 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "250% [150 FPS (NTSC) / 125 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "2x");
+TRANSLATE_NOOP("FullscreenUI", "2x (Quad Speed)");
+TRANSLATE_NOOP("FullscreenUI", "3 Frames");
+TRANSLATE_NOOP("FullscreenUI", "30% [18 FPS (NTSC) / 15 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "300% [180 FPS (NTSC) / 150 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "350% [210 FPS (NTSC) / 175 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "3x");
+TRANSLATE_NOOP("FullscreenUI", "3x (6x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "3x (for 720p)");
+TRANSLATE_NOOP("FullscreenUI", "4 Frames");
+TRANSLATE_NOOP("FullscreenUI", "40% [24 FPS (NTSC) / 20 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "400% [240 FPS (NTSC) / 200 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "450% [270 FPS (NTSC) / 225 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "4x");
+TRANSLATE_NOOP("FullscreenUI", "4x (8x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "5 Frames");
+TRANSLATE_NOOP("FullscreenUI", "50% [30 FPS (NTSC) / 25 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "500% [300 FPS (NTSC) / 250 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "5x");
+TRANSLATE_NOOP("FullscreenUI", "5x (10x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "5x (for 1080p)");
+TRANSLATE_NOOP("FullscreenUI", "6 Frames");
+TRANSLATE_NOOP("FullscreenUI", "60% [36 FPS (NTSC) / 30 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "600% [360 FPS (NTSC) / 300 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "6x");
+TRANSLATE_NOOP("FullscreenUI", "6x (12x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "6x (for 1440p)");
+TRANSLATE_NOOP("FullscreenUI", "7 Frames");
+TRANSLATE_NOOP("FullscreenUI", "70% [42 FPS (NTSC) / 35 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "700% [420 FPS (NTSC) / 350 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "7x");
+TRANSLATE_NOOP("FullscreenUI", "7x (14x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "8 Frames");
+TRANSLATE_NOOP("FullscreenUI", "80% [48 FPS (NTSC) / 40 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "800% [480 FPS (NTSC) / 400 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "8x");
+TRANSLATE_NOOP("FullscreenUI", "8x (16x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "9 Frames");
+TRANSLATE_NOOP("FullscreenUI", "90% [54 FPS (NTSC) / 45 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "900% [540 FPS (NTSC) / 450 FPS (PAL)]");
+TRANSLATE_NOOP("FullscreenUI", "9x");
+TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
+TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
+TRANSLATE_NOOP("FullscreenUI", "A memory card with the name '{}' already exists.");
+TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
+TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
+TRANSLATE_NOOP("FullscreenUI", "Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
+TRANSLATE_NOOP("FullscreenUI", "Achievements are disabled.");
+TRANSLATE_NOOP("FullscreenUI", "Achievements: {} ({} points)");
+TRANSLATE_NOOP("FullscreenUI", "Active Challenge Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
+TRANSLATE_NOOP("FullscreenUI", "Add Shader");
+TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
+TRANSLATE_NOOP("FullscreenUI", "Adds a new shader to the chain.");
+TRANSLATE_NOOP("FullscreenUI", "Adds additional precision to PGXP data post-projection. May improve visuals in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Adds padding to ensure pixels are a whole number in size.");
+TRANSLATE_NOOP("FullscreenUI", "Adjusts the emulation speed so the console's refresh rate matches the host when VSync and Audio Resampling are enabled.");
+TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
+TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
+TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
+TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
+TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
+TRANSLATE_NOOP("FullscreenUI", "Apply Per-Game Settings");
+TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
+TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
+TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
+TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
+TRANSLATE_NOOP("FullscreenUI", "Audio Settings");
+TRANSLATE_NOOP("FullscreenUI", "Auto-Detect");
+TRANSLATE_NOOP("FullscreenUI", "Automatic Mapping");
+TRANSLATE_NOOP("FullscreenUI", "Automatic based on window size");
+TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
+TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
+TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed, no devices are available.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically Load Cheats");
+TRANSLATE_NOOP("FullscreenUI", "Automatically applies patches to disc images when they are present, currently only PPF is supported.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically loads and applies cheats on game start.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
+TRANSLATE_NOOP("FullscreenUI", "Avoids calls to C++ code, significantly speeding up the recompiler.");
+TRANSLATE_NOOP("FullscreenUI", "BIOS Directory");
+TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
+TRANSLATE_NOOP("FullscreenUI", "BIOS Settings");
+TRANSLATE_NOOP("FullscreenUI", "BIOS for {}");
+TRANSLATE_NOOP("FullscreenUI", "BIOS to use when emulating {} consoles.");
+TRANSLATE_NOOP("FullscreenUI", "Back To Pause Menu");
+TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
+TRANSLATE_NOOP("FullscreenUI", "Behavior");
+TRANSLATE_NOOP("FullscreenUI", "Borderless Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
+TRANSLATE_NOOP("FullscreenUI", "CD-ROM Emulation");
+TRANSLATE_NOOP("FullscreenUI", "CPU Emulation");
+TRANSLATE_NOOP("FullscreenUI", "CPU Mode");
+TRANSLATE_NOOP("FullscreenUI", "Cancel");
+TRANSLATE_NOOP("FullscreenUI", "Change Disc");
+TRANSLATE_NOOP("FullscreenUI", "Change settings for the emulator.");
+TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the console's output to the screen.");
+TRANSLATE_NOOP("FullscreenUI", "Cheat List");
+TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
+TRANSLATE_NOOP("FullscreenUI", "Chroma Smoothing For 24-Bit Display");
+TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
+TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
+TRANSLATE_NOOP("FullscreenUI", "Clear Shaders");
+TRANSLATE_NOOP("FullscreenUI", "Clears a shader from the chain.");
+TRANSLATE_NOOP("FullscreenUI", "Clears all settings set for this game.");
+TRANSLATE_NOOP("FullscreenUI", "Clears the mask/transparency bit in VRAM write dumps.");
+TRANSLATE_NOOP("FullscreenUI", "Close");
+TRANSLATE_NOOP("FullscreenUI", "Close Game");
+TRANSLATE_NOOP("FullscreenUI", "Close Menu");
+TRANSLATE_NOOP("FullscreenUI", "Compatibility Rating");
+TRANSLATE_NOOP("FullscreenUI", "Compatibility: ");
+TRANSLATE_NOOP("FullscreenUI", "Confirm Power Off");
+TRANSLATE_NOOP("FullscreenUI", "Console Settings");
+TRANSLATE_NOOP("FullscreenUI", "Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {}");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{}");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Macros");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Settings");
+TRANSLATE_NOOP("FullscreenUI", "Controller Settings");
+TRANSLATE_NOOP("FullscreenUI", "Controller Type");
+TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
+TRANSLATE_NOOP("FullscreenUI", "Controls");
+TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host when fast forwarding.");
+TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host.");
+TRANSLATE_NOOP("FullscreenUI", "Copies the current global settings to this game.");
+TRANSLATE_NOOP("FullscreenUI", "Copies the global controller configuration to this game.");
+TRANSLATE_NOOP("FullscreenUI", "Copy Global Settings");
+TRANSLATE_NOOP("FullscreenUI", "Copy Settings");
+TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
+TRANSLATE_NOOP("FullscreenUI", "Covers Directory");
+TRANSLATE_NOOP("FullscreenUI", "Create");
+TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
+TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
+TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
+TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
+TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
+TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
+TRANSLATE_NOOP("FullscreenUI", "Default");
+TRANSLATE_NOOP("FullscreenUI", "Default Boot");
+TRANSLATE_NOOP("FullscreenUI", "Default View");
+TRANSLATE_NOOP("FullscreenUI", "Default: Disabled");
+TRANSLATE_NOOP("FullscreenUI", "Default: Enabled");
+TRANSLATE_NOOP("FullscreenUI", "Delete Save");
+TRANSLATE_NOOP("FullscreenUI", "Delete State");
+TRANSLATE_NOOP("FullscreenUI", "Depth Buffer");
+TRANSLATE_NOOP("FullscreenUI", "Details");
+TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how much of the area typically not visible on a consumer TV set to crop/hide.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated CPU executes instructions.");
+TRANSLATE_NOOP("FullscreenUI", "Determines quality of audio when not running at 100% speed.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
+TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
+TRANSLATE_NOOP("FullscreenUI", "Device Settings");
+TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
+TRANSLATE_NOOP("FullscreenUI", "Disable Interlacing");
+TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
+TRANSLATE_NOOP("FullscreenUI", "Disabled");
+TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
+TRANSLATE_NOOP("FullscreenUI", "Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.");
+TRANSLATE_NOOP("FullscreenUI", "Discord Server");
+TRANSLATE_NOOP("FullscreenUI", "Display FPS Limit");
+TRANSLATE_NOOP("FullscreenUI", "Display Settings");
+TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Download Covers");
+TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
+TRANSLATE_NOOP("FullscreenUI", "Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.");
+TRANSLATE_NOOP("FullscreenUI", "Downsampling");
+TRANSLATE_NOOP("FullscreenUI", "Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
+TRANSLATE_NOOP("FullscreenUI", "DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.");
+TRANSLATE_NOOP("FullscreenUI", "DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.");
+TRANSLATE_NOOP("FullscreenUI", "Dump Replaceable VRAM Writes");
+TRANSLATE_NOOP("FullscreenUI", "Emulation Settings");
+TRANSLATE_NOOP("FullscreenUI", "Emulation Speed");
+TRANSLATE_NOOP("FullscreenUI", "Enable 8MB RAM");
+TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
+TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
+TRANSLATE_NOOP("FullscreenUI", "Enable PGXP Vertex Cache");
+TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");
+TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Block Linking");
+TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler ICache");
+TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Memory Exceptions");
+TRANSLATE_NOOP("FullscreenUI", "Enable Region Check");
+TRANSLATE_NOOP("FullscreenUI", "Enable Rewinding");
+TRANSLATE_NOOP("FullscreenUI", "Enable SDL Input Source");
+TRANSLATE_NOOP("FullscreenUI", "Enable Sound Effects");
+TRANSLATE_NOOP("FullscreenUI", "Enable Subdirectory Scanning");
+TRANSLATE_NOOP("FullscreenUI", "Enable TTY Output");
+TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Texture Replacement");
+TRANSLATE_NOOP("FullscreenUI", "Enable VSync");
+TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
+TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
+TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
+TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of battery life.");
+TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables tracking and submission of leaderboards in supported games.");
+TRANSLATE_NOOP("FullscreenUI", "Enhancements");
+TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.");
+TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
+TRANSLATE_NOOP("FullscreenUI", "Enter the name of the memory card you wish to create.");
+TRANSLATE_NOOP("FullscreenUI", "Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
+TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
+TRANSLATE_NOOP("FullscreenUI", "Exit");
+TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
+TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
+TRANSLATE_NOOP("FullscreenUI", "Exits the program.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to create memory card '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to load shader {}. It may be invalid.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "File Title");
+TRANSLATE_NOOP("FullscreenUI", "Fills the window with the active display area, regardless of the aspect ratio.");
+TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For 24-Bit Display");
+TRANSLATE_NOOP("FullscreenUI", "Force NTSC Timings");
+TRANSLATE_NOOP("FullscreenUI", "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while others will break.");
+TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
+TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Fullscreen Resolution");
+TRANSLATE_NOOP("FullscreenUI", "GPU Adapter");
+TRANSLATE_NOOP("FullscreenUI", "GPU Renderer");
+TRANSLATE_NOOP("FullscreenUI", "GPU adapter will be applied after restarting.");
+TRANSLATE_NOOP("FullscreenUI", "Game Grid");
+TRANSLATE_NOOP("FullscreenUI", "Game ID: {}");
+TRANSLATE_NOOP("FullscreenUI", "Game List");
+TRANSLATE_NOOP("FullscreenUI", "Game List Settings");
+TRANSLATE_NOOP("FullscreenUI", "Game Properties");
+TRANSLATE_NOOP("FullscreenUI", "Game Quick Save");
+TRANSLATE_NOOP("FullscreenUI", "Game Slot {0}##game_slot_{0}");
+TRANSLATE_NOOP("FullscreenUI", "Game Title: {}");
+TRANSLATE_NOOP("FullscreenUI", "Game compatibility rating copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
+TRANSLATE_NOOP("FullscreenUI", "Game path copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game region copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game serial copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game settings have been cleared for '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Genre: %s");
+TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
+TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
+TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
+TRANSLATE_NOOP("FullscreenUI", "Hotkey Settings");
+TRANSLATE_NOOP("FullscreenUI", "How many saves will be kept for rewinding. Higher values have greater memory requirements.");
+TRANSLATE_NOOP("FullscreenUI", "How often a rewind state will be created. Higher frequencies have greater system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
+TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
+TRANSLATE_NOOP("FullscreenUI", "In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:");
+TRANSLATE_NOOP("FullscreenUI", "Increase Timer Resolution");
+TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
+TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
+TRANSLATE_NOOP("FullscreenUI", "Infinite/Instantaneous");
+TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
+TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
+TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
+TRANSLATE_NOOP("FullscreenUI", "Integer Upscaling");
+TRANSLATE_NOOP("FullscreenUI", "Integration");
+TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
+TRANSLATE_NOOP("FullscreenUI", "Internal Resolution Scale");
+TRANSLATE_NOOP("FullscreenUI", "Internal Resolution Screenshots");
+TRANSLATE_NOOP("FullscreenUI", "Issue Tracker");
+TRANSLATE_NOOP("FullscreenUI", "Last Played");
+TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
+TRANSLATE_NOOP("FullscreenUI", "Launch a game by selecting a file/disc image.");
+TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game directories.");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
+TRANSLATE_NOOP("FullscreenUI", "Limits how many frames are displayed to the screen. These frames are still rendered.");
+TRANSLATE_NOOP("FullscreenUI", "Linear Upscaling");
+TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
+TRANSLATE_NOOP("FullscreenUI", "Load Profile");
+TRANSLATE_NOOP("FullscreenUI", "Load Resume State");
+TRANSLATE_NOOP("FullscreenUI", "Load State");
+TRANSLATE_NOOP("FullscreenUI", "Loads a global save state.");
+TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
+TRANSLATE_NOOP("FullscreenUI", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.");
+TRANSLATE_NOOP("FullscreenUI", "Locked Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Log Level");
+TRANSLATE_NOOP("FullscreenUI", "Log To Debug Console");
+TRANSLATE_NOOP("FullscreenUI", "Log To File");
+TRANSLATE_NOOP("FullscreenUI", "Log To System Console");
+TRANSLATE_NOOP("FullscreenUI", "Logging");
+TRANSLATE_NOOP("FullscreenUI", "Logging Settings");
+TRANSLATE_NOOP("FullscreenUI", "Login");
+TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
+TRANSLATE_NOOP("FullscreenUI", "Logout");
+TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Logs messages to duckstation.log in the user directory.");
+TRANSLATE_NOOP("FullscreenUI", "Logs messages to the console window.");
+TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where supported.");
+TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Macro will toggle every {} frames.");
+TRANSLATE_NOOP("FullscreenUI", "Macro {} Buttons");
+TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
+TRANSLATE_NOOP("FullscreenUI", "Macro {} Trigger");
+TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
+TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
+TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
+TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
+TRANSLATE_NOOP("FullscreenUI", "Memory Card {} Type");
+TRANSLATE_NOOP("FullscreenUI", "Memory card '{}' created.");
+TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "Move Down");
+TRANSLATE_NOOP("FullscreenUI", "Move Up");
+TRANSLATE_NOOP("FullscreenUI", "Moves this shader higher in the chain, applying it earlier.");
+TRANSLATE_NOOP("FullscreenUI", "Moves this shader lower in the chain, applying it later.");
+TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
+TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
+TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
+TRANSLATE_NOOP("FullscreenUI", "No");
+TRANSLATE_NOOP("FullscreenUI", "No Binding");
+TRANSLATE_NOOP("FullscreenUI", "No Buttons Selected");
+TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
+TRANSLATE_NOOP("FullscreenUI", "No cheats found for {}.");
+TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
+TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
+TRANSLATE_NOOP("FullscreenUI", "No save present in this slot.");
+TRANSLATE_NOOP("FullscreenUI", "No save states found.");
+TRANSLATE_NOOP("FullscreenUI", "None (Double Speed)");
+TRANSLATE_NOOP("FullscreenUI", "None (Normal Speed)");
+TRANSLATE_NOOP("FullscreenUI", "Not Logged In");
+TRANSLATE_NOOP("FullscreenUI", "Not Scanning Subdirectories");
+TRANSLATE_NOOP("FullscreenUI", "OK");
+TRANSLATE_NOOP("FullscreenUI", "OSD Scale");
+TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
+TRANSLATE_NOOP("FullscreenUI", "Open in File Browser");
+TRANSLATE_NOOP("FullscreenUI", "Operations");
+TRANSLATE_NOOP("FullscreenUI", "Optimal Frame Pacing");
+TRANSLATE_NOOP("FullscreenUI", "Options");
+TRANSLATE_NOOP("FullscreenUI", "Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "Output Volume");
+TRANSLATE_NOOP("FullscreenUI", "Overclocking Percentage");
+TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Clear Threshold");
+TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
+TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Tolerance");
+TRANSLATE_NOOP("FullscreenUI", "PGXP Settings");
+TRANSLATE_NOOP("FullscreenUI", "Password: ");
+TRANSLATE_NOOP("FullscreenUI", "Patches");
+TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to log calls to printf(). Only use when debugging, can break games.");
+TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
+TRANSLATE_NOOP("FullscreenUI", "Path");
+TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
+TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
+TRANSLATE_NOOP("FullscreenUI", "Pause On Start");
+TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when a game is started.");
+TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.");
+TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you open the quick menu, and unpauses when you close it.");
+TRANSLATE_NOOP("FullscreenUI", "Per-Game Configuration");
+TRANSLATE_NOOP("FullscreenUI", "Per-game controller configuration initialized with global settings.");
+TRANSLATE_NOOP("FullscreenUI", "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.");
+TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Colors");
+TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Textures");
+TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org.");
+TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
+TRANSLATE_NOOP("FullscreenUI", "Position");
+TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
+TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
+TRANSLATE_NOOP("FullscreenUI", "Post-processing chain is empty.");
+TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
+TRANSLATE_NOOP("FullscreenUI", "Preload Images to RAM");
+TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
+TRANSLATE_NOOP("FullscreenUI", "Presents frames on a background thread when fast forwarding or vsync is disabled.");
+TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");
+TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
+TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and the host from sleeping while emulation is running.");
+TRANSLATE_NOOP("FullscreenUI", "Provides vibration and LED control support over Bluetooth.");
+TRANSLATE_NOOP("FullscreenUI", "Push a controller button or axis now.");
+TRANSLATE_NOOP("FullscreenUI", "Quick Save");
+TRANSLATE_NOOP("FullscreenUI", "RAIntegration is being used instead of the built-in achievements implementation.");
+TRANSLATE_NOOP("FullscreenUI", "Read Speedup");
+TRANSLATE_NOOP("FullscreenUI", "Readahead Sectors");
+TRANSLATE_NOOP("FullscreenUI", "Recompiler Fast Memory Access");
+TRANSLATE_NOOP("FullscreenUI", "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers.");
+TRANSLATE_NOOP("FullscreenUI", "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.");
+TRANSLATE_NOOP("FullscreenUI", "Reduces polygon Z-fighting through depth testing. Low compatibility with games.");
+TRANSLATE_NOOP("FullscreenUI", "Region");
+TRANSLATE_NOOP("FullscreenUI", "Region: ");
+TRANSLATE_NOOP("FullscreenUI", "Release Date: %s");
+TRANSLATE_NOOP("FullscreenUI", "Reload Shaders");
+TRANSLATE_NOOP("FullscreenUI", "Reloads the shaders from disk, applying any changes.");
+TRANSLATE_NOOP("FullscreenUI", "Remove From Chain");
+TRANSLATE_NOOP("FullscreenUI", "Remove From List");
+TRANSLATE_NOOP("FullscreenUI", "Removed stage {} ({}).");
+TRANSLATE_NOOP("FullscreenUI", "Removes this shader from the chain.");
+TRANSLATE_NOOP("FullscreenUI", "Renames existing save states when saving to a backup file.");
+TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved input profile.");
+TRANSLATE_NOOP("FullscreenUI", "Rescan All Games");
+TRANSLATE_NOOP("FullscreenUI", "Reset Memory Card Directory");
+TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
+TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
+TRANSLATE_NOOP("FullscreenUI", "Reset System");
+TRANSLATE_NOOP("FullscreenUI", "Resets all configuration to defaults (including bindings).");
+TRANSLATE_NOOP("FullscreenUI", "Resets memory card directory to default (user directory).");
+TRANSLATE_NOOP("FullscreenUI", "Resolution change will be applied after restarting.");
+TRANSLATE_NOOP("FullscreenUI", "Restores the state of the system prior to the last state loaded.");
+TRANSLATE_NOOP("FullscreenUI", "Resume");
+TRANSLATE_NOOP("FullscreenUI", "Resume Game");
+TRANSLATE_NOOP("FullscreenUI", "Rewind Save Frequency");
+TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
+TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.");
+TRANSLATE_NOOP("FullscreenUI", "Rich Presence");
+TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
+TRANSLATE_NOOP("FullscreenUI", "Runahead");
+TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
+TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.");
+TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
+TRANSLATE_NOOP("FullscreenUI", "Save Profile");
+TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
+TRANSLATE_NOOP("FullscreenUI", "Save State");
+TRANSLATE_NOOP("FullscreenUI", "Save State On Exit");
+TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
+TRANSLATE_NOOP("FullscreenUI", "Saves screenshots at internal render resolution and without postprocessing.");
+TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
+TRANSLATE_NOOP("FullscreenUI", "Scaled Dithering");
+TRANSLATE_NOOP("FullscreenUI", "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.");
+TRANSLATE_NOOP("FullscreenUI", "Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.");
+TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
+TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
+TRANSLATE_NOOP("FullscreenUI", "Screen Display");
+TRANSLATE_NOOP("FullscreenUI", "Search Directories");
+TRANSLATE_NOOP("FullscreenUI", "Seek Speedup");
+TRANSLATE_NOOP("FullscreenUI", "Select Device");
+TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
+TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
+TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the resolution to use in fullscreen modes.");
+TRANSLATE_NOOP("FullscreenUI", "Serial");
+TRANSLATE_NOOP("FullscreenUI", "Session: {}");
+TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
+TRANSLATE_NOOP("FullscreenUI", "Set VRAM Write Dump Alpha Channel");
+TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding the emulated depth buffer. May help in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.");
+TRANSLATE_NOOP("FullscreenUI", "Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.");
+TRANSLATE_NOOP("FullscreenUI", "Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.");
+TRANSLATE_NOOP("FullscreenUI", "Sets the verbosity of messages logged. Higher levels will log more messages.");
+TRANSLATE_NOOP("FullscreenUI", "Sets which sort of memory card image will be used for slot {}.");
+TRANSLATE_NOOP("FullscreenUI", "Setting {} binding {}.");
+TRANSLATE_NOOP("FullscreenUI", "Settings");
+TRANSLATE_NOOP("FullscreenUI", "Shader {} added as stage {}.");
+TRANSLATE_NOOP("FullscreenUI", "Shared Card Name");
+TRANSLATE_NOOP("FullscreenUI", "Show CPU Usage");
+TRANSLATE_NOOP("FullscreenUI", "Show Challenge Indicators");
+TRANSLATE_NOOP("FullscreenUI", "Show Controller Input");
+TRANSLATE_NOOP("FullscreenUI", "Show Enhancement Settings");
+TRANSLATE_NOOP("FullscreenUI", "Show FPS");
+TRANSLATE_NOOP("FullscreenUI", "Show Frame Times");
+TRANSLATE_NOOP("FullscreenUI", "Show GPU Usage");
+TRANSLATE_NOOP("FullscreenUI", "Show Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Show OSD Messages");
+TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
+TRANSLATE_NOOP("FullscreenUI", "Show Speed");
+TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
+TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows enhancement settings in the bottom-right corner of the screen.");
+TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
+TRANSLATE_NOOP("FullscreenUI", "Shows on-screen-display messages when events occur.");
+TRANSLATE_NOOP("FullscreenUI", "Shows persistent icons when turbo is active or when paused.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the current controller state of the system in the bottom-left corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the current rendering resolution of the system in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage based on threads in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.");
+TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
+TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Size");
+TRANSLATE_NOOP("FullscreenUI", "Size: %.2f MB");
+TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
+TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.");
+TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
+TRANSLATE_NOOP("FullscreenUI", "Sort By");
+TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");
+TRANSLATE_NOOP("FullscreenUI", "Speed Control");
+TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.");
+TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.");
+TRANSLATE_NOOP("FullscreenUI", "Stage {}: {}");
+TRANSLATE_NOOP("FullscreenUI", "Start BIOS");
+TRANSLATE_NOOP("FullscreenUI", "Start Download");
+TRANSLATE_NOOP("FullscreenUI", "Start File");
+TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
+TRANSLATE_NOOP("FullscreenUI", "Starts the console from where it was before it was last closed.");
+TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to an input profile.");
+TRANSLATE_NOOP("FullscreenUI", "Stretch Display Vertically");
+TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
+TRANSLATE_NOOP("FullscreenUI", "Stretch To Fit");
+TRANSLATE_NOOP("FullscreenUI", "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.");
+TRANSLATE_NOOP("FullscreenUI", "Summary");
+TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
+TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
+TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
+TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.");
+TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
+TRANSLATE_NOOP("FullscreenUI", "Test Mode");
+TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Texture Dumping");
+TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
+TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");
+TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers.");
+TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
+TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
+TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
+TRANSLATE_NOOP("FullscreenUI", "This build was not compiled with RetroAchivements support.");
+TRANSLATE_NOOP("FullscreenUI", "Threaded Presentation");
+TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
+TRANSLATE_NOOP("FullscreenUI", "Time Played");
+TRANSLATE_NOOP("FullscreenUI", "Time Played: %s");
+TRANSLATE_NOOP("FullscreenUI", "Timing out in %.0f seconds...");
+TRANSLATE_NOOP("FullscreenUI", "Title");
+TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
+TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
+TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
+TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
+TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
+TRANSLATE_NOOP("FullscreenUI", "Type");
+TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
+TRANSLATE_NOOP("FullscreenUI", "Unknown");
+TRANSLATE_NOOP("FullscreenUI", "Unlimited");
+TRANSLATE_NOOP("FullscreenUI", "Unlocked Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
+TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
+TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
+TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
+TRANSLATE_NOOP("FullscreenUI", "Use Serial File Names");
+TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Sub-Images");
+TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
+TRANSLATE_NOOP("FullscreenUI", "User Name: ");
+TRANSLATE_NOOP("FullscreenUI", "Username: {}");
+TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
+TRANSLATE_NOOP("FullscreenUI", "Uses a bilinear filter when upscaling to display, smoothing out the image.");
+TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
+TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
+TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Speed boost, and safe to use.");
+TRANSLATE_NOOP("FullscreenUI", "Uses game-specific settings for controllers for this game.");
+TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
+TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
+TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, memory cards and controllers will be overwritten when save states are loaded.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, rich presence information will be collected and sent to the server where supported.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
+TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
+TRANSLATE_NOOP("FullscreenUI", "When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, use a single memory card for all discs.");
+TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
+TRANSLATE_NOOP("FullscreenUI", "XXX points");
+TRANSLATE_NOOP("FullscreenUI", "Yes");
+TRANSLATE_NOOP("FullscreenUI", "You have unlocked all achievements and earned {} points!");
+TRANSLATE_NOOP("FullscreenUI", "You have unlocked {} of {} achievements, earning {} of {} possible points.");
+TRANSLATE_NOOP("FullscreenUI", "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
+TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
+TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
+TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
+TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
+TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
+TRANSLATE_NOOP("FullscreenUI", "{} point");
+TRANSLATE_NOOP("FullscreenUI", "{} points");
+// TRANSLATION-STRING-AREA-END
+#endif

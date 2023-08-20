@@ -7,7 +7,7 @@ import re
 #src_file = "src/duckstation-qt/qttranslations.cpp"
 src_dir = os.path.join(os.path.dirname(__file__), "..", "src")
 fa_file = os.path.join(os.path.dirname(__file__), "..", "dep", "imgui", "include", "IconsFontAwesome5.h")
-dst_file = os.path.join(os.path.dirname(__file__), "..", "src", "frontend-common", "imgui_manager.cpp")
+dst_file = os.path.join(os.path.dirname(__file__), "..", "src", "util", "imgui_manager.cpp")
 
 all_source_files = glob.glob(os.path.join(src_dir, "**", "*.cpp"), recursive=True) + \
     glob.glob(os.path.join(src_dir, "**", "*.h"), recursive=True) + \
