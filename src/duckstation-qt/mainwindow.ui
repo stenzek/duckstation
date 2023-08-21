@@ -17,7 +17,7 @@
    <string>DuckStation</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="resources/resources.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <widget class="QStackedWidget" name="mainContainer"/>
@@ -27,7 +27,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -117,6 +117,7 @@
       <iconset theme="global-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
+     <addaction name="action"/>
     </widget>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
@@ -472,7 +473,7 @@
   </action>
   <action name="actionGitHubRepository">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
    </property>
    <property name="text">
@@ -481,7 +482,7 @@
   </action>
   <action name="actionIssueTracker">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/IssueTracker.png</normaloff>:/icons/IssueTracker.png</iconset>
    </property>
    <property name="text">
@@ -490,7 +491,7 @@
   </action>
   <action name="actionDiscordServer">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
    </property>
    <property name="text">
@@ -508,7 +509,7 @@
   </action>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/QT.png</normaloff>:/icons/QT.png</iconset>
    </property>
    <property name="text">
@@ -517,7 +518,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources/resources.qrc">
      <normaloff>:/icons/duck_64.png</normaloff>:/icons/duck_64.png</iconset>
    </property>
    <property name="text">
@@ -974,6 +975,16 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/flags/ko@2x.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>한국인</string>
    </property>
   </action>
  </widget>
