@@ -129,8 +129,8 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
   {
     char line[1024];
     DWORD written;
-    std::snprintf(line, countof(line), "Exception 0x%08X at 0x%p\n", exi->ExceptionRecord->ExceptionCode,
-                  exi->ExceptionRecord->ExceptionAddress);
+    std::snprintf(line, countof(line), "Exception 0x%08X at 0x%p\n",
+                  static_cast<unsigned>(exi->ExceptionRecord->ExceptionCode), exi->ExceptionRecord->ExceptionAddress);
     WriteFile(hFile, line, static_cast<DWORD>(std::strlen(line)), &written, nullptr);
   }
 
@@ -207,9 +207,13 @@ bool Install()
   return false;
 }
 
-void SetWriteDirectory(const std::string_view& dump_directory) {}
+void SetWriteDirectory(const std::string_view& dump_directory)
+{
+}
 
-void Uninstall() {}
+void Uninstall()
+{
+}
 
 } // namespace CrashHandler
 

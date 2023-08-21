@@ -989,15 +989,7 @@ void RA_Shutdown()
     //	Call shutdown on toolchain
     if (_RA_Shutdown != nullptr)
     {
-#ifdef __cplusplus
-        try {
-#endif
-            _RA_Shutdown();
-#ifdef __cplusplus
-        }
-        catch (std::runtime_error&) {
-        }
-#endif
+      _RA_Shutdown();
     }
 
     //	Clear func ptrs

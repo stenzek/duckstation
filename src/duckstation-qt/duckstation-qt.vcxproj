@@ -368,7 +368,14 @@
       <AdditionalDependencies>$(QtEntryPointLib);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
+      <PreprocessorDefinitions>QT_NO_EXCEPTIONS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4127;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(Configuration.Contains(Clang))">
+    <ClCompile>
+      <!-- Throws warning : known but unsupported action 'shared' for '#pragma section' - ignored [-Wignored-pragmas] -->
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang))">-Wno-ignored-pragmas %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />

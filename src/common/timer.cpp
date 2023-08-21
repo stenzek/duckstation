@@ -336,7 +336,7 @@ void Timer::NanoSleep(std::uint64_t ns)
     if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE))
       WaitForSingleObject(timer, INFINITE);
     else
-      std::fprintf(stderr, "SetWaitableTimer() failed: %08X\n", GetLastError());
+      std::fprintf(stderr, "SetWaitableTimer() failed: %08X\n", static_cast<unsigned>(GetLastError()));
   }
   else
   {

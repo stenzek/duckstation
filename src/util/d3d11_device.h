@@ -84,7 +84,7 @@ public:
   void UnmapIndexBuffer(u32 used_index_count) override;
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
-  void UnmapUniformBuffer(u32 size);
+  void UnmapUniformBuffer(u32 size) override;
   void SetFramebuffer(GPUFramebuffer* fb) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;

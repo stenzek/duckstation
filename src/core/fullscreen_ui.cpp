@@ -1495,11 +1495,12 @@ void FullscreenUI::DrawInputBindingWindow()
   if (ImGui::BeginPopupModal(title, nullptr,
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs))
   {
-    ImGui::TextWrapped(
-      SmallString::FromFmt(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section, s_input_binding_display_name));
+    ImGui::TextWrapped("%s", SmallString::FromFmt(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section,
+                                                  s_input_binding_display_name)
+                               .GetCharArray());
     ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
     ImGui::NewLine();
-    ImGui::Text(FSUI_CSTR("Timing out in %.0f seconds..."), time_remaining);
+    ImGui::TextUnformatted(SmallString::FromFmt(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
     ImGui::EndPopup();
   }
 
@@ -6234,16 +6235,18 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
     ImGui::TextWrapped(
+      "%s",
       FSUI_CSTR("DuckStation can automatically download covers for games which do not currently have a cover set. We "
                 "do not host any cover images, the user must provide their own source for images."));
     ImGui::NewLine();
-    ImGui::TextWrapped(FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
+    ImGui::TextWrapped("%s",
+                       FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
                                  "per line. The following variables are available:"));
     ImGui::NewLine();
-    ImGui::TextWrapped(FSUI_CSTR("${title}: Title of the game.\n${filetitle}: Name component of the game's "
-                                 "filename.\n${serial}: Serial of the game."));
+    ImGui::TextWrapped("%s", FSUI_CSTR("${title}: Title of the game.\n${filetitle}: Name component of the game's "
+                                       "filename.\n${serial}: Serial of the game."));
     ImGui::NewLine();
-    ImGui::TextWrapped(FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
+    ImGui::TextWrapped("%s", FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
     ImGui::NewLine();
 
     BeginMenuButtons();
