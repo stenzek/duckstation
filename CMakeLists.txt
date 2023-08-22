@@ -22,9 +22,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
   set(SUPPORTS_X11 TRUE)
 endif()
 
-# Set minimum OS version for macOS. 10.14 should work.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "")
-
 # Global options.
 if(NOT ANDROID)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
