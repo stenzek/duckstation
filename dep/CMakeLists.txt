@@ -1,6 +1,5 @@
 add_subdirectory(fmt)
 add_subdirectory(gsl)
-add_subdirectory(glad)
 add_subdirectory(stb)
 add_subdirectory(zlib)
 add_subdirectory(zstd)
@@ -20,6 +19,10 @@ add_subdirectory(fast_float)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb)
+endif()
+
+if(ENABLE_OPENGL)
+  add_subdirectory(glad)
 endif()
 
 if(ENABLE_DISCORD_PRESENCE)

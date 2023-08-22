@@ -4,7 +4,7 @@ add_executable(duckstation-nogui
   nogui_platform.h
 )
 
-target_link_libraries(duckstation-nogui PRIVATE core util common imgui glad scmversion)
+target_link_libraries(duckstation-nogui PRIVATE core util common imgui scmversion)
 
 if(WIN32)
   message(STATUS "Building Win32 NoGUI Platform.")
