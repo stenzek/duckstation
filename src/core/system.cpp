@@ -2910,7 +2910,9 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
 
         // But prefer a disc-specific card if one already exists.
         std::string disc_card_path =
-          g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->title), slot);
+          g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(
+                                             s_running_game_entry ? s_running_game_entry->title : s_running_game_title),
+                                           slot);
         if (disc_card_path != card_path)
         {
           if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
