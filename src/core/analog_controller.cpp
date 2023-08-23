@@ -8,6 +8,7 @@
 #include "host.h"
 #include "settings.h"
 #include "system.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 #include <cmath>
 Log_SetChannel(AnalogController);
@@ -348,7 +349,7 @@ void AnalogController::UpdateHostVibration()
     hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
   }
 
-  Host::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
+  InputManager::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
 }
 
 u8 AnalogController::GetExtraButtonMaskLSB() const
@@ -820,7 +821,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("RRight", TRANSLATE_NOOP("AnalogController", "Right Stick Right"), AnalogController::HalfAxis::RRight, GenericInputBinding::RightStickRight),
   AXIS("RDown", TRANSLATE_NOOP("AnalogController", "Right Stick Down"), AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
   AXIS("RUp", TRANSLATE_NOOP("AnalogController", "Right Stick Up"), AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
-  // clang-format on
+// clang-format on
 
 #undef AXIS
 #undef BUTTON

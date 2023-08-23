@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllerbindingwidgets.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "controllersettingsdialog.h"
 #include "controllersettingwidgetbinder.h"
-#include "core/controller.h"
-#include "core/host_settings.h"
-#include "util/input_manager.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+#include "core/controller.h"
+#include "core/host.h"
+
+#include "util/input_manager.h"
+
+#include "common/log.h"
+#include "common/string_util.h"
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QInputDialog>
@@ -519,7 +523,9 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
   layout->addStretch(1);
 }
 
-ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() {}
+ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget()
+{
+}
 
 void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget,
                                                           QGridLayout* layout, const Controller::ControllerInfo* cinfo)
@@ -720,9 +726,13 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerBindingWidget_Base::ControllerBindingWidget_Base(ControllerBindingWidget* parent) : QWidget(parent) {}
+ControllerBindingWidget_Base::ControllerBindingWidget_Base(ControllerBindingWidget* parent) : QWidget(parent)
+{
+}
 
-ControllerBindingWidget_Base::~ControllerBindingWidget_Base() {}
+ControllerBindingWidget_Base::~ControllerBindingWidget_Base()
+{
+}
 
 QIcon ControllerBindingWidget_Base::getIcon() const
 {
@@ -792,7 +802,9 @@ ControllerBindingWidget_DigitalController::ControllerBindingWidget_DigitalContro
   initBindingWidgets();
 }
 
-ControllerBindingWidget_DigitalController::~ControllerBindingWidget_DigitalController() {}
+ControllerBindingWidget_DigitalController::~ControllerBindingWidget_DigitalController()
+{
+}
 
 QIcon ControllerBindingWidget_DigitalController::getIcon() const
 {
@@ -813,7 +825,9 @@ ControllerBindingWidget_AnalogController::ControllerBindingWidget_AnalogControll
   initBindingWidgets();
 }
 
-ControllerBindingWidget_AnalogController::~ControllerBindingWidget_AnalogController() {}
+ControllerBindingWidget_AnalogController::~ControllerBindingWidget_AnalogController()
+{
+}
 
 QIcon ControllerBindingWidget_AnalogController::getIcon() const
 {
@@ -834,7 +848,9 @@ ControllerBindingWidget_AnalogJoystick::ControllerBindingWidget_AnalogJoystick(C
   initBindingWidgets();
 }
 
-ControllerBindingWidget_AnalogJoystick::~ControllerBindingWidget_AnalogJoystick() {}
+ControllerBindingWidget_AnalogJoystick::~ControllerBindingWidget_AnalogJoystick()
+{
+}
 
 QIcon ControllerBindingWidget_AnalogJoystick::getIcon() const
 {
@@ -872,7 +888,9 @@ ControllerBindingWidget_NeGcon::ControllerBindingWidget_NeGcon(ControllerBinding
   }
 }
 
-ControllerBindingWidget_NeGcon::~ControllerBindingWidget_NeGcon() {}
+ControllerBindingWidget_NeGcon::~ControllerBindingWidget_NeGcon()
+{
+}
 
 QIcon ControllerBindingWidget_NeGcon::getIcon() const
 {
@@ -893,7 +911,9 @@ ControllerBindingWidget_GunCon::ControllerBindingWidget_GunCon(ControllerBinding
   initBindingWidgets();
 }
 
-ControllerBindingWidget_GunCon::~ControllerBindingWidget_GunCon() {}
+ControllerBindingWidget_GunCon::~ControllerBindingWidget_GunCon()
+{
+}
 
 QIcon ControllerBindingWidget_GunCon::getIcon() const
 {
@@ -914,7 +934,9 @@ ControllerBindingWidget_Mouse::ControllerBindingWidget_Mouse(ControllerBindingWi
   initBindingWidgets();
 }
 
-ControllerBindingWidget_Mouse::~ControllerBindingWidget_Mouse() {}
+ControllerBindingWidget_Mouse::~ControllerBindingWidget_Mouse()
+{
+}
 
 QIcon ControllerBindingWidget_Mouse::getIcon() const
 {

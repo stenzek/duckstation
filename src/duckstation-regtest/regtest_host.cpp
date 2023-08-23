@@ -1,6 +1,18 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "core/achievements.h"
+#include "core/game_list.h"
+#include "core/host.h"
+#include "core/system.h"
+
+#include "scmversion/scmversion.h"
+
+#include "util/gpu_device.h"
+#include "util/imgui_manager.h"
+#include "util/input_manager.h"
+#include "util/platform_misc.h"
+
 #include "common/assert.h"
 #include "common/crash_handler.h"
 #include "common/file_system.h"
@@ -8,22 +20,11 @@
 #include "common/memory_settings_interface.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "core/common_host.h"
-#include "core/game_list.h"
-#include "core/host.h"
-#include "core/host_settings.h"
-#include "core/system.h"
-#include "scmversion/scmversion.h"
-#include "util/gpu_device.h"
-#include "util/imgui_manager.h"
-#include "util/input_manager.h"
+
 #include <csignal>
 #include <cstdio>
-Log_SetChannel(RegTestHost);
 
-#ifdef WITH_CHEEVOS
-#include "core/achievements_private.h"
-#endif
+Log_SetChannel(RegTestHost);
 
 namespace RegTestHost {
 static bool ParseCommandLineParameters(int argc, char* argv[], std::optional<SystemBootParameters>& autoboot);
@@ -157,12 +158,10 @@ s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, con
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-  CommonHost::LoadSettings(si, lock);
 }
 
 void Host::CheckForSettingsChanges(const Settings& old_settings)
 {
-  CommonHost::CheckForSettingsChanges(old_settings);
 }
 
 void Host::CommitBaseSettingChanges()

@@ -1,13 +1,12 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "achievements_private.h"
+#include "achievements.h"
 #include "bios.h"
 #include "bus.h"
 #include "cpu_core.h"
 #include "fullscreen_ui.h"
 #include "host.h"
-#include "host_settings.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
@@ -682,8 +681,7 @@ void Achievements::FrameUpdate()
 #ifdef WITH_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
-    if (!System::IsPaused())
-      RA_DoAchievementsFrame();
+    RA_DoAchievementsFrame();
     return;
   }
 #endif
@@ -693,17 +691,8 @@ void Achievements::FrameUpdate()
   if (HasActiveGame())
   {
     std::unique_lock lock(s_achievements_mutex);
-    if (!System::IsPaused())
-      rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &PeekMemory, nullptr, nullptr);
+    rc_runtime_do_frame(&s_rcheevos_runtime, &CheevosEventHandler, &PeekMemory, nullptr, nullptr);
     UpdateRichPresence();
-
-    if (!IsTestModeActive())
-    {
-      const s32 ping_frequency =
-        g_settings.achievements_rich_presence ? RICH_PRESENCE_PING_FREQUENCY : NO_RICH_PRESENCE_PING_FREQUENCY;
-      if (static_cast<s32>(s_last_ping_time.GetTimeSeconds()) >= ping_frequency)
-        SendPing();
-    }
   }
 }
 
@@ -714,7 +703,18 @@ void Achievements::ProcessPendingHTTPRequests()
     return;
 #endif
 
+  if (!s_http_downloader)
+    return;
+
   s_http_downloader->PollRequests();
+
+  if (HasActiveGame() && !IsTestModeActive())
+  {
+    const s32 ping_frequency =
+      g_settings.achievements_rich_presence ? RICH_PRESENCE_PING_FREQUENCY : NO_RICH_PRESENCE_PING_FREQUENCY;
+    if (static_cast<s32>(s_last_ping_time.GetTimeSeconds()) >= ping_frequency)
+      SendPing();
+  }
 }
 
 bool Achievements::DoState(StateWrapper& sw)
@@ -1029,7 +1029,7 @@ void Achievements::DisplayAchievementSummary()
 
     // Technically not going through the resource API, but since we're passing this to something else, we can't.
     if (g_settings.achievements_sound_effects)
-      FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+      PlatformMisc::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
   });
 }
 
@@ -1773,7 +1773,7 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, std::string conten
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
   if (g_settings.achievements_sound_effects)
-    FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, LBSUBMIT_SOUND_NAME).c_str());
+    PlatformMisc::PlaySoundAsync(Path::Combine(EmuFolders::Resources, LBSUBMIT_SOUND_NAME).c_str());
 }
 
 void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
@@ -1818,7 +1818,7 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
                                      GetAchievementBadgePath(*achievement));
   }
   if (g_settings.achievements_sound_effects)
-    FrontendCommon::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
+    PlatformMisc::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
 
   if (IsMastered())
     DisplayMasteredNotification();

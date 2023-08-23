@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "metal_device.h"
-#include "core/host_settings.h"
 #include "spirv_compiler.h"
 
 #include "common/align.h"

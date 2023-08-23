@@ -6,7 +6,6 @@
 #include "nogui_host.h"
 
 #include "core/host.h"
-#include "core/host_settings.h"
 
 #include "util/cocoa_tools.h"
 #include "util/imgui_manager.h"
@@ -27,9 +26,6 @@ constexpr NSWindowStyleMask WINDOWED_STYLE = NSWindowStyleMaskTitled | NSWindowS
 }
 - (BOOL)canBecomeKeyView {
   return YES;
-}
-- (void)viewDidEndLiveResize:(NSEvent *)event {
-  [super viewDidEndLiveResize:event];
 }
 - (void)mouseDown:(NSEvent *)event {
   NoGUIHost::ProcessPlatformMouseButtonEvent(0, true);

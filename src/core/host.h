@@ -9,14 +9,17 @@
 #include <ctime>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+class SettingsInterface;
 struct WindowInfo;
 enum class AudioBackend : u8;
 enum class AudioStretchMode : u8;
+enum class RenderAPI : u32;
 class AudioStream;
 class CDImage;
 
@@ -37,6 +40,46 @@ std::optional<std::string> ReadResourceFileToString(const char* filename);
 
 /// Returns the modified time of a resource.
 std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
+
+// Base setting retrieval, bypasses layers.
+std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
+bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
+s32 GetBaseIntSettingValue(const char* section, const char* key, s32 default_value = 0);
+u32 GetBaseUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
+float GetBaseFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+double GetBaseDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
+std::vector<std::string> GetBaseStringListSetting(const char* section, const char* key);
+
+// Allows the emucore to write settings back to the frontend. Use with care.
+// You should call CommitBaseSettingChanges() if you directly write to the layer (i.e. not these functions), or it may
+// not be written to disk.
+void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
+void SetBaseIntSettingValue(const char* section, const char* key, s32 value);
+void SetBaseUIntSettingValue(const char* section, const char* key, u32 value);
+void SetBaseFloatSettingValue(const char* section, const char* key, float value);
+void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
+void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+bool AddValueToBaseStringListSetting(const char* section, const char* key, const char* value);
+bool RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value);
+void DeleteBaseSettingValue(const char* section, const char* key);
+void CommitBaseSettingChanges();
+
+// Settings access, thread-safe.
+std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
+bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
+int GetIntSettingValue(const char* section, const char* key, s32 default_value = 0);
+u32 GetUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
+float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+double GetDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
+std::vector<std::string> GetStringListSetting(const char* section, const char* key);
+
+/// Direct access to settings interface. Must hold the lock when calling GetSettingsInterface() and while using it.
+std::unique_lock<std::mutex> GetSettingsLock();
+SettingsInterface* GetSettingsInterface();
+
+/// Returns the settings interface that controller bindings should be loaded from.
+/// If an input profile is being used, this will be the input layer, otherwise the layered interface.
+SettingsInterface* GetSettingsInterfaceForBindings();
 
 /// Returns a localized version of the specified string within the specified context.
 /// The pointer is guaranteed to be valid until the next language change.
@@ -85,10 +128,6 @@ void ReportFormattedDebuggerMessage(const char* format, ...);
 /// such as compiling shaders when starting up.
 void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
 
-/// Internal method used by pads to dispatch vibration updates to input sources.
-/// Intensity is normalized from 0 to 1.
-void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity);
-
 /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
 void SetMouseMode(bool relative, bool hide_cursor);
 
@@ -105,6 +144,18 @@ bool CopyTextToClipboard(const std::string_view& text);
 /// if the user cancels the shutdown confirmation.
 void RequestExit(bool allow_confirm);
 
+/// Attempts to create the rendering device backend.
+bool CreateGPUDevice(RenderAPI api);
+
+/// Handles fullscreen transitions and such.
+void UpdateDisplayWindow();
+
+/// Called when the window is resized.
+void ResizeDisplayWindow(s32 width, s32 height, float scale);
+
+/// Destroys any active rendering device.
+void ReleaseGPUDevice();
+
 /// Called before drawing the OSD and other display elements.
 void BeginPresentFrame();
 
@@ -113,6 +164,24 @@ void RenderDisplay(bool skip_present);
 void InvalidateDisplay();
 
 namespace Internal {
+/// Retrieves the base settings layer. Must call with lock held.
+SettingsInterface* GetBaseSettingsLayer();
+
+/// Retrieves the game settings layer, if present. Must call with lock held.
+SettingsInterface* GetGameSettingsLayer();
+
+/// Retrieves the input settings layer, if present. Must call with lock held.
+SettingsInterface* GetInputSettingsLayer();
+
+/// Sets the base settings layer. Should be called by the host at initialization time.
+void SetBaseSettingsLayer(SettingsInterface* sif);
+
+/// Sets the game settings layer. Called by VMManager when the game changes.
+void SetGameSettingsLayer(SettingsInterface* sif);
+
+/// Sets the input profile settings layer. Called by VMManager when the game changes.
+void SetInputSettingsLayer(SettingsInterface* sif);
+
 /// Implementation to retrieve a translated string.
 s32 GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
                             size_t tbuf_space);

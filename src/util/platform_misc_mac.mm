@@ -2,16 +2,23 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "platform_misc.h"
+#include "window_info.h"
+#include "cocoa_tools.h"
+
 #include "common/log.h"
 #include "common/string.h"
+
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <Cocoa/Cocoa.h>
 #include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
 #include <vector>
-Log_SetChannel(FrontendCommon);
 
-#import <AppKit/AppKit.h>
+Log_SetChannel(PlatformMisc);
+
+#if __has_feature(objc_arc)
+#error ARC should not be enabled.
+#endif
 
 static IOPMAssertionID s_prevent_idle_assertion = kIOPMNullAssertionID;
 
@@ -39,7 +46,7 @@ static bool SetScreensaverInhibitMacOS(bool inhibit)
 
 static bool s_screensaver_suspended;
 
-void FrontendCommon::SuspendScreensaver()
+void PlatformMisc::SuspendScreensaver()
 {
   if (s_screensaver_suspended)
 
@@ -52,7 +59,7 @@ void FrontendCommon::SuspendScreensaver()
   s_screensaver_suspended = true;
 }
 
-void FrontendCommon::ResumeScreensaver()
+void PlatformMisc::ResumeScreensaver()
 {
   if (!s_screensaver_suspended)
     return;
@@ -63,7 +70,7 @@ void FrontendCommon::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-bool FrontendCommon::PlaySoundAsync(const char* path)
+bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   NSString* nspath = [[NSString alloc] initWithUTF8String:path];
   NSSound* sound = [[NSSound alloc] initWithContentsOfFile:nspath byReference:YES];
@@ -71,6 +78,16 @@ bool FrontendCommon::PlaySoundAsync(const char* path)
   [sound release];
   [nspath release];
   return result;
+}
+
+NSString* CocoaTools::StringViewToNSString(const std::string_view& str)
+{
+  if (str.empty())
+    return nil;
+
+  return [[[NSString alloc] initWithBytes:str.data()
+                                                length:static_cast<NSUInteger>(str.length())
+                                              encoding:NSUTF8StringEncoding] autorelease];
 }
 
 // From https://github.com/PCSX2/pcsx2/blob/1b673d9dd0829a48f5f0b6604c1de2108e981399/common/CocoaTools.mm
@@ -110,7 +127,7 @@ bool FrontendCommon::PlaySoundAsync(const char* path)
 
 static PCSX2KVOHelper* s_themeChangeHandler;
 
-void FrontendCommon::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
+void CocoaTools::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
 {
 	assert([NSThread isMainThread]);
 	if (!s_themeChangeHandler)
@@ -125,7 +142,7 @@ void FrontendCommon::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
 	[s_themeChangeHandler addCallback:ctx run:handler];
 }
 
-void FrontendCommon::RemoveThemeChangeHandler(void* ctx)
+void CocoaTools::RemoveThemeChangeHandler(void* ctx)
 {
 	assert([NSThread isMainThread]);
 	[s_themeChangeHandler removeCallback:ctx];

@@ -194,6 +194,9 @@ GameHash GetGameHash();
 bool IsRunningUnknownGame();
 bool WasFastBooted();
 
+/// Returns the time elapsed in the current play session.
+u64 GetSessionPlayedTime();
+
 const BIOS::ImageInfo* GetBIOSImageInfo();
 const BIOS::Hash& GetBIOSHash();
 
@@ -459,6 +462,18 @@ void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
 
+namespace Internal
+{
+/// Called on process startup.
+void ProcessStartup();
+
+/// Called on process shutdown.
+void ProcessShutdown();
+
+/// Polls input, updates subsystems which are present while paused/inactive.
+void IdlePollUpdate();
+}
+
 } // namespace System
 
 namespace Host {
@@ -497,16 +512,4 @@ void RequestResizeHostDisplay(s32 width, s32 height);
 
 /// Requests shut down of the current virtual machine.
 void RequestSystemShutdown(bool allow_confirm, bool save_state);
-
-/// Attempts to create the rendering device backend.
-bool CreateGPUDevice(RenderAPI api);
-
-/// Handles fullscreen transitions and such.
-void UpdateDisplayWindow();
-
-/// Called when the window is resized.
-void ResizeDisplayWindow(s32 width, s32 height, float scale);
-
-/// Destroys any active rendering device.
-void ReleaseGPUDevice();
 } // namespace Host

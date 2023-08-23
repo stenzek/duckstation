@@ -1,7 +1,12 @@
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
 #pragma once
 
-#include <optional>
-#include <type_traits>
+#include "qthost.h"
+#include "settingwidgetbinder.h"
+
+#include "core/host.h"
 
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
@@ -11,10 +16,8 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
-
-#include "core/host_settings.h"
-#include "qthost.h"
-#include "settingwidgetbinder.h"
+#include <optional>
+#include <type_traits>
 
 /// This nastyness is required because input profiles aren't overlaid settings like the rest of them, it's
 /// input profile *or* global, not both.

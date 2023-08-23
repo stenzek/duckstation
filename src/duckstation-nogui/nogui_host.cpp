@@ -6,13 +6,12 @@
 
 #include "scmversion/scmversion.h"
 
-#include "core/common_host.h"
+#include "core/achievements.h"
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/host.h"
-#include "core/host_settings.h"
 #include "core/imgui_overlays.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -21,6 +20,7 @@
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
+#include "util/platform_misc.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -42,10 +42,6 @@
 #include <thread>
 
 Log_SetChannel(NoGUIHost);
-
-#ifdef WITH_CHEEVOS
-#include "core/achievements_private.h"
-#endif
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
@@ -278,15 +274,15 @@ void NoGUIHost::SetDefaultSettings(SettingsInterface& si, bool system, bool cont
   if (system)
   {
     System::SetDefaultSettings(si);
-    CommonHost::SetDefaultSettings(si);
     EmuFolders::SetDefaults();
     EmuFolders::Save(si);
   }
 
   if (controller)
   {
-    CommonHost::SetDefaultControllerSettings(si);
-    CommonHost::SetDefaultHotkeyBindings(si);
+    InputManager::SetDefaultSourceConfig(si);
+    Settings::SetDefaultControllerConfig(si);
+    Settings::SetDefaultHotkeyConfig(si);
   }
 
   g_nogui_window->SetDefaultConfig(si);
@@ -384,12 +380,10 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-  CommonHost::LoadSettings(si, lock);
 }
 
 void Host::CheckForSettingsChanges(const Settings& old_settings)
 {
-  CommonHost::CheckForSettingsChanges(old_settings);
 }
 
 void Host::CommitBaseSettingChanges()
@@ -614,7 +608,7 @@ void NoGUIHost::CPUThreadEntryPoint()
   Threading::SetNameOfCurrentThread("CPU Thread");
 
   // input source setup must happen on emu thread
-  CommonHost::Initialize();
+  System::Internal::ProcessStartup();
 
   // start the fullscreen UI and get it going
   if (Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)) && FullscreenUI::Initialize())
@@ -640,7 +634,7 @@ void NoGUIHost::CPUThreadEntryPoint()
   Host::ReleaseGPUDevice();
   Host::ReleaseRenderWindow();
 
-  CommonHost::Shutdown();
+  System::Internal::ProcessShutdown();
   g_nogui_window->QuitMessageLoop();
 }
 
@@ -655,6 +649,7 @@ void NoGUIHost::CPUThreadMainLoop()
     }
 
     Host::PumpMessagesOnCPUThread();
+    System::Internal::IdlePollUpdate();
     Host::RenderDisplay(false);
     if (!g_gpu_device->IsVsyncEnabled())
       g_gpu_device->ThrottlePresentation();
@@ -708,34 +703,24 @@ void Host::ReleaseRenderWindow()
 
 void Host::OnSystemStarting()
 {
-  CommonHost::OnSystemStarting();
-  Log_VerbosePrintf("Host::OnSystemStarting()");
   s_save_state_on_shutdown = false;
   s_was_paused_by_focus_loss = false;
 }
 
 void Host::OnSystemStarted()
 {
-  CommonHost::OnSystemStarted();
-  Log_VerbosePrintf("Host::OnSystemStarted()");
 }
 
 void Host::OnSystemPaused()
 {
-  CommonHost::OnSystemPaused();
-  Log_VerbosePrintf("Host::OnSystemPaused()");
 }
 
 void Host::OnSystemResumed()
 {
-  CommonHost::OnSystemResumed();
-  Log_VerbosePrintf("Host::OnSystemResumed()");
 }
 
 void Host::OnSystemDestroyed()
 {
-  CommonHost::OnSystemDestroyed();
-  Log_VerbosePrintf("Host::OnSystemDestroyed()");
 }
 
 void Host::BeginPresentFrame()
@@ -764,18 +749,15 @@ void Host::OnPerformanceCountersUpdated()
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
 {
-  CommonHost::OnGameChanged(disc_path, game_serial, game_name);
   Log_VerbosePrintf("Host::OnGameChanged(\"%s\", \"%s\", \"%s\")", disc_path.c_str(), game_serial.c_str(),
                     game_name.c_str());
   NoGUIHost::UpdateWindowTitle(game_name);
 }
 
-#ifdef WITH_CHEEVOS
 void Host::OnAchievementsRefreshed()
 {
   // noop
 }
-#endif
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
@@ -793,7 +775,6 @@ void Host::PumpMessagesOnCPUThread()
 {
   NoGUIHost::ProcessCPUThreadPlatformMessages();
   NoGUIHost::ProcessCPUThreadEvents(false);
-  CommonHost::PumpMessagesOnCPUThread(); // calls InputManager::PollSources()
 }
 
 std::unique_ptr<NoGUIPlatform> NoGUIHost::CreatePlatform()

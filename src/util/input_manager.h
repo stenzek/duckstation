@@ -319,7 +319,7 @@ bool IsUsingRawInput();
 bool HasPointerAxisBinds();
 
 /// Restores default configuration.
-void SetDefaultConfig(SettingsInterface& si);
+void SetDefaultSourceConfig(SettingsInterface& si);
 
 /// Clears all bindings for a given port.
 void ClearPortBindings(SettingsInterface& si, u32 port);
@@ -343,9 +343,6 @@ void OnInputDeviceDisconnected(const std::string_view& identifier);
 } // namespace InputManager
 
 namespace Host {
-/// Return the current window handle. Needed for DInput.
-std::optional<WindowInfo> GetTopLevelWindowInfo();
-
 /// Called when a new input device is connected.
 void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
 

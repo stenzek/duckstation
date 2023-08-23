@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "inputbindingwidgets.h"
-#include "common/bitutils.h"
 #include "controllersettingsdialog.h"
-#include "core/host_settings.h"
 #include "inputbindingdialog.h"
 #include "qthost.h"
 #include "qtutils.h"
+
+#include "core/host.h"
+
+#include "common/bitutils.h"
+
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
@@ -408,7 +411,9 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent, Contro
   setKey(dialog, std::move(section_name), std::move(key_name));
 }
 
-InputVibrationBindingWidget::~InputVibrationBindingWidget() {}
+InputVibrationBindingWidget::~InputVibrationBindingWidget()
+{
+}
 
 void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::string section_name,
                                          std::string key_name)

@@ -5,7 +5,6 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-#include "core/common_host.h"
 #include "core/spu.h"
 
 #include "util/audio_stream.h"

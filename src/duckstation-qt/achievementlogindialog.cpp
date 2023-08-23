@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "achievementlogindialog.h"
-#include "core/achievements_private.h"
+#include "core/achievements.h"
 #include "qthost.h"
 #include <QtWidgets/QMessageBox>
 

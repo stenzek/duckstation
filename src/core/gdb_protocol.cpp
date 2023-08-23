@@ -4,17 +4,19 @@
 #include "gdb_protocol.h"
 #include "bus.h"
 #include "cpu_core_private.h"
+#include "cpu_core.h"
+#include "system.h"
+
 #include "common/log.h"
 #include "common/string_util.h"
-#include "cpu_core.h"
-#include "common_host.h"
-#include "system.h"
+
 #include <functional>
 #include <iomanip>
 #include <map>
 #include <optional>
 #include <sstream>
 #include <string>
+
 Log_SetChannel(GDBProtocol);
 
 namespace GDBProtocol

@@ -8,7 +8,7 @@
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
 
-#include "core/achievements_private.h"
+#include "core/achievements.h"
 #include "core/system.h"
 
 #include "common/string_util.h"

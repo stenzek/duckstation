@@ -20,7 +20,6 @@
 #include "qthost.h"
 
 #include "core/host.h"
-#include "core/host_settings.h"
 
 #include "util/ini_settings_interface.h"
 
@@ -32,7 +31,7 @@
 
 #ifdef WITH_CHEEVOS
 #include "achievementsettingswidget.h"
-#include "core/achievements_private.h"
+#include "core/achievements.h"
 #endif
 
 static QList<SettingsDialog*> s_open_game_properties_dialogs;

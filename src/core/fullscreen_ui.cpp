@@ -7,14 +7,12 @@
 #include "achievements.h"
 #include "bios.h"
 #include "cheats.h"
-#include "common_host.h"
 #include "controller.h"
 #include "core/memory_card_image.h"
 #include "cpu_core.h"
 #include "game_list.h"
 #include "gpu.h"
 #include "host.h"
-#include "host_settings.h"
 #include "resources.h"
 #include "settings.h"
 #include "system.h"
@@ -52,10 +50,6 @@
 #include <vector>
 
 Log_SetChannel(FullscreenUI);
-
-#ifdef WITH_CHEEVOS
-#include "achievements_private.h"
-#endif
 
 #define TR_CONTEXT "FullscreenUI"
 
@@ -3170,7 +3164,7 @@ void FullscreenUI::ResetControllerSettings()
 {
   SettingsInterface* dsi = GetEditingSettingsInterface();
 
-  CommonHost::SetDefaultControllerSettings(*dsi);
+  Settings::SetDefaultControllerConfig(*dsi);
   ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
 }
 
@@ -4831,7 +4825,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
     if (!serial.empty())
     {
       const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(serial);
-      const std::time_t session_time = static_cast<std::time_t>(CommonHost::GetSessionPlayedTime());
+      const std::time_t session_time = static_cast<std::time_t>(System::GetSessionPlayedTime());
 
       buffer.Fmt(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true).GetStringView());
       const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),

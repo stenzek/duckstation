@@ -85,6 +85,7 @@ struct Settings
   bool apply_game_settings = true;
   bool auto_load_cheats = true;
   bool disable_all_enhancements = false;
+  bool enable_discord_presence = false;
 
   bool rewind_enable = false;
   float rewind_save_frequency = 10.0f;
@@ -190,6 +191,7 @@ struct Settings
   bool achievements_notifications = true;
   bool achievements_sound_effects = true;
   bool achievements_primed_indicators = true;
+  bool achievements_use_raintegration = false;
 
   struct DebugSettings
   {
@@ -335,6 +337,12 @@ struct Settings
   void Save(SettingsInterface& si) const;
 
   void FixIncompatibleSettings(bool display_osd_messages);
+
+  /// Initializes configuration.
+  void UpdateLogSettings();
+
+  static void SetDefaultControllerConfig(SettingsInterface& si);
+  static void SetDefaultHotkeyConfig(SettingsInterface& si);
 
   static std::optional<LOGLEVEL> ParseLogLevelName(const char* str);
   static const char* GetLogLevelName(LOGLEVEL level);

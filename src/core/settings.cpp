@@ -5,10 +5,10 @@
 #include "achievements.h"
 #include "controller.h"
 #include "host.h"
-#include "host_settings.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
+#include "util/input_manager.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -182,6 +182,7 @@ void Settings::Load(SettingsInterface& si)
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
   auto_load_cheats = si.GetBoolValue("Main", "AutoLoadCheats", true);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
+  enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
   rewind_save_slots = static_cast<u32>(si.GetIntValue("Main", "RewindSaveSlots", 10));
@@ -369,6 +370,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
   achievements_primed_indicators = si.GetBoolValue("Cheevos", "PrimedIndicators", true);
+  achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -426,6 +428,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
   si.SetBoolValue("Main", "AutoLoadCheats", auto_load_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
+  si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetIntValue("Main", "RewindSaveSlots", rewind_save_slots);
@@ -565,6 +568,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
   si.SetBoolValue("Cheevos", "PrimedIndicators", achievements_primed_indicators);
+  si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
@@ -724,6 +728,46 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.debugging.dump_cpu_to_vram_copies = false;
     g_settings.debugging.dump_vram_to_cpu_copies = false;
   }
+}
+
+void Settings::UpdateLogSettings()
+{
+  Log::SetFilterLevel(log_level);
+  Log::SetConsoleOutputParams(log_to_console, log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
+  Log::SetDebugOutputParams(log_to_debug, log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
+
+  if (log_to_file)
+  {
+    Log::SetFileOutputParams(log_to_file, Path::Combine(EmuFolders::DataRoot, "duckstation.log").c_str(), true,
+                             log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
+  }
+  else
+  {
+    Log::SetFileOutputParams(false, nullptr);
+  }
+}
+
+void Settings::SetDefaultControllerConfig(SettingsInterface& si)
+{
+  // Global Settings
+  si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
+  si.SetFloatValue("ControllerPorts", "PointerXScale", 8.0f);
+  si.SetFloatValue("ControllerPorts", "PointerYScale", 8.0f);
+  si.SetBoolValue("ControllerPorts", "PointerXInvert", false);
+  si.SetBoolValue("ControllerPorts", "PointerYInvert", false);
+
+  // Default pad types and parameters.
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    const std::string section(Controller::GetSettingsSection(i));
+    si.ClearSection(section.c_str());
+    si.SetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(i));
+  }
+
+#ifndef __ANDROID__
+  // Use the automapper to set this up.
+  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
+#endif
 }
 
 static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {

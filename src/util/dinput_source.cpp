@@ -4,13 +4,16 @@
 #define INITGUID
 
 #include "dinput_source.h"
+#include "input_manager.h"
+#include "platform_misc.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/string_util.h"
-#include "core/host.h"
+
 #include "fmt/format.h"
-#include "input_manager.h"
+
 #include <cmath>
 #include <limits>
 Log_SetChannel(DInputSource);

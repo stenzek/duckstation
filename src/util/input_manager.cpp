@@ -1071,7 +1071,7 @@ bool InputManager::HasPointerAxisBinds()
   return false;
 }
 
-void InputManager::SetDefaultConfig(SettingsInterface& si)
+void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
 {
   si.ClearSection("InputSources");
   si.SetBoolValue("InputSources", "SDL", true);

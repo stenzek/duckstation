@@ -232,7 +232,6 @@ if(WIN32)
 elseif(APPLE)
   target_sources(util PRIVATE
     cocoa_tools.h
-    cocoa_tools.mm
     metal_device.h
     metal_device.mm
     metal_stream_buffer.h

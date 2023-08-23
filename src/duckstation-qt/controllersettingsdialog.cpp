@@ -2,16 +2,19 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllersettingsdialog.h"
-#include "common/assert.h"
-#include "common/file_system.h"
 #include "controllerbindingwidgets.h"
 #include "controllerglobalsettingswidget.h"
-#include "core/controller.h"
-#include "core/host_settings.h"
-#include "util/input_manager.h"
 #include "hotkeysettingswidget.h"
 #include "qthost.h"
+
+#include "core/controller.h"
+#include "core/host.h"
+
 #include "util/ini_settings_interface.h"
+#include "util/input_manager.h"
+
+#include "common/assert.h"
+#include "common/file_system.h"
 
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>

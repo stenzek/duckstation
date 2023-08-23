@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "imgui_overlays.h"
+#include "cdrom.h"
 #include "controller.h"
+#include "dma.h"
 #include "fullscreen_ui.h"
 #include "gpu.h"
 #include "host.h"
-#include "host_settings.h"
+#include "mdec.h"
 #include "resources.h"
 #include "settings.h"
 #include "spu.h"
@@ -130,6 +132,99 @@ static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
 }
 
 static bool s_save_state_selector_ui_open = false;
+
+void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
+                                int progress_value /*= -1*/)
+{
+  const auto& io = ImGui::GetIO();
+  const float scale = ImGuiManager::GetGlobalScale();
+  const float width = (400.0f * scale);
+  const bool has_progress = (progress_min < progress_max);
+
+  // eat the last imgui frame, it might've been partially rendered by the caller.
+  ImGui::EndFrame();
+  ImGui::NewFrame();
+
+  const float logo_width = 260.0f * scale;
+  const float logo_height = 260.0f * scale;
+
+  ImGui::SetNextWindowSize(ImVec2(logo_width, logo_height), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) - (50.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  if (ImGui::Begin("LoadingScreenLogo", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
+                     ImGuiWindowFlags_NoBackground))
+  {
+    GPUTexture* tex = ImGuiFullscreen::GetCachedTexture("images/duck.png");
+    if (tex)
+      ImGui::Image(tex, ImVec2(logo_width, logo_height));
+  }
+  ImGui::End();
+
+  const float padding_and_rounding = 15.0f * scale;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
+  ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 80.0f : 50.0f) * scale), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.0f));
+  if (ImGui::Begin("LoadingScreen", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing))
+  {
+    if (has_progress)
+    {
+      ImGui::TextUnformatted(message);
+
+      TinyString buf;
+      buf.Fmt("{}/{}", progress_value, progress_max);
+
+      const ImVec2 prog_size = ImGui::CalcTextSize(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      ImGui::SameLine();
+      ImGui::SetCursorPosX(width - padding_and_rounding - prog_size.x);
+      ImGui::TextUnformatted(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
+      ImGui::ProgressBar(static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min),
+                         ImVec2(-1.0f, 0.0f), "");
+      Log_InfoPrintf("%s: %d/%d", message, progress_value, progress_max);
+    }
+    else
+    {
+      const ImVec2 text_size(ImGui::CalcTextSize(message));
+      ImGui::SetCursorPosX((width - text_size.x) / 2.0f);
+      ImGui::TextUnformatted(message);
+      Log_InfoPrintf("%s", message);
+    }
+  }
+  ImGui::End();
+  ImGui::PopStyleVar(2);
+
+  ImGui::EndFrame();
+  g_gpu_device->Render(false);
+  ImGui::NewFrame();
+}
+
+void ImGuiManager::RenderDebugWindows()
+{
+  if (System::IsValid())
+  {
+    if (g_settings.debugging.show_gpu_state)
+      g_gpu->DrawDebugStateWindow();
+    if (g_settings.debugging.show_cdrom_state)
+      CDROM::DrawDebugWindow();
+    if (g_settings.debugging.show_timers_state)
+      Timers::DrawDebugStateWindow();
+    if (g_settings.debugging.show_spu_state)
+      SPU::DrawDebugStateWindow();
+    if (g_settings.debugging.show_mdec_state)
+      MDEC::DrawDebugStateWindow();
+    if (g_settings.debugging.show_dma_state)
+      DMA::DrawDebugStateWindow();
+  }
+}
 
 void ImGuiManager::RenderTextOverlays()
 {

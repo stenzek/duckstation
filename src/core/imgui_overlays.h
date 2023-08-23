@@ -7,8 +7,9 @@
 
 namespace ImGuiManager {
 void RenderTextOverlays();
+void RenderDebugWindows();
 void RenderOverlayWindows();
-}
+} // namespace ImGuiManager
 
 namespace SaveStateSelectorUI {
 

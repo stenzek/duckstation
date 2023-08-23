@@ -3,9 +3,23 @@
 
 #include <string_view>
 
-#include <Cocoa/Cocoa.h>
+struct WindowInfo;
+
+#ifdef __OBJC__
+#import <AppKit/AppKit.h>
+#import <Cocoa/Cocoa.h>
 
 namespace CocoaTools {
   NSString* StringViewToNSString(const std::string_view& str);
+}
+
+#endif
+
+namespace CocoaTools {
+  /// Add a handler to be run when macOS changes between dark and light themes
+  void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
+
+  /// Remove a handler previously added using AddThemeChangeHandler with the given context
+  void RemoveThemeChangeHandler(void* ctx);
 }
 

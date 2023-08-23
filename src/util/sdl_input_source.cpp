@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "sdl_input_source.h"
+#include "input_manager.h"
+
+#include "core/host.h"
+
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "core/host.h"
-#include "core/host_settings.h"
-#include "input_manager.h"
+
 #include <cmath>
+
 #ifdef __APPLE__
 #include <dispatch/dispatch.h>
 #endif
+
 Log_SetChannel(SDLInputSource);
 
 static constexpr const char* s_sdl_axis_names[] = {

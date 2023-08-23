@@ -4,7 +4,6 @@
 #include "game_list.h"
 #include "bios.h"
 #include "host.h"
-#include "host_settings.h"
 #include "psf_loader.h"
 #include "settings.h"
 #include "system.h"

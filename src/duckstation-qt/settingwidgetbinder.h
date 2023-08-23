@@ -1,10 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
-#include <optional>
-#include <type_traits>
+#include "qthost.h"
+#include "qtutils.h"
+#include "settingsdialog.h"
+
+#include "core/host.h"
+#include "core/settings.h"
+
+#include "common/assert.h"
+#include "common/path.h"
 
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
@@ -17,15 +24,8 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
-
-#include "common/assert.h"
-#include "common/path.h"
-#include "core/host_settings.h"
-#include "core/settings.h"
-
-#include "qthost.h"
-#include "qtutils.h"
-#include "settingsdialog.h"
+#include <optional>
+#include <type_traits>
 
 namespace SettingWidgetBinder {
 static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";

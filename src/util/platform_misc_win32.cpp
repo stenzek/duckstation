@@ -6,7 +6,7 @@
 #include "common/string_util.h"
 #include "platform_misc.h"
 #include <cinttypes>
-Log_SetChannel(FrontendCommon);
+Log_SetChannel(PlatformMisc);
 
 #include "common/windows_headers.h"
 #include <mmsystem.h>
@@ -24,7 +24,7 @@ static bool SetScreensaverInhibitWin32(bool inhibit)
 
 static bool s_screensaver_suspended;
 
-void FrontendCommon::SuspendScreensaver()
+void PlatformMisc::SuspendScreensaver()
 {
   if (s_screensaver_suspended)
     return;
@@ -38,7 +38,7 @@ void FrontendCommon::SuspendScreensaver()
   s_screensaver_suspended = true;
 }
 
-void FrontendCommon::ResumeScreensaver()
+void PlatformMisc::ResumeScreensaver()
 {
   if (!s_screensaver_suspended)
     return;
@@ -49,7 +49,7 @@ void FrontendCommon::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-bool FrontendCommon::PlaySoundAsync(const char* path)
+bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
   return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);

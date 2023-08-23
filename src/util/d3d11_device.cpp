@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d11_device.h"
-#include "core/host_settings.h" // TODO: Remove me
+#include "core/host.h" // TODO: Remove me
 #include "d3d11_pipeline.h"
 #include "d3d11_texture.h"
 #include "d3d_common.h"

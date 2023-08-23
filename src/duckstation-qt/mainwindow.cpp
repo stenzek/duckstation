@@ -25,7 +25,6 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/platform_misc.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -46,13 +45,13 @@
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
 
-#ifdef WITH_CHEEVOS
-#include "core/achievements_private.h"
-#endif
-
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <Dbt.h>
+#endif
+
+#ifdef __APPLE__
+#include "util/cocoa_tools.h"
 #endif
 
 Log_SetChannel(MainWindow);
@@ -65,11 +64,7 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe "
   "*.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
 
-#ifdef __APPLE__
-const char* DEFAULT_THEME_NAME = "";
-#else
 const char* DEFAULT_THEME_NAME = "darkfusion";
-#endif
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
@@ -123,7 +118,7 @@ MainWindow::~MainWindow()
   unregisterForDeviceNotifications();
 #endif
 #ifdef __APPLE__
-  FrontendCommon::RemoveThemeChangeHandler(this);
+  CocoaTools::RemoveThemeChangeHandler(this);
 #endif
 }
 
@@ -159,8 +154,8 @@ void MainWindow::initialize()
 #endif
 
 #ifdef __APPLE__
-  FrontendCommon::AddThemeChangeHandler(this,
-                                        [](void* ctx) { QtHost::RunOnUIThread([] { g_main_window->updateTheme(); }); });
+  CocoaTools::AddThemeChangeHandler(this,
+                                    [](void* ctx) { QtHost::RunOnUIThread([] { g_main_window->updateTheme(); }); });
 #endif
 }
 

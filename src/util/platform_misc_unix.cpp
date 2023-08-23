@@ -7,7 +7,7 @@
 #include "input_manager.h"
 #include "platform_misc.h"
 #include <cinttypes>
-Log_SetChannel(FrontendCommon);
+Log_SetChannel(PlatformMisc);
 
 #include <spawn.h>
 #include <unistd.h>
@@ -146,7 +146,7 @@ static bool SetScreensaverInhibit(bool inhibit)
 
 static bool s_screensaver_suspended;
 
-void FrontendCommon::SuspendScreensaver()
+void PlatformMisc::SuspendScreensaver()
 {
   if (s_screensaver_suspended)
     return;
@@ -160,7 +160,7 @@ void FrontendCommon::SuspendScreensaver()
   s_screensaver_suspended = true;
 }
 
-void FrontendCommon::ResumeScreensaver()
+void PlatformMisc::ResumeScreensaver()
 {
   if (!s_screensaver_suspended)
     return;
@@ -171,7 +171,7 @@ void FrontendCommon::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-bool FrontendCommon::PlaySoundAsync(const char* path)
+bool PlatformMisc::PlaySoundAsync(const char* path)
 {
 #ifdef __linux__
   // This is... pretty awful. But I can't think of a better way without linking to e.g. gstreamer.

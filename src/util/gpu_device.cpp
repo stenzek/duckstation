@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_device.h"
-#include "core/host_settings.h"
+#include "core/host.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "postprocessing_chain.h"

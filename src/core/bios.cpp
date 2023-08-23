@@ -9,7 +9,6 @@
 #include "common/path.h"
 #include "cpu_disasm.h"
 #include "host.h"
-#include "host_settings.h"
 #include "settings.h"
 #include <cerrno>
 Log_SetChannel(BIOS);

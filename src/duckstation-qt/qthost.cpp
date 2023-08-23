@@ -7,6 +7,7 @@
 #include "qtprogresscallback.h"
 #include "qtutils.h"
 
+#include "core/achievements.h"
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
@@ -14,7 +15,6 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/host.h"
-#include "core/host_settings.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
 #include "core/spu.h"
@@ -32,6 +32,7 @@
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
+#include "util/platform_misc.h"
 
 #include "scmversion/scmversion.h"
 
@@ -60,10 +61,6 @@ Log_SetChannel(QtHost);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <ShlObj.h>
-#endif
-
-#ifdef WITH_CHEEVOS
-#include "core/achievements_private.h"
 #endif
 
 static constexpr u32 SETTINGS_VERSION = 3;
@@ -321,7 +318,6 @@ void QtHost::SetDataDirectory()
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-  CommonHost::LoadSettings(si, lock);
   g_emu_thread->loadSettings(si);
 }
 
@@ -358,7 +354,6 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
 
 void Host::CheckForSettingsChanges(const Settings& old_settings)
 {
-  CommonHost::CheckForSettingsChanges(old_settings);
   g_emu_thread->checkForSettingsChanges(old_settings);
 }
 
@@ -385,15 +380,15 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
   if (system)
   {
     System::SetDefaultSettings(si);
-    CommonHost::SetDefaultSettings(si);
     EmuFolders::SetDefaults();
     EmuFolders::Save(si);
   }
 
   if (controller)
   {
-    CommonHost::SetDefaultControllerSettings(si);
-    CommonHost::SetDefaultHotkeyBindings(si);
+    InputManager::SetDefaultSourceConfig(si);
+    Settings::SetDefaultControllerConfig(si);
+    Settings::SetDefaultHotkeyConfig(si);
   }
 }
 
@@ -745,15 +740,11 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 
 void Host::OnSystemStarting()
 {
-  CommonHost::OnSystemStarting();
-
   emit g_emu_thread->systemStarting();
 }
 
 void Host::OnSystemStarted()
 {
-  CommonHost::OnSystemStarted();
-
   g_emu_thread->wakeThread();
   g_emu_thread->stopBackgroundControllerPollTimer();
 
@@ -762,8 +753,6 @@ void Host::OnSystemStarted()
 
 void Host::OnSystemPaused()
 {
-  CommonHost::OnSystemPaused();
-
   emit g_emu_thread->systemPaused();
   g_emu_thread->startBackgroundControllerPollTimer();
   Host::InvalidateDisplay();
@@ -771,8 +760,6 @@ void Host::OnSystemPaused()
 
 void Host::OnSystemResumed()
 {
-  CommonHost::OnSystemResumed();
-
   // if we were surfaceless (view->game list, system->unpause), get our display widget back
   if (g_emu_thread->isSurfaceless())
     g_emu_thread->setSurfaceless(false);
@@ -785,8 +772,6 @@ void Host::OnSystemResumed()
 
 void Host::OnSystemDestroyed()
 {
-  CommonHost::OnSystemDestroyed();
-
   g_emu_thread->resetPerformanceCounters();
   g_emu_thread->startBackgroundControllerPollTimer();
   emit g_emu_thread->systemDestroyed();
@@ -1227,10 +1212,9 @@ void EmuThread::saveScreenshot()
   System::SaveScreenshot(nullptr, true, true);
 }
 
-#ifdef WITH_CHEEVOS
-
 void Host::OnAchievementsRefreshed()
 {
+#ifdef WITH_CHEEVOS
   u32 game_id = 0;
   u32 achievement_count = 0;
   u32 max_points = 0;
@@ -1264,18 +1248,19 @@ void Host::OnAchievementsRefreshed()
   }
 
   emit g_emu_thread->achievementsRefreshed(game_id, game_info, achievement_count, max_points);
+#endif
 }
 
 void Host::OnAchievementsChallengeModeChanged()
 {
+#ifdef WITH_CHEEVOS
   emit g_emu_thread->achievementsChallengeModeChanged();
-}
-
 #endif
+}
 
 void EmuThread::doBackgroundControllerPoll()
 {
-  InputManager::PollSources();
+  System::Internal::IdlePollUpdate();
 }
 
 void EmuThread::createBackgroundControllerPollTimer()
@@ -1346,7 +1331,7 @@ void EmuThread::run()
   m_started_semaphore.release();
 
   // input source setup must happen on emu thread
-  CommonHost::Initialize();
+  System::Internal::ProcessStartup();
 
   // bind buttons/axises
   createBackgroundControllerPollTimer();
@@ -1370,7 +1355,7 @@ void EmuThread::run()
       }
 
       m_event_loop->processEvents(QEventLoop::AllEvents);
-      CommonHost::PumpMessagesOnCPUThread();
+      System::Internal::IdlePollUpdate();
       if (g_gpu_device)
       {
         Host::RenderDisplay(false);
@@ -1384,7 +1369,7 @@ void EmuThread::run()
     System::ShutdownSystem(false);
 
   destroyBackgroundControllerPollTimer();
-  CommonHost::Shutdown();
+  System::Internal::ProcessShutdown();
 
   // move back to UI thread
   moveToThread(m_ui_thread);
@@ -1585,8 +1570,6 @@ void Host::OnPerformanceCountersUpdated()
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
 {
-  CommonHost::OnGameChanged(disc_path, game_serial, game_name);
-
   emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
                                         QString::fromStdString(game_name));
 }
@@ -1606,7 +1589,6 @@ void Host::SetMouseMode(bool relative, bool hide_cursor)
 void Host::PumpMessagesOnCPUThread()
 {
   g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
-  CommonHost::PumpMessagesOnCPUThread(); // calls InputManager::PollSources()
 }
 
 void QtHost::SaveSettings()

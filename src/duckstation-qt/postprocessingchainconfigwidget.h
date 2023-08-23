@@ -13,7 +13,7 @@
 #include <optional>
 #include <string_view>
 
-namespace FrontendCommon {
+namespace PlatformMisc {
 class PostProcessingChain;
 }
 

@@ -12,14 +12,14 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "dma.h"
-#include "fmt/chrono.h"
-#include "fmt/format.h"
+#include "fullscreen_ui.h"
 #include "game_database.h"
+#include "game_list.h"
 #include "gpu.h"
 #include "gte.h"
 #include "host.h"
 #include "host_interface_progress_callback.h"
-#include "host_settings.h"
+#include "imgui_overlays.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "memory_card.h"
@@ -38,7 +38,9 @@
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/ini_settings_interface.h"
+#include "util/input_manager.h"
 #include "util/iso_reader.h"
+#include "util/platform_misc.h"
 #include "util/state_wrapper.h"
 
 #include "common/error.h"
@@ -49,6 +51,8 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 #include "xxhash.h"
 
 #include <cctype>
@@ -65,6 +69,10 @@ Log_SetChannel(System);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <mmsystem.h>
+#endif
+
+#ifdef WITH_DISCORD_PRESENCE
+#include "discord_rpc.h"
 #endif
 
 // #define PROFILE_MEMORY_SAVE_STATES 1
@@ -130,7 +138,16 @@ static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
 static bool CheckForSBIFile(CDImage* image);
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
 
+static void UpdateSessionTime(const std::string& prev_serial);
+
 static void SetTimerResolutionIncreased(bool enabled);
+
+#ifdef WITH_DISCORD_PRESENCE
+static void InitializeDiscordPresence();
+static void ShutdownDiscordPresence();
+static void UpdateDiscordPresence(bool rich_presence_only);
+static void PollDiscordPresence();
+#endif
 } // namespace System
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
@@ -222,9 +239,61 @@ static bool s_runahead_replay_pending = false;
 static u32 s_runahead_frames = 0;
 static u32 s_runahead_replay_frames = 0;
 
+// Used to track play time. We use a monotonic timer here, in case of clock changes.
+static u64 s_session_start_time = 0;
+
+#ifdef WITH_DISCORD_PRESENCE
+// discord rich presence
+static bool s_discord_presence_active = false;
+#ifdef WITH_CHEEVOS
+static std::string s_discord_presence_cheevos_string;
+#endif
+#endif
+
 static TinyString GetTimestampStringForFileName()
 {
   return TinyString::FromFmt("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
+}
+
+void System::Internal::ProcessStartup()
+{
+  // This will call back to Host::LoadSettings() -> ReloadSources().
+  LoadSettings(false);
+
+#ifdef WITH_CHEEVOS
+#ifdef WITH_RAINTEGRATION
+  if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
+    Achievements::SwitchToRAIntegration();
+#endif
+  if (g_settings.achievements_enabled)
+    Achievements::Initialize();
+#endif
+}
+
+void System::Internal::ProcessShutdown()
+{
+#ifdef WITH_DISCORD_PRESENCE
+  ShutdownDiscordPresence();
+#endif
+
+#ifdef WITH_CHEEVOS
+  Achievements::Shutdown();
+#endif
+
+  InputManager::CloseSources();
+}
+
+void System::Internal::IdlePollUpdate()
+{
+  InputManager::PollSources();
+
+#ifdef WITH_DISCORD_PRESENCE
+  PollDiscordPresence();
+#endif
+
+#ifdef WITH_CHEEVOS
+  Achievements::ProcessPendingHTTPRequests();
+#endif
 }
 
 System::State System::GetState()
@@ -845,7 +914,11 @@ void System::LoadSettings(bool display_osd_messages)
   std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
   SettingsInterface& si = *Host::GetSettingsInterface();
   g_settings.Load(si);
+  g_settings.UpdateLogSettings();
+
   Host::LoadSettings(si, lock);
+  InputManager::ReloadSources(si, lock);
+  InputManager::ReloadBindings(si, *Host::GetSettingsInterfaceForBindings());
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && !s_running_game_serial.empty())
@@ -1017,12 +1090,34 @@ void System::PauseSystem(bool paused)
 
   if (paused)
   {
+    FullscreenUI::OnSystemPaused();
+
+    InputManager::PauseVibration();
+
+#ifdef WITH_CHEEVOS
+    Achievements::OnSystemPaused(true);
+#endif
+
+    if (g_settings.inhibit_screensaver)
+      PlatformMisc::ResumeScreensaver();
+
     Host::OnSystemPaused();
   }
   else
   {
-    Host::OnSystemResumed();
+    FullscreenUI::OnSystemResumed();
+
+#ifdef WITH_CHEEVOS
+    Achievements::OnSystemPaused(false);
+#endif
+
+    if (g_settings.inhibit_screensaver)
+      PlatformMisc::SuspendScreensaver();
+
     UpdateDisplaySync();
+
+    Host::OnSystemResumed();
+
     ResetPerformanceCounters();
     ResetThrottler();
   }
@@ -1330,16 +1425,16 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Good to go.
-  s_state =
-    (g_settings.start_paused || parameters.override_start_paused.value_or(false)) ? State::Paused : State::Running;
+  s_state = State::Running;
   UpdateSoftwareCursor();
   SPU::GetOutputStream()->SetPaused(false);
-  Host::OnSystemStarted();
 
-  if (s_state == State::Paused)
-    Host::OnSystemPaused();
-  else
-    Host::OnSystemResumed();
+  FullscreenUI::OnSystemStarted();
+
+  if (g_settings.inhibit_screensaver)
+    PlatformMisc::SuspendScreensaver();
+
+  Host::OnSystemStarted();
 
   // try to load the state, if it fails, bail out
   if (!parameters.save_state.empty())
@@ -1370,6 +1465,9 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   if (g_settings.audio_dump_on_boot)
     StartDumpingAudio();
+
+  if (g_settings.start_paused || parameters.override_start_paused.value_or(false))
+    PauseSystem(true);
 
   ResetPerformanceCounters();
   if (IsRunning())
@@ -1520,6 +1618,16 @@ void System::DestroySystem()
   if (s_state == State::Shutdown)
     return;
 
+  Host::ClearOSDMessages();
+
+  SaveStateSelectorUI::Close(true);
+  FullscreenUI::OnSystemDestroyed();
+
+  InputManager::PauseVibration();
+
+  if (g_settings.inhibit_screensaver)
+    PlatformMisc::ResumeScreensaver();
+
   SetTimerResolutionIncreased(false);
 
   s_cpu_thread_usage = {};
@@ -1569,6 +1677,8 @@ void System::DestroySystem()
 
 void System::ClearRunningGame()
 {
+  UpdateSessionTime(s_running_game_serial);
+
   s_running_game_serial.clear();
   s_running_game_path.clear();
   s_running_game_title.clear();
@@ -1579,6 +1689,10 @@ void System::ClearRunningGame()
 
 #ifdef WITH_CHEEVOS
   Achievements::GameChanged(s_running_game_path, nullptr);
+#endif
+
+#ifdef WITH_DISCORD_PRESENCE
+  UpdateDiscordPresence(false);
 #endif
 }
 
@@ -1644,6 +1758,7 @@ void System::FrameDone()
   g_gpu->FlushRender();
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
+  // TODO: when running ahead, we can skip this (and the flush above)
   SPU::GeneratePendingSamples();
 
   if (s_cheat_list)
@@ -1677,6 +1792,8 @@ void System::FrameDone()
       // *technically* this means higher input latency (by less than a frame), but runahead itself
       // counter-acts that.
       Host::PumpMessagesOnCPUThread();
+      InputManager::PollSources();
+
       if (IsExecutionInterrupted())
       {
         s_system_interrupted = false;
@@ -1693,6 +1810,15 @@ void System::FrameDone()
 
     SaveRunaheadState();
   }
+
+#ifdef WITH_CHEEVOS
+  if (Achievements::IsActive())
+    Achievements::FrameUpdate();
+#endif
+
+#ifdef WITH_DISCORD_PRESENCE
+  PollDiscordPresence();
+#endif
 
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time < s_next_frame_time || s_display_all_frames || s_last_frame_skipped)
@@ -1722,6 +1848,7 @@ void System::FrameDone()
   if (s_runahead_frames == 0)
   {
     Host::PumpMessagesOnCPUThread();
+    InputManager::PollSources();
 
     if (IsExecutionInterrupted())
     {
@@ -3150,8 +3277,10 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   if (!booting && s_running_game_path == path)
     return;
 
+  const std::string prev_serial = std::move(s_running_game_serial);
+
   s_running_game_path.clear();
-  s_running_game_serial.clear();
+  s_running_game_serial = {};
   s_running_game_title.clear();
   s_running_game_entry = nullptr;
   s_running_game_hash = 0;
@@ -3206,6 +3335,15 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_cheat_list.reset();
   if (g_settings.auto_load_cheats && !Achievements::ChallengeModeActive())
     LoadCheatListFromGameTitle();
+
+  if (s_running_game_serial != prev_serial)
+    UpdateSessionTime(prev_serial);
+
+  SaveStateSelectorUI::RefreshList();
+
+#ifdef WITH_DISCORD_PRESENCE
+  UpdateDiscordPresence(false);
+#endif
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 }
@@ -3541,6 +3679,14 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_gpu_device->SetPostProcessingChain({});
       }
     }
+
+    if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
+    {
+      if (g_settings.inhibit_screensaver)
+        PlatformMisc::SuspendScreensaver();
+      else
+        PlatformMisc::ResumeScreensaver();
+    }
   }
 
   bool controllers_updated = false;
@@ -3566,6 +3712,28 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     UpdateMultitaps();
+
+#ifdef WITH_CHEEVOS
+  Achievements::UpdateSettings(old_settings);
+#endif
+
+  FullscreenUI::CheckForConfigChanges(old_settings);
+
+  if (g_settings.enable_discord_presence != old_settings.enable_discord_presence)
+  {
+    if (g_settings.enable_discord_presence)
+      InitializeDiscordPresence();
+    else
+      ShutdownDiscordPresence();
+  }
+
+  if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
+      g_settings.log_to_console != old_settings.log_to_console ||
+      g_settings.log_to_debug != old_settings.log_to_debug || g_settings.log_to_window != old_settings.log_to_window ||
+      g_settings.log_to_file != old_settings.log_to_file)
+  {
+    g_settings.UpdateLogSettings();
+  }
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage)
@@ -4538,3 +4706,120 @@ void System::SetTimerResolutionIncreased(bool enabled)
     timeEndPeriod(1);
 #endif
 }
+
+void System::UpdateSessionTime(const std::string& prev_serial)
+{
+  const u64 ctime = Common::Timer::GetCurrentValue();
+  if (!prev_serial.empty())
+  {
+    // round up to seconds
+    const std::time_t etime =
+      static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+    const std::time_t wtime = std::time(nullptr);
+    GameList::AddPlayedTimeForSerial(prev_serial, wtime, etime);
+  }
+
+  s_session_start_time = ctime;
+}
+
+u64 System::GetSessionPlayedTime()
+{
+  const u64 ctime = Common::Timer::GetCurrentValue();
+  return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+}
+
+#ifdef WITH_DISCORD_PRESENCE
+
+void System::InitializeDiscordPresence()
+{
+  if (s_discord_presence_active)
+    return;
+
+  DiscordEventHandlers handlers = {};
+  Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
+  s_discord_presence_active = true;
+
+  UpdateDiscordPresence(false);
+}
+
+void System::ShutdownDiscordPresence()
+{
+  if (!s_discord_presence_active)
+    return;
+
+  Discord_ClearPresence();
+  Discord_Shutdown();
+  s_discord_presence_active = false;
+#ifdef WITH_CHEEVOS
+  s_discord_presence_cheevos_string.clear();
+#endif
+}
+
+void System::UpdateDiscordPresence(bool rich_presence_only)
+{
+  if (!s_discord_presence_active)
+    return;
+
+#ifdef WITH_CHEEVOS
+  // Update only if RetroAchievements rich presence has changed
+  const std::string& new_rich_presence = Achievements::GetRichPresenceString();
+  if (new_rich_presence == s_discord_presence_cheevos_string && rich_presence_only)
+  {
+    return;
+  }
+  s_discord_presence_cheevos_string = new_rich_presence;
+#else
+  if (rich_presence_only)
+  {
+    return;
+  }
+#endif
+
+  // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
+  DiscordRichPresence rp = {};
+  rp.largeImageKey = "duckstation_logo";
+  rp.largeImageText = "DuckStation PS1/PSX Emulator";
+  rp.startTimestamp = std::time(nullptr);
+
+  SmallString details_string;
+  if (!System::IsShutdown())
+  {
+    details_string.AppendFormattedString("%s (%s)", System::GetGameTitle().c_str(), System::GetGameSerial().c_str());
+  }
+  else
+  {
+    details_string.AppendString("No Game Running");
+  }
+
+#ifdef WITH_CHEEVOS
+  SmallString state_string;
+  // Trim to 128 bytes as per Discord-RPC requirements
+  if (s_discord_presence_cheevos_string.length() >= 128)
+  {
+    // 124 characters + 3 dots + null terminator
+    state_string = s_discord_presence_cheevos_string.substr(0, 124);
+    state_string.AppendString("...");
+  }
+  else
+  {
+    state_string = s_discord_presence_cheevos_string;
+  }
+
+  rp.state = state_string;
+#endif
+  rp.details = details_string;
+
+  Discord_UpdatePresence(&rp);
+}
+
+void System::PollDiscordPresence()
+{
+  if (!s_discord_presence_active)
+    return;
+
+  UpdateDiscordPresence(true);
+
+  Discord_RunCallbacks();
+}
+
+#endif

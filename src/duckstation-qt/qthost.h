@@ -6,12 +6,10 @@
 #include "gdbserver.h"
 #include "qtutils.h"
 
+#include "core/game_list.h"
 #include "core/host.h"
-#include "core/host_settings.h"
 #include "core/system.h"
 #include "core/types.h"
-#include "core/common_host.h"
-#include "core/game_list.h"
 
 #include "util/gpu_device.h"
 #include "util/input_manager.h"

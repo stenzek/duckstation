@@ -16,8 +16,6 @@ add_library(core
     cheats.h
     controller.cpp
     controller.h
-    common_host.cpp
-    common_host.h
     cpu_code_cache.cpp
     cpu_code_cache.h
     cpu_core.cpp
@@ -62,8 +60,7 @@ add_library(core
     host.h
     host_interface_progress_callback.cpp
     host_interface_progress_callback.h
-    host_settings.cpp
-    host_settings.h
+    hotkeys.cpp
     input_types.h
     imgui_overlays.cpp
     imgui_overlays.h
@@ -157,7 +154,6 @@ endif()
 if(ENABLE_CHEEVOS)
   target_sources(core PRIVATE
     achievements.cpp
-    achievements_private.h
   )
   target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
   target_link_libraries(core PRIVATE rcheevos rapidjson)

@@ -10,7 +10,6 @@
     <ClCompile Include="cdrom.cpp" />
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cheats.cpp" />
-    <ClCompile Include="common_host.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -49,7 +48,7 @@
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
-    <ClCompile Include="host_settings.cpp" />
+    <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
     <ClCompile Include="mdec.cpp" />
@@ -74,7 +73,6 @@
     <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="achievements_private.h" />
     <ClInclude Include="analog_controller.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="bios.h" />
@@ -83,7 +81,6 @@
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="achievements.h" />
-    <ClInclude Include="common_host.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cpu_disasm.h" />
@@ -118,7 +115,6 @@
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
-    <ClInclude Include="host_settings.h" />
     <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="input_types.h" />
     <ClInclude Include="interrupt_controller.h" />

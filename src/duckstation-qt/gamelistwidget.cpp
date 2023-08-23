@@ -8,7 +8,7 @@
 #include "qtutils.h"
 
 #include "core/game_list.h"
-#include "core/host_settings.h"
+#include "core/host.h"
 #include "core/settings.h"
 
 #include "common/assert.h"
@@ -83,7 +83,9 @@ private:
   QString m_filter_name;
 };
 
-GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent) {}
+GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent)
+{
+}
 
 GameListWidget::~GameListWidget() = default;
 
@@ -585,7 +587,9 @@ const GameList::Entry* GameListWidget::getSelectedEntry() const
   }
 }
 
-GameListGridListView::GameListGridListView(QWidget* parent /*= nullptr*/) : QListView(parent) {}
+GameListGridListView::GameListGridListView(QWidget* parent /*= nullptr*/) : QListView(parent)
+{
+}
 
 void GameListGridListView::wheelEvent(QWheelEvent* e)
 {
