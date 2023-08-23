@@ -277,8 +277,9 @@ private:
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
 
-  std::string m_current_game_title;
-  std::string m_current_game_serial;
+  QString m_current_game_path;
+  QString m_current_game_title;
+  QString m_current_game_serial;
 
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;

@@ -25,6 +25,11 @@ struct ImageInfo;
 struct Hash;
 }
 
+namespace GameDatabase
+{
+struct Entry;
+}
+
 struct SystemBootParameters
 {
   SystemBootParameters();
@@ -184,6 +189,7 @@ void FrameDone();
 const std::string& GetDiscPath();
 const std::string& GetGameSerial();
 const std::string& GetGameTitle();
+const GameDatabase::Entry* GetGameDatabaseEntry();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
 bool WasFastBooted();

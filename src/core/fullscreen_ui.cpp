@@ -996,40 +996,85 @@ void FullscreenUI::DoChangeDiscFromFile()
 
 void FullscreenUI::DoChangeDisc()
 {
-  if (!System::HasMediaSubImages())
+  ImGuiFullscreen::ChoiceDialogOptions options;
+
+  if (System::HasMediaSubImages())
   {
-    DoChangeDiscFromFile();
+    const u32 current_index = System::GetMediaSubImageIndex();
+    const u32 count = System::GetMediaSubImageCount();
+    options.reserve(count + 1);
+    options.emplace_back(FSUI_STR("From File..."), false);
+
+    for (u32 i = 0; i < count; i++)
+      options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
+
+    auto callback = [](s32 index, const std::string& title, bool checked) {
+      if (index == 0)
+      {
+        CloseChoiceDialog();
+        DoChangeDiscFromFile();
+        return;
+      }
+      else if (index > 0)
+      {
+        System::SwitchMediaSubImage(static_cast<u32>(index - 1));
+      }
+
+      QueueResetFocus();
+      CloseChoiceDialog();
+      ReturnToMainWindow();
+    };
+
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+                     std::move(callback));
+
     return;
   }
 
-  const u32 current_index = System::GetMediaSubImageIndex();
-  const u32 count = System::GetMediaSubImageCount();
-  ImGuiFullscreen::ChoiceDialogOptions options;
-  options.reserve(count + 1);
-  options.emplace_back("From File...", false);
-
-  for (u32 i = 0; i < count; i++)
-    options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
-
-  auto callback = [](s32 index, const std::string& title, bool checked) {
-    if (index == 0)
+  if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
+  {
+    const auto lock = GameList::GetLock();
+    const auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
+    if (matches.size() > 1)
     {
-      CloseChoiceDialog();
-      DoChangeDiscFromFile();
+      options.reserve(matches.size() + 1);
+      options.emplace_back(FSUI_STR("From File..."), false);
+
+      std::vector<std::string> paths;
+      paths.reserve(matches.size());
+
+      const std::string& current_path = System::GetDiscPath();
+      for (auto& [title, glentry] : matches)
+      {
+        options.emplace_back(std::move(title), current_path == glentry->path);
+        paths.push_back(glentry->path);
+      }
+
+      auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
+        if (index == 0)
+        {
+          CloseChoiceDialog();
+          DoChangeDiscFromFile();
+          return;
+        }
+        else if (index > 0)
+        {
+          System::InsertMedia(paths[index - 1].c_str());
+        }
+
+        QueueResetFocus();
+        CloseChoiceDialog();
+        ReturnToMainWindow();
+      };
+
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+                       std::move(callback));
+
       return;
     }
-    else if (index > 0)
-    {
-      System::SwitchMediaSubImage(static_cast<u32>(index - 1));
-    }
+  }
 
-    QueueResetFocus();
-    CloseChoiceDialog();
-    ReturnToMainWindow();
-  };
-
-  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
-                   std::move(callback));
+  DoChangeDiscFromFile();
 }
 
 void FullscreenUI::DoCheatsMenu()

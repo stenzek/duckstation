@@ -603,8 +603,9 @@ void MainWindow::onSystemDestroyed()
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
 {
-  m_current_game_title = game_title.toStdString();
-  m_current_game_serial = game_serial.toStdString();
+  m_current_game_path = filename;
+  m_current_game_title = game_title;
+  m_current_game_serial = game_serial;
 
   updateWindowTitle();
   // updateSaveStateMenus(path, serial, crc);
@@ -916,18 +917,34 @@ void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
 
 void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group)
 {
-  if (!s_system_valid || !System::HasMediaSubImages())
+  if (!s_system_valid)
     return;
 
-  const u32 count = System::GetMediaSubImageCount();
-  const u32 current = System::GetMediaSubImageIndex();
-  for (u32 i = 0; i < count; i++)
+  if (System::HasMediaSubImages())
   {
-    QAction* action = action_group->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
-    action->setCheckable(true);
-    action->setChecked(i == current);
-    connect(action, &QAction::triggered, [i]() { g_emu_thread->changeDiscFromPlaylist(i); });
-    menu->addAction(action);
+    const u32 count = System::GetMediaSubImageCount();
+    const u32 current = System::GetMediaSubImageIndex();
+    for (u32 i = 0; i < count; i++)
+    {
+      QAction* action = action_group->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
+      action->setCheckable(true);
+      action->setChecked(i == current);
+      connect(action, &QAction::triggered, [i]() { g_emu_thread->changeDiscFromPlaylist(i); });
+      menu->addAction(action);
+    }
+  }
+  else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
+  {
+    auto lock = GameList::GetLock();
+    for (const auto& [title, glentry] : GameList::GetMatchingEntriesForSerial(entry->disc_set_serials))
+    {
+      QAction* action = action_group->addAction(QString::fromStdString(title));
+      QString path = QString::fromStdString(glentry->path);
+      action->setCheckable(true);
+      action->setChecked(path == m_current_game_path);
+      connect(action, &QAction::triggered, [path = std::move(path)]() { g_emu_thread->changeDisc(path); });
+      menu->addAction(action);
+    }
   }
 }
 
@@ -1155,12 +1172,12 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
-  populateLoadStateMenu(m_current_game_serial.c_str(), m_ui.menuLoadState);
+  populateLoadStateMenu(m_current_game_serial.toUtf8().constData(), m_ui.menuLoadState);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
-  populateSaveStateMenu(m_current_game_serial.c_str(), m_ui.menuSaveState);
+  populateSaveStateMenu(m_current_game_serial.toUtf8().constData(), m_ui.menuSaveState);
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -1706,9 +1723,9 @@ void MainWindow::updateWindowTitle()
 {
   QString suffix(QtHost::GetAppConfigSuffix());
   QString main_title(QtHost::GetAppNameAndVersion() + suffix);
-  QString display_title(QString::fromStdString(m_current_game_title) + suffix);
+  QString display_title(m_current_game_title + suffix);
 
-  if (!s_system_valid || m_current_game_title.empty())
+  if (!s_system_valid || m_current_game_title.isEmpty())
     display_title = main_title;
   else if (isRenderingToMain())
     main_title = display_title;
@@ -2464,7 +2481,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     return true;
 
   // If we don't have a serial, we can't save state.
-  allow_save_to_state &= !m_current_game_serial.empty();
+  allow_save_to_state &= !m_current_game_serial.isEmpty();
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.

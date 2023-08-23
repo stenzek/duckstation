@@ -333,6 +333,11 @@ const std::string& System::GetGameTitle()
   return s_running_game_title;
 }
 
+const GameDatabase::Entry* System::GetGameDatabaseEntry()
+{
+  return s_running_game_entry;
+}
+
 System::GameHash System::GetGameHash()
 {
   return s_running_game_hash;

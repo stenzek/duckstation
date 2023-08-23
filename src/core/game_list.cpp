@@ -1033,6 +1033,50 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   return ret;
 }
 
+std::vector<std::pair<std::string, const GameList::Entry*>>
+GameList::GetMatchingEntriesForSerial(const gsl::span<const std::string> serials)
+{
+  std::vector<std::pair<std::string, const GameList::Entry*>> ret;
+  ret.reserve(serials.size());
+
+  for (const std::string& serial : serials)
+  {
+    const Entry* matching_entry = nullptr;
+    bool has_multiple_entries = false;
+
+    for (const Entry& entry : s_entries)
+    {
+      if (entry.serial != serial)
+        continue;
+
+      if (!matching_entry)
+        matching_entry = &entry;
+      else
+        has_multiple_entries = true;
+    }
+
+    if (!matching_entry)
+      continue;
+
+    if (!has_multiple_entries)
+    {
+      ret.emplace_back(matching_entry->title, matching_entry);
+      continue;
+    }
+
+    // Have to add all matching files.
+    for (const Entry& entry : s_entries)
+    {
+      if (entry.serial != serial)
+        continue;
+
+      ret.emplace_back(Path::GetFileName(entry.path), &entry);
+    }
+  }
+
+  return ret;
+}
+
 bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial,
                               ProgressCallback* progress, std::function<void(const Entry*, std::string)> save_callback)
 {
