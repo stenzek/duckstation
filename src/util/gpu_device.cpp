@@ -36,6 +36,7 @@ Log_SetChannel(GPUDevice);
 #include "common/windows_headers.h"
 #include "d3d11_device.h"
 #include "d3d12_device.h"
+#include "d3d_common.h"
 #endif
 
 #ifdef WITH_OPENGL
@@ -350,7 +351,10 @@ std::string GPUDevice::GetShaderCacheBaseName(const std::string_view& type) cons
   {
 #ifdef _WIN32
     case RenderAPI::D3D11:
-      ret = fmt::format("d3d11_{}{}", type, debug_suffix);
+      ret = fmt::format(
+        "d3d11_{}_{}{}", type,
+        D3DCommon::GetFeatureLevelShaderModelString(D3D11Device::GetInstance().GetD3DDevice()->GetFeatureLevel()),
+        debug_suffix);
       break;
     case RenderAPI::D3D12:
       ret = fmt::format("d3d12_{}{}", type, debug_suffix);
