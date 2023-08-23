@@ -58,13 +58,13 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
       box_layout->addLayout(hbox);
     }
 
-    QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Sub-Images"), box);
+    QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Multi-Disc Games"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), playlist_title_as_game_title,
                                                  "MemoryCards", "UsePlaylistTitle", true);
     box_layout->addWidget(playlist_title_as_game_title);
     dialog->registerWidgetHelp(
-      playlist_title_as_game_title, tr("Use Single Card For Sub-Images"), tr("Checked"),
-      tr("When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card "
+      playlist_title_as_game_title, tr("Use Single Card For Multi-Disc Games"), tr("Checked"),
+      tr("When playing a multi-disc game and using per-game (title) memory cards, a single memory card "
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
     box_layout->addWidget(QtUtils::CreateHorizontalLine(box));

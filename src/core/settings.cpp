@@ -1271,7 +1271,7 @@ std::string Settings::GetSharedMemoryCardPath(u32 slot) const
   return ret;
 }
 
-std::string Settings::GetGameMemoryCardPath(const char* serial, u32 slot)
+std::string Settings::GetGameMemoryCardPath(const std::string_view& serial, u32 slot)
 {
   return Path::Combine(EmuFolders::MemoryCards, fmt::format("{}_{}.mcd", serial, slot + 1));
 }

@@ -2304,8 +2304,8 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
     if (g_gpu_device->RenderScreenshot(screenshot_width, screenshot_height,
-                                         Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
-                                         &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
+                                       Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
+                                       &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {
@@ -2893,8 +2893,43 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       }
       else
       {
-        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(
-          MemoryCard::SanitizeGameTitleForFileName(s_running_game_title).c_str(), slot));
+        std::string card_path;
+
+        // Playlist - use title if different.
+        if (HasMediaSubImages() && s_running_game_entry && s_running_game_title != s_running_game_entry->title)
+        {
+          card_path = g_settings.GetGameMemoryCardPath(
+            MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->title), slot);
+        }
+        // Multi-disc game - use disc set name.
+        else if (s_running_game_entry && !s_running_game_entry->disc_set_name.empty())
+        {
+          card_path = g_settings.GetGameMemoryCardPath(
+            MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->disc_set_name), slot);
+        }
+
+        // But prefer a disc-specific card if one already exists.
+        std::string disc_card_path =
+          g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->title), slot);
+        if (disc_card_path != card_path)
+        {
+          if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
+              FileSystem::FileExists(disc_card_path.c_str()))
+          {
+            if (g_settings.memory_card_use_playlist_title && !card_path.empty())
+            {
+              Host::AddIconOSDMessage(
+                fmt::format("DiscSpecificMC{}", slot), ICON_FA_SD_CARD,
+                fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
+                            Path::GetFileName(disc_card_path)),
+                Host::OSD_INFO_DURATION);
+            }
+
+            card_path = std::move(disc_card_path);
+          }
+        }
+
+        return MemoryCard::Open(card_path.c_str());
       }
     }
 
@@ -3145,9 +3180,9 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
         s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
       }
 
-      if (image->HasSubImages() && g_settings.memory_card_use_playlist_title)
+      if (image->HasSubImages())
       {
-        std::string image_title(image->GetMetadata("title"));
+        std::string image_title = image->GetMetadata("title");
         if (!image_title.empty())
           s_running_game_title = std::move(image_title);
       }
@@ -3456,8 +3491,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
-        (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title &&
-         HasMediaSubImages()))
+        (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title))
     {
       UpdateMemoryCardTypes();
     }
@@ -4448,7 +4482,7 @@ void System::UpdateSoftwareCursor()
   if (image && image->IsValid())
   {
     g_gpu_device->SetSoftwareCursor(image->GetPixels(), image->GetWidth(), image->GetHeight(), image->GetPitch(),
-                                      image_scale);
+                                    image_scale);
   }
   else
   {

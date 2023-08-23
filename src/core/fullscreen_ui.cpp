@@ -3583,8 +3583,8 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     SetSettingsChanged(bsi);
   }
 
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "Use Single Card For Sub-Images"),
-                    FSUI_CSTR("When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, "
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "Use Single Card For Multi-Disc Games"),
+                    FSUI_CSTR("When playing a multi-disc game and using per-game (title) memory cards, "
                               "use a single memory card for all discs."),
                     "MemoryCards", "UsePlaylistTitle", true);
 

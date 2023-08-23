@@ -192,17 +192,14 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     if (g_settings.load_devices_from_save_states)
     {
       Host::AddFormattedOSDMessage(
-        10.0f,
-        TRANSLATE("OSDMessage",
-                              "Save state contains controller type %s in port %u, but %s is used. Switching."),
+        10.0f, TRANSLATE("OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
         Settings::GetControllerTypeName(state_controller_type), i + 1u,
         Settings::GetControllerTypeName(controller_type));
     }
     else
     {
-      Host::AddFormattedOSDMessage(
-        10.0f, TRANSLATE("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
-        Settings::GetControllerTypeName(state_controller_type), i + 1u);
+      Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
+                                   Settings::GetControllerTypeName(state_controller_type), i + 1u);
     }
 
     // dev-friendly untranslated console log.
@@ -256,8 +253,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   {
     Host::AddFormattedOSDMessage(
       20.0f,
-      TRANSLATE("OSDMessage",
-                            "Memory card %u present in save state but not in system. Creating temporary card."),
+      TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
       i + 1u);
     s_memory_cards[i] = MemoryCard::Create();
   }
@@ -296,7 +292,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
         Host::AddFormattedOSDMessage(
           20.0f,
           TRANSLATE("OSDMessage",
-                                "Memory card %u from save state does match current card data. Simulating replugging."),
+                    "Memory card %u from save state does match current card data. Simulating replugging."),
           i + 1u);
 
         // this is a potentially serious issue - some games cache info from memcards and jumping around
@@ -312,8 +308,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddFormattedOSDMessage(
-        20.0f,
-        TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
+        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
         i + 1u);
     }
 
@@ -325,16 +320,14 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     if (g_settings.load_devices_from_save_states)
     {
       Host::AddFormattedOSDMessage(
-        20.0f,
-        TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
+        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
         i + 1u);
       s_memory_cards[i].reset();
     }
     else
     {
       Host::AddFormattedOSDMessage(
-        20.0f,
-        TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
+        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
         i + 1u);
       s_memory_cards[i]->Reset();
     }
@@ -545,6 +538,10 @@ MemoryCard* Pad::GetMemoryCard(u32 slot)
 
 void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
 {
+  Log_InfoPrintf("Memory card slot %u: %s", slot,
+                 dev ? (dev->GetFilename().empty() ? "<no file configured>" : dev->GetFilename().c_str()) :
+                       "<unplugged>");
+
   s_memory_cards[slot] = std::move(dev);
 }
 
@@ -798,7 +795,8 @@ void Pad::DoTransfer(TickCount ticks_late)
             const u32 frame_number = System::GetFrameNumber();
 
             // consider u32 overflow case
-            if (ShouldAvoidSavingToState() && (frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
+            if (ShouldAvoidSavingToState() &&
+                (frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
               BackupMemoryCardState();
 
             s_last_memory_card_transfer_frame = frame_number;

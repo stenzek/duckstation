@@ -312,7 +312,7 @@ struct Settings
   std::string GetSharedMemoryCardPath(u32 slot) const;
 
   /// Returns the default path to a memory card for a specific game.
-  static std::string GetGameMemoryCardPath(const char* serial, u32 slot);
+  static std::string GetGameMemoryCardPath(const std::string_view& serial, u32 slot);
 
   static void CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator);
   static u32 CPUOverclockFractionToPercent(u32 numerator, u32 denominator);
