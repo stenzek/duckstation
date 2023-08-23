@@ -65,7 +65,7 @@ struct Entry
   u8 max_players;
   u8 min_blocks;
   u8 max_blocks;
-  u32 supported_controllers;
+  u16 supported_controllers;
   CompatibilityRating compatibility;
 
   std::bitset<static_cast<int>(Trait::Count)> traits{};
@@ -79,6 +79,9 @@ struct Entry
   std::optional<u32> gpu_max_run_ahead;
   std::optional<float> gpu_pgxp_tolerance;
   std::optional<float> gpu_pgxp_depth_threshold;
+
+  std::string disc_set_name;
+  std::vector<std::string> disc_set_serials;
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
 

@@ -29,7 +29,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 3,
+  GAME_DATABASE_CACHE_VERSION = 4,
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
@@ -427,9 +427,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 
-#define BIT_FOR(ctype) (static_cast<u32>(1) << static_cast<u32>(ctype))
+#define BIT_FOR(ctype) (static_cast<u16>(1) << static_cast<u32>(ctype))
 
-  if (supported_controllers != 0 && supported_controllers != static_cast<u32>(-1))
+  if (supported_controllers != 0 && supported_controllers != static_cast<u16>(-1))
   {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
@@ -558,13 +558,14 @@ bool GameDatabase::LoadFromCache()
     constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
     std::array<u8, num_bytes> bits;
     u8 compatibility;
+    u32 num_disc_set_serials;
 
     if (!stream->ReadSizePrefixedString(&entry.serial) || !stream->ReadSizePrefixedString(&entry.title) ||
         !stream->ReadSizePrefixedString(&entry.genre) || !stream->ReadSizePrefixedString(&entry.developer) ||
         !stream->ReadSizePrefixedString(&entry.publisher) || !stream->ReadU64(&entry.release_date) ||
         !stream->ReadU8(&entry.min_players) || !stream->ReadU8(&entry.max_players) ||
         !stream->ReadU8(&entry.min_blocks) || !stream->ReadU8(&entry.max_blocks) ||
-        !stream->ReadU32(&entry.supported_controllers) || !stream->ReadU8(&compatibility) ||
+        !stream->ReadU16(&entry.supported_controllers) || !stream->ReadU8(&compatibility) ||
         compatibility >= static_cast<u8>(GameDatabase::CompatibilityRating::Count) ||
         !stream->Read2(bits.data(), num_bytes) ||
         !ReadOptionalFromStream(stream.get(), &entry.display_active_start_offset) ||
@@ -576,10 +577,24 @@ bool GameDatabase::LoadFromCache()
         !ReadOptionalFromStream(stream.get(), &entry.gpu_fifo_size) ||
         !ReadOptionalFromStream(stream.get(), &entry.gpu_max_run_ahead) ||
         !ReadOptionalFromStream(stream.get(), &entry.gpu_pgxp_tolerance) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_pgxp_depth_threshold))
+        !ReadOptionalFromStream(stream.get(), &entry.gpu_pgxp_depth_threshold) ||
+        !stream->ReadSizePrefixedString(&entry.disc_set_name) || !stream->ReadU32(&num_disc_set_serials))
     {
       Log_DevPrintf("Cache entry is corrupted.");
       return false;
+    }
+
+    if (num_disc_set_serials > 0)
+    {
+      entry.disc_set_serials.reserve(num_disc_set_serials);
+      for (u32 j = 0; j < num_disc_set_serials; j++)
+      {
+        if (!stream->ReadSizePrefixedString(&entry.disc_set_serials.emplace_back()))
+        {
+          Log_DevPrintf("Cache entry is corrupted.");
+          return false;
+        }
+      }
     }
 
     entry.compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility);
@@ -640,7 +655,7 @@ bool GameDatabase::SaveToCache()
     result = result && stream->WriteU8(entry.max_players);
     result = result && stream->WriteU8(entry.min_blocks);
     result = result && stream->WriteU8(entry.max_blocks);
-    result = result && stream->WriteU32(entry.supported_controllers);
+    result = result && stream->WriteU16(entry.supported_controllers);
     result = result && stream->WriteU8(static_cast<u8>(entry.compatibility));
 
     constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
@@ -664,6 +679,11 @@ bool GameDatabase::SaveToCache()
     result = result && WriteOptionalToStream(stream.get(), entry.gpu_max_run_ahead);
     result = result && WriteOptionalToStream(stream.get(), entry.gpu_pgxp_tolerance);
     result = result && WriteOptionalToStream(stream.get(), entry.gpu_pgxp_depth_threshold);
+
+    result = result && stream->WriteSizePrefixedString(entry.disc_set_name);
+    result = result && stream->WriteU32(static_cast<u32>(entry.disc_set_serials.size()));
+    for (const std::string& serial : entry.disc_set_serials)
+      result = result && stream->WriteSizePrefixedString(serial);
   }
 
   for (const auto& it : s_code_lookup)
@@ -852,7 +872,7 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
     }
   }
 
-  entry->supported_controllers = ~0u;
+  entry->supported_controllers = static_cast<u16>(~0u);
   const auto controllers = value.FindMember("controllers");
   if (controllers != value.MemberEnd())
   {
@@ -880,7 +900,7 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
           first = false;
         }
 
-        entry->supported_controllers |= (1u << static_cast<u32>(ctype.value()));
+        entry->supported_controllers |= (1u << static_cast<u16>(ctype.value()));
       }
     }
     else
@@ -934,6 +954,32 @@ bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
     else
     {
       Log_WarningPrintf("traits is not an object");
+    }
+  }
+
+  GetStringFromObject(value, "discSetName", &entry->disc_set_name);
+  const auto disc_set_serials = value.FindMember("discSetSerials");
+  if (disc_set_serials != value.MemberEnd())
+  {
+    if (disc_set_serials->value.IsArray())
+    {
+      const auto disc_set_serials_array = disc_set_serials->value.GetArray();
+      entry->disc_set_serials.reserve(disc_set_serials_array.Size());
+      for (const rapidjson::Value& serial : disc_set_serials_array)
+      {
+        if (serial.IsString())
+        {
+          entry->disc_set_serials.emplace_back(serial.GetString(), serial.GetStringLength());
+        }
+        else
+        {
+          Log_WarningPrintf("discSetSerial is not a string");
+        }
+      }
+    }
+    else
+    {
+      Log_WarningPrintf("discSetSerials is not an array");
     }
   }
 

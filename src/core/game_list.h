@@ -48,7 +48,7 @@ struct Entry
   std::time_t total_played_time = 0;
 
   u64 release_date = 0;
-  u32 supported_controllers = ~static_cast<u32>(0);
+  u16 supported_controllers = static_cast<u16>(~0u);
   u8 min_players = 1;
   u8 max_players = 1;
   u8 min_blocks = 0;

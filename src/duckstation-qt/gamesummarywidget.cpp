@@ -105,11 +105,11 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       m_ui.releaseInfo->setText(tr("Unknown"));
 
     QString controllers;
-    if (entry->supported_controllers != 0 && entry->supported_controllers != static_cast<u32>(-1))
+    if (entry->supported_controllers != 0 && entry->supported_controllers != static_cast<u16>(-1))
     {
       for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
       {
-        if ((entry->supported_controllers & (1u << i)) != 0)
+        if ((entry->supported_controllers & static_cast<u16>(1u << i)) != 0)
         {
           if (!controllers.isEmpty())
             controllers.append(", ");

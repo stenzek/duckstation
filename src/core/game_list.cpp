@@ -41,7 +41,7 @@ namespace GameList {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-  GAME_LIST_CACHE_VERSION = 33,
+  GAME_LIST_CACHE_VERSION = 34,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -244,7 +244,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     entry->max_players = 0;
     entry->min_blocks = 0;
     entry->max_blocks = 0;
-    entry->supported_controllers = ~0u;
+    entry->supported_controllers = static_cast<u16>(~0u);
   }
 
   // region detection
@@ -319,7 +319,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
         !stream->ReadSizePrefixedString(&ge.genre) || !stream->ReadSizePrefixedString(&ge.publisher) ||
         !stream->ReadSizePrefixedString(&ge.developer) || !stream->ReadU64(&ge.hash) ||
         !stream->ReadU64(&ge.total_size) || !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) ||
-        !stream->ReadU64(&ge.release_date) || !stream->ReadU32(&ge.supported_controllers) ||
+        !stream->ReadU64(&ge.release_date) || !stream->ReadU16(&ge.supported_controllers) ||
         !stream->ReadU8(&ge.min_players) || !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) ||
         !stream->ReadU8(&ge.max_blocks) || !stream->ReadU8(&compatibility_rating) ||
         region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
@@ -359,7 +359,7 @@ bool GameList::WriteEntryToCache(const Entry* entry)
   result &= s_cache_write_stream->WriteU64(entry->total_size);
   result &= s_cache_write_stream->WriteU64(entry->last_modified_time);
   result &= s_cache_write_stream->WriteU64(entry->release_date);
-  result &= s_cache_write_stream->WriteU32(entry->supported_controllers);
+  result &= s_cache_write_stream->WriteU16(entry->supported_controllers);
   result &= s_cache_write_stream->WriteU8(entry->min_players);
   result &= s_cache_write_stream->WriteU8(entry->max_players);
   result &= s_cache_write_stream->WriteU8(entry->min_blocks);
