@@ -3,274 +3,9 @@
 #include <cstdlib>
 #include <cstring>
 
-// https://github.com/bucanero/apollo-ps3/commit/b8e52b021239d40f2ba6945d7352345f4457b7b7
-extern const unsigned char shiftJIS_convTable[25088];
-
-void sjis2ascii(char* bData)
-{
-  std::uint16_t ch;
-  int i, j = 0;
-  int len = static_cast<int>(std::strlen(bData));
-
-  for (i = 0; i < len; i += 2)
-  {
-    ch = (bData[i] << 8) | bData[i + 1];
-
-    // 'A' .. 'Z'
-    // '0' .. '9'
-    if ((ch >= 0x8260 && ch <= 0x8279) || (ch >= 0x824F && ch <= 0x8258))
-    {
-      bData[j++] = (ch & 0xFF) - 0x1F;
-      continue;
-    }
-
-    // 'a' .. 'z'
-    if (ch >= 0x8281 && ch <= 0x829A)
-    {
-      bData[j++] = (ch & 0xFF) - 0x20;
-      continue;
-    }
-
-    switch (ch)
-    {
-      case 0x0000: // End of the string
-        bData[j] = 0;
-        return;
-
-      case 0x8140:
-        bData[j++] = ' ';
-        break;
-
-      case 0x8143:
-        bData[j++] = ',';
-        break;
-
-      case 0x8144:
-        bData[j++] = '.';
-        break;
-
-      case 0x8145:
-        bData[j++] = '\xFA';
-        break;
-
-      case 0x8146:
-        bData[j++] = ':';
-        break;
-
-      case 0x8147:
-        bData[j++] = ';';
-        break;
-
-      case 0x8148:
-        bData[j++] = '?';
-        break;
-
-      case 0x8149:
-        bData[j++] = '!';
-        break;
-
-      case 0x814F:
-        bData[j++] = '^';
-        break;
-
-      case 0x8151:
-        bData[j++] = '_';
-        break;
-
-      case 0x815B:
-      case 0x815C:
-      case 0x815D:
-        bData[j++] = '-';
-        break;
-
-      case 0x815E:
-        bData[j++] = '/';
-        break;
-
-      case 0x815F:
-        bData[j++] = '\\';
-        break;
-
-      case 0x8160:
-        bData[j++] = '~';
-        break;
-
-      case 0x8161:
-        bData[j++] = '|';
-        break;
-
-      case 0x8168:
-        bData[j++] = '"';
-        break;
-
-      case 0x8169:
-        bData[j++] = '(';
-        break;
-
-      case 0x816A:
-        bData[j++] = ')';
-        break;
-
-      case 0x816D:
-        bData[j++] = '[';
-        break;
-
-      case 0x816E:
-        bData[j++] = ']';
-        break;
-
-      case 0x816F:
-        bData[j++] = '{';
-        break;
-
-      case 0x8170:
-        bData[j++] = '}';
-        break;
-
-      case 0x817B:
-        bData[j++] = '+';
-        break;
-
-      case 0x817C:
-        bData[j++] = '-';
-        break;
-
-      case 0x817D:
-        bData[j++] = '\xF1';
-        break;
-
-      case 0x817E:
-        bData[j++] = '*';
-        break;
-
-      case 0x8180:
-        bData[j++] = '\xF6';
-        break;
-
-      case 0x8181:
-        bData[j++] = '=';
-        break;
-
-      case 0x8183:
-        bData[j++] = '<';
-        break;
-
-      case 0x8184:
-        bData[j++] = '>';
-        break;
-
-      case 0x818A:
-        bData[j++] = '\xF8';
-        break;
-
-      case 0x818B:
-        bData[j++] = '\'';
-        break;
-
-      case 0x818C:
-        bData[j++] = '"';
-        break;
-
-      case 0x8190:
-        bData[j++] = '$';
-        break;
-
-      case 0x8193:
-        bData[j++] = '%';
-        break;
-
-      case 0x8194:
-        bData[j++] = '#';
-        break;
-
-      case 0x8195:
-        bData[j++] = '&';
-        break;
-
-      case 0x8196:
-        bData[j++] = '*';
-        break;
-
-      case 0x8197:
-        bData[j++] = '@';
-        break;
-
-        // Character not found
-      default:
-        bData[j++] = bData[i];
-        bData[j++] = bData[i + 1];
-        break;
-    }
-  }
-
-  bData[j] = 0;
-  return;
-}
-
-char* sjis2utf8(char* input)
-{
-  // Simplify the input and decode standard ASCII characters
-  sjis2ascii(input);
-
-  size_t len = static_cast<int>(std::strlen(input));
-  char* output = reinterpret_cast<char*>(
-    std::malloc(3 * len)); // ShiftJis won't give 4byte UTF8, so max. 3 byte per input char are needed
-  size_t indexInput = 0, indexOutput = 0;
-
-  while (indexInput < len)
-  {
-    char arraySection = ((uint8_t)input[indexInput]) >> 4;
-
-    size_t arrayOffset;
-    if (arraySection == 0x8)
-      arrayOffset = 0x100; // these are two-byte shiftjis
-    else if (arraySection == 0x9)
-      arrayOffset = 0x1100;
-    else if (arraySection == 0xE)
-      arrayOffset = 0x2100;
-    else
-      arrayOffset = 0; // this is one byte shiftjis
-
-    // determining real array offset
-    if (arrayOffset)
-    {
-      arrayOffset += (((uint8_t)input[indexInput]) & 0xf) << 8;
-      indexInput++;
-      if (indexInput >= len)
-        break;
-    }
-    arrayOffset += (uint8_t)input[indexInput++];
-    arrayOffset <<= 1;
-
-    // unicode number is...
-    uint16_t unicodeValue = (shiftJIS_convTable[arrayOffset] << 8) | shiftJIS_convTable[arrayOffset + 1];
-
-    // converting to UTF8
-    if (unicodeValue < 0x80)
-    {
-      output[indexOutput++] = static_cast<char>(unicodeValue);
-    }
-    else if (unicodeValue < 0x800)
-    {
-      output[indexOutput++] = 0xC0 | static_cast<char>((unicodeValue >> 6));
-      output[indexOutput++] = 0x80 | static_cast<char>((unicodeValue & 0x3f));
-    }
-    else
-    {
-      output[indexOutput++] = 0xE0 | static_cast<char>((unicodeValue >> 12));
-      output[indexOutput++] = 0x80 | static_cast<char>(((unicodeValue & 0xfff) >> 6));
-      output[indexOutput++] = 0x80 | static_cast<char>((unicodeValue & 0x3f));
-    }
-  }
-
-  // remove the unnecessary bytes
-  output[indexOutput] = 0;
-  return output;
-}
-
 // https://stackoverflow.com/questions/33165171/c-shiftjis-to-utf8-conversion
 
-const unsigned char shiftJIS_convTable[25088] = {
+static const unsigned char shiftJIS_convTable[25088] = {
   0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00, 0x06, 0x00, 0x07, 0x00, 0x08, 0x00,
   0x09, 0x00, 0x0a, 0x00, 0x0b, 0x00, 0x0c, 0x00, 0x0d, 0x00, 0x0e, 0x00, 0x0f, 0x00, 0x10, 0x00, 0x11, 0x00, 0x12,
   0x00, 0x13, 0x00, 0x14, 0x00, 0x15, 0x00, 0x16, 0x00, 0x17, 0x00, 0x18, 0x00, 0x19, 0x00, 0x1a, 0x00, 0x1b, 0x00,
@@ -1594,3 +1329,267 @@ const unsigned char shiftJIS_convTable[25088] = {
   0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
 
 };
+
+// https://github.com/bucanero/apollo-ps3/commit/b8e52b021239d40f2ba6945d7352345f4457b7b7
+
+void sjis2ascii(char* bData)
+{
+  std::uint16_t ch;
+  int i, j = 0;
+  int len = static_cast<int>(std::strlen(bData));
+
+  for (i = 0; i < len; i += 2)
+  {
+    ch = (bData[i] << 8) | bData[i + 1];
+
+    // 'A' .. 'Z'
+    // '0' .. '9'
+    if ((ch >= 0x8260 && ch <= 0x8279) || (ch >= 0x824F && ch <= 0x8258))
+    {
+      bData[j++] = (ch & 0xFF) - 0x1F;
+      continue;
+    }
+
+    // 'a' .. 'z'
+    if (ch >= 0x8281 && ch <= 0x829A)
+    {
+      bData[j++] = (ch & 0xFF) - 0x20;
+      continue;
+    }
+
+    switch (ch)
+    {
+      case 0x0000: // End of the string
+        bData[j] = 0;
+        return;
+
+      case 0x8140:
+        bData[j++] = ' ';
+        break;
+
+      case 0x8143:
+        bData[j++] = ',';
+        break;
+
+      case 0x8144:
+        bData[j++] = '.';
+        break;
+
+      case 0x8145:
+        bData[j++] = '\xFA';
+        break;
+
+      case 0x8146:
+        bData[j++] = ':';
+        break;
+
+      case 0x8147:
+        bData[j++] = ';';
+        break;
+
+      case 0x8148:
+        bData[j++] = '?';
+        break;
+
+      case 0x8149:
+        bData[j++] = '!';
+        break;
+
+      case 0x814F:
+        bData[j++] = '^';
+        break;
+
+      case 0x8151:
+        bData[j++] = '_';
+        break;
+
+      case 0x815B:
+      case 0x815C:
+      case 0x815D:
+        bData[j++] = '-';
+        break;
+
+      case 0x815E:
+        bData[j++] = '/';
+        break;
+
+      case 0x815F:
+        bData[j++] = '\\';
+        break;
+
+      case 0x8160:
+        bData[j++] = '~';
+        break;
+
+      case 0x8161:
+        bData[j++] = '|';
+        break;
+
+      case 0x8168:
+        bData[j++] = '"';
+        break;
+
+      case 0x8169:
+        bData[j++] = '(';
+        break;
+
+      case 0x816A:
+        bData[j++] = ')';
+        break;
+
+      case 0x816D:
+        bData[j++] = '[';
+        break;
+
+      case 0x816E:
+        bData[j++] = ']';
+        break;
+
+      case 0x816F:
+        bData[j++] = '{';
+        break;
+
+      case 0x8170:
+        bData[j++] = '}';
+        break;
+
+      case 0x817B:
+        bData[j++] = '+';
+        break;
+
+      case 0x817C:
+        bData[j++] = '-';
+        break;
+
+      case 0x817D:
+        bData[j++] = '\xF1';
+        break;
+
+      case 0x817E:
+        bData[j++] = '*';
+        break;
+
+      case 0x8180:
+        bData[j++] = '\xF6';
+        break;
+
+      case 0x8181:
+        bData[j++] = '=';
+        break;
+
+      case 0x8183:
+        bData[j++] = '<';
+        break;
+
+      case 0x8184:
+        bData[j++] = '>';
+        break;
+
+      case 0x818A:
+        bData[j++] = '\xF8';
+        break;
+
+      case 0x818B:
+        bData[j++] = '\'';
+        break;
+
+      case 0x818C:
+        bData[j++] = '"';
+        break;
+
+      case 0x8190:
+        bData[j++] = '$';
+        break;
+
+      case 0x8193:
+        bData[j++] = '%';
+        break;
+
+      case 0x8194:
+        bData[j++] = '#';
+        break;
+
+      case 0x8195:
+        bData[j++] = '&';
+        break;
+
+      case 0x8196:
+        bData[j++] = '*';
+        break;
+
+      case 0x8197:
+        bData[j++] = '@';
+        break;
+
+        // Character not found
+      default:
+        bData[j++] = bData[i];
+        bData[j++] = bData[i + 1];
+        break;
+    }
+  }
+
+  bData[j] = 0;
+  return;
+}
+
+char* sjis2utf8(char* input)
+{
+  // Simplify the input and decode standard ASCII characters
+  sjis2ascii(input);
+
+  size_t len = static_cast<int>(std::strlen(input));
+  char* output = reinterpret_cast<char*>(
+    std::malloc(3 * len)); // ShiftJis won't give 4byte UTF8, so max. 3 byte per input char are needed
+  size_t indexInput = 0, indexOutput = 0;
+
+  while (indexInput < len)
+  {
+    char arraySection = ((uint8_t)input[indexInput]) >> 4;
+
+    size_t arrayOffset;
+    if (arraySection == 0x8)
+      arrayOffset = 0x100; // these are two-byte shiftjis
+    else if (arraySection == 0x9)
+      arrayOffset = 0x1100;
+    else if (arraySection == 0xE)
+      arrayOffset = 0x2100;
+    else
+      arrayOffset = 0; // this is one byte shiftjis
+
+    // determining real array offset
+    if (arrayOffset)
+    {
+      arrayOffset += (((uint8_t)input[indexInput]) & 0xf) << 8;
+      indexInput++;
+      if (indexInput >= len)
+        break;
+    }
+    arrayOffset += (uint8_t)input[indexInput++];
+    arrayOffset <<= 1;
+
+    // unicode number is...
+    uint16_t unicodeValue = (shiftJIS_convTable[arrayOffset] << 8) | shiftJIS_convTable[arrayOffset + 1];
+
+    // converting to UTF8
+    if (unicodeValue < 0x80)
+    {
+      output[indexOutput++] = static_cast<char>(unicodeValue);
+    }
+    else if (unicodeValue < 0x800)
+    {
+      output[indexOutput++] = 0xC0 | static_cast<char>((unicodeValue >> 6));
+      output[indexOutput++] = 0x80 | static_cast<char>((unicodeValue & 0x3f));
+    }
+    else
+    {
+      output[indexOutput++] = 0xE0 | static_cast<char>((unicodeValue >> 12));
+      output[indexOutput++] = 0x80 | static_cast<char>(((unicodeValue & 0xfff) >> 6));
+      output[indexOutput++] = 0x80 | static_cast<char>((unicodeValue & 0x3f));
+    }
+  }
+
+  // remove the unnecessary bytes
+  output[indexOutput] = 0;
+  return output;
+}
