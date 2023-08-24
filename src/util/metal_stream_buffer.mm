@@ -138,7 +138,7 @@ void MetalStreamBuffer::CommitMemory(u32 final_num_bytes)
 void MetalStreamBuffer::UpdateCurrentFencePosition()
 {
   // Has the offset changed since the last fence?
-  const u64 counter = MetalDevice::GetCurrentFenceCounter();
+  const u64 counter = MetalDevice::GetInstance().GetCurrentFenceCounter();
   if (!m_tracked_fences.empty() && m_tracked_fences.back().first == counter)
   {
     // Still haven't executed a command buffer, so just update the offset.
@@ -155,7 +155,7 @@ void MetalStreamBuffer::UpdateGPUPosition()
   auto start = m_tracked_fences.begin();
   auto end = start;
 
-  const u64 completed_counter = MetalDevice::GetCompletedFenceCounter();
+  const u64 completed_counter = MetalDevice::GetInstance().GetCompletedFenceCounter();
   while (end != m_tracked_fences.end() && completed_counter >= end->first)
   {
     m_current_gpu_position = end->second;
@@ -242,11 +242,12 @@ bool MetalStreamBuffer::WaitForClearSpace(u32 num_bytes)
 
   // Did any fences satisfy this condition?
   // Has the command buffer been executed yet? If not, the caller should execute it.
-  if (iter == m_tracked_fences.end() || iter->first == MetalDevice::GetCurrentFenceCounter())
+  MetalDevice& dev = MetalDevice::GetInstance();
+  if (iter == m_tracked_fences.end() || iter->first == dev.GetCurrentFenceCounter())
     return false;
 
   // Wait until this fence is signaled. This will fire the callback, updating the GPU position.
-  MetalDevice::GetInstance().WaitForFenceCounter(iter->first);
+  dev.WaitForFenceCounter(iter->first);
   m_tracked_fences.erase(m_tracked_fences.begin(), m_current_offset == iter->second ? m_tracked_fences.end() : ++iter);
   m_current_offset = new_offset;
   m_current_space = new_space;

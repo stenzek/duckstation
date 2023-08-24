@@ -121,11 +121,18 @@ public:
 
   void SetDebugName(const std::string_view& name) override;
 
+  // Call when the texture is bound to the pipeline, or read from in a copy.
+  ALWAYS_INLINE void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
+
 private:
   MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
                Format format);
 
   id<MTLTexture> m_texture;
+
+  // Contains the fence counter when the texture was last used.
+  // When this matches the current fence counter, the texture was used this command buffer.
+  u64 m_use_fence_counter = 0;
 
   u16 m_map_x = 0;
   u16 m_map_y = 0;
@@ -179,9 +186,9 @@ class MetalDevice final : public GPUDevice
 {
 public:
   ALWAYS_INLINE static MetalDevice& GetInstance() { return *static_cast<MetalDevice*>(g_gpu_device.get()); }
-  ALWAYS_INLINE static id<MTLDevice> GetMTLDevice() { return GetInstance().m_device; }
-  ALWAYS_INLINE static u64 GetCurrentFenceCounter() { return GetInstance().m_current_fence_counter; }
-  ALWAYS_INLINE static u64 GetCompletedFenceCounter() { return GetInstance().m_completed_fence_counter; }
+  ALWAYS_INLINE id<MTLDevice> GetMTLDevice() { return m_device; }
+  ALWAYS_INLINE u64 GetCurrentFenceCounter() { return m_current_fence_counter; }
+  ALWAYS_INLINE u64 GetCompletedFenceCounter() { return m_completed_fence_counter; }
 
   MetalDevice();
   ~MetalDevice();

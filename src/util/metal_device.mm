@@ -130,7 +130,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
     id<MTLDevice> device = nil;
     if (!adapter.empty())
     {
-      NSArray<id<MTLDevice>> *devices = [MTLCopyAllDevices() autorelease];
+      NSArray<id<MTLDevice>>* devices = [MTLCopyAllDevices() autorelease];
       const u32 count = static_cast<u32>([devices count]);
       for (u32 i = 0; i < count; i++)
       {
@@ -140,11 +140,11 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
           break;
         }
       }
-      
+
       if (device == nil)
         Log_ErrorPrint(fmt::format("Failed to find device named '{}'. Trying default.", adapter).c_str());
     }
-    
+
     if (device == nil)
     {
       device = [MTLCreateSystemDefaultDevice() autorelease];
@@ -416,14 +416,15 @@ void MetalDevice::DestroyBuffers()
 GPUDevice::AdapterAndModeList MetalDevice::StaticGetAdapterAndModeList()
 {
   AdapterAndModeList ret;
-  @autoreleasepool {
-    NSArray<id<MTLDevice>> *devices = [MTLCopyAllDevices() autorelease];
+  @autoreleasepool
+  {
+    NSArray<id<MTLDevice>>* devices = [MTLCopyAllDevices() autorelease];
     const u32 count = static_cast<u32>([devices count]);
     ret.adapter_names.reserve(count);
     for (u32 i = 0; i < count; i++)
       ret.adapter_names.emplace_back([devices[i].name UTF8String]);
   }
-  
+
   return ret;
 }
 
@@ -914,7 +915,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
       Panic("Failed to allocate temporary buffer.");
       return false;
     }
-    
+
     dev.DeferRelease(actual_buffer);
   }
   else
@@ -928,19 +929,19 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
         return false;
       }
     }
-    
+
     actual_offset = sb.GetCurrentOffset();
     StringUtil::StrideMemCpy(sb.GetCurrentHostPointer(), aligned_pitch, data, pitch, width * GetPixelSize(), height);
     sb.CommitMemory(req_size);
     actual_buffer = sb.GetBuffer();
     actual_pitch = aligned_pitch;
   }
-  
+
   if (m_state == GPUTexture::State::Cleared && (x != 0 || y != 0 || width != m_width || height != m_height))
     dev.CommitClear(this);
 
-  // TODO: track this
-  const bool is_inline = true;
+  const bool is_inline = (m_use_fence_counter == dev.GetCurrentFenceCounter());
+
   id<MTLBlitCommandEncoder> encoder = dev.GetBlitEncoder(is_inline);
   [encoder copyFromBuffer:actual_buffer
              sourceOffset:actual_offset
@@ -1423,6 +1424,9 @@ void MetalDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
 
   CommitClear(S);
 
+  S->SetUseFenceCounter(m_current_fence_counter);
+  D->SetUseFenceCounter(m_current_fence_counter);
+
   @autoreleasepool
   {
     id<MTLBlitCommandEncoder> encoder = GetBlitEncoder(true);
@@ -1743,7 +1747,8 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   DebugAssert(slot < MAX_TEXTURE_SAMPLERS);
 
   id<MTLTexture> T = texture ? static_cast<MetalTexture*>(texture)->GetMTLTexture() : nil;
-  id<MTLSamplerState> S = sampler ? static_cast<MetalSampler*>(sampler)->GetSamplerState() : nil;
+  if (texture)
+    static_cast<MetalTexture*>(texture)->SetUseFenceCounter(m_current_fence_counter);
 
   if (m_current_textures[slot] != T)
   {
@@ -1752,6 +1757,7 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
       [m_render_encoder setFragmentTexture:T atIndex:slot];
   }
 
+  id<MTLSamplerState> S = sampler ? static_cast<MetalSampler*>(sampler)->GetSamplerState() : nil;
   if (m_current_samplers[slot] != S)
   {
     m_current_samplers[slot] = S;
@@ -1829,7 +1835,8 @@ void MetalDevice::BeginRenderPass()
     m_inline_upload_encoder = nil;
   }
 
-  @autoreleasepool {
+  @autoreleasepool
+  {
     MTLRenderPassDescriptor* desc;
     if (!m_current_framebuffer)
     {
@@ -1841,6 +1848,10 @@ void MetalDevice::BeginRenderPass()
     else
     {
       desc = m_current_framebuffer->GetDescriptor();
+      if (MetalTexture* RT = static_cast<MetalTexture*>(m_current_framebuffer->GetRT()))
+        RT->SetUseFenceCounter(m_current_fence_counter);
+      if (MetalTexture* DS = static_cast<MetalTexture*>(m_current_framebuffer->GetDS()))
+        DS->SetUseFenceCounter(m_current_fence_counter);
     }
 
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
