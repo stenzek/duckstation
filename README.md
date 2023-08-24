@@ -23,14 +23,14 @@ DuckStation features a fully-featured frontend built using Qt, as well as a full
 Other features include:
 
  - CPU Recompiler/JIT (x86-64, armv7/AArch32 and AArch64)
- - Hardware (D3D11, D3D12, OpenGL, Vulkan) and software rendering
+ - Hardware (D3D11, D3D12, OpenGL, Vulkan, Metal) and software rendering
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers
  - PGXP for geometry precision, texture correction, and depth buffer emulation
  - Adaptive downsampling filter
  - Post processing shader chains
  - "Fast boot" for skipping BIOS splash/intro
  - Save state support
- - Windows, Linux, **highly experimental** macOS support
+ - Windows, Linux, macOS support
  - Supports bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
  - Direct booting of homebrew executables
  - Direct loading of Portable Sound Format (psf) files
@@ -94,7 +94,11 @@ To download:
  
 ### macOS
 
-Universal MacOS builds are provided for both x64 and ARM64 (Apple Silicon). However, due to lack of hardware, investigating issues is difficult, so we can't guarantee everything functions as intended.
+Universal MacOS builds are provided for both x64 and ARM64 (Apple Silicon).
+
+Using the Preview channel and Metal renderer is recommended, MoltenVK is reported to have issues with some games.
+
+MacOS Big Sir (11.0) is required, as this is also the minimum requirement for Qt.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-mac-release.zip`.
@@ -144,12 +148,11 @@ Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
  - SDL2 (at least version 2.0.22) (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.1.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
+ - Qt 6 (at least version 6.5.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - libevdev (`libevdev-dev`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
- - Optional for framebuffer output: DRM/GBM (`libgbm-dev` `libdrm-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
 1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
@@ -164,7 +167,7 @@ Requirements (Debian/Ubuntu package names):
 Requirements:
  - CMake
  - SDL2 (at least version 2.0.22)
- - Qt 6 (at least version 6.1.0)
+ - Qt 6 (at least version 6.5.0)
 
 Optional (recommended for faster builds):
  - Ninja
