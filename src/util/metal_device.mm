@@ -1829,21 +1829,23 @@ void MetalDevice::BeginRenderPass()
     m_inline_upload_encoder = nil;
   }
 
-  MTLRenderPassDescriptor* desc;
-  if (!m_current_framebuffer)
-  {
-    // Rendering to view, but we got interrupted...
-    desc = [MTLRenderPassDescriptor renderPassDescriptor];
-    desc.colorAttachments[0].texture = [m_layer_drawable texture];
-    desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-  }
-  else
-  {
-    desc = m_current_framebuffer->GetDescriptor();
-  }
+  @autoreleasepool {
+    MTLRenderPassDescriptor* desc;
+    if (!m_current_framebuffer)
+    {
+      // Rendering to view, but we got interrupted...
+      desc = [MTLRenderPassDescriptor renderPassDescriptor];
+      desc.colorAttachments[0].texture = [m_layer_drawable texture];
+      desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
+    }
+    else
+    {
+      desc = m_current_framebuffer->GetDescriptor();
+    }
 
-  m_render_encoder = [m_render_cmdbuf renderCommandEncoderWithDescriptor:desc];
-  SetInitialEncoderState();
+    m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
+    SetInitialEncoderState();
+  }
 }
 
 void MetalDevice::EndRenderPass()
