@@ -1167,7 +1167,6 @@ bool System::LoadState(const char* filename)
   ResetPerformanceCounters();
   ResetThrottler();
   Host::RenderDisplay(false);
-  g_gpu->RestoreGraphicsAPIState();
   Log_VerbosePrintf("Loading state took %.2f msec", load_timer.GetTimeMilliseconds());
   return true;
 }
@@ -1832,8 +1831,6 @@ void System::FrameDone()
       s_accumulated_gpu_time += g_gpu_device->GetAndResetAccumulatedGPUTime();
       s_presents_since_last_update++;
     }
-
-    g_gpu->RestoreGraphicsAPIState();
   }
   else if (current_time >= s_next_frame_time)
   {
@@ -2183,8 +2180,6 @@ void System::InternalReset()
 {
   if (IsShutdown())
     return;
-
-  g_gpu->RestoreGraphicsAPIState();
 
   CPU::Reset();
   CPU::CodeCache::Flush();
@@ -3918,8 +3913,6 @@ void System::DoRewind()
   s_next_frame_time += s_frame_period;
 
   Host::RenderDisplay(false);
-  g_gpu->RestoreGraphicsAPIState();
-
   Host::PumpMessagesOnCPUThread();
 
   Throttle();

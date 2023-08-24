@@ -3,6 +3,7 @@
 
 #include "host.h"
 #include "fullscreen_ui.h"
+#include "gpu.h"
 #include "imgui_overlays.h"
 #include "shader_cache_version.h"
 #include "system.h"
@@ -490,6 +491,9 @@ void Host::RenderDisplay(bool skip_present)
   g_gpu_device->Render(skip_present);
 
   ImGuiManager::NewFrame();
+
+  if (g_gpu)
+    g_gpu->RestoreGraphicsAPIState();
 }
 
 void Host::InvalidateDisplay()
