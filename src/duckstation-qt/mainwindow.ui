@@ -117,7 +117,6 @@
       <iconset theme="global-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
-     <addaction name="action"/>
     </widget>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
@@ -975,16 +974,6 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader</string>
-   </property>
-  </action>
-  <action name="action">
-   <property name="icon">
-    <iconset>
-     <normalon>:/icons/flags/ko@2x.png</normalon>
-    </iconset>
-   </property>
-   <property name="text">
-    <string>한국인</string>
    </property>
   </action>
  </widget>
