@@ -10,16 +10,21 @@ struct WindowInfo;
 #import <Cocoa/Cocoa.h>
 
 namespace CocoaTools {
-  NSString* StringViewToNSString(const std::string_view& str);
+NSString* StringViewToNSString(const std::string_view& str);
 }
 
 #endif
 
 namespace CocoaTools {
-  /// Add a handler to be run when macOS changes between dark and light themes
-  void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
+/// Add a handler to be run when macOS changes between dark and light themes
+void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
 
-  /// Remove a handler previously added using AddThemeChangeHandler with the given context
-  void RemoveThemeChangeHandler(void* ctx);
-}
+/// Remove a handler previously added using AddThemeChangeHandler with the given context
+void RemoveThemeChangeHandler(void* ctx);
 
+/// Creates metal layer on specified window surface.
+bool CreateMetalLayer(WindowInfo* wi);
+
+/// Destroys metal layer on specified window surface.
+void DestroyMetalLayer(WindowInfo* wi);
+} // namespace CocoaTools

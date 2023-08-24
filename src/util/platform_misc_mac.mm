@@ -147,3 +147,50 @@ void CocoaTools::RemoveThemeChangeHandler(void* ctx)
 	assert([NSThread isMainThread]);
 	[s_themeChangeHandler removeCallback:ctx];
 }
+
+bool CocoaTools::CreateMetalLayer(WindowInfo *wi)
+{
+  // Punt off to main thread if we're not calling from it already.
+  if (![NSThread isMainThread])
+  {
+    bool ret;
+    dispatch_sync(dispatch_get_main_queue(), [&ret, wi]() {
+      ret = CreateMetalLayer(wi);
+    });
+    return ret;
+  }
+  
+  CAMetalLayer* layer = [CAMetalLayer layer];
+  if (layer == nil)
+  {
+    Log_ErrorPrint("Failed to create CAMetalLayer");
+    return false;
+  }
+  
+  NSView* view = (__bridge NSView*)wi->window_handle;
+  [view setWantsLayer:TRUE];
+  [view setLayer:layer];
+  [layer setContentsScale:[[[view window] screen] backingScaleFactor]];
+  
+  wi->surface_handle = (__bridge void*)layer;
+  return true;
+}
+
+void CocoaTools::DestroyMetalLayer(WindowInfo *wi)
+{
+  if (!wi->surface_handle)
+    return;
+  
+  // Punt off to main thread if we're not calling from it already.
+  if (![NSThread isMainThread])
+  {
+    dispatch_sync(dispatch_get_main_queue(), [wi]() { DestroyMetalLayer(wi); });
+    return;
+  }
+  
+  NSView* view = (__bridge NSView*)wi->window_handle;
+  CAMetalLayer* layer = (__bridge CAMetalLayer*)wi->surface_handle;
+  [view setLayer:nil];
+  [view setWantsLayer:NO];
+  [layer release];
+}

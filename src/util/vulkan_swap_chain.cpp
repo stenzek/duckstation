@@ -16,6 +16,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+#include "util/cocoa_tools.h"
+#endif
+
 Log_SetChannel(VulkanDevice);
 
 VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
@@ -60,7 +64,6 @@ VkSurfaceKHR VulkanSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysica
 #if defined(VK_USE_PLATFORM_METAL_EXT)
   if (wi->type == WindowInfo::Type::MacOS)
   {
-#if 0
     // TODO: FIXME
     if (!wi->surface_handle && !CocoaTools::CreateMetalLayer(wi))
       return VK_NULL_HANDLE;
@@ -77,10 +80,6 @@ VkSurfaceKHR VulkanSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysica
     }
 
     return surface;
-#else
-    Panic("Fixme");
-    return VK_NULL_HANDLE;
-#endif
   }
 #endif
 
@@ -156,12 +155,8 @@ void VulkanSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, 
   vkDestroySurfaceKHR(VulkanDevice::GetInstance().GetVulkanInstance(), surface, nullptr);
 
 #if defined(__APPLE__)
-#if 0
   if (wi->type == WindowInfo::Type::MacOS && wi->surface_handle)
     CocoaTools::DestroyMetalLayer(wi);
-#else
-  Panic("TODO");
-#endif
 #endif
 }
 
