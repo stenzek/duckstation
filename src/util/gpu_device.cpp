@@ -984,9 +984,12 @@ bool GPUDevice::RenderScreenshot(u32 width, u32 height, const Common::Rectangle<
 
   ClearRenderTarget(render_texture.get(), 0);
 
-  RenderDisplay(render_fb.get(), draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
-                m_display_texture, m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
-                m_display_texture_view_height, IsUsingLinearFiltering());
+  if (m_display_texture)
+  {
+    RenderDisplay(render_fb.get(), draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
+                  m_display_texture, m_display_texture_view_x, m_display_texture_view_y, m_display_texture_view_width,
+                  m_display_texture_view_height, IsUsingLinearFiltering());
+  }
 
   SetFramebuffer(nullptr);
 
