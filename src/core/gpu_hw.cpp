@@ -284,6 +284,8 @@ void GPU_HW::RestoreGraphicsAPIState()
 
 void GPU_HW::UpdateSettings()
 {
+  GPU::UpdateSettings();
+
   const u32 resolution_scale = CalculateResolutionScale();
   const u32 multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
