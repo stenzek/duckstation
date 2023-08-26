@@ -849,8 +849,11 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     desc.rasterSampleCount = config.per_sample_shading ? config.samples : 1;
 
     // Metal-specific stuff
-    desc.vertexBuffers[1].mutability = MTLMutabilityImmutable;
-    desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
+    desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
+    if (!config.input_layout.vertex_attributes.empty())
+      desc.vertexBuffers[1].mutability = MTLMutabilityImmutable;
+    if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
+      desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
 
     ca.blendingEnabled = config.blend.enable;
     if (config.blend.enable)
@@ -1668,7 +1671,10 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
   m_current_uniform_buffer_position = m_uniform_buffer.GetCurrentOffset();
   m_uniform_buffer.CommitMemory(size);
   if (InRenderPass())
-    SetUniformBufferInRenderEncoder();
+  {
+    [m_render_encoder setVertexBufferOffset:m_current_uniform_buffer_position atIndex:0];
+    [m_render_encoder setFragmentBufferOffset:m_current_uniform_buffer_position atIndex:0];
+  }
 }
 
 void MetalDevice::SetFramebuffer(GPUFramebuffer* fb)
@@ -1713,6 +1719,7 @@ void MetalDevice::UnbindFramebuffer(MetalTexture* tex)
 
 void MetalDevice::SetPipeline(GPUPipeline* pipeline)
 {
+  DebugAssert(pipeline);
   if (m_current_pipeline == pipeline)
     return;
 
@@ -1732,6 +1739,12 @@ void MetalDevice::SetPipeline(GPUPipeline* pipeline)
       [m_render_encoder setCullMode:m_current_cull_mode];
     }
   }
+  else
+  {
+    // Still need to set depth state before the draw begins.
+    m_current_depth_state = m_current_pipeline->GetDepthState();
+    m_current_cull_mode = m_current_pipeline->GetCullMode();
+  }
 }
 
 void MetalDevice::UnbindPipeline(MetalPipeline* pl)
@@ -1740,6 +1753,7 @@ void MetalDevice::UnbindPipeline(MetalPipeline* pl)
     return;
 
   m_current_pipeline = nullptr;
+  m_current_depth_state = nil;
 }
 
 void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -1888,7 +1902,8 @@ void MetalDevice::SetInitialEncoderState()
   // Set initial state.
   // TODO: avoid uniform set here? it's probably going to get changed...
   // Might be better off just deferring all the init until the first draw...
-  SetUniformBufferInRenderEncoder();
+  [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
+  [m_render_encoder setFragmentBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
   [m_render_encoder setVertexBuffer:m_vertex_buffer.GetBuffer() offset:0 atIndex:1];
   [m_render_encoder setCullMode:m_current_cull_mode];
   if (m_current_depth_state != nil)
@@ -1901,12 +1916,6 @@ void MetalDevice::SetInitialEncoderState()
     [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:1];
   SetViewportInRenderEncoder();
   SetScissorInRenderEncoder();
-}
-
-void MetalDevice::SetUniformBufferInRenderEncoder()
-{
-  [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
-  [m_render_encoder setFragmentBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
 }
 
 void MetalDevice::SetViewportInRenderEncoder()

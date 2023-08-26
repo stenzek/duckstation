@@ -321,7 +321,6 @@ private:
   Common::Rectangle<s32> ClampToFramebufferSize(const Common::Rectangle<s32>& rc) const;
   void PreDrawCheck();
   void SetInitialEncoderState();
-  void SetUniformBufferInRenderEncoder();
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
 
