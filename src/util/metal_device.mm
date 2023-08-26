@@ -850,6 +850,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     // Metal-specific stuff
     desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
+    desc.fragmentBuffers[0].mutability = MTLMutabilityImmutable;
     if (!config.input_layout.vertex_attributes.empty())
       desc.vertexBuffers[1].mutability = MTLMutabilityImmutable;
     if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
