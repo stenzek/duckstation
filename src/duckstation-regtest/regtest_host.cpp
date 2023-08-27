@@ -3,6 +3,7 @@
 
 #include "core/achievements.h"
 #include "core/game_list.h"
+#include "core/gpu.h"
 #include "core/host.h"
 #include "core/system.h"
 
@@ -306,7 +307,7 @@ void Host::BeginPresentFrame()
   if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame % s_frame_dump_interval) == 0))
   {
     std::string dump_filename(RegTestHost::GetFrameDumpFilename(frame));
-    g_gpu_device->WriteDisplayTextureToFile(std::move(dump_filename));
+    g_gpu->WriteDisplayTextureToFile(std::move(dump_filename));
   }
 }
 

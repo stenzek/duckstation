@@ -12,16 +12,21 @@
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
+#include "util/postprocessing_chain.h"
+#include "util/shadergen.h"
 #include "util/state_wrapper.h"
 
+#include "common/align.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
+#include "stb_image_resize.h"
 #include "stb_image_write.h"
 
 #include <cmath>
+#include <thread>
 
 Log_SetChannel(GPU);
 
@@ -54,11 +59,13 @@ bool GPU::Initialize()
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
 
-  if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty() &&
-      !g_gpu_device->SetPostProcessingChain(g_settings.display_post_process_chain))
+  if (!CompilePipelines())
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+    Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
+    return false;
   }
+
+  UpdatePostProcessingChain();
 
   g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
 
@@ -501,7 +508,7 @@ float GPU::ComputeVerticalFrequency() const
     static_cast<double>(ticks_per_frame));
 }
 
-float GPU::GetDisplayAspectRatio() const
+float GPU::ComputeDisplayAspectRatio() const
 {
   if (g_settings.display_force_4_3_for_24bit && m_GPUSTAT.display_area_color_depth_24)
   {
@@ -984,8 +991,17 @@ void GPU::UpdateCommandTickEvent()
 bool GPU::ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, float x_scale, u32* out_tick,
                                                       u32* out_line) const
 {
-  auto [display_x, display_y] = g_gpu_device->ConvertWindowCoordinatesToDisplayCoordinates(
-    window_x, window_y, g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
+  float left_padding, top_padding, scale;
+  CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), &left_padding, &top_padding,
+                    &scale, nullptr);
+
+  // convert coordinates to active display region, then to full display region
+  const float scaled_display_x = static_cast<float>(window_x) - left_padding;
+  const float scaled_display_y = static_cast<float>(window_y) - top_padding;
+
+  // scale back to internal resolution
+  float display_x = scaled_display_x / scale / x_scale;
+  float display_y = scaled_display_y / scale;
 
   if (x_scale != 1.0f)
   {
@@ -1524,6 +1540,562 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
   m_draw_mode.texture_window_changed = true;
+}
+
+bool GPU::CompilePipelines()
+{
+  ShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend);
+
+  GPUPipeline::GraphicsConfig plconfig;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.input_layout.vertex_stride = 0;
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.color_format = g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+
+  std::unique_ptr<GPUShader> display_vs =
+    g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateDisplayVertexShader());
+  std::unique_ptr<GPUShader> display_fs =
+    g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateDisplayFragmentShader(true));
+  if (!display_vs || !display_fs)
+    return false;
+  GL_OBJECT_NAME(display_vs, "Display Vertex Shader");
+  GL_OBJECT_NAME(display_fs, "Display Fragment Shader");
+
+  plconfig.vertex_shader = display_vs.get();
+  plconfig.fragment_shader = display_fs.get();
+  if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    return false;
+  GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline");
+
+  return true;
+}
+
+void GPU::ClearDisplayTexture()
+{
+  m_display_texture = nullptr;
+  m_display_texture_view_x = 0;
+  m_display_texture_view_y = 0;
+  m_display_texture_view_width = 0;
+  m_display_texture_view_height = 0;
+}
+
+void GPU::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
+{
+  DebugAssert(texture);
+  m_display_texture = texture;
+  m_display_texture_view_x = view_x;
+  m_display_texture_view_y = view_y;
+  m_display_texture_view_width = view_width;
+  m_display_texture_view_height = view_height;
+}
+
+void GPU::SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s32 view_height)
+{
+  m_display_texture_view_x = view_x;
+  m_display_texture_view_y = view_y;
+  m_display_texture_view_width = view_width;
+  m_display_texture_view_height = view_height;
+}
+
+void GPU::SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
+                               s32 active_height, float display_aspect_ratio)
+{
+  m_display_width = display_width;
+  m_display_height = display_height;
+  m_display_active_left = active_left;
+  m_display_active_top = active_top;
+  m_display_active_width = active_width;
+  m_display_active_height = active_height;
+  m_display_aspect_ratio = display_aspect_ratio;
+}
+
+bool GPU::PresentDisplay()
+{
+  if (!HasDisplayTexture())
+    return g_gpu_device->BeginPresent(false);
+
+  const Common::Rectangle<s32> draw_rect =
+    CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
+  return RenderDisplay(nullptr, draw_rect, g_settings.display_linear_filtering, true);
+}
+
+bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool linear_filter,
+                        bool postfx)
+{
+  GL_SCOPE("RenderDisplay: %dx%d at %d,%d", draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
+
+  if (m_display_texture)
+    m_display_texture->MakeReadyForSampling();
+
+  const GPUTexture::Format hdformat =
+    (target && target->GetRT()) ? target->GetRT()->GetFormat() : g_gpu_device->GetWindowFormat();
+  const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
+  const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
+  const bool really_postfx = (postfx && HasDisplayTexture() && m_post_processing_chain &&
+                              m_post_processing_chain->CheckTargets(hdformat, target_width, target_height));
+  if (really_postfx)
+  {
+    g_gpu_device->ClearRenderTarget(m_post_processing_chain->GetInputTexture(), 0);
+    g_gpu_device->SetFramebuffer(m_post_processing_chain->GetInputFramebuffer());
+  }
+  else
+  {
+    if (target)
+      g_gpu_device->SetFramebuffer(target);
+    else if (!g_gpu_device->BeginPresent(false))
+      return false;
+  }
+
+  if (!HasDisplayTexture())
+    return true;
+
+  g_gpu_device->SetPipeline(m_display_pipeline.get());
+  g_gpu_device->SetTextureSampler(0, m_display_texture,
+                                  linear_filter ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
+
+  const float position_adjust = linear_filter ? 0.5f : 0.0f;
+  const float size_adjust = linear_filter ? 1.0f : 0.0f;
+  const float uniforms[4] = {(static_cast<float>(m_display_texture_view_x) + position_adjust) /
+                               static_cast<float>(m_display_texture->GetWidth()),
+                             (static_cast<float>(m_display_texture_view_y) + position_adjust) /
+                               static_cast<float>(m_display_texture->GetHeight()),
+                             (static_cast<float>(m_display_texture_view_width) - size_adjust) /
+                               static_cast<float>(m_display_texture->GetWidth()),
+                             (static_cast<float>(m_display_texture_view_height) - size_adjust) /
+                               static_cast<float>(m_display_texture->GetHeight())};
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+
+  g_gpu_device->SetViewportAndScissor(draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
+  g_gpu_device->Draw(3, 0);
+
+  if (really_postfx)
+  {
+    return m_post_processing_chain->Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
+                                          draw_rect.GetHeight(), m_display_texture_view_width,
+                                          m_display_texture_view_height);
+  }
+  else
+  {
+    return true;
+  }
+}
+
+bool GPU::UpdatePostProcessingChain()
+{
+  if (!g_settings.display_post_processing || g_settings.display_post_process_chain.empty())
+  {
+    m_post_processing_chain.reset();
+    return true;
+  }
+
+  m_post_processing_chain = std::make_unique<PostProcessingChain>();
+  if (!m_post_processing_chain->CreateFromString(g_settings.display_post_process_chain))
+  {
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
+    m_post_processing_chain.reset();
+    return false;
+  }
+
+  return true;
+}
+
+Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left_padding,
+                                                float* out_top_padding, float* out_scale, float* out_x_scale,
+                                                bool apply_aspect_ratio /* = true */) const
+{
+  const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
+  const float display_aspect_ratio = g_settings.display_stretch ? window_ratio : m_display_aspect_ratio;
+  const float x_scale =
+    apply_aspect_ratio ?
+      (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
+      1.0f;
+  const float display_width = g_settings.display_stretch_vertically ? static_cast<float>(m_display_width) :
+                                                                      static_cast<float>(m_display_width) * x_scale;
+  const float display_height = g_settings.display_stretch_vertically ? static_cast<float>(m_display_height) / x_scale :
+                                                                       static_cast<float>(m_display_height);
+  const float active_left = g_settings.display_stretch_vertically ? static_cast<float>(m_display_active_left) :
+                                                                    static_cast<float>(m_display_active_left) * x_scale;
+  const float active_top = g_settings.display_stretch_vertically ? static_cast<float>(m_display_active_top) / x_scale :
+                                                                   static_cast<float>(m_display_active_top);
+  const float active_width = g_settings.display_stretch_vertically ?
+                               static_cast<float>(m_display_active_width) :
+                               static_cast<float>(m_display_active_width) * x_scale;
+  const float active_height = g_settings.display_stretch_vertically ?
+                                static_cast<float>(m_display_active_height) / x_scale :
+                                static_cast<float>(m_display_active_height);
+  if (out_x_scale)
+    *out_x_scale = x_scale;
+
+  // now fit it within the window
+  float scale;
+  if ((display_width / display_height) >= window_ratio)
+  {
+    // align in middle vertically
+    scale = static_cast<float>(window_width) / display_width;
+    if (g_settings.display_integer_scaling)
+      scale = std::max(std::floor(scale), 1.0f);
+
+    if (out_left_padding)
+    {
+      if (g_settings.display_integer_scaling)
+        *out_left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
+      else
+        *out_left_padding = 0.0f;
+    }
+    if (out_top_padding)
+    {
+      switch (g_settings.display_alignment)
+      {
+        case DisplayAlignment::RightOrBottom:
+          *out_top_padding = std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
+          break;
+
+        case DisplayAlignment::Center:
+          *out_top_padding =
+            std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
+          break;
+
+        case DisplayAlignment::LeftOrTop:
+        default:
+          *out_top_padding = 0.0f;
+          break;
+      }
+    }
+  }
+  else
+  {
+    // align in middle horizontally
+    scale = static_cast<float>(window_height) / display_height;
+    if (g_settings.display_integer_scaling)
+      scale = std::max(std::floor(scale), 1.0f);
+
+    if (out_left_padding)
+    {
+      switch (g_settings.display_alignment)
+      {
+        case DisplayAlignment::RightOrBottom:
+          *out_left_padding = std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
+          break;
+
+        case DisplayAlignment::Center:
+          *out_left_padding =
+            std::max<float>((static_cast<float>(window_width) - (display_width * scale)) / 2.0f, 0.0f);
+          break;
+
+        case DisplayAlignment::LeftOrTop:
+        default:
+          *out_left_padding = 0.0f;
+          break;
+      }
+    }
+
+    if (out_top_padding)
+    {
+      if (g_settings.display_integer_scaling)
+        *out_top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
+      else
+        *out_top_padding = 0.0f;
+    }
+  }
+
+  if (out_scale)
+    *out_scale = scale;
+
+  return Common::Rectangle<float>::FromExtents(active_left * scale, active_top * scale, active_width * scale,
+                                               active_height * scale);
+}
+
+Common::Rectangle<s32> GPU::CalculateDrawRect(s32 window_width, s32 window_height,
+                                              bool apply_aspect_ratio /* = true */) const
+{
+  float left_padding, top_padding;
+  const Common::Rectangle<float> draw_rc =
+    CalculateDrawRect(window_width, window_height, &left_padding, &top_padding, nullptr, nullptr, apply_aspect_ratio);
+
+  // TODO: This should be a float rectangle. But because GL is lame, it only has integer viewports...
+  return Common::Rectangle<s32>::FromExtents(
+    static_cast<s32>(draw_rc.left + left_padding), static_cast<s32>(draw_rc.top + top_padding),
+    static_cast<s32>(draw_rc.GetWidth()), static_cast<s32>(draw_rc.GetHeight()));
+}
+
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                          bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
+                                          std::vector<u32> texture_data, u32 texture_data_stride,
+                                          GPUTexture::Format texture_format)
+{
+
+  const char* extension = std::strrchr(filename.c_str(), '.');
+  if (!extension)
+  {
+    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename.c_str());
+    return false;
+  }
+
+  if (!GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
+    return false;
+
+  if (clear_alpha)
+  {
+    for (u32& pixel : texture_data)
+      pixel |= 0xFF000000;
+  }
+
+  if (flip_y)
+    GPUTexture::FlipTextureDataRGBA8(width, height, texture_data, texture_data_stride);
+
+  if (resize_width > 0 && resize_height > 0 && (resize_width != width || resize_height != height))
+  {
+    std::vector<u32> resized_texture_data(resize_width * resize_height);
+    u32 resized_texture_stride = sizeof(u32) * resize_width;
+    if (!stbir_resize_uint8(reinterpret_cast<u8*>(texture_data.data()), width, height, texture_data_stride,
+                            reinterpret_cast<u8*>(resized_texture_data.data()), resize_width, resize_height,
+                            resized_texture_stride, 4))
+    {
+      Log_ErrorPrintf("Failed to resize texture data from %ux%u to %ux%u", width, height, resize_width, resize_height);
+      return false;
+    }
+
+    width = resize_width;
+    height = resize_height;
+    texture_data = std::move(resized_texture_data);
+    texture_data_stride = resized_texture_stride;
+  }
+
+  const auto write_func = [](void* context, void* data, int size) {
+    std::fwrite(data, 1, size, static_cast<std::FILE*>(context));
+  };
+
+  bool result = false;
+  if (StringUtil::Strcasecmp(extension, ".png") == 0)
+  {
+    result =
+      (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".jpg") == 0)
+  {
+    result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".tga") == 0)
+  {
+    result = (stbi_write_tga_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
+  }
+  else if (StringUtil::Strcasecmp(extension, ".bmp") == 0)
+  {
+    result = (stbi_write_bmp_to_func(write_func, fp.get(), width, height, 4, texture_data.data()) != 0);
+  }
+
+  if (!result)
+  {
+    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename.c_str(), extension);
+    return false;
+  }
+
+  return true;
+}
+
+bool GPU::WriteDisplayTextureToFile(std::string filename, bool full_resolution /* = true */,
+                                    bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = false */)
+{
+  if (!m_display_texture)
+    return false;
+
+  s32 resize_width = 0;
+  s32 resize_height = std::abs(m_display_texture_view_height);
+  if (apply_aspect_ratio)
+  {
+    const float ss_width_scale = static_cast<float>(m_display_active_width) / static_cast<float>(m_display_width);
+    const float ss_height_scale = static_cast<float>(m_display_active_height) / static_cast<float>(m_display_height);
+    const float ss_aspect_ratio = m_display_aspect_ratio * ss_width_scale / ss_height_scale;
+    resize_width = g_settings.display_stretch_vertically ?
+                     m_display_texture_view_width :
+                     static_cast<s32>(static_cast<float>(resize_height) * ss_aspect_ratio);
+    resize_height = g_settings.display_stretch_vertically ?
+                      static_cast<s32>(static_cast<float>(resize_height) /
+                                       (m_display_aspect_ratio /
+                                        (static_cast<float>(m_display_width) / static_cast<float>(m_display_height)))) :
+                      resize_height;
+  }
+  else
+  {
+    resize_width = m_display_texture_view_width;
+  }
+
+  if (!full_resolution)
+  {
+    const s32 resolution_scale = std::abs(m_display_texture_view_height) / m_display_active_height;
+    resize_height /= resolution_scale;
+    resize_width /= resolution_scale;
+  }
+
+  if (resize_width <= 0 || resize_height <= 0)
+    return false;
+
+  const u32 read_x = static_cast<u32>(m_display_texture_view_x);
+  const u32 read_y = static_cast<u32>(m_display_texture_view_y);
+  const u32 read_width = static_cast<u32>(m_display_texture_view_width);
+  const u32 read_height = static_cast<u32>(m_display_texture_view_height);
+
+  std::vector<u32> texture_data(read_width * read_height);
+  const u32 texture_data_stride =
+    Common::AlignUpPow2(GPUTexture::GetPixelSize(m_display_texture->GetFormat()) * read_width, 4);
+  if (!g_gpu_device->DownloadTexture(m_display_texture, read_x, read_y, read_width, read_height, texture_data.data(),
+                                     texture_data_stride))
+  {
+    Log_ErrorPrintf("Texture download failed");
+    RestoreGraphicsAPIState();
+    return false;
+  }
+
+  RestoreGraphicsAPIState();
+
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
+    return false;
+  }
+
+  constexpr bool clear_alpha = true;
+  const bool flip_y = g_gpu_device->UsesLowerLeftOrigin();
+
+  if (!compress_on_thread)
+  {
+    return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp), clear_alpha,
+                                         flip_y, resize_width, resize_height, std::move(texture_data),
+                                         texture_data_stride, m_display_texture->GetFormat());
+  }
+
+  std::thread compress_thread(CompressAndWriteTextureToFile, read_width, read_height, std::move(filename),
+                              std::move(fp), clear_alpha, flip_y, resize_width, resize_height, std::move(texture_data),
+                              texture_data_stride, m_display_texture->GetFormat());
+  compress_thread.detach();
+  return true;
+}
+
+bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
+                                   std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
+{
+  const GPUTexture::Format hdformat =
+    g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+
+  std::unique_ptr<GPUTexture> render_texture =
+    g_gpu_device->CreateTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, hdformat);
+  if (!render_texture)
+    return false;
+
+  std::unique_ptr<GPUFramebuffer> render_fb = g_gpu_device->CreateFramebuffer(render_texture.get());
+  if (!render_fb)
+    return false;
+
+  g_gpu_device->ClearRenderTarget(render_texture.get(), 0);
+
+  RenderDisplay(render_fb.get(), draw_rect, g_settings.display_linear_filtering, postfx);
+
+  g_gpu_device->SetFramebuffer(nullptr);
+
+  const u32 stride = GPUTexture::GetPixelSize(hdformat) * width;
+  out_pixels->resize(width * height);
+  if (!g_gpu_device->DownloadTexture(render_texture.get(), 0, 0, width, height, out_pixels->data(), stride))
+  {
+    RestoreGraphicsAPIState();
+    return false;
+  }
+
+  *out_stride = stride;
+  *out_format = hdformat;
+  RestoreGraphicsAPIState();
+  return true;
+}
+
+bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution /* = false */,
+                                 bool compress_on_thread /* = false */)
+{
+  u32 width = g_gpu_device->GetWindowWidth();
+  u32 height = g_gpu_device->GetWindowHeight();
+  auto [draw_left, draw_top, draw_width, draw_height] = CalculateDrawRect(width, height);
+
+  if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
+  {
+    // If internal res, scale the computed draw rectangle to the internal res.
+    // We re-use the draw rect because it's already been AR corrected.
+    const float sar =
+      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
+    const float dar = static_cast<float>(draw_width) / static_cast<float>(draw_height);
+    if (sar >= dar)
+    {
+      // stretch height, preserve width
+      const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
+      width = m_display_texture_view_width;
+      height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
+    }
+    else
+    {
+      // stretch width, preserve height
+      const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
+      width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
+      height = m_display_texture_view_height;
+    }
+
+    // DX11 won't go past 16K texture size.
+    constexpr u32 MAX_TEXTURE_SIZE = 16384;
+    if (width > MAX_TEXTURE_SIZE)
+    {
+      height = static_cast<u32>(static_cast<float>(height) /
+                                (static_cast<float>(width) / static_cast<float>(MAX_TEXTURE_SIZE)));
+      width = MAX_TEXTURE_SIZE;
+    }
+    if (height > MAX_TEXTURE_SIZE)
+    {
+      height = MAX_TEXTURE_SIZE;
+      width = static_cast<u32>(static_cast<float>(width) /
+                               (static_cast<float>(height) / static_cast<float>(MAX_TEXTURE_SIZE)));
+    }
+
+    // Remove padding, it's not part of the framebuffer.
+    draw_left = 0;
+    draw_top = 0;
+    draw_width = static_cast<s32>(width);
+    draw_height = static_cast<s32>(height);
+  }
+  if (width == 0 || height == 0)
+    return false;
+
+  std::vector<u32> pixels;
+  u32 pixels_stride;
+  GPUTexture::Format pixels_format;
+  if (!RenderScreenshotToBuffer(width, height,
+                                Common::Rectangle<s32>::FromExtents(draw_left, draw_top, draw_width, draw_height),
+                                !internal_resolution, &pixels, &pixels_stride, &pixels_format))
+  {
+    Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
+    return false;
+  }
+
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  if (!fp)
+  {
+    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
+    return false;
+  }
+
+  if (!compress_on_thread)
+  {
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), true,
+                                         g_gpu_device->UsesLowerLeftOrigin(), width, height, std::move(pixels),
+                                         pixels_stride, pixels_format);
+  }
+
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), true,
+                              g_gpu_device->UsesLowerLeftOrigin(), width, height, std::move(pixels), pixels_stride,
+                              pixels_format);
+  compress_thread.detach();
+  return true;
 }
 
 bool GPU::DumpVRAMToFile(const char* filename)

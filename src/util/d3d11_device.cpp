@@ -6,7 +6,6 @@
 #include "d3d11_pipeline.h"
 #include "d3d11_texture.h"
 #include "d3d_common.h"
-#include "postprocessing_chain.h" // TODO: Remove me
 
 #include "common/align.h"
 #include "common/assert.h"

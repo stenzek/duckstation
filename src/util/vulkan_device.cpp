@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "vulkan_device.h"
-#include "postprocessing_chain.h" // TODO: Remove me
 #include "vulkan_builders.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_stream_buffer.h"

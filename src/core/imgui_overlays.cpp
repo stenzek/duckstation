@@ -203,7 +203,15 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   ImGui::PopStyleVar(2);
 
   ImGui::EndFrame();
-  g_gpu_device->Render(false);
+
+  // TODO: Glass effect or something.
+
+  if (g_gpu_device->BeginPresent(false))
+  {
+    g_gpu_device->RenderImGui();
+    g_gpu_device->EndPresent();
+  }
+
   ImGui::NewFrame();
 }
 
@@ -443,9 +451,10 @@ void ImGuiManager::DrawPerformanceOverlay()
       ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-      ImGui::PushFont(fixed_font);
       if (ImGui::Begin("##frame_times", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs))
       {
+        ImGui::PushFont(fixed_font);
+
         auto [min, max] = GetMinMax(System::GetFrameTimeHistory());
 
         // add a little bit of space either side, so we're not constantly resizing
@@ -487,9 +496,9 @@ void ImGuiManager::DrawPerformanceOverlay()
         win_dl->AddText(
           ImVec2(wpos.x + history_size.x - text_size.x - spacing, wpos.y + history_size.y - fixed_font->FontSize),
           IM_COL32(255, 255, 255, 255), text.GetCharArray(), text.GetCharArray() + text.GetLength());
+        ImGui::PopFont();
       }
       ImGui::End();
-      ImGui::PopFont();
       ImGui::PopStyleVar(5);
       ImGui::PopStyleColor(3);
     }

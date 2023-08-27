@@ -2415,7 +2415,7 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
   if (screenshot_size > 0)
   {
     // assume this size is the width
-    const float display_aspect_ratio = g_gpu_device->GetDisplayAspectRatio();
+    const float display_aspect_ratio = g_gpu->GetDisplayAspectRatio();
     const u32 screenshot_width = screenshot_size;
     const u32 screenshot_height =
       std::max(1u, static_cast<u32>(static_cast<float>(screenshot_width) /
@@ -2425,9 +2425,9 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
-    if (g_gpu_device->RenderScreenshot(screenshot_width, screenshot_height,
-                                       Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
-                                       &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
+    if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height,
+                                        Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
+                                        false, &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {
@@ -3664,15 +3664,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.display_post_processing != old_settings.display_post_processing ||
         g_settings.display_post_process_chain != old_settings.display_post_process_chain)
     {
-      if (g_settings.display_post_processing && !g_settings.display_post_process_chain.empty())
-      {
-        if (!g_gpu_device->SetPostProcessingChain(g_settings.display_post_process_chain))
-          Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
-      }
-      else
-      {
-        g_gpu_device->SetPostProcessingChain({});
-      }
+      g_gpu->UpdatePostProcessingChain();
     }
 
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
@@ -4192,8 +4184,8 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
     return false;
   }
 
-  const bool screenshot_saved = g_gpu_device->WriteScreenshotToFile(
-    filename, g_settings.display_internal_resolution_screenshots, compress_on_thread);
+  const bool screenshot_saved =
+    g_gpu->RenderScreenshotToFile(filename, g_settings.display_internal_resolution_screenshots, compress_on_thread);
 
   if (!screenshot_saved)
   {
@@ -4539,18 +4531,12 @@ void System::TogglePostProcessing()
     return;
 
   g_settings.display_post_processing = !g_settings.display_post_processing;
-  if (g_settings.display_post_processing)
-  {
-    Host::AddKeyedOSDMessage("PostProcessing", TRANSLATE_STR("OSDMessage", "Post-processing is now enabled."), 10.0f);
-
-    if (!g_gpu_device->SetPostProcessingChain(g_settings.display_post_process_chain))
-      Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
-  }
-  else
-  {
-    Host::AddKeyedOSDMessage("PostProcessing", TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."), 10.0f);
-    g_gpu_device->SetPostProcessingChain({});
-  }
+  Host::AddKeyedOSDMessage("PostProcessing",
+                           g_settings.display_post_processing ?
+                             TRANSLATE_STR("OSDMessage", "Post-processing is now enabled.") :
+                             TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."),
+                           Host::OSD_QUICK_DURATION);
+  g_gpu->UpdatePostProcessingChain();
 }
 
 void System::ReloadPostProcessingShaders()
@@ -4558,10 +4544,8 @@ void System::ReloadPostProcessingShaders()
   if (!IsValid() || !g_settings.display_post_processing)
     return;
 
-  if (!g_gpu_device->SetPostProcessingChain(g_settings.display_post_process_chain))
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post-processing shader chain."), 20.0f);
-  else
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), 10.0f);
+  if (!g_gpu->UpdatePostProcessingChain())
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_ERROR_DURATION);
 }
 
 void System::ToggleWidescreen()
@@ -4659,14 +4643,13 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   if (scale == 0.0f)
     scale = g_gpu->IsHardwareRenderer() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
-  const float y_scale =
-    (static_cast<float>(g_gpu_device->GetDisplayWidth()) / static_cast<float>(g_gpu_device->GetDisplayHeight())) /
-    g_gpu_device->GetDisplayAspectRatio();
+  const float y_scale = (static_cast<float>(g_gpu->GetDisplayWidth()) / static_cast<float>(g_gpu->GetDisplayHeight())) /
+                        g_gpu->GetDisplayAspectRatio();
 
   const u32 requested_width =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu_device->GetDisplayWidth()) * scale)), 1);
-  const u32 requested_height = std::max<u32>(
-    static_cast<u32>(std::ceil(static_cast<float>(g_gpu_device->GetDisplayHeight()) * y_scale * scale)), 1);
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetDisplayWidth()) * scale)), 1);
+  const u32 requested_height =
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetDisplayHeight()) * y_scale * scale)), 1);
 
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }

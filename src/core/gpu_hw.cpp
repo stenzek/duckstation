@@ -125,8 +125,6 @@ GPU_HW::GPU_HW() : GPU()
 
 GPU_HW::~GPU_HW()
 {
-  g_gpu_device->ClearDisplayTexture();
-
   if (m_sw_renderer)
   {
     m_sw_renderer->Shutdown();
@@ -337,7 +335,6 @@ void GPU_HW::UpdateSettings()
   {
     RestoreGraphicsAPIState();
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    g_gpu_device->ClearDisplayTexture();
     DestroyBuffers();
   }
 
@@ -503,7 +500,7 @@ bool GPU_HW::CreateBuffers()
                                                            GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT)) ||
       !(m_vram_read_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, 1,
                                                           GPUTexture::Type::Texture, VRAM_RT_FORMAT)) ||
-      !(m_display_texture = g_gpu_device->CreateTexture(
+      !(m_display_private_texture = g_gpu_device->CreateTexture(
           ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) *
             m_resolution_scale,
           GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
@@ -516,14 +513,14 @@ bool GPU_HW::CreateBuffers()
   GL_OBJECT_NAME(m_vram_texture, "VRAM Texture");
   GL_OBJECT_NAME(m_vram_depth_texture, "VRAM Depth Texture");
   GL_OBJECT_NAME(m_vram_read_texture, "VRAM Read Texture");
-  GL_OBJECT_NAME(m_display_texture, "Display Texture");
+  GL_OBJECT_NAME(m_display_private_texture, "Display Texture");
   GL_OBJECT_NAME(m_vram_readback_texture, "VRAM Readback Texture");
 
   // vram framebuffer has both colour and depth
   if (!(m_vram_framebuffer = g_gpu_device->CreateFramebuffer(m_vram_texture.get(), m_vram_depth_texture.get())) ||
       !(m_vram_update_depth_framebuffer = g_gpu_device->CreateFramebuffer(m_vram_depth_texture.get())) ||
       !(m_vram_readback_framebuffer = g_gpu_device->CreateFramebuffer(m_vram_readback_texture.get())) ||
-      !(m_display_framebuffer = g_gpu_device->CreateFramebuffer(m_display_texture.get())))
+      !(m_display_framebuffer = g_gpu_device->CreateFramebuffer(m_display_private_texture.get())))
   {
     return false;
   }
@@ -578,12 +575,14 @@ void GPU_HW::ClearFramebuffer()
   g_gpu_device->ClearRenderTarget(m_vram_texture.get(), 0);
   g_gpu_device->ClearDepth(m_vram_depth_texture.get(), m_pgxp_depth_buffer ? 1.0f : 0.0f);
   ClearVRAMDirtyRectangle();
-  g_gpu_device->ClearRenderTarget(m_display_texture.get(), 0);
+  g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0);
   m_last_depth_z = 1.0f;
 }
 
 void GPU_HW::DestroyBuffers()
 {
+  ClearDisplayTexture();
+
   m_vram_upload_buffer.reset();
   m_downsample_weight_framebuffer.reset();
   m_downsample_weight_texture.reset();
@@ -599,7 +598,7 @@ void GPU_HW::DestroyBuffers()
   m_vram_depth_texture.reset();
   m_vram_texture.reset();
   m_vram_readback_texture.reset();
-  m_display_texture.reset();
+  m_display_private_texture.reset();
 }
 
 bool GPU_HW::CompilePipelines()
@@ -1147,8 +1146,8 @@ void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32
 
 void GPU_HW::ClearDisplay()
 {
-  g_gpu_device->ClearDisplayTexture();
-  g_gpu_device->ClearRenderTarget(m_display_texture.get(), 0xFF000000u);
+  ClearDisplayTexture();
+  g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0xFF000000u);
 }
 
 void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
@@ -2385,25 +2384,23 @@ void GPU_HW::UpdateDisplay()
     if (IsUsingMultisampling())
     {
       UpdateVRAMReadTexture();
-      g_gpu_device->SetDisplayTexture(m_vram_read_texture.get(), 0, 0, m_vram_read_texture->GetWidth(),
-                                      m_vram_read_texture->GetHeight());
+      SetDisplayTexture(m_vram_read_texture.get(), 0, 0, m_vram_read_texture->GetWidth(),
+                        m_vram_read_texture->GetHeight());
     }
     else
     {
-      g_gpu_device->SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(),
-                                      m_vram_texture->GetHeight());
+      SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
     }
 
-    g_gpu_device->SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
-                                       static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
+    SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
+                         static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
   }
   else
   {
     // TODO: use a dynamically sized texture
-    g_gpu_device->SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height,
-                                       m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
-                                       m_crtc_state.display_vram_width, m_crtc_state.display_vram_height,
-                                       GetDisplayAspectRatio());
+    SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height, m_crtc_state.display_origin_left,
+                         m_crtc_state.display_origin_top, m_crtc_state.display_vram_width,
+                         m_crtc_state.display_vram_height, ComputeDisplayAspectRatio());
 
     const u32 resolution_scale = m_GPUSTAT.display_area_color_depth_24 ? 1 : m_resolution_scale;
     const u32 vram_offset_x = m_crtc_state.display_vram_left;
@@ -2418,7 +2415,7 @@ void GPU_HW::UpdateDisplay()
 
     if (IsDisplayDisabled())
     {
-      g_gpu_device->ClearDisplayTexture();
+      ClearDisplayTexture();
     }
     else if (!m_GPUSTAT.display_area_color_depth_24 && interlaced == InterlacedRenderMode::None &&
              !IsUsingMultisampling() && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
@@ -2432,15 +2429,15 @@ void GPU_HW::UpdateDisplay()
       }
       else
       {
-        g_gpu_device->SetDisplayTexture(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y,
-                                        scaled_display_width, scaled_display_height);
+        SetDisplayTexture(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
+                          scaled_display_height);
       }
     }
     else
     {
       // TODO: discard vs load for interlaced
       if (interlaced == InterlacedRenderMode::None)
-        g_gpu_device->InvalidateRenderTarget(m_display_texture.get());
+        g_gpu_device->InvalidateRenderTarget(m_display_private_texture.get());
 
       g_gpu_device->SetFramebuffer(m_display_framebuffer.get());
       g_gpu_device->SetPipeline(
@@ -2454,16 +2451,16 @@ void GPU_HW::UpdateDisplay()
                                reinterpret_crop_left, reinterpret_field_offset};
       g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
 
-      Assert(scaled_display_width <= m_display_texture->GetWidth() &&
-             scaled_display_height <= m_display_texture->GetHeight());
+      Assert(scaled_display_width <= m_display_private_texture->GetWidth() &&
+             scaled_display_height <= m_display_private_texture->GetHeight());
 
       g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       g_gpu_device->Draw(3, 0);
 
       if (IsUsingDownsampling())
-        DownsampleFramebuffer(m_display_texture.get(), 0, 0, scaled_display_width, scaled_display_height);
+        DownsampleFramebuffer(m_display_private_texture.get(), 0, 0, scaled_display_width, scaled_display_height);
       else
-        g_gpu_device->SetDisplayTexture(m_display_texture.get(), 0, 0, scaled_display_width, scaled_display_height);
+        SetDisplayTexture(m_display_private_texture.get(), 0, 0, scaled_display_width, scaled_display_height);
 
       RestoreGraphicsAPIState();
     }
@@ -2570,7 +2567,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
   RestoreGraphicsAPIState();
 
-  g_gpu_device->SetDisplayTexture(m_downsample_render_texture.get(), 0, 0, width, height);
+  SetDisplayTexture(m_downsample_render_texture.get(), 0, 0, width, height);
 }
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
@@ -2591,7 +2588,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
 
   RestoreGraphicsAPIState();
 
-  g_gpu_device->SetDisplayTexture(m_downsample_render_texture.get(), ds_left, ds_top, ds_width, ds_height);
+  SetDisplayTexture(m_downsample_render_texture.get(), ds_left, ds_top, ds_width, ds_height);
 }
 
 void GPU_HW::DrawRendererStats(bool is_idle_frame)

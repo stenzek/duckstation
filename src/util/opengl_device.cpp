@@ -5,7 +5,6 @@
 #include "opengl_pipeline.h"
 #include "opengl_stream_buffer.h"
 #include "opengl_texture.h"
-#include "postprocessing_chain.h" // TODO: Remove me
 
 #include "core/host.h"
 

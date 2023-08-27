@@ -7,7 +7,6 @@
 #include "d3d12_stream_buffer.h"
 #include "d3d12_texture.h"
 #include "d3d_common.h"
-#include "postprocessing_chain.h" // TODO: Remove me
 
 #include "core/host.h"
 

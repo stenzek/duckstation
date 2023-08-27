@@ -261,7 +261,7 @@ bool PostProcessingChain::Apply(GPUFramebuffer* final_target, s32 final_left, s3
   {
     const bool is_final = (stage.get() == m_shaders.back().get());
 
-    if (!stage->Apply(input, is_final ? nullptr : output_fb, final_left, final_top, final_width, final_height,
+    if (!stage->Apply(input, is_final ? final_target : output_fb, final_left, final_top, final_width, final_height,
                       orig_width, orig_height, m_target_width, m_target_height))
     {
       return false;

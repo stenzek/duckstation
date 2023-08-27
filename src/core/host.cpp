@@ -16,6 +16,8 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
+#include "imgui.h"
+
 #include <cstdarg>
 
 Log_SetChannel(Host);
@@ -356,7 +358,22 @@ void Host::RenderDisplay(bool skip_present)
   ImGuiManager::RenderOverlayWindows();
   ImGuiManager::RenderDebugWindows();
 
-  g_gpu_device->Render(skip_present);
+  bool do_present;
+  if (g_gpu && !skip_present)
+    do_present = g_gpu->PresentDisplay();
+  else
+    do_present = g_gpu_device->BeginPresent(skip_present);
+
+  if (do_present)
+  {
+    g_gpu_device->RenderImGui();
+    g_gpu_device->EndPresent();
+  }
+  else
+  {
+    // Still need to kick ImGui or it gets cranky.
+    ImGui::Render();
+  }
 
   ImGuiManager::NewFrame();
 

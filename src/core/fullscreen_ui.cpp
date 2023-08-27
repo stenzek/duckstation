@@ -3978,16 +3978,7 @@ void FullscreenUI::SavePostProcessingChain()
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const std::string config(s_postprocessing_chain.GetConfigString());
   bsi->SetStringValue("Display", "PostProcessChain", config.c_str());
-  if (bsi->GetBoolValue("Display", "PostProcessing", false))
-    g_gpu_device->SetPostProcessingChain(config);
-  if (IsEditingGameSettings(bsi))
-  {
-    s_game_settings_interface->Save();
-  }
-  else
-  {
-    s_settings_changed.store(true, std::memory_order_release);
-  }
+  SetSettingsChanged(bsi);
 }
 
 enum
@@ -4014,11 +4005,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("Display", "PostProcessing", false)))
   {
-    const std::string chain(bsi->GetStringValue("Display", "PostProcessChain", ""));
-    g_gpu_device->SetPostProcessingChain(chain);
-    if (chain.empty())
-      ShowToast(std::string(), FSUI_STR("Post-processing chain is empty."));
-    else
+    if (!g_gpu || g_gpu->UpdatePostProcessingChain())
       ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
   }
 

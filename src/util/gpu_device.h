@@ -419,9 +419,6 @@ protected:
   u32 m_current_position;
 };
 
-// TODO: remove
-class PostProcessingChain;
-
 class GPUDevice
 {
 public:
@@ -506,10 +503,6 @@ public:
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
 
-  ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture; }
-  ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
-  ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
-  ALWAYS_INLINE float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
   virtual RenderAPI GetRenderAPI() const = 0;
@@ -524,8 +517,6 @@ public:
 
   virtual bool SupportsExclusiveFullscreen() const;
   virtual AdapterAndModeList GetAdapterAndModeList() = 0;
-
-  bool SetPostProcessingChain(const std::string_view& config);
 
   /// Call when the window size changes externally to recreate any resources.
   virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
@@ -596,11 +587,9 @@ public:
   /// Returns false if the window was completely occluded.
   virtual bool BeginPresent(bool skip_present) = 0;
   virtual void EndPresent() = 0;
-  bool Render(bool skip_present);
 
-  /// Renders the display with postprocessing to the specified image.
-  bool RenderScreenshot(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, std::vector<u32>* out_pixels,
-                        u32* out_stride, GPUTexture::Format* out_format);
+  /// Renders ImGui screen elements. Call before EndPresent().
+  void RenderImGui();
 
   ALWAYS_INLINE bool IsVsyncEnabled() const { return m_vsync_enabled; }
   virtual void SetVSync(bool enabled) = 0;
@@ -613,12 +602,6 @@ public:
   bool ShouldSkipDisplayingFrame();
   void ThrottlePresentation();
 
-  void ClearDisplayTexture();
-  void SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height);
-  void SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s32 view_height);
-  void SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
-                            s32 active_height, float display_aspect_ratio);
-
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
   virtual bool GetHostRefreshRate(float* refresh_rate);
@@ -628,30 +611,6 @@ public:
 
   /// Returns the amount of GPU time utilized since the last time this method was called.
   virtual float GetAndResetAccumulatedGPUTime();
-
-  /// Helper function for computing the draw rectangle in a larger window.
-  std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height,
-                                                   bool apply_aspect_ratio = true) const;
-
-  /// Helper function for converting window coordinates to display coordinates.
-  std::tuple<float, float> ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y, s32 window_width,
-                                                                        s32 window_height) const;
-
-  /// Helper function to save texture data to a PNG. If flip_y is set, the image will be flipped aka OpenGL.
-  bool WriteTextureToFile(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, std::string filename,
-                          bool clear_alpha = true, bool flip_y = false, u32 resize_width = 0, u32 resize_height = 0,
-                          bool compress_on_thread = false);
-
-  /// Helper function to save current display texture to PNG.
-  bool WriteDisplayTextureToFile(std::string filename, bool full_resolution = true, bool apply_aspect_ratio = true,
-                                 bool compress_on_thread = false);
-
-  /// Helper function to save current display texture to a buffer.
-  bool WriteDisplayTextureToBuffer(std::vector<u32>* buffer, u32 resize_width = 0, u32 resize_height = 0,
-                                   bool clear_alpha = true);
-
-  /// Helper function to save screenshot to PNG.
-  bool WriteScreenshotToFile(std::string filename, bool internal_resolution = false, bool compress_on_thread = false);
 
 protected:
   virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) = 0;
@@ -684,47 +643,17 @@ protected:
   bool m_debug_device = false;
 
 private:
-  ALWAYS_INLINE bool HasDisplayTexture() const { return (m_display_texture != nullptr); }
-
   void OpenShaderCache(const std::string_view& base_path, u32 version);
   void CloseShaderCache();
   bool CreateResources();
   void DestroyResources();
 
-  bool IsUsingLinearFiltering() const;
-
-  void CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top, float* out_width,
-                         float* out_height, float* out_left_padding, float* out_top_padding, float* out_scale,
-                         float* out_x_scale, bool apply_aspect_ratio = true) const;
-
-  void RenderImGui();
-
-  bool RenderDisplay(GPUFramebuffer* target, s32 left, s32 top, s32 width, s32 height, GPUTexture* texture,
-                     s32 texture_view_x, s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
-                     bool linear_filter);
-
+  // TODO: Move out.
   u64 m_last_frame_displayed_time = 0;
-
-  s32 m_display_width = 0;
-  s32 m_display_height = 0;
-  s32 m_display_active_left = 0;
-  s32 m_display_active_top = 0;
-  s32 m_display_active_width = 0;
-  s32 m_display_active_height = 0;
-  float m_display_aspect_ratio = 1.0f;
   float m_display_frame_interval = 0.0f;
-
-  std::unique_ptr<GPUPipeline> m_display_pipeline;
-  GPUTexture* m_display_texture = nullptr;
-  s32 m_display_texture_view_x = 0;
-  s32 m_display_texture_view_y = 0;
-  s32 m_display_texture_view_width = 0;
-  s32 m_display_texture_view_height = 0;
 
   std::unique_ptr<GPUPipeline> m_imgui_pipeline;
   std::unique_ptr<GPUTexture> m_imgui_font_texture;
-
-  std::unique_ptr<PostProcessingChain> m_post_processing_chain;
 };
 
 extern std::unique_ptr<GPUDevice> g_gpu_device;

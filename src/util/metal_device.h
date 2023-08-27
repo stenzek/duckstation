@@ -18,7 +18,6 @@
 
 #include "gpu_device.h"
 #include "metal_stream_buffer.h"
-#include "postprocessing_chain.h"
 #include "window_info.h"
 
 #include "common/rectangle.h"
