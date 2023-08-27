@@ -1,0 +1,1 @@
+crosshair.png: Adapted from https://icons8.com/icon/15970/target
