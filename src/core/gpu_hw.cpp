@@ -2081,9 +2081,8 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   }
 
   const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-
-  DebugAssert((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT);
-  IncludeVRAMDirtyRectangle(Common::Rectangle<u32>::FromExtents(x, y, width, height));
+  DebugAssert(bounds.right <= VRAM_WIDTH && bounds.bottom <= VRAM_HEIGHT);
+  IncludeVRAMDirtyRectangle(bounds);
 
   if (check_mask)
   {
