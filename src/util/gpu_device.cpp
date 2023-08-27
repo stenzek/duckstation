@@ -793,7 +793,6 @@ void GPUDevice::ClearDisplayTexture()
   m_display_texture_view_y = 0;
   m_display_texture_view_width = 0;
   m_display_texture_view_height = 0;
-  m_display_changed = true;
 }
 
 void GPUDevice::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
@@ -804,7 +803,6 @@ void GPUDevice::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s
   m_display_texture_view_y = view_y;
   m_display_texture_view_width = view_width;
   m_display_texture_view_height = view_height;
-  m_display_changed = true;
 }
 
 void GPUDevice::SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s32 view_height)
@@ -813,7 +811,6 @@ void GPUDevice::SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s3
   m_display_texture_view_y = view_y;
   m_display_texture_view_width = view_width;
   m_display_texture_view_height = view_height;
-  m_display_changed = true;
 }
 
 void GPUDevice::SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top,
@@ -826,7 +823,6 @@ void GPUDevice::SetDisplayParameters(s32 display_width, s32 display_height, s32 
   m_display_active_width = active_width;
   m_display_active_height = active_height;
   m_display_aspect_ratio = display_aspect_ratio;
-  m_display_changed = true;
 }
 
 bool GPUDevice::GetHostRefreshRate(float* refresh_rate)

@@ -6,7 +6,7 @@
 #include "host.h"
 #include "system.h"
 
-#include "util/gpu_device.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
@@ -20,8 +20,9 @@ static constexpr std::array<u8, static_cast<size_t>(PlayStationMouse::Button::Co
 
 PlayStationMouse::PlayStationMouse(u32 index) : Controller(index)
 {
-  m_last_host_position_x = g_gpu_device->GetMousePositionX();
-  m_last_host_position_y = g_gpu_device->GetMousePositionY();
+  const auto& [x, y] = InputManager::GetPointerAbsolutePosition(0);
+  m_last_host_position_x = static_cast<s32>(x);
+  m_last_host_position_y = static_cast<s32>(y);
 }
 
 PlayStationMouse::~PlayStationMouse() = default;
@@ -161,8 +162,9 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 void PlayStationMouse::UpdatePosition()
 {
   // get screen coordinates
-  const s32 mouse_x = g_gpu_device->GetMousePositionX();
-  const s32 mouse_y = g_gpu_device->GetMousePositionY();
+  const auto& [fmouse_x, fmouse_y] = InputManager::GetPointerAbsolutePosition(0);
+  const s32 mouse_x = static_cast<s32>(fmouse_x);
+  const s32 mouse_y = static_cast<s32>(fmouse_y);
   const s32 delta_x = mouse_x - m_last_host_position_x;
   const s32 delta_y = mouse_y - m_last_host_position_y;
   m_last_host_position_x = mouse_x;

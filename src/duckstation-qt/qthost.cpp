@@ -568,35 +568,6 @@ void EmuThread::onDisplayWindowTextEntered(const QString& text)
   ImGuiManager::AddTextInput(text.toStdString());
 }
 
-void EmuThread::onDisplayWindowMouseMoveEvent(bool relative, float x, float y)
-{
-  // display might be null here if the event happened after shutdown
-  DebugAssert(isOnThread());
-  if (!relative)
-  {
-    if (g_gpu_device)
-      g_gpu_device->SetMousePosition(static_cast<s32>(x), static_cast<s32>(y));
-
-    InputManager::UpdatePointerAbsolutePosition(0, x, y);
-    ImGuiManager::UpdateMousePosition(x, y);
-  }
-  else
-  {
-    if (x != 0.0f)
-      InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, x);
-    if (y != 0.0f)
-      InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, y);
-
-    if (g_gpu_device)
-    {
-      const float abs_x = static_cast<float>(g_gpu_device->GetMousePositionX()) + x;
-      const float abs_y = static_cast<float>(g_gpu_device->GetMousePositionY()) + y;
-      g_gpu_device->SetMousePosition(static_cast<s32>(abs_x), static_cast<s32>(abs_y));
-      ImGuiManager::UpdateMousePosition(abs_x, abs_y);
-    }
-  }
-}
-
 void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
   DebugAssert(isOnThread());
@@ -733,7 +704,6 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
   connect(widget, &DisplayWidget::windowRestoredEvent, this, &EmuThread::redrawDisplayWindow);
   connect(widget, &DisplayWidget::windowKeyEvent, this, &EmuThread::onDisplayWindowKeyEvent);
   connect(widget, &DisplayWidget::windowTextEntered, this, &EmuThread::onDisplayWindowTextEntered);
-  connect(widget, &DisplayWidget::windowMouseMoveEvent, this, &EmuThread::onDisplayWindowMouseMoveEvent);
   connect(widget, &DisplayWidget::windowMouseButtonEvent, this, &EmuThread::onDisplayWindowMouseButtonEvent);
   connect(widget, &DisplayWidget::windowMouseWheelEvent, this, &EmuThread::onDisplayWindowMouseWheelEvent);
 }

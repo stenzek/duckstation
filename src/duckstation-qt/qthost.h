@@ -192,7 +192,6 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void stopInThread();
-  void onDisplayWindowMouseMoveEvent(bool relative, float x, float y);
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
   void onDisplayWindowResized(int width, int height, float scale);

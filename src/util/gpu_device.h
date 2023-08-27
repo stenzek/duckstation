@@ -506,15 +506,6 @@ public:
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
 
-  // Position is relative to the top-left corner of the window.
-  ALWAYS_INLINE s32 GetMousePositionX() const { return m_mouse_position_x; }
-  ALWAYS_INLINE s32 GetMousePositionY() const { return m_mouse_position_y; }
-  ALWAYS_INLINE void SetMousePosition(s32 x, s32 y)
-  {
-    m_mouse_position_x = x;
-    m_mouse_position_y = y;
-  }
-
   ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture; }
   ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
   ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
@@ -714,9 +705,6 @@ private:
 
   u64 m_last_frame_displayed_time = 0;
 
-  s32 m_mouse_position_x = 0;
-  s32 m_mouse_position_y = 0;
-
   s32 m_display_width = 0;
   s32 m_display_height = 0;
   s32 m_display_active_left = 0;
@@ -735,8 +723,6 @@ private:
 
   std::unique_ptr<GPUPipeline> m_imgui_pipeline;
   std::unique_ptr<GPUTexture> m_imgui_font_texture;
-
-  bool m_display_changed = false;
 
   std::unique_ptr<PostProcessingChain> m_post_processing_chain;
 };

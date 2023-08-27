@@ -6,7 +6,7 @@
 #include "host.h"
 #include "system.h"
 
-#include "util/gpu_device.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
@@ -183,8 +183,9 @@ bool GunCon::Transfer(const u8 data_in, u8* data_out)
 void GunCon::UpdatePosition()
 {
   // get screen coordinates
-  const s32 mouse_x = g_gpu_device->GetMousePositionX();
-  const s32 mouse_y = g_gpu_device->GetMousePositionY();
+  const auto& [fmouse_x, fmouse_y] = InputManager::GetPointerAbsolutePosition(0);
+  const s32 mouse_x = static_cast<s32>(fmouse_x);
+  const s32 mouse_y = static_cast<s32>(fmouse_y);
 
   // are we within the active display area?
   u32 tick, line;
