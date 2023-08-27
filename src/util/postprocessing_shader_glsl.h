@@ -5,19 +5,21 @@
 
 #include "postprocessing_shader.h"
 
-class PostProcessingShaderGLSL final : public PostProcessingShader
+namespace PostProcessing {
+
+class GLSLShader final : public Shader
 {
 public:
-  PostProcessingShaderGLSL();
-  PostProcessingShaderGLSL(std::string name, std::string code);
-  ~PostProcessingShaderGLSL();
+  GLSLShader();
+  GLSLShader(std::string name, std::string code);
+  ~GLSLShader();
 
   ALWAYS_INLINE const std::string& GetCode() const { return m_code; }
 
   bool IsValid() const override;
 
-  bool LoadFromFile(std::string name, const char* filename);
-  bool LoadFromString(std::string name, std::string code);
+  bool LoadFromFile(std::string name, const char* filename, Error* error);
+  bool LoadFromString(std::string name, std::string code, Error* error);
 
   bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) override;
   bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height) override;
@@ -51,3 +53,5 @@ private:
   std::unique_ptr<GPUPipeline> m_pipeline;
   std::unique_ptr<GPUSampler> m_sampler;
 };
+
+} // namespace PostProcessing

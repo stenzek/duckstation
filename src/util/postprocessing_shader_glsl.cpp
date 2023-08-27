@@ -12,7 +12,7 @@
 #include <cstring>
 #include <sstream>
 
-Log_SetChannel(PostProcessingShaderGLSL);
+Log_SetChannel(PostProcessing);
 
 namespace {
 class PostProcessingGLSLShaderGen : public ShaderGen
@@ -21,34 +21,34 @@ public:
   PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
   ~PostProcessingGLSLShaderGen();
 
-  std::string GeneratePostProcessingVertexShader(const PostProcessingShaderGLSL& shader);
-  std::string GeneratePostProcessingFragmentShader(const PostProcessingShaderGLSL& shader);
+  std::string GeneratePostProcessingVertexShader(const PostProcessing::GLSLShader& shader);
+  std::string GeneratePostProcessingFragmentShader(const PostProcessing::GLSLShader& shader);
 
 private:
-  void WriteUniformBuffer(std::stringstream& ss, const PostProcessingShaderGLSL& shader, bool use_push_constants);
+  void WriteUniformBuffer(std::stringstream& ss, const PostProcessing::GLSLShader& shader, bool use_push_constants);
 };
 } // namespace
 
-PostProcessingShaderGLSL::PostProcessingShaderGLSL() = default;
+PostProcessing::GLSLShader::GLSLShader() = default;
 
-PostProcessingShaderGLSL::PostProcessingShaderGLSL(std::string name, std::string code) : m_code(code)
+PostProcessing::GLSLShader::GLSLShader(std::string name, std::string code) : m_code(code)
 {
   m_name = std::move(name);
   LoadOptions();
 }
 
-PostProcessingShaderGLSL::~PostProcessingShaderGLSL() = default;
+PostProcessing::GLSLShader::~GLSLShader() = default;
 
-bool PostProcessingShaderGLSL::LoadFromFile(std::string name, const char* filename)
+bool PostProcessing::GLSLShader::LoadFromFile(std::string name, const char* filename, Error* error)
 {
-  std::optional<std::string> code = FileSystem::ReadFileToString(filename);
+  std::optional<std::string> code = FileSystem::ReadFileToString(filename, error);
   if (!code.has_value() || code->empty())
     return false;
 
-  return LoadFromString(std::move(name), code.value());
+  return LoadFromString(std::move(name), code.value(), error);
 }
 
-bool PostProcessingShaderGLSL::LoadFromString(std::string name, std::string code)
+bool PostProcessing::GLSLShader::LoadFromString(std::string name, std::string code, Error* error)
 {
   m_name = std::move(name);
   m_code = std::move(code);
@@ -57,21 +57,21 @@ bool PostProcessingShaderGLSL::LoadFromString(std::string name, std::string code
   return true;
 }
 
-bool PostProcessingShaderGLSL::IsValid() const
+bool PostProcessing::GLSLShader::IsValid() const
 {
   return !m_name.empty() && !m_code.empty();
 }
 
-u32 PostProcessingShaderGLSL::GetUniformsSize() const
+u32 PostProcessing::GLSLShader::GetUniformsSize() const
 {
   // lazy packing. todo improve.
-  return sizeof(CommonUniforms) + (sizeof(Option::ValueVector) * static_cast<u32>(m_options.size()));
+  return sizeof(CommonUniforms) + (sizeof(ShaderOption::ValueVector) * static_cast<u32>(m_options.size()));
 }
 
-void PostProcessingShaderGLSL::FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height,
-                                                 s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
-                                                 s32 texture_view_height, u32 window_width, u32 window_height,
-                                                 s32 original_width, s32 original_height, float time) const
+void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height,
+                                                   s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
+                                                   s32 texture_view_height, u32 window_width, u32 window_height,
+                                                   s32 original_width, s32 original_height, float time) const
 {
   CommonUniforms* common = static_cast<CommonUniforms*>(buffer);
 
@@ -105,14 +105,14 @@ void PostProcessingShaderGLSL::FillUniformBuffer(void* buffer, u32 texture_width
   common->time = time;
 
   u8* option_values = reinterpret_cast<u8*>(common + 1);
-  for (const Option& option : m_options)
+  for (const ShaderOption& option : m_options)
   {
-    std::memcpy(option_values, option.value.data(), sizeof(Option::ValueVector));
-    option_values += sizeof(Option::ValueVector);
+    std::memcpy(option_values, option.value.data(), sizeof(ShaderOption::ValueVector));
+    option_values += sizeof(ShaderOption::ValueVector);
   }
 }
 
-bool PostProcessingShaderGLSL::CompilePipeline(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height)
 {
   if (m_pipeline)
     m_pipeline.reset();
@@ -155,11 +155,11 @@ bool PostProcessingShaderGLSL::CompilePipeline(GPUTexture::Format format, u32 wi
   return true;
 }
 
-bool PostProcessingShaderGLSL::Apply(GPUTexture* input, GPUFramebuffer* final_target, s32 final_left, s32 final_top,
-                                     s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
-                                     u32 target_width, u32 target_height)
+bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUFramebuffer* final_target, s32 final_left, s32 final_top,
+                                       s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
+                                       u32 target_width, u32 target_height)
 {
-  GL_SCOPE("PostProcessingShader %s", m_name.c_str());
+  GL_SCOPE("GLSL Shader %s", m_name.c_str());
 
   // Assumes final stage has been cleared already.
   if (!final_target)
@@ -179,18 +179,19 @@ bool PostProcessingShaderGLSL::Apply(GPUTexture* input, GPUFramebuffer* final_ta
   const u32 uniforms_size = GetUniformsSize();
   void* uniforms = g_gpu_device->MapUniformBuffer(uniforms_size);
   FillUniformBuffer(uniforms, input->GetWidth(), input->GetHeight(), final_left, final_top, final_width, final_height,
-                    target_width, target_height, orig_width, orig_height, static_cast<float>(m_timer.GetTimeSeconds()));
+                    target_width, target_height, orig_width, orig_height,
+                    static_cast<float>(PostProcessing::GetTimer().GetTimeSeconds()));
   g_gpu_device->UnmapUniformBuffer(uniforms_size);
   g_gpu_device->Draw(3, 0);
   return true;
 }
 
-bool PostProcessingShaderGLSL::ResizeOutput(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::GLSLShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height)
 {
   return true;
 }
 
-void PostProcessingShaderGLSL::LoadOptions()
+void PostProcessing::GLSLShader::LoadOptions()
 {
   // Adapted from Dolphin's PostProcessingConfiguration::LoadOptions().
   constexpr char config_start_delimiter[] = "[configuration]";
@@ -209,7 +210,7 @@ void PostProcessingShaderGLSL::LoadOptions()
 
   std::istringstream in(configuration_string);
 
-  Option current_option = {};
+  ShaderOption current_option = {};
   while (!in.eof())
   {
     std::string line_str;
@@ -229,7 +230,7 @@ void PostProcessingShaderGLSL::LoadOptions()
         size_t endpos = line_view.find("]");
         if (endpos != std::string::npos)
         {
-          if (current_option.type != Option::Type::Invalid)
+          if (current_option.type != ShaderOption::Type::Invalid)
           {
             current_option.value = current_option.default_value;
             if (current_option.ui_name.empty())
@@ -244,11 +245,11 @@ void PostProcessingShaderGLSL::LoadOptions()
           // New section!
           std::string_view sub = line_view.substr(1, endpos - 1);
           if (sub == "OptionBool")
-            current_option.type = Option::Type::Bool;
+            current_option.type = ShaderOption::Type::Bool;
           else if (sub == "OptionRangeFloat")
-            current_option.type = Option::Type::Float;
+            current_option.type = ShaderOption::Type::Float;
           else if (sub == "OptionRangeInteger")
-            current_option.type = Option::Type::Int;
+            current_option.type = ShaderOption::Type::Int;
           else
             Log_ErrorPrintf("Invalid option type: '%s'", line_str.c_str());
 
@@ -256,7 +257,7 @@ void PostProcessingShaderGLSL::LoadOptions()
         }
       }
 
-      if (current_option.type == Option::Type::Invalid)
+      if (current_option.type == ShaderOption::Type::Invalid)
         continue;
 
       std::string_view key, value;
@@ -277,7 +278,7 @@ void PostProcessingShaderGLSL::LoadOptions()
         }
         else if (key == "MinValue" || key == "MaxValue" || key == "DefaultValue" || key == "StepAmount")
         {
-          Option::ValueVector* dst_array;
+          ShaderOption::ValueVector* dst_array;
           if (key == "MinValue")
             dst_array = &current_option.min_value;
           else if (key == "MaxValue")
@@ -288,12 +289,12 @@ void PostProcessingShaderGLSL::LoadOptions()
             dst_array = &current_option.step_value;
 
           u32 size = 0;
-          if (current_option.type == Option::Type::Bool)
+          if (current_option.type == ShaderOption::Type::Bool)
             (*dst_array)[size++].int_value = StringUtil::FromChars<bool>(value).value_or(false) ? 1 : 0;
-          else if (current_option.type == Option::Type::Float)
-            size = ParseVector<float>(value, dst_array);
-          else if (current_option.type == Option::Type::Int)
-            size = ParseVector<s32>(value, dst_array);
+          else if (current_option.type == ShaderOption::Type::Float)
+            size = PostProcessing::ShaderOption::ParseFloatVector(value, dst_array);
+          else if (current_option.type == ShaderOption::Type::Int)
+            size = PostProcessing::ShaderOption::ParseIntVector(value, dst_array);
 
           current_option.vector_size =
             (current_option.vector_size == 0) ? size : std::min(current_option.vector_size, size);
@@ -306,7 +307,8 @@ void PostProcessingShaderGLSL::LoadOptions()
     }
   }
 
-  if (current_option.type != Option::Type::Invalid && !current_option.name.empty() && current_option.vector_size > 0)
+  if (current_option.type != ShaderOption::Type::Invalid && !current_option.name.empty() &&
+      current_option.vector_size > 0)
   {
     current_option.value = current_option.default_value;
     if (current_option.ui_name.empty())
@@ -323,7 +325,7 @@ PostProcessingGLSLShaderGen::PostProcessingGLSLShaderGen(RenderAPI render_api, b
 
 PostProcessingGLSLShaderGen::~PostProcessingGLSLShaderGen() = default;
 
-std::string PostProcessingGLSLShaderGen::GeneratePostProcessingVertexShader(const PostProcessingShaderGLSL& shader)
+std::string PostProcessingGLSLShaderGen::GeneratePostProcessingVertexShader(const PostProcessing::GLSLShader& shader)
 {
   std::stringstream ss;
 
@@ -346,7 +348,7 @@ std::string PostProcessingGLSLShaderGen::GeneratePostProcessingVertexShader(cons
   return ss.str();
 }
 
-std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(const PostProcessingShaderGLSL& shader)
+std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(const PostProcessing::GLSLShader& shader)
 {
   std::stringstream ss;
 
@@ -459,7 +461,7 @@ void main(in float2 v_tex0_ : TEXCOORD0, in float4 v_pos_ : SV_Position, out flo
   return ss.str();
 }
 
-void PostProcessingGLSLShaderGen::WriteUniformBuffer(std::stringstream& ss, const PostProcessingShaderGLSL& shader,
+void PostProcessingGLSLShaderGen::WriteUniformBuffer(std::stringstream& ss, const PostProcessing::GLSLShader& shader,
                                                      bool use_push_constants)
 {
   u32 pad_counter = 0;
@@ -478,31 +480,31 @@ void PostProcessingGLSLShaderGen::WriteUniformBuffer(std::stringstream& ss, cons
   ss << "  float ubo_pad" << (pad_counter++) << ";\n";
   ss << "\n";
 
-  static constexpr std::array<const char*, PostProcessingShader::Option::MAX_VECTOR_COMPONENTS + 1> vector_size_suffix =
+  static constexpr std::array<const char*, PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS + 1> vector_size_suffix =
     {{"", "", "2", "3", "4"}};
-  for (const PostProcessingShader::Option& option : shader.GetOptions())
+  for (const PostProcessing::ShaderOption& option : shader.GetOptions())
   {
     switch (option.type)
     {
-      case PostProcessingShader::Option::Type::Bool:
+      case PostProcessing::ShaderOption::Type::Bool:
         ss << "  int " << option.name << ";\n";
-        for (u32 i = option.vector_size; i < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; i++)
+        for (u32 i = option.vector_size; i < PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS; i++)
           ss << "  int ubo_pad" << (pad_counter++) << ";\n";
         break;
 
-      case PostProcessingShader::Option::Type::Int:
+      case PostProcessing::ShaderOption::Type::Int:
       {
         ss << "  int" << vector_size_suffix[option.vector_size] << " " << option.name << ";\n";
-        for (u32 i = option.vector_size; i < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; i++)
+        for (u32 i = option.vector_size; i < PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS; i++)
           ss << "  int ubo_pad" << (pad_counter++) << ";\n";
       }
       break;
 
-      case PostProcessingShader::Option::Type::Float:
+      case PostProcessing::ShaderOption::Type::Float:
       default:
       {
         ss << "  float" << vector_size_suffix[option.vector_size] << " " << option.name << ";\n";
-        for (u32 i = option.vector_size; i < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; i++)
+        for (u32 i = option.vector_size; i < PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS; i++)
           ss << "  float ubo_pad" << (pad_counter++) << ";\n";
       }
       break;

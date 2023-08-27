@@ -140,9 +140,9 @@ private:
 };
 #endif
 
-std::optional<std::vector<u8>> ReadBinaryFile(const char* filename);
+std::optional<std::vector<u8>> ReadBinaryFile(const char* filename, Error* error = nullptr);
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
-std::optional<std::string> ReadFileToString(const char* filename);
+std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
 bool WriteStringToFile(const char* filename, const std::string_view& sv);

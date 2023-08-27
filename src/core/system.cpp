@@ -41,6 +41,7 @@
 #include "util/input_manager.h"
 #include "util/iso_reader.h"
 #include "util/platform_misc.h"
+#include "util/postprocessing.h"
 #include "util/state_wrapper.h"
 
 #include "common/error.h"
@@ -117,7 +118,7 @@ static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
-static bool CreateGPU(GPURenderer renderer);
+static bool CreateGPU(GPURenderer renderer, bool is_switching);
 static bool SaveUndoLoadState();
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
@@ -869,7 +870,7 @@ std::string System::GetInputProfilePath(const std::string_view& name)
   return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
 }
 
-bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_display, bool update_display /* = true*/)
+bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool update_display /* = true*/)
 {
   ClearMemorySaveStates();
   g_gpu->RestoreGraphicsAPIState();
@@ -883,10 +884,10 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_display, bool
 
   // create new renderer
   g_gpu.reset();
-  if (force_recreate_display)
+  if (force_recreate_device)
     Host::ReleaseGPUDevice();
 
-  if (!CreateGPU(renderer))
+  if (!CreateGPU(renderer, true))
   {
     if (!IsStartupCancelled())
       Host::ReportErrorAsync("Error", "Failed to recreate GPU.");
@@ -1530,7 +1531,7 @@ bool System::Initialize(bool force_software_renderer)
     return false;
   }
 
-  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer))
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false))
   {
     Bus::Shutdown();
     CPU::Shutdown();
@@ -1571,6 +1572,7 @@ bool System::Initialize(bool force_software_renderer)
   MDEC::Initialize();
   SIO::Initialize();
   PCDrv::Initialize();
+  PostProcessing::Initialize();
 
   static constexpr float WARNING_DURATION = 15.0f;
 
@@ -1618,6 +1620,8 @@ void System::DestroySystem()
     return;
 
   Host::ClearOSDMessages();
+
+  PostProcessing::Shutdown();
 
   SaveStateSelectorUI::Close(true);
   FullscreenUI::OnSystemDestroyed();
@@ -1971,7 +1975,7 @@ void System::RecreateSystem()
     PauseSystem(true);
 }
 
-bool System::CreateGPU(GPURenderer renderer)
+bool System::CreateGPU(GPURenderer renderer, bool is_switching)
 {
   const RenderAPI api = Settings::GetRenderAPIForRenderer(renderer);
 
@@ -1981,6 +1985,7 @@ bool System::CreateGPU(GPURenderer renderer)
     {
       Log_WarningPrintf("Recreating GPU device, expecting %s got %s", GPUDevice::RenderAPIToString(api),
                         GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+      PostProcessing::Shutdown();
     }
 
     Host::ReleaseGPUDevice();
@@ -1989,6 +1994,9 @@ bool System::CreateGPU(GPURenderer renderer)
       Host::ReleaseRenderWindow();
       return false;
     }
+
+    if (is_switching)
+      PostProcessing::Initialize();
   }
 
   if (renderer == GPURenderer::Software)
@@ -3482,13 +3490,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                     g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation))
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
-    const bool recreate_display = (g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+    const bool recreate_device = (g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
                                    g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation);
 
     Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Switching to %s%s GPU renderer."),
                                  Settings::GetRendererName(g_settings.gpu_renderer),
                                  g_settings.gpu_use_debug_device ? " (debug)" : "");
-    RecreateGPU(g_settings.gpu_renderer, recreate_display);
+    RecreateGPU(g_settings.gpu_renderer, recreate_device);
   }
 
   if (IsValid())
@@ -3661,12 +3669,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateSpeedLimiterState();
     }
 
-    if (g_settings.display_post_processing != old_settings.display_post_processing ||
-        g_settings.display_post_process_chain != old_settings.display_post_process_chain)
-    {
-      g_gpu->UpdatePostProcessingChain();
-    }
-
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
     {
       if (g_settings.inhibit_screensaver)
@@ -3674,6 +3676,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       else
         PlatformMisc::ResumeScreensaver();
     }
+
+    PostProcessing::UpdateSettings();
   }
 
   if (g_gpu_device && g_settings.display_osd_scale != old_settings.display_osd_scale)
@@ -4523,29 +4527,6 @@ void System::ApplyCheatCode(u32 index)
     Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Cheat '%s' is already enabled."),
                                  cc.description.c_str());
   }
-}
-
-void System::TogglePostProcessing()
-{
-  if (!IsValid())
-    return;
-
-  g_settings.display_post_processing = !g_settings.display_post_processing;
-  Host::AddKeyedOSDMessage("PostProcessing",
-                           g_settings.display_post_processing ?
-                             TRANSLATE_STR("OSDMessage", "Post-processing is now enabled.") :
-                             TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."),
-                           Host::OSD_QUICK_DURATION);
-  g_gpu->UpdatePostProcessingChain();
-}
-
-void System::ReloadPostProcessingShaders()
-{
-  if (!IsValid() || !g_settings.display_post_processing)
-    return;
-
-  if (!g_gpu->UpdatePostProcessingChain())
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_ERROR_DURATION);
 }
 
 void System::ToggleWidescreen()

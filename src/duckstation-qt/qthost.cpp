@@ -33,6 +33,7 @@
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
+#include "util/postprocessing.h"
 
 #include "scmversion/scmversion.h"
 
@@ -947,7 +948,20 @@ void EmuThread::reloadPostProcessingShaders()
     return;
   }
 
-  System::ReloadPostProcessingShaders();
+  if (System::IsValid())
+    PostProcessing::ReloadShaders();
+}
+
+void EmuThread::updatePostProcessingSettings()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection);
+    return;
+  }
+
+  if (System::IsValid())
+    PostProcessing::UpdateSettings();
 }
 
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)

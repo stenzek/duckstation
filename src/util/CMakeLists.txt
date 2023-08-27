@@ -48,8 +48,8 @@ add_library(util
   page_fault_handler.cpp
   page_fault_handler.h
   platform_misc.h
-  postprocessing_chain.cpp
-  postprocessing_chain.h
+  postprocessing.cpp
+  postprocessing.h
   postprocessing_shader.cpp
   postprocessing_shader.h
   postprocessing_shader_glsl.cpp

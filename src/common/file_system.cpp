@@ -743,9 +743,9 @@ s64 FileSystem::GetPathFileSize(const char* Path)
   return sd.Size;
 }
 
-std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
+std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename, Error* error)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
   if (!fp)
     return std::nullopt;
 
@@ -767,9 +767,9 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
   return res;
 }
 
-std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
+std::optional<std::string> FileSystem::ReadFileToString(const char* filename, Error* error)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
   if (!fp)
     return std::nullopt;
 

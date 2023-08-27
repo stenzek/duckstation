@@ -94,7 +94,6 @@ struct Settings
 
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
   std::string gpu_adapter;
-  std::string display_post_process_chain;
   u32 gpu_resolution_scale = 1;
   u32 gpu_multisamples = 1;
   bool gpu_use_thread = true;
@@ -132,7 +131,6 @@ struct Settings
   bool display_linear_filtering = true;
   bool display_integer_scaling = false;
   bool display_stretch = false;
-  bool display_post_processing = false;
   bool display_show_osd_messages = true;
   bool display_show_fps = false;
   bool display_show_speed = false;

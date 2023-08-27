@@ -12,7 +12,7 @@
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
-#include "util/postprocessing_chain.h"
+#include "util/postprocessing.h"
 #include "util/shadergen.h"
 #include "util/state_wrapper.h"
 
@@ -64,8 +64,6 @@ bool GPU::Initialize()
     Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
     return false;
   }
-
-  UpdatePostProcessingChain();
 
   g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
 
@@ -1637,12 +1635,12 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
     (target && target->GetRT()) ? target->GetRT()->GetFormat() : g_gpu_device->GetWindowFormat();
   const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
   const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const bool really_postfx = (postfx && HasDisplayTexture() && m_post_processing_chain &&
-                              m_post_processing_chain->CheckTargets(hdformat, target_width, target_height));
+  const bool really_postfx = (postfx && HasDisplayTexture() && PostProcessing::IsActive() &&
+                              PostProcessing::CheckTargets(hdformat, target_width, target_height));
   if (really_postfx)
   {
-    g_gpu_device->ClearRenderTarget(m_post_processing_chain->GetInputTexture(), 0);
-    g_gpu_device->SetFramebuffer(m_post_processing_chain->GetInputFramebuffer());
+    g_gpu_device->ClearRenderTarget(PostProcessing::GetInputTexture(), 0);
+    g_gpu_device->SetFramebuffer(PostProcessing::GetInputFramebuffer());
   }
   else
   {
@@ -1676,7 +1674,7 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
 
   if (really_postfx)
   {
-    return m_post_processing_chain->Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
+    return PostProcessing::Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
                                           draw_rect.GetHeight(), m_display_texture_view_width,
                                           m_display_texture_view_height);
   }
@@ -1684,25 +1682,6 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
   {
     return true;
   }
-}
-
-bool GPU::UpdatePostProcessingChain()
-{
-  if (!g_settings.display_post_processing || g_settings.display_post_process_chain.empty())
-  {
-    m_post_processing_chain.reset();
-    return true;
-  }
-
-  m_post_processing_chain = std::make_unique<PostProcessingChain>();
-  if (!m_post_processing_chain->CreateFromString(g_settings.display_post_process_chain))
-  {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to load post processing shader chain."), 20.0f);
-    m_post_processing_chain.reset();
-    return false;
-  }
-
-  return true;
 }
 
 Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left_padding,

@@ -24,9 +24,10 @@
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
-#include "util/postprocessing_chain.h"
+#include "util/postprocessing.h"
 
 #include "common/byte_stream.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/make_array.h"
@@ -199,6 +200,12 @@ enum class GameListPage
   List,
   Settings,
   Count
+};
+
+struct PostProcessingStageInfo
+{
+  std::string name;
+  std::vector<PostProcessing::ShaderOption> options;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -382,8 +389,7 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
-static void PopulatePostProcessingChain();
-static void SavePostProcessingChain();
+static void PopulatePostProcessingChain(SettingsInterface* si);
 static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
                               const std::string_view& key, const std::string_view& display_name);
 static void DrawInputBindingWindow();
@@ -398,7 +404,7 @@ static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 static std::vector<std::string> s_graphics_adapter_list_cache;
 static std::vector<std::string> s_fullscreen_mode_list_cache;
-static PostProcessingChain s_postprocessing_chain;
+static std::vector<PostProcessingStageInfo> s_postprocessing_stages;
 static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 static std::atomic_bool s_settings_changed{false};
 static std::atomic_bool s_game_settings_changed{false};
@@ -741,7 +747,7 @@ void FullscreenUI::Shutdown()
   s_cover_image_map.clear();
   s_game_list_sorted_entries = {};
   s_game_list_directories_cache = {};
-  s_postprocessing_chain.ClearStages();
+  s_postprocessing_stages = {};
   s_fullscreen_mode_list_cache = {};
   s_graphics_adapter_list_cache = {};
   s_hotkey_list_cache = {};
@@ -2386,7 +2392,7 @@ void FullscreenUI::SwitchToSettings()
   s_game_settings_interface.reset();
 
   PopulateGraphicsAdapterList();
-  PopulatePostProcessingChain();
+  PopulatePostProcessingChain(GetEditingSettingsInterface());
 
   s_current_main_window = MainWindowType::Settings;
   s_settings_page = SettingsPage::Interface;
@@ -3967,18 +3973,17 @@ void FullscreenUI::DrawDisplaySettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::PopulatePostProcessingChain()
+void FullscreenUI::PopulatePostProcessingChain(SettingsInterface* si)
 {
-  std::string chain_value(GetEditingSettingsInterface()->GetStringValue("Display", "PostProcessChain", ""));
-  s_postprocessing_chain.CreateFromString(chain_value);
-}
-
-void FullscreenUI::SavePostProcessingChain()
-{
-  SettingsInterface* bsi = GetEditingSettingsInterface();
-  const std::string config(s_postprocessing_chain.GetConfigString());
-  bsi->SetStringValue("Display", "PostProcessChain", config.c_str());
-  SetSettingsChanged(bsi);
+  const u32 stages = PostProcessing::Config::GetStageCount(*si);
+  s_postprocessing_stages.reserve(stages);
+  for (u32 i = 0; i < stages; i++)
+  {
+    PostProcessingStageInfo psi;
+    psi.name = PostProcessing::Config::GetStageShaderName(*si, i);
+    psi.options = PostProcessing::Config::GetStageOptions(*si, i);
+    s_postprocessing_stages.push_back(std::move(psi));
+  }
 }
 
 enum
@@ -4005,7 +4010,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("Display", "PostProcessing", false)))
   {
-    if (!g_gpu || g_gpu->UpdatePostProcessingChain())
+    if (System::IsValid() && PostProcessing::ReloadShaders())
       ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
   }
 
@@ -4013,25 +4018,32 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
   if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), FSUI_CSTR("Adds a new shader to the chain.")))
   {
+    std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
     ImGuiFullscreen::ChoiceDialogOptions options;
-    for (std::string& name : PostProcessingChain::GetAvailableShaderNames())
-      options.emplace_back(std::move(name), false);
+    options.reserve(shaders.size());
+    for (auto& [display_name, name] : shaders)
+      options.emplace_back(std::move(display_name), false);
 
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Add Shader"), false, std::move(options),
-                     [](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
+                     [shaders = std::move(shaders)](s32 index, const std::string& title, bool checked) {
+                       if (index < 0 || static_cast<u32>(index) >= shaders.size())
                          return;
 
-                       if (s_postprocessing_chain.AddStage(title))
+                       const std::string& shader_name = shaders[index].second;
+                       SettingsInterface* bsi = GetEditingSettingsInterface();
+                       Error error;
+                       if (PostProcessing::Config::AddStage(*bsi, shader_name, &error))
                        {
                          ShowToast(std::string(), fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
-                                                              s_postprocessing_chain.GetStageCount()));
-                         SavePostProcessingChain();
+                                                              PostProcessing::Config::GetStageCount(*bsi)));
+                         PopulatePostProcessingChain(bsi);
+                         SetSettingsChanged(bsi);
                        }
                        else
                        {
                          ShowToast(std::string(),
-                                   fmt::format(FSUI_FSTR("Failed to load shader {}. It may be invalid."), title));
+                                   fmt::format(FSUI_FSTR("Failed to load shader {}. It may be invalid.\nError was:"),
+                                               title, error.GetDescription()));
                        }
 
                        CloseChoiceDialog();
@@ -4047,9 +4059,11 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         if (!confirmed)
           return;
 
-        s_postprocessing_chain.ClearStages();
+        SettingsInterface* bsi = GetEditingSettingsInterface();
+        PostProcessing::Config::ClearStages(*bsi);
+        PopulatePostProcessingChain(bsi);
+        SetSettingsChanged(bsi);
         ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
-        SavePostProcessingChain();
       });
   }
 
@@ -4058,11 +4072,12 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
   SmallString str;
   SmallString tstr;
-  for (u32 stage_index = 0; stage_index < s_postprocessing_chain.GetStageCount(); stage_index++)
+  for (u32 stage_index = 0; stage_index < static_cast<u32>(s_postprocessing_stages.size()); stage_index++)
   {
+    PostProcessingStageInfo& si = s_postprocessing_stages[stage_index];
+
     ImGui::PushID(stage_index);
-    PostProcessingShader* stage = s_postprocessing_chain.GetShaderStage(stage_index);
-    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, stage->GetName());
+    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
     MenuHeading(str);
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_TIMES, "Remove From Chain"), FSUI_CSTR("Removes this shader from the chain.")))
@@ -4080,17 +4095,20 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Move Down"),
                    FSUI_CSTR("Moves this shader lower in the chain, applying it later."),
-                   (stage_index != (s_postprocessing_chain.GetStageCount() - 1))))
+                   (stage_index != (s_postprocessing_stages.size() - 1))))
     {
       postprocessing_action = POSTPROCESSING_ACTION_MOVE_DOWN;
       postprocessing_action_index = stage_index;
     }
 
-    for (PostProcessingShader::Option& opt : stage->GetOptions())
+    for (PostProcessing::ShaderOption& opt : si.options)
     {
+      if (opt.ui_name.empty())
+        continue;
+
       switch (opt.type)
       {
-        case PostProcessingShader::Option::Type::Bool:
+        case PostProcessing::ShaderOption::Type::Bool:
         {
           bool value = (opt.value[0].int_value != 0);
           tstr.Fmt(ICON_FA_COGS "{}", opt.ui_name);
@@ -4100,12 +4118,13 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                            &value))
           {
             opt.value[0].int_value = (value != 0);
-            SavePostProcessingChain();
+            PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+            SetSettingsChanged(bsi);
           }
         }
         break;
 
-        case PostProcessingShader::Option::Type::Float:
+        case PostProcessing::ShaderOption::Type::Float:
         {
           tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
@@ -4148,47 +4167,43 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             }
 #else
             ImGui::SetNextItemWidth(end);
+
+            bool changed = false;
             switch (opt.vector_size)
             {
               case 1:
               {
-                if (ImGui::SliderFloat("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
-                                       opt.max_value[0].float_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderFloat("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                             opt.max_value[0].float_value);
               }
               break;
 
               case 2:
               {
-                if (ImGui::SliderFloat2("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
-                                        opt.max_value[0].float_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderFloat2("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                              opt.max_value[0].float_value);
               }
               break;
 
               case 3:
               {
-                if (ImGui::SliderFloat3("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
-                                        opt.max_value[0].float_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderFloat3("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                              opt.max_value[0].float_value);
               }
               break;
 
               case 4:
               {
-                if (ImGui::SliderFloat4("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
-                                        opt.max_value[0].float_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderFloat4("##value", &opt.value[0].float_value, opt.min_value[0].float_value,
+                                              opt.max_value[0].float_value);
               }
               break;
+            }
+
+            if (changed)
+            {
+              PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+              SetSettingsChanged(bsi);
             }
 #endif
 
@@ -4208,7 +4223,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         }
         break;
 
-        case PostProcessingShader::Option::Type::Int:
+        case PostProcessing::ShaderOption::Type::Int:
         {
           tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
@@ -4250,48 +4265,43 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
               }
             }
 #else
+            bool changed = false;
             ImGui::SetNextItemWidth(end);
             switch (opt.vector_size)
             {
               case 1:
               {
-                if (ImGui::SliderInt("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
-                                     opt.max_value[0].int_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderInt("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                           opt.max_value[0].int_value);
               }
               break;
 
               case 2:
               {
-                if (ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
-                                      opt.max_value[0].int_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                            opt.max_value[0].int_value);
               }
               break;
 
               case 3:
               {
-                if (ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
-                                      opt.max_value[0].int_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                            opt.max_value[0].int_value);
               }
               break;
 
               case 4:
               {
-                if (ImGui::SliderInt4("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
-                                      opt.max_value[0].int_value))
-                {
-                  SavePostProcessingChain();
-                }
+                changed = ImGui::SliderInt4("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                                            opt.max_value[0].int_value);
               }
               break;
+            }
+
+            if (changed)
+            {
+              PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+              SetSettingsChanged(bsi);
             }
 #endif
 
@@ -4320,23 +4330,26 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   {
     case POSTPROCESSING_ACTION_REMOVE:
     {
-      PostProcessingShader* stage = s_postprocessing_chain.GetShaderStage(postprocessing_action_index);
+      const PostProcessingStageInfo& si = s_postprocessing_stages[postprocessing_action_index];
       ShowToast(std::string(),
-                fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, stage->GetName()));
-      s_postprocessing_chain.RemoveStage(postprocessing_action_index);
-      SavePostProcessingChain();
+                fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, si.name));
+      PostProcessing::Config::RemoveStage(*bsi, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi);
+      SetSettingsChanged(bsi);
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_UP:
     {
-      s_postprocessing_chain.MoveStageUp(postprocessing_action_index);
-      SavePostProcessingChain();
+      PostProcessing::Config::MoveStageUp(*bsi, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi);
+      SetSettingsChanged(bsi);
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_DOWN:
     {
-      s_postprocessing_chain.MoveStageDown(postprocessing_action_index);
-      SavePostProcessingChain();
+      PostProcessing::Config::MoveStageDown(*bsi, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi);
+      SetSettingsChanged(bsi);
     }
     break;
     default:

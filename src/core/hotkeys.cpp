@@ -15,6 +15,7 @@
 
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
+#include "util/postprocessing.h"
 
 #include "common/file_system.h"
 
@@ -345,13 +346,13 @@ DEFINE_HOTKEY("DecreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  System::TogglePostProcessing();
+                  PostProcessing::Toggle();
               })
 
 DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Post Processing Shaders"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  System::ReloadPostProcessingShaders();
+                  PostProcessing::ReloadShaders();
               })
 
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),

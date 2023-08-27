@@ -3,7 +3,12 @@
 
 #pragma once
 
+#include "postprocessing.h"
+
+#include "gpu_texture.h"
+
 #include "common/rectangle.h"
+#include "common/settings_interface.h"
 #include "common/timer.h"
 #include "common/types.h"
 #include "gpu_device.h"
@@ -16,68 +21,27 @@
 class GPUPipeline;
 class GPUTexture;
 
-class PostProcessingChain;
+namespace PostProcessing {
 
-class PostProcessingShader
+class Shader
 {
-  friend PostProcessingChain;
-
 public:
-  struct Option
-  {
-    enum : u32
-    {
-      MAX_VECTOR_COMPONENTS = 4
-    };
-
-    enum class Type
-    {
-      Invalid,
-      Bool,
-      Int,
-      Float
-    };
-
-    union Value
-    {
-      s32 int_value;
-      float float_value;
-    };
-    static_assert(sizeof(Value) == sizeof(u32));
-
-    using ValueVector = std::array<Value, MAX_VECTOR_COMPONENTS>;
-    static_assert(sizeof(ValueVector) == sizeof(u32) * MAX_VECTOR_COMPONENTS);
-
-    std::string name;
-    std::string ui_name;
-    std::string dependent_option;
-    Type type;
-    u32 vector_size;
-    u32 buffer_size;
-    u32 buffer_offset;
-    ValueVector default_value;
-    ValueVector min_value;
-    ValueVector max_value;
-    ValueVector step_value;
-    ValueVector value;
-  };
-
-  PostProcessingShader();
-  PostProcessingShader(std::string name);
-  virtual ~PostProcessingShader();
+  Shader();
+  Shader(std::string name);
+  virtual ~Shader();
 
   ALWAYS_INLINE const std::string& GetName() const { return m_name; }
-  ALWAYS_INLINE const std::vector<Option>& GetOptions() const { return m_options; }
-  ALWAYS_INLINE std::vector<Option>& GetOptions() { return m_options; }
+  ALWAYS_INLINE const std::vector<ShaderOption>& GetOptions() const { return m_options; }
+  ALWAYS_INLINE std::vector<ShaderOption>& GetOptions() { return m_options; }
   ALWAYS_INLINE bool HasOptions() const { return !m_options.empty(); }
 
   virtual bool IsValid() const = 0;
 
-  const Option* GetOptionByName(const std::string_view& name) const;
-  Option* GetOptionByName(const std::string_view& name);
+  std::vector<ShaderOption> TakeOptions();
+  void LoadOptions(SettingsInterface& si, const char* section);
 
-  std::string GetConfigString() const;
-  void SetConfigString(const std::string_view& str);
+  const ShaderOption* GetOptionByName(const std::string_view& name) const;
+  ShaderOption* GetOptionByName(const std::string_view& name);
 
   virtual bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) = 0;
 
@@ -89,11 +53,10 @@ public:
 protected:
   static void ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value);
 
-  template<typename T>
-  static u32 ParseVector(const std::string_view& line, PostProcessingShader::Option::ValueVector* values);
+  virtual void OnOptionChanged(const ShaderOption& option);
 
   std::string m_name;
-  std::vector<Option> m_options;
-
-  Common::Timer m_timer;
+  std::vector<ShaderOption> m_options;
 };
+
+} // namespace PostProcessing

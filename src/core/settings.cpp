@@ -264,7 +264,6 @@ void Settings::Load(SettingsInterface& si)
   display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
   display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
   display_stretch = si.GetBoolValue("Display", "Stretch", false);
-  display_post_processing = si.GetBoolValue("Display", "PostProcessing", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
@@ -279,7 +278,6 @@ void Settings::Load(SettingsInterface& si)
   display_internal_resolution_screenshots = si.GetBoolValue("Display", "InternalResolutionScreenshots", false);
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
-  display_post_process_chain = si.GetStringValue("Display", "PostProcessChain", "");
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
@@ -486,7 +484,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
   si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
   si.SetBoolValue("Display", "Stretch", display_stretch);
-  si.SetBoolValue("Display", "PostProcessing", display_post_processing);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
@@ -501,10 +498,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "InternalResolutionScreenshots", display_internal_resolution_screenshots);
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
   si.SetBoolValue("Display", "VSync", video_sync_enabled);
-  if (display_post_process_chain.empty())
-    si.DeleteValue("Display", "PostProcessChain");
-  else
-    si.SetStringValue("Display", "PostProcessChain", display_post_process_chain.c_str());
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
   si.SetFloatValue("Display", "OSDScale", display_osd_scale);
 

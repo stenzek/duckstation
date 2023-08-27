@@ -246,7 +246,7 @@ void Execute();
 void RecreateSystem();
 
 /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
-bool RecreateGPU(GPURenderer renderer, bool force_recreate_display = false, bool update_display = true);
+bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 
 void SingleStepCPU();
 
@@ -424,12 +424,6 @@ void SetCheatCodeState(u32 index, bool enabled, bool save_to_file);
 
 /// Immediately applies the specified cheat code.
 void ApplyCheatCode(u32 index);
-
-/// Temporarily toggles post-processing on/off.
-void TogglePostProcessing();
-
-/// Reloads post processing shaders with the current configuration.
-void ReloadPostProcessingShaders();
 
 /// Toggle Widescreen Hack and Aspect Ratio
 void ToggleWidescreen();

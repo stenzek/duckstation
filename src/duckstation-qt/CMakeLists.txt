@@ -113,14 +113,9 @@ set(SRCS
   memorycardsettingswidget.h
   memoryviewwidget.cpp
   memoryviewwidget.h
-  postprocessingchainconfigwidget.cpp
-  postprocessingchainconfigwidget.h
-  postprocessingchainconfigwidget.ui
   postprocessingsettingswidget.cpp
   postprocessingsettingswidget.h
   postprocessingsettingswidget.ui
-  postprocessingshaderconfigwidget.cpp
-  postprocessingshaderconfigwidget.h
   qthost.cpp
   qthost.h
   qtkeycodes.cpp

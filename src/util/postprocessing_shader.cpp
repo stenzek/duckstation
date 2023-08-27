@@ -11,9 +11,9 @@
 #include <cstring>
 #include <sstream>
 
-Log_SetChannel(PostProcessingShader);
+Log_SetChannel(PostProcessing);
 
-void PostProcessingShader::ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value)
+void PostProcessing::Shader::ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value)
 {
   size_t key_start = 0;
   while (key_start < line.size() && std::isspace(line[key_start]))
@@ -48,168 +48,85 @@ void PostProcessingShader::ParseKeyValue(const std::string_view& line, std::stri
   *value = line.substr(value_start, value_end - value_start);
 }
 
-template<typename T>
-u32 PostProcessingShader::ParseVector(const std::string_view& line, PostProcessingShader::Option::ValueVector* values)
-{
-  u32 index = 0;
-  size_t start = 0;
-  while (index < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS)
-  {
-    while (start < line.size() && std::isspace(line[start]))
-      start++;
+PostProcessing::Shader::Shader() = default;
 
-    if (start >= line.size())
-      break;
-
-    size_t end = line.find(',', start);
-    if (end == std::string_view::npos)
-      end = line.size();
-
-    const std::string_view component = line.substr(start, end - start);
-    T value = StringUtil::FromChars<T>(component).value_or(static_cast<T>(0));
-    if constexpr (std::is_same_v<T, float>)
-      (*values)[index++].float_value = value;
-    else if constexpr (std::is_same_v<T, s32>)
-      (*values)[index++].int_value = value;
-
-    start = end + 1;
-  }
-
-  const u32 size = index;
-
-  for (; index < PostProcessingShader::Option::MAX_VECTOR_COMPONENTS; index++)
-  {
-    if constexpr (std::is_same_v<T, float>)
-      (*values)[index++].float_value = 0.0f;
-    else if constexpr (std::is_same_v<T, s32>)
-      (*values)[index++].int_value = 0;
-  }
-
-  return size;
-}
-
-template u32 PostProcessingShader::ParseVector<s32>(const std::string_view& line,
-                                                    PostProcessingShader::Option::ValueVector* values);
-template u32 PostProcessingShader::ParseVector<float>(const std::string_view& line,
-                                                      PostProcessingShader::Option::ValueVector* values);
-
-PostProcessingShader::PostProcessingShader() = default;
-
-PostProcessingShader::PostProcessingShader(std::string name) : m_name(std::move(name))
+PostProcessing::Shader::Shader(std::string name) : m_name(std::move(name))
 {
 }
 
-PostProcessingShader::~PostProcessingShader() = default;
+PostProcessing::Shader::~Shader() = default;
 
-bool PostProcessingShader::IsValid() const
+bool PostProcessing::Shader::IsValid() const
 {
   return false;
 }
 
-const PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const std::string_view& name) const
+std::vector<PostProcessing::ShaderOption> PostProcessing::Shader::TakeOptions()
 {
-  for (const Option& option : m_options)
-  {
-    if (option.name == name)
-      return &option;
-  }
-
-  return nullptr;
+  return std::move(m_options);
 }
 
-PostProcessingShader::Option* PostProcessingShader::GetOptionByName(const std::string_view& name)
+void PostProcessing::Shader::LoadOptions(SettingsInterface& si, const char* section)
 {
-  for (Option& option : m_options)
+  for (ShaderOption& option : m_options)
   {
-    if (option.name == name)
-      return &option;
-  }
-
-  return nullptr;
-}
-
-std::string PostProcessingShader::GetConfigString() const
-{
-  std::stringstream ss;
-  bool first = true;
-  for (const Option& option : m_options)
-  {
-    if (!first)
-      ss << ';';
-    else
-      first = false;
-
-    ss << option.name;
-    ss << '=';
-
-    for (u32 i = 0; i < option.vector_size; i++)
+    if (option.type == ShaderOption::Type::Bool)
     {
-      if (i > 0)
-        ss << ",";
-
-      switch (option.type)
+      const bool new_value = si.GetBoolValue(section, option.name.c_str(), option.default_value[0].int_value != 0);
+      if ((option.value[0].int_value != 0) != new_value)
       {
-        case Option::Type::Bool:
-          ss << ((option.value[i].int_value != 0) ? "true" : "false");
-          break;
-
-        case Option::Type::Int:
-          ss << option.value[i].int_value;
-          break;
-
-        case Option::Type::Float:
-          ss << option.value[i].float_value;
-          break;
-
-        default:
-          break;
+        option.value[0].int_value = new_value ? 1 : 0;
+        OnOptionChanged(option);
       }
     }
-  }
-
-  return ss.str();
-}
-
-void PostProcessingShader::SetConfigString(const std::string_view& str)
-{
-  for (Option& option : m_options)
-    option.value = option.default_value;
-
-  size_t last_sep = 0;
-  while (last_sep < str.size())
-  {
-    size_t next_sep = str.find(';', last_sep);
-    if (next_sep == std::string_view::npos)
-      next_sep = str.size();
-
-    const std::string_view kv = str.substr(last_sep, next_sep - last_sep);
-    std::string_view key, value;
-    ParseKeyValue(kv, &key, &value);
-    if (!key.empty() && !value.empty())
+    else
     {
-      Option* option = GetOptionByName(key);
-      if (option)
+      ShaderOption::ValueVector value = option.default_value;
+
+      std::string config_value;
+      if (si.GetStringValue(section, option.name.c_str(), &config_value))
       {
-        switch (option->type)
+        const u32 value_vector_size = (option.type == ShaderOption::Type::Int) ?
+                                        ShaderOption::ParseIntVector(config_value, &value) :
+                                        ShaderOption::ParseFloatVector(config_value, &value);
+        if (value_vector_size != option.vector_size)
         {
-          case Option::Type::Bool:
-            option->value[0].int_value = StringUtil::FromChars<bool>(value).value_or(false) ? 1 : 0;
-            break;
-
-          case Option::Type::Int:
-            ParseVector<s32>(value, &option->value);
-            break;
-
-          case Option::Type::Float:
-            ParseVector<float>(value, &option->value);
-            break;
-
-          default:
-            break;
+          Log_WarningPrintf("Only got %u of %u elements for '%s' in config section %s.", value_vector_size,
+                            option.vector_size, option.name.c_str(), section);
         }
       }
-    }
 
-    last_sep = next_sep + 1;
+      if (std::memcmp(&option.value, &value, sizeof(value)) != 0)
+      {
+        option.value = value;
+        OnOptionChanged(option);
+      }
+    }
   }
+}
+
+const PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(const std::string_view& name) const
+{
+  for (const ShaderOption& option : m_options)
+  {
+    if (option.name == name)
+      return &option;
+  }
+
+  return nullptr;
+}
+
+PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(const std::string_view& name)
+{
+  for (ShaderOption& option : m_options)
+  {
+    if (option.name == name)
+      return &option;
+  }
+
+  return nullptr;
+}
+
+void PostProcessing::Shader::OnOptionChanged(const ShaderOption& option)
+{
 }

@@ -27,8 +27,6 @@ class GPUFramebuffer;
 class GPUTexture;
 class GPUPipeline;
 
-class PostProcessingChain;
-
 class TimingEvent;
 
 namespace Threading {
@@ -206,8 +204,6 @@ public:
 
   /// Draws the current display texture, with any post-processing.
   bool PresentDisplay();
-
-  bool UpdatePostProcessingChain();
 
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
@@ -602,8 +598,6 @@ protected:
   s32 m_display_texture_view_y = 0;
   s32 m_display_texture_view_width = 0;
   s32 m_display_texture_view_height = 0;
-
-  std::unique_ptr<PostProcessingChain> m_post_processing_chain;
 
   struct Stats
   {
