@@ -349,6 +349,7 @@ void Host::RenderDisplay(bool skip_present)
     FullscreenUI::Render();
     ImGuiManager::RenderTextOverlays();
     ImGuiManager::RenderOSDMessages();
+    ImGuiManager::RenderSoftwareCursors();
   }
 
   // Debug windows are always rendered, otherwise mouse input breaks on skip.

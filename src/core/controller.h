@@ -88,7 +88,7 @@ public:
   virtual void LoadSettings(SettingsInterface& si, const char* section);
 
   /// Returns the software cursor to use for this controller, if any.
-  virtual bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode);
+  virtual bool GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode);
 
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(ControllerType type, u32 index);

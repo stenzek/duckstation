@@ -215,7 +215,7 @@ void PlayStationMouse::LoadSettings(SettingsInterface& si, const char* section)
   m_use_relative_mode = si.GetBoolValue(section, "RelativeMouseMode", false);
 }
 
-bool PlayStationMouse::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
+bool PlayStationMouse::GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode)
 {
   *relative_mode = m_use_relative_mode;
   return m_use_relative_mode;

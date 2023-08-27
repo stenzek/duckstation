@@ -20,7 +20,6 @@
 
 #include "fmt/format.h"
 #include "imgui.h"
-#include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
 
@@ -432,25 +431,16 @@ bool GPUDevice::CreateResources()
   std::unique_ptr<GPUShader> display_vs = CreateShader(GPUShaderStage::Vertex, shadergen.GenerateDisplayVertexShader());
   std::unique_ptr<GPUShader> display_fs =
     CreateShader(GPUShaderStage::Fragment, shadergen.GenerateDisplayFragmentShader(true));
-  std::unique_ptr<GPUShader> cursor_fs =
-    CreateShader(GPUShaderStage::Fragment, shadergen.GenerateDisplayFragmentShader(false));
-  if (!display_vs || !display_fs || !cursor_fs)
+  if (!display_vs || !display_fs)
     return false;
   GL_OBJECT_NAME(display_vs, "Display Vertex Shader");
   GL_OBJECT_NAME(display_fs, "Display Fragment Shader");
-  GL_OBJECT_NAME(cursor_fs, "Cursor Fragment Shader");
 
   plconfig.vertex_shader = display_vs.get();
   plconfig.fragment_shader = display_fs.get();
   if (!(m_display_pipeline = CreatePipeline(plconfig)))
     return false;
   GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline");
-
-  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
-  plconfig.fragment_shader = cursor_fs.get();
-  if (!(m_cursor_pipeline = CreatePipeline(plconfig)))
-    return false;
-  GL_OBJECT_NAME(m_cursor_pipeline, "Cursor Pipeline");
 
   std::unique_ptr<GPUShader> imgui_vs = CreateShader(GPUShaderStage::Vertex, shadergen.GenerateImGuiVertexShader());
   std::unique_ptr<GPUShader> imgui_fs = CreateShader(GPUShaderStage::Fragment, shadergen.GenerateImGuiFragmentShader());
@@ -472,6 +462,7 @@ bool GPUDevice::CreateResources()
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
   plconfig.vertex_shader = imgui_vs.get();
   plconfig.fragment_shader = imgui_fs.get();
+  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
 
   m_imgui_pipeline = CreatePipeline(plconfig);
   if (!m_imgui_pipeline)
@@ -486,12 +477,9 @@ bool GPUDevice::CreateResources()
 
 void GPUDevice::DestroyResources()
 {
-  m_cursor_texture.reset();
-
   m_imgui_font_texture.reset();
   m_imgui_pipeline.reset();
 
-  m_cursor_pipeline.reset();
   m_display_pipeline.reset();
   m_imgui_pipeline.reset();
 
@@ -862,61 +850,6 @@ float GPUDevice::GetAndResetAccumulatedGPUTime()
   return 0.0f;
 }
 
-void GPUDevice::SetSoftwareCursor(std::unique_ptr<GPUTexture> texture, float scale /*= 1.0f*/)
-{
-  if (texture)
-    texture->MakeReadyForSampling();
-
-  m_cursor_texture = std::move(texture);
-  m_cursor_texture_scale = scale;
-}
-
-bool GPUDevice::SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale /*= 1.0f*/)
-{
-  std::unique_ptr<GPUTexture> tex =
-    CreateTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, pixels, stride, false);
-  if (!tex)
-    return false;
-
-  SetSoftwareCursor(std::move(tex), scale);
-  return true;
-}
-
-bool GPUDevice::SetSoftwareCursor(const char* path, float scale /*= 1.0f*/)
-{
-  auto fp = FileSystem::OpenManagedCFile(path, "rb");
-  if (!fp)
-  {
-    return false;
-  }
-
-  int width, height, file_channels;
-  u8* pixel_data = stbi_load_from_file(fp.get(), &width, &height, &file_channels, 4);
-  if (!pixel_data)
-  {
-    const char* error_reason = stbi_failure_reason();
-    Log_ErrorPrintf("Failed to load image from '%s': %s", path, error_reason ? error_reason : "unknown error");
-    return false;
-  }
-
-  std::unique_ptr<GPUTexture> tex =
-    CreateTexture(static_cast<u32>(width), static_cast<u32>(height), 1, 1, 1, GPUTexture::Type::Texture,
-                  GPUTexture::Format::RGBA8, pixel_data, sizeof(u32) * static_cast<u32>(width), false);
-  stbi_image_free(pixel_data);
-  if (!tex)
-    return false;
-
-  Log_InfoPrintf("Loaded %dx%d image from '%s' for software cursor", width, height, path);
-  SetSoftwareCursor(std::move(tex), scale);
-  return true;
-}
-
-void GPUDevice::ClearSoftwareCursor()
-{
-  m_cursor_texture.reset();
-  m_cursor_texture_scale = 1.0f;
-}
-
 bool GPUDevice::IsUsingLinearFiltering() const
 {
   return g_settings.display_linear_filtering;
@@ -962,7 +895,6 @@ bool GPUDevice::Render(bool skip_present)
   SetViewportAndScissor(0, 0, GetWindowWidth(), GetWindowHeight());
 
   RenderImGui();
-  RenderSoftwareCursor();
 
   EndPresent();
   return true;
@@ -1052,27 +984,6 @@ bool GPUDevice::RenderDisplay(GPUFramebuffer* target, s32 left, s32 top, s32 wid
   {
     return true;
   }
-}
-
-void GPUDevice::RenderSoftwareCursor()
-{
-  if (!HasSoftwareCursor())
-    return;
-
-  const auto [left, top, width, height] = CalculateSoftwareCursorDrawRect();
-  RenderSoftwareCursor(left, top, width, height, m_cursor_texture.get());
-}
-
-void GPUDevice::RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, GPUTexture* texture)
-{
-  SetPipeline(m_display_pipeline.get());
-  SetTextureSampler(0, texture, m_linear_sampler.get());
-
-  const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-  PushUniformBuffer(uniforms, sizeof(uniforms));
-
-  SetViewportAndScissor(left, top, width, height);
-  Draw(3, 0);
 }
 
 void GPUDevice::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left, float* out_top,
@@ -1191,25 +1102,6 @@ std::tuple<s32, s32, s32, s32> GPUDevice::CalculateDrawRect(s32 window_width, s3
 
   return std::make_tuple(static_cast<s32>(left + left_padding), static_cast<s32>(top + top_padding),
                          static_cast<s32>(width), static_cast<s32>(height));
-}
-
-std::tuple<s32, s32, s32, s32> GPUDevice::CalculateSoftwareCursorDrawRect() const
-{
-  return CalculateSoftwareCursorDrawRect(m_mouse_position_x, m_mouse_position_y);
-}
-
-std::tuple<s32, s32, s32, s32> GPUDevice::CalculateSoftwareCursorDrawRect(s32 cursor_x, s32 cursor_y) const
-{
-  const float scale = m_window_info.surface_scale * m_cursor_texture_scale;
-  const u32 cursor_extents_x = static_cast<u32>(static_cast<float>(m_cursor_texture->GetWidth()) * scale * 0.5f);
-  const u32 cursor_extents_y = static_cast<u32>(static_cast<float>(m_cursor_texture->GetHeight()) * scale * 0.5f);
-
-  const s32 out_left = cursor_x - cursor_extents_x;
-  const s32 out_top = cursor_y - cursor_extents_y;
-  const s32 out_width = cursor_extents_x * 2u;
-  const s32 out_height = cursor_extents_y * 2u;
-
-  return std::tie(out_left, out_top, out_width, out_height);
 }
 
 std::tuple<float, float> GPUDevice::ConvertWindowCoordinatesToDisplayCoordinates(s32 window_x, s32 window_y,

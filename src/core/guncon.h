@@ -32,7 +32,7 @@ public:
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
   
   void LoadSettings(SettingsInterface& si, const char* section) override;
-  bool GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode) override;
+  bool GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode) override;
 
   float GetBindState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
@@ -56,7 +56,6 @@ private:
     YMSB
   };
 
-  Common::RGBA8Image m_crosshair_image;
   std::string m_crosshair_image_path;
   float m_crosshair_image_scale = 1.0f;
   float m_x_scale = 1.0f;

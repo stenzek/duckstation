@@ -638,18 +638,6 @@ public:
   /// Returns the amount of GPU time utilized since the last time this method was called.
   virtual float GetAndResetAccumulatedGPUTime();
 
-  /// Sets the software cursor to the specified texture. Ownership of the texture is transferred.
-  void SetSoftwareCursor(std::unique_ptr<GPUTexture> texture, float scale = 1.0f);
-
-  /// Sets the software cursor to the specified image.
-  bool SetSoftwareCursor(const void* pixels, u32 width, u32 height, u32 stride, float scale = 1.0f);
-
-  /// Sets the software cursor to the specified path (png image).
-  bool SetSoftwareCursor(const char* path, float scale = 1.0f);
-
-  /// Disables the software cursor.
-  void ClearSoftwareCursor();
-
   /// Helper function for computing the draw rectangle in a larger window.
   std::tuple<s32, s32, s32, s32> CalculateDrawRect(s32 window_width, s32 window_height,
                                                    bool apply_aspect_ratio = true) const;
@@ -705,7 +693,6 @@ protected:
   bool m_debug_device = false;
 
 private:
-  ALWAYS_INLINE bool HasSoftwareCursor() const { return static_cast<bool>(m_cursor_texture); }
   ALWAYS_INLINE bool HasDisplayTexture() const { return (m_display_texture != nullptr); }
 
   void OpenShaderCache(const std::string_view& base_path, u32 version);
@@ -719,17 +706,11 @@ private:
                          float* out_height, float* out_left_padding, float* out_top_padding, float* out_scale,
                          float* out_x_scale, bool apply_aspect_ratio = true) const;
 
-  std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect() const;
-  std::tuple<s32, s32, s32, s32> CalculateSoftwareCursorDrawRect(s32 cursor_x, s32 cursor_y) const;
-
   void RenderImGui();
-
-  void RenderSoftwareCursor();
 
   bool RenderDisplay(GPUFramebuffer* target, s32 left, s32 top, s32 width, s32 height, GPUTexture* texture,
                      s32 texture_view_x, s32 texture_view_y, s32 texture_view_width, s32 texture_view_height,
                      bool linear_filter);
-  void RenderSoftwareCursor(s32 left, s32 top, s32 width, s32 height, GPUTexture* texture);
 
   u64 m_last_frame_displayed_time = 0;
 
@@ -754,10 +735,6 @@ private:
 
   std::unique_ptr<GPUPipeline> m_imgui_pipeline;
   std::unique_ptr<GPUTexture> m_imgui_font_texture;
-
-  std::unique_ptr<GPUPipeline> m_cursor_pipeline;
-  std::unique_ptr<GPUTexture> m_cursor_texture;
-  float m_cursor_texture_scale = 1.0f;
 
   bool m_display_changed = false;
 

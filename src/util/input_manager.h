@@ -174,6 +174,11 @@ static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 
 /// Maximum number of host mouse devices.
 static constexpr u32 MAX_POINTER_DEVICES = 1;
+static constexpr u32 MAX_POINTER_BUTTONS = 3;
+
+/// Maximum number of software cursors. We allocate an extra two for controllers with
+/// positioning data from the controller instead of a mouse.
+static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_BUTTONS + 2;
 
 /// Number of macro buttons per controller.
 static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
@@ -302,12 +307,18 @@ void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensi
 /// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 void PauseVibration();
 
+/// Reads absolute pointer position.
+std::pair<float, float> GetPointerAbsolutePosition(u32 index);
+
 /// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
 void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 
 /// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate
 /// reporting.
 void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+
+/// Updates host mouse mode (relative/cursor hiding).
+void UpdateHostMouseMode();
 
 /// Sets the state of the specified macro button.
 void SetMacroButtonState(u32 pad, u32 index, bool state);

@@ -69,7 +69,7 @@ std::optional<u32> Controller::GetAnalogInputBytes() const
 
 void Controller::LoadSettings(SettingsInterface& si, const char* section) {}
 
-bool Controller::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
+bool Controller::GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode)
 {
   return false;
 }

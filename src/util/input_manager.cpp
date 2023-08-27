@@ -1026,6 +1026,12 @@ void InputManager::GenerateRelativeMouseEvents()
   }
 }
 
+std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
+{
+  return std::make_pair(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)],
+                        s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
+}
+
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 {
   const float dx = x - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
@@ -1044,6 +1050,11 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 
   s_pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f),
                                                                 std::memory_order_release);
+}
+
+void InputManager::UpdateHostMouseMode()
+{
+  // TODO: Move from System to here.
 }
 
 bool InputManager::IsUsingRawInput()

@@ -4,7 +4,6 @@
 #include "guncon.h"
 #include "gpu.h"
 #include "host.h"
-#include "resources.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -12,6 +11,7 @@
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/path.h"
 
 #include <array>
 
@@ -19,7 +19,9 @@ Log_SetChannel(GunCon);
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Button::Count)> s_button_indices = {{13, 3, 14}};
 
-GunCon::GunCon(u32 index) : Controller(index) {}
+GunCon::GunCon(u32 index) : Controller(index)
+{
+}
 
 GunCon::~GunCon() = default;
 
@@ -248,22 +250,10 @@ void GunCon::LoadSettings(SettingsInterface& si, const char* section)
 {
   Controller::LoadSettings(si, section);
 
-  std::string path = si.GetStringValue(section, "CrosshairImagePath");
-  if (path != m_crosshair_image_path)
-  {
-    m_crosshair_image_path = std::move(path);
-    if (m_crosshair_image_path.empty() || !m_crosshair_image.LoadFromFile(m_crosshair_image_path.c_str()))
-    {
-      m_crosshair_image.Invalidate();
-    }
-  }
-
+  m_crosshair_image_path = si.GetStringValue(section, "CrosshairImagePath");
 #ifndef __ANDROID__
-  if (!m_crosshair_image.IsValid())
-  {
-    m_crosshair_image.SetPixels(Resources::CROSSHAIR_IMAGE_WIDTH, Resources::CROSSHAIR_IMAGE_HEIGHT,
-                                Resources::CROSSHAIR_IMAGE_DATA.data());
-  }
+  if (m_crosshair_image_path.empty())
+    m_crosshair_image_path = Path::Combine(EmuFolders::Resources, "images/crosshair.png");
 #endif
 
   m_crosshair_image_scale = si.GetFloatValue(section, "CrosshairScale", 1.0f);
@@ -271,12 +261,12 @@ void GunCon::LoadSettings(SettingsInterface& si, const char* section)
   m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
 }
 
-bool GunCon::GetSoftwareCursor(const Common::RGBA8Image** image, float* image_scale, bool* relative_mode)
+bool GunCon::GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode)
 {
-  if (!m_crosshair_image.IsValid())
+  if (m_crosshair_image_path.empty())
     return false;
 
-  *image = &m_crosshair_image;
+  *image_path = m_crosshair_image_path;
   *image_scale = m_crosshair_image_scale;
   *relative_mode = false;
   return true;

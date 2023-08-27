@@ -4624,11 +4624,11 @@ void System::UpdateSoftwareCursor()
   if (!IsValid())
   {
     Host::SetMouseMode(false, false);
-    g_gpu_device->ClearSoftwareCursor();
+    ImGuiManager::ClearSoftwareCursor(0);
     return;
   }
 
-  const Common::RGBA8Image* image = nullptr;
+  std::string image_path;
   float image_scale = 1.0f;
   bool relative_mode = false;
   bool hide_cursor = false;
@@ -4636,7 +4636,7 @@ void System::UpdateSoftwareCursor()
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     Controller* controller = System::GetController(i);
-    if (controller && controller->GetSoftwareCursor(&image, &image_scale, &relative_mode))
+    if (controller && controller->GetSoftwareCursor(&image_path, &image_scale, &relative_mode))
     {
       hide_cursor = true;
       break;
@@ -4645,15 +4645,10 @@ void System::UpdateSoftwareCursor()
 
   Host::SetMouseMode(relative_mode, hide_cursor);
 
-  if (image && image->IsValid())
-  {
-    g_gpu_device->SetSoftwareCursor(image->GetPixels(), image->GetWidth(), image->GetHeight(), image->GetPitch(),
-                                    image_scale);
-  }
+  if (!image_path.empty())
+    ImGuiManager::SetSoftwareCursor(0, std::move(image_path), image_scale);
   else
-  {
-    g_gpu_device->ClearSoftwareCursor();
-  }
+    ImGuiManager::ClearSoftwareCursor(0);
 }
 
 void System::RequestDisplaySize(float scale /*= 0.0f*/)
