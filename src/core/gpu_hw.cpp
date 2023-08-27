@@ -2,23 +2,29 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_hw.h"
+#include "cpu_core.h"
+#include "gpu_hw_shadergen.h"
+#include "gpu_sw_backend.h"
+#include "host.h"
+#include "pgxp.h"
+#include "settings.h"
+#include "system.h"
+
+#include "util/imgui_manager.h"
+#include "util/state_wrapper.h"
+
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
-#include "cpu_core.h"
-#include "gpu_hw_shadergen.h"
-#include "gpu_sw_backend.h"
-#include "host.h"
+
 #include "imgui.h"
-#include "pgxp.h"
-#include "settings.h"
-#include "system.h"
-#include "util/state_wrapper.h"
+
 #include <cmath>
 #include <sstream>
 #include <tuple>
+
 Log_SetChannel(GPU_HW);
 
 // TODO: instead of full state restore, only restore what changed

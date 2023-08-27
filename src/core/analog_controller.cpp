@@ -2,15 +2,21 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "analog_controller.h"
-#include "IconsFontAwesome5.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "host.h"
 #include "settings.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/log.h"
+#include "common/string_util.h"
+
+#include "IconsFontAwesome5.h"
+
 #include <cmath>
+
 Log_SetChannel(AnalogController);
 
 AnalogController::AnalogController(u32 index) : Controller(index)

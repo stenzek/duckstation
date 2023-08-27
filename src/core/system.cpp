@@ -3684,6 +3684,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
+  if (g_gpu_device && g_settings.display_osd_scale != old_settings.display_osd_scale)
+    ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
+
   bool controllers_updated = false;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {

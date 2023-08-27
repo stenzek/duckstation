@@ -4,9 +4,6 @@
 #include "dma.h"
 #include "bus.h"
 #include "cdrom.h"
-#include "common/bitfield.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
@@ -17,10 +14,18 @@
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/bitfield.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
 #include <array>
 #include <memory>
 #include <vector>
+
 Log_SetChannel(DMA);
 
 namespace DMA {

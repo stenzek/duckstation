@@ -18,8 +18,11 @@ void SetFontPath(std::string path);
 /// Sets the glyph range to use when loading fonts.
 void SetFontRange(const u16* range);
 
+/// Changes the global scale.
+void SetGlobalScale(float global_scale);
+
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize();
+bool Initialize(float global_scale);
 
 /// Frees all ImGui resources.
 void Shutdown();
@@ -83,3 +86,24 @@ bool ProcessHostKeyEvent(InputBindingKey key, float value);
 /// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
 bool ProcessGenericInputEvent(GenericInputBinding key, float value);
 } // namespace ImGuiManager
+
+namespace Host {
+/// Typical durations for OSD messages.
+static constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
+static constexpr float OSD_ERROR_DURATION = 15.0f;
+static constexpr float OSD_WARNING_DURATION = 10.0f;
+static constexpr float OSD_INFO_DURATION = 5.0f;
+static constexpr float OSD_QUICK_DURATION = 2.5f;
+
+/// Returns the scale of OSD elements.
+float GetOSDScale();
+
+/// Adds OSD messages, duration is in seconds.
+void AddOSDMessage(std::string message, float duration = 2.0f);
+void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
+void AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration = 2.0f);
+void AddFormattedOSDMessage(float duration, const char* format, ...);
+void AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...);
+void RemoveKeyedOSDMessage(std::string key);
+void ClearOSDMessages();
+} // namespace Host

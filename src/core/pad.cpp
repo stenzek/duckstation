@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "pad.h"
-#include "common/bitfield.h"
-#include "common/fifo_queue.h"
-#include "common/log.h"
 #include "controller.h"
 #include "host.h"
 #include "interrupt_controller.h"
@@ -13,9 +10,17 @@
 #include "save_state_version.h"
 #include "system.h"
 #include "types.h"
+
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/bitfield.h"
+#include "common/fifo_queue.h"
+#include "common/log.h"
+
 #include <array>
 #include <memory>
+
 Log_SetChannel(Pad);
 
 namespace Pad {

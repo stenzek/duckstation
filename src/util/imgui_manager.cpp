@@ -1,21 +1,23 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "imgui_manager.h"
-#include "IconsFontAwesome5.h"
+#include "gpu_device.h"
+#include "host.h"
+#include "imgui_fullscreen.h"
+#include "input_manager.h"
+
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "gpu_device.h"
-#include "core/host.h"
-#include "core/system.h"
+
+#include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 #include "imgui.h"
-#include "imgui_fullscreen.h"
 #include "imgui_internal.h"
-#include "input_manager.h"
+
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -37,6 +39,7 @@ static void AcquirePendingOSDMessages();
 static void DrawOSDMessages();
 } // namespace ImGuiManager
 
+static float s_global_prescale = 1.0f; // before window scale
 static float s_global_scale = 1.0f;
 
 static std::string s_font_path;
@@ -72,7 +75,13 @@ void ImGuiManager::SetFontRange(const u16* range)
   s_standard_font_data = {};
 }
 
-bool ImGuiManager::Initialize()
+void ImGuiManager::SetGlobalScale(float global_scale)
+{
+  s_global_prescale = global_scale;
+  UpdateScale();
+}
+
+bool ImGuiManager::Initialize(float global_scale)
 {
   if (!LoadFontData())
   {
@@ -80,8 +89,8 @@ bool ImGuiManager::Initialize()
     return false;
   }
 
-  s_global_scale =
-    std::max(g_gpu_device->GetWindowScale() * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
+  s_global_prescale = global_scale;
+  s_global_scale = std::max(g_gpu_device->GetWindowScale() * global_scale, 1.0f);
 
   ImGui::CreateContext();
 
@@ -104,7 +113,6 @@ bool ImGuiManager::Initialize()
 
   SetKeyMap();
   SetStyle();
-
 
   if (!AddImGuiFonts(false) || !g_gpu_device->UpdateImGuiFontTexture())
   {
@@ -149,7 +157,7 @@ void ImGuiManager::WindowResized()
 void ImGuiManager::UpdateScale()
 {
   const float window_scale = g_gpu_device ? g_gpu_device->GetWindowScale() : 1.0f;
-  const float scale = std::max(window_scale * static_cast<float>(g_settings.display_osd_scale / 100.0f), 1.0f);
+  const float scale = std::max(window_scale * s_global_prescale, 1.0f);
 
   if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
     return;
@@ -623,23 +631,20 @@ void ImGuiManager::AcquirePendingOSDMessages()
     if (s_osd_posted_messages.empty())
       break;
 
-    if (g_settings.display_show_osd_messages)
+    OSDMessage& new_msg = s_osd_posted_messages.front();
+    std::deque<OSDMessage>::iterator iter;
+    if (!new_msg.key.empty() && (iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
+                                                      [&new_msg](const OSDMessage& other) {
+                                                        return new_msg.key == other.key;
+                                                      })) != s_osd_active_messages.end())
     {
-      OSDMessage& new_msg = s_osd_posted_messages.front();
-      std::deque<OSDMessage>::iterator iter;
-      if (!new_msg.key.empty() && (iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
-                                                       [&new_msg](const OSDMessage& other) {
-                                                         return new_msg.key == other.key;
-                                                       })) != s_osd_active_messages.end())
-      {
-        iter->text = std::move(new_msg.text);
-        iter->duration = new_msg.duration;
-        iter->time = new_msg.time;
-      }
-      else
-      {
-        s_osd_active_messages.push_back(std::move(new_msg));
-      }
+      iter->text = std::move(new_msg.text);
+      iter->duration = new_msg.duration;
+      iter->time = new_msg.time;
+    }
+    else
+    {
+      s_osd_active_messages.push_back(std::move(new_msg));
     }
 
     s_osd_posted_messages.pop_front();

@@ -3,6 +3,19 @@
 
 #include "cdrom.h"
 #include "cdrom_async_reader.h"
+#include "dma.h"
+#include "host.h"
+#include "host_interface_progress_callback.h"
+#include "interrupt_controller.h"
+#include "settings.h"
+#include "spu.h"
+#include "system.h"
+
+#include "util/cd_image.h"
+#include "util/cd_xa.h"
+#include "util/imgui_manager.h"
+#include "util/state_wrapper.h"
+
 #include "common/align.h"
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
@@ -10,17 +23,9 @@
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/platform.h"
-#include "dma.h"
-#include "host.h"
-#include "host_interface_progress_callback.h"
+
 #include "imgui.h"
-#include "interrupt_controller.h"
-#include "settings.h"
-#include "spu.h"
-#include "system.h"
-#include "util/cd_image.h"
-#include "util/cd_xa.h"
-#include "util/state_wrapper.h"
+
 #include <cmath>
 #include <vector>
 Log_SetChannel(CDROM);
@@ -719,8 +724,8 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region)
   if (CanReadMedia())
     RemoveMedia(true);
 
-  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s",
-                  Settings::GetDiscRegionName(region), Settings::GetConsoleRegionName(System::GetRegion()));
+  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(region),
+                 Settings::GetConsoleRegionName(System::GetRegion()));
 
   s_disc_region = region;
   m_reader.SetMedia(std::move(media));
@@ -779,17 +784,16 @@ bool CDROM::PrecacheMedia()
 
   if (m_reader.GetMedia()->HasSubImages() && m_reader.GetMedia()->GetSubImageCount() > 1)
   {
-    Host::AddFormattedOSDMessage(
-      15.0f, TRANSLATE("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
-      FileSystem::GetDisplayNameFromPath(m_reader.GetMedia()->GetFileName()).c_str());
+    Host::AddFormattedOSDMessage(15.0f,
+                                 TRANSLATE("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
+                                 FileSystem::GetDisplayNameFromPath(m_reader.GetMedia()->GetFileName()).c_str());
     return false;
   }
 
   HostInterfaceProgressCallback callback;
   if (!m_reader.Precache(&callback))
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),
-                        15.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."), 15.0f);
     return false;
   }
 

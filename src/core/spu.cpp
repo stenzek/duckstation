@@ -3,19 +3,24 @@
 
 #include "spu.h"
 #include "cdrom.h"
-#include "common/bitfield.h"
-#include "common/fifo_queue.h"
-#include "common/log.h"
-#include "common/path.h"
 #include "dma.h"
 #include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+
 #include "util/audio_stream.h"
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
 #include "util/wav_writer.h"
+
+#include "common/bitfield.h"
+#include "common/fifo_queue.h"
+#include "common/log.h"
+#include "common/path.h"
+
 #include <memory>
+
 Log_SetChannel(SPU);
 
 // Enable to dump all voices of the SPU audio individually.

@@ -2,20 +2,25 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cubeb_audio_stream.h"
+#include "host.h"
+#include "imgui_manager.h"
+
+#include "core/settings.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
-#include "core/host.h"
-#include "core/settings.h"
+
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
-Log_SetChannel(CubebAudioStream);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <objbase.h>
 #endif
+
+Log_SetChannel(CubebAudioStream);
 
 static void StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state);
 

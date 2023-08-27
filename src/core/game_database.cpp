@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "game_database.h"
+#include "host.h"
+#include "system.h"
+
+#include "util/cd_image.h"
+#include "util/imgui_manager.h"
+
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/heterogeneous_containers.h"
@@ -9,15 +15,15 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "host.h"
+
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
-#include "system.h"
-#include "util/cd_image.h"
+
 #include <iomanip>
 #include <memory>
 #include <optional>
 #include <sstream>
+
 Log_SetChannel(GameDatabase);
 
 #ifdef _WIN32

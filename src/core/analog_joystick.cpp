@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "analog_joystick.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "host.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/log.h"
+#include "common/string_util.h"
+
 #include <cmath>
+
 Log_SetChannel(AnalogJoystick);
 
 AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
@@ -58,9 +63,8 @@ bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
   if (sw.IsReading() && (old_analog_mode != m_analog_mode))
   {
     Host::AddFormattedOSDMessage(5.0f,
-                                 m_analog_mode ?
-                                   TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
-                                   TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
+                                 m_analog_mode ? TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
+                                                 TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
                                  m_index + 1u);
   }
   return true;
@@ -234,9 +238,8 @@ void AnalogJoystick::ToggleAnalogMode()
 
   Log_InfoPrintf("Joystick %u switched to %s mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddFormattedOSDMessage(5.0f,
-                               m_analog_mode ?
-                                 TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
-                                 TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
+                               m_analog_mode ? TRANSLATE("AnalogJoystick", "Controller %u switched to analog mode.") :
+                                               TRANSLATE("AnalogJoystick", "Controller %u switched to digital mode."),
                                m_index + 1u);
 }
 
@@ -370,7 +373,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("RRight", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Right"), AnalogJoystick::HalfAxis::RRight, GenericInputBinding::RightStickRight),
   AXIS("RDown", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Down"), AnalogJoystick::HalfAxis::RDown, GenericInputBinding::RightStickDown),
   AXIS("RUp", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Up"), AnalogJoystick::HalfAxis::RUp, GenericInputBinding::RightStickUp),
-  // clang-format on
+// clang-format on
 
 #undef AXIS
 #undef BUTTON
@@ -384,7 +387,7 @@ static const char* s_invert_settings[] = {TRANSLATE_NOOP("AnalogJoystick", "Not 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogJoystick", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogJoystick",
-                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
+                  "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "1.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("AnalogJoystick", "Analog Sensitivity"),
    TRANSLATE_NOOP(
@@ -396,8 +399,8 @@ static const SettingInfo s_settings[] = {
    TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
    s_invert_settings, 0.0f},
   {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATE_NOOP("AnalogJoystick", "Invert Right Stick"),
-   TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr, nullptr,
-   s_invert_settings, 0.0f},
+   TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
+   nullptr, s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJoystick,

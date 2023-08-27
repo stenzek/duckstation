@@ -27,6 +27,8 @@ add_library(util
   gpu_shader_cache.h
   gpu_texture.cpp
   gpu_texture.h
+  host.cpp
+  host.h
   imgui_fullscreen.cpp
   imgui_fullscreen.h
   imgui_manager.cpp

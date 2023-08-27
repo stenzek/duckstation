@@ -2,16 +2,22 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memory_card.h"
-#include "IconsFontAwesome5.h"
+#include "host.h"
+#include "system.h"
+
+#include "util/imgui_manager.h"
+#include "util/state_wrapper.h"
+
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "host.h"
-#include "system.h"
-#include "util/state_wrapper.h"
+
+#include "IconsFontAwesome5.h"
+
 #include <cstdio>
+
 Log_SetChannel(MemoryCard);
 
 MemoryCard::MemoryCard()

@@ -68,6 +68,7 @@
     <ClInclude Include="d3d11_pipeline.h" />
     <ClInclude Include="d3d11_stream_buffer.h" />
     <ClInclude Include="d3d11_texture.h" />
+    <ClInclude Include="host.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="d3d11_pipeline.cpp" />
     <ClCompile Include="d3d11_stream_buffer.cpp" />
     <ClCompile Include="d3d11_texture.cpp" />
+    <ClCompile Include="host.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="gl">

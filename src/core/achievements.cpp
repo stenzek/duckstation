@@ -22,6 +22,7 @@
 
 #include "util/cd_image.h"
 #include "util/imgui_fullscreen.h"
+#include "util/imgui_manager.h"
 #include "util/platform_misc.h"
 #include "util/state_wrapper.h"
 

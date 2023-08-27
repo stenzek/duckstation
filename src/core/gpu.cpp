@@ -2,21 +2,27 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu.h"
-#include "common/file_system.h"
-#include "common/heap_array.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "dma.h"
 #include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
-#include "stb_image_write.h"
 #include "system.h"
 #include "timers.h"
+
 #include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/file_system.h"
+#include "common/heap_array.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
+#include "stb_image_write.h"
+
 #include <cmath>
+
 Log_SetChannel(GPU);
 
 std::unique_ptr<GPU> g_gpu;

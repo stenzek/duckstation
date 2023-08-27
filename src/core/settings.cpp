@@ -8,6 +8,7 @@
 #include "system.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 #include "util/input_manager.h"
 
 #include "common/assert.h"

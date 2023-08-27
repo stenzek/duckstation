@@ -2,16 +2,21 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "mdec.h"
-#include "common/bitfield.h"
-#include "common/fifo_queue.h"
-#include "common/log.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "host.h"
-#include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/bitfield.h"
+#include "common/fifo_queue.h"
+#include "common/log.h"
+
+#include "imgui.h"
+
 #include <array>
 #include <memory>
 
