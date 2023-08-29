@@ -2871,9 +2871,9 @@ void FullscreenUI::DrawBIOSSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Enable Fast Boot"),
                     FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Output"),
-                    FSUI_CSTR("Patches the BIOS to log calls to printf(). Only use when debugging, can break games."),
-                    "BIOS", "PatchTTYEnable", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Logging"),
+                    FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."),
+                    "BIOS", "TTYLogging", false);
 
   EndMenuButtons();
 }

@@ -969,6 +969,14 @@ void CodeGenerator::BlockPrologue()
 
   EmitStoreCPUStructField(offsetof(State, exception_raised), Value::FromConstantU8(0));
 
+  if (g_settings.bios_tty_logging)
+  {
+    if (m_pc == 0xa0)
+      EmitFunctionCall(nullptr, &CPU::HandleA0Syscall);
+    else if (m_pc == 0xb0)
+      EmitFunctionCall(nullptr, &CPU::HandleB0Syscall);
+  }
+
 #if 0
   EmitFunctionCall(nullptr, &Thunks::LogPC, Value::FromConstantU32(m_pc));
 #endif

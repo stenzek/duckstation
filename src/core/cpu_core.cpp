@@ -618,6 +618,70 @@ static void LogInstruction(u32 bits, u32 pc, Registers* regs)
   WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
 }
 
+static void HandleWriteSyscall()
+{
+  const auto& regs = g_state.regs;
+  if (regs.a0 != 1) // stdout
+    return;
+
+  u32 addr = regs.a1;
+  const u32 count = regs.a2;
+  for (u32 i = 0; i < count; i++)
+  {
+    u8 value;
+    if (!SafeReadMemoryByte(addr++, &value) || value == 0)
+      break;
+
+    Bus::AddTTYCharacter(static_cast<char>(value));
+  }
+}
+
+static void HandlePutcSyscall()
+{
+  const auto& regs = g_state.regs;
+  if (regs.a0 != 0)
+    Bus::AddTTYCharacter(static_cast<char>(regs.a0));
+}
+
+static void HandlePutsSyscall()
+{
+  const auto& regs = g_state.regs;
+
+  u32 addr = regs.a1;
+  for (u32 i = 0; i < 1024; i++)
+  {
+    u8 value;
+    if (!SafeReadMemoryByte(addr++, &value) || value == 0)
+      break;
+
+    Bus::AddTTYCharacter(static_cast<char>(value));
+  }
+}
+
+void HandleA0Syscall()
+{
+  const auto& regs = g_state.regs;
+  const u32 call = regs.t1;
+  if (call == 0x03)
+    HandleWriteSyscall();
+  else if (call == 0x09 || call == 0x3c)
+    HandlePutcSyscall();
+  else if (call == 0x3e)
+    HandlePutsSyscall();
+}
+
+void HandleB0Syscall()
+{
+  const auto& regs = g_state.regs;
+  const u32 call = regs.t1;
+  if (call == 0x35)
+    HandleWriteSyscall();
+  else if (call == 0x3b || call == 0x3d)
+    HandlePutcSyscall();
+  else if (call == 0x3f)
+    HandlePutsSyscall();
+}
+
 const std::array<DebuggerRegisterListEntry, NUM_DEBUGGER_REGISTER_LIST_ENTRIES> g_debugger_register_list = {
   {{"zero", &CPU::g_state.regs.zero},
    {"at", &CPU::g_state.regs.at},
@@ -1764,7 +1828,9 @@ void UpdateDebugDispatcherFlag()
   const bool has_cop0_breakpoints =
     dcic.super_master_enable_1 && dcic.super_master_enable_2 && dcic.execution_breakpoint_enable;
 
-  const bool use_debug_dispatcher = has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log;
+  const bool use_debug_dispatcher =
+    has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log ||
+    (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
   if (use_debug_dispatcher == g_state.use_debug_dispatcher)
     return;
 
@@ -2056,6 +2122,11 @@ template<PGXPMode pgxp_mode, bool debug>
       {
         if (s_trace_to_log)
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, &g_state.regs);
+
+        if (UNLIKELY(g_state.current_instruction_pc == 0xA0))
+          HandleA0Syscall();
+        else if (UNLIKELY(g_state.current_instruction_pc == 0xB0))
+          HandleB0Syscall();
       }
 
 #if 0 // GTE flag test debugging

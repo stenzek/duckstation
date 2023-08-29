@@ -183,14 +183,6 @@ void BIOS::PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask
                 old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
 }
 
-bool BIOS::PatchBIOSEnableTTY(u8* image, u32 image_size)
-{
-  Log_InfoPrintf("Patching BIOS to enable TTY/printf");
-  PatchBIOS(image, image_size, 0x1FC06F0C, 0x24010001);
-  PatchBIOS(image, image_size, 0x1FC06F14, 0xAF81A9C0);
-  return true;
-}
-
 bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size)
 {
   // Replace the shell entry point with a return back to the bootstrap.

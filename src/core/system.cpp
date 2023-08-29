@@ -339,7 +339,7 @@ bool System::IsValid()
 
 bool System::IsExecuting()
 {
-  DebugAssert(IsValid());
+  DebugAssert(s_state != State::Shutdown);
   return s_system_executing;
 }
 
@@ -1388,15 +1388,6 @@ bool System::BootSystem(SystemBootParameters parameters)
   UpdateMemoryCardTypes();
   UpdateMultitaps();
   InternalReset();
-
-  // Enable tty by patching bios.
-  if (g_settings.bios_patch_tty_enable)
-  {
-    if (s_bios_image_info && s_bios_image_info->patch_compatible)
-      BIOS::PatchBIOSEnableTTY(Bus::g_bios, Bus::BIOS_SIZE);
-    else
-      Log_ErrorPrintf("Not patching TTY enable, as BIOS is not patch compatible.");
-  }
 
   // Load EXE late after BIOS.
   if (!exe_boot.empty() && !LoadEXE(exe_boot.c_str()))
@@ -3556,7 +3547,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler &&
         (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions ||
          g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
-         g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache))
+         g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache ||
+         g_settings.bios_tty_logging != old_settings.bios_tty_logging))
     {
       Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
 

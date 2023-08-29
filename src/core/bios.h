@@ -67,7 +67,6 @@ bool IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_regio
 
 void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
 
-bool PatchBIOSEnableTTY(u8* image, u32 image_size);
 bool PatchBIOSFastBoot(u8* image, u32 image_size);
 bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp);
 

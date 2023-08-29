@@ -164,9 +164,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="enableTTYOutput">
+       <widget class="QCheckBox" name="enableTTYLogging">
         <property name="text">
-         <string>Enable TTY Output</string>
+         <string>Enable TTY Logging</string>
         </property>
        </widget>
       </item>

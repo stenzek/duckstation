@@ -228,7 +228,7 @@ struct Settings
     }
   } texture_replacements;
 
-  bool bios_patch_tty_enable = false;
+  bool bios_tty_logging = false;
   bool bios_patch_fast_boot = DEFAULT_FAST_BOOT_VALUE;
   bool enable_8mb_ram = false;
 

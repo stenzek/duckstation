@@ -16,15 +16,15 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent) 
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYOutput, "BIOS", "PatchTTYEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, "BIOS", "TTYLogging", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
 
   dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
                                 "but usually safe to enable."));
   dialog->registerWidgetHelp(
-    m_ui.enableTTYOutput, tr("Enable TTY Output"), tr("Unchecked"),
-    tr("Patches the BIOS to log calls to printf(). Only use when debugging, can break games."));
+    m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
+    tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
 
   connect(m_ui.imageNTSCJ, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)

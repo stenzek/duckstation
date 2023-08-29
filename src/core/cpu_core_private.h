@@ -126,4 +126,8 @@ ALWAYS_INLINE static void StallUntilGTEComplete()
     (g_state.gte_completion_tick > g_state.pending_ticks) ? g_state.gte_completion_tick : g_state.pending_ticks;
 }
 
+// kernel call interception
+void HandleA0Syscall();
+void HandleB0Syscall();
+
 } // namespace CPU

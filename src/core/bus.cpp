@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "sio.h"
 #include "spu.h"
+#include "system.h"
 #include "timers.h"
 #include "timing_event.h"
 #include "util/state_wrapper.h"
@@ -189,6 +190,35 @@ void Reset()
   m_ram_size_reg = UINT32_C(0x00000B88);
   m_ram_code_bits = {};
   RecalculateMemoryTimings();
+}
+
+void AddTTYCharacter(char ch)
+{
+  if (ch == '\r')
+  {
+  }
+  else if (ch == '\n')
+  {
+    if (!m_tty_line_buffer.empty())
+    {
+      Log::Writef("TTY", "", LOGLEVEL_INFO, "\033[1;34m%s\033[0m", m_tty_line_buffer.c_str());
+#ifdef _DEBUG
+      if (CPU::IsTraceEnabled())
+        CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
+#endif
+    }
+    m_tty_line_buffer.clear();
+  }
+  else
+  {
+    m_tty_line_buffer += ch;
+  }
+}
+
+void AddTTYString(const std::string_view& str)
+{
+  for (char ch : str)
+    AddTTYCharacter(ch);
 }
 
 bool DoState(StateWrapper& sw)
@@ -974,25 +1004,7 @@ static TickCount DoEXP2Access(u32 offset, u32& value)
   {
     if (offset == 0x23 || offset == 0x80)
     {
-      if (value == '\r')
-      {
-      }
-      else if (value == '\n')
-      {
-        if (!m_tty_line_buffer.empty())
-        {
-          Log_InfoPrintf("TTY: %s", m_tty_line_buffer.c_str());
-#ifdef _DEBUG
-          if (CPU::IsTraceEnabled())
-            CPU::WriteToExecutionLog("TTY: %s\n", m_tty_line_buffer.c_str());
-#endif
-        }
-        m_tty_line_buffer.clear();
-      }
-      else
-      {
-        m_tty_line_buffer += static_cast<char>(Truncate8(value));
-      }
+      AddTTYCharacter(static_cast<char>(value));
     }
     else if (offset == 0x41 || offset == 0x42)
     {
@@ -1002,6 +1014,23 @@ static TickCount DoEXP2Access(u32 offset, u32& value)
     {
       Log_DevPrintf("BIOS POST2 status: %02X", value & UINT32_C(0x0F));
     }
+#if 0
+    // TODO: Put behind configuration variable
+    else if (offset == 0x81)
+    {
+      Log_WarningPrintf("pcsx_debugbreak()");
+      Host::ReportErrorAsync("Error", "pcsx_debugbreak()");
+      System::PauseSystem(true);
+      CPU::ExitExecution();
+    }
+    else if (offset == 0x82)
+    {
+      Log_WarningPrintf("pcsx_exit() with status 0x%02X", value & UINT32_C(0xFF));
+      Host::ReportErrorAsync("Error", fmt::format("pcsx_exit() with status 0x{:02X}", value & UINT32_C(0xFF)));
+      System::ShutdownSystem(false);
+      CPU::ExitExecution();
+    }
+#endif
     else
     {
       Log_WarningPrintf("EXP2 write: 0x%08X <- 0x%08X", EXP2_BASE | offset, value);

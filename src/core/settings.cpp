@@ -317,7 +317,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
-  bios_patch_tty_enable = si.GetBoolValue("BIOS", "PatchTTYEnable", false);
+  bios_tty_logging = si.GetBoolValue("BIOS", "TTYLogging", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
 
   multitap_mode =
@@ -530,7 +530,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
   si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
 
-  si.SetBoolValue("BIOS", "PatchTTYEnable", bios_patch_tty_enable);
+  si.SetBoolValue("BIOS", "TTYLogging", bios_tty_logging);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -619,7 +619,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.use_old_mdec_routines = false;
     g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
-    g_settings.bios_patch_tty_enable = false;
+    g_settings.bios_tty_logging = false;
   }
 
   if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())

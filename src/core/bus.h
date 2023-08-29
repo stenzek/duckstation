@@ -9,6 +9,7 @@
 #include <bitset>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 class StateWrapper;
@@ -179,5 +180,9 @@ PhysicalMemoryAddress GetMemoryRegionEnd(MemoryRegion region);
 u8* GetMemoryRegionPointer(MemoryRegion region);
 std::optional<PhysicalMemoryAddress> SearchMemory(PhysicalMemoryAddress start_address, const u8* pattern,
                                                   const u8* mask, u32 pattern_length);
+
+// TTY Logging.
+void AddTTYCharacter(char ch);
+void AddTTYString(const std::string_view& str);
 
 } // namespace Bus
