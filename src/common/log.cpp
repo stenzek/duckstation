@@ -130,12 +130,12 @@ static int FormatLogMessageForDisplay(char* buffer, size_t buffer_size, const ch
 
     if (level <= LOGLEVEL_PERF)
     {
-      return std::snprintf(buffer, buffer_size, "%s[%10.4f] %c(%s): %s%s%s", color_start, message_time,
+      return std::snprintf(buffer, buffer_size, "[%10.4f] %s%c(%s): %s%s%s", message_time, color_start,
                            s_log_level_characters[level], functionName, message, color_end, message_end);
     }
     else
     {
-      return std::snprintf(buffer, buffer_size, "%s[%10.4f] %c/%s: %s%s%s", color_start, message_time,
+      return std::snprintf(buffer, buffer_size, "[%10.4f] %s%c/%s: %s%s%s", message_time, color_start,
                            s_log_level_characters[level], channelName, message, color_end, message_end);
     }
   }
