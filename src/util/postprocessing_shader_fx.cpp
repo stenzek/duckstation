@@ -22,6 +22,7 @@
 
 #include "fmt/format.h"
 
+#include <bitset>
 #include <cctype>
 #include <cmath>
 #include <cstring>
@@ -41,25 +42,32 @@ static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
 {
   const bool debug_info = g_gpu_device ? g_gpu_device->IsDebugDevice() : false;
   const bool uniforms_to_spec_constants = false;
+  const RenderAPI rapi = GetRenderAPI();
 
-  switch (GetRenderAPI())
+  switch (rapi)
   {
     case RenderAPI::None:
     case RenderAPI::D3D11:
     case RenderAPI::D3D12:
+    {
       return std::unique_ptr<reshadefx::codegen>(
         reshadefx::create_codegen_hlsl(50, debug_info, uniforms_to_spec_constants));
+    }
 
     case RenderAPI::Vulkan:
     case RenderAPI::Metal:
-      return std::unique_ptr<reshadefx::codegen>(
-        reshadefx::create_codegen_glsl(true, debug_info, uniforms_to_spec_constants));
+    {
+      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
+        true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
+    }
 
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
     default:
+    {
       return std::unique_ptr<reshadefx::codegen>(
-        reshadefx::create_codegen_glsl(false, debug_info, uniforms_to_spec_constants));
+        reshadefx::create_codegen_glsl(false, debug_info, uniforms_to_spec_constants, false, true));
+    }
   }
 }
 
@@ -989,12 +997,6 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   const RenderAPI api = g_gpu_device->GetRenderAPI();
   const bool needs_main_defn = (api != RenderAPI::D3D11 && api != RenderAPI::D3D12);
 
-  if (api != RenderAPI::D3D11)
-  {
-    Log_ErrorPrintf("ReShade is currently only supported on Direct3D 11 (due to bugs)");
-    return false;
-  }
-
   m_valid = false;
   m_textures.clear();
   m_passes.clear();
@@ -1021,21 +1023,34 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
                                                    GPUShaderStage stage) {
     std::string real_code;
     if (needs_main_defn)
-      real_code = fmt::format("#version 460 core\n#define ENTRY_POINT_{}\n{}", name, code);
+    {
+      // dFdx/dFdy are not defined in the vertex shader.
+      const char* defns = (stage == GPUShaderStage::Vertex) ? "#define dFdx(x) x\n#define dFdy(x) x\n" : "";
+      real_code = fmt::format("#version 460 core\n#define ENTRY_POINT_{}\n{}\n{}", name, defns, code);
+
+      for (const Sampler& sampler : samplers)
+      {
+        std::string decl = fmt::format("binding = /*SAMPLER:{}*/0", sampler.reshade_name);
+        std::string replacement = fmt::format("binding = {}", sampler.slot);
+        StringUtil::ReplaceAll(&real_code, decl, replacement);
+      }
+    }
     else
+    {
       real_code = std::string(code);
 
-    for (const Sampler& sampler : samplers)
-    {
-      std::string decl = fmt::format("__{}_t : register( t0);", sampler.reshade_name);
-      std::string replacement =
-        fmt::format("__{}_t : register({}t{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
-      StringUtil::ReplaceAll(&real_code, decl, replacement);
+      for (const Sampler& sampler : samplers)
+      {
+        std::string decl = fmt::format("__{}_t : register( t0);", sampler.reshade_name);
+        std::string replacement =
+          fmt::format("__{}_t : register({}t{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
+        StringUtil::ReplaceAll(&real_code, decl, replacement);
 
-      decl = fmt::format("__{}_s : register( s0);", sampler.reshade_name);
-      replacement =
-        fmt::format("__{}_s : register({}s{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
-      StringUtil::ReplaceAll(&real_code, decl, replacement);
+        decl = fmt::format("__{}_s : register( s0);", sampler.reshade_name);
+        replacement =
+          fmt::format("__{}_s : register({}s{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
+        StringUtil::ReplaceAll(&real_code, decl, replacement);
+      }
     }
 
     // FileSystem::WriteStringToFile("D:\\foo.txt", real_code);
@@ -1281,24 +1296,38 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
     g_gpu_device->SetPipeline(pass.pipeline.get());
 
     // Set all inputs first, before the render pass starts.
+    std::bitset<GPUDevice::MAX_TEXTURE_SAMPLERS> bound_textures = {};
     for (const Sampler& sampler : pass.samplers)
     {
       GL_INS("Texture Sampler %u: ID %d [%s]", sampler.slot, sampler.texture_id,
              GetTextureNameForID(sampler.texture_id));
       g_gpu_device->SetTextureSampler(sampler.slot, GetTextureByID(sampler.texture_id, input, final_target),
                                       sampler.sampler);
+      bound_textures[sampler.slot] = true;
+    }
+
+    // Ensure RT wasn't left bound as a previous output, it breaks VK/DX12.
+    // TODO: Maybe move this into the backend? Not sure...
+    for (u32 i = 0; i < GPUDevice::MAX_TEXTURE_SAMPLERS; i++)
+    {
+      if (!bound_textures[i])
+        g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
     }
 
     if (!output_fb)
     {
       // Drawing to final buffer.
       if (!g_gpu_device->BeginPresent(false))
+      {
+        GL_POP();
         return false;
+      }
     }
 
     g_gpu_device->Draw(pass.num_vertices, 0);
   }
 
+  GL_POP();
   m_frame_timer.Reset();
   return true;
 }

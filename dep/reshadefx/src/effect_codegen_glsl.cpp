@@ -99,9 +99,16 @@ private:
 				"uvec4 compCond(bvec4 cond, uvec4 a, uvec4 b) { return uvec4(cond.x ? a.x : b.x, cond.y ? a.y : b.y, cond.z ? a.z : b.z, cond.w ? a.w : b.w); }\n";
 
 		if (!_ubo_block.empty())
-			// Read matrices in column major layout, even though they are actually row major, to avoid transposing them on every access (since GLSL uses column matrices)
-			// TODO: This technically only works with square matrices
-			preamble += "layout(std140, column_major, binding = 0) uniform _Globals {\n" + _ubo_block + "};\n";
+		{
+			if (_vulkan_semantics)
+			{
+				preamble += "layout(std140, set = 0, binding = 0) uniform _Globals {\n" + _ubo_block + "};\n";
+			}
+			else
+			{
+				preamble += "layout(std140, binding = 1) uniform _Globals {\n" + _ubo_block + "};\n";
+			}
+		}
 
 		module.code.assign(preamble.begin(), preamble.end());
 
@@ -620,7 +627,14 @@ private:
 
 		write_location(code, loc);
 
-		code += "layout(binding = " + std::to_string(info.binding);
+		code += "layout(";
+		if (_vulkan_semantics)
+			code += "set = 1, ";
+#if 0
+		code += "binding = " + std::to_string(info.binding);
+#else
+		code += "binding = /*SAMPLER:" + info.unique_name + "*/0";
+#endif
 		code += ") uniform ";
 		write_type(code, info.type);
 		code += ' ' + id_to_name(info.id) + ";\n";
