@@ -220,8 +220,7 @@ void OpenGLDevice::PushDebugGroup(const char* fmt, ...)
   va_start(ap, fmt);
   const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
   va_end(ap);
-  if (!buf.empty())
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>(buf.size()), buf.c_str());
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>(buf.size()), buf.c_str());
 #endif
 }
 

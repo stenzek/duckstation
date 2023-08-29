@@ -362,7 +362,7 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
         glUniform1i(location, i);
     }
 
-    glUseProgram(m_current_pipeline ? m_current_pipeline->GetProgram() : 0);
+    glUseProgram(m_last_program);
   }
 }
 
@@ -722,6 +722,8 @@ bool OpenGLDevice::ReadPipelineCache(const std::string& filename)
     }
 
     OpenGLPipeline::ProgramCacheItem pitem;
+    pitem.program_id = 0;
+    pitem.reference_count = 0;
     pitem.file_format = entry.format;
     pitem.file_offset = entry.offset;
     pitem.file_uncompressed_size = entry.uncompressed_size;
