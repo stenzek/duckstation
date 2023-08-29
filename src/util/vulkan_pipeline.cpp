@@ -167,8 +167,9 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
         i, 0, format_mapping[static_cast<u8>(va.type.GetValue())][static_cast<u8>(va.components.GetValue() - 1)],
         va.offset);
     }
-    gpb.SetPrimitiveTopology(primitives[static_cast<u8>(config.primitive)]);
   }
+
+  gpb.SetPrimitiveTopology(primitives[static_cast<u8>(config.primitive)]);
 
   // Line width?
 

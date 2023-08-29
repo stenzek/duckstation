@@ -2096,8 +2096,8 @@ void VulkanDevice::EndPresent()
   EndRenderPass();
 
   VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, m_swap_chain->GetCurrentImage(), GPUTexture::Type::RenderTarget, 0, 1,
-                                                0, 1, VulkanTexture::Layout::ColorAttachment,
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, m_swap_chain->GetCurrentImage(), GPUTexture::Type::RenderTarget,
+                                                0, 1, 0, 1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
   SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
   MoveToNextCommandBuffer();
@@ -2960,8 +2960,8 @@ void VulkanDevice::SetInitialPipelineState()
 
 void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
 {
-  VulkanTexture* T = static_cast<VulkanTexture*>(texture);
-  const VkSampler vsampler = sampler ? static_cast<VulkanSampler*>(sampler)->GetSampler() : VK_NULL_HANDLE;
+  VulkanTexture* T = texture ? static_cast<VulkanTexture*>(texture) : m_null_texture.get();
+  const VkSampler vsampler = static_cast<VulkanSampler*>(sampler ? sampler : m_nearest_sampler.get())->GetSampler();
   if (m_current_textures[slot] != texture || m_current_samplers[slot] != vsampler)
   {
     m_current_textures[slot] = T;
@@ -3108,8 +3108,9 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(bool new_layout, bool new_dynam
                                                     m_current_samplers[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       }
 
+      const u32 set = (layout == GPUPipeline::Layout::MultiTextureAndUBO) ? 1 : 0;
       dsub.PushUpdate(GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      m_pipeline_layouts[static_cast<u8>(m_current_pipeline_layout)], false);
+                      m_pipeline_layouts[static_cast<u8>(m_current_pipeline_layout)], set);
       if (num_ds == 0)
         return true;
     }
