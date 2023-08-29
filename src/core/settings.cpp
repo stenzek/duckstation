@@ -1469,6 +1469,9 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(SaveStates.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
   return result;
 }
