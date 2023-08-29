@@ -1770,7 +1770,8 @@ void UpdateDebugDispatcherFlag()
 
   Log_DevPrintf("%s debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
   g_state.use_debug_dispatcher = use_debug_dispatcher;
-  ExitExecution();
+  if (System::IsExecuting())
+    ExitExecution();
 }
 
 void ExitExecution()

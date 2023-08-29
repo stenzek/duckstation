@@ -337,6 +337,12 @@ bool System::IsValid()
   return s_state == State::Running || s_state == State::Paused;
 }
 
+bool System::IsExecuting()
+{
+  DebugAssert(IsValid());
+  return s_system_executing;
+}
+
 bool System::IsStartupCancelled()
 {
   return s_startup_cancelled.load();

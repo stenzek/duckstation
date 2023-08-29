@@ -139,6 +139,7 @@ bool IsExecutionInterrupted();
 bool IsPaused();
 bool IsShutdown();
 bool IsValid();
+bool IsExecuting();
 
 bool IsStartupCancelled();
 void CancelPendingStartup();
