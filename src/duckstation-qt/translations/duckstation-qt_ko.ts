@@ -4360,7 +4360,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <location filename="../displaysettingswidget.cpp" line="247"/>
         <source>Borderless Fullscreen</source>
-        <translation>외곽선 없는 전체 화면</translation>
+        <translation>전체 창 화면</translation>
     </message>
 </context>
 <context>
@@ -5198,7 +5198,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="955"/>
         <source>Nearest-Neighbor</source>
-        <translation>최근접</translation>
+        <translation>최근린</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="955"/>
@@ -5213,7 +5213,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="957"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
-        <translation>JINC2(느림, 엣지 블렌딩 없음)</translation>
+        <translation>JINC2(느림, 에지 블렌딩 없음)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="958"/>
@@ -5223,12 +5223,12 @@ Achievements: %5 (%6)
     <message>
         <location filename="../../core/settings.cpp" line="959"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
-        <translation>xBR(매우 느림, 엣지 블렌딩 없음)</translation>
+        <translation>xBR(매우 느림, 에지 블렌딩 없음)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="956"/>
         <source>Bilinear (No Edge Blending)</source>
-        <translation>쌍선형(엣지 블렌딩 없음)</translation>
+        <translation>쌍선형(에지 블렌딩 없음)</translation>
     </message>
 </context>
 <context>
@@ -9094,7 +9094,7 @@ URL : %1</translation>
     <message>
         <location filename="../settingsdialog.cpp" line="100"/>
         <source>Display</source>
-        <translation>디스플레이</translation>
+        <translation>화면</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="102"/>
@@ -9298,6 +9298,112 @@ s: %s
 SBI 파일을 추가하는 방법에 대한 지침은 사용 설명서를 확인하세요.
 
 계속하시겠습니까?</translation>
+    </message>
+</context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>OK</source>
+        <translation>확인</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation>아니오(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation>예(&amp;Y)</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>도움말</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation>열기</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>저장</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>중지</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>적용</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>닫기</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>초기화</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>다시 시도</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>기본값으로 되돌리기</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation>무시</translation>
+    </message>
+    <message>
+        <source>N&amp;o to All</source>
+        <translation>전부 아니오(&amp;O)</translation>
+    </message>
+    <message>
+        <source>Save All</source>
+        <translation>전부 저장</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>폐기</translation>
+    </message>
+    <message>
+        <source>Yes to &amp;All</source>
+        <translation>전부 예(&amp;A)</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>OK</source>
+        <translation>확인</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>도움말</translation>
+    </message>
+    <message>
+        <source>Show Details...</source>
+        <translation>상세 정보 표시...</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across all major desktop operating systems. It is also available for embedded Linux and other embedded and mobile operating systems.&lt;/p&gt;&lt;p&gt;Qt is available under multiple licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of GNU (L)GPL.&lt;/p&gt;&lt;p&gt;Qt licensed under GNU (L)GPL is appropriate for the development of Qt&amp;nbsp;applications provided you can comply with the terms and conditions of the respective licenses.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://%2/&quot;&gt;%2&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) %1 The Qt Company Ltd and other contributors.&lt;/p&gt;&lt;p&gt;Qt and the Qt logo are trademarks of The Qt Company Ltd.&lt;/p&gt;&lt;p&gt;Qt is The Qt Company Ltd product developed as an open source project. See &lt;a href=&quot;http://%3/&quot;&gt;%3&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="unfinished">&lt;p&gt;Qt는 크로스 플랫폼 애플리케이션 개발을 위한 C++ 툴킷입니다.&lt;/p&gt;&lt;p&gt;Qt는 모든 주요 데스크톱 운영 체제에서 단일 소스 이식성을 제공합니다. 임베디드 리눅스 및 기타 임베디드 및 모바일 운영 체제에서도 사용할 수 있습니다.&lt;/p&gt;&lt;p&gt;Qt는 다양한 사용자의 요구를 수용하도록 설계된 3가지 라이선스 옵션으로 제공됩니다.&lt;/p&gt;&lt;p&gt;당사의 상용 라이선스 계약에 따라 라이선스가 부여된 Qt는 소스 코드를 제3자와 공유하고 싶지 않거나 GNU LGPL 버전 3 또는 GNU LGPL 버전 2.1의 조건을 준수할 수 없는 독점/상업용 소프트웨어의 개발에 적합합니다.&lt;/p&gt;&lt;p&gt;GNU LGPL 버전 3에 따라 라이센스가 부여된 Qt는 GNU LGPL 버전 3의 약관을 준수할 수 있는 경우, Qt 응용프로그램 개발에 적절합니다.&lt;/p&gt;&lt;p&gt;GNU LGPL 버전 2.1에 따라 라이센스가 부여된 Qt는 GNU LGPL 버전 2.1의 약관을 준수할 수 있다면 Qt 응용프로그램을 개발하는데 적합합니다.&lt;/p&gt;&lt;p&gt;Qt 라이선스에 대한 개요는 &lt;a href=&quot;http://%2/&quot;&gt;%2&lt;/a&gt;을(를) 참조하십시오.&lt;/p&gt;&lt;p&gt;Copyright (C) %1 The Qt Company Ltd 및 기타 기여자.&lt;/p&gt;&lt;p&gt;Qt 및 Qt 로고는 The Qt Company Ltd의 상표입니다.&lt;/p&gt;&lt;p&gt;Qt는 오픈 소스 프로젝트로 개발된 The Qt Company Ltd 제품입니다. 자세한 내용은 &lt;a href=&quot;http://%3/&quot;&gt;%3&lt;/a&gt;을(를) 참조하십시오.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>About Qt</source>
+        <translation>Qt 정보</translation>
+    </message>
+    <message>
+        <source>Hide Details...</source>
+        <translation>세부 정보 숨기기...</translation>
+    </message>
+    <message>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
+        <translation>&lt;h3&gt;Qt 정보&lt;/h3&gt;&lt;p&gt;이 프로그램은 Qt 버전 %1을(를) 사용합니다.&lt;/p&gt;</translation>
     </message>
 </context>
 </TS>
