@@ -35,6 +35,7 @@ disable_compiler_warnings_for_target(rcheevos)
 
 if(NOT ANDROID)
   add_subdirectory(enet)
+  add_subdirectory(ggpo-x)
 endif()
 
 if(ENABLE_CUBEB)
