@@ -92,18 +92,8 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 
 SystemBootParameters::~SystemBootParameters() = default;
 
-struct MemorySaveState
-{
-  std::unique_ptr<GPUTexture> vram_texture;
-  std::unique_ptr<GrowableMemoryByteStream> state_stream;
-};
-
 namespace System {
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
-static bool InternalSaveState(ByteStream* state, u32 screenshot_size = 256,
-                              u32 compression_method = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
-static bool SaveMemoryState(MemorySaveState* mss);
-static bool LoadMemoryState(const MemorySaveState& mss);
 
 static bool LoadEXE(const char* filename);
 
@@ -118,7 +108,6 @@ static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
-static bool DoLoadState(ByteStream* stream, bool force_software_renderer, bool update_display);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 static bool CreateGPU(GPURenderer renderer, bool is_switching);
 static bool SaveUndoLoadState();
@@ -230,14 +219,14 @@ static std::unique_ptr<ByteStream> m_undo_load_state;
 
 static bool s_memory_saves_enabled = false;
 
-static std::deque<MemorySaveState> s_rewind_states;
+static std::deque<System::MemorySaveState> s_rewind_states;
 static s32 s_rewind_load_frequency = -1;
 static s32 s_rewind_load_counter = -1;
 static s32 s_rewind_save_frequency = -1;
 static s32 s_rewind_save_counter = -1;
 static bool s_rewinding_first_save = false;
 
-static std::deque<MemorySaveState> s_runahead_states;
+static std::deque<System::MemorySaveState> s_runahead_states;
 static bool s_runahead_replay_pending = false;
 static u32 s_runahead_frames = 0;
 static u32 s_runahead_replay_frames = 0;
@@ -1163,7 +1152,7 @@ bool System::LoadState(const char* filename)
 
   SaveUndoLoadState();
 
-  if (!DoLoadState(stream.get(), false, true))
+  if (!LoadStateFromStream(stream.get(), true))
   {
     Host::ReportFormattedErrorAsync("Load State Error",
                                     TRANSLATE("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
@@ -1201,7 +1190,7 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   Log_InfoPrintf("Saving state to '%s'...", filename);
 
   const u32 screenshot_size = 256;
-  const bool result = InternalSaveState(stream.get(), screenshot_size,
+  const bool result = SaveStateToStream(stream.get(), screenshot_size,
                                         g_settings.compress_save_states ? SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD :
                                                                           SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
   if (!result)
@@ -1450,7 +1439,7 @@ bool System::BootSystem(SystemBootParameters parameters)
       return false;
     }
 
-    if (!DoLoadState(stream.get(), false, true))
+    if (!LoadStateFromStream(stream.get(), true))
     {
       DestroySystem();
       return false;
@@ -1939,7 +1928,7 @@ void System::RecreateSystem()
 
   const bool was_paused = System::IsPaused();
   std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::InternalSaveState(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
+  if (!System::SaveStateToStream(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
   {
     Host::ReportErrorAsync("Error", "Failed to save state before system recreation. Shutting down.");
     DestroySystem();
@@ -1955,7 +1944,7 @@ void System::RecreateSystem()
     return;
   }
 
-  if (!DoLoadState(stream.get(), false, false))
+  if (!LoadStateFromStream(stream.get(), false))
   {
     DestroySystem();
     return;
@@ -2235,7 +2224,7 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return ret;
 }
 
-bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool update_display)
+bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ignore_media)
 {
   Assert(IsValid());
 
@@ -2262,88 +2251,91 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
     return false;
   }
 
-  Error error;
-  std::string media_filename;
-  std::unique_ptr<CDImage> media;
-  if (header.media_filename_length > 0)
+  if (!ignore_media)
   {
-    media_filename.resize(header.media_filename_length);
-    if (!state->SeekAbsolute(header.offset_to_media_filename) ||
+    Error error;
+    std::string media_filename;
+    std::unique_ptr<CDImage> media;
+    if (header.media_filename_length > 0)
+    {
+      media_filename.resize(header.media_filename_length);
+      if (!state->SeekAbsolute(header.offset_to_media_filename) ||
         !state->Read2(media_filename.data(), header.media_filename_length))
-    {
-      return false;
-    }
-
-    std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
-    if (old_media && old_media->GetFileName() == media_filename)
-    {
-      Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
-      media = std::move(old_media);
-    }
-    else
-    {
-      media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
-      if (!media)
       {
-        if (old_media)
+        return false;
+      }
+
+      std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
+      if (old_media && old_media->GetFileName() == media_filename)
+      {
+        Log_InfoPrintf("Re-using same media '%s'", media_filename.c_str());
+        media = std::move(old_media);
+      }
+      else
+      {
+        media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
+        if (!media)
         {
-          Host::AddFormattedOSDMessage(
-            30.0f,
-            TRANSLATE("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
-                                    "existing image '%s', this may result in instability."),
-            media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
-          media = std::move(old_media);
-          header.media_subimage_index = media->GetCurrentSubImage();
-        }
-        else
-        {
-          Host::ReportFormattedErrorAsync("Error",
-                                          TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
-                                          media_filename.c_str(), error.GetDescription().c_str());
-          return false;
+          if (old_media)
+          {
+            Host::AddFormattedOSDMessage(
+              30.0f,
+              TRANSLATE("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
+                "existing image '%s', this may result in instability."),
+              media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
+            media = std::move(old_media);
+            header.media_subimage_index = media->GetCurrentSubImage();
+          }
+          else
+          {
+            Host::ReportFormattedErrorAsync("Error",
+              TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
+              media_filename.c_str(), error.GetDescription().c_str());
+            return false;
+          }
         }
       }
     }
-  }
 
-  UpdateRunningGame(media_filename.c_str(), media.get(), false);
+    UpdateRunningGame(media_filename.c_str(), media.get(), false);
 
-  if (media && header.version >= 51)
-  {
-    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
-    if (header.media_subimage_index >= num_subimages ||
-        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
-         !media->SwitchSubImage(header.media_subimage_index, &error)))
+    if (media && header.version >= 51)
     {
-      Host::ReportFormattedErrorAsync(
-        "Error", TRANSLATE("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
-        header.media_subimage_index + 1u, media_filename.c_str(), error.GetDescription().c_str());
-      return false;
+      const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
+      if (header.media_subimage_index >= num_subimages ||
+        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
+          !media->SwitchSubImage(header.media_subimage_index, &error)))
+      {
+        Host::ReportFormattedErrorAsync(
+          "Error", TRANSLATE("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
+          header.media_subimage_index + 1u, media_filename.c_str(), error.GetDescription().c_str());
+        return false;
+      }
+      else
+      {
+        Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
+      }
+    }
+
+    CDROM::Reset();
+    if (media)
+    {
+      const DiscRegion region = GetRegionForImage(media.get());
+      CDROM::InsertMedia(std::move(media), region);
+      if (g_settings.cdrom_load_image_to_ram)
+        CDROM::PrecacheMedia();
     }
     else
     {
-      Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
+      CDROM::RemoveMedia(false);
     }
+
+    // ensure the correct card is loaded
+    if (g_settings.HasAnyPerGameMemoryCards())
+      UpdatePerGameMemoryCards();
   }
 
   ClearMemorySaveStates();
-
-  CDROM::Reset();
-  if (media)
-  {
-    const DiscRegion region = GetRegionForImage(media.get());
-    CDROM::InsertMedia(std::move(media), region);
-    if (g_settings.cdrom_load_image_to_ram)
-      CDROM::PrecacheMedia();
-  }
-  else
-  {
-    CDROM::RemoveMedia(false);
-  }
-
-  // ensure the correct card is loaded
-  if (g_settings.HasAnyPerGameMemoryCards())
-    UpdatePerGameMemoryCards();
 
 #ifdef WITH_CHEEVOS
   // Updating game/loading settings can turn on hardcore mode. Catch this.
@@ -2385,8 +2377,9 @@ bool System::DoLoadState(ByteStream* state, bool force_software_renderer, bool u
   return true;
 }
 
-bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 */,
-                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/)
+bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 */,
+                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/,
+                               bool ignore_media /* = false*/)
 {
   if (IsShutdown())
     return false;
@@ -2403,7 +2396,7 @@ bool System::InternalSaveState(ByteStream* state, u32 screenshot_size /* = 256 *
   StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
   StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
 
-  if (CDROM::HasMedia())
+  if (CDROM::HasMedia() && !ignore_media)
   {
     const std::string& media_filename = CDROM::GetMediaFileName();
     header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
@@ -4052,7 +4045,7 @@ bool System::UndoLoadState()
   Assert(IsValid());
 
   m_undo_load_state->SeekAbsolute(0);
-  if (!DoLoadState(m_undo_load_state.get(), false, true))
+  if (!LoadStateFromStream(m_undo_load_state.get(), true))
   {
     Host::ReportErrorAsync("Error", "Failed to load undo state, resetting system.");
     m_undo_load_state.reset();
@@ -4071,7 +4064,7 @@ bool System::SaveUndoLoadState()
     m_undo_load_state.reset();
 
   m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!InternalSaveState(m_undo_load_state.get()))
+  if (!SaveStateToStream(m_undo_load_state.get()))
   {
     Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to save undo load state."), 15.0f);
     m_undo_load_state.reset();

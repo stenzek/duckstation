@@ -19,11 +19,13 @@ class Controller;
 struct CheatCode;
 class CheatList;
 
-namespace BIOS
-{
+class GPUTexture;
+class GrowableMemoryByteStream;
+
+namespace BIOS {
 struct ImageInfo;
 struct Hash;
-}
+} // namespace BIOS
 
 namespace GameDatabase
 {
@@ -239,6 +241,18 @@ void ResetSystem();
 bool LoadState(const char* filename);
 bool SaveState(const char* filename, bool backup_existing_save);
 bool SaveResumeState();
+
+/// Memory save states - only for internal use.
+struct MemorySaveState
+{
+  std::unique_ptr<GPUTexture> vram_texture;
+  std::unique_ptr<GrowableMemoryByteStream> state_stream;
+};
+bool SaveMemoryState(MemorySaveState* mss);
+bool LoadMemoryState(const MemorySaveState& mss);
+bool LoadStateFromStream(ByteStream* stream, bool update_display, bool ignore_media = false);
+bool SaveStateToStream(ByteStream* state, u32 screenshot_size = 256, u32 compression_method = 0,
+                       bool ignore_media = false);
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
