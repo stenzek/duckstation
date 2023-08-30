@@ -103,7 +103,7 @@ static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_
 
 static void StallCPU(TickCount ticks);
 
-static bool LoadBIOS();
+static bool LoadBIOS(const std::string& override_bios_path);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1359,7 +1359,7 @@ bool System::BootSystem(SystemBootParameters parameters)
 #endif
 
   // Load BIOS image.
-  if (!LoadBIOS())
+  if (!LoadBIOS(parameters.override_bios))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -2140,9 +2140,10 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   return !sw.HasError();
 }
 
-bool System::LoadBIOS()
+bool System::LoadBIOS(const std::string& override_bios_path)
 {
-  std::optional<BIOS::Image> bios_image(BIOS::GetBIOSImage(s_region));
+  std::optional<BIOS::Image> bios_image(
+    override_bios_path.empty() ? BIOS::GetBIOSImage(s_region) : FileSystem::ReadBinaryFile(override_bios_path.c_str()));
   if (!bios_image.has_value())
   {
     Host::ReportFormattedErrorAsync("Error", TRANSLATE("System", "Failed to load %s BIOS."),
