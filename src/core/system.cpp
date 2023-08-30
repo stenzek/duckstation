@@ -24,6 +24,7 @@
 #include "mdec.h"
 #include "memory_card.h"
 #include "multitap.h"
+#include "netplay.h"
 #include "pad.h"
 #include "pcdrv.h"
 #include "pgxp.h"
@@ -71,6 +72,7 @@ Log_SetChannel(System);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <mmsystem.h>
+#include <WinSock2.h>
 #endif
 
 #ifdef ENABLE_DISCORD_PRESENCE
@@ -241,6 +243,12 @@ static TinyString GetTimestampStringForFileName()
 
 void System::Internal::ProcessStartup()
 {
+#if defined(_WIN32)
+  // Setup WinSock
+  WSADATA wd = {};
+  WSAStartup(MAKEWORD(2, 2), &wd);
+#endif
+
   if (!Bus::AllocateMemory())
     Panic("Failed to allocate memory for emulated bus.");
 
@@ -266,6 +274,11 @@ void System::Internal::ProcessShutdown()
   InputManager::CloseSources();
 
   Bus::ReleaseMemory();
+
+#ifdef _WIN32
+  // Cleanup WinSock
+  WSACleanup();
+#endif
 }
 
 void System::Internal::IdlePollUpdate()
@@ -966,7 +979,7 @@ void System::ApplySettings(bool display_osd_messages)
   CheckForSettingsChanges(old_config);
   Host::CheckForSettingsChanges(old_config);
 
-  if (IsValid())
+  if (IsValid() && !Netplay::IsActive())
   {
     ResetPerformanceCounters();
     if (s_system_executing)
@@ -1077,7 +1090,7 @@ void System::ResetSystem()
 
 void System::PauseSystem(bool paused)
 {
-  if (paused == IsPaused() || !IsValid())
+  if (paused == IsPaused() || !IsValid() || Netplay::IsActive())
     return;
 
   SetState(paused ? State::Paused : State::Running);
@@ -1117,7 +1130,7 @@ void System::PauseSystem(bool paused)
 
 bool System::LoadState(const char* filename)
 {
-  if (!IsValid())
+  if (!IsValid() || Netplay::IsActive())
     return false;
 
   if (Achievements::IsHardcoreModeActive() &&
@@ -1748,6 +1761,12 @@ void System::FrameDone()
   PollDiscordPresence();
 #endif
 
+  if (Netplay::IsActive())
+  {
+    Netplay::FrameDone();
+    return;
+  }
+
   if (s_frame_step_request)
   {
     s_frame_step_request = false;
@@ -1855,6 +1874,9 @@ void System::UpdateThrottlePeriod()
   }
 
   ResetThrottler();
+
+  if (Netplay::IsActive())
+    Netplay::UpdateThrottlePeriod();
 }
 
 void System::ResetThrottler()
@@ -2650,7 +2672,7 @@ bool System::IsFastForwardEnabled()
 
 void System::SetFastForwardEnabled(bool enabled)
 {
-  if (!IsValid())
+  if (!IsValid() || Netplay::IsActive())
     return;
 
   s_fast_forward_enabled = enabled;
@@ -2664,7 +2686,7 @@ bool System::IsTurboEnabled()
 
 void System::SetTurboEnabled(bool enabled)
 {
-  if (!IsValid())
+  if (!IsValid() || Netplay::IsActive())
     return;
 
   s_turbo_enabled = enabled;
@@ -2673,7 +2695,7 @@ void System::SetTurboEnabled(bool enabled)
 
 void System::SetRewindState(bool enabled)
 {
-  if (!System::IsValid())
+  if (!System::IsValid() || Netplay::IsActive())
     return;
 
   if (!g_settings.rewind_enable)
@@ -2693,7 +2715,7 @@ void System::SetRewindState(bool enabled)
 
 void System::DoFrameStep()
 {
-  if (!IsValid())
+  if (!IsValid() || Netplay::IsActive())
     return;
 
   if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Frame stepping"))
@@ -3993,6 +4015,9 @@ void System::ShutdownSystem(bool save_resume_state)
   if (!IsValid())
     return;
 
+  if (Netplay::IsActive())
+    Netplay::SystemDestroyed();
+
   if (save_resume_state)
     SaveResumeState();
 
@@ -4598,6 +4623,8 @@ bool System::PresentDisplay(bool allow_skip_present)
   if (!skip_present)
   {
     FullscreenUI::Render();
+    if (Netplay::IsActive())
+      Netplay::RenderOverlays();
     ImGuiManager::RenderTextOverlays();
     ImGuiManager::RenderOSDMessages();
 

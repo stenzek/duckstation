@@ -58,6 +58,7 @@
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
+    <ClCompile Include="netplay.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="pcdrv.cpp" />
@@ -129,6 +130,8 @@
     <ClInclude Include="multitap.h" />
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
+    <ClInclude Include="netplay.h" />
+    <ClInclude Include="netplay_packets.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="pcdrv.h" />
@@ -151,6 +154,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\dep\discord-rpc\discord-rpc.vcxproj">
       <Project>{4266505b-dbaf-484b-ab31-b53b9c8235b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\enet\enet.vcxproj">
+      <Project>{460a096b-fcc7-465c-8e4b-434af490a9ea}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\ggpo-x\ggpo-x.vcxproj">
+      <Project>{edf3634a-ce8a-4625-92bd-27bad5d30a9a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
@@ -190,6 +199,7 @@
   <Import Project="core.props" />
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\enet\include;$(SolutionDir)dep\ggpo-x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>

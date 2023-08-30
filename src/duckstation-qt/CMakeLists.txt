@@ -123,6 +123,10 @@ set(SRCS
   memorycardsettingswidget.h
   memoryviewwidget.cpp
   memoryviewwidget.h
+  netplaycreatesessiondialog.ui
+  netplayjoinsessiondialog.ui
+  netplaydialogs.cpp
+  netplaydialogs.h
   postprocessingsettingswidget.cpp
   postprocessingsettingswidget.h
   postprocessingsettingswidget.ui

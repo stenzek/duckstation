@@ -217,6 +217,12 @@ void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
   s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
 }
 
+void Host::Internal::SetNetplaySettingsLayer(SettingsInterface* sif)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_NETPLAY, sif);
+}
+
 void Host::ReportFormattedDebuggerMessage(const char* format, ...)
 {
   std::va_list ap;

@@ -7,6 +7,7 @@
 #include "interrupt_controller.h"
 #include "memory_card.h"
 #include "multitap.h"
+#include "netplay.h"
 #include "save_state_version.h"
 #include "system.h"
 #include "types.h"
@@ -159,6 +160,8 @@ void Pad::Reset()
 {
   SoftReset();
 
+  s_last_memory_card_transfer_frame = 0;
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (s_controllers[i])
@@ -175,12 +178,12 @@ void Pad::Reset()
 bool Pad::ShouldAvoidSavingToState()
 {
   // Currently only runahead, will also be used for netplay.
-  return g_settings.IsRunaheadEnabled();
+  return g_settings.IsRunaheadEnabled() || Netplay::IsActive();
 }
 
 u32 Pad::GetMaximumRollbackFrames()
 {
-  return g_settings.runahead_frames;
+  return (Netplay::IsActive() ? Netplay::GetMaxPrediction() : g_settings.runahead_frames);
 }
 
 bool Pad::DoStateController(StateWrapper& sw, u32 i)
@@ -251,11 +254,12 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
 bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 {
+  const bool force_load = Netplay::IsActive();
   bool card_present_in_state = static_cast<bool>(s_memory_cards[i]);
 
   sw.Do(&card_present_in_state);
 
-  if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states)
+  if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states && !force_load)
   {
     Host::AddFormattedOSDMessage(
       20.0f,
@@ -269,7 +273,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 
   if (card_present_in_state)
   {
-    if (sw.IsReading() && !g_settings.load_devices_from_save_states)
+    if (sw.IsReading() && !g_settings.load_devices_from_save_states && !force_load)
     {
       // load memcard into a temporary: If the card datas match, take the one from the savestate
       // since it has other useful non-data state information. Otherwise take the user's card
@@ -281,7 +285,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       return false;
   }
 
-  if (sw.IsWriting())
+  if (sw.IsWriting() || force_load)
     return true; // all done as far as writes concerned.
 
   if (card_from_state)
@@ -468,6 +472,9 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   }
   else
   {
+    if (sw.IsReading())
+      s_last_memory_card_transfer_frame = 0;
+
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
       if ((sw.GetVersion() < 50) && (i >= 2))

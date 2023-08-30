@@ -14,6 +14,7 @@
 #include "generalsettingswidget.h"
 #include "logwindow.h"
 #include "memorycardeditordialog.h"
+#include "netplaydialogs.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -84,6 +85,7 @@ static bool s_use_central_widget = false;
 // UI thread VM validity.
 static bool s_system_valid = false;
 static bool s_system_paused = false;
+static bool s_netplay_active = false;
 static QString s_current_game_title;
 static QString s_current_game_serial;
 static QString s_current_game_path;
@@ -652,6 +654,18 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
       m_was_paused_by_focus_loss = false;
     }
   }
+}
+
+void MainWindow::onNetplaySessionOpened(bool is_host)
+{
+  s_netplay_active = true;
+  updateEmulationActions(false, s_system_valid, false);
+}
+
+void MainWindow::onNetplaySessionClosed()
+{
+  s_netplay_active = false;
+  updateEmulationActions(false, s_system_valid, false);
 }
 
 void MainWindow::onStartFileActionTriggered()
@@ -1671,6 +1685,8 @@ void MainWindow::setupAdditionalUi()
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
+  const bool netplay_active = s_netplay_active;
+
   m_ui.actionStartFile->setDisabled(starting || running);
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
@@ -1680,24 +1696,29 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
   m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
-  m_ui.actionReset->setDisabled(starting || !running);
-  m_ui.actionPause->setDisabled(starting || !running);
-  m_ui.actionChangeDisc->setDisabled(starting || !running);
-  m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionReset->setDisabled(starting || !running || netplay_active);
+  m_ui.actionPause->setDisabled(starting || !running || netplay_active);
+  m_ui.actionChangeDisc->setDisabled(starting || !running || netplay_active);
+  m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode || netplay_active);
   m_ui.actionScreenshot->setDisabled(starting || !running);
-  m_ui.menuChangeDisc->setDisabled(starting || !running);
-  m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionCPUDebugger->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.menuChangeDisc->setDisabled(starting || !running || netplay_active);
+  m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode || netplay_active);
+  m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode || netplay_active);
+  m_ui.actionCPUDebugger->setDisabled(starting || !running || cheevos_challenge_mode || netplay_active);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
 
-  m_ui.actionSaveState->setDisabled(starting || !running);
-  m_ui.menuSaveState->setDisabled(starting || !running);
+  m_ui.actionLoadState->setDisabled(netplay_active);
+  m_ui.menuLoadState->setDisabled(netplay_active);
+  m_ui.actionSaveState->setDisabled(starting || !running || netplay_active);
+  m_ui.menuSaveState->setDisabled(starting || !running || netplay_active);
   m_ui.menuWindowSize->setDisabled(starting || !running);
 
   m_ui.actionViewGameProperties->setDisabled(starting || !running);
+
+  m_ui.actionCreateNetplaySession->setDisabled(!running || cheevos_challenge_mode || netplay_active);
+  m_ui.actionJoinNetplaySession->setDisabled(cheevos_challenge_mode || netplay_active);
 
   if (starting || running)
   {
@@ -2016,6 +2037,8 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::achievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
+  connect(g_emu_thread, &EmuThread::netplaySessionOpened, this, &MainWindow::onNetplaySessionOpened);
+  connect(g_emu_thread, &EmuThread::netplaySessionClosed, this, &MainWindow::onNetplaySessionClosed);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2089,6 +2112,10 @@ void MainWindow::connectSignals()
   }
 
   updateMenuSelectedTheme();
+
+  // Netplay UI , TODO
+  connect(m_ui.actionCreateNetplaySession, &QAction::triggered, this, &MainWindow::onCreateNetplaySessionClicked);
+  connect(m_ui.actionJoinNetplaySession, &QAction::triggered, this, &MainWindow::onJoinNetplaySessionClicked);
 }
 
 void MainWindow::setTheme(const QString& theme)
@@ -2550,6 +2577,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 
   // If we don't have a serial, we can't save state.
   allow_save_to_state &= !s_current_game_serial.isEmpty();
+  allow_save_to_state &= !s_netplay_active;
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
@@ -2793,6 +2821,18 @@ void MainWindow::onCPUDebuggerClosed()
   m_debugger_window = nullptr;
 }
 
+void MainWindow::onCreateNetplaySessionClicked()
+{
+  CreateNetplaySessionDialog dlg(this);
+  dlg.exec();
+}
+
+void MainWindow::onJoinNetplaySessionClicked()
+{
+  JoinNetplaySessionDialog dlg(this);
+  dlg.exec();
+}
+
 void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
   QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::DataRoot)));
@@ -2876,7 +2916,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 #else
   const bool was_fullscreen = false;
 #endif
-  const bool was_paused = !s_system_valid || s_system_paused;
+  const bool was_paused = !s_system_valid || s_system_paused || s_netplay_active;
 
   // We need to switch out of exclusive fullscreen before we can display our popup.
   // However, we do not want to switch back to render-to-main, the window might have generated this event.

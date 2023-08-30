@@ -20,6 +20,7 @@
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
+#include "core/netplay.h"
 #include "core/spu.h"
 #include "core/system.h"
 
@@ -105,6 +106,9 @@ static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_run_setup_wizard = false;
+
+// TODO: REMOVE ME
+static int s_netplay_test = -1;
 
 EmuThread* g_emu_thread;
 GDBServer* g_gdb_server;
@@ -975,6 +979,62 @@ void EmuThread::updatePostProcessingSettings()
     PostProcessing::UpdateSettings();
 }
 
+void EmuThread::createNetplaySession(const QString& nickname, qint32 port, qint32 max_players, const QString& password, int inputdelay, bool traversal)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "createNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
+                              Q_ARG(qint32, port), Q_ARG(qint32, max_players), Q_ARG(const QString&, password),
+                              Q_ARG(int, inputdelay), Q_ARG(bool, traversal));
+    return;
+  }
+
+  // need a valid system to make a session
+  if (!System::IsValid())
+    return;
+
+  if (!Netplay::CreateSession(nickname.toStdString(), port, max_players, password.toStdString(), inputdelay, traversal))
+  {
+    errorReported(tr("Netplay Error"), tr("Failed to create netplay session. The log may contain more information."));
+    return;
+  }
+}
+
+void EmuThread::joinNetplaySession(const QString& nickname, const QString& hostname, qint32 port,
+                                   const QString& password, bool spectating, int inputdelay, bool traversal,
+                                   const QString& hostcode)
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "joinNetplaySession", Qt::QueuedConnection, Q_ARG(const QString&, nickname),
+                              Q_ARG(const QString&, hostname), Q_ARG(qint32, port), Q_ARG(const QString&, password),
+                              Q_ARG(bool, spectating), Q_ARG(int, inputdelay), Q_ARG(bool, traversal),
+                              Q_ARG(const QString&, hostcode));
+    return;
+  }
+
+  setInitialState(std::nullopt);
+
+  if (!Netplay::JoinSession(nickname.toStdString(), hostname.toStdString(), port, password.toStdString(), spectating, inputdelay, traversal, hostcode.toStdString()))
+  {
+    errorReported(tr("Netplay Error"), tr("Failed to join netplay session. The log may contain more information."));
+    return;
+  }
+
+  // Exit the event loop, we'll take it from here.
+  g_emu_thread->wakeThread();
+}
+
+void Host::OnNetplaySessionOpened(bool is_host)
+{
+  emit g_emu_thread->netplaySessionOpened(is_host);
+}
+
+void Host::OnNetplaySessionClosed()
+{
+  emit g_emu_thread->netplaySessionClosed();
+}
+
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
 {
   if (!isOnThread())
@@ -1327,11 +1387,16 @@ void EmuThread::run()
   // bind buttons/axises
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
+  setInitialState(std::nullopt);
 
   // main loop
   while (!m_shutdown_flag)
   {
-    if (System::IsRunning())
+    if (Netplay::IsActive())
+    {
+      Netplay::ExecuteNetplay();
+    }
+    else if (System::IsRunning())
     {
       System::Execute();
     }
@@ -1906,7 +1971,12 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
         continue;
       }
-#ifdef ENABLE_RAINTEGRATION
+      else if (CHECK_ARG_PARAM("-netplay"))
+      {
+        s_netplay_test = StringUtil::FromChars<int>(args[++i].toStdString()).value_or(0);
+        continue;
+      }
+#ifdef WITH_RAINTEGRATION
       else if (CHECK_ARG("-raintegration"))
       {
         Achievements::SwitchToRAIntegration();
@@ -2069,6 +2139,31 @@ int main(int argc, char* argv[])
     g_emu_thread->bootSystem(std::move(autoboot));
   else if (!s_nogui_mode)
     main_window->startupUpdateCheck();
+
+  if (s_netplay_test >= 0)
+  {
+    Host::RunOnCPUThread([]() {
+      const bool first = (s_netplay_test == 0);
+      QtHost::RunOnUIThread([first]() { g_main_window->move(QPoint(first ? 300 : 1400, 500)); });
+
+      const int port = 31200;
+      const QString remote = QStringLiteral("127.0.0.1");
+      std::string game = "D:\\PSX\\chd\\padtest.chd";
+      const QString nickname = QStringLiteral("NICKNAME%1").arg(s_netplay_test + 1);
+      if (first)
+      {
+        auto params = std::make_shared<SystemBootParameters>(std::move(game));
+        params->override_fast_boot = true;
+        params->fast_forward_to_first_frame = true;
+        g_emu_thread->bootSystem(std::move(params));
+        g_emu_thread->createNetplaySession(nickname, port, 2, QString(), 0, false);
+      }
+      else
+      {
+        g_emu_thread->joinNetplaySession(nickname, remote, port, QString(), false, 0, false, "");
+      }
+    });
+  }
 
   // This doesn't return until we exit.
   result = app.exec();

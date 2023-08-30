@@ -133,6 +133,8 @@ private Q_SLOTS:
                                     quint32 unread_messages);
   void onAchievementsChallengeModeChanged(bool enabled);
   void onApplicationStateChanged(Qt::ApplicationState state);
+  void onNetplaySessionOpened(bool is_host);
+  void onNetplaySessionClosed();
 
   void onStartFileActionTriggered();
   void onStartDiscActionTriggered();
@@ -176,6 +178,9 @@ private Q_SLOTS:
 
   void openCPUDebugger();
   void onCPUDebuggerClosed();
+
+  void onCreateNetplaySessionClicked();
+  void onJoinNetplaySessionClicked();
 
 protected:
   void showEvent(QShowEvent* event) override;

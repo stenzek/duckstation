@@ -79,6 +79,9 @@ add_library(core
   multitap.h
   negcon.cpp
   negcon.h
+  netplay.cpp
+  netplay.h
+  netplay_packets.h
   pad.cpp
   pad.h
   pcdrv.cpp
@@ -125,6 +128,10 @@ target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
 target_link_libraries(core PRIVATE stb xxhash imgui rapidjson rcheevos)
+
+if(NOT ANDROID)
+  target_link_libraries(core PRIVATE enet ggpo-x)
+endif()
 
 if(${CPU_ARCH} STREQUAL "x64")
   target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")

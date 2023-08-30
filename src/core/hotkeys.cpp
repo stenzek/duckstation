@@ -7,6 +7,7 @@
 #include "gpu.h"
 #include "host.h"
 #include "imgui_overlays.h"
+#include "netplay.h"
 #include "pgxp.h"
 #include "settings.h"
 #include "spu.h"
@@ -106,6 +107,17 @@ DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_N
               [](s32 pressed) {
                 if (!pressed)
                   FullscreenUI::OpenPauseMenu();
+              })
+// Netplay on Android? Give me a break....
+DEFINE_HOTKEY("OpenNetplayChat", TRANSLATE_NOOP("Hotkeys", "Netplay"), TRANSLATE_NOOP("Hotkeys", "Open Netplay Chat"),
+              [](s32 pressed) {
+                if (!pressed)
+                  Netplay::OpenChat();
+              })
+DEFINE_HOTKEY("ToggleDesyncNotifications", TRANSLATE_NOOP("Hotkeys", "Netplay"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Desync Notifications"), [](s32 pressed) {
+                if (!pressed)
+                  Netplay::ToggleDesyncNotifications();
               })
 #endif
 

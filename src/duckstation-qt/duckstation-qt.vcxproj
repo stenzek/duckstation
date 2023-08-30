@@ -45,6 +45,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="netplaydialogs.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="qttranslations.cpp" />
     <ClCompile Include="qthost.cpp" />
@@ -89,6 +90,7 @@
     <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="logwindow.h" />
     <ClInclude Include="pch.h" />
+    <QtMoc Include="netplaydialogs.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -262,6 +264,7 @@
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_netplaydialogs.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
@@ -330,6 +333,12 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="setupwizarddialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="netplaycreatesessiondialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="netplayjoinsessiondialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

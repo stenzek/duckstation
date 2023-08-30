@@ -60,6 +60,7 @@
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="netplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -124,5 +125,7 @@
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="netplay.h" />
+    <ClInclude Include="netplay_packets.h" />
   </ItemGroup>
 </Project>
