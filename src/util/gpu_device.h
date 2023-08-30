@@ -373,8 +373,8 @@ public:
     DepthState depth;
     BlendState blend;
 
-    const GPUShader* vertex_shader;
-    const GPUShader* fragment_shader;
+    GPUShader* vertex_shader;
+    GPUShader* fragment_shader;
 
     GPUTexture::Format color_format;
     GPUTexture::Format depth_format;

@@ -18,14 +18,22 @@ public:
 
   void SetDebugName(const std::string_view& name) override;
 
-  ALWAYS_INLINE GLuint GetGLId() const { return m_id; }
+  bool Compile();
+
+  ALWAYS_INLINE GLuint GetGLId() const { return m_id.value(); }
   ALWAYS_INLINE const GPUShaderCache::CacheIndexKey& GetKey() const { return m_key; }
 
 private:
-  OpenGLShader(GPUShaderStage stage, GLuint id, const GPUShaderCache::CacheIndexKey& key);
+  OpenGLShader(GPUShaderStage stage, const GPUShaderCache::CacheIndexKey& key, std::string source);
 
-  GLuint m_id;
   GPUShaderCache::CacheIndexKey m_key;
+  std::string m_source;
+  std::optional<GLuint> m_id;
+  bool m_compile_tried = false;
+
+#ifdef _DEBUG
+  std::string m_debug_name;
+#endif
 };
 
 class OpenGLPipeline final : public GPUPipeline

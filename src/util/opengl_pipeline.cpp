@@ -68,48 +68,54 @@ static void FillFooter(PipelineDiskCacheFooter* footer, u32 version)
                       std::size(footer->driver_version));
 }
 
-OpenGLShader::OpenGLShader(GPUShaderStage stage, GLuint id, const GPUShaderCache::CacheIndexKey& key)
-  : GPUShader(stage), m_id(id), m_key(key)
+OpenGLShader::OpenGLShader(GPUShaderStage stage, const GPUShaderCache::CacheIndexKey& key, std::string source)
+  : GPUShader(stage), m_key(key), m_source(std::move(source))
 {
 }
 
-OpenGLShader::~OpenGLShader() = default;
+OpenGLShader::~OpenGLShader()
+{
+  if (m_id.has_value())
+    glDeleteShader(m_id.value());
+}
 
 void OpenGLShader::SetDebugName(const std::string_view& name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)
-    glObjectLabel(GL_SHADER, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
+  {
+    if (m_id.has_value())
+    {
+      m_debug_name = {};
+      glObjectLabel(GL_SHADER, m_id.value(), static_cast<GLsizei>(name.length()),
+                    static_cast<const GLchar*>(name.data()));
+    }
+    else
+    {
+      m_debug_name = name;
+    }
+  }
 #endif
 }
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+bool OpenGLShader::Compile()
 {
-  // Not supported.. except spir-v maybe? but no point really...
-  return {};
-}
+  if (m_compile_tried)
+    return m_id.has_value();
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
-                                                                const char* entry_point,
-                                                                DynamicHeapArray<u8>* out_binary)
-{
-  if (std::strcmp(entry_point, "main") != 0)
-  {
-    Log_ErrorPrintf("Entry point must be 'main', but got '%s' instead.", entry_point);
-    return {};
-  }
+  m_compile_tried = true;
 
   glGetError();
 
-  GLuint shader = glCreateShader(GetGLShaderType(stage));
+  GLuint shader = glCreateShader(GetGLShaderType(m_stage));
   if (GLenum err = glGetError(); err != GL_NO_ERROR)
   {
     Log_ErrorPrintf("glCreateShader() failed: %u", err);
-    return {};
+    return false;
   }
 
-  const GLchar* string = source.data();
-  const GLint length = static_cast<GLint>(source.length());
+  const GLchar* string = m_source.data();
+  const GLint length = static_cast<GLint>(m_source.length());
   glShaderSource(shader, 1, &string, &length);
   glCompileShader(shader);
 
@@ -134,21 +140,51 @@ std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage s
       Log_ErrorPrintf("Shader failed to compile:\n%s", info_log.c_str());
 
       auto fp = FileSystem::OpenManagedCFile(
-        GetShaderDumpPath(fmt::format("bad_shader_{}.txt", s_next_bad_shader_id++)).c_str(), "wb");
+        GPUDevice::GetShaderDumpPath(fmt::format("bad_shader_{}.txt", s_next_bad_shader_id++)).c_str(), "wb");
       if (fp)
       {
-        std::fwrite(source.data(), source.size(), 1, fp.get());
-        std::fprintf(fp.get(), "\n\nCompile %s shader failed\n", GPUShader::GetStageName(stage));
+        std::fwrite(m_source.data(), m_source.size(), 1, fp.get());
+        std::fprintf(fp.get(), "\n\nCompile %s shader failed\n", GPUShader::GetStageName(m_stage));
         std::fwrite(info_log.c_str(), info_log_length, 1, fp.get());
       }
 
       glDeleteShader(shader);
-      return {};
+      return false;
     }
   }
 
+  m_id = shader;
+
+#ifdef _DEBUG
+  if (glObjectLabel && !m_debug_name.empty())
+  {
+    glObjectLabel(GL_SHADER, shader, static_cast<GLsizei>(m_debug_name.length()),
+                  static_cast<const GLchar*>(m_debug_name.data()));
+    m_debug_name = {};
+  }
+#endif
+
+  return true;
+}
+
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+{
+  // Not supported.. except spir-v maybe? but no point really...
+  return {};
+}
+
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+                                                                const char* entry_point,
+                                                                DynamicHeapArray<u8>* out_binary)
+{
+  if (std::strcmp(entry_point, "main") != 0)
+  {
+    Log_ErrorPrintf("Entry point must be 'main', but got '%s' instead.", entry_point);
+    return {};
+  }
+
   return std::unique_ptr<GPUShader>(
-    new OpenGLShader(stage, shader, GPUShaderCache::GetCacheKey(stage, source, "main")));
+    new OpenGLShader(stage, GPUShaderCache::GetCacheKey(stage, source, entry_point), std::string(source)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -262,6 +298,14 @@ GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& k
 
 GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
 {
+  OpenGLShader* vertex_shader = static_cast<OpenGLShader*>(plconfig.vertex_shader);
+  OpenGLShader* fragment_shader = static_cast<OpenGLShader*>(plconfig.fragment_shader);
+  if (!vertex_shader || !fragment_shader || !vertex_shader->Compile() || !fragment_shader->Compile())
+  {
+    Log_ErrorPrintf("Failed to compile shaders.");
+    return 0;
+  }
+
   glGetError();
   const GLuint program_id = glCreateProgram();
   if (glGetError() != GL_NO_ERROR)
@@ -274,8 +318,8 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
     glProgramParameteri(program_id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
 
   Assert(plconfig.vertex_shader && plconfig.fragment_shader);
-  glAttachShader(program_id, static_cast<const OpenGLShader*>(plconfig.vertex_shader)->GetGLId());
-  glAttachShader(program_id, static_cast<const OpenGLShader*>(plconfig.fragment_shader)->GetGLId());
+  glAttachShader(program_id, vertex_shader->GetGLId());
+  glAttachShader(program_id, fragment_shader->GetGLId());
 
   if (!ShaderGen::UseGLSLBindingLayout())
   {
