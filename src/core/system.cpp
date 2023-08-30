@@ -2979,21 +2979,25 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
   if (is_running_psf)
     return nullptr;
 
+  std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
+
   switch (type)
   {
     case MemoryCardType::PerGame:
     {
       if (s_running_game_serial.empty())
       {
-        Host::AddFormattedOSDMessage(5.0f,
-                                     TRANSLATE("System",
-                                               "Per-game memory card cannot be used for slot %u as the running "
-                                               "game has no code. Using shared card instead."),
-                                     slot + 1u);
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_FA_SD_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no code. Using shared card instead."),
+                      slot + 1u),
+          Host::OSD_INFO_DURATION);
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
       {
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
         return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_running_game_serial.c_str(), slot));
       }
     }
@@ -3002,11 +3006,12 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
     {
       if (s_running_game_title.empty())
       {
-        Host::AddFormattedOSDMessage(5.0f,
-                                     TRANSLATE("System",
-                                               "Per-game memory card cannot be used for slot %u as the running "
-                                               "game has no title. Using shared card instead."),
-                                     slot + 1u);
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_FA_SD_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no title. Using shared card instead."),
+                      slot + 1u),
+          Host::OSD_INFO_DURATION);
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
@@ -3049,6 +3054,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
           }
         }
 
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
         return MemoryCard::Open(card_path.c_str());
       }
     }
@@ -3059,15 +3065,16 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
-        Host::AddFormattedOSDMessage(5.0f,
-                                     TRANSLATE("System",
-                                               "Per-game memory card cannot be used for slot %u as the running "
-                                               "game has no path. Using shared card instead."),
-                                     slot + 1u);
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_FA_SD_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no path. Using shared card instead."),
+                      slot + 1u));
         return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
       }
       else
       {
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
         return MemoryCard::Open(
           g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), slot));
       }
@@ -3075,15 +3082,22 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
 
     case MemoryCardType::Shared:
     {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
       return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
     }
 
     case MemoryCardType::NonPersistent:
+    {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
       return MemoryCard::Create();
+    }
 
     case MemoryCardType::None:
     default:
+    {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
       return nullptr;
+    }
   }
 }
 
