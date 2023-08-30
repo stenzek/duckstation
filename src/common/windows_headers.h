@@ -27,3 +27,6 @@
 #if defined(DeleteFile)
 #undef DeleteFile
 #endif
+#if defined(GetMessage)
+#undef GetMessage
+#endif
