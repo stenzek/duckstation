@@ -146,6 +146,7 @@ bool IsExecuting();
 
 bool IsStartupCancelled();
 void CancelPendingStartup();
+void InterruptExecution();
 
 ConsoleRegion GetRegion();
 DiscRegion GetDiscRegion();

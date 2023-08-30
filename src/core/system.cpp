@@ -345,6 +345,12 @@ void System::CancelPendingStartup()
     s_startup_cancelled.store(true);
 }
 
+void System::InterruptExecution()
+{
+  if (s_system_executing)
+    s_system_interrupted = true;
+}
+
 ConsoleRegion System::GetRegion()
 {
   return s_region;
