@@ -37,6 +37,7 @@
 #include "util/audio_stream.h"
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 #include "util/iso_reader.h"
@@ -54,6 +55,7 @@
 
 #include "fmt/chrono.h"
 #include "fmt/format.h"
+#include "imgui.h"
 #include "xxhash.h"
 
 #include <cctype>
@@ -1109,6 +1111,7 @@ void System::PauseSystem(bool paused)
       PlatformMisc::ResumeScreensaver();
 
     Host::OnSystemPaused();
+    InvalidateDisplay();
   }
   else
   {
@@ -1173,7 +1176,7 @@ bool System::LoadState(const char* filename)
 
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::RenderDisplay(false);
+  InvalidateDisplay();
   Log_VerbosePrintf("Loading state took %.2f msec", load_timer.GetTimeMilliseconds());
   return true;
 }
@@ -1764,6 +1767,15 @@ void System::FrameDone()
   if (s_cheat_list)
     s_cheat_list->Apply();
 
+#ifdef WITH_CHEEVOS
+  if (Achievements::IsActive())
+    Achievements::FrameUpdate();
+#endif
+
+#ifdef WITH_DISCORD_PRESENCE
+  PollDiscordPresence();
+#endif
+
   if (s_frame_step_request)
   {
     s_frame_step_request = false;
@@ -1811,27 +1823,10 @@ void System::FrameDone()
     SaveRunaheadState();
   }
 
-#ifdef WITH_CHEEVOS
-  if (Achievements::IsActive())
-    Achievements::FrameUpdate();
-#endif
-
-#ifdef WITH_DISCORD_PRESENCE
-  PollDiscordPresence();
-#endif
-
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time < s_next_frame_time || s_display_all_frames || s_last_frame_skipped)
   {
-    s_last_frame_skipped = false;
-
-    const bool skip_present = g_gpu_device->ShouldSkipDisplayingFrame();
-    Host::RenderDisplay(skip_present);
-    if (!skip_present && g_gpu_device->IsGPUTimingEnabled())
-    {
-      s_accumulated_gpu_time += g_gpu_device->GetAndResetAccumulatedGPUTime();
-      s_presents_since_last_update++;
-    }
+    s_last_frame_skipped = !PresentDisplay(true);
   }
   else if (current_time >= s_next_frame_time)
   {
@@ -1928,6 +1923,8 @@ void System::SingleStepCPU()
   g_gpu->FlushRender();
   SPU::GeneratePendingSamples();
 
+  InvalidateDisplay();
+
   s_system_executing = false;
 }
 
@@ -1966,7 +1963,7 @@ void System::RecreateSystem()
 
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::RenderDisplay(false);
+  InvalidateDisplay();
 
   if (was_paused)
     PauseSystem(true);
@@ -3488,7 +3485,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
     const bool recreate_device = (g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
-                                   g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation);
+                                  g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation);
 
     Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Switching to %s%s GPU renderer."),
                                  Settings::GetRendererName(g_settings.gpu_renderer),
@@ -3594,7 +3591,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings();
-      Host::InvalidateDisplay();
+      InvalidateDisplay();
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -3909,7 +3906,7 @@ void System::DoRewind()
 
   s_next_frame_time += s_frame_period;
 
-  Host::RenderDisplay(false);
+  InvalidateDisplay();
   Host::PumpMessagesOnCPUThread();
 
   Throttle();
@@ -4578,7 +4575,6 @@ void System::ToggleSoftwareRendering()
   Host::AddKeyedFormattedOSDMessage("SoftwareRendering", 5.0f, TRANSLATE("OSDMessage", "Switching to %s renderer..."),
                                     Settings::GetRendererDisplayName(new_renderer));
   RecreateGPU(new_renderer);
-  Host::InvalidateDisplay();
   ResetPerformanceCounters();
 }
 
@@ -4642,6 +4638,63 @@ void System::HostDisplayResized()
     GTE::UpdateAspectRatio();
 
   g_gpu->UpdateResolutionScale();
+}
+
+bool System::PresentDisplay(bool allow_skip_present)
+{
+  const bool skip_present = allow_skip_present && g_gpu_device->ShouldSkipDisplayingFrame();
+
+  Host::BeginPresentFrame();
+
+  // acquire for IO.MousePos.
+  std::atomic_thread_fence(std::memory_order_acquire);
+
+  if (!skip_present)
+  {
+    FullscreenUI::Render();
+    ImGuiManager::RenderTextOverlays();
+    ImGuiManager::RenderOSDMessages();
+    ImGuiManager::RenderSoftwareCursors();
+  }
+
+  // Debug windows are always rendered, otherwise mouse input breaks on skip.
+  ImGuiManager::RenderOverlayWindows();
+  ImGuiManager::RenderDebugWindows();
+
+  bool do_present;
+  if (g_gpu && !skip_present)
+    do_present = g_gpu->PresentDisplay();
+  else
+    do_present = g_gpu_device->BeginPresent(skip_present);
+
+  if (do_present)
+  {
+    g_gpu_device->RenderImGui();
+    g_gpu_device->EndPresent();
+
+    if (g_gpu_device->IsGPUTimingEnabled())
+    {
+      s_accumulated_gpu_time += g_gpu_device->GetAndResetAccumulatedGPUTime();
+      s_presents_since_last_update++;
+    }
+  }
+  else
+  {
+    // Still need to kick ImGui or it gets cranky.
+    ImGui::Render();
+  }
+
+  ImGuiManager::NewFrame();
+
+  if (g_gpu)
+    g_gpu->RestoreGraphicsAPIState();
+
+  return do_present;
+}
+
+void System::InvalidateDisplay()
+{
+  PresentDisplay(false);
 }
 
 void System::SetTimerResolutionIncreased(bool enabled)

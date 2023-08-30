@@ -55,7 +55,6 @@ static void HotkeyModifyResolutionScale(s32 increment)
     g_gpu->RestoreGraphicsAPIState();
     g_gpu->UpdateSettings();
     System::ClearMemorySaveStates();
-    Host::InvalidateDisplay();
   }
 }
 

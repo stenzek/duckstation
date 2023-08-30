@@ -275,7 +275,7 @@ void Host::UpdateDisplayWindow()
 
   // If we're paused, re-present the current frame at the new window size.
   if (System::IsValid() && System::IsPaused())
-    RenderDisplay(false);
+    System::InvalidateDisplay();
 }
 
 void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
@@ -292,7 +292,7 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
   if (System::IsValid())
   {
     if (System::IsPaused())
-      RenderDisplay(false);
+      System::InvalidateDisplay();
 
     System::HostDisplayResized();
   }
@@ -338,50 +338,3 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
 }
 
 #endif
-
-void Host::RenderDisplay(bool skip_present)
-{
-  Host::BeginPresentFrame();
-
-  // acquire for IO.MousePos.
-  std::atomic_thread_fence(std::memory_order_acquire);
-
-  if (!skip_present)
-  {
-    FullscreenUI::Render();
-    ImGuiManager::RenderTextOverlays();
-    ImGuiManager::RenderOSDMessages();
-    ImGuiManager::RenderSoftwareCursors();
-  }
-
-  // Debug windows are always rendered, otherwise mouse input breaks on skip.
-  ImGuiManager::RenderOverlayWindows();
-  ImGuiManager::RenderDebugWindows();
-
-  bool do_present;
-  if (g_gpu && !skip_present)
-    do_present = g_gpu->PresentDisplay();
-  else
-    do_present = g_gpu_device->BeginPresent(skip_present);
-
-  if (do_present)
-  {
-    g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent();
-  }
-  else
-  {
-    // Still need to kick ImGui or it gets cranky.
-    ImGui::Render();
-  }
-
-  ImGuiManager::NewFrame();
-
-  if (g_gpu)
-    g_gpu->RestoreGraphicsAPIState();
-}
-
-void Host::InvalidateDisplay()
-{
-  RenderDisplay(false);
-}

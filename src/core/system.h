@@ -448,6 +448,10 @@ void RequestDisplaySize(float scale = 0.0f);
 /// Call when host display size changes, use with "match display" aspect ratio setting.
 void HostDisplayResized();
 
+/// Renders the display.
+bool PresentDisplay(bool allow_skip_present);
+void InvalidateDisplay();
+
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////

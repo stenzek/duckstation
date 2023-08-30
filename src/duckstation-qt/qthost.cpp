@@ -415,8 +415,6 @@ void EmuThread::applySettings(bool display_osd_messages /* = false */)
   }
 
   System::ApplySettings(display_osd_messages);
-  if (!FullscreenUI::IsInitialized() && System::IsPaused())
-    redrawDisplayWindow();
 }
 
 void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
@@ -428,8 +426,6 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   }
 
   System::ReloadGameSettings(display_osd_messages);
-  if (!FullscreenUI::IsInitialized() && System::IsPaused())
-    redrawDisplayWindow();
 }
 
 void EmuThread::updateEmuFolders()
@@ -509,11 +505,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
 
   setInitialState(params->override_fullscreen);
 
-  if (!System::BootSystem(std::move(*params)))
-    return;
-
-  // force a frame to be drawn to repaint the window
-  Host::InvalidateDisplay();
+  System::BootSystem(std::move(*params));
 }
 
 void EmuThread::bootOrLoadState(std::string path)
@@ -606,7 +598,7 @@ void EmuThread::redrawDisplayWindow()
   if (!g_gpu_device || System::IsShutdown())
     return;
 
-  Host::RenderDisplay(false);
+  System::InvalidateDisplay();
 }
 
 void EmuThread::toggleFullscreen()
@@ -726,7 +718,6 @@ void Host::OnSystemPaused()
 {
   emit g_emu_thread->systemPaused();
   g_emu_thread->startBackgroundControllerPollTimer();
-  Host::InvalidateDisplay();
 }
 
 void Host::OnSystemResumed()
@@ -1137,7 +1128,6 @@ void EmuThread::singleStepCPU()
     return;
 
   System::SingleStepCPU();
-  Host::InvalidateDisplay();
 }
 
 void EmuThread::dumpRAM(const QString& filename)
@@ -1342,7 +1332,7 @@ void EmuThread::run()
       System::Internal::IdlePollUpdate();
       if (g_gpu_device)
       {
-        Host::RenderDisplay(false);
+        System::PresentDisplay(false);
         if (!g_gpu_device->IsVsyncEnabled())
           g_gpu_device->ThrottlePresentation();
       }

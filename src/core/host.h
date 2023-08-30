@@ -104,10 +104,6 @@ void ReleaseGPUDevice();
 /// Called before drawing the OSD and other display elements.
 void BeginPresentFrame();
 
-/// Provided by the host; renders the display.
-void RenderDisplay(bool skip_present);
-void InvalidateDisplay();
-
 namespace Internal {
 /// Retrieves the base settings layer. Must call with lock held.
 SettingsInterface* GetBaseSettingsLayer();
