@@ -191,7 +191,7 @@ void MemoryCardSettingsWidget::updateMemoryCardPath(int index)
   std::string path(
     m_dialog->getEffectiveStringValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index).c_str()));
   if (!Path::IsAbsolute(path))
-    path = Path::Combine(EmuFolders::MemoryCards, path);
+    path = Path::Canonicalize(Path::Combine(EmuFolders::MemoryCards, path));
 
   QSignalBlocker db(m_port_ui[index].memory_card_path);
   m_port_ui[index].memory_card_path->setText(QString::fromStdString(path));
