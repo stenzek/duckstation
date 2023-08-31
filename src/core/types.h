@@ -116,11 +116,20 @@ enum class DisplayAspectRatio : u8
   Count
 };
 
-enum class DisplayAlignment
+enum class DisplayAlignment : u8
 {
   LeftOrTop,
   Center,
   RightOrBottom,
+  Count
+};
+
+enum class DisplayScalingMode : u8
+{
+  Nearest,
+  BilinearSmooth,
+  NearestInteger,
+  BilinearSharp,
   Count
 };
 

@@ -286,9 +286,9 @@ void GPU_HW::RestoreGraphicsAPIState()
   m_batch_ubo_dirty = true;
 }
 
-void GPU_HW::UpdateSettings()
+void GPU_HW::UpdateSettings(const Settings& old_settings)
 {
-  GPU::UpdateSettings();
+  GPU::UpdateSettings(old_settings);
 
   const u32 resolution_scale = CalculateResolutionScale();
   const u32 multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
@@ -297,6 +297,7 @@ void GPU_HW::UpdateSettings()
   const bool use_uv_limits = ShouldUseUVLimits();
   const bool disable_color_perspective = m_supports_disable_color_perspective && ShouldDisableColorPerspective();
 
+  // TODO: Use old_settings
   const bool framebuffer_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples || m_downsample_mode != downsample_mode);
   const bool shaders_changed =
@@ -429,7 +430,7 @@ void GPU_HW::UpdateResolutionScale()
   GPU::UpdateResolutionScale();
 
   if (CalculateResolutionScale() != m_resolution_scale)
-    UpdateSettings();
+    UpdateSettings(g_settings);
 }
 
 GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const

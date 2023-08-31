@@ -426,6 +426,7 @@ bool GPUDevice::CreateResources()
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
+  plconfig.blend.write_mask = 0x7;
   plconfig.color_format = HasSurface() ? m_window_info.surface_format : GPUTexture::Format::RGBA8;
   plconfig.depth_format = GPUTexture::Format::Unknown;
   plconfig.samples = 1;

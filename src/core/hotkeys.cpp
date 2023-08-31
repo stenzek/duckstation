@@ -48,12 +48,13 @@ static void HotkeyModifyResolutionScale(s32 increment)
   if (new_resolution_scale == g_settings.gpu_resolution_scale)
     return;
 
+  const Settings old_settings = g_settings;
   g_settings.gpu_resolution_scale = new_resolution_scale;
 
   if (System::IsValid())
   {
     g_gpu->RestoreGraphicsAPIState();
-    g_gpu->UpdateSettings();
+    g_gpu->UpdateSettings(old_settings);
     System::ClearMemorySaveStates();
   }
 }
@@ -309,9 +310,10 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
+                  Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   g_gpu->RestoreGraphicsAPIState();
-                  g_gpu->UpdateSettings();
+                  g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
@@ -374,12 +376,14 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle PGXP Depth Buffer"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
+                  const Settings old_settings = g_settings;
+                  g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
+
                   g_gpu->RestoreGraphicsAPIState();
-                  g_gpu->UpdateSettings();
+                  g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
                                            g_settings.gpu_pgxp_depth_buffer ?
@@ -393,12 +397,14 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
               [](s32 pressed) {
                 if (pressed && System::IsValid())
                 {
-                  g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
+                  const Settings old_settings = g_settings;
+                  g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
+
                   g_gpu->RestoreGraphicsAPIState();
-                  g_gpu->UpdateSettings();
+                  g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPCPU",
                                            g_settings.gpu_pgxp_cpu ?

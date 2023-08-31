@@ -3883,7 +3883,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
   DrawEnumSetting(
     bsi, FSUI_CSTR("Position"), FSUI_CSTR("Determines the position on the screen when black borders must be added."),
     "Display", "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
-    &Settings::GetDisplayAlignmentDisplayName, &Settings::GetDisplayAlignmentDisplayName, DisplayAlignment::Count);
+    &Settings::GetDisplayAlignmentName, &Settings::GetDisplayAlignmentDisplayName, DisplayAlignment::Count);
 
   DrawEnumSetting(bsi, FSUI_CSTR("Downsampling"),
                   FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
@@ -3892,17 +3892,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
                   (renderer != GPURenderer::Software));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Linear Upscaling"),
-                    FSUI_CSTR("Uses a bilinear filter when upscaling to display, smoothing out the image."), "Display",
-                    "LinearFiltering", true);
-
-  DrawToggleSetting(bsi, FSUI_CSTR("Integer Upscaling"),
-                    FSUI_CSTR("Adds padding to ensure pixels are a whole number in size."), "Display", "IntegerScaling",
-                    false);
-
-  DrawToggleSetting(bsi, FSUI_CSTR("Stretch To Fit"),
-                    FSUI_CSTR("Fills the window with the active display area, regardless of the aspect ratio."),
-                    "Display", "Stretch", false);
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Scaling"),
+    FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
+    "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
+    &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
 
   DrawToggleSetting(bsi, FSUI_CSTR("Internal Resolution Screenshots"),
                     FSUI_CSTR("Saves screenshots at internal render resolution and without postprocessing."), "Display",

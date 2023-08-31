@@ -33,7 +33,7 @@ public:
   bool Initialize() override;
   bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
   void Reset(bool clear_vram) override;
-  void UpdateSettings() override;
+  void UpdateSettings(const Settings& old_settings) override;
 
 protected:
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;

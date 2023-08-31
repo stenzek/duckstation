@@ -120,6 +120,7 @@ struct Settings
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
+  DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
   u16 display_aspect_ratio_custom_numerator = 0;
   u16 display_aspect_ratio_custom_denominator = 0;
   s16 display_active_start_offset = 0;
@@ -128,9 +129,6 @@ struct Settings
   s8 display_line_end_offset = 0;
   bool display_force_4_3_for_24bit = false;
   bool gpu_24bit_chroma_smoothing = false;
-  bool display_linear_filtering = true;
-  bool display_integer_scaling = false;
-  bool display_stretch = false;
   bool display_show_osd_messages = true;
   bool display_show_fps = false;
   bool display_show_speed = false;
@@ -387,6 +385,10 @@ struct Settings
   static const char* GetDisplayAlignmentName(DisplayAlignment alignment);
   static const char* GetDisplayAlignmentDisplayName(DisplayAlignment alignment);
 
+  static std::optional<DisplayScalingMode> ParseDisplayScaling(const char* str);
+  static const char* GetDisplayScalingName(DisplayScalingMode mode);
+  static const char* GetDisplayScalingDisplayName(DisplayScalingMode mode);
+
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);
   static const char* GetAudioBackendDisplayName(AudioBackend backend);
@@ -448,6 +450,7 @@ struct Settings
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
+  static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;

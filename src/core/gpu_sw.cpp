@@ -97,9 +97,9 @@ void GPU_SW::Reset(bool clear_vram)
   m_backend.Reset(clear_vram);
 }
 
-void GPU_SW::UpdateSettings()
+void GPU_SW::UpdateSettings(const Settings& old_settings)
 {
-  GPU::UpdateSettings();
+  GPU::UpdateSettings(old_settings);
   m_backend.UpdateSettings();
 }
 

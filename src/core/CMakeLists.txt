@@ -46,6 +46,8 @@ add_library(core
     gpu_hw.h
     gpu_hw_shadergen.cpp
     gpu_hw_shadergen.h
+    gpu_shadergen.cpp
+    gpu_shadergen.h
     gpu_sw.cpp
     gpu_sw.h
     gpu_sw_backend.cpp

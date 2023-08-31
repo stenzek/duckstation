@@ -210,7 +210,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "#define SAMPLE_TEXTURE(name, coords) texture(name, coords)\n";
     ss << "#define SAMPLE_TEXTURE_OFFSET(name, coords, offset) textureOffset(name, coords, offset)\n";
     ss << "#define SAMPLE_TEXTURE_LEVEL(name, coords, level) textureLod(name, coords, level)\n";
-    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLodOffset(name, coords, level, offset)\n";
+    ss << "#define SAMPLE_TEXTURE_LEVEL_OFFSET(name, coords, level, offset) textureLodOffset(name, coords, level, "
+          "offset)\n";
     ss << "#define LOAD_TEXTURE(name, coords, mip) texelFetch(name, coords, mip)\n";
     ss << "#define LOAD_TEXTURE_MS(name, coords, sample) texelFetch(name, coords, int(sample))\n";
     ss << "#define LOAD_TEXTURE_OFFSET(name, coords, mip, offset) texelFetchOffset(name, coords, mip, offset)\n";
@@ -303,7 +304,6 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
     ss << "cbuffer UBOBlock : register(b0)\n";
     m_has_uniform_buffer = true;
   }
-
 }
 
 void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
@@ -676,44 +676,6 @@ std::string ShaderGen::GenerateCopyFragmentShader()
   o_col0 = SAMPLE_TEXTURE(samp0, coords);
 }
 )";
-
-  return ss.str();
-}
-
-std::string ShaderGen::GenerateDisplayVertexShader()
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
-  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
-  ss << R"(
-{
-  float2 pos = float2(float((v_id << 1) & 2u), float(v_id & 2u));
-  v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
-  v_pos = float4(pos * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  #if API_VULKAN
-    v_pos.y = -v_pos.y;
-  #endif
-}
-)";
-
-  return ss.str();
-}
-
-std::string ShaderGen::GenerateDisplayFragmentShader(bool set_alpha_to_one /* = false */)
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
-  ss << "{\n";
-
-  if (set_alpha_to_one)
-    ss << "o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).rgb, 1.0f);";
-  else
-    ss << "o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);";
-
-  ss << "\n}\n";
 
   return ss.str();
 }

@@ -41,9 +41,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLinearFiltering, "Display", "LinearFiltering", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayIntegerScaling, "Display", "IntegerScaling", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayStretch, "Display", "Stretch", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
+                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
+                                               Settings::DEFAULT_DISPLAY_SCALING);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.internalResolutionScreenshots, "Display",
                                                "InternalResolutionScreenshots", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, "Display", "VSync", false);
@@ -66,10 +66,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
           &DisplaySettingsWidget::onGPUFullscreenModeIndexChanged);
   connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &DisplaySettingsWidget::onAspectRatioChanged);
-  connect(m_ui.displayIntegerScaling, &QCheckBox::stateChanged, this,
-          &DisplaySettingsWidget::onIntegerFilteringChanged);
   populateGPUAdaptersAndResolutions();
-  onIntegerFilteringChanged();
   onAspectRatioChanged();
 
   dialog->registerWidgetHelp(
@@ -100,18 +97,9 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* pa
     m_ui.displayAlignment, tr("Position"),
     QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
     tr("Determines the position on the screen when black borders must be added."));
-  dialog->registerWidgetHelp(m_ui.displayLinearFiltering, tr("Linear Upscaling"), tr("Checked"),
-                             tr("Uses bilinear texture filtering when displaying the console's framebuffer to the "
-                                "screen. <br>Disabling filtering "
-                                "will producer a sharper, blockier/pixelated image. Enabling will smooth out the "
-                                "image. <br>The option will be less "
-                                "noticable the higher the resolution scale."));
   dialog->registerWidgetHelp(
-    m_ui.displayIntegerScaling, tr("Integer Upscaling"), tr("Unchecked"),
-    tr("Adds padding to the display area to ensure that the ratio between pixels on the host to "
-       "pixels in the console is an integer number. <br>May result in a sharper image in some 2D games."));
-  dialog->registerWidgetHelp(m_ui.displayStretch, tr("Stretch To Fill"), tr("Unchecked"),
-                             tr("Fills the window with the active display area, regardless of the aspect ratio."));
+    m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
+    tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
   dialog->registerWidgetHelp(m_ui.internalResolutionScreenshots, tr("Internal Resolution Screenshots"), tr("Unchecked"),
                              tr("Saves screenshots at internal render resolution and without postprocessing. If this "
                                 "option is disabled, the screenshots will be taken at the window's resolution. "
@@ -175,6 +163,12 @@ void DisplaySettingsWidget::setupAdditionalUi()
   {
     m_ui.displayCropMode->addItem(
       QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayScalingMode::Count); i++)
+  {
+    m_ui.displayScaling->addItem(
+      QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAlignment::Count); i++)
@@ -287,13 +281,6 @@ void DisplaySettingsWidget::onGPUFullscreenModeIndexChanged()
   }
 
   m_dialog->setStringSettingValue("GPU", "FullscreenMode", m_ui.fullscreenMode->currentText().toUtf8().constData());
-}
-
-void DisplaySettingsWidget::onIntegerFilteringChanged()
-{
-  const bool integer_scaling = m_dialog->getEffectiveBoolValue("Display", "IntegerScaling", false);
-  m_ui.displayLinearFiltering->setEnabled(!integer_scaling);
-  m_ui.displayStretch->setEnabled(!integer_scaling);
 }
 
 void DisplaySettingsWidget::onAspectRatioChanged()

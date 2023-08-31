@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu.h"
 #include "dma.h"
+#include "gpu_shadergen.h"
 #include "host.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
@@ -59,7 +60,7 @@ bool GPU::Initialize()
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
 
-  if (!CompilePipelines())
+  if (!CompileDisplayPipeline())
   {
     Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
     return false;
@@ -70,7 +71,7 @@ bool GPU::Initialize()
   return true;
 }
 
-void GPU::UpdateSettings()
+void GPU::UpdateSettings(const Settings& old_settings)
 {
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_fifo_size = g_settings.gpu_fifo_size;
@@ -85,6 +86,12 @@ void GPU::UpdateSettings()
 
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
+
+  if (g_settings.display_scaling != old_settings.display_scaling)
+  {
+    if (!CompileDisplayPipeline())
+      Panic("Failed to compile display pipeline on settings change.");
+  }
 
   g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
 }
@@ -1540,9 +1547,9 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window_changed = true;
 }
 
-bool GPU::CompilePipelines()
+bool GPU::CompileDisplayPipeline()
 {
-  ShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend);
+  GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend);
 
   GPUPipeline::GraphicsConfig plconfig;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
@@ -1556,20 +1563,35 @@ bool GPU::CompilePipelines()
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
 
-  std::unique_ptr<GPUShader> display_vs =
-    g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateDisplayVertexShader());
-  std::unique_ptr<GPUShader> display_fs =
-    g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateDisplayFragmentShader(true));
-  if (!display_vs || !display_fs)
-    return false;
-  GL_OBJECT_NAME(display_vs, "Display Vertex Shader");
-  GL_OBJECT_NAME(display_fs, "Display Fragment Shader");
+  std::string vs = shadergen.GenerateDisplayVertexShader();
+  std::string fs;
+  switch (g_settings.display_scaling)
+  {
+    case DisplayScalingMode::BilinearSharp:
+      fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
+      break;
 
-  plconfig.vertex_shader = display_vs.get();
-  plconfig.fragment_shader = display_fs.get();
+    case DisplayScalingMode::Nearest:
+    case DisplayScalingMode::BilinearSmooth:
+    case DisplayScalingMode::NearestInteger:
+    default:
+      fs = shadergen.GenerateDisplayFragmentShader();
+      break;
+  }
+
+  std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, vs);
+  std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, fs);
+  if (!vso || !fso)
+    return false;
+  GL_OBJECT_NAME(vso, "Display Vertex Shader");
+  GL_OBJECT_NAME(fso, "Display Fragment Shader [%s]", Settings::GetDisplayScalingName(g_settings.display_scaling));
+
+  plconfig.vertex_shader = vso.get();
+  plconfig.fragment_shader = fso.get();
   if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
-  GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline");
+  GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline [%s]",
+                 Settings::GetDisplayScalingName(g_settings.display_scaling));
 
   return true;
 }
@@ -1620,16 +1642,55 @@ bool GPU::PresentDisplay()
 
   const Common::Rectangle<s32> draw_rect =
     CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
-  return RenderDisplay(nullptr, draw_rect, g_settings.display_linear_filtering, true);
+  return RenderDisplay(nullptr, draw_rect, true);
 }
 
-bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool linear_filter,
-                        bool postfx)
+bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool postfx)
 {
   GL_SCOPE("RenderDisplay: %dx%d at %d,%d", draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
 
   if (m_display_texture)
     m_display_texture->MakeReadyForSampling();
+
+  bool texture_filter_linear = false;
+  bool bilinear_adjust = false;
+
+  struct Uniforms
+  {
+    float src_rect[4];
+    float src_size[4];
+    float params[4];
+  } uniforms;
+  std::memset(uniforms.params, 0, sizeof(uniforms.params));
+
+  switch (g_settings.display_scaling)
+  {
+    case DisplayScalingMode::Nearest:
+    case DisplayScalingMode::NearestInteger:
+      break;
+
+    case DisplayScalingMode::BilinearSmooth:
+      texture_filter_linear = true;
+      bilinear_adjust = true;
+      break;
+
+    case DisplayScalingMode::BilinearSharp:
+    {
+      texture_filter_linear = true;
+      uniforms.params[0] = std::max(
+        std::floor(static_cast<float>(draw_rect.GetWidth()) / static_cast<float>(m_display_texture_view_width)), 1.0f);
+      uniforms.params[1] = std::max(
+        std::floor(static_cast<float>(draw_rect.GetHeight()) / static_cast<float>(m_display_texture_view_height)),
+        1.0f);
+      uniforms.params[2] = 0.5f - 0.5f / uniforms.params[0];
+      uniforms.params[3] = 0.5f - 0.5f / uniforms.params[1];
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 
   const GPUTexture::Format hdformat =
     (target && target->GetRT()) ? target->GetRT()->GetFormat() : g_gpu_device->GetWindowFormat();
@@ -1654,29 +1715,30 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
     return true;
 
   g_gpu_device->SetPipeline(m_display_pipeline.get());
-  g_gpu_device->SetTextureSampler(0, m_display_texture,
-                                  linear_filter ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetTextureSampler(
+    0, m_display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
 
-  const float position_adjust = linear_filter ? 0.5f : 0.0f;
-  const float size_adjust = linear_filter ? 1.0f : 0.0f;
-  const float uniforms[4] = {(static_cast<float>(m_display_texture_view_x) + position_adjust) /
-                               static_cast<float>(m_display_texture->GetWidth()),
-                             (static_cast<float>(m_display_texture_view_y) + position_adjust) /
-                               static_cast<float>(m_display_texture->GetHeight()),
-                             (static_cast<float>(m_display_texture_view_width) - size_adjust) /
-                               static_cast<float>(m_display_texture->GetWidth()),
-                             (static_cast<float>(m_display_texture_view_height) - size_adjust) /
-                               static_cast<float>(m_display_texture->GetHeight())};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+  const float position_adjust = bilinear_adjust ? 0.5f : 0.0f;
+  const float size_adjust = bilinear_adjust ? 1.0f : 0.0f;
+  const float rcp_width = 1.0f / static_cast<float>(m_display_texture->GetWidth());
+  const float rcp_height = 1.0f / static_cast<float>(m_display_texture->GetHeight());
+  uniforms.src_rect[0] = (static_cast<float>(m_display_texture_view_x) + position_adjust) * rcp_width;
+  uniforms.src_rect[1] = (static_cast<float>(m_display_texture_view_y) + position_adjust) * rcp_height;
+  uniforms.src_rect[2] = (static_cast<float>(m_display_texture_view_width) - size_adjust) * rcp_width;
+  uniforms.src_rect[3] = (static_cast<float>(m_display_texture_view_height) - size_adjust) * rcp_height;
+  uniforms.src_size[0] = static_cast<float>(m_display_texture->GetWidth());
+  uniforms.src_size[1] = static_cast<float>(m_display_texture->GetHeight());
+  uniforms.src_size[2] = rcp_width;
+  uniforms.src_size[3] = rcp_height;
+  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
   g_gpu_device->SetViewportAndScissor(draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
   g_gpu_device->Draw(3, 0);
 
   if (really_postfx)
   {
-    return PostProcessing::Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
-                                          draw_rect.GetHeight(), m_display_texture_view_width,
-                                          m_display_texture_view_height);
+    return PostProcessing::Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
+                                 m_display_texture_view_width, m_display_texture_view_height);
   }
   else
   {
@@ -1689,10 +1751,9 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
                                                 bool apply_aspect_ratio /* = true */) const
 {
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-  const float display_aspect_ratio = g_settings.display_stretch ? window_ratio : m_display_aspect_ratio;
   const float x_scale =
     apply_aspect_ratio ?
-      (display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
+      (m_display_aspect_ratio / (static_cast<float>(m_display_width) / static_cast<float>(m_display_height))) :
       1.0f;
   const float display_width = g_settings.display_stretch_vertically ? static_cast<float>(m_display_width) :
                                                                       static_cast<float>(m_display_width) * x_scale;
@@ -1717,12 +1778,12 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
-    if (g_settings.display_integer_scaling)
+    if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
     {
-      if (g_settings.display_integer_scaling)
+      if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
         *out_left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
       else
         *out_left_padding = 0.0f;
@@ -1751,7 +1812,7 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
   {
     // align in middle horizontally
     scale = static_cast<float>(window_height) / display_height;
-    if (g_settings.display_integer_scaling)
+    if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
@@ -1776,7 +1837,7 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
 
     if (out_top_padding)
     {
-      if (g_settings.display_integer_scaling)
+      if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
         *out_top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
       else
         *out_top_padding = 0.0f;
@@ -1974,7 +2035,8 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
 
   g_gpu_device->ClearRenderTarget(render_texture.get(), 0);
 
-  RenderDisplay(render_fb.get(), draw_rect, g_settings.display_linear_filtering, postfx);
+  // TODO: this should use copy shader instead.
+  RenderDisplay(render_fb.get(), draw_rect, postfx);
 
   g_gpu_device->SetFramebuffer(nullptr);
 

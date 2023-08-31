@@ -161,7 +161,7 @@ void Settings::Load(SettingsInterface& si)
   region =
     ParseConsoleRegionName(
       si.GetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)).c_str())
-      .value_or(DEFAULT_CONSOLE_REGION);
+    .value_or(DEFAULT_CONSOLE_REGION);
   enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
@@ -192,7 +192,7 @@ void Settings::Load(SettingsInterface& si)
   cpu_execution_mode =
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
-      .value_or(DEFAULT_CPU_EXECUTION_MODE);
+    .value_or(DEFAULT_CPU_EXECUTION_MODE);
   cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
   cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
@@ -201,11 +201,11 @@ void Settings::Load(SettingsInterface& si)
   cpu_recompiler_block_linking = si.GetBoolValue("CPU", "RecompilerBlockLinking", true);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
   cpu_fastmem_mode = ParseCPUFastmemMode(
-                       si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
-                       .value_or(DEFAULT_CPU_FASTMEM_MODE);
+    si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
+    .value_or(DEFAULT_CPU_FASTMEM_MODE);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
-                   .value_or(DEFAULT_GPU_RENDERER);
+    .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
@@ -220,11 +220,11 @@ void Settings::Load(SettingsInterface& si)
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
-      .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+    .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_downsample_mode =
     ParseDownsampleModeName(
       si.GetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)).c_str())
-      .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
+    .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
@@ -243,11 +243,11 @@ void Settings::Load(SettingsInterface& si)
   display_crop_mode =
     ParseDisplayCropMode(
       si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)).c_str())
-      .value_or(DEFAULT_DISPLAY_CROP_MODE);
+    .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
-      .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+    .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_aspect_ratio_custom_numerator = static_cast<u16>(
     std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
   display_aspect_ratio_custom_denominator = static_cast<u16>(
@@ -255,15 +255,15 @@ void Settings::Load(SettingsInterface& si)
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
-      .value_or(DEFAULT_DISPLAY_ALIGNMENT);
+    .value_or(DEFAULT_DISPLAY_ALIGNMENT);
+  display_scaling =
+    ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
+    .value_or(DEFAULT_DISPLAY_SCALING);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
   display_line_start_offset = static_cast<s8>(si.GetIntValue("Display", "LineStartOffset", 0));
   display_line_end_offset = static_cast<s8>(si.GetIntValue("Display", "LineEndOffset", 0));
-  display_linear_filtering = si.GetBoolValue("Display", "LinearFiltering", true);
-  display_integer_scaling = si.GetBoolValue("Display", "IntegerScaling", false);
-  display_stretch = si.GetBoolValue("Display", "Stretch", false);
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
@@ -292,13 +292,13 @@ void Settings::Load(SettingsInterface& si)
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
-      .value_or(DEFAULT_AUDIO_BACKEND);
+    .value_or(DEFAULT_AUDIO_BACKEND);
   audio_driver = si.GetStringValue("Audio", "Driver");
   audio_output_device = si.GetStringValue("Audio", "OutputDevice");
   audio_stretch_mode =
     AudioStream::ParseStretchMode(
       si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
-      .value_or(DEFAULT_AUDIO_STRETCH_MODE);
+    .value_or(DEFAULT_AUDIO_STRETCH_MODE);
   audio_output_latency_ms = si.GetUIntValue("Audio", "OutputLatencyMS", DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
   audio_buffer_ms = si.GetUIntValue("Audio", "BufferMS", DEFAULT_AUDIO_BUFFER_MS);
   audio_output_volume = si.GetUIntValue("Audio", "OutputVolume", 100);
@@ -323,14 +323,14 @@ void Settings::Load(SettingsInterface& si)
   multitap_mode =
     ParseMultitapModeName(
       si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
-      .value_or(DEFAULT_MULTITAP_MODE);
+    .value_or(DEFAULT_MULTITAP_MODE);
 
   controller_types[0] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(0).c_str(), "Type",
-                                                                  GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
-                                                  .c_str())
-                          .value_or(DEFAULT_CONTROLLER_1_TYPE);
+    GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
+    .c_str())
+    .value_or(DEFAULT_CONTROLLER_1_TYPE);
 
-  const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
+  const std::array<bool, 2> mtap_enabled = { {IsPort1MultitapEnabled(), IsPort2MultitapEnabled()} };
   for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     // Ignore types when multitap not enabled
@@ -342,19 +342,19 @@ void Settings::Load(SettingsInterface& si)
     }
 
     controller_types[i] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
-                                                                    GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
-                                                    .c_str())
-                            .value_or(DEFAULT_CONTROLLER_2_TYPE);
+      GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
+      .c_str())
+      .value_or(DEFAULT_CONTROLLER_2_TYPE);
   }
 
   memory_card_types[0] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
-      .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
+    .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
   memory_card_types[1] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
-      .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
+    .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
@@ -372,7 +372,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
-                .value_or(DEFAULT_LOG_LEVEL);
+    .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
   log_to_console = si.GetBoolValue("Logging", "LogToConsole", DEFAULT_LOG_TO_CONSOLE);
   log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
@@ -401,6 +401,12 @@ void Settings::Load(SettingsInterface& si)
     si.GetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
   texture_replacements.dump_vram_write_height_threshold =
     si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
+
+#ifdef __ANDROID__
+  // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
+  if (si.GetBoolValue("Display", "Stretch", false))
+    display_aspect_ratio = DisplayAspectRatio::MatchWindow;
+#endif
 }
 
 void Settings::Save(SettingsInterface& si) const
@@ -479,11 +485,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
+  si.SetBoolValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
   si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
   si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
-  si.SetBoolValue("Display", "LinearFiltering", display_linear_filtering);
-  si.SetBoolValue("Display", "IntegerScaling", display_integer_scaling);
-  si.SetBoolValue("Display", "Stretch", display_stretch);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
@@ -626,18 +630,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   {
     Log_WarningPrintf("Disabling PCDrv because no root directory is specified.");
     g_settings.pcdrv_enable = false;
-  }
-
-  if (g_settings.display_integer_scaling && g_settings.display_linear_filtering)
-  {
-    Log_WarningPrintf("Disabling linear filter due to integer upscaling.");
-    g_settings.display_linear_filtering = false;
-  }
-
-  if (g_settings.display_integer_scaling && g_settings.display_stretch)
-  {
-    Log_WarningPrintf("Disabling stretch due to integer upscaling.");
-    g_settings.display_stretch = false;
   }
 
   if (g_settings.gpu_pgxp_enable)
@@ -1091,7 +1083,7 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 
 static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
   {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"),
-   TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Match Window)"), TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3",
+   TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"), TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3",
    "16:9", "19:9", "20:9", "PAR 1:1"}};
 static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
   {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
@@ -1172,7 +1164,44 @@ const char* Settings::GetDisplayAlignmentName(DisplayAlignment alignment)
 
 const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
 {
-  return s_display_alignment_display_names[static_cast<int>(alignment)];
+  return Host::TranslateToCString("DisplayAlignment", s_display_alignment_display_names[static_cast<int>(alignment)]);
+}
+
+static std::array<const char*, static_cast<size_t>(DisplayScalingMode::Count)> s_display_scaling_names = {{
+  "Nearest",
+  "BilinearSmooth",
+  "NearestInteger",
+  "BilinearSharp",
+}};
+static std::array<const char*, static_cast<size_t>(DisplayScalingMode::Count)> s_display_scaling_display_names = {{
+  TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor"),
+  TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Smooth)"),
+  TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor (Integer)"),
+  TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Sharp)"),
+}};
+
+std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_scaling_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayScalingMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
+{
+  return s_display_scaling_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
+{
+  return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
 }
 
 static constexpr const char* s_audio_backend_names[] = {
@@ -1470,8 +1499,12 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(
+             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), false) &&
+           result;
+  result = FileSystem::EnsureDirectoryExists(
+             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) &&
+           result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
   return result;
 }

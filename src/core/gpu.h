@@ -27,6 +27,7 @@ class GPUFramebuffer;
 class GPUTexture;
 class GPUPipeline;
 
+struct Settings;
 class TimingEvent;
 
 namespace Threading {
@@ -151,7 +152,7 @@ public:
   void SynchronizeCRTC();
 
   /// Recompile shaders/recreate framebuffers when needed.
-  virtual void UpdateSettings();
+  virtual void UpdateSettings(const Settings& old_settings);
 
   /// Updates the resolution scale when it's set to automatic.
   virtual void UpdateResolutionScale();
@@ -582,7 +583,7 @@ protected:
                                              float* out_top_padding, float* out_scale, float* out_x_scale,
                                              bool apply_aspect_ratio = true) const;
 
-  bool RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool linear_filter, bool postfx);
+  bool RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
 
   s32 m_display_width = 0;
   s32 m_display_height = 0;
@@ -612,7 +613,7 @@ protected:
   Stats m_last_stats = {};
 
 private:
-  bool CompilePipelines();
+  bool CompileDisplayPipeline();
 
   using GP0CommandHandler = bool (GPU::*)();
   using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;

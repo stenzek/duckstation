@@ -2267,7 +2267,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
     {
       media_filename.resize(header.media_filename_length);
       if (!state->SeekAbsolute(header.offset_to_media_filename) ||
-        !state->Read2(media_filename.data(), header.media_filename_length))
+          !state->Read2(media_filename.data(), header.media_filename_length))
       {
         return false;
       }
@@ -2288,7 +2288,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
             Host::AddFormattedOSDMessage(
               30.0f,
               TRANSLATE("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
-                "existing image '%s', this may result in instability."),
+                                      "existing image '%s', this may result in instability."),
               media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
             media = std::move(old_media);
             header.media_subimage_index = media->GetCurrentSubImage();
@@ -2296,8 +2296,8 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
           else
           {
             Host::ReportFormattedErrorAsync("Error",
-              TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
-              media_filename.c_str(), error.GetDescription().c_str());
+                                            TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
+                                            media_filename.c_str(), error.GetDescription().c_str());
             return false;
           }
         }
@@ -2310,8 +2310,8 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
     {
       const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
       if (header.media_subimage_index >= num_subimages ||
-        (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
-          !media->SwitchSubImage(header.media_subimage_index, &error)))
+          (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
+           !media->SwitchSubImage(header.media_subimage_index, &error)))
       {
         Host::ReportFormattedErrorAsync(
           "Error", TRANSLATE("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
@@ -3592,6 +3592,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.display_alignment != old_settings.display_alignment ||
+        g_settings.display_scaling != old_settings.display_scaling ||
         g_settings.display_show_gpu != old_settings.display_show_gpu ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
         g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
@@ -3604,7 +3605,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.rewind_enable != old_settings.rewind_enable ||
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
-      g_gpu->UpdateSettings();
+      g_gpu->UpdateSettings(old_settings);
       InvalidateDisplay();
     }
 
