@@ -93,8 +93,6 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
   sw.DoEx(&button_state, 44, static_cast<u16>(0xFFFF));
   if (apply_input_state)
     m_button_state = button_state;
-  else
-    m_analog_mode = old_analog_mode;
 
   sw.Do(&m_command);
 
