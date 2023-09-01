@@ -122,7 +122,7 @@
         <location filename="../achievementsettingswidget.ui" line="38"/>
         <location filename="../achievementsettingswidget.cpp" line="48"/>
         <source>Enable Rich Presence</source>
-        <translation type="unfinished">Включить Rich Presence</translation>
+        <translation>Включить статус активности</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="80"/>
@@ -623,17 +623,17 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="351"/>
         <source>Enable PCDrv</source>
-        <translation type="unfinished">Включить PCDrv</translation>
+        <translation>Включить PCDrv</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="352"/>
         <source>Enable PCDrv Writes</source>
-        <translation type="unfinished">Включить запись PCDrv</translation>
+        <translation>Включить запись PCDrv</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="353"/>
         <source>PCDrv Root Directory</source>
-        <translation type="unfinished">Корневой каталог PCDrv</translation>
+        <translation>Корневой каталог PCDrv</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="253"/>
@@ -844,42 +844,42 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_controller.cpp" line="820"/>
         <source>Left Stick Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="821"/>
         <source>Left Stick Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="822"/>
         <source>Left Stick Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="823"/>
         <source>Left Stick Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="824"/>
         <source>Right Stick Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="825"/>
         <source>Right Stick Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="826"/>
         <source>Right Stick Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="827"/>
         <source>Right Stick Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="834"/>
@@ -1064,42 +1064,42 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="368"/>
         <source>Left Stick Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="369"/>
         <source>Left Stick Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="370"/>
         <source>Left Stick Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="371"/>
         <source>Left Stick Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Левый джойстик вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="372"/>
         <source>Right Stick Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик влево</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="373"/>
         <source>Right Stick Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вправо</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="374"/>
         <source>Right Stick Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вниз</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="375"/>
         <source>Right Stick Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Правый джойстик вверх</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="382"/>
@@ -2585,7 +2585,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="138"/>
         <source>No, take me back to safety.</source>
-        <translation type="unfinished">Нет, верни меня в безопасное место.</translation>
+        <translation>Нет, верни меня в безопасное место.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="135"/>
@@ -4263,22 +4263,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/digital_controller.cpp" line="153"/>
         <source>D-Pad Up</source>
-        <translation type="unfinished">Крестовина вверх</translation>
+        <translation>Крестовина вверх</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="154"/>
         <source>D-Pad Right</source>
-        <translation type="unfinished">Крестовина вправо</translation>
+        <translation>Крестовина вправо</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="155"/>
         <source>D-Pad Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Крестовина вниз</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="156"/>
         <source>D-Pad Left</source>
-        <translation type="unfinished">Крестовина влево</translation>
+        <translation>Крестовина влево</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="157"/>
@@ -4795,7 +4795,7 @@ Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-        <translation type="unfinished">Идентификатор игры: %1
+        <translation>Идентификатор игры: %1
 Название игры: %2
 Достижения: %5 (%6)
 
@@ -4804,7 +4804,7 @@ Achievements: %5 (%6)
     <message numerus="yes">
         <location filename="../qthost.cpp" line="1211"/>
         <source>%n points</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n балл</numerusform>
             <numerusform>%n балла</numerusform>
             <numerusform>%n баллов</numerusform>
@@ -4813,7 +4813,7 @@ Achievements: %5 (%6)
     <message>
         <location filename="../qthost.cpp" line="1217"/>
         <source>Rich presence inactive or unsupported.</source>
-        <translation type="unfinished">Rich presence неактивен или не поддерживается.</translation>
+        <translation>Статус активности неактивен или не поддерживается.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1221"/>
@@ -5450,7 +5450,9 @@ Achievements: %5 (%6)
         <source>${title}: Title of the game.
 ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">${title}: Название игры.
+${filetitle}: компонент имени файла игры.
+${serial}: Серийный номер игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7537"/>
@@ -6795,7 +6797,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7804"/>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="unfinished">Игра не загружена или RetroAchievements недоступен.</translation>
+        <translation>Игра не загружена или RetroAchievements недоступен.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7805"/>
@@ -6820,7 +6822,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7809"/>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки игры инициализируются глобальными настройками для &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7810"/>
@@ -6835,7 +6837,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7812"/>
         <source>Genre: %s</source>
-        <translation type="unfinished">Жанр: %s</translation>
+        <translation>Жанр: %s</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7813"/>
@@ -7542,7 +7544,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7953"/>
         <source>Release Date: %s</source>
-        <translation type="unfinished"></translation>
+        <translation>Даты выпуска %s</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7954"/>
@@ -7634,12 +7636,12 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7971"/>
         <source>Resume</source>
-        <translation type="unfinished">Продолжить</translation>
+        <translation>Продолжить</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7972"/>
         <source>Resume Game</source>
-        <translation type="unfinished">Продолжить игру</translation>
+        <translation>Продолжить игру</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7973"/>
@@ -7664,7 +7666,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7977"/>
         <source>Rich presence inactive or unsupported.</source>
-        <translation type="unfinished">Статус активности неактивен или не поддерживается.</translation>
+        <translation>Статус активности неактивен или не поддерживается.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7978"/>
@@ -7704,7 +7706,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7985"/>
         <source>Save State On Exit</source>
-        <translation type="unfinished">Сохранить состояние при выходе</translation>
+        <translation>Сохранить состояние при выходе</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7986"/>
@@ -8029,12 +8031,12 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8050"/>
         <source>Sort Reversed</source>
-        <translation type="unfinished">Сортировать в обратном порядке</translation>
+        <translation>Сортировать в обратном порядке</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8051"/>
         <source>Speed Control</source>
-        <translation type="unfinished">Управление скоростью</translation>
+        <translation>Управление скоростью</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8052"/>
@@ -8069,7 +8071,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8058"/>
         <source>Start Fullscreen</source>
-        <translation type="unfinished">Запускать в полноэкранном режиме</translation>
+        <translation>Запускать в полноэкранном режиме</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8059"/>
@@ -9421,22 +9423,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/guncon.cpp" line="222"/>
         <source>Trigger</source>
-        <translation type="unfinished"></translation>
+        <translation>Курок</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="223"/>
         <source>Shoot Offscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>Выстрел за кадром</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="224"/>
         <source>A</source>
-        <translation type="unfinished">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="225"/>
         <source>B</source>
-        <translation type="unfinished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="232"/>
