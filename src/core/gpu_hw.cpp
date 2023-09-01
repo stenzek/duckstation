@@ -1049,8 +1049,9 @@ void GPU_HW::DestroyPipelines()
 
 void GPU_HW::UpdateVRAMReadTexture()
 {
-  const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
+  GL_SCOPE("UpdateVRAMReadTexture()");
 
+  const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
   if (m_vram_texture->IsMultisampled())
   {
     if (g_gpu_device->GetFeatures().partial_msaa_resolve)

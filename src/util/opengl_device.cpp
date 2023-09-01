@@ -348,9 +348,9 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
 {
   const bool is_gles = m_gl_context->IsGLES();
 
-  // bool vendor_id_amd = false;
-  // bool vendor_id_nvidia = false;
-  //  bool vendor_id_intel = false;
+  bool vendor_id_amd = false;
+  //bool vendor_id_nvidia = false;
+  bool vendor_id_intel = false;
   bool vendor_id_arm = false;
   bool vendor_id_qualcomm = false;
   bool vendor_id_powervr = false;
@@ -361,7 +361,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
       std::strstr(vendor, "ATI"))
   {
     Log_InfoPrint("AMD GPU detected.");
-    // vendor_id_amd = true;
+    vendor_id_amd = true;
   }
   else if (std::strstr(vendor, "NVIDIA Corporation"))
   {
@@ -371,7 +371,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   else if (std::strstr(vendor, "Intel"))
   {
     Log_InfoPrint("Intel GPU detected.");
-    // vendor_id_intel = true;
+    vendor_id_intel = true;
   }
   else if (std::strstr(vendor, "ARM"))
   {
@@ -452,7 +452,10 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
     }
   }
 
-  m_features.per_sample_shading = GLAD_GL_VERSION_4_0 || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_ARB_sample_shading;
+  // Sample rate shading is broken on AMD and Intel.
+  // If AMD and Intel can't get it right, I very much doubt broken mobile drivers can.
+  m_features.per_sample_shading = (GLAD_GL_VERSION_4_0 || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_ARB_sample_shading) &&
+                                  (!vendor_id_amd && !vendor_id_intel && !is_shitty_mobile_driver);
 
   // noperspective is not supported in GLSL ES.
   m_features.noperspective_interpolation = !is_gles;

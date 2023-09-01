@@ -365,6 +365,7 @@ bool VulkanDevice::SelectDeviceFeatures()
   m_device_features.largePoints = available_features.largePoints;
   m_device_features.wideLines = available_features.wideLines;
   m_device_features.samplerAnisotropy = available_features.samplerAnisotropy;
+  m_device_features.sampleRateShading = available_features.sampleRateShading;
 
   return true;
 }
@@ -2208,7 +2209,7 @@ bool VulkanDevice::CheckFeatures()
     Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
-  m_features.per_sample_shading = true;
+  m_features.per_sample_shading = m_device_features.sampleRateShading;
   m_features.supports_texture_buffers = true;
 
 #ifdef __APPLE__
@@ -2326,12 +2327,19 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
   VulkanTexture* S = static_cast<VulkanTexture*>(src);
   const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
 
-  S->CommitClear(cmdbuf);
-  D->CommitClear(cmdbuf);
+  if (S->GetState() == GPUTexture::State::Cleared)
+    S->CommitClear(cmdbuf);
+  if (D->IsRenderTargetOrDepthStencil() && D->GetState() == GPUTexture::State::Cleared)
+  {
+    if (width < dst->GetWidth() || height < dst->GetHeight())
+      D->CommitClear(cmdbuf);
+    else
+      D->SetState(GPUTexture::State::Dirty);
+  }
 
   S->TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, S->GetLayout(), VulkanTexture::Layout::TransferSrc);
   D->TransitionSubresourcesToLayout(cmdbuf, dst_layer, 1, dst_level, 1, D->GetLayout(),
-                                    VulkanTexture::Layout::TransferSrc);
+                                    VulkanTexture::Layout::TransferDst);
 
   const VkImageResolve resolve = {{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u},
                                   {static_cast<s32>(src_x), static_cast<s32>(src_y), 0},
@@ -2342,7 +2350,7 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolve);
 
   S->TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, VulkanTexture::Layout::TransferSrc, S->GetLayout());
-  D->TransitionSubresourcesToLayout(cmdbuf, dst_layer, 1, dst_level, 1, VulkanTexture::Layout::TransferSrc,
+  D->TransitionSubresourcesToLayout(cmdbuf, dst_layer, 1, dst_level, 1, VulkanTexture::Layout::TransferDst,
                                     D->GetLayout());
 }
 

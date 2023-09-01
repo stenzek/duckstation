@@ -71,9 +71,9 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
                            0,
                            VK_IMAGE_TYPE_2D,
                            vk_format,
-                           {static_cast<u32>(width), static_cast<u32>(height), 1},
-                           static_cast<u32>(levels),
-                           1,
+                           {width, height, 1u},
+                           levels,
+                           layers,
                            static_cast<VkSampleCountFlagBits>(samples),
                            VK_IMAGE_TILING_OPTIMAL};
 
@@ -336,7 +336,7 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   // if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
   if (m_type == Type::RenderTarget)
   {
-    if (x != 0 || y != 0 || width != m_width || height != m_height)
+    if (m_state == State::Cleared && (x != 0 || y != 0 || width != m_width || height != m_height))
       CommitClear(cmdbuf);
     else
       m_state = State::Dirty;
@@ -979,7 +979,8 @@ std::unique_ptr<GPUFramebuffer> VulkanDevice::CreateFramebuffer(GPUTexture* rt_o
 
   const VkRenderPass render_pass =
     GetRenderPass(RT ? RT->GetVkFormat() : VK_FORMAT_UNDEFINED, DS ? DS->GetVkFormat() : VK_FORMAT_UNDEFINED,
-                  VK_SAMPLE_COUNT_1_BIT, RT ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                  static_cast<VkSampleCountFlagBits>(RT ? RT->GetSamples() : DS->GetSamples()),
+                  RT ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                   RT ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
                   DS ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                   DS ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
