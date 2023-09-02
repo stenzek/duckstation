@@ -2069,10 +2069,13 @@ bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution 
 {
   u32 width = g_gpu_device->GetWindowWidth();
   u32 height = g_gpu_device->GetWindowHeight();
-  auto [draw_left, draw_top, draw_width, draw_height] = CalculateDrawRect(width, height);
+  Common::Rectangle<s32> draw_rect = CalculateDrawRect(width, height);
 
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
+    const u32 draw_width = static_cast<u32>(draw_rect.GetWidth());
+    const u32 draw_height = static_cast<u32>(draw_rect.GetHeight());
+
     // If internal res, scale the computed draw rectangle to the internal res.
     // We re-use the draw rect because it's already been AR corrected.
     const float sar =
@@ -2109,10 +2112,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution 
     }
 
     // Remove padding, it's not part of the framebuffer.
-    draw_left = 0;
-    draw_top = 0;
-    draw_width = static_cast<s32>(width);
-    draw_height = static_cast<s32>(height);
+    draw_rect.Set(0, 0, static_cast<s32>(width), static_cast<s32>(height));
   }
   if (width == 0 || height == 0)
     return false;
@@ -2120,9 +2120,8 @@ bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution 
   std::vector<u32> pixels;
   u32 pixels_stride;
   GPUTexture::Format pixels_format;
-  if (!RenderScreenshotToBuffer(width, height,
-                                Common::Rectangle<s32>::FromExtents(draw_left, draw_top, draw_width, draw_height),
-                                !internal_resolution, &pixels, &pixels_stride, &pixels_format))
+  if (!RenderScreenshotToBuffer(width, height, draw_rect, !internal_resolution, &pixels, &pixels_stride,
+                                &pixels_format))
   {
     Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
     return false;
