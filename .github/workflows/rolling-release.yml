@@ -25,7 +25,27 @@ jobs:
     - uses: actions/checkout@v2.3.1
       with:
         fetch-depth: 0
-        submodules: true
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v3
+      with:
+        path: |
+          dep/msvc/deps-arm64
+          dep/msvc/deps-x64
+        key: deps ${{ hashFiles('scripts/build-dependencies-windows-arm64.bat', 'scripts/build-dependencies-windows-x64.bat') }}
+
+    - name: Build X64 Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      env:
+        DEBUG: 0
+      run: scripts/build-dependencies-windows-x64.bat
+
+    - name: Build ARM64 Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      env:
+        DEBUG: 0
+      run: scripts/build-dependencies-windows-arm64.bat
 
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
@@ -98,6 +118,27 @@ jobs:
         fetch-depth: 0
         submodules: true
 
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v3
+      with:
+        path: |
+          dep/msvc/deps-arm64
+          dep/msvc/deps-x64
+        key: deps ${{ hashFiles('scripts/build-dependencies-windows-arm64.bat', 'scripts/build-dependencies-windows-x64.bat') }}
+
+    - name: Build X64 Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      env:
+        DEBUG: 0
+      run: scripts/build-dependencies-windows-x64.bat
+
+    - name: Build ARM64 Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      env:
+        DEBUG: 0
+      run: scripts/build-dependencies-windows-arm64.bat
+
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       shell: cmd
@@ -106,7 +147,6 @@ jobs:
         echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
-
 
     - name: Tag as dev build
       if: github.ref == 'refs/heads/dev'
@@ -172,8 +212,14 @@ jobs:
       shell: bash
       run: |
         # Workaround for https://github.com/actions/runner-images/issues/675
-        sudo scripts/retry.sh apt-get update
-        sudo scripts/retry.sh apt-get -y install cmake ninja-build ccache libsdl2-dev libgtk-3-dev libegl1-mesa-dev libevdev-dev libgbm-dev libdrm-dev libwayland-dev libwayland-egl-backend-dev extra-cmake-modules libcurl4-gnutls-dev libxrandr-dev llvm-12 lld-12 clang-12
+        # TODO: Update to LLVM 18
+        sudo scripts/retry.sh apt-get update &&
+        sudo scripts/retry.sh apt-get -y install \
+          cmake ninja-build ccache libegl1-mesa-dev libevdev-dev libwayland-dev libwayland-egl-backend-dev libxrandr-dev libdbus-1-dev \
+          extra-cmake-modules libcurl4-openssl-dev libssl-dev libasound2-dev libpulse-dev libx11-xcb-dev build-essential git libclang-dev \
+          libclang-11-dev libclang-12-dev patchelf libglib2.0-dev libfontconfig1-dev libharfbuzz-dev libjpeg-dev libpng-dev libfreetype-dev \
+          libinput-dev libxcb-*-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev libwayland-dev libgl1-mesa-dev libegl-dev \
+          libegl1-mesa-dev libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev llvm-12 lld-12 clang-12
 
     - name: Cache Dependencies
       id: cache-deps
@@ -191,7 +237,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DUSE_DRMKMS=OFF -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DBUILD_TESTS=OFF -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
         cmake --build . --parallel
         cd ..
         scripts/make-appimage.sh $(realpath ./build) $(realpath .) $HOME/deps DuckStation-x64

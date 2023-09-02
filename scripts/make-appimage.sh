@@ -58,7 +58,6 @@ declare -a SYSLIBS=(
 	"libudev.so.1"
 	"libwrap.so.0"
 	"libharfbuzz.so.0"
-	"libFLAC.so.8"
 	"libX11.so.6"
 	"libX11-xcb.so.1"
 	"libXau.so.6"

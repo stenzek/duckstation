@@ -198,17 +198,22 @@ if(ENABLE_VULKAN)
   endif()
 endif()
 
-if(SDL2_FOUND)
+if(USE_SDL2)
   target_sources(util PRIVATE 
     sdl_input_source.cpp
     sdl_input_source.h
   )
   target_compile_definitions(util PUBLIC "WITH_SDL2=1")
-  target_include_directories(util PUBLIC ${SDL2_INCLUDE_DIRS})
-  target_link_libraries(util PUBLIC ${SDL2_LIBRARIES})
+  target_link_libraries(util PUBLIC SDL2::SDL2)
 
   # Copy bundled SDL2 to output on Windows.
   if(WIN32)
+    # Copy SDL2 DLL to binary directory.
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_DEBUG)
+    else()
+      get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_RELEASE)
+    endif()
     add_custom_command(TARGET util POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL_PATH}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/SDL2.dll")
   endif()
