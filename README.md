@@ -55,7 +55,7 @@ Other features include:
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
-Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage format), and Android ARMv7/ARMv8 are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer, please speak to them for support, not us.
+Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage/Flatpak formats), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer, please speak to them for support, not us.
 
 ### Windows
 
@@ -84,13 +84,20 @@ The Qt frontend includes an automatic update checker. Builds downloaded after 20
 
 ### Linux
 
-The only supported version of DuckStation for Linux are the AppImages in the releases page. The AppImages require a distribution equivalent to Ubuntu 20.04 or newer to run, which is also the minimum requirement for Qt 6. If you are using a packaged version of DuckStation from another source, please do not ask us for assistance and speak to your packager instead, they have a history of breaking things and there's a good chance that's the issue.
+The only supported version of DuckStation for Linux are the AppImage and Flatpak in the releases page. Other AppImages or Flatpaks, **including Flathub**/"Discover" store **are not supported**, and if history is any indication, **likely broken** because packagers tend to modify things they don't understand.
 
-#### Binaries
+#### AppImage
 
-To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-qt.AppImage`.
+The AppImages require a distribution equivalent to Ubuntu 20.04 or newer to run, which is also the minimum requirement for Qt 6.
+
+ - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-x64.AppImage`.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
+
+#### Flatpak
+
+ - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-x64.flatpak`.
+ - Run `flatpak install ./duckstation-x64.flatpak`.
+ - Use `flatpak run org.duckstation.duckstation` to start, or select `DuckStation` in the launcher of your desktop environment.
  
 ### macOS
 
@@ -137,7 +144,7 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 Requirements:
  - Visual Studio 2022
 
-1. Clone the respository with submodules (`git clone --recursive https://github.com/stenzek/duckstation.git`).
+1. Clone the respository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
 3. Build solution.
 4. Binaries are located in `bin/x64`.
@@ -146,16 +153,15 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (at least version 2.0.22) (`libsdl2-dev` `libxrandr-dev`)
+ - SDL2 (at least version 2.28.2) (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.5.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
- - libevdev (`libevdev-dev`)
+ - Qt 6 (at least version 6.5.1) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
-1. Clone the repository. Submodules aren't necessary, there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git -b dev`).
+1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
 2. Create a build directory, either in-tree or elsewhere.
 3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
 4. Compile the source code. For the example above, run `cmake --build build-release --parallel`.
@@ -166,13 +172,13 @@ Requirements (Debian/Ubuntu package names):
 
 Requirements:
  - CMake
- - SDL2 (at least version 2.0.22)
- - Qt 6 (at least version 6.5.0)
+ - SDL2 (at least version 2.28.2)
+ - Qt 6 (at least version 6.5.1)
 
 Optional (recommended for faster builds):
  - Ninja
 
-1. Clone the repository. Submodules aren't necessary; there is only one and it is only used for Windows (`git clone https://github.com/stenzek/duckstation.git`).
+1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON`. You may need to specify `-DQt6_DIR` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
 4. Compile the source code: `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
