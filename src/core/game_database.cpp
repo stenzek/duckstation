@@ -35,7 +35,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 4,
+  GAME_DATABASE_CACHE_VERSION = 5,
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
@@ -482,13 +482,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #undef BIT_FOR
 }
 
-static void GetTimestamps(u64* gamedb_ts, u64* gamesettings_ts, u64* compat_ts)
-{
-  *gamedb_ts = Host::GetResourceFileTimestamp("database/gamedb.json").value_or(0);
-  *gamesettings_ts = Host::GetResourceFileTimestamp("database/gamesettings.ini").value_or(0);
-  *compat_ts = Host::GetResourceFileTimestamp("database/compatibility.xml").value_or(0);
-}
-
 template<typename T>
 bool ReadOptionalFromStream(ByteStream* stream, std::optional<T>* dest)
 {
@@ -535,21 +528,19 @@ bool GameDatabase::LoadFromCache()
     return false;
   }
 
-  u64 gamedb_ts, gamesettings_ts, compat_ts;
-  GetTimestamps(&gamedb_ts, &gamesettings_ts, &compat_ts);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json").value_or(0);
 
   u32 signature, version, num_entries, num_codes;
-  u64 file_gamedb_ts, file_gamesettings_ts, file_compat_ts;
+  u64 file_gamedb_ts;
   if (!stream->ReadU32(&signature) || !stream->ReadU32(&version) || !stream->ReadU64(&file_gamedb_ts) ||
-      !stream->ReadU64(&file_gamesettings_ts) || !stream->ReadU64(&file_compat_ts) || !stream->ReadU32(&num_entries) ||
-      !stream->ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
+      !stream->ReadU32(&num_entries) || !stream->ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
       version != GAME_DATABASE_CACHE_VERSION)
   {
     Log_DevPrintf("Cache header is corrupted or version mismatch.");
     return false;
   }
 
-  if (gamedb_ts != file_gamedb_ts || gamesettings_ts != file_gamesettings_ts || compat_ts != file_compat_ts)
+  if (gamedb_ts != file_gamedb_ts)
   {
     Log_DevPrintf("Cache is out of date, recreating.");
     return false;
@@ -631,8 +622,7 @@ bool GameDatabase::LoadFromCache()
 
 bool GameDatabase::SaveToCache()
 {
-  u64 gamedb_ts, gamesettings_ts, compat_ts;
-  GetTimestamps(&gamedb_ts, &gamesettings_ts, &compat_ts);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json").value_or(0);
 
   std::unique_ptr<ByteStream> stream(
     ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
@@ -643,8 +633,6 @@ bool GameDatabase::SaveToCache()
   bool result = stream->WriteU32(GAME_DATABASE_CACHE_SIGNATURE);
   result = result && stream->WriteU32(GAME_DATABASE_CACHE_VERSION);
   result = result && stream->WriteU64(static_cast<u64>(gamedb_ts));
-  result = result && stream->WriteU64(static_cast<u64>(gamesettings_ts));
-  result = result && stream->WriteU64(static_cast<u64>(compat_ts));
 
   result = result && stream->WriteU32(static_cast<u32>(s_entries.size()));
   result = result && stream->WriteU32(static_cast<u32>(s_code_lookup.size()));
