@@ -26,6 +26,7 @@ endif()
 option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
 option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
 option(BUILD_REGTEST "Build regression test runner" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
 option(ENABLE_CUBEB "Build with Cubeb audio output" ON)
 option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
 option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
@@ -77,7 +78,7 @@ if(NOT WIN32 AND NOT ANDROID)
   find_package(CURL REQUIRED)
 endif()
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.5.2 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+  find_package(Qt6 6.5.1 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
 endif()
 
 
@@ -221,9 +222,11 @@ if((LINUX OR FREEBSD) AND (${CPU_ARCH} STREQUAL "x86" OR ${CPU_ARCH} STREQUAL "a
   add_definitions("-D_FILE_OFFSET_BITS=64")
 endif()
 
+if(BUILD_TESTS)
+  enable_testing()
+endif()
 
 # Recursively include the source tree.
-enable_testing()
 add_subdirectory(dep)
 add_subdirectory(src)
 
