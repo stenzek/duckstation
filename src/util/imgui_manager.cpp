@@ -90,6 +90,8 @@ struct OSDMessage
 static std::deque<OSDMessage> s_osd_active_messages;
 static std::deque<OSDMessage> s_osd_posted_messages;
 static std::mutex s_osd_messages_lock;
+static bool s_show_osd_messages = true;
+static bool s_global_prescale_changed = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 
@@ -107,11 +109,24 @@ void ImGuiManager::SetFontRange(const u16* range)
 
 void ImGuiManager::SetGlobalScale(float global_scale)
 {
+  if (s_global_prescale == global_scale)
+    return;
+
   s_global_prescale = global_scale;
-  UpdateScale();
+  s_global_prescale_changed = true;
 }
 
-bool ImGuiManager::Initialize(float global_scale)
+void ImGuiManager::SetShowOSDMessages(bool enable)
+{
+  if (s_show_osd_messages == enable)
+    return;
+
+  s_show_osd_messages = enable;
+  if (!enable)
+    Host::ClearOSDMessages();
+}
+
+bool ImGuiManager::Initialize(float global_scale, bool show_osd_messages)
 {
   if (!LoadFontData())
   {
@@ -121,6 +136,7 @@ bool ImGuiManager::Initialize(float global_scale)
 
   s_global_prescale = global_scale;
   s_global_scale = std::max(g_gpu_device->GetWindowScale() * global_scale, 1.0f);
+  s_show_osd_messages = show_osd_messages;
 
   ImGui::CreateContext();
 
@@ -181,10 +197,11 @@ void ImGuiManager::WindowResized()
 
   ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
-  UpdateScale();
-
   // restart imgui frame on the new window size to pick it up, otherwise we draw to the old size
   ImGui::EndFrame();
+
+  UpdateScale();
+
   NewFrame();
 }
 
@@ -195,9 +212,6 @@ void ImGuiManager::UpdateScale()
 
   if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
     return;
-
-  // This is assumed to be called mid-frame.
-  ImGui::EndFrame();
 
   s_global_scale = scale;
 
@@ -211,14 +225,18 @@ void ImGuiManager::UpdateScale()
 
   if (!g_gpu_device->UpdateImGuiFontTexture())
     Panic("Failed to recreate font texture after scale+resize");
-
-  NewFrame();
 }
 
 void ImGuiManager::NewFrame()
 {
   ImGuiIO& io = ImGui::GetIO();
   io.DeltaTime = static_cast<float>(s_last_render_time.GetTimeSecondsAndReset());
+
+  if (s_global_prescale_changed)
+  {
+    s_global_prescale_changed = false;
+    UpdateScale();
+  }
 
   ImGui::NewFrame();
 
@@ -587,6 +605,9 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
   else
     Log_InfoPrintf("OSD: %s", message.c_str());
 
+  if (!s_show_osd_messages)
+    return;
+
   OSDMessage msg;
   msg.key = std::move(key);
   msg.text = std::move(message);
@@ -622,6 +643,9 @@ void Host::AddKeyedFormattedOSDMessage(std::string key, float duration, const ch
 
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
+  if (!s_show_osd_messages)
+    return;
+
   OSDMessage msg;
   msg.key = std::move(key);
   msg.duration = 0.0f;

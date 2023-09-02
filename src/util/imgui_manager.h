@@ -21,8 +21,11 @@ void SetFontRange(const u16* range);
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
 
+/// Changes whether OSD messages are silently dropped.
+void SetShowOSDMessages(bool enable);
+
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(float global_scale);
+bool Initialize(float global_scale, bool show_osd_messages);
 
 /// Frees all ImGui resources.
 void Shutdown();

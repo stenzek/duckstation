@@ -3690,8 +3690,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     PostProcessing::UpdateSettings();
   }
 
-  if (g_gpu_device && g_settings.display_osd_scale != old_settings.display_osd_scale)
-    ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
+  if (g_gpu_device)
+  {
+    if (g_settings.display_osd_scale != old_settings.display_osd_scale)
+      ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
+    if (g_settings.display_show_osd_messages != old_settings.display_show_osd_messages)
+      ImGuiManager::SetShowOSDMessages(g_settings.display_show_osd_messages);
+  }
 
   bool controllers_updated = false;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)

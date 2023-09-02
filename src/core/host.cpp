@@ -249,7 +249,7 @@ bool Host::CreateGPUDevice(RenderAPI api)
     return false;
   }
 
-  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f))
+  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, g_settings.display_show_osd_messages))
   {
     Log_ErrorPrintf("Failed to initialize ImGuiManager.");
     g_gpu_device->Destroy();
