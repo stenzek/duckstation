@@ -43,6 +43,11 @@ if(${CPU_ARCH} STREQUAL "riscv64")
   add_subdirectory(riscv-disas)
 endif()
 
+if(WIN32)
+  add_subdirectory(d3d12ma)
+  add_subdirectory(winpixeventruntime)
+endif()
+
 if(APPLE)
   add_subdirectory(spirv-cross)
 endif()

@@ -68,15 +68,16 @@ if(WIN32)
     http_downloader_winhttp.h
     thirdparty/StackWalker.cpp
     thirdparty/StackWalker.h
-    win32_progress_callback.cpp
-    win32_progress_callback.h
     windows_headers.h
   )
-  target_link_libraries(common PRIVATE d3dcompiler.lib)
+  target_link_libraries(common PRIVATE winhttp.lib)
+endif()
 
+if(MSVC)
   if(${CPU_ARCH} STREQUAL "x64")
     enable_language(ASM_MASM)
     target_sources(common PRIVATE fastjmp_x86.asm)
+    set_source_files_properties(fastjmp_x86.asm PROPERTIES COMPILE_FLAGS "/D_M_X86_64")
   elseif(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
     enable_language(ASM_MARMASM)
     target_sources(common PRIVATE fastjmp_arm.asm)

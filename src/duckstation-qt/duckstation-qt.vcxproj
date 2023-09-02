@@ -41,6 +41,9 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="memorycardeditordialog.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="qttranslations.cpp" />
     <ClCompile Include="qthost.cpp" />
@@ -81,6 +84,7 @@
     <QtMoc Include="colorpickerbutton.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryviewwidget.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
@@ -354,6 +358,13 @@
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
   <Import Project="..\..\dep\msvc\vsprops\QtCompile.props" />
   <Import Project="..\core\core.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>$(QtEntryPointLib);%(AdditionalDependencies)</AdditionalDependencies>

@@ -8,7 +8,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib;winhttp.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);winhttp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

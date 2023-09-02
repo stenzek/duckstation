@@ -165,10 +165,13 @@ set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNT
 qt6_add_translation(QM_FILES ${TS_FILES})
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
+target_precompile_headers(duckstation-qt PRIVATE "pch.h")
 target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
 
 if(WIN32)
+  target_sources(duckstation-qt PRIVATE duckstation-qt.rc)
+
   # We want a Windows subsystem application not console.
   set_target_properties(duckstation-qt PROPERTIES
     WIN32_EXECUTABLE TRUE
@@ -185,7 +188,6 @@ if(WIN32)
                                  $<IF:$<CONFIG:Debug>,--debug,--release>
                                  --no-translations
                                  --no-compiler-runtime
-                                 --no-angle
                                  "$<TARGET_FILE:duckstation-qt>"
   )
   add_custom_command(TARGET duckstation-qt POST_BUILD

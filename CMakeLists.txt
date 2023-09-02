@@ -78,12 +78,12 @@ if(WIN32 AND USE_SDL2)
     set(SDL2_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/lib64/SDL2.lib")
     set(SDL2MAIN_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/lib64/SDL2main.lib")
     set(SDL2_DLL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/bin64/SDL2.dll")
-    set(Qt6_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/qt/6.1.0/msvc2019_64/lib/cmake/Qt6")
+    set(Qt6_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/qt/6.5.0/msvc2022_64/lib/cmake/Qt6")
   else()
     set(SDL2_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/lib32/SDL2.lib")
     set(SDL2MAIN_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/lib32/SDL2main.lib")
     set(SDL2_DLL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/sdl2/bin32/SDL2.dll")
-    set(Qt6_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/qt/6.1.0/msvc2019_32/lib/cmake/Qt6")
+    set(Qt6_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dep/msvc/qt/6.5.0/msvc2022_32/lib/cmake/Qt6")
   endif()
 endif()
 
@@ -144,19 +144,6 @@ if(MSVC)
   # COMDAT folding/remove unused functions.
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF")
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /OPT:REF /OPT:ICF")
-
-  # Enable LTO/LTCG on Release builds.
-  if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    cmake_policy(SET CMP0069 NEW)
-    include(CheckIPOSupported)
-    check_ipo_supported(RESULT IPO_IS_SUPPORTED)
-    if(IPO_IS_SUPPORTED)
-      message(STATUS "Enabling LTCG/IPO.")
-      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-    else()
-      message(WARNING "LTCG/IPO is not supported, this will make the build slightly slower.")
-    endif()
-  endif()
 endif()
 
 
@@ -223,8 +210,14 @@ endif()
 
 
 # We don't need exceptions, disable them to save a bit of code size.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+if(MSVC)
+  string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0 /permissive-")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
+endif()
 
 # Write binaries to a seperate directory.
 if(WIN32)

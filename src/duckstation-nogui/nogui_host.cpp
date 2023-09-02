@@ -426,9 +426,6 @@ void NoGUIHost::ProcessPlatformWindowResize(s32 width, s32 height, float scale)
 
 void NoGUIHost::ProcessPlatformMouseMoveEvent(float x, float y)
 {
-  if (g_gpu_device)
-    g_gpu_device->SetMousePosition(static_cast<s32>(x), static_cast<s32>(y));
-
   InputManager::UpdatePointerAbsolutePosition(0, x, y);
   ImGuiManager::UpdateMousePosition(x, y);
 }
@@ -650,7 +647,7 @@ void NoGUIHost::CPUThreadMainLoop()
 
     Host::PumpMessagesOnCPUThread();
     System::Internal::IdlePollUpdate();
-    Host::RenderDisplay(false);
+    System::PresentDisplay(false);
     if (!g_gpu_device->IsVsyncEnabled())
       g_gpu_device->ThrottlePresentation();
   }

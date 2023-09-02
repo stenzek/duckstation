@@ -18,7 +18,6 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QObject>
 #include <QtCore/QSemaphore>
-#include <QtCore/QSettings>
 #include <QtCore/QString>
 #include <QtCore/QThread>
 #include <atomic>

@@ -3,11 +3,13 @@
   <ItemGroup>
     <ClCompile Include="updater.cpp" />
     <ClCompile Include="win32_main.cpp" />
+    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="updater.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="updater.h" />
+    <ClInclude Include="win32_progress_callback.h" />
   </ItemGroup>
 </Project>

@@ -70,6 +70,7 @@
     <ClInclude Include="d3d11_texture.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -146,6 +147,7 @@
     <ClCompile Include="d3d11_texture.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="gl">

@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "updater.h"
+#include "win32_progress_callback.h"
+
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/minizip_helpers.h"
 #include "common/string_util.h"
-#include "common/win32_progress_callback.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>

@@ -21,7 +21,6 @@
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="minizip_helpers.h" />
-    <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="make_array.h" />
     <ClInclude Include="thirdparty\StackWalker.h">
       <Filter>thirdparty</Filter>
@@ -57,7 +56,6 @@
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
-    <ClCompile Include="win32_progress_callback.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>

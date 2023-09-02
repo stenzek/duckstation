@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
     <ClCompile Include="win32_main.cpp" />
     <ClCompile Include="updater.cpp" />
+    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="updater.manifest" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="updater.h" />
+    <ClInclude Include="win32_progress_callback.h" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
       <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
@@ -24,19 +24,18 @@
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32EEAF44-57F8-4C6C-A6F0-DE5667123DD5}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
   <Import Project="..\common\common.props" />
-
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
-
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
 </Project>

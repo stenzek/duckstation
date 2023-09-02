@@ -4,6 +4,7 @@ add_executable(duckstation-nogui
   nogui_platform.h
 )
 
+target_precompile_headers(duckstation-nogui PRIVATE "pch.h")
 target_link_libraries(duckstation-nogui PRIVATE core util common imgui scmversion)
 
 if(WIN32)

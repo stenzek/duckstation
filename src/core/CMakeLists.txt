@@ -119,6 +119,7 @@ set(RECOMPILER_SRCS
     cpu_recompiler_types.h
 )
 
+target_precompile_headers(core PRIVATE "pch.h")
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)

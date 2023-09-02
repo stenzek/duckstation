@@ -3,7 +3,7 @@
 
 #pragma once
 #include "common/progress_callback.h"
-#include "windows_headers.h"
+#include "common/windows_headers.h"
 
 class Win32ProgressCallback final : public BaseProgressCallback
 {

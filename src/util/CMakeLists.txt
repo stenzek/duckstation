@@ -68,6 +68,7 @@ add_library(util
   window_info.h
 )
 
+target_precompile_headers(util PRIVATE "pch.h")
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
@@ -116,6 +117,7 @@ if(ENABLE_OPENGL)
       gl/context_wgl.cpp
       gl/context_wgl.h
     )
+    target_link_libraries(util PRIVATE "opengl32.lib")
   endif()
 
   if(LINUX OR FREEBSD OR ANDROID)
@@ -222,6 +224,28 @@ endif()
 
 if(WIN32)
   target_sources(util PRIVATE
+    d3d_common.cpp
+    d3d_common.h
+    d3d11_device.cpp
+    d3d11_device.h
+    d3d11_pipeline.cpp
+    d3d11_pipeline.h
+    d3d11_stream_buffer.cpp
+    d3d11_stream_buffer.h
+    d3d11_texture.cpp
+    d3d11_texture.h
+    d3d12_builders.cpp
+    d3d12_builders.h
+    d3d12_descriptor_heap_manager.cpp
+    d3d12_descriptor_heap_manager.h
+    d3d12_device.cpp
+    d3d12_device.h
+    d3d12_pipeline.cpp
+    d3d12_pipeline.h
+    d3d12_stream_buffer.cpp
+    d3d12_stream_buffer.h
+    d3d12_texture.cpp
+    d3d12_texture.h
     dinput_source.cpp
     dinput_source.h
     platform_misc_win32.cpp
@@ -232,9 +256,14 @@ if(WIN32)
     xinput_source.cpp
     xinput_source.h
   )
-  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib)
+  target_link_libraries(util PRIVATE d3d12ma)
+  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib)
+
+  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
+  endif()
 elseif(APPLE)
-  target_sources(util PRIVATE
+  set(MAC_SOURCES
     cocoa_tools.h
     metal_device.h
     metal_device.mm
@@ -242,10 +271,12 @@ elseif(APPLE)
     metal_stream_buffer.mm
     platform_misc_mac.mm
   )
+  target_sources(util PRIVATE ${MAC_SOURCES})
   find_library(IOK_LIBRARY IOKit REQUIRED)
   find_library(METAL_LIBRARY Metal)
   find_library(QUARTZCORE_LIBRARY QuartzCore)
   target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY})
+  set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
 elseif(NOT ANDROID)
   target_sources(util PRIVATE
     platform_misc_unix.cpp

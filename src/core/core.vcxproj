@@ -61,6 +61,9 @@
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="pcdrv.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="pgxp.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="psf_loader.cpp" />
@@ -129,6 +132,7 @@
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="pcdrv.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="pgxp.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="psf_loader.h" />
@@ -189,6 +193,9 @@
       <PreprocessorDefinitions>ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />

@@ -41,7 +41,6 @@
     <ClInclude Include="timer.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="minizip_helpers.h" />
-    <ClInclude Include="win32_progress_callback.h" />
     <ClInclude Include="windows_headers.h" />
   </ItemGroup>
   <ItemGroup>
@@ -66,7 +65,6 @@
     <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="timer.cpp" />
-    <ClCompile Include="win32_progress_callback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

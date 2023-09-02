@@ -59,6 +59,7 @@
     <ClCompile Include="achievements.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -122,5 +123,6 @@
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="gpu_shadergen.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
 </Project>
