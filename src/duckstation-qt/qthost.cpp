@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+﻿// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qthost.h"
@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "setupwizarddialog.h"
 
 #include "core/achievements.h"
 #include "core/cheats.h"
@@ -86,6 +87,7 @@ static void SetDataDirectory();
 static bool SetCriticalFolders();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static void SaveSettings();
+static bool RunSetupWizard();
 static void InitializeEarlyConsole();
 static void HookSignals();
 static void PrintCommandLineVersion();
@@ -100,6 +102,7 @@ static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
+static bool s_run_setup_wizard = false;
 
 EmuThread* g_emu_thread;
 GDBServer* g_gdb_server;
@@ -161,6 +164,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     settings_filename = Path::Combine(EmuFolders::DataRoot, "settings.ini");
 
   Log_InfoPrintf("Loading config from %s.", settings_filename.c_str());
+  s_run_setup_wizard = s_run_setup_wizard || !FileSystem::FileExists(settings_filename.c_str());
   s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(settings_filename));
   Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
 
@@ -179,8 +183,15 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     s_base_settings_interface->SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
     s_base_settings_interface->SetBoolValue("ControllerPorts", "ControllerSettingsMigrated", true);
     SetDefaultSettings(*s_base_settings_interface, true, true);
-    s_base_settings_interface->Save();
+
+    // Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
+    if (!s_run_setup_wizard)
+      s_base_settings_interface->Save();
   }
+
+  // Setup wizard was incomplete last time?
+  s_run_setup_wizard =
+    s_run_setup_wizard || s_base_settings_interface->GetBoolValue("Main", "SetupWizardIncomplete", false);
 
   EmuFolders::LoadConfig(*s_base_settings_interface.get());
   EmuFolders::EnsureFoldersExist();
@@ -1879,6 +1890,11 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         s_start_fullscreen_ui = true;
         continue;
       }
+      else if (CHECK_ARG("-setupwizard"))
+      {
+        s_run_setup_wizard = true;
+        continue;
+      }
       else if (CHECK_ARG("-earlyconsole"))
       {
         InitializeEarlyConsole();
@@ -1975,6 +1991,22 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   return true;
 }
 
+bool QtHost::RunSetupWizard()
+{
+  // Set a flag in the config so that even though we created the ini, we'll run the wizard next time.
+  Host::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", true);
+  Host::CommitBaseSettingChanges();
+
+  SetupWizardDialog dialog;
+  if (dialog.exec() == QDialog::Rejected)
+    return false;
+
+  // Remove the flag.
+  Host::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
+  Host::CommitBaseSettingChanges();
+  return true;
+}
+
 int main(int argc, char* argv[])
 {
   CrashHandler::Install();
@@ -1992,11 +2024,20 @@ int main(int argc, char* argv[])
   MainWindow::updateApplicationTheme();
 
   // Start up the CPU thread.
-  MainWindow* main_window = new MainWindow();
   QtHost::HookSignals();
   EmuThread::start();
 
+  // Optionally run setup wizard.
+  MainWindow* main_window;
+  int result;
+  if (s_run_setup_wizard && !QtHost::RunSetupWizard())
+  {
+    result = EXIT_FAILURE;
+    goto shutdown_and_exit;
+  }
+
   // Create all window objects, the emuthread might still be starting up at this point.
+  main_window = new MainWindow();
   main_window->initialize();
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
@@ -2022,8 +2063,9 @@ int main(int argc, char* argv[])
     main_window->startupUpdateCheck();
 
   // This doesn't return until we exit.
-  const int result = app.exec();
+  result = app.exec();
 
+shutdown_and_exit:
   // Shutting down.
   EmuThread::stop();
 

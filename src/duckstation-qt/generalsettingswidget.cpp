@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "generalsettingswidget.h"
@@ -9,6 +9,21 @@
 #include "scmversion/scmversion.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+const char* GeneralSettingsWidget::THEME_NAMES[] = {
+  QT_TRANSLATE_NOOP("MainWindow", "Native"),
+  QT_TRANSLATE_NOOP("MainWindow", "Fusion"),
+  QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)"),
+  QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Blue)"),
+  QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle"),
+  nullptr,
+};
+
+const char* GeneralSettingsWidget::THEME_VALUES[] = {
+  "", "fusion", "darkfusion", "darkfusionblue", "qdarkstyle", nullptr,
+};
+
+const char* GeneralSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
 
 GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)

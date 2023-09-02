@@ -67,7 +67,8 @@ void QtHost::InstallTranslator()
   }
   s_translators.clear();
 
-  const QString language(QString::fromStdString(Host::GetBaseStringSettingValue("Main", "Language", "en")));
+  const QString language(
+    QString::fromStdString(Host::GetBaseStringSettingValue("Main", "Language", GetDefaultLanguage())));
 
   // install the base qt translation first
   const QString base_dir(QStringLiteral("%1/translations").arg(qApp->applicationDirPath()));
@@ -191,6 +192,12 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
           {QStringLiteral("Русский"), QStringLiteral("ru")},
           {QStringLiteral("Türkçe"), QStringLiteral("tr")},
           {QStringLiteral("简体中文"), QStringLiteral("zh-cn")}};
+}
+
+const char* QtHost::GetDefaultLanguage()
+{
+  // TODO: Default system language instead.
+  return "en";
 }
 
 static constexpr const ImWchar s_base_latin_range[] = {

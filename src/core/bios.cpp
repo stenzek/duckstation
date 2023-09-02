@@ -131,7 +131,9 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename)
     return std::nullopt;
   }
 
-  Log_DevPrint(fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetImageHash(ret).ToString()).c_str());
+  Log_DevPrint(
+    fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetImageHash(ret).ToString())
+      .c_str());
   return ret;
 }
 
@@ -162,7 +164,7 @@ const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& has
 
 bool BIOS::IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_region)
 {
-  return (bios_region == ConsoleRegion::Auto || bios_region == console_region);
+  return (console_region == ConsoleRegion::Auto || bios_region == ConsoleRegion::Auto || bios_region == console_region);
 }
 
 void BIOS::PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask /*= UINT32_C(0xFFFFFFFF)*/)
@@ -293,8 +295,8 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region)
   std::optional<Image> image = LoadImageFromFile(Path::Combine(EmuFolders::Bios, bios_name).c_str());
   if (!image.has_value())
   {
-    Host::ReportFormattedErrorAsync(
-      "Error", TRANSLATE("HostInterface", "Failed to load configured BIOS file '%s'"), bios_name.c_str());
+    Host::ReportFormattedErrorAsync("Error", TRANSLATE("HostInterface", "Failed to load configured BIOS file '%s'"),
+                                    bios_name.c_str());
     return std::nullopt;
   }
 
@@ -348,8 +350,7 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
 
   if (!fallback_image.has_value())
   {
-    Host::ReportFormattedErrorAsync("Error",
-                                    TRANSLATE("HostInterface", "No BIOS image found for %s region"),
+    Host::ReportFormattedErrorAsync("Error", TRANSLATE("HostInterface", "No BIOS image found for %s region"),
                                     Settings::GetConsoleRegionDisplayName(region));
     return std::nullopt;
   }

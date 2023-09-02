@@ -51,8 +51,10 @@
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="settingsdialog.cpp" />
+    <ClCompile Include="setupwizarddialog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="biossettingswidget.h" />
@@ -264,6 +266,7 @@
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -321,6 +324,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="controllerledsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="setupwizarddialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

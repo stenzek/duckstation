@@ -188,7 +188,6 @@ private:
   static void setIconThemeFromSettings();
   void setupAdditionalUi();
   void connectSignals();
-  void addThemeToMenu(const QString& name, const QString& key);
 
   void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
   void updateStatusBarWidgetVisibility();

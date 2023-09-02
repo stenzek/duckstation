@@ -129,6 +129,9 @@ set(SRCS
   settingsdialog.h
   settingsdialog.ui
   settingwidgetbinder.h
+  setupwizarddialog.cpp
+  setupwizarddialog.h
+  setupwizarddialog.ui
 )
 
 if(ENABLE_CHEEVOS)

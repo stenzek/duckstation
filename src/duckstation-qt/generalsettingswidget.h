@@ -24,4 +24,9 @@ private:
   Ui::GeneralSettingsWidget m_ui;
 
   SettingsDialog* m_dialog;
+
+public:
+  static const char* THEME_NAMES[];
+  static const char* THEME_VALUES[];
+  static const char* DEFAULT_THEME_NAME;
 };

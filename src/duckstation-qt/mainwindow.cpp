@@ -10,6 +10,7 @@
 #include "displaywidget.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
+#include "generalsettingswidget.h"
 #include "memorycardeditordialog.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -63,8 +64,6 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images "
   "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe "
   "*.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
-
-const char* DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
@@ -2030,20 +2029,17 @@ void MainWindow::connectSignals()
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowMDECState, "Debug", "ShowMDECState", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowDMAState, "Debug", "ShowDMAState", false);
 
-  addThemeToMenu(tr("Default"), QStringLiteral("default"));
-  addThemeToMenu(tr("Fusion"), QStringLiteral("fusion"));
-  addThemeToMenu(tr("Dark Fusion (Gray)"), QStringLiteral("darkfusion"));
-  addThemeToMenu(tr("Dark Fusion (Blue)"), QStringLiteral("darkfusionblue"));
-  addThemeToMenu(tr("QDarkStyle"), QStringLiteral("qdarkstyle"));
-  updateMenuSelectedTheme();
-}
+  for (u32 i = 0; GeneralSettingsWidget::THEME_NAMES[i]; i++)
+  {
+    const QString key = QString::fromUtf8(GeneralSettingsWidget::THEME_NAMES[i]);
+    QAction* action =
+      m_ui.menuSettingsTheme->addAction(qApp->translate("MainWindow", GeneralSettingsWidget::THEME_NAMES[i]));
+    action->setCheckable(true);
+    action->setData(key);
+    connect(action, &QAction::toggled, [this, key](bool) { setTheme(key); });
+  }
 
-void MainWindow::addThemeToMenu(const QString& name, const QString& key)
-{
-  QAction* action = m_ui.menuSettingsTheme->addAction(name);
-  action->setCheckable(true);
-  action->setData(key);
-  connect(action, &QAction::toggled, [this, key](bool) { setTheme(key); });
+  updateMenuSelectedTheme();
 }
 
 void MainWindow::setTheme(const QString& theme)
@@ -2062,7 +2058,7 @@ void MainWindow::updateTheme()
 
 void MainWindow::setStyleFromSettings()
 {
-  const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+  const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", GeneralSettingsWidget::DEFAULT_THEME_NAME));
 
   // setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
   // is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
@@ -2332,7 +2328,8 @@ void MainWindow::updateDebugMenuCropMode()
 
 void MainWindow::updateMenuSelectedTheme()
 {
-  QString theme = QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Theme", DEFAULT_THEME_NAME));
+  QString theme =
+    QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Theme", GeneralSettingsWidget::DEFAULT_THEME_NAME));
 
   for (QObject* obj : m_ui.menuSettingsTheme->children())
   {
