@@ -12,7 +12,12 @@ GPUShaderGen::~GPUShaderGen() = default;
 
 void GPUShaderGen::WriteDisplayUniformBuffer(std::stringstream& ss)
 {
-  DeclareUniformBuffer(ss, {"float4 u_src_rect", "float4 u_src_size", "float4 u_params"}, true);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect", "float4 u_src_size", "float4 u_clamp_rect", "float4 u_params"}, true);
+
+  ss << R"(
+float2 ClampUV(float2 uv) {
+  return clamp(uv, u_clamp_rect.xy, u_clamp_rect.zw);
+})";
 }
 
 std::string GPUShaderGen::GenerateDisplayVertexShader()
@@ -35,17 +40,17 @@ std::string GPUShaderGen::GenerateDisplayVertexShader()
   return ss.str();
 }
 
-std::string GPUShaderGen::GenerateDisplayFragmentShader()
+std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv)
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteDisplayUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
-  ss << R"(
-{
-  o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).rgb, 1.0f);
-})";
+  if (clamp_uv)
+    ss << "{\n  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(v_tex0)).rgb, 1.0f);\n }";
+  else
+    ss << "{\n  o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).rgb, 1.0f);\n }";
 
   return ss.str();
 }
@@ -72,7 +77,7 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader()
   float2 f = (center_dist - clamp(center_dist, -region_range, region_range)) * scale + 0.5;
   float2 mod_texel = texel_floored + f;
 
-  o_col0 = float4(SAMPLE_TEXTURE(samp0, mod_texel * u_src_size.zw).rgb, 1.0f);
+  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(mod_texel * u_src_size.zw)).rgb, 1.0f);
 })";
 
   return ss.str();

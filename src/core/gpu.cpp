@@ -1571,11 +1571,14 @@ bool GPU::CompileDisplayPipeline()
       fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
       break;
 
-    case DisplayScalingMode::Nearest:
     case DisplayScalingMode::BilinearSmooth:
+      fs = shadergen.GenerateDisplayFragmentShader(true);
+      break;
+
+    case DisplayScalingMode::Nearest:
     case DisplayScalingMode::NearestInteger:
     default:
-      fs = shadergen.GenerateDisplayFragmentShader();
+      fs = shadergen.GenerateDisplayFragmentShader(false);
       break;
   }
 
@@ -1659,6 +1662,7 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
   {
     float src_rect[4];
     float src_size[4];
+    float clamp_rect[4];
     float params[4];
   } uniforms;
   std::memset(uniforms.params, 0, sizeof(uniforms.params));
@@ -1718,14 +1722,20 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
   g_gpu_device->SetTextureSampler(
     0, m_display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
 
-  const float position_adjust = bilinear_adjust ? 0.5f : 0.0f;
-  const float size_adjust = bilinear_adjust ? 1.0f : 0.0f;
+  // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
+  // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
   const float rcp_width = 1.0f / static_cast<float>(m_display_texture->GetWidth());
   const float rcp_height = 1.0f / static_cast<float>(m_display_texture->GetHeight());
-  uniforms.src_rect[0] = (static_cast<float>(m_display_texture_view_x) + position_adjust) * rcp_width;
-  uniforms.src_rect[1] = (static_cast<float>(m_display_texture_view_y) + position_adjust) * rcp_height;
-  uniforms.src_rect[2] = (static_cast<float>(m_display_texture_view_width) - size_adjust) * rcp_width;
-  uniforms.src_rect[3] = (static_cast<float>(m_display_texture_view_height) - size_adjust) * rcp_height;
+  uniforms.src_rect[0] = static_cast<float>(m_display_texture_view_x) * rcp_width;
+  uniforms.src_rect[1] = static_cast<float>(m_display_texture_view_y) * rcp_height;
+  uniforms.src_rect[2] = static_cast<float>(m_display_texture_view_width) * rcp_width;
+  uniforms.src_rect[3] = static_cast<float>(m_display_texture_view_height) * rcp_height;
+  uniforms.clamp_rect[0] = (static_cast<float>(m_display_texture_view_x) + 0.5f) * rcp_width;
+  uniforms.clamp_rect[1] = (static_cast<float>(m_display_texture_view_y) + 0.5f) * rcp_height;
+  uniforms.clamp_rect[2] =
+    (static_cast<float>(m_display_texture_view_x + m_display_texture_view_width) - 0.5f) * rcp_width;
+  uniforms.clamp_rect[3] =
+    (static_cast<float>(m_display_texture_view_y + m_display_texture_view_height) - 0.5f) * rcp_height;
   uniforms.src_size[0] = static_cast<float>(m_display_texture->GetWidth());
   uniforms.src_size[1] = static_cast<float>(m_display_texture->GetHeight());
   uniforms.src_size[2] = rcp_width;
