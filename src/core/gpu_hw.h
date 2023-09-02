@@ -157,7 +157,7 @@ private:
   void SetScissor();
   void MapBatchVertexPointer(u32 required_vertices);
   void UnmapBatchVertexPointer(u32 used_vertices);
-  void DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices);
+  void DrawBatchVertices(BatchRenderMode render_mode, u32 num_vertices, u32 base_vertex);
   void ClearDisplay() override;
   void UpdateDisplay() override;
 
@@ -266,24 +266,22 @@ private:
 
   u32 m_resolution_scale = 1;
   u32 m_multisamples = 1;
-  u32 m_max_resolution_scale = 1;
-  bool m_true_color = true;
 
   union
   {
-    BitField<u8, bool, 0, 1> m_supports_per_sample_shading;
-    BitField<u8, bool, 1, 1> m_supports_dual_source_blend;
-    BitField<u8, bool, 2, 1> m_supports_disable_color_perspective;
-    BitField<u8, bool, 3, 1> m_per_sample_shading;
-    BitField<u8, bool, 4, 1> m_scaled_dithering;
-    BitField<u8, bool, 5, 1> m_chroma_smoothing;
-    BitField<u8, bool, 6, 1> m_disable_color_perspective;
+    BitField<u8, bool, 0, 1> m_supports_dual_source_blend;
+    BitField<u8, bool, 1, 1> m_per_sample_shading;
+    BitField<u8, bool, 2, 1> m_scaled_dithering;
+    BitField<u8, bool, 3, 1> m_chroma_smoothing;
+    BitField<u8, bool, 4, 1> m_disable_color_perspective;
 
     u8 bits = 0;
   };
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
+  GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
+  bool m_true_color = true;
   bool m_using_uv_limits = false;
   bool m_pgxp_depth_buffer = false;
 
@@ -298,6 +296,7 @@ private:
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 5, 9, 4, 3> m_batch_pipelines{};
+  std::unique_ptr<GPUPipeline> m_wireframe_pipeline;
 
   // [wrapped][interlaced]
   DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2> m_vram_fill_pipelines{};

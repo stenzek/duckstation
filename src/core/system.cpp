@@ -3589,6 +3589,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
         g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing ||
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
+        g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.display_alignment != old_settings.display_alignment ||

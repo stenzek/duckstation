@@ -45,6 +45,11 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
     return std::tie(v1, v2);
 }
 
+ALWAYS_INLINE static u32 GetMaxResolutionScale()
+{
+  return g_gpu_device->GetMaxTextureSize() / VRAM_WIDTH;
+}
+
 ALWAYS_INLINE static bool ShouldUseUVLimits()
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
@@ -57,7 +62,7 @@ ALWAYS_INLINE static bool ShouldDisableColorPerspective()
 }
 
 /// Returns true if the specified texture filtering mode requires dual-source blending.
-static bool TextureFilterRequiresDualSourceBlend(GPUTextureFilter filter)
+ALWAYS_INLINE static bool TextureFilterRequiresDualSourceBlend(GPUTextureFilter filter)
 {
   return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 || filter == GPUTextureFilter::xBR);
 }
@@ -148,41 +153,49 @@ bool GPU_HW::Initialize()
     return false;
 
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
-  m_max_resolution_scale = g_gpu_device->GetMaxTextureSize() / VRAM_WIDTH;
-  m_supports_dual_source_blend = features.dual_source_blend;
-  m_supports_per_sample_shading = features.per_sample_shading;
-  m_supports_disable_color_perspective = features.noperspective_interpolation;
 
   m_resolution_scale = CalculateResolutionScale();
   m_multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
-  m_per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
+  m_per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_using_uv_limits = ShouldUseUVLimits();
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
-  m_disable_color_perspective = m_supports_disable_color_perspective && ShouldDisableColorPerspective();
+  m_wireframe_mode = g_settings.gpu_wireframe_mode;
+  m_disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
 
   if (m_multisamples != g_settings.gpu_multisamples)
   {
-    Host::AddFormattedOSDMessage(20.0f, TRANSLATE("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
+    Host::AddFormattedOSDMessage(Host::OSD_CRITICAL_ERROR_DURATION,
+                                 TRANSLATE("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
                                  g_settings.gpu_multisamples, m_multisamples);
   }
   if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
   {
     Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
   }
-  if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
+  if (!features.dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
   {
     Host::AddFormattedOSDMessage(
-      20.0f, TRANSLATE("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
+      Host::OSD_CRITICAL_ERROR_DURATION,
+      TRANSLATE("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
       Settings::GetTextureFilterDisplayName(m_texture_filtering));
     m_texture_filtering = GPUTextureFilter::Nearest;
   }
 
-  if (!m_supports_disable_color_perspective && !ShouldDisableColorPerspective())
+  if (!features.noperspective_interpolation && !ShouldDisableColorPerspective())
     Log_WarningPrint("Disable color perspective not supported, but should be used.");
+
+  if (!features.geometry_shaders && m_wireframe_mode != GPUWireframeMode::Disabled)
+  {
+    Host::AddOSDMessage(
+      TRANSLATE("OSDMessage",
+                "Geometry shaders are not supported by your GPU, and are required for wireframe rendering."),
+      Host::OSD_CRITICAL_ERROR_DURATION);
+    m_wireframe_mode = GPUWireframeMode::Disabled;
+  }
 
   m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
 
@@ -290,12 +303,16 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 {
   GPU::UpdateSettings(old_settings);
 
+  const GPUDevice::Features features = g_gpu_device->GetFeatures();
+
   const u32 resolution_scale = CalculateResolutionScale();
   const u32 multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
-  const bool per_sample_shading = g_settings.gpu_per_sample_shading && m_supports_per_sample_shading;
+  const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.noperspective_interpolation;
   const GPUDownsampleMode downsample_mode = GetDownsampleMode(resolution_scale);
+  const GPUWireframeMode wireframe_mode =
+    features.geometry_shaders ? g_settings.gpu_wireframe_mode : GPUWireframeMode::Disabled;
   const bool use_uv_limits = ShouldUseUVLimits();
-  const bool disable_color_perspective = m_supports_disable_color_perspective && ShouldDisableColorPerspective();
+  const bool disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
 
   // TODO: Use old_settings
   const bool framebuffer_changed =
@@ -305,7 +322,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
      m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
-     m_downsample_mode != downsample_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
+     m_downsample_mode != downsample_mode || m_wireframe_mode != wireframe_mode ||
+     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
      m_disable_color_perspective != disable_color_perspective);
 
   if (m_resolution_scale != resolution_scale)
@@ -348,6 +366,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_using_uv_limits = use_uv_limits;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = downsample_mode;
+  m_wireframe_mode = wireframe_mode;
   m_disable_color_perspective = disable_color_perspective;
 
   if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
@@ -387,10 +406,12 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
 u32 GPU_HW::CalculateResolutionScale() const
 {
+  const u32 max_resolution_scale = GetMaxResolutionScale();
+
   u32 scale;
   if (g_settings.gpu_resolution_scale != 0)
   {
-    scale = std::clamp<u32>(g_settings.gpu_resolution_scale, 1, m_max_resolution_scale);
+    scale = std::clamp<u32>(g_settings.gpu_resolution_scale, 1, max_resolution_scale);
   }
   else
   {
@@ -404,7 +425,7 @@ u32 GPU_HW::CalculateResolutionScale() const
       static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight()) / height));
     Log_InfoPrintf("Height = %d, preferred scale = %d", height, preferred_scale);
 
-    scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, m_max_resolution_scale));
+    scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, max_resolution_scale));
   }
 
   if (g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive && scale > 1 && !Common::IsPow2(scale))
@@ -474,7 +495,7 @@ std::tuple<u32, u32> GPU_HW::GetFullDisplayResolution(bool scaled /* = true */)
 void GPU_HW::PrintSettingsToLog()
 {
   Log_InfoPrintf("Resolution Scale: %u (%ux%u), maximum %u", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,
-                 VRAM_HEIGHT * m_resolution_scale, m_max_resolution_scale);
+                 VRAM_HEIGHT * m_resolution_scale, GetMaxResolutionScale());
   Log_InfoPrintf("Multisampling: %ux%s", m_multisamples, m_per_sample_shading ? " (per sample shading)" : "");
   Log_InfoPrintf("Dithering: %s%s", m_true_color ? "Disabled" : "Enabled",
                  (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
@@ -483,6 +504,7 @@ void GPU_HW::PrintSettingsToLog()
   Log_InfoPrintf("Using UV limits: %s", m_using_uv_limits ? "YES" : "NO");
   Log_InfoPrintf("Depth buffer: %s", m_pgxp_depth_buffer ? "YES" : "NO");
   Log_InfoPrintf("Downsampling: %s", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
+  Log_InfoPrintf("Wireframe rendering: %s", Settings::GetGPUWireframeModeDisplayName(m_wireframe_mode));
   Log_InfoPrintf("Using software renderer for readbacks: %s", m_sw_renderer ? "YES" : "NO");
 }
 
@@ -772,6 +794,39 @@ bool GPU_HW::CompilePipelines()
     }
   }
 
+  if (m_wireframe_mode != GPUWireframeMode::Disabled)
+  {
+    std::unique_ptr<GPUShader> gs =
+      g_gpu_device->CreateShader(GPUShaderStage::Geometry, shadergen.GenerateWireframeGeometryShader());
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateWireframeFragmentShader());
+    if (!gs || !fs)
+      return false;
+
+    GL_OBJECT_NAME(gs, "Batch Wireframe Geometry Shader");
+    GL_OBJECT_NAME(fs, "Batch Wireframe Fragment Shader");
+
+    plconfig.input_layout.vertex_attributes =
+      gsl::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
+    plconfig.blend = (m_wireframe_mode == GPUWireframeMode::OverlayWireframe) ?
+                       GPUPipeline::BlendState::GetAlphaBlendingState() :
+                       GPUPipeline::BlendState::GetNoBlendingState();
+    plconfig.blend.write_mask = 0x7;
+    plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+    plconfig.vertex_shader = batch_vertex_shaders[0].get();
+    plconfig.geometry_shader = gs.get();
+    plconfig.fragment_shader = fs.get();
+
+    if (!(m_wireframe_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+
+    GL_OBJECT_NAME(m_wireframe_pipeline, "Batch Wireframe Pipeline");
+
+    plconfig.vertex_shader = nullptr;
+    plconfig.geometry_shader = nullptr;
+    plconfig.fragment_shader = nullptr;
+  }
+
   batch_shader_guard.Run();
 
   std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader =
@@ -1026,6 +1081,8 @@ void GPU_HW::DestroyPipelines()
 {
   static constexpr auto destroy = [](std::unique_ptr<GPUPipeline>& p) { p.reset(); };
 
+  m_wireframe_pipeline.reset();
+
   m_batch_pipelines.enumerate(destroy);
 
   m_vram_fill_pipelines.enumerate(destroy);
@@ -1136,7 +1193,7 @@ void GPU_HW::UnmapBatchVertexPointer(u32 used_vertices)
   m_batch_current_vertex_ptr = nullptr;
 }
 
-void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode, u32 base_vertex, u32 num_vertices)
+void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode, u32 num_vertices, u32 base_vertex)
 {
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   const u8 depth_test = m_batch.use_depth_buffer ? static_cast<u8>(2) : BoolToUInt8(m_batch.check_mask_before_draw);
@@ -2365,16 +2422,26 @@ void GPU_HW::FlushRender()
     m_batch_ubo_dirty = false;
   }
 
-  if (NeedsTwoPassRendering())
+  if (m_wireframe_mode != GPUWireframeMode::OnlyWireframe)
   {
-    m_renderer_stats.num_batches += 2;
-    DrawBatchVertices(BatchRenderMode::OnlyOpaque, m_batch_base_vertex, vertex_count);
-    DrawBatchVertices(BatchRenderMode::OnlyTransparent, m_batch_base_vertex, vertex_count);
+    if (NeedsTwoPassRendering())
+    {
+      m_renderer_stats.num_batches += 2;
+      DrawBatchVertices(BatchRenderMode::OnlyOpaque, vertex_count, m_batch_base_vertex);
+      DrawBatchVertices(BatchRenderMode::OnlyTransparent, vertex_count, m_batch_base_vertex);
+    }
+    else
+    {
+      m_renderer_stats.num_batches++;
+      DrawBatchVertices(m_batch.GetRenderMode(), vertex_count, m_batch_base_vertex);
+    }
   }
-  else
+
+  if (m_wireframe_mode != GPUWireframeMode::Disabled)
   {
     m_renderer_stats.num_batches++;
-    DrawBatchVertices(m_batch.GetRenderMode(), m_batch_base_vertex, vertex_count);
+    g_gpu_device->SetPipeline(m_wireframe_pipeline.get());
+    g_gpu_device->Draw(vertex_count, m_batch_base_vertex);
   }
 }
 

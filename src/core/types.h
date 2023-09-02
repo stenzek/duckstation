@@ -95,6 +95,14 @@ enum class GPUDownsampleMode : u8
   Count
 };
 
+enum class GPUWireframeMode : u8
+{
+  Disabled,
+  OverlayWireframe,
+  OnlyWireframe,
+  Count,
+};
+
 enum class DisplayCropMode : u8
 {
   None,

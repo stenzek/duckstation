@@ -489,41 +489,44 @@ void ShaderGen::DeclareFragmentEntryPoint(
 {
   if (m_glsl)
   {
-    if (m_use_glsl_interface_blocks)
+    if (num_color_inputs > 0 || num_texcoord_inputs > 0 || additional_inputs.size() > 0)
     {
-      const char* qualifier = GetInterpolationQualifier(true, msaa, ssaa, false);
-
-      if (m_spirv)
-        ss << "layout(location = 0) ";
-
-      ss << "in VertexData {\n";
-      for (u32 i = 0; i < num_color_inputs; i++)
-        ss << "  " << qualifier << (noperspective_color ? "noperspective " : "") << "float4 v_col" << i << ";\n";
-
-      for (u32 i = 0; i < num_texcoord_inputs; i++)
-        ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
-
-      for (const auto& [qualifiers, name] : additional_inputs)
+      if (m_use_glsl_interface_blocks)
       {
-        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
-        ss << "  " << qualifier_to_use << " " << name << ";\n";
+        const char* qualifier = GetInterpolationQualifier(true, msaa, ssaa, false);
+
+        if (m_spirv)
+          ss << "layout(location = 0) ";
+
+        ss << "in VertexData {\n";
+        for (u32 i = 0; i < num_color_inputs; i++)
+          ss << "  " << qualifier << (noperspective_color ? "noperspective " : "") << "float4 v_col" << i << ";\n";
+
+        for (u32 i = 0; i < num_texcoord_inputs; i++)
+          ss << "  " << qualifier << "float2 v_tex" << i << ";\n";
+
+        for (const auto& [qualifiers, name] : additional_inputs)
+        {
+          const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+          ss << "  " << qualifier_to_use << " " << name << ";\n";
+        }
+        ss << "};\n";
       }
-      ss << "};\n";
-    }
-    else
-    {
-      const char* qualifier = GetInterpolationQualifier(false, msaa, ssaa, false);
-
-      for (u32 i = 0; i < num_color_inputs; i++)
-        ss << qualifier << (noperspective_color ? "noperspective " : "") << "in float4 v_col" << i << ";\n";
-
-      for (u32 i = 0; i < num_texcoord_inputs; i++)
-        ss << qualifier << "in float2 v_tex" << i << ";\n";
-
-      for (const auto& [qualifiers, name] : additional_inputs)
+      else
       {
-        const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
-        ss << qualifier_to_use << " in " << name << ";\n";
+        const char* qualifier = GetInterpolationQualifier(false, msaa, ssaa, false);
+
+        for (u32 i = 0; i < num_color_inputs; i++)
+          ss << qualifier << (noperspective_color ? "noperspective " : "") << "in float4 v_col" << i << ";\n";
+
+        for (u32 i = 0; i < num_texcoord_inputs; i++)
+          ss << qualifier << "in float2 v_tex" << i << ";\n";
+
+        for (const auto& [qualifiers, name] : additional_inputs)
+        {
+          const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
+          ss << qualifier_to_use << " in " << name << ";\n";
+        }
       }
     }
 

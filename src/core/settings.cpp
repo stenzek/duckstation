@@ -161,7 +161,7 @@ void Settings::Load(SettingsInterface& si)
   region =
     ParseConsoleRegionName(
       si.GetStringValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)).c_str())
-    .value_or(DEFAULT_CONSOLE_REGION);
+      .value_or(DEFAULT_CONSOLE_REGION);
   enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
@@ -192,7 +192,7 @@ void Settings::Load(SettingsInterface& si)
   cpu_execution_mode =
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
-    .value_or(DEFAULT_CPU_EXECUTION_MODE);
+      .value_or(DEFAULT_CPU_EXECUTION_MODE);
   cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
   cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
@@ -201,11 +201,11 @@ void Settings::Load(SettingsInterface& si)
   cpu_recompiler_block_linking = si.GetBoolValue("CPU", "RecompilerBlockLinking", true);
   cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
   cpu_fastmem_mode = ParseCPUFastmemMode(
-    si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
-    .value_or(DEFAULT_CPU_FASTMEM_MODE);
+                       si.GetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)).c_str())
+                       .value_or(DEFAULT_CPU_FASTMEM_MODE);
 
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
-    .value_or(DEFAULT_GPU_RENDERER);
+                   .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
   gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
   gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
@@ -220,11 +220,15 @@ void Settings::Load(SettingsInterface& si)
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
-    .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+      .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_downsample_mode =
     ParseDownsampleModeName(
       si.GetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)).c_str())
-    .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
+      .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
+  gpu_wireframe_mode =
+    ParseGPUWireframeMode(
+      si.GetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)).c_str())
+      .value_or(DEFAULT_GPU_WIREFRAME_MODE);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
@@ -243,11 +247,11 @@ void Settings::Load(SettingsInterface& si)
   display_crop_mode =
     ParseDisplayCropMode(
       si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)).c_str())
-    .value_or(DEFAULT_DISPLAY_CROP_MODE);
+      .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
     ParseDisplayAspectRatio(
       si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
-    .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+      .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_aspect_ratio_custom_numerator = static_cast<u16>(
     std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
   display_aspect_ratio_custom_denominator = static_cast<u16>(
@@ -255,10 +259,10 @@ void Settings::Load(SettingsInterface& si)
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
-    .value_or(DEFAULT_DISPLAY_ALIGNMENT);
+      .value_or(DEFAULT_DISPLAY_ALIGNMENT);
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
-    .value_or(DEFAULT_DISPLAY_SCALING);
+      .value_or(DEFAULT_DISPLAY_SCALING);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -292,13 +296,13 @@ void Settings::Load(SettingsInterface& si)
 
   audio_backend =
     ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
-    .value_or(DEFAULT_AUDIO_BACKEND);
+      .value_or(DEFAULT_AUDIO_BACKEND);
   audio_driver = si.GetStringValue("Audio", "Driver");
   audio_output_device = si.GetStringValue("Audio", "OutputDevice");
   audio_stretch_mode =
     AudioStream::ParseStretchMode(
       si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
-    .value_or(DEFAULT_AUDIO_STRETCH_MODE);
+      .value_or(DEFAULT_AUDIO_STRETCH_MODE);
   audio_output_latency_ms = si.GetUIntValue("Audio", "OutputLatencyMS", DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
   audio_buffer_ms = si.GetUIntValue("Audio", "BufferMS", DEFAULT_AUDIO_BUFFER_MS);
   audio_output_volume = si.GetUIntValue("Audio", "OutputVolume", 100);
@@ -323,14 +327,14 @@ void Settings::Load(SettingsInterface& si)
   multitap_mode =
     ParseMultitapModeName(
       si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
-    .value_or(DEFAULT_MULTITAP_MODE);
+      .value_or(DEFAULT_MULTITAP_MODE);
 
   controller_types[0] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(0).c_str(), "Type",
-    GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
-    .c_str())
-    .value_or(DEFAULT_CONTROLLER_1_TYPE);
+                                                                  GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
+                                                  .c_str())
+                          .value_or(DEFAULT_CONTROLLER_1_TYPE);
 
-  const std::array<bool, 2> mtap_enabled = { {IsPort1MultitapEnabled(), IsPort2MultitapEnabled()} };
+  const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
   for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     // Ignore types when multitap not enabled
@@ -342,19 +346,19 @@ void Settings::Load(SettingsInterface& si)
     }
 
     controller_types[i] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
-      GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
-      .c_str())
-      .value_or(DEFAULT_CONTROLLER_2_TYPE);
+                                                                    GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
+                                                    .c_str())
+                            .value_or(DEFAULT_CONTROLLER_2_TYPE);
   }
 
   memory_card_types[0] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_1_TYPE)).c_str())
-    .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
+      .value_or(DEFAULT_MEMORY_CARD_1_TYPE);
   memory_card_types[1] =
     ParseMemoryCardTypeName(
       si.GetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(DEFAULT_MEMORY_CARD_2_TYPE)).c_str())
-    .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
+      .value_or(DEFAULT_MEMORY_CARD_2_TYPE);
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
@@ -372,7 +376,7 @@ void Settings::Load(SettingsInterface& si)
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
-    .value_or(DEFAULT_LOG_LEVEL);
+                .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
   log_to_console = si.GetBoolValue("Logging", "LogToConsole", DEFAULT_LOG_TO_CONSOLE);
   log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
@@ -462,6 +466,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
+  si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
@@ -1052,6 +1057,35 @@ const char* Settings::GetDownsampleModeDisplayName(GPUDownsampleMode mode)
   return Host::TranslateToCString("GPUDownsampleMode", s_downsample_mode_display_names[static_cast<int>(mode)]);
 }
 
+static constexpr auto s_wireframe_mode_names = make_array("Disabled", "OverlayWireframe", "OnlyWireframe");
+static constexpr auto s_wireframe_mode_display_names =
+  make_array(TRANSLATE_NOOP("GPUWireframeMode", "Disabled"), TRANSLATE_NOOP("GPUWireframeMode", "Overlay Wireframe"),
+             TRANSLATE_NOOP("GPUWireframeMode", "Only Wireframe"));
+
+std::optional<GPUWireframeMode> Settings::ParseGPUWireframeMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_wireframe_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUWireframeMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetGPUWireframeModeName(GPUWireframeMode mode)
+{
+  return s_wireframe_mode_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
+{
+  return Host::TranslateToCString("GPUWireframeMode", s_wireframe_mode_display_names[static_cast<int>(mode)]);
+}
+
 static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
 static std::array<const char*, 3> s_display_crop_mode_display_names = {
   {TRANSLATE_NOOP("DisplayCropMode", "None"), TRANSLATE_NOOP("DisplayCropMode", "Only Overscan Area"),
@@ -1082,9 +1116,8 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 }
 
 static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
-  {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"),
-   TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"), TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3",
-   "16:9", "19:9", "20:9", "PAR 1:1"}};
+  {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"), TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"),
+   TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3", "16:9", "19:9", "20:9", "PAR 1:1"}};
 static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
   {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
 

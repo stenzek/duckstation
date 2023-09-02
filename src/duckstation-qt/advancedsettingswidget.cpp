@@ -279,6 +279,11 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addMSAATweakOption(m_dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Wireframe Mode"), "GPU", "WireframeMode",
+                       Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
+                       Settings::GetGPUWireframeModeDisplayName, static_cast<u32>(GPUWireframeMode::Count),
+                       GPUWireframeMode::Disabled);
+
   if (m_dialog->isPerGameSettings())
   {
     addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"), "Display",
@@ -365,6 +370,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Wireframe mode
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache
     setFloatRangeTweakOption(m_ui.tweakOptionTable, i++, -1.0f); // PGXP geometry tolerance
     setFloatRangeTweakOption(m_ui.tweakOptionTable, i++,

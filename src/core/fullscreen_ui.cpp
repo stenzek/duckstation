@@ -2872,8 +2872,8 @@ void FullscreenUI::DrawBIOSSettingsPage()
                     FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
   DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Logging"),
-                    FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."),
-                    "BIOS", "TTYLogging", false);
+                    FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."), "BIOS",
+                    "TTYLogging", false);
 
   EndMenuButtons();
 }
@@ -4695,6 +4695,11 @@ void FullscreenUI::DrawAdvancedSettingsPage()
     bsi, FSUI_CSTR("Stretch Display Vertically"),
     FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
     "Display", "StretchVertically", false);
+  DrawEnumSetting(bsi, FSUI_CSTR("Wireframe Rendering"),
+                  FSUI_CSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
+                  "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
+                  &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
+                  GPUWireframeMode::Count);
 
   MenuHeading(FSUI_CSTR("PGXP Settings"));
 

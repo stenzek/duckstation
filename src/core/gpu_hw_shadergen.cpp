@@ -1087,6 +1087,96 @@ float3 SampleVRAM24Smoothed(uint2 icoords)
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+
+  if (m_glsl)
+  {
+    ss << R"(
+layout(triangles) in;
+layout(line_strip, max_vertices = 6) out;
+
+void main()
+{
+  gl_Position = gl_in[0].gl_Position;
+  EmitVertex();
+  gl_Position = gl_in[1].gl_Position;
+  EmitVertex();
+  EndPrimitive();
+  gl_Position = gl_in[1].gl_Position;
+  EmitVertex();
+  gl_Position = gl_in[2].gl_Position;
+  EmitVertex();
+  EndPrimitive();
+  gl_Position = gl_in[2].gl_Position;
+  EmitVertex();
+  gl_Position = gl_in[0].gl_Position;
+  EmitVertex();
+  EndPrimitive();
+}
+)";
+  }
+  else
+  {
+    ss << R"(
+struct GSInput
+{
+  float4 col0 : COLOR0;
+  float4 pos : SV_Position;
+};
+
+struct GSOutput
+{
+  float4 pos : SV_Position;
+};
+
+GSOutput GetVertex(GSInput vi)
+{
+  GSOutput vo;
+  vo.pos = vi.pos;
+  return vo;
+}
+
+[maxvertexcount(6)]
+void main(triangle GSInput input[3], inout LineStream<GSOutput> output)
+{
+  output.Append(GetVertex(input[0]));
+  output.Append(GetVertex(input[1]));
+  output.RestartStrip();
+
+  output.Append(GetVertex(input[1]));
+  output.Append(GetVertex(input[2]));
+  output.RestartStrip();
+
+  output.Append(GetVertex(input[2]));
+  output.Append(GetVertex(input[0]));
+  output.RestartStrip();
+}
+)";
+  }
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader()
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteCommonFunctions(ss);
+
+  DeclareFragmentEntryPoint(ss, 0, 0, {}, false, 1);
+  ss << R"(
+{
+  o_col0 = float4(1.0, 1.0, 1.0, 0.5);
+}
+)";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
 {
   std::stringstream ss;
