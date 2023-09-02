@@ -41,7 +41,7 @@ struct PipelineDiskCacheIndexEntry
   u32 uncompressed_size;
   u32 compressed_size;
 };
-static_assert(sizeof(PipelineDiskCacheIndexEntry) == 128); // No padding
+static_assert(sizeof(PipelineDiskCacheIndexEntry) == 112); // No padding
 
 static unsigned s_next_bad_shader_id = 1;
 
@@ -50,6 +50,7 @@ static GLenum GetGLShaderType(GPUShaderStage stage)
   static constexpr std::array<GLenum, static_cast<u32>(GPUShaderStage::MaxCount)> mapping = {{
     GL_VERTEX_SHADER,   // Vertex
     GL_FRAGMENT_SHADER, // Fragment
+    GL_GEOMETRY_SHADER, // Geometry
     GL_COMPUTE_SHADER,  // Compute
   }};
 
@@ -222,13 +223,12 @@ size_t OpenGLPipeline::ProgramCacheKeyHash::operator()(const ProgramCacheKey& k)
 {
   // TODO: maybe use xxhash here...
   std::size_t h = 0;
-  hash_combine(h, k.vs_key.entry_point_low, k.vs_key.entry_point_high, k.vs_key.source_hash_low,
-               k.vs_key.source_hash_high, k.vs_key.source_length, k.vs_key.shader_type);
-  hash_combine(h, k.fs_key.entry_point_low, k.fs_key.entry_point_high, k.fs_key.source_hash_low,
-               k.fs_key.source_hash_high, k.fs_key.source_length, k.fs_key.shader_type);
   hash_combine(h, k.va_key.num_vertex_attributes, k.va_key.vertex_attribute_stride);
   for (const VertexAttribute& va : k.va_key.vertex_attributes)
     hash_combine(h, va.key);
+  hash_combine(h, k.vs_hash_low, k.vs_hash_high, k.vs_length);
+  hash_combine(h, k.fs_hash_low, k.fs_hash_high, k.fs_length);
+  hash_combine(h, k.gs_hash_low, k.gs_hash_high, k.gs_length);
   return h;
 }
 
@@ -236,9 +236,21 @@ OpenGLPipeline::ProgramCacheKey OpenGLPipeline::GetProgramCacheKey(const Graphic
 {
   Assert(plconfig.input_layout.vertex_attributes.size() <= MAX_VERTEX_ATTRIBUTES);
 
+  const GPUShaderCache::CacheIndexKey& vs_key = static_cast<const OpenGLShader*>(plconfig.vertex_shader)->GetKey();
+  const GPUShaderCache::CacheIndexKey& fs_key = static_cast<const OpenGLShader*>(plconfig.fragment_shader)->GetKey();
+  const GPUShaderCache::CacheIndexKey* gs_key =
+    plconfig.geometry_shader ? &static_cast<const OpenGLShader*>(plconfig.geometry_shader)->GetKey() : nullptr;
+
   ProgramCacheKey ret;
-  ret.vs_key = static_cast<const OpenGLShader*>(plconfig.vertex_shader)->GetKey();
-  ret.fs_key = static_cast<const OpenGLShader*>(plconfig.fragment_shader)->GetKey();
+  ret.vs_hash_low = vs_key.source_hash_low;
+  ret.vs_hash_high = vs_key.source_hash_high;
+  ret.vs_length = vs_key.source_length;
+  ret.fs_hash_low = fs_key.source_hash_low;
+  ret.fs_hash_high = fs_key.source_hash_high;
+  ret.fs_length = fs_key.source_length;
+  ret.gs_hash_low = gs_key ? gs_key->source_hash_low : 0;
+  ret.gs_hash_high = gs_key ? gs_key->source_hash_high : 0;
+  ret.gs_length = gs_key ? gs_key->source_length : 0;
 
   std::memset(ret.va_key.vertex_attributes, 0, sizeof(ret.va_key.vertex_attributes));
   ret.va_key.vertex_attribute_stride = 0;
@@ -300,7 +312,9 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
 {
   OpenGLShader* vertex_shader = static_cast<OpenGLShader*>(plconfig.vertex_shader);
   OpenGLShader* fragment_shader = static_cast<OpenGLShader*>(plconfig.fragment_shader);
-  if (!vertex_shader || !fragment_shader || !vertex_shader->Compile() || !fragment_shader->Compile())
+  OpenGLShader* geometry_shader = static_cast<OpenGLShader*>(plconfig.geometry_shader);
+  if (!vertex_shader || !fragment_shader || !vertex_shader->Compile() || !fragment_shader->Compile() ||
+      (geometry_shader && !geometry_shader->Compile()))
   {
     Log_ErrorPrintf("Failed to compile shaders.");
     return 0;
@@ -320,6 +334,8 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
   Assert(plconfig.vertex_shader && plconfig.fragment_shader);
   glAttachShader(program_id, vertex_shader->GetGLId());
   glAttachShader(program_id, fragment_shader->GetGLId());
+  if (geometry_shader)
+    glAttachShader(program_id, geometry_shader->GetGLId());
 
   if (!ShaderGen::UseGLSLBindingLayout())
   {

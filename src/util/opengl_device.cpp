@@ -460,6 +460,8 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   // noperspective is not supported in GLSL ES.
   m_features.noperspective_interpolation = !is_gles;
 
+  m_features.geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2;
+
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
                             (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));
   m_features.partial_msaa_resolve = true;

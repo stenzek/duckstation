@@ -138,6 +138,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   plconfig.per_sample_shading = false;
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
+  plconfig.geometry_shader = nullptr;
 
   if (!(m_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;

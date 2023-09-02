@@ -25,6 +25,7 @@ public:
 
   ID3D11VertexShader* GetVertexShader() const;
   ID3D11PixelShader* GetPixelShader() const;
+  ID3D11GeometryShader* GetGeometryShader() const;
   ID3D11ComputeShader* GetComputeShader() const;
 
   ALWAYS_INLINE const std::vector<u8>& GetBytecode() const { return m_bytecode; }
@@ -55,6 +56,7 @@ public:
   ALWAYS_INLINE ID3D11BlendState* GetBlendState() const { return m_bs.Get(); }
   ALWAYS_INLINE ID3D11InputLayout* GetInputLayout() const { return m_il.Get(); }
   ALWAYS_INLINE ID3D11VertexShader* GetVertexShader() const { return m_vs.Get(); }
+  ALWAYS_INLINE ID3D11GeometryShader* GetGeometryShader() const { return m_gs.Get(); }
   ALWAYS_INLINE ID3D11PixelShader* GetPixelShader() const { return m_ps.Get(); }
   ALWAYS_INLINE D3D11_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const { return m_topology; }
   ALWAYS_INLINE u32 GetVertexStride() const { return m_vertex_stride; }
@@ -63,14 +65,15 @@ public:
 
 private:
   D3D11Pipeline(ComPtr<ID3D11RasterizerState> rs, ComPtr<ID3D11DepthStencilState> ds, ComPtr<ID3D11BlendState> bs,
-                ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs, ComPtr<ID3D11PixelShader> ps,
-                D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor);
+                ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs, ComPtr<ID3D11GeometryShader> gs,
+                ComPtr<ID3D11PixelShader> ps, D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor);
 
   ComPtr<ID3D11RasterizerState> m_rs;
   ComPtr<ID3D11DepthStencilState> m_ds;
   ComPtr<ID3D11BlendState> m_bs;
   ComPtr<ID3D11InputLayout> m_il;
   ComPtr<ID3D11VertexShader> m_vs;
+  ComPtr<ID3D11GeometryShader> m_gs;
   ComPtr<ID3D11PixelShader> m_ps;
   D3D11_PRIMITIVE_TOPOLOGY m_topology;
   u32 m_vertex_stride;

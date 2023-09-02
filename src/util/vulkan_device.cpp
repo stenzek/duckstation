@@ -366,6 +366,7 @@ bool VulkanDevice::SelectDeviceFeatures()
   m_device_features.wideLines = available_features.wideLines;
   m_device_features.samplerAnisotropy = available_features.samplerAnisotropy;
   m_device_features.sampleRateShading = available_features.sampleRateShading;
+  m_device_features.geometryShader = available_features.geometryShader;
 
   return true;
 }
@@ -2226,6 +2227,8 @@ bool VulkanDevice::CheckFeatures()
 
   if (m_features.texture_buffers_emulated_with_ssbo)
     Log_WarningPrintf("Emulating texture buffers with SSBOs.");
+
+  m_features.geometry_shaders = m_device_features.geometryShader;
 
   m_features.partial_msaa_resolve = true;
   m_features.shader_cache = true;

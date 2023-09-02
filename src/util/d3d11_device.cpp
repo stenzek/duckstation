@@ -173,6 +173,7 @@ void D3D11Device::SetFeatures()
   m_features.noperspective_interpolation = true;
   m_features.supports_texture_buffers = true;
   m_features.texture_buffers_emulated_with_ssbo = false;
+  m_features.geometry_shaders = true;
   m_features.partial_msaa_resolve = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;

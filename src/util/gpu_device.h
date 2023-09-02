@@ -114,6 +114,7 @@ enum class GPUShaderStage : u8
 {
   Vertex,
   Fragment,
+  Geometry,
   Compute,
 
   MaxCount
@@ -374,6 +375,7 @@ public:
     BlendState blend;
 
     GPUShader* vertex_shader;
+    GPUShader* geometry_shader;
     GPUShader* fragment_shader;
 
     GPUTexture::Format color_format;
@@ -433,6 +435,7 @@ public:
     bool noperspective_interpolation : 1;
     bool supports_texture_buffers : 1;
     bool texture_buffers_emulated_with_ssbo : 1;
+    bool geometry_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool gpu_timing : 1;
     bool shader_cache : 1;

@@ -32,6 +32,9 @@ std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code,
 // Compile a fragment shader to SPIR-V.
 std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code, u32 options);
 
+// Compile a geometry shader to SPIR-V.
+std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code, u32 options);
+
 // Compile a compute shader to SPIR-V.
 std::optional<SPIRVCodeVector> CompileComputeShader(std::string_view source_code, u32 options);
 

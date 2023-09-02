@@ -183,6 +183,7 @@ private:
 
   ID3D11InputLayout* m_current_input_layout = nullptr;
   ID3D11VertexShader* m_current_vertex_shader = nullptr;
+  ID3D11GeometryShader* m_current_geometry_shader = nullptr;
   ID3D11PixelShader* m_current_pixel_shader = nullptr;
   ID3D11RasterizerState* m_current_rasterizer_state = nullptr;
   ID3D11DepthStencilState* m_current_depth_state = nullptr;

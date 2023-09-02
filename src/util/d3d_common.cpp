@@ -358,21 +358,24 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
   {
     case D3D_FEATURE_LEVEL_10_0:
     {
-      static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "ps_4_0", "cs_4_0"}};
+      static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
+        {"vs_4_0", "ps_4_0", "gs_4_0", "cs_4_0"}};
       target = targets[static_cast<int>(stage)];
     }
     break;
 
     case D3D_FEATURE_LEVEL_10_1:
     {
-      static constexpr std::array<const char*, 4> targets = {{"vs_4_1", "ps_4_1", "cs_4_1"}};
+      static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
+        {"vs_4_1", "ps_4_1", "gs_4_0", "cs_4_1"}};
       target = targets[static_cast<int>(stage)];
     }
     break;
 
     case D3D_FEATURE_LEVEL_11_0:
     {
-      static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "ps_5_0", "cs_5_0"}};
+      static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
+        {"vs_5_0", "ps_5_0", "gs_5_0", "cs_5_0"}};
       target = targets[static_cast<int>(stage)];
     }
     break;
@@ -380,7 +383,8 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     case D3D_FEATURE_LEVEL_11_1:
     default:
     {
-      static constexpr std::array<const char*, 4> targets = {{"vs_5_1", "ps_5_1", "cs_5_1"}};
+      static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
+        {"vs_5_1", "ps_5_1", "gs_5_1", "cs_5_1"}};
       target = targets[static_cast<int>(stage)];
     }
     break;

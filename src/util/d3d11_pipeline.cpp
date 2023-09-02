@@ -34,6 +34,12 @@ ID3D11PixelShader* D3D11Shader::GetPixelShader() const
   return static_cast<ID3D11PixelShader*>(m_shader.Get());
 }
 
+ID3D11GeometryShader* D3D11Shader::GetGeometryShader() const
+{
+  DebugAssert(m_stage == GPUShaderStage::Geometry);
+  return static_cast<ID3D11GeometryShader*>(m_shader.Get());
+}
+
 ID3D11ComputeShader* D3D11Shader::GetComputeShader() const
 {
   DebugAssert(m_stage == GPUShaderStage::Compute);
@@ -62,6 +68,11 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage st
     case GPUShaderStage::Fragment:
       hr = m_device->CreatePixelShader(data.data(), data.size(), nullptr,
                                        reinterpret_cast<ID3D11PixelShader**>(shader.GetAddressOf()));
+      break;
+
+    case GPUShaderStage::Geometry:
+      hr = m_device->CreateGeometryShader(data.data(), data.size(), nullptr,
+                                          reinterpret_cast<ID3D11GeometryShader**>(shader.GetAddressOf()));
       break;
 
     case GPUShaderStage::Compute:
@@ -98,11 +109,11 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage st
 
 D3D11Pipeline::D3D11Pipeline(ComPtr<ID3D11RasterizerState> rs, ComPtr<ID3D11DepthStencilState> ds,
                              ComPtr<ID3D11BlendState> bs, ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs,
-                             ComPtr<ID3D11PixelShader> ps, D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride,
-                             u32 blend_factor)
+                             ComPtr<ID3D11GeometryShader> gs, ComPtr<ID3D11PixelShader> ps,
+                             D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor)
   : m_rs(std::move(rs)), m_ds(std::move(ds)), m_bs(std::move(bs)), m_il(std::move(il)), m_vs(std::move(vs)),
-    m_ps(std::move(ps)), m_topology(topology), m_vertex_stride(vertex_stride), m_blend_factor(blend_factor),
-    m_blend_factor_float(GPUDevice::RGBA8ToFloat(blend_factor))
+    m_gs(std::move(gs)), m_ps(std::move(ps)), m_topology(topology), m_vertex_stride(vertex_stride),
+    m_blend_factor(blend_factor), m_blend_factor_float(GPUDevice::RGBA8ToFloat(blend_factor))
 {
 }
 
@@ -318,11 +329,12 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
       D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, // TriangleStrips
     }};
 
-  return std::unique_ptr<GPUPipeline>(
-    new D3D11Pipeline(std::move(rs), std::move(ds), std::move(bs), std::move(il),
-                      static_cast<const D3D11Shader*>(config.vertex_shader)->GetVertexShader(),
-                      static_cast<const D3D11Shader*>(config.fragment_shader)->GetPixelShader(),
-                      primitives[static_cast<u8>(config.primitive)], vertex_stride, config.blend.constant));
+  return std::unique_ptr<GPUPipeline>(new D3D11Pipeline(
+    std::move(rs), std::move(ds), std::move(bs), std::move(il),
+    static_cast<const D3D11Shader*>(config.vertex_shader)->GetVertexShader(),
+    config.geometry_shader ? static_cast<const D3D11Shader*>(config.geometry_shader)->GetGeometryShader() : nullptr,
+    static_cast<const D3D11Shader*>(config.fragment_shader)->GetPixelShader(),
+    primitives[static_cast<u8>(config.primitive)], vertex_stride, config.blend.constant));
 }
 
 void D3D11Device::SetPipeline(GPUPipeline* pipeline)
@@ -356,6 +368,12 @@ void D3D11Device::SetPipeline(GPUPipeline* pipeline)
   {
     m_current_vertex_shader = vs;
     m_context->VSSetShader(vs, nullptr, 0);
+  }
+
+  if (ID3D11GeometryShader* gs = PL->GetGeometryShader(); m_current_geometry_shader != gs)
+  {
+    m_current_geometry_shader = gs;
+    m_context->GSSetShader(gs, nullptr, 0);
   }
 
   if (ID3D11PixelShader* ps = PL->GetPixelShader(); m_current_pixel_shader != ps)

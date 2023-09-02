@@ -210,6 +210,7 @@ void MetalDevice::SetFeatures()
   m_features.noperspective_interpolation = true;
   m_features.supports_texture_buffers = true;
   m_features.texture_buffers_emulated_with_ssbo = true;
+  m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;

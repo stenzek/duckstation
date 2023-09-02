@@ -41,7 +41,7 @@ class OpenGLPipeline final : public GPUPipeline
   friend OpenGLDevice;
 
 public:
-  static constexpr u32 MAX_VERTEX_ATTRIBUTES = 6;
+  static constexpr u32 MAX_VERTEX_ATTRIBUTES = 7;
 
   struct VertexArrayCacheKey
   {
@@ -65,14 +65,18 @@ public:
 
   struct ProgramCacheKey
   {
-    GPUShaderCache::CacheIndexKey vs_key;
-    GPUShaderCache::CacheIndexKey fs_key;
+    u64 vs_hash_low, vs_hash_high;
+    u64 gs_hash_low, gs_hash_high;
+    u64 fs_hash_low, fs_hash_high;
+    u32 vs_length;
+    u32 gs_length;
+    u32 fs_length;
     VertexArrayCacheKey va_key;
 
     bool operator==(const ProgramCacheKey& rhs) const;
     bool operator!=(const ProgramCacheKey& rhs) const;
   };
-  static_assert(sizeof(ProgramCacheKey) == 112); // Has no padding
+  static_assert(sizeof(ProgramCacheKey) == 96); // Has no padding
   struct ProgramCacheKeyHash
   {
     size_t operator()(const ProgramCacheKey& k) const;

@@ -1091,6 +1091,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       plconfig.primitive = MapPrimitive(info.topology);
       plconfig.vertex_shader = vs.get();
       plconfig.fragment_shader = fs.get();
+      plconfig.geometry_shader = nullptr;
       if (!plconfig.vertex_shader || !plconfig.fragment_shader)
         return false;
 

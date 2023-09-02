@@ -680,6 +680,7 @@ bool GPU_HW::CompilePipelines()
   plconfig.depth_format = VRAM_DS_FORMAT;
   plconfig.samples = m_multisamples;
   plconfig.per_sample_shading = m_per_sample_shading;
+  plconfig.geometry_shader = nullptr;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   for (u8 depth_test = 0; depth_test < 3; depth_test++)

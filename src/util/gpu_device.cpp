@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_device.h"
-#include "core/host.h" // TODO: Remove, needed for getting fullscreen mode.
+#include "core/host.h"     // TODO: Remove, needed for getting fullscreen mode.
 #include "core/settings.h" // TODO: Remove, needed for dump directory.
 #include "shadergen.h"
 
@@ -78,18 +78,10 @@ GPUShader::~GPUShader() = default;
 
 const char* GPUShader::GetStageName(GPUShaderStage stage)
 {
-  switch (stage)
-  {
-    case GPUShaderStage::Vertex:
-      return "Vertex";
-    case GPUShaderStage::Fragment:
-      return "Fragment";
-    case GPUShaderStage::Compute:
-      return "Compute";
-    default:
-      UnreachableCode();
-      return "";
-  }
+  static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> names = {"Vertex", "Fragment",
+                                                                                                "Geometry", "Compute"};
+
+  return names[static_cast<u32>(stage)];
 }
 
 GPUPipeline::GPUPipeline() = default;
@@ -432,6 +424,7 @@ bool GPUDevice::CreateResources()
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
   plconfig.vertex_shader = imgui_vs.get();
+  plconfig.geometry_shader = nullptr;
   plconfig.fragment_shader = imgui_fs.get();
 
   m_imgui_pipeline = CreatePipeline(plconfig);

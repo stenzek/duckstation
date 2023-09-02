@@ -4,7 +4,7 @@
 #include "spirv_compiler.h"
 #include "gpu_device.h"
 
-#include "core/settings.h"// TODO: Remove me
+#include "core/settings.h" // TODO: Remove me
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -137,6 +137,12 @@ std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileFragmentShad
   return CompileShaderToSPV(EShLangFragment, "ps", source_code, options);
 }
 
+std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileGeometryShader(std::string_view source_code,
+                                                                                   u32 options)
+{
+  return CompileShaderToSPV(EShLangGeometry, "gs", source_code, options);
+}
+
 std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileComputeShader(std::string_view source_code,
                                                                                   u32 options)
 {
@@ -153,6 +159,9 @@ std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileShader(GPUSh
 
     case GPUShaderStage::Fragment:
       return CompileShaderToSPV(EShLangFragment, "ps", source_code, options);
+
+    case GPUShaderStage::Geometry:
+      return CompileShaderToSPV(EShLangGeometry, "gs", source_code, options);
 
     case GPUShaderStage::Compute:
       return CompileShaderToSPV(EShLangCompute, "cs", source_code, options);

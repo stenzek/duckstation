@@ -1591,6 +1591,7 @@ bool GPU::CompileDisplayPipeline()
 
   plconfig.vertex_shader = vso.get();
   plconfig.fragment_shader = fso.get();
+  plconfig.geometry_shader = nullptr;
   if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
   GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline [%s]",

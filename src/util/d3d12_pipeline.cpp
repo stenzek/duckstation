@@ -88,6 +88,8 @@ std::string D3D12Pipeline::GetPipelineName(const GraphicsConfig& config)
     hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
   if (const D3D12Shader* shader = static_cast<const D3D12Shader*>(config.fragment_shader))
     hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
+  if (const D3D12Shader* shader = static_cast<const D3D12Shader*>(config.geometry_shader))
+    hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
   hash.Update(&config.color_format, sizeof(config.color_format));
   hash.Update(&config.depth_format, sizeof(config.depth_format));
   hash.Update(&config.samples, sizeof(config.samples));
@@ -178,6 +180,11 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
                       static_cast<const D3D12Shader*>(config.vertex_shader)->GetBytecodeSize());
   gpb.SetPixelShader(static_cast<const D3D12Shader*>(config.fragment_shader)->GetBytecodeData(),
                      static_cast<const D3D12Shader*>(config.fragment_shader)->GetBytecodeSize());
+  if (config.geometry_shader)
+  {
+    gpb.SetGeometryShader(static_cast<const D3D12Shader*>(config.geometry_shader)->GetBytecodeData(),
+                          static_cast<const D3D12Shader*>(config.geometry_shader)->GetBytecodeSize());
+  }
   gpb.SetPrimitiveTopologyType(primitive_types[static_cast<u8>(config.primitive)]);
 
   if (!config.input_layout.vertex_attributes.empty())

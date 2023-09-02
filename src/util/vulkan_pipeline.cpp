@@ -44,7 +44,8 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage s
 }
 
 std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
-                                                                const char* entry_point, DynamicHeapArray<u8>* out_binary)
+                                                                const char* entry_point,
+                                                                DynamicHeapArray<u8>* out_binary)
 {
   if (std::strcmp(entry_point, "main") != 0)
   {
@@ -155,6 +156,9 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   Vulkan::GraphicsPipelineBuilder gpb;
   gpb.SetVertexShader(static_cast<const VulkanShader*>(config.vertex_shader)->GetModule());
   gpb.SetFragmentShader(static_cast<const VulkanShader*>(config.fragment_shader)->GetModule());
+
+  if (config.geometry_shader)
+    gpb.SetGeometryShader(static_cast<const VulkanShader*>(config.geometry_shader)->GetModule());
 
   if (!config.input_layout.vertex_attributes.empty())
   {
