@@ -98,6 +98,7 @@ declare -a SYSLIBS=(
 	"libxcb-render-util.so.0"
 	"libxcb-shape.so.0"
 	"libxcb-sync.so.1"
+	"libxcb-cursor.so.0"
 	"libxcb-util.so.1"
 	"libxcb-xfixes.so.0"
 	"libxcb-xkb.so.1"
