@@ -1,22 +1,5 @@
-/***************************************************************************
- *   Original copyright notice from PGXP code from Beetle PSX.             *
- *   Copyright (C) 2016 by iCatButler                                      *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
- ***************************************************************************/
+// SPDX-FileCopyrightText: 2016 iCatButler, 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: GPL-2.0+
 
 #pragma once
 #include "types.h"
@@ -45,7 +28,8 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 
 // -- CPU functions
 void CPU_LW(u32 instr, u32 addr, u32 rtVal);
-void CPU_LHx(u32 instr, u32 addr, u32 rtVal);
+void CPU_LH(u32 instr, u32 addr, u32 rtVal);
+void CPU_LHU(u32 instr, u32 addr, u32 rtVal);
 void CPU_LBx(u32 instr, u32 addr, u32 rtVal);
 void CPU_SB(u32 instr, u32 addr, u32 rtVal);
 void CPU_SH(u32 instr, u32 addr, u32 rtVal);

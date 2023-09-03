@@ -213,7 +213,7 @@ void SettingsDialog::setCategory(const char* category)
 
 void SettingsDialog::onCategoryCurrentRowChanged(int row)
 {
-  DebugAssert(row < MAX_SETTINGS_WIDGETS);
+  DebugAssert(row < static_cast<int>(MAX_SETTINGS_WIDGETS));
   m_ui.settingsContainer->setCurrentIndex(row);
   m_ui.helpText->setText(m_category_help_text[row]);
 }

@@ -7,7 +7,9 @@
 #include "system.h"
 #include "util/state_wrapper.h"
 
-DigitalController::DigitalController(u32 index) : Controller(index) {}
+DigitalController::DigitalController(u32 index) : Controller(index)
+{
+}
 
 DigitalController::~DigitalController() = default;
 
@@ -164,7 +166,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   BUTTON("R1", TRANSLATE_NOOP("DigitalController", "R1"), DigitalController::Button::R1, GenericInputBinding::R1),
   BUTTON("L2", TRANSLATE_NOOP("DigitalController", "L2"), DigitalController::Button::L2, GenericInputBinding::L2),
   BUTTON("R2", TRANSLATE_NOOP("DigitalController", "R2"), DigitalController::Button::R2, GenericInputBinding::R2),
-  // clang-format on
+// clang-format on
 
 #undef BUTTON
 };
@@ -172,7 +174,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "ForcePopnControllerMode",
    TRANSLATE_NOOP("DigitalController", "Force Pop'n Controller Mode"),
-   TRANSLATE_NOOP("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false"}};
+   TRANSLATE_NOOP("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false", nullptr,
+   nullptr, nullptr, nullptr, nullptr, 0.0f}};
 
 const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
                                                             "DigitalController",

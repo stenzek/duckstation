@@ -1476,7 +1476,10 @@ bool CodeGenerator::Compile_Load(const CodeBlockInstruction& cbi)
       ConvertValueSizeInPlace(&result, RegSize_32, (cbi.instruction.op == InstructionOp::lh));
 
       if (g_settings.gpu_pgxp_enable)
-        EmitFunctionCall(nullptr, PGXP::CPU_LHx, Value::FromConstantU32(cbi.instruction.bits), address, result);
+      {
+        EmitFunctionCall(nullptr, (cbi.instruction.op == InstructionOp::lhu) ? &PGXP::CPU_LHU : PGXP::CPU_LH,
+                         Value::FromConstantU32(cbi.instruction.bits), address, result);
+      }
 
       if (address_spec)
       {

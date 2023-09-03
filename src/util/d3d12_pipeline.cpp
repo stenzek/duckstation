@@ -15,8 +15,6 @@
 
 Log_SetChannel(D3D12Device);
 
-static u32 s_next_bad_shader_id = 1;
-
 D3D12Shader::D3D12Shader(GPUShaderStage stage, Bytecode bytecode) : GPUShader(stage), m_bytecode(std::move(bytecode))
 {
 }

@@ -31,6 +31,10 @@ union CodeBlockKey
 
   ALWAYS_INLINE u32 GetPCPhysicalAddress() const { return (aligned_pc << 2) & PHYSICAL_MEMORY_ADDRESS_MASK; }
 
+  ALWAYS_INLINE CodeBlockKey() = default;
+
+  ALWAYS_INLINE CodeBlockKey(const CodeBlockKey& rhs) : bits(rhs.bits) {}
+
   ALWAYS_INLINE CodeBlockKey& operator=(const CodeBlockKey& rhs)
   {
     bits = rhs.bits;

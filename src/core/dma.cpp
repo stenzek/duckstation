@@ -38,7 +38,7 @@ enum class SyncMode : u32
 };
 
 static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
-static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
+// static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
 
 static u32 GetAddressMask();
 static void ClearState();

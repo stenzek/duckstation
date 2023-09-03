@@ -758,6 +758,7 @@ void Host::OnAchievementsRefreshed()
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
+#if 0
   // TODO: Find a better home for this.
   if (InputManager::HasPointerAxisBinds())
   {
@@ -766,6 +767,7 @@ void Host::SetMouseMode(bool relative, bool hide_cursor)
   }
 
   // emit g_emu_thread->mouseModeRequested(relative, hide_cursor);
+#endif
 }
 
 void Host::PumpMessagesOnCPUThread()

@@ -1353,7 +1353,7 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, sxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LHx(inst.bits, addr, sxvalue);
+        PGXP::CPU_LH(inst.bits, addr, sxvalue);
     }
     break;
 
@@ -1406,7 +1406,7 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, zxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LHx(inst.bits, addr, zxvalue);
+        PGXP::CPU_LHU(inst.bits, addr, zxvalue);
     }
     break;
 

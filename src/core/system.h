@@ -27,8 +27,7 @@ struct ImageInfo;
 struct Hash;
 } // namespace BIOS
 
-namespace GameDatabase
-{
+namespace GameDatabase {
 struct Entry;
 }
 
@@ -79,7 +78,10 @@ enum : u32
 {
   // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
   MAX_SAVE_STATE_SIZE = 11 * 1024 * 1024,
+};
 
+enum : s32
+{
   PER_GAME_SAVE_STATE_SLOTS = 10,
   GLOBAL_SAVE_STATE_SLOTS = 10
 };
@@ -477,8 +479,7 @@ void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
 
-namespace Internal
-{
+namespace Internal {
 /// Called on process startup.
 void ProcessStartup();
 
@@ -487,7 +488,7 @@ void ProcessShutdown();
 
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();
-}
+} // namespace Internal
 
 } // namespace System
 

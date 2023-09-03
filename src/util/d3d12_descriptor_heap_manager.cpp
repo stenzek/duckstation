@@ -16,7 +16,7 @@ bool D3D12DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_H
 {
   D3D12_DESCRIPTOR_HEAP_DESC desc = {type, static_cast<UINT>(num_descriptors),
                                      shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE :
-                                                      D3D12_DESCRIPTOR_HEAP_FLAG_NONE};
+                                                      D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0u};
 
   HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_descriptor_heap.ReleaseAndGetAddressOf()));
   if (FAILED(hr))
@@ -44,10 +44,12 @@ bool D3D12DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_H
 
 void D3D12DescriptorHeapManager::Destroy()
 {
+#ifdef _DEBUG
   for (BitSetType& bs : m_free_slots)
   {
     DebugAssert(bs.all());
   }
+#endif
 
   m_shader_visible = false;
   m_num_descriptors = 0;
@@ -111,7 +113,7 @@ D3D12DescriptorAllocator::~D3D12DescriptorAllocator() = default;
 bool D3D12DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors)
 {
   const D3D12_DESCRIPTOR_HEAP_DESC desc = {type, static_cast<UINT>(num_descriptors),
-                                           D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE};
+                                           D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, 0u};
   const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_descriptor_heap.ReleaseAndGetAddressOf()));
   if (FAILED(hr))
   {

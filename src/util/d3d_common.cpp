@@ -415,7 +415,7 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     if (fp)
     {
       std::fwrite(source.data(), source.size(), 1, fp.get());
-      std::fprintf(fp.get(), "\n\nCompile as %s failed: %08X\n", target, hr);
+      std::fprintf(fp.get(), "\n\nCompile as %s failed: %08X\n", target, static_cast<unsigned>(hr));
       std::fwrite(error_string.c_str(), error_string.size(), 1, fp.get());
     }
 

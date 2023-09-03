@@ -10,12 +10,14 @@
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
-#include "common/log.h"
 #include "common/path.h"
 
 #include <array>
 
+#ifdef _DEBUG
+#include "common/log.h"
 Log_SetChannel(GunCon);
+#endif
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Button::Count)> s_button_indices = {{13, 3, 14}};
 
@@ -230,7 +232,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATE_NOOP("GunCon", "Crosshair Image Path"),
-   TRANSLATE_NOOP("GunCon", "Path to an image to use as a crosshair/cursor.")},
+   TRANSLATE_NOOP("GunCon", "Path to an image to use as a crosshair/cursor."), nullptr, nullptr, nullptr, nullptr,
+   nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "CrosshairScale", TRANSLATE_NOOP("GunCon", "Crosshair Image Scale"),
    TRANSLATE_NOOP("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
    100.0f},

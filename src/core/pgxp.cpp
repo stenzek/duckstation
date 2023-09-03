@@ -1,30 +1,16 @@
-/***************************************************************************
- *   Original copyright notice from PGXP code from Beetle PSX.             *
- *   Copyright (C) 2016 by iCatButler                                      *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
- ***************************************************************************/
+// SPDX-FileCopyrightText: 2016 iCatButler, 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: GPL-2.0+
 
 #include "pgxp.h"
 #include "bus.h"
-#include "common/log.h"
 #include "cpu_core.h"
 #include "settings.h"
+
+#include "common/log.h"
+
 #include <climits>
 #include <cmath>
+
 Log_SetChannel(PGXP);
 
 namespace PGXP {
@@ -50,19 +36,19 @@ enum : u32
 #define VALID_ALL (VALID_0 | VALID_1 | VALID_2 | VALID_3)
 #define INV_VALID_ALL (ALL ^ VALID_ALL)
 
-typedef struct PGXP_value_Tag
+struct PGXP_value
 {
   float x;
   float y;
   float z;
   union
   {
-    unsigned int flags;
-    unsigned char compFlags[4];
-    unsigned short halfFlags[2];
+    u32 flags;
+    u8 compFlags[4];
+    u16 halfFlags[2];
   };
-  unsigned int value;
-} PGXP_value;
+  u32 value;
+};
 
 typedef union
 {
@@ -184,7 +170,7 @@ ALWAYS_INLINE_RELEASE void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 va
   *dest = PGXP_value_invalid;
 }
 
-ALWAYS_INLINE_RELEASE static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, int sign)
+ALWAYS_INLINE_RELEASE static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, bool sign)
 {
   u32 validMask = 0;
   psx_value val, mask;
@@ -333,13 +319,13 @@ void Shutdown()
 }
 
 // Instruction register decoding
-#define op(_instr) (_instr >> 26) // The op part of the instruction register
-#define func(_instr) ((_instr)&0x3F) // The funct part of the instruction register
-#define sa(_instr) ((_instr >> 6) & 0x1F) // The sa part of the instruction register
+#define op(_instr) (_instr >> 26)          // The op part of the instruction register
+#define func(_instr) ((_instr)&0x3F)       // The funct part of the instruction register
+#define sa(_instr) ((_instr >> 6) & 0x1F)  // The sa part of the instruction register
 #define rd(_instr) ((_instr >> 11) & 0x1F) // The rd part of the instruction register
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
-#define imm(_instr) (_instr & 0xFFFF) // The immediate part of the instruction register
+#define imm(_instr) (_instr & 0xFFFF)      // The immediate part of the instruction register
 #define cop2idx(_instr) (((_instr >> 11) & 0x1F) | ((_instr >> 17) & 0x20))
 
 #define SX0 (GTE_regs[12].x)
@@ -548,13 +534,13 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 }
 
 // Instruction register decoding
-#define op(_instr) (_instr >> 26) // The op part of the instruction register
-#define func(_instr) ((_instr)&0x3F) // The funct part of the instruction register
-#define sa(_instr) ((_instr >> 6) & 0x1F) // The sa part of the instruction register
+#define op(_instr) (_instr >> 26)          // The op part of the instruction register
+#define func(_instr) ((_instr)&0x3F)       // The funct part of the instruction register
+#define sa(_instr) ((_instr >> 6) & 0x1F)  // The sa part of the instruction register
 #define rd(_instr) ((_instr >> 11) & 0x1F) // The rd part of the instruction register
 #define rt(_instr) ((_instr >> 16) & 0x1F) // The rt part of the instruction register
 #define rs(_instr) ((_instr >> 21) & 0x1F) // The rs part of the instruction register
-#define imm(_instr) (_instr & 0xFFFF) // The immediate part of the instruction register
+#define imm(_instr) (_instr & 0xFFFF)      // The immediate part of the instruction register
 #define imm_sext(_instr)                                                                                               \
   static_cast<s32>(static_cast<s16>(_instr & 0xFFFF)) // The immediate part of the instruction register
 
@@ -569,10 +555,16 @@ void CPU_LBx(u32 instr, u32 addr, u32 rtVal)
   CPU_reg[rt(instr)] = PGXP_value_invalid;
 }
 
-void CPU_LHx(u32 instr, u32 addr, u32 rtVal)
+void CPU_LH(u32 instr, u32 addr, u32 rtVal)
 {
-  // Rt = Mem[Rs + Im] (sign/zero extended)
-  ValidateAndCopyMem16(&CPU_reg[rt(instr)], addr, rtVal, 1);
+  // Rt = Mem[Rs + Im] (sign extended)
+  ValidateAndCopyMem16(&CPU_reg[rt(instr)], addr, rtVal, true);
+}
+
+void CPU_LHU(u32 instr, u32 addr, u32 rtVal)
+{
+  // Rt = Mem[Rs + Im] (zero extended)
+  ValidateAndCopyMem16(&CPU_reg[rt(instr)], addr, rtVal, false);
 }
 
 void CPU_SB(u32 instr, u32 addr, u32 rtVal)
@@ -782,7 +774,15 @@ void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&CPU_reg[rs(instr)], rsVal);
   Validate(&CPU_reg[rt(instr)], rtVal);
 
-  if (rtVal != 0)
+  if (rtVal == 0)
+  {
+    ret = CPU_reg[rs(instr)];
+  }
+  else if (rsVal == 0)
+  {
+    ret = CPU_reg[rt(instr)];
+  }
+  else
   {
     // iCB: Only require one valid input
     if (((CPU_reg[rt(instr)].flags & VALID_01) != VALID_01) != ((CPU_reg[rs(instr)].flags & VALID_01) != VALID_01))
@@ -808,10 +808,6 @@ void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
     // TODO: decide which "z/w" component to use
 
     ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
-  }
-  else
-  {
-    ret = CPU_reg[rs(instr)];
   }
 
   ret.value = rsVal + rtVal;

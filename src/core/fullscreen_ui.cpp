@@ -4330,6 +4330,9 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::PopFont();
         }
         break;
+
+        default:
+          break;
       }
     }
 
@@ -4590,9 +4593,10 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   if (ImGui::BeginPopupModal("Achievements Login", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
 
-    ImGui::TextWrapped(FSUI_CSTR("Please enter your user name and password for retroachievements.org."));
+    ImGui::TextWrapped("%s", FSUI_CSTR("Please enter your user name and password for retroachievements.org."));
     ImGui::NewLine();
     ImGui::TextWrapped(
+      "%s",
       FSUI_CSTR("Your password will not be saved in DuckStation, an access token will be generated and used instead."));
 
     ImGui::NewLine();
@@ -4600,11 +4604,11 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     static char username[256] = {};
     static char password[256] = {};
 
-    ImGui::Text(FSUI_CSTR("User Name: "));
+    ImGui::TextUnformatted(FSUI_CSTR("User Name: "));
     ImGui::SameLine(LayoutScale(200.0f));
     ImGui::InputText("##username", username, sizeof(username));
 
-    ImGui::Text(FSUI_CSTR("Password: "));
+    ImGui::TextUnformatted(FSUI_CSTR("Password: "));
     ImGui::SameLine(LayoutScale(200.0f));
     ImGui::InputText("##password", password, sizeof(password), ImGuiInputTextFlags_Password);
 
@@ -5260,7 +5264,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       0.5f;
 
     u32 grid_x = 0;
-    u32 grid_y = 0;
     ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
     for (u32 i = 0; i < s_save_state_selector_slots.size(); i++)
     {
@@ -5455,7 +5458,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       if (grid_x == grid_count_x)
       {
         grid_x = 0;
-        grid_y++;
         ImGui::SetCursorPosX(start_x);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
       }
@@ -5996,7 +5998,6 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   SmallString draw_title;
 
   u32 grid_x = 0;
-  u32 grid_y = 0;
   ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
   for (const GameList::Entry* entry : s_game_list_sorted_entries)
   {
@@ -6060,7 +6061,6 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     if (grid_x == grid_count_x)
     {
       grid_x = 0;
-      grid_y++;
       ImGui::SetCursorPosX(start_x);
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
     }
@@ -6452,18 +6452,19 @@ void FullscreenUI::DrawAboutWindow()
   if (ImGui::BeginPopupModal(FSUI_CSTR("About DuckStation"), &s_about_window_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    ImGui::TextWrapped(FSUI_CSTR("DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) "
+    ImGui::TextWrapped("%s",
+                       FSUI_CSTR("DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) "
                                  "console, focusing on playability, speed, and long-term maintainability."));
     ImGui::NewLine();
     ImGui::TextWrapped(
-      FSUI_CSTR("Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md"));
+      "%s", FSUI_CSTR("Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md"));
     ImGui::NewLine();
     ImGui::TextWrapped(
-      FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
+      "%s", FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
     ImGui::NewLine();
     ImGui::TextWrapped(
-      FSUI_CSTR("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
-                "Limited. This software is not affiliated in any way with Sony Interactive Entertainment."));
+      "%s", FSUI_CSTR("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
+                      "Limited. This software is not affiliated in any way with Sony Interactive Entertainment."));
 
     ImGui::NewLine();
 

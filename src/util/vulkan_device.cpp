@@ -485,20 +485,15 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   }
 
   VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_TRUE, VK_FALSE,
+    VK_FALSE};
   VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
-  {
-    rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
-  }
   if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
-  {
-    attachment_feedback_loop_feature.attachmentFeedbackLoopLayout = VK_TRUE;
     Vulkan::AddPointerToChain(&device_info, &attachment_feedback_loop_feature);
-  }
 
   VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
   if (res != VK_SUCCESS)
@@ -532,11 +527,12 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
 void VulkanDevice::ProcessDeviceExtensions()
 {
   // advanced feature checks
-  VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+  VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, nullptr, {}};
   VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE,
+    VK_FALSE};
   VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT, nullptr, VK_FALSE};
 
   // add in optional feature structs
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
@@ -553,9 +549,9 @@ void VulkanDevice::ProcessDeviceExtensions()
   m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
     (attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
 
-  VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+  VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR, nullptr, 0u};
 
   if (m_optional_extensions.vk_khr_driver_properties)
   {
@@ -1046,10 +1042,16 @@ void VulkanDevice::DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swa
   CommandBuffer& resources = m_frame_resources[index];
 
   uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
-  submit_info.commandBufferCount = resources.init_buffer_used ? 2u : 1u;
-  submit_info.pCommandBuffers =
-    resources.init_buffer_used ? resources.command_buffers.data() : &resources.command_buffers[1];
+  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                              nullptr,
+                              0u,
+                              nullptr,
+                              nullptr,
+                              resources.init_buffer_used ? 2u : 1u,
+                              resources.init_buffer_used ? resources.command_buffers.data() :
+                                                           &resources.command_buffers[1],
+                              0u,
+                              nullptr};
 
   if (present_swap_chain)
   {
@@ -2679,7 +2681,8 @@ void VulkanDevice::BeginRenderPass()
 {
   DebugAssert(!InRenderPass());
 
-  VkRenderPassBeginInfo bi = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr};
+  VkRenderPassBeginInfo bi = {
+    VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, VK_NULL_HANDLE, VK_NULL_HANDLE, {}, 0u, nullptr};
   std::array<VkClearValue, 2> clear_values;
 
   if (LIKELY(m_current_framebuffer))
@@ -2746,7 +2749,7 @@ void VulkanDevice::BeginRenderPass()
         case GPUTexture::State::Cleared:
         {
           const u32 idx = rt ? 1 : 0;
-          clear_values[idx].depthStencil = {ds->GetClearDepth()};
+          clear_values[idx].depthStencil = {ds->GetClearDepth(), 0u};
           ds_load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
           ds->SetState(GPUTexture::State::Dirty);
           bi.pClearValues = clear_values.data();

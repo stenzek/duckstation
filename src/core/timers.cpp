@@ -177,6 +177,9 @@ void Timers::SetGate(u32 timer, bool state)
       case SyncMode::FreeRunOnGate:
         cs.mode.sync_enable = false;
         break;
+
+      default:
+        break;
     }
   }
 

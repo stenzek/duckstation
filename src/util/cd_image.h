@@ -144,6 +144,12 @@ public:
       BitField<u8, bool, 6, 1> data;
       BitField<u8, bool, 7, 1> four_channel_audio;
 
+      Control() = default;
+
+      Control(u8 bits_) : bits(bits_) {}
+
+      Control(const Control& rhs) : bits(rhs.bits) {}
+
       Control& operator=(const Control& rhs)
       {
         bits = rhs.bits;
@@ -170,10 +176,14 @@ public:
 
     static u16 ComputeCRC(const Data& data);
 
-    Control GetControl() const { return Control{control_bits}; }
+    Control GetControl() const { return Control(control_bits); }
     bool IsData() const { return GetControl().data; }
 
     bool IsCRCValid() const;
+
+    SubChannelQ() = default;
+
+    SubChannelQ(const SubChannelQ& q) : data(q.data) {}
 
     SubChannelQ& operator=(const SubChannelQ& q)
     {
@@ -233,42 +243,15 @@ public:
                                                   ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
   // Accessors.
-  const std::string& GetFileName() const
-  {
-    return m_filename;
-  }
-  LBA GetPositionOnDisc() const
-  {
-    return m_position_on_disc;
-  }
-  Position GetMSFPositionOnDisc() const
-  {
-    return Position::FromLBA(m_position_on_disc);
-  }
-  LBA GetPositionInTrack() const
-  {
-    return m_position_in_track;
-  }
-  Position GetMSFPositionInTrack() const
-  {
-    return Position::FromLBA(m_position_in_track);
-  }
-  LBA GetLBACount() const
-  {
-    return m_lba_count;
-  }
-  u32 GetIndexNumber() const
-  {
-    return m_current_index->index_number;
-  }
-  u32 GetTrackNumber() const
-  {
-    return m_current_index->track_number;
-  }
-  u32 GetTrackCount() const
-  {
-    return static_cast<u32>(m_tracks.size());
-  }
+  const std::string& GetFileName() const { return m_filename; }
+  LBA GetPositionOnDisc() const { return m_position_on_disc; }
+  Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
+  LBA GetPositionInTrack() const { return m_position_in_track; }
+  Position GetMSFPositionInTrack() const { return Position::FromLBA(m_position_in_track); }
+  LBA GetLBACount() const { return m_lba_count; }
+  u32 GetIndexNumber() const { return m_current_index->index_number; }
+  u32 GetTrackNumber() const { return m_current_index->track_number; }
+  u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
   LBA GetTrackStartPosition(u8 track) const;
   Position GetTrackStartMSFPosition(u8 track) const;
   LBA GetTrackLength(u8 track) const;
@@ -276,26 +259,11 @@ public:
   TrackMode GetTrackMode(u8 track) const;
   LBA GetTrackIndexPosition(u8 track, u8 index) const;
   LBA GetTrackIndexLength(u8 track, u8 index) const;
-  u32 GetFirstTrackNumber() const
-  {
-    return m_tracks.front().track_number;
-  }
-  u32 GetLastTrackNumber() const
-  {
-    return m_tracks.back().track_number;
-  }
-  u32 GetIndexCount() const
-  {
-    return static_cast<u32>(m_indices.size());
-  }
-  const std::vector<Track>& GetTracks() const
-  {
-    return m_tracks;
-  }
-  const std::vector<Index>& GetIndices() const
-  {
-    return m_indices;
-  }
+  u32 GetFirstTrackNumber() const { return m_tracks.front().track_number; }
+  u32 GetLastTrackNumber() const { return m_tracks.back().track_number; }
+  u32 GetIndexCount() const { return static_cast<u32>(m_indices.size()); }
+  const std::vector<Track>& GetTracks() const { return m_tracks; }
+  const std::vector<Index>& GetIndices() const { return m_indices; }
   const Track& GetTrack(u32 track) const;
   const Index& GetIndex(u32 i) const;
 

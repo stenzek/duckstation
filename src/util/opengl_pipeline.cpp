@@ -729,8 +729,11 @@ bool OpenGLDevice::ReadPipelineCache(const std::string& filename)
 
   // Read footer.
   const s64 size = FileSystem::FSize64(m_pipeline_disk_cache_file);
-  if (size < sizeof(PipelineDiskCacheFooter) || size >= static_cast<s64>(std::numeric_limits<u32>::max()))
+  if (size < static_cast<s64>(sizeof(PipelineDiskCacheFooter)) ||
+      size >= static_cast<s64>(std::numeric_limits<u32>::max()))
+  {
     return DiscardPipelineCache();
+  }
 
   PipelineDiskCacheFooter file_footer;
   if (FileSystem::FSeek64(m_pipeline_disk_cache_file, size - sizeof(PipelineDiskCacheFooter), SEEK_SET) != 0 ||

@@ -82,10 +82,11 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage st
 
     default:
       UnreachableCode();
+      hr = S_FALSE;
       break;
   }
 
-  if (!shader)
+  if (FAILED(hr) || !shader)
     return {};
 
   return std::unique_ptr<GPUShader>(new D3D11Shader(stage, std::move(shader), std::move(bytecode)));

@@ -4,9 +4,6 @@
 #include "window_info.h"
 
 #include "common/assert.h"
-#include "common/log.h"
-
-Log_SetChannel(WindowInfo);
 
 void WindowInfo::SetSurfaceless()
 {
@@ -88,10 +85,13 @@ bool WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_
 #ifdef USE_X11
 
 #include "common/scoped_guard.h"
+#include "common/log.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
+
+Log_SetChannel(WindowInfo);
 
 // Helper class for managing X errors
 namespace {

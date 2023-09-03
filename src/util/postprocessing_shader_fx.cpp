@@ -805,8 +805,6 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
     m_textures.push_back(std::move(tex));
   }
 
-  TextureID last_output = INPUT_COLOR_TEXTURE;
-
   for (reshadefx::technique_info& tech : mod.techniques)
   {
     for (reshadefx::pass_info& pi : tech.passes)
@@ -915,7 +913,6 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 #ifdef _DEBUG
       pass.name = std::move(pi.name);
 #endif
-      last_output = pass.render_target;
       m_passes.push_back(std::move(pass));
     }
   }
@@ -1019,8 +1016,8 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   const std::string_view code(mod.code.data(), mod.code.size());
 
-  auto get_shader = [this, needs_main_defn, &code](const std::string& name, const std::vector<Sampler>& samplers,
-                                                   GPUShaderStage stage) {
+  auto get_shader = [needs_main_defn, &code](const std::string& name, const std::vector<Sampler>& samplers,
+                                             GPUShaderStage stage) {
     std::string real_code;
     if (needs_main_defn)
     {

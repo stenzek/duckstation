@@ -135,8 +135,8 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
   }
 
   // Set it to 4x speed. A good balance between readahead and spinning up way too high.
-  static constexpr u32 READ_SPEED_MULTIPLIER = 4;
-  static constexpr u32 READ_SPEED_KBS = (DATA_SECTOR_SIZE * FRAMES_PER_SECOND * 8) / 1024;
+  static constexpr u32 READ_SPEED_MULTIPLIER = 8;
+  static constexpr u32 READ_SPEED_KBS = (DATA_SECTOR_SIZE * FRAMES_PER_SECOND * READ_SPEED_MULTIPLIER) / 1024;
   CDROM_SET_SPEED set_speed = {CdromSetSpeed, READ_SPEED_KBS, 0, CdromDefaultRotation};
   if (!DeviceIoControl(m_hDevice, IOCTL_CDROM_SET_SPEED, &set_speed, sizeof(set_speed), nullptr, 0, nullptr, nullptr))
     Log_WarningPrintf("DeviceIoControl(IOCTL_CDROM_SET_SPEED) failed: %08X", GetLastError());

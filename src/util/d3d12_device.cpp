@@ -58,7 +58,7 @@ enum : u32
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;
 
-static constexpr D3D12_CLEAR_VALUE s_present_clear_color = {DXGI_FORMAT_R8G8B8A8_UNORM, {0.0f, 0.0f, 0.0f, 1.0f}};
+static constexpr D3D12_CLEAR_VALUE s_present_clear_color = {DXGI_FORMAT_R8G8B8A8_UNORM, {{0.0f, 0.0f, 0.0f, 1.0f}}};
 static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
 
 // We just need to keep this alive, never reference it.
@@ -80,19 +80,6 @@ D3D12Device::~D3D12Device()
 {
   Assert(!m_device);
   Assert(s_pipeline_cache_data.empty());
-}
-
-static constexpr u32 GetActiveTexturesForLayout(GPUPipeline::Layout layout)
-{
-  constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> counts = {
-    1,                               // SingleTextureAndUBO
-    1,                               // SingleTextureAndPushConstants
-    0,                               // SingleTextureBufferAndPushConstants
-    GPUDevice::MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
-    GPUDevice::MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
-  };
-
-  return counts[static_cast<u8>(layout)];
 }
 
 D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
@@ -202,7 +189,7 @@ bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   }
 
   const D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
-                                               D3D12_COMMAND_QUEUE_FLAG_NONE};
+                                               D3D12_COMMAND_QUEUE_FLAG_NONE, 0u};
   hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
   if (FAILED(hr))
   {
@@ -468,8 +455,8 @@ bool D3D12Device::CreateDescriptorHeaps()
   }
 
   // Allocate null SRV descriptor for unbound textures.
-  constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D,
-                                                             D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+  static constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {
+    DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING, {}};
 
   if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
   {
@@ -629,7 +616,7 @@ bool D3D12Device::CreateTimestampQuery()
   constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
   constexpr u32 BUFFER_SIZE = sizeof(u64) * QUERY_COUNT;
 
-  const D3D12_QUERY_HEAP_DESC desc = {D3D12_QUERY_HEAP_TYPE_TIMESTAMP, QUERY_COUNT};
+  const D3D12_QUERY_HEAP_DESC desc = {D3D12_QUERY_HEAP_TYPE_TIMESTAMP, QUERY_COUNT, 0u};
   HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.GetAddressOf()));
   if (FAILED(hr))
   {
@@ -638,7 +625,8 @@ bool D3D12Device::CreateTimestampQuery()
     return false;
   }
 
-  const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK};
+  const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK,
+                                                    D3D12_HEAP_FLAG_NONE, nullptr, nullptr};
   const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER,
                                              0,
                                              BUFFER_SIZE,
@@ -878,7 +866,7 @@ bool D3D12Device::CreateSwapChainRTV()
   if (FAILED(hr))
     return false;
 
-  const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {swap_chain_desc.BufferDesc.Format, D3D12_RTV_DIMENSION_TEXTURE2D};
+  const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {swap_chain_desc.BufferDesc.Format, D3D12_RTV_DIMENSION_TEXTURE2D, {}};
 
   for (u32 i = 0; i < swap_chain_desc.BufferCount; i++)
   {
@@ -1038,7 +1026,7 @@ bool D3D12Device::SupportsTextureFormat(GPUTexture::Format format) const
   if (dfmt == DXGI_FORMAT_UNKNOWN)
     return false;
 
-  D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {dfmt};
+  D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {dfmt, {}, {}};
   return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
          (support.Support1 & required) == required;
 }
@@ -1189,7 +1177,8 @@ void D3D12Device::SetFeatures()
   m_max_multisamples = 1;
   for (u32 multisamples = 2; multisamples < D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)
   {
-    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS fd = {DXGI_FORMAT_R8G8B8A8_UNORM, static_cast<UINT>(multisamples)};
+    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS fd = {DXGI_FORMAT_R8G8B8A8_UNORM, static_cast<UINT>(multisamples),
+                                                        D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE, 0u};
 
     if (SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &fd, sizeof(fd))) &&
         fd.NumQualityLevels > 0)
@@ -1660,8 +1649,8 @@ void D3D12Device::BeginRenderPass()
     // Re-rendering to swap chain.
     const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
     rt_desc = {swap_chain_buf.second,
-               {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE},
-               {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE}};
+               {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, {}},
+               {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
     rt_desc_p = &rt_desc;
   }
 
@@ -1705,7 +1694,7 @@ void D3D12Device::BeginSwapChainRenderPass()
   const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {
     swap_chain_buf.second,
     {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {s_present_clear_color}},
-    {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE}};
+    {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
   m_current_framebuffer = nullptr;
@@ -1875,8 +1864,6 @@ void D3D12Device::SetScissor(ID3D12GraphicsCommandList4* cmdlist)
 
 void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
 {
-  D3D12DescriptorHandle null_handle;
-
   D3D12Texture* T = static_cast<D3D12Texture*>(texture);
   if (m_current_textures[slot] != T)
   {
@@ -1984,7 +1971,7 @@ void D3D12Device::PreDrawCheck()
         return;
       }
     }
-    else if (dirty & DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS)
+    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS))
     {
       if (!UpdateRootParameters(dirty))
       {

@@ -55,7 +55,6 @@ private:
 
   HWND m_dummy_window = {};
   u32 m_num_keyboards = 0;
-  u32 m_num_mice = 0;
 
   std::vector<MouseState> m_mice;
 };

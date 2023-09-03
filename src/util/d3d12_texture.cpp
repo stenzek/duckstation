@@ -160,16 +160,17 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
       break;
   }
 
-  if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.Get(), samples, fm.dsv_format, &uav_descriptor))
+  if (uav_format != DXGI_FORMAT_UNKNOWN &&
+      !CreateUAVDescriptor(resource.Get(), samples, fm.dsv_format, &uav_descriptor))
   {
     m_descriptor_heap_manager.Free(&write_descriptor);
     m_descriptor_heap_manager.Free(&srv_descriptor);
     return {};
   }
 
-  std::unique_ptr<D3D12Texture> tex(new D3D12Texture(width, height, layers, levels, samples, type, format, fm.resource_format,
-                                                     std::move(resource), std::move(allocation), srv_descriptor,
-                                                     write_descriptor, uav_descriptor, write_descriptor_type, state));
+  std::unique_ptr<D3D12Texture> tex(new D3D12Texture(
+    width, height, layers, levels, samples, type, format, fm.resource_format, std::move(resource),
+    std::move(allocation), srv_descriptor, write_descriptor, uav_descriptor, write_descriptor_type, state));
 
   if (data)
   {
@@ -203,7 +204,7 @@ bool D3D12Device::CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 
     else
     {
       desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-      desc.Texture2DArray = {0u, levels, 0u, layers};
+      desc.Texture2DArray = {0u, levels, 0u, layers, 0u, 0.0f};
     }
   }
   else
@@ -215,7 +216,7 @@ bool D3D12Device::CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 
     else
     {
       desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-      desc.Texture2D = {0u, levels};
+      desc.Texture2D = {0u, levels, 0u, 0.0f};
     }
   }
 
@@ -233,7 +234,7 @@ bool D3D12Device::CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   const D3D12_RENDER_TARGET_VIEW_DESC desc = {format, (samples > 1) ? D3D12_RTV_DIMENSION_TEXTURE2DMS :
-                                                                      D3D12_RTV_DIMENSION_TEXTURE2D};
+                                                                      D3D12_RTV_DIMENSION_TEXTURE2D, {} };
   m_device->CreateRenderTargetView(resource, &desc, dh->cpu_handle);
   return true;
 }
@@ -248,7 +249,7 @@ bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {
-    format, (samples > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE};
+    format, (samples > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE, {} };
   m_device->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
   return true;
 }
@@ -263,7 +264,7 @@ bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   DebugAssert(samples == 1);
-  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {format, D3D12_UAV_DIMENSION_TEXTURE2D};
+  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = { format, D3D12_UAV_DIMENSION_TEXTURE2D, {} };
   m_device->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
   return true;
 }
@@ -348,7 +349,8 @@ ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 
   ComPtr<ID3D12Resource> resource;
   ComPtr<D3D12MA::Allocation> allocation;
 
-  const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
+  const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD,
+                                                    D3D12_HEAP_FLAG_NONE, nullptr, nullptr};
   const D3D12_RESOURCE_DESC resource_desc = {
     D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
     D3D12_RESOURCE_FLAG_NONE};
@@ -901,8 +903,10 @@ bool D3D12TextureBuffer::Create(D3D12Device& dev)
   if (!dev.GetDescriptorHeapManager().Allocate(&m_descriptor))
     return {};
 
-  D3D12_SHADER_RESOURCE_VIEW_DESC desc = {format_mapping[static_cast<u8>(m_format)], D3D12_SRV_DIMENSION_BUFFER,
-                                          D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+  D3D12_SHADER_RESOURCE_VIEW_DESC desc = {format_mapping[static_cast<u8>(m_format)],
+                                          D3D12_SRV_DIMENSION_BUFFER,
+                                          D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+                                          {}};
   desc.Buffer.NumElements = m_size_in_elements;
   dev.GetDevice()->CreateShaderResourceView(m_buffer.GetBuffer(), &desc, m_descriptor);
   return true;

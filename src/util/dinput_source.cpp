@@ -287,7 +287,8 @@ std::vector<std::pair<std::string, std::string>> DInputSource::EnumerateDevices(
   std::vector<std::pair<std::string, std::string>> ret;
   for (size_t i = 0; i < m_controllers.size(); i++)
   {
-    DIDEVICEINSTANCEW dii = {sizeof(DIDEVICEINSTANCEW)};
+    DIDEVICEINSTANCEW dii;
+    dii.dwSize = sizeof(DIDEVICEINSTANCEW);
     std::string name;
     if (SUCCEEDED(m_controllers[i].device->GetDeviceInfo(&dii)))
       name = StringUtil::WideStringToUTF8String(dii.tszProductName);

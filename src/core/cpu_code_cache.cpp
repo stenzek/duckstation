@@ -561,7 +561,8 @@ void LogCurrentState()
 
 CodeBlockKey GetNextBlockKey()
 {
-  CodeBlockKey key = {};
+  CodeBlockKey key;
+  key.bits = 0;
   key.SetPC(g_state.pc);
   key.user_mode = InUserMode();
   return key;

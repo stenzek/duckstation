@@ -49,7 +49,9 @@ bool Win32RawInputSource::Initialize(SettingsInterface& si, std::unique_lock<std
   return true;
 }
 
-void Win32RawInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) {}
+void Win32RawInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+{
+}
 
 bool Win32RawInputSource::ReloadDevices()
 {
@@ -72,7 +74,9 @@ std::vector<std::pair<std::string, std::string>> Win32RawInputSource::EnumerateD
   return {};
 }
 
-void Win32RawInputSource::UpdateMotorState(InputBindingKey key, float intensity) {}
+void Win32RawInputSource::UpdateMotorState(InputBindingKey key, float intensity)
+{
+}
 
 void Win32RawInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                                            float small_intensity)
@@ -171,7 +175,7 @@ bool Win32RawInputSource::OpenDevices()
       m_num_keyboards++;
 #endif
     if (rid.dwType == RIM_TYPEMOUSE)
-      m_mice.push_back({rid.hDevice});
+      m_mice.push_back({rid.hDevice, 0u, 0, 0});
   }
 
   Log_DevPrintf("(Win32RawInputSource) Found %u keyboards and %zu mice", m_num_keyboards, m_mice.size());

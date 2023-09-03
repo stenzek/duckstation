@@ -167,7 +167,13 @@ void XAudio2AudioStream::EnqueueBuffer()
   const XAUDIO2_BUFFER buf = {
     static_cast<UINT32>(0),                                                // flags
     static_cast<UINT32>(sizeof(s16) * m_channels * m_enqueue_buffer_size), // bytes
-    reinterpret_cast<const BYTE*>(samples)                                 // data
+    reinterpret_cast<const BYTE*>(samples),                                // data
+    0u,
+    0u,
+    0u,
+    0u,
+    0u,
+    nullptr,
   };
 
   HRESULT hr = m_source_voice->SubmitSourceBuffer(&buf, nullptr);
@@ -189,19 +195,31 @@ void XAudio2AudioStream::SetOutputVolume(u32 volume)
   m_volume = volume;
 }
 
-void __stdcall XAudio2AudioStream::OnVoiceProcessingPassStart(UINT32 BytesRequired) {}
+void __stdcall XAudio2AudioStream::OnVoiceProcessingPassStart(UINT32 BytesRequired)
+{
+}
 
-void __stdcall XAudio2AudioStream::OnVoiceProcessingPassEnd(void) {}
+void __stdcall XAudio2AudioStream::OnVoiceProcessingPassEnd(void)
+{
+}
 
-void __stdcall XAudio2AudioStream::OnStreamEnd(void) {}
+void __stdcall XAudio2AudioStream::OnStreamEnd(void)
+{
+}
 
-void __stdcall XAudio2AudioStream::OnBufferStart(void* pBufferContext) {}
+void __stdcall XAudio2AudioStream::OnBufferStart(void* pBufferContext)
+{
+}
 
 void __stdcall XAudio2AudioStream::OnBufferEnd(void* pBufferContext)
 {
   EnqueueBuffer();
 }
 
-void __stdcall XAudio2AudioStream::OnLoopEnd(void* pBufferContext) {}
+void __stdcall XAudio2AudioStream::OnLoopEnd(void* pBufferContext)
+{
+}
 
-void __stdcall XAudio2AudioStream::OnVoiceError(void* pBufferContext, HRESULT Error) {}
+void __stdcall XAudio2AudioStream::OnVoiceError(void* pBufferContext, HRESULT Error)
+{
+}

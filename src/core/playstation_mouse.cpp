@@ -191,14 +191,15 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   // clang-format off
   BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), PlayStationMouse::Button::Left, GenericInputBinding::Cross),
   BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), PlayStationMouse::Button::Right, GenericInputBinding::Circle),
-  // clang-format on
+// clang-format on
 
 #undef BUTTON
 };
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "RelativeMouseMode", TRANSLATE_NOOP("PlayStationMouse", "Relative Mouse Mode"),
-   TRANSLATE_NOOP("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false"},
+   TRANSLATE_NOOP("PlayStationMouse", "Locks the mouse cursor to the window, use for FPS games."), "false", nullptr,
+   nullptr, nullptr, nullptr, nullptr, 0.0f},
 };
 
 const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,

@@ -207,6 +207,8 @@ public:
     u32 key;
 
     // clang-format off
+    ALWAYS_INLINE VertexAttribute() = default;
+    ALWAYS_INLINE constexpr VertexAttribute(const VertexAttribute& rhs) : key(rhs.key) {}
     ALWAYS_INLINE VertexAttribute& operator=(const VertexAttribute& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const VertexAttribute& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const VertexAttribute& rhs) const { return key != rhs.key; }
@@ -217,11 +219,14 @@ public:
                                           u16 offset)
     {
       // Nasty :/ can't access an inactive element of a union here..
-      return VertexAttribute{{(static_cast<u32>(index) & 0xf) | ((static_cast<u32>(semantic) & 0x3) << 4) |
-                              ((static_cast<u32>(semantic_index) & 0x3) << 6) | ((static_cast<u32>(type) & 0xf) << 8) |
-                              ((static_cast<u32>(components) & 0x7) << 12) |
-                              ((static_cast<u32>(offset) & 0xffff) << 16)}};
+      return VertexAttribute((static_cast<u32>(index) & 0xf) | ((static_cast<u32>(semantic) & 0x3) << 4) |
+                             ((static_cast<u32>(semantic_index) & 0x3) << 6) | ((static_cast<u32>(type) & 0xf) << 8) |
+                             ((static_cast<u32>(components) & 0x7) << 12) |
+                             ((static_cast<u32>(offset) & 0xffff) << 16));
     }
+
+  private:
+    ALWAYS_INLINE constexpr VertexAttribute(u32 key_) : key(key_) {}
   };
 
   struct InputLayout
@@ -298,6 +303,8 @@ public:
     u8 key;
 
     // clang-format off
+    ALWAYS_INLINE RasterizationState() = default;
+    ALWAYS_INLINE RasterizationState(const RasterizationState& rhs) : key(rhs.key) {}
     ALWAYS_INLINE RasterizationState& operator=(const RasterizationState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const RasterizationState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const RasterizationState& rhs) const { return key != rhs.key; }
@@ -314,6 +321,8 @@ public:
     u8 key;
 
     // clang-format off
+    ALWAYS_INLINE DepthState() = default;
+    ALWAYS_INLINE DepthState(const DepthState& rhs) : key(rhs.key) {}
     ALWAYS_INLINE DepthState& operator=(const DepthState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const DepthState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const DepthState& rhs) const { return key != rhs.key; }
@@ -342,6 +351,8 @@ public:
     u64 key;
 
     // clang-format off
+    ALWAYS_INLINE BlendState() = default;
+    ALWAYS_INLINE BlendState(const BlendState& rhs) : key(rhs.key) {}
     ALWAYS_INLINE BlendState& operator=(const BlendState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const BlendState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const BlendState& rhs) const { return key != rhs.key; }
@@ -486,7 +497,7 @@ public:
 
     return counts[static_cast<u8>(layout)];
   }
-  
+
 #ifdef __APPLE__
   // We have to define these in the base class, because they're in Objective C++.
   static std::unique_ptr<GPUDevice> WrapNewMetalDevice();

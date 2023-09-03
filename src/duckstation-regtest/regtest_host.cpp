@@ -34,7 +34,6 @@ static void PrintCommandLineHelp(const char* progname);
 static bool InitializeConfig();
 static void InitializeEarlyConsole();
 static void HookSignals();
-static void SetAppRoot();
 static bool SetFolders();
 static std::string GetFrameDumpFilename(u32 frame);
 } // namespace RegTestHost

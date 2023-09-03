@@ -11,8 +11,6 @@
 
 Log_SetChannel(VulkanDevice);
 
-static u32 s_next_bad_shader_id = 1;
-
 VulkanShader::VulkanShader(GPUShaderStage stage, VkShaderModule mod) : GPUShader(stage), m_module(mod)
 {
 }

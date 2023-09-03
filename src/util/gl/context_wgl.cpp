@@ -10,6 +10,10 @@
 
 Log_SetChannel(GL::ContextWGL);
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wmicrosoft-cast"
+#endif
+
 static void* GetProcAddressCallback(const char* name)
 {
   void* addr = wglGetProcAddress(name);

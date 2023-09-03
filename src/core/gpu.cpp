@@ -331,6 +331,15 @@ void GPU::UpdateDMARequest()
       m_GPUSTAT.ready_to_send_vram = true;
       m_GPUSTAT.ready_to_recieve_dma = m_fifo.IsEmpty();
       break;
+
+    case BlitterState::DrawingPolyLine:
+      m_GPUSTAT.ready_to_send_vram = false;
+      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
+      break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 
   bool dma_request;
@@ -374,6 +383,14 @@ void GPU::UpdateGPUIdle()
 
     case BlitterState::ReadingVRAM:
       m_GPUSTAT.gpu_idle = false;
+      break;
+
+    case BlitterState::DrawingPolyLine:
+      m_GPUSTAT.gpu_idle = false;
+      break;
+
+    default:
+      UnreachableCode();
       break;
   }
 }
@@ -1657,7 +1674,6 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
     m_display_texture->MakeReadyForSampling();
 
   bool texture_filter_linear = false;
-  bool bilinear_adjust = false;
 
   struct Uniforms
   {
@@ -1676,7 +1692,6 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
 
     case DisplayScalingMode::BilinearSmooth:
       texture_filter_linear = true;
-      bilinear_adjust = true;
       break;
 
     case DisplayScalingMode::BilinearSharp:

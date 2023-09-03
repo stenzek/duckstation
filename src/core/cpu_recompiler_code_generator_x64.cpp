@@ -303,6 +303,8 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_8:
           m_emit->movsx(GetHostReg16(to_reg), GetHostReg8(from_reg));
           return;
+        default:
+          break;
       }
     }
     break;
@@ -317,14 +319,17 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_16:
           m_emit->movsx(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
+        default:
+          break;
       }
     }
     break;
 
     default:
-      Panic("Unknown sign-extend combination");
       break;
   }
+
+  Panic("Unknown sign-extend combination");
 }
 
 void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)
@@ -338,6 +343,8 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_8:
           m_emit->movzx(GetHostReg16(to_reg), GetHostReg8(from_reg));
           return;
+        default:
+          break;
       }
     }
     break;
@@ -352,9 +359,14 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_16:
           m_emit->movzx(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
+        default:
+          break;
       }
     }
     break;
+
+    default:
+      break;
   }
 
   Panic("Unknown sign-extend combination");
@@ -410,6 +422,10 @@ void CodeGenerator::EmitCopyValue(HostReg to_reg, const Value& value)
         m_emit->mov(GetHostReg64(to_reg), GetHostReg64(value.host_reg));
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
@@ -479,6 +495,10 @@ void CodeGenerator::EmitAdd(HostReg to_reg, HostReg from_reg, const Value& value
       }
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
@@ -548,6 +568,10 @@ void CodeGenerator::EmitSub(HostReg to_reg, HostReg from_reg, const Value& value
       }
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
@@ -605,6 +629,10 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
       }
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
@@ -1838,6 +1866,10 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
         }
       }
       break;
+
+      default:
+        UnreachableCode();
+        break;
     }
   }
   else
@@ -1861,6 +1893,10 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
 
       case RegSize_32:
         m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
+        break;
+
+      default:
+        UnreachableCode();
         break;
     }
   }
@@ -1936,6 +1972,10 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
         }
       }
       break;
+
+      default:
+        UnreachableCode();
+        break;
     }
   }
   else
@@ -1962,6 +2002,10 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
 
       case RegSize_32:
         m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
+        break;
+
+      default:
+        UnreachableCode();
         break;
     }
   }
@@ -2191,6 +2235,10 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
         }
       }
       break;
+
+      default:
+        UnreachableCode();
+        break;
     }
   }
   else
@@ -2234,6 +2282,10 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
           m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg32(value.host_reg));
       }
       break;
+
+      default:
+        UnreachableCode();
+        break;
     }
   }
 

@@ -2099,6 +2099,9 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
     case Command::Stop:
       DoStatSecondResponse();
       break;
+
+    default:
+      break;
   }
 
   s_command_second_response = Command::None;
@@ -2731,7 +2734,6 @@ void CDROM::DoSectorRead()
   }
   else
   {
-    const CDImage::Position pos(CDImage::Position::FromLBA(s_current_lba));
     Log_DevPrintf("Sector %u [%s] has invalid subchannel Q", s_current_lba,
                   LBAToMSFString(s_current_lba).GetCharArray());
   }

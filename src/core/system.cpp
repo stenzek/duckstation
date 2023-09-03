@@ -101,8 +101,6 @@ static std::string GetExecutableNameForImage(ISOReader& iso, bool strip_subdirec
 static bool ReadExecutableFromImage(ISOReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
 
-static void StallCPU(TickCount ticks);
-
 static bool LoadBIOS(const std::string& override_bios_path);
 static void InternalReset();
 static void ClearRunningGame();
@@ -2927,10 +2925,6 @@ bool SetExpansionROM(const char* filename)
   return true;
 }
 
-void System::StallCPU(TickCount ticks)
-{
-  CPU::AddPendingTicks(ticks);
-}
 #endif
 
 Controller* System::GetController(u32 slot)
@@ -3207,6 +3201,10 @@ void System::UpdateMultitaps()
       Pad::GetMultitap(1)->SetEnable(true, 4);
     }
     break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 

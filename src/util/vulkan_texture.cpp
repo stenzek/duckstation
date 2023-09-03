@@ -75,7 +75,12 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
                            levels,
                            layers,
                            static_cast<VkSampleCountFlagBits>(samples),
-                           VK_IMAGE_TILING_OPTIMAL};
+                           VK_IMAGE_TILING_OPTIMAL,
+                           0u,
+                           VK_SHARING_MODE_EXCLUSIVE,
+                           0,
+                           nullptr,
+                           VK_IMAGE_LAYOUT_UNDEFINED};
 
   VmaAllocationCreateInfo aci = {};
   aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -433,7 +438,7 @@ void VulkanTexture::CommitClear(VkCommandBuffer cmdbuf)
 
   if (IsDepthStencil())
   {
-    const VkClearDepthStencilValue cv = {m_clear_value.depth};
+    const VkClearDepthStencilValue cv = {m_clear_value.depth, 0u};
     const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
     vkCmdClearDepthStencilImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
   }

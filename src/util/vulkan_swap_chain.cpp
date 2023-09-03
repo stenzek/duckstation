@@ -413,9 +413,10 @@ bool VulkanSwapChain::CreateSwapChain()
   }
 
 #ifdef _WIN32
-  VkSurfaceFullScreenExclusiveInfoEXT exclusive_info = {VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT};
+  VkSurfaceFullScreenExclusiveInfoEXT exclusive_info = {VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
+                                                        nullptr, VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT};
   VkSurfaceFullScreenExclusiveWin32InfoEXT exclusive_win32_info = {
-    VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT};
+    VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT, nullptr, NULL};
   if (m_exclusive_fullscreen_control.has_value())
   {
     if (dev.GetOptionalExtensions().vk_ext_full_screen_exclusive)

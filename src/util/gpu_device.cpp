@@ -109,7 +109,7 @@ bool GPUPipeline::InputLayout::operator==(const InputLayout& rhs) const
 bool GPUPipeline::InputLayout::operator!=(const InputLayout& rhs) const
 {
   return (vertex_stride != rhs.vertex_stride ||
-          vertex_attributes.size() != rhs.vertex_attributes.size() &&
+          vertex_attributes.size() != rhs.vertex_attributes.size() ||
             std::memcmp(vertex_attributes.data(), rhs.vertex_attributes.data(),
                         sizeof(VertexAttribute) * rhs.vertex_attributes.size()) != 0);
 }
