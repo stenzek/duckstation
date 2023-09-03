@@ -165,6 +165,7 @@ bool GPU_HW::Initialize()
 
   m_resolution_scale = CalculateResolutionScale();
   m_multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
+  m_supports_dual_source_blend = features.dual_source_blend;
   m_per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
@@ -783,9 +784,8 @@ bool GPU_HW::CompilePipelines()
               plconfig.fragment_shader =
                 batch_fragment_shaders[render_mode][texture_mode][dithering][interlacing].get();
 
-              // TODO: Depth write always on???
               plconfig.depth.depth_test = depth_test_values[depth_test];
-              plconfig.depth.depth_write = true;
+              plconfig.depth.depth_write = !m_pgxp_depth_buffer || depth_test != 0;
               plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
 
               if ((static_cast<GPUTransparencyMode>(transparency_mode) != GPUTransparencyMode::Disabled &&
@@ -1563,7 +1563,7 @@ void GPU_HW::LoadVertices()
           for (BatchVertex& v : vertices)
             v.w = 1.0f;
         }
-        else if (g_settings.gpu_pgxp_depth_buffer)
+        else if (m_pgxp_depth_buffer)
         {
           const bool use_depth = (m_batch.transparency_mode == GPUTransparencyMode::Disabled);
           SetBatchDepthBuffer(use_depth);
