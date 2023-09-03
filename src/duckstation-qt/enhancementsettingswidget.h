@@ -19,6 +19,7 @@ public:
 
 private Q_SLOTS:
   void updateScaledDitheringEnabled();
+  void updateDownsampleScaleVisible();
   void updatePGXPSettingsEnabled();
 
 private:

@@ -20,6 +20,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
@@ -43,7 +44,10 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
 
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EnhancementSettingsWidget::updateScaledDitheringEnabled);
+  connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &EnhancementSettingsWidget::updateDownsampleScaleVisible);
   connect(m_ui.trueColor, &QCheckBox::stateChanged, this, &EnhancementSettingsWidget::updateScaledDitheringEnabled);
+  updateDownsampleScaleVisible();
   updateScaledDitheringEnabled();
 
   connect(m_ui.pgxpEnable, &QCheckBox::stateChanged, this, &EnhancementSettingsWidget::updatePGXPSettingsEnabled);
@@ -55,6 +59,9 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWi
     m_ui.gpuDownsampleMode, tr("Downsampling"), tr("Disabled"),
     tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
        "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
+  dialog->registerWidgetHelp(m_ui.gpuDownsampleScale, tr("Downsampling Display Scale"), tr("1x"),
+                             tr("Selects the resolution scale that will be applied to the final image. 1x will "
+                                "downsample to the original console resolution."));
   dialog->registerWidgetHelp(
     m_ui.disableInterlacing, tr("Disable Interlacing (force progressive render/scan)"), tr("Unchecked"),
     tr(
@@ -139,6 +146,29 @@ void EnhancementSettingsWidget::updateScaledDitheringEnabled()
   const bool true_color = m_ui.trueColor->isChecked();
   const bool allow_scaled_dithering = (resolution_scale != 1 && !true_color);
   m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
+}
+
+void EnhancementSettingsWidget::updateDownsampleScaleVisible()
+{
+  const GPUDownsampleMode mode =
+    Settings::ParseDownsampleModeName(
+      m_dialog
+        ->getEffectiveStringValue("GPU", "DownsampleMode",
+                                  Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
+        .c_str())
+      .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
+
+  const bool visible = (mode == GPUDownsampleMode::Box);
+  if (visible && m_ui.gpuDownsampleLayout->indexOf(m_ui.gpuDownsampleScale) < 0)
+  {
+    m_ui.gpuDownsampleScale->setVisible(true);
+    m_ui.gpuDownsampleLayout->addWidget(m_ui.gpuDownsampleScale, 0);
+  }
+  else if (!visible && m_ui.gpuDownsampleLayout->indexOf(m_ui.gpuDownsampleScale) >= 0)
+  {
+    m_ui.gpuDownsampleScale->setVisible(false);
+    m_ui.gpuDownsampleLayout->removeWidget(m_ui.gpuDownsampleScale);
+  }
 }
 
 void EnhancementSettingsWidget::setupAdditionalUi()

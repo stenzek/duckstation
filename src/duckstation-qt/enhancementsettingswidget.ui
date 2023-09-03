@@ -88,7 +88,24 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QComboBox" name="gpuDownsampleMode"/>
+       <layout class="QHBoxLayout" name="gpuDownsampleLayout" stretch="1,0">
+        <item>
+         <widget class="QComboBox" name="gpuDownsampleMode"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="gpuDownsampleScale">
+          <property name="suffix">
+           <string>x</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>16</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

@@ -1558,24 +1558,26 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader()
+std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 factor)
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DeclareTexture(ss, "samp0", 0, false);
 
+  ss << "#define FACTOR " << factor << "\n";
+
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
   ss << R"(
 {
   float3 color = float3(0.0, 0.0, 0.0);
-  uint2 base_coords = uint2(v_pos.xy) * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
+  uint2 base_coords = uint2(v_pos.xy) * uint2(FACTOR, FACTOR);
+  for (uint offset_x = 0u; offset_x < FACTOR; offset_x++)
   {
-    for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
+    for (uint offset_y = 0u; offset_y < FACTOR; offset_y++)
       color += LOAD_TEXTURE(samp0, int2(base_coords + uint2(offset_x, offset_y)), 0).rgb;
   }
-  color /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
+  color /= float(FACTOR * FACTOR);
   o_col0 = float4(color, 1.0);
 }
 )";

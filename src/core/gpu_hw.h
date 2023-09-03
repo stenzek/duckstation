@@ -347,4 +347,5 @@ private:
   }
 
   void PrintSettingsToLog();
+  void CheckSettings();
 };

@@ -19,6 +19,7 @@
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
 
+#include "IconsFontAwesome5.h"
 #include "imgui.h"
 
 #include <cmath>
@@ -48,6 +49,14 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
 ALWAYS_INLINE static u32 GetMaxResolutionScale()
 {
   return g_gpu_device->GetMaxTextureSize() / VRAM_WIDTH;
+}
+
+ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale()
+{
+  u32 scale = std::min<u32>(g_settings.gpu_resolution_scale, g_settings.gpu_downsample_scale);
+  while ((g_settings.gpu_resolution_scale % scale) != 0)
+    scale--;
+  return scale;
 }
 
 ALWAYS_INLINE static bool ShouldUseUVLimits()
@@ -166,38 +175,7 @@ bool GPU_HW::Initialize()
   m_wireframe_mode = g_settings.gpu_wireframe_mode;
   m_disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
 
-  if (m_multisamples != g_settings.gpu_multisamples)
-  {
-    Host::AddFormattedOSDMessage(Host::OSD_CRITICAL_ERROR_DURATION,
-                                 TRANSLATE("OSDMessage", "%ux MSAA is not supported, using %ux instead."),
-                                 g_settings.gpu_multisamples, m_multisamples);
-  }
-  if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
-  {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
-  }
-  if (!features.dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
-  {
-    Host::AddFormattedOSDMessage(
-      Host::OSD_CRITICAL_ERROR_DURATION,
-      TRANSLATE("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
-      Settings::GetTextureFilterDisplayName(m_texture_filtering));
-    m_texture_filtering = GPUTextureFilter::Nearest;
-  }
-
-  if (!features.noperspective_interpolation && !ShouldDisableColorPerspective())
-    Log_WarningPrint("Disable color perspective not supported, but should be used.");
-
-  if (!features.geometry_shaders && m_wireframe_mode != GPUWireframeMode::Disabled)
-  {
-    Host::AddOSDMessage(
-      TRANSLATE("OSDMessage",
-                "Geometry shaders are not supported by your GPU, and are required for wireframe rendering."),
-      Host::OSD_CRITICAL_ERROR_DURATION);
-    m_wireframe_mode = GPUWireframeMode::Disabled;
-  }
-
-  m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
+  CheckSettings();
 
   UpdateSoftwareRenderer(false);
 
@@ -316,14 +294,18 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   // TODO: Use old_settings
   const bool framebuffer_changed =
-    (m_resolution_scale != resolution_scale || m_multisamples != multisamples || m_downsample_mode != downsample_mode);
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples || m_downsample_mode != downsample_mode ||
+     (m_downsample_mode == GPUDownsampleMode::Box &&
+      g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale));
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
      m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
-     m_downsample_mode != downsample_mode || m_wireframe_mode != wireframe_mode ||
-     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
+     m_downsample_mode != downsample_mode ||
+     (m_downsample_mode == GPUDownsampleMode::Box &&
+      g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale) ||
+     m_wireframe_mode != wireframe_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
      m_disable_color_perspective != disable_color_perspective);
 
   if (m_resolution_scale != resolution_scale)
@@ -369,8 +351,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_wireframe_mode = wireframe_mode;
   m_disable_color_perspective = disable_color_perspective;
 
-  if (!m_supports_dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
-    m_texture_filtering = GPUTextureFilter::Nearest;
+  CheckSettings();
 
   if (m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer())
   {
@@ -402,6 +383,72 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
   }
+}
+
+void GPU_HW::CheckSettings()
+{
+  const GPUDevice::Features features = g_gpu_device->GetFeatures();
+
+  if (m_multisamples != g_settings.gpu_multisamples)
+  {
+    Host::AddIconOSDMessage("MSAAUnsupported", ICON_FA_PAINT_BRUSH,
+                            fmt::format(TRANSLATE_FS("OSDMessage", "{}x MSAA is not supported, using {}x instead."),
+                                        g_settings.gpu_multisamples, m_multisamples),
+                            Host::OSD_CRITICAL_ERROR_DURATION);
+  }
+  else
+  {
+    Host::RemoveKeyedOSDMessage("MSAAUnsupported");
+  }
+
+  if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
+  {
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "SSAA is not supported, using MSAA instead."), 20.0f);
+  }
+  if (!features.dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
+  {
+    Host::AddFormattedOSDMessage(
+      Host::OSD_CRITICAL_ERROR_DURATION,
+      TRANSLATE("OSDMessage", "Texture filter '%s' is not supported with the current renderer."),
+      Settings::GetTextureFilterDisplayName(m_texture_filtering));
+    m_texture_filtering = GPUTextureFilter::Nearest;
+  }
+
+  if (!features.noperspective_interpolation && !ShouldDisableColorPerspective())
+    Log_WarningPrint("Disable color perspective not supported, but should be used.");
+
+  if (!features.geometry_shaders && m_wireframe_mode != GPUWireframeMode::Disabled)
+  {
+    Host::AddOSDMessage(
+      TRANSLATE("OSDMessage",
+                "Geometry shaders are not supported by your GPU, and are required for wireframe rendering."),
+      Host::OSD_CRITICAL_ERROR_DURATION);
+    m_wireframe_mode = GPUWireframeMode::Disabled;
+  }
+
+  if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    const u32 scale = GetBoxDownsampleScale();
+    if (scale != g_settings.gpu_downsample_scale || scale == g_settings.gpu_resolution_scale)
+    {
+      Host::AddIconOSDMessage(
+        "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
+        fmt::format(
+          TRANSLATE_FS("OSDMessage",
+                       "Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead."),
+          g_settings.gpu_resolution_scale, g_settings.gpu_downsample_scale, scale),
+        Host::OSD_ERROR_DURATION);
+    }
+    else
+    {
+      Host::RemoveKeyedOSDMessage("BoxDownsampleUnsupported");
+    }
+
+    if (scale == g_settings.gpu_resolution_scale)
+      m_downsample_mode = GPUDownsampleMode::Disabled;
+  }
+
+  m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
 }
 
 u32 GPU_HW::CalculateResolutionScale() const
@@ -580,8 +627,10 @@ bool GPU_HW::CreateBuffers()
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    if (!(m_downsample_render_texture = g_gpu_device->CreateTexture(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1,
-                                                                    GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
+    const u32 downsample_scale = GetBoxDownsampleScale();
+    if (!(m_downsample_render_texture =
+            g_gpu_device->CreateTexture(VRAM_WIDTH * downsample_scale, VRAM_HEIGHT * downsample_scale, 1, 1, 1,
+                                        GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
         !(m_downsample_framebuffer = g_gpu_device->CreateFramebuffer(m_downsample_render_texture.get())))
     {
       return false;
@@ -1056,8 +1105,9 @@ bool GPU_HW::CompilePipelines()
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateBoxSampleDownsampleFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment,
+      shadergen.GenerateBoxSampleDownsampleFragmentShader(m_resolution_scale / GetBoxDownsampleScale()));
     if (!fs)
       return false;
 
@@ -2642,10 +2692,11 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
-  const u32 ds_left = left / m_resolution_scale;
-  const u32 ds_top = top / m_resolution_scale;
-  const u32 ds_width = width / m_resolution_scale;
-  const u32 ds_height = height / m_resolution_scale;
+  const u32 factor = m_resolution_scale / GetBoxDownsampleScale();
+  const u32 ds_left = left / factor;
+  const u32 ds_top = top / factor;
+  const u32 ds_width = width / factor;
+  const u32 ds_height = height / factor;
 
   source->MakeReadyForSampling();
 

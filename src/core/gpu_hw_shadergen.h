@@ -30,7 +30,7 @@ public:
   std::string GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass);
   std::string GenerateAdaptiveDownsampleBlurFragmentShader();
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
-  std::string GenerateBoxSampleDownsampleFragmentShader();
+  std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor);
 
 private:
   ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }

@@ -3907,6 +3907,17 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   "GPU", "DownsampleMode", Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, &Settings::ParseDownsampleModeName,
                   &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
                   (renderer != GPURenderer::Software));
+  if (Settings::ParseDownsampleModeName(
+        GetEffectiveStringSetting(bsi, "GPU", "DownsampleMode",
+                                  Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
+          .c_str())
+        .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE) == GPUDownsampleMode::Box)
+  {
+    DrawIntRangeSetting(bsi, FSUI_CSTR("Downsampling Display Scale"),
+                        FSUI_CSTR("Selects the resolution scale that will be applied to the final image. 1x will "
+                                  "downsample to the original console resolution."),
+                        "GPU", "DownsampleScale", 1, 1, GPU::MAX_RESOLUTION_SCALE, "%dx");
+  }
 
   DrawEnumSetting(
     bsi, FSUI_CSTR("Scaling"),

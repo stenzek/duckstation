@@ -106,6 +106,7 @@ struct Settings
   bool gpu_scaled_dithering = true;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
+  u8 gpu_downsample_scale = 1;
   GPUWireframeMode gpu_wireframe_mode = DEFAULT_GPU_WIREFRAME_MODE;
   bool gpu_disable_interlacing = true;
   bool gpu_force_ntsc_timings = false;
