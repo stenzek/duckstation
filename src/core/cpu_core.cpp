@@ -2075,6 +2075,8 @@ ALWAYS_INLINE_RELEASE static bool BreakpointCheck()
         Host::ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
         i++;
       }
+
+      ExitExecution();
     }
   }
 
@@ -2208,6 +2210,8 @@ void Execute()
 
 void SingleStep()
 {
+  s_single_step = true;
+  s_single_step_done = false;
   if (fastjmp_set(&s_jmp_buf) == 0)
     ExecuteDebug();
   Host::ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.pc);
