@@ -334,7 +334,7 @@ static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const c
                               ImFont* summary_font = g_medium_font);
 static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* key, int default_value, const char* const* options, size_t option_count,
-                               int option_offset = 0, bool enabled = true,
+                               bool translate_options, int option_offset = 0, bool enabled = true,
                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                                ImFont* summary_font = g_medium_font);
 static void DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
@@ -380,9 +380,9 @@ static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const cha
                             ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 static void DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                  const char* key, float default_value, const char* const* options,
-                                 const float* option_values, size_t option_count, bool enabled = true,
-                                 float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                                 ImFont* summary_font = g_medium_font);
+                                 const float* option_values, size_t option_count, bool translate_options,
+                                 bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
                               const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                               ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
@@ -1585,8 +1585,8 @@ bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, 
 
 void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                       const char* section, const char* key, int default_value,
-                                      const char* const* options, size_t option_count, int option_offset, bool enabled,
-                                      float height, ImFont* font, ImFont* summary_font)
+                                      const char* const* options, size_t option_count, bool translate_options,
+                                      int option_offset, bool enabled, float height, ImFont* font, ImFont* summary_font)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -1601,7 +1601,9 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
   const int index = value.has_value() ? (value.value() - option_offset) : std::numeric_limits<int>::min();
   const char* value_text =
     (value.has_value()) ?
-      ((index < 0 || static_cast<size_t>(index) >= option_count) ? FSUI_CSTR("Unknown") : options[index]) :
+      ((index < 0 || static_cast<size_t>(index) >= option_count) ?
+         FSUI_CSTR("Unknown") :
+         (translate_options ? Host::TranslateToCString(TR_CONTEXT, options[index]) : options[index])) :
       FSUI_CSTR("Use Global Setting");
 
   if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
@@ -1611,7 +1613,11 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
-      cd_options.emplace_back(options[i], (i == static_cast<size_t>(index)));
+    {
+      cd_options.emplace_back(translate_options ? Host::TranslateToString(TR_CONTEXT, options[i]) :
+                                                  std::string(options[i]),
+                              (i == static_cast<size_t>(index)));
+    }
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section, key, option_offset](s32 index, const std::string& title, bool checked) {
                        if (index >= 0)
@@ -2259,7 +2265,8 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                         const char* section, const char* key, float default_value,
                                         const char* const* options, const float* option_values, size_t option_count,
-                                        bool enabled, float height, ImFont* font, ImFont* summary_font)
+                                        bool translate_options, bool enabled, float height, ImFont* font,
+                                        ImFont* summary_font)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value(
@@ -2285,17 +2292,25 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
     }
   }
 
-  if (MenuButtonWithValue(title, summary,
-                          value.has_value() ? ((index < option_count) ? options[index] : FSUI_CSTR("Unknown")) :
-                                              FSUI_CSTR("Use Global Setting"),
-                          enabled, height, font, summary_font))
+  if (MenuButtonWithValue(
+        title, summary,
+        value.has_value() ?
+          ((index < option_count) ?
+             (translate_options ? Host::TranslateToCString(TR_CONTEXT, options[index]) : options[index]) :
+             FSUI_CSTR("Unknown")) :
+          FSUI_CSTR("Use Global Setting"),
+        enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
-      cd_options.emplace_back(options[i], (value.has_value() && i == static_cast<size_t>(index)));
+    {
+      cd_options.emplace_back(translate_options ? Host::TranslateToString(TR_CONTEXT, options[i]) :
+                                                  std::string(options[i]),
+                              (value.has_value() && i == static_cast<size_t>(index)));
+    }
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
                        if (index >= 0)
@@ -2942,12 +2957,12 @@ void FullscreenUI::DrawConsoleSettingsPage()
     bsi, FSUI_CSTR("Read Speedup"),
     FSUI_CSTR(
       "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others."),
-    "CDROM", "ReadSpeedup", 1, cdrom_read_speeds.data(), cdrom_read_speeds.size(), 1);
+    "CDROM", "ReadSpeedup", 1, cdrom_read_speeds.data(), cdrom_read_speeds.size(), true, 1);
   DrawIntListSetting(
     bsi, FSUI_CSTR("Seek Speedup"),
     FSUI_CSTR(
       "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others."),
-    "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds.data(), cdrom_seek_speeds.size());
+    "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds.data(), cdrom_seek_speeds.size(), true);
 
   DrawIntRangeSetting(
     bsi, FSUI_CSTR("Readahead Sectors"),
@@ -2998,16 +3013,17 @@ void FullscreenUI::DrawEmulationSettingsPage()
     bsi, FSUI_CSTR("Emulation Speed"),
     FSUI_CSTR("Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
-    emulation_speed_titles.size());
+    emulation_speed_titles.size(), true);
   DrawFloatListSetting(
     bsi, FSUI_CSTR("Fast Forward Speed"),
     FSUI_CSTR("Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
-    emulation_speed_titles.size());
+    emulation_speed_titles.size(), true);
   DrawFloatListSetting(
     bsi, FSUI_CSTR("Turbo Speed"),
     FSUI_CSTR("Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems."), "Main",
-    "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(), emulation_speed_titles.size());
+    "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(), emulation_speed_titles.size(),
+    true);
 
   MenuHeading(FSUI_CSTR("Runahead/Rewind"));
 
@@ -3036,7 +3052,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
     bsi, FSUI_CSTR("Runahead"),
     FSUI_CSTR(
       "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."),
-    "Main", "RunaheadFrameCount", 0, runahead_options.data(), runahead_options.size());
+    "Main", "RunaheadFrameCount", 0, runahead_options.data(), runahead_options.size(), true);
 
   TinyString rewind_summary;
   if (runahead_enabled)
@@ -3489,7 +3505,7 @@ void FullscreenUI::DrawControllerSettingsPage()
             break;
           case SettingInfo::Type::IntegerList:
             DrawIntListSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
-                               si.options, 0, si.IntegerMinValue(), true);
+                               si.options, 0, false, si.IntegerMinValue(), true);
             break;
           case SettingInfo::Type::Float:
             DrawFloatSpinBoxSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
@@ -3846,7 +3862,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
   DrawIntListSetting(
     bsi, FSUI_CSTR("Internal Resolution Scale"),
     FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
-    "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), 0, is_hardware);
+    "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0, is_hardware);
 
   DrawEnumSetting(
     bsi, FSUI_CSTR("Texture Filtering"), FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."),
@@ -6227,10 +6243,10 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
                        "Sets which view the game list will open to.", "Main", "DefaultFullscreenUIGameView", 0,
-                       view_types, std::size(view_types));
+                       view_types, std::size(view_types), true);
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT, "Sort By"),
                        "Determines which field the game list will be sorted by.", "Main", "FullscreenUIGameSort", 0,
-                       sort_types, std::size(sort_types));
+                       sort_types, std::size(sort_types), true);
     DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
                       "Reverses the game list sort order from the default (usually ascending to descending).", "Main",
                       "FullscreenUIGameSortReverse", false);
