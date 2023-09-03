@@ -73,6 +73,13 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define NORETURN_FUNCTION_POINTER __attribute__((noreturn))
 #endif
 
+// __assume, potentially enables optimization.
+#ifdef _MSC_VER
+#define ASSUME(x) __assume(x)
+#else
+#define ASSUME(x) do { if (!(x)) __builtin_unreachable(); } while(0)
+#endif
+
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER

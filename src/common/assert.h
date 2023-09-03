@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
+#include "types.h"
+
 void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine);
-void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine);
+[[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine);
 
 #define Assert(expr)                                                                                                   \
   if (!(expr))                                                                                                         \
@@ -28,11 +30,9 @@ void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char*
   {                                                                                                                    \
     Y_OnAssertFailed("Debug assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                           \
   }
-#define DebugUnreachableCode() Y_OnPanicReached("Unreachable code reached", __FUNCTION__, __FILE__, __LINE__)
 #else
 #define DebugAssert(expr)
 #define DebugAssertMsg(expr, msg)
-#define DebugUnreachableCode()
 #endif
 
 // Panics the application, displaying an error message.
@@ -41,8 +41,12 @@ void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char*
 // Kills the application, indicating a pure function call that should not have happened.
 #define PureCall() Y_OnPanicReached("PureCall encountered", __FUNCTION__, __FILE__, __LINE__)
 
+#ifdef _DEBUG
 // Kills the application, indicating that code that was never supposed to be reached has been executed.
 #define UnreachableCode() Y_OnPanicReached("Unreachable code reached", __FUNCTION__, __FILE__, __LINE__)
+#else
+#define UnreachableCode() ASSUME(false)
+#endif
 
 // Helper for switch cases.
 #define DefaultCaseIsUnreachable()                                                                                     \

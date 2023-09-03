@@ -12,6 +12,10 @@
 #include <tlhelp32.h>
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Winvalid-noreturn"
+#endif
+
 static std::mutex s_AssertFailedMutex;
 
 static inline void FreezeThreads(void** ppHandle)
@@ -107,7 +111,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   ResumeThreads(pHandle);
 }
 
-void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
+[[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
 {
   std::lock_guard<std::mutex> guard(s_AssertFailedMutex);
 
