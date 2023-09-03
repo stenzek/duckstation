@@ -309,7 +309,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   return !sw.HasError();
 }
 
-void GPU::RestoreGraphicsAPIState()
+void GPU::RestoreDeviceContext()
 {
 }
 
@@ -1999,11 +1999,11 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool full_resolution /
                                      texture_data_stride))
   {
     Log_ErrorPrintf("Texture download failed");
-    RestoreGraphicsAPIState();
+    RestoreDeviceContext();
     return false;
   }
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
   if (!fp)
@@ -2055,13 +2055,13 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   out_pixels->resize(width * height);
   if (!g_gpu_device->DownloadTexture(render_texture.get(), 0, 0, width, height, out_pixels->data(), stride))
   {
-    RestoreGraphicsAPIState();
+    RestoreDeviceContext();
     return false;
   }
 
   *out_stride = stride;
   *out_format = hdformat;
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
   return true;
 }
 

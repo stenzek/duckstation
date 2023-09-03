@@ -96,7 +96,7 @@ public:
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   // TODO: replace with "invalidate cached state"
-  virtual void RestoreGraphicsAPIState();
+  virtual void RestoreDeviceContext();
 
   // Render statistics debug window.
   void DrawDebugStateWindow();

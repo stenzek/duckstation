@@ -53,7 +53,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    g_gpu->RestoreGraphicsAPIState();
+    g_gpu->RestoreDeviceContext();
     g_gpu->UpdateSettings(old_settings);
     System::ClearMemorySaveStates();
   }
@@ -312,7 +312,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                 {
                   Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
-                  g_gpu->RestoreGraphicsAPIState();
+                  g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXP",
@@ -382,7 +382,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   const Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
 
-                  g_gpu->RestoreGraphicsAPIState();
+                  g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
@@ -403,7 +403,7 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                   const Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
 
-                  g_gpu->RestoreGraphicsAPIState();
+                  g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
                   System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPCPU",

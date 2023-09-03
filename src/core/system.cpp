@@ -876,7 +876,7 @@ std::string System::GetInputProfilePath(const std::string_view& name)
 bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool update_display /* = true*/)
 {
   ClearMemorySaveStates();
-  g_gpu->RestoreGraphicsAPIState();
+  g_gpu->RestoreDeviceContext();
 
   // save current state
   std::unique_ptr<ByteStream> state_stream = ByteStream::CreateGrowableMemoryStream();
@@ -903,7 +903,7 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   {
     state_stream->SeekAbsolute(0);
     sw.SetMode(StateWrapper::Mode::Read);
-    g_gpu->RestoreGraphicsAPIState();
+    g_gpu->RestoreDeviceContext();
     g_gpu->DoState(sw, nullptr, update_display);
     TimingEvents::DoState(sw);
   }
@@ -1724,7 +1724,7 @@ void System::Execute()
         s_system_executing = true;
 
         // TODO: Purge reset/restore
-        g_gpu->RestoreGraphicsAPIState();
+        g_gpu->RestoreDeviceContext();
 
         if (s_rewind_load_counter >= 0)
           DoRewind();
@@ -1800,6 +1800,7 @@ void System::FrameDone()
       // counter-acts that.
       Host::PumpMessagesOnCPUThread();
       InputManager::PollSources();
+      g_gpu->RestoreDeviceContext();
 
       if (IsExecutionInterrupted())
       {
@@ -1845,6 +1846,8 @@ void System::FrameDone()
       return;
     }
   }
+
+  g_gpu->RestoreDeviceContext();
 
   // Update perf counters *after* throttling, we want to measure from start-of-frame
   // to start-of-frame, not end-of-frame to end-of-frame (will be noisy due to different
@@ -1911,7 +1914,7 @@ void System::SingleStepCPU()
   s_frame_timer.Reset();
   s_system_executing = true;
 
-  g_gpu->RestoreGraphicsAPIState();
+  g_gpu->RestoreDeviceContext();
 
   CPU::SingleStep();
 
@@ -2068,7 +2071,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
-  g_gpu->RestoreGraphicsAPIState();
+  g_gpu->RestoreDeviceContext();
   if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw, host_texture, update_display))
     return false;
 
@@ -2464,7 +2467,7 @@ bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 *
   {
     header.offset_to_data = static_cast<u32>(state->GetPosition());
 
-    g_gpu->RestoreGraphicsAPIState();
+    g_gpu->RestoreDeviceContext();
 
     header.data_compression_type = compression_method;
 
@@ -3220,7 +3223,7 @@ bool System::DumpVRAM(const char* filename)
   if (!IsValid())
     return false;
 
-  g_gpu->RestoreGraphicsAPIState();
+  g_gpu->RestoreDeviceContext();
   return g_gpu->DumpVRAMToFile(filename);
 }
 
@@ -4707,15 +4710,15 @@ bool System::PresentDisplay(bool allow_skip_present)
 
   ImGuiManager::NewFrame();
 
-  if (g_gpu)
-    g_gpu->RestoreGraphicsAPIState();
-
   return do_present;
 }
 
 void System::InvalidateDisplay()
 {
   PresentDisplay(false);
+
+  if (g_gpu)
+    g_gpu->RestoreDeviceContext();
 }
 
 void System::SetTimerResolutionIncreased(bool enabled)

@@ -49,7 +49,7 @@ public:
   void Reset(bool clear_vram) override;
   bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
 
-  void RestoreGraphicsAPIState() override;
+  void RestoreDeviceContext() override;
 
   void UpdateSettings(const Settings& old_settings) override;
   void UpdateResolutionScale() override final;

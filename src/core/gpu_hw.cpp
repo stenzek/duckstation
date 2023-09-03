@@ -215,7 +215,7 @@ bool GPU_HW::Initialize()
     return false;
   }
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
   return true;
 }
 
@@ -290,7 +290,7 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   return true;
 }
 
-void GPU_HW::RestoreGraphicsAPIState()
+void GPU_HW::RestoreDeviceContext()
 {
   g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->SetFramebuffer(m_vram_framebuffer.get());
@@ -352,7 +352,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   // Back up VRAM if we're recreating the framebuffer.
   if (framebuffer_changed)
   {
-    RestoreGraphicsAPIState();
+    RestoreDeviceContext();
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
     DestroyBuffers();
   }
@@ -397,7 +397,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     if (!CreateBuffers())
       Panic("Failed to recreate buffers.");
 
-    RestoreGraphicsAPIState();
+    RestoreDeviceContext();
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
@@ -1896,7 +1896,7 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
   g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
   g_gpu_device->Draw(3, 0);
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
   return true;
 }
 
@@ -2088,7 +2088,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 }
 
 void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
@@ -2119,7 +2119,7 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
                                 reinterpret_cast<u32*>(&m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left]),
                                 VRAM_WIDTH * sizeof(u16));
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 }
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
@@ -2188,7 +2188,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
   g_gpu_device->Draw(3, 0);
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 }
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
@@ -2254,7 +2254,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer)].get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
-    RestoreGraphicsAPIState();
+    RestoreDeviceContext();
 
     if (m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer)
       m_current_depth++;
@@ -2532,7 +2532,7 @@ void GPU_HW::UpdateDisplay()
       else
         SetDisplayTexture(m_display_private_texture.get(), 0, 0, scaled_display_width, scaled_display_height);
 
-      RestoreGraphicsAPIState();
+      RestoreDeviceContext();
     }
   }
 }
@@ -2635,7 +2635,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
   GL_POP();
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 
   SetDisplayTexture(m_downsample_render_texture.get(), 0, 0, width, height);
 }
@@ -2656,7 +2656,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   g_gpu_device->SetViewportAndScissor(ds_left, ds_top, ds_width, ds_height);
   g_gpu_device->Draw(3, 0);
 
-  RestoreGraphicsAPIState();
+  RestoreDeviceContext();
 
   SetDisplayTexture(m_downsample_render_texture.get(), ds_left, ds_top, ds_width, ds_height);
 }

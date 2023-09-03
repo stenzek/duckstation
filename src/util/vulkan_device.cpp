@@ -1916,18 +1916,6 @@ bool VulkanDevice::UpdateWindow()
   SubmitCommandBuffer(false);
   WaitForGPUIdle();
 
-  // recreate surface in existing swap chain if it already exists
-  if (m_swap_chain)
-  {
-    if (m_swap_chain->RecreateSurface(m_window_info))
-    {
-      m_window_info = m_swap_chain->GetWindowInfo();
-      return true;
-    }
-
-    m_swap_chain.reset();
-  }
-
   VkSurfaceKHR surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
   if (surface == VK_NULL_HANDLE)
   {
