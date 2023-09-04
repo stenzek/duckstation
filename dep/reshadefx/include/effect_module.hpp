@@ -6,6 +6,7 @@
 #pragma once
 
 #include "effect_expression.hpp"
+#include <cstdint>
 #include <unordered_set>
 
 namespace reshadefx

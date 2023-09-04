@@ -6,6 +6,7 @@
 #pragma once
 
 #include "effect_module.hpp"
+#include <cstdint>
 #include <unordered_map> // Used for symbol lookup table
 
 namespace reshadefx

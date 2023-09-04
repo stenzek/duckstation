@@ -6,6 +6,7 @@
 #pragma once
 
 #include "effect_token.hpp"
+#include <cstdint>
 
 namespace reshadefx
 {
