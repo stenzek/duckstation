@@ -390,9 +390,12 @@ inline size_t getPageSize()
 	static const long pageSize = sysconf(_SC_PAGESIZE);
 	if (pageSize > 0) {
 		return (size_t)pageSize;
+	} else {
+		return 4096;
 	}
-#endif
+#else
 	return 4096;
+#endif
 }
 
 inline bool IsInDisp8(uint32_t x) { return 0xFFFFFF80 <= x || x <= 0x7F; }
