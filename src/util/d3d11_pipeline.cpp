@@ -51,7 +51,7 @@ void D3D11Shader::SetDebugName(const std::string_view& name)
   SetD3DDebugObjectName(m_shader.Get(), name);
 }
 
-std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
 {
   ComPtr<ID3D11DeviceChild> shader;
   std::vector<u8> bytecode;

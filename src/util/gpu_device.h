@@ -12,10 +12,9 @@
 #include "common/rectangle.h"
 #include "common/types.h"
 
-#include "gsl/span"
-
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -231,7 +230,7 @@ public:
 
   struct InputLayout
   {
-    gsl::span<const VertexAttribute> vertex_attributes;
+    std::span<const VertexAttribute> vertex_attributes;
     u32 vertex_stride;
 
     bool operator==(const InputLayout& rhs) const;
@@ -634,7 +633,7 @@ protected:
   virtual bool ReadPipelineCache(const std::string& filename);
   virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data);
 
-  virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data) = 0;
+  virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) = 0;
   virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                             const char* entry_point,
                                                             DynamicHeapArray<u8>* out_binary) = 0;

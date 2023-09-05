@@ -5,9 +5,8 @@
 
 #include "common/types.h"
 
-#include "gsl/span"
-
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -43,7 +42,7 @@ std::optional<SPIRVCodeVector> CompileShader(GPUShaderStage stage, std::string_v
 #ifdef __APPLE__
 
 // Converts a SPIR-V shader into MSL.
-std::optional<std::string> CompileSPIRVToMSL(gsl::span<const SPIRVCodeType> spv);
+std::optional<std::string> CompileSPIRVToMSL(std::span<const SPIRVCodeType> spv);
 
 #endif
 

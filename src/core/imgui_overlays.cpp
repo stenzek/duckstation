@@ -30,7 +30,6 @@
 #include "IconsFontAwesome5.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
-#include "gsl/span"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -39,6 +38,7 @@
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <span>
 #include <unordered_map>
 
 #if defined(CPU_X64)
@@ -64,7 +64,7 @@ namespace SaveStateSelectorUI {
 static void Draw();
 }
 
-static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
+static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
 #if defined(CPU_X64)
   __m128 vmin(_mm_loadu_ps(values.data()));

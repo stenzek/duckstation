@@ -6,7 +6,6 @@
 #include "common/types.h"
 
 #include "fmt/format.h"
-#include "gsl/span"
 
 #include <array>
 #include <atomic>
@@ -18,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <tuple>

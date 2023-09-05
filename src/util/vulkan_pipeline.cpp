@@ -25,7 +25,7 @@ void VulkanShader::SetDebugName(const std::string_view& name)
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, name);
 }
 
-std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
 {
   VkShaderModule mod;
 
@@ -67,7 +67,7 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage s
     std::memcpy(out_binary->data(), spirv->data(), spirv_size);
   }
 
-  return CreateShaderFromBinary(stage, gsl::span<const u8>(reinterpret_cast<const u8*>(spirv->data()), spirv_size));
+  return CreateShaderFromBinary(stage, std::span<const u8>(reinterpret_cast<const u8*>(spirv->data()), spirv_size));
 }
 
 //////////////////////////////////////////////////////////////////////////

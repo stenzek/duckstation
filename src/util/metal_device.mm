@@ -637,7 +637,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
   }
 }
 
-std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
 {
   const std::string_view str_data(reinterpret_cast<const char*>(data.data()), data.size());
   return CreateShaderFromMSL(stage, str_data, "main0");

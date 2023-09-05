@@ -68,7 +68,7 @@ public:
 
   std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
 
-  std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data) override;
+  std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point, DynamicHeapArray<u8>* out_binary) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
@@ -111,7 +111,7 @@ public:
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
   GLuint LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key);
-  GLuint CreateVAO(gsl::span<const GPUPipeline::VertexAttribute> attributes, u32 stride);
+  GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride);
   void UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key);
 
   void SetActiveTexture(u32 slot);

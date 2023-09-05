@@ -1033,7 +1033,7 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
 }
 
 std::vector<std::pair<std::string, const GameList::Entry*>>
-GameList::GetMatchingEntriesForSerial(const gsl::span<const std::string> serials)
+GameList::GetMatchingEntriesForSerial(const std::span<const std::string> serials)
 {
   std::vector<std::pair<std::string, const GameList::Entry*>> ret;
   ret.reserve(serials.size());

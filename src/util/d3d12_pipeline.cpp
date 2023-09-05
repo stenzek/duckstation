@@ -25,7 +25,7 @@ void D3D12Shader::SetDebugName(const std::string_view& name)
 {
 }
 
-std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
 {
   // Can't do much at this point.
   std::vector bytecode(data.begin(), data.end());

@@ -168,7 +168,7 @@ bool OpenGLShader::Compile()
   return true;
 }
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, gsl::span<const u8> data)
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
 {
   // Not supported.. except spir-v maybe? but no point really...
   return {};
@@ -455,7 +455,7 @@ GLuint OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& k
 
   OpenGLPipeline::VertexArrayCacheItem item;
   item.vao_id =
-    CreateVAO(gsl::span<const GPUPipeline::VertexAttribute>(key.vertex_attributes, key.num_vertex_attributes),
+    CreateVAO(std::span<const GPUPipeline::VertexAttribute>(key.vertex_attributes, key.num_vertex_attributes),
               key.vertex_attribute_stride);
   if (item.vao_id == 0)
     return 0;
@@ -465,7 +465,7 @@ GLuint OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& k
   return item.vao_id;
 }
 
-GLuint OpenGLDevice::CreateVAO(gsl::span<const GPUPipeline::VertexAttribute> attributes, u32 stride)
+GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride)
 {
   glGetError();
   GLuint vao;

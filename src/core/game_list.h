@@ -10,11 +10,10 @@
 
 #include "common/string.h"
 
-#include "gsl/span"
-
 #include <ctime>
 #include <functional>
 #include <mutex>
+#include <span>
 #include <string>
 
 class ByteStream;
@@ -107,7 +106,7 @@ std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_fil
 /// Returns a list of (title, entry) for entries matching serials. Titles will match the gamedb title,
 /// except when two files have the same serial, in which case the filename will be used instead.
 std::vector<std::pair<std::string, const Entry*>>
-GetMatchingEntriesForSerial(const gsl::span<const std::string> serials);
+GetMatchingEntriesForSerial(const std::span<const std::string> serials);
 
 /// Downloads covers using the specified URL templates. By default, covers are saved by title, but this can be changed
 /// with the use_serial parameter. save_callback optionall takes the entry and the path the new cover is saved to.

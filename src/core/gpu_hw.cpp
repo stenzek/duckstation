@@ -774,11 +774,11 @@ bool GPU_HW::CompilePipelines()
 
               plconfig.input_layout.vertex_attributes =
                 textured ?
-                  (m_using_uv_limits ? gsl::span<const GPUPipeline::VertexAttribute>(
+                  (m_using_uv_limits ? std::span<const GPUPipeline::VertexAttribute>(
                                          vertex_attributes, NUM_BATCH_TEXTURED_LIMITS_VERTEX_ATTRIBUTES) :
-                                       gsl::span<const GPUPipeline::VertexAttribute>(
+                                       std::span<const GPUPipeline::VertexAttribute>(
                                          vertex_attributes, NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
-                  gsl::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
+                  std::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
 
               plconfig.vertex_shader = batch_vertex_shaders[BoolToUInt8(textured)].get();
               plconfig.fragment_shader =
@@ -856,7 +856,7 @@ bool GPU_HW::CompilePipelines()
     GL_OBJECT_NAME(fs, "Batch Wireframe Fragment Shader");
 
     plconfig.input_layout.vertex_attributes =
-      gsl::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
+      std::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
     plconfig.blend = (m_wireframe_mode == GPUWireframeMode::OverlayWireframe) ?
                        GPUPipeline::BlendState::GetAlphaBlendingState() :
                        GPUPipeline::BlendState::GetNoBlendingState();
