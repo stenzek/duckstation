@@ -1,7 +1,9 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
-[Latest News](#latest-news) | [Features](#features) | [Screenshots](#screenshots) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
+[Latest News](#latest-news) | [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows and Linux (AppImage)** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows and Linux (AppImage):** https://github.com/stenzek/duckstation/releases/tag/latest
+
+**Latest Builds for Windows, Linux (AppImage/Flatpak), and macOS:** https://github.com/stenzek/duckstation/releases/tag/preview
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit
 
@@ -76,6 +78,8 @@ To set up:
 2. If using the Qt frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
 2. Select a game from the list, or open a disc image file and enjoy.
 
+If you are using the preview release, the setup wizard will guide you through these steps.
+
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/17/release/vc_redist.x64.exe.
 
 **Windows 7 users, TLS 1.2 is not supported by default and you will not be able to use the automatic updater or RetroAchievements.** This knowledge base article contains instructions for enabling TLS 1.1/1.2: https://support.microsoft.com/en-us/topic/update-to-enable-tls-1-1-and-tls-1-2-as-default-secure-protocols-in-winhttp-in-windows-c4bd73d2-31d7-761e-0178-11268bb10392
@@ -88,7 +92,7 @@ The only supported version of DuckStation for Linux are the AppImage and Flatpak
 
 #### AppImage
 
-The AppImages require a distribution equivalent to Ubuntu 20.04 or newer to run, which is also the minimum requirement for Qt 6.
+The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
 
  - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-x64.AppImage`.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
@@ -145,10 +149,11 @@ Requirements:
  - Visual Studio 2022
 
 1. Clone the respository: `git clone https://github.com/stenzek/duckstation.git`.
-2. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
-3. Build solution.
-4. Binaries are located in `bin/x64`.
-5. Run `duckstation-qt-x64-Release.exe` or whichever config you used.
+2. Download the dependencies pack from https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/latest/deps-x64.7z, and extract it to `dep\msvc`.
+3. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
+4. Build solution.
+5. Binaries are located in `bin/x64`.
+6. Run `duckstation-qt-x64-Release.exe` or whichever config you used.
 
 ### Linux
 Requirements (Debian/Ubuntu package names):
@@ -179,7 +184,7 @@ Optional (recommended for faster builds):
  - Ninja
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
-2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_FRONTEND=ON -DUSE_SDL2=ON`. You may need to specify `-DQt6_DIR` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
+2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. You may need to specify `-DQt6_DIR` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
 4. Compile the source code: `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
 
