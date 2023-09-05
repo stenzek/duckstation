@@ -47,11 +47,6 @@ if((LINUX OR FREEBSD) AND NOT ANDROID)
   option(USE_DBUS "Enable DBus support for screensaver inhibiting" ON)
 endif()
 
-# Force EGL when using Wayland
-if(USE_WAYLAND)
-  set(USE_EGL ON)
-endif()
-
 if(ANDROID)
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -86,9 +81,13 @@ if(BUILD_QT_FRONTEND)
 endif()
 
 
-if(USE_EGL)
+# Everything except Windows/Mac use EGL.
+if(ENABLE_OPENGL AND (LINUX OR FREEBSD OR ANDROID))
   find_package(EGL REQUIRED)
+  set(USE_EGL TRUE)
 endif()
+
+
 if(USE_X11)
   find_package(X11 REQUIRED)
   if (NOT X11_Xrandr_FOUND)
