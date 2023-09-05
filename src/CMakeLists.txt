@@ -20,5 +20,5 @@ if(BUILD_REGTEST)
 endif()
 
 if(BUILD_TESTS)
-  add_subdirectory(common-tests)
+  add_subdirectory(common-tests EXCLUDE_FROM_ALL)
 endif()
