@@ -2087,7 +2087,6 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
 
     default:
       UnreachableCode();
-      return false;
   }
 }
 

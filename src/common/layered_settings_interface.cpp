@@ -12,7 +12,6 @@ LayeredSettingsInterface::~LayeredSettingsInterface() = default;
 bool LayeredSettingsInterface::Save()
 {
   Panic("Attempting to save layered settings interface");
-  return false;
 }
 
 void LayeredSettingsInterface::Clear()
@@ -183,13 +182,11 @@ void LayeredSettingsInterface::SetStringList(const char* section, const char* ke
 bool LayeredSettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)
 {
   Panic("Attempt to call RemoveFromStringList() on layered settings interface");
-  return false;
 }
 
 bool LayeredSettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
 {
   Panic("Attempt to call AddToStringList() on layered settings interface");
-  return true;
 }
 
 std::vector<std::pair<std::string, std::string>> LayeredSettingsInterface::GetKeyValueList(const char* section) const

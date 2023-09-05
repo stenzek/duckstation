@@ -89,7 +89,6 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
     Log_ErrorPrintf("Map failed: 0x%08X (alignment %u, minsize %u, size %u, position %u, map type %u)", hr, alignment,
                     min_size, m_size, m_position, static_cast<u32>(map_type));
     Panic("Map failed");
-    return {};
   }
 
   return MappingResult{static_cast<char*>(sr.pData) + m_position, m_position, m_position / alignment,

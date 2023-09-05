@@ -3169,7 +3169,6 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
 
     default:
       UnreachableCode();
-      return false;
   }
 }
 

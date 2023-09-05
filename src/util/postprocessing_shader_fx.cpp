@@ -160,7 +160,6 @@ static GPUSampler::Config MapSampler(const reshadefx::sampler_info& si)
         return GPUSampler::AddressMode::Repeat;
       case reshadefx::texture_address_mode::mirror:
         Panic("Not implemented");
-        return GPUSampler::AddressMode::Repeat;
       case reshadefx::texture_address_mode::clamp:
         return GPUSampler::AddressMode::ClampToEdge;
       case reshadefx::texture_address_mode::border:
@@ -241,7 +240,6 @@ static GPUPipeline::Primitive MapPrimitive(reshadefx::primitive_topology topolog
       return GPUPipeline::Primitive::Lines;
     case reshadefx::primitive_topology::line_strip:
       Panic("Unhandled line strip");
-      return GPUPipeline::Primitive::Lines;
     case reshadefx::primitive_topology::triangle_list:
       return GPUPipeline::Primitive::Triangles;
     case reshadefx::primitive_topology::triangle_strip:

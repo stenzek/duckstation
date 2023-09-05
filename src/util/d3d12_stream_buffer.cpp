@@ -71,7 +71,6 @@ bool D3D12StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     Log_ErrorPrintf("Attempting to allocate %u bytes from a %u byte stream buffer", static_cast<u32>(num_bytes),
                     static_cast<u32>(m_size));
     Panic("Stream buffer overflow");
-    return false;
   }
 
   // Is the GPU behind or up to date with our current offset?

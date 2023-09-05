@@ -1356,7 +1356,6 @@ InstructionImpl GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 
     default:
       Panic("Missing handler");
-      return nullptr;
   }
 }
 

@@ -154,7 +154,6 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
     default:
     {
       UnreachableCode();
-      return false;
     }
   }
 }

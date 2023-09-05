@@ -133,10 +133,7 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
       return false;
 
     default:
-    {
       UnreachableCode();
-      return false;
-    }
   }
 }
 

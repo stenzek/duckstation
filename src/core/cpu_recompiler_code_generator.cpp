@@ -274,7 +274,6 @@ Value CodeGenerator::ConvertValueSize(const Value& value, RegSize size, bool sig
     }
 
     UnreachableCode();
-    return Value{};
   }
 
   Value new_value = m_register_cache.AllocateScratch(size);
@@ -330,7 +329,6 @@ void* CodeGenerator::GetCurrentCodePointer() const
     return GetCurrentFarCodePointer();
 
   Panic("unknown emitter");
-  return nullptr;
 }
 
 Value CodeGenerator::AddValues(const Value& lhs, const Value& rhs, bool set_flags)
@@ -2480,7 +2478,6 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
       else
       {
         UnreachableCode();
-        return false;
       }
     }
 
@@ -2549,7 +2546,6 @@ bool CodeGenerator::Compile_Branch(const CodeBlockInstruction& cbi)
 
     default:
       UnreachableCode();
-      return false;
   }
 }
 
