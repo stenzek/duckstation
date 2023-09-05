@@ -92,6 +92,11 @@ if(NOT WIN32 AND NOT ANDROID)
   target_link_libraries(common PRIVATE
     CURL::libcurl
   )
+
+  if(LIBBACKTRACE_FOUND)
+    target_compile_definitions(common PRIVATE "-DUSE_LIBBACKTRACE=1")
+    target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+  endif()
 endif()
 
 if(ANDROID)
