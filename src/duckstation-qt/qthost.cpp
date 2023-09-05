@@ -475,6 +475,8 @@ void EmuThread::startFullscreenUI()
     return;
   }
 
+  emit fullscreenUIStateChange(true);
+
   // poll more frequently so we don't lose events
   stopBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
@@ -488,7 +490,7 @@ void EmuThread::stopFullscreenUI()
     QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
     // wait until the host display is gone
-    while (g_gpu_device)
+    while (!QtHost::IsSystemValid() && g_gpu_device)
       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
     return;
@@ -497,10 +499,15 @@ void EmuThread::stopFullscreenUI()
   if (System::IsValid())
     shutdownSystem();
 
+  if (m_run_fullscreen_ui)
+  {
+    m_run_fullscreen_ui = false;
+    emit fullscreenUIStateChange(false);
+  }
+
   if (!g_gpu_device)
     return;
 
-  m_run_fullscreen_ui = false;
   Host::ReleaseGPUDevice();
   Host::ReleaseRenderWindow();
 }

@@ -140,6 +140,7 @@ Q_SIGNALS:
   void runningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
+  void fullscreenUIStateChange(bool running);
   void achievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
   void achievementsChallengeModeChanged();
   void cheatEnabled(quint32 index, bool enabled);

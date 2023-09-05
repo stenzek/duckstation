@@ -288,9 +288,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
   updateWindowTitle();
   updateWindowState();
 
-  m_ui.actionStartFullscreenUI->setEnabled(false);
-  m_ui.actionStartFullscreenUI2->setEnabled(false);
-
   updateDisplayWidgetCursor();
   updateDisplayRelatedActions(true, render_to_main, fullscreen);
   m_display_widget->setFocus();
@@ -405,8 +402,6 @@ void MainWindow::releaseRenderWindow()
 
   m_ui.actionViewSystemDisplay->setEnabled(false);
   m_ui.actionFullscreen->setEnabled(false);
-  m_ui.actionStartFullscreenUI->setEnabled(true);
-  m_ui.actionStartFullscreenUI2->setEnabled(true);
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
@@ -1184,6 +1179,20 @@ void MainWindow::onCheatsMenuAboutToShow()
   populateCheatsMenu(m_ui.menuCheats);
 }
 
+void MainWindow::onStartFullscreenUITriggered()
+{
+  if (m_display_widget)
+    g_emu_thread->stopFullscreenUI();
+  else
+    g_emu_thread->startFullscreenUI();
+}
+
+void MainWindow::onFullscreenUIStateChange(bool running)
+{
+  m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
+  m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
+}
+
 void MainWindow::onRemoveDiscActionTriggered()
 {
   g_emu_thread->changeDisc(QString());
@@ -1633,6 +1642,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.actionStartDisc->setDisabled(starting || running);
   m_ui.actionStartBios->setDisabled(starting || running);
   m_ui.actionResumeLastState->setDisabled(starting || running || cheevos_challenge_mode);
+  m_ui.actionStartFullscreenUI->setDisabled(starting || running);
+  m_ui.actionStartFullscreenUI2->setDisabled(starting || running);
 
   m_ui.actionPowerOff->setDisabled(starting || !running);
   m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
@@ -1879,6 +1890,8 @@ void MainWindow::connectSignals()
   connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
   connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
+  connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
+  connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
@@ -1945,8 +1958,6 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
 
-  connect(m_ui.actionStartFullscreenUI, &QAction::triggered, g_emu_thread, &EmuThread::startFullscreenUI);
-  connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, g_emu_thread, &EmuThread::startFullscreenUI);
   connect(g_emu_thread, &EmuThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
           Qt::QueuedConnection);
   connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError, Qt::BlockingQueuedConnection);
@@ -1964,6 +1975,7 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::systemResumed, this, &MainWindow::onSystemResumed);
   connect(g_emu_thread, &EmuThread::runningGameChanged, this, &MainWindow::onRunningGameChanged);
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
+  connect(g_emu_thread, &EmuThread::fullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
 #ifdef WITH_CHEEVOS
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
