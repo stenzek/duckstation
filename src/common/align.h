@@ -72,8 +72,7 @@ ALWAYS_INLINE static void* AlignedMalloc(size_t size, size_t alignment)
       size = (size + alignment - 1) & ~(alignment - 1);
 #endif
   void* ret = nullptr;
-  posix_memalign(&ret, alignment, size);
-  return ret;
+  return (posix_memalign(&ret, alignment, size) == 0) ? ret : nullptr;
 #endif
 }
 
