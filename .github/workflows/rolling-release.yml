@@ -202,7 +202,7 @@ jobs:
 
 
   linux-build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2.3.1
       with:
@@ -212,14 +212,16 @@ jobs:
       shell: bash
       run: |
         # Workaround for https://github.com/actions/runner-images/issues/675
-        # TODO: Update to LLVM 18
+        scripts/retry.sh wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo scripts/retry.sh apt-add-repository -n 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
+
         sudo scripts/retry.sh apt-get update &&
         sudo scripts/retry.sh apt-get -y install \
           cmake ninja-build ccache libegl1-mesa-dev libevdev-dev libwayland-dev libwayland-egl-backend-dev libxrandr-dev libdbus-1-dev \
           extra-cmake-modules libcurl4-openssl-dev libssl-dev libasound2-dev libpulse-dev libx11-xcb-dev build-essential git libclang-dev \
           libclang-11-dev libclang-12-dev patchelf libglib2.0-dev libfontconfig1-dev libharfbuzz-dev libjpeg-dev libpng-dev libfreetype-dev \
           libinput-dev libxcb-*-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev libwayland-dev libgl1-mesa-dev libegl-dev \
-          libegl1-mesa-dev libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev llvm-12 lld-12 clang-12
+          libegl1-mesa-dev libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev libfuse2 llvm-16 lld-16 clang-16
 
     - name: Cache Dependencies
       id: cache-deps
@@ -237,10 +239,10 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DBUILD_TESTS=OFF -DUSE_EGL=ON -DUSE_SDL2=ON -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_NOGUI_FRONTEND=OFF -DBUILD_QT_FRONTEND=ON -DBUILD_TESTS=OFF -DUSE_WAYLAND=ON -DUSE_X11=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
         cmake --build . --parallel
         cd ..
-        scripts/make-appimage.sh $(realpath ./build) $(realpath .) $HOME/deps DuckStation-x64
+        scripts/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
@@ -262,7 +264,7 @@ jobs:
 
     - name: Generate AppStream XML
       run: |
-        scripts/flatpak/generate-metainfo.sh scripts/flatpak/org.duckstation.duckstation.metainfo.xml
+        scripts/generate-metainfo.sh scripts/flatpak/org.duckstation.duckstation.metainfo.xml
         cat scripts/flatpak/org.duckstation.duckstation.metainfo.xml
         flatpak run org.freedesktop.appstream-glib validate scripts/flatpak/org.duckstation.duckstation.metainfo.xml
 

@@ -47,8 +47,8 @@
       ],
       "post-install": [
         "cp -a \"${FLATPAK_BUILDER_BUILDDIR}/bin\" ${FLATPAK_DEST}",
-        "install -Dm644 data/resources/images/duck.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.duckstation.png",
-        "install -Dm644 scripts/flatpak/duckstation-qt.desktop ${FLATPAK_DEST}/share/applications/org.duckstation.duckstation.desktop",
+        "install -Dm644 scripts/duckstation-qt.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.duckstation.png",
+        "install -Dm644 scripts/duckstation-qt.desktop ${FLATPAK_DEST}/share/applications/org.duckstation.duckstation.desktop",
         "desktop-file-edit --set-key=Icon --set-value=org.duckstation.duckstation ${FLATPAK_DEST}/share/applications/org.duckstation.duckstation.desktop",
         "install -Dm644 scripts/flatpak/org.duckstation.duckstation.metainfo.xml ${FLATPAK_DEST}/share/metainfo/org.duckstation.duckstation.metainfo.xml"
       ]
