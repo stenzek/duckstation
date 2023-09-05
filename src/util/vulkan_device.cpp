@@ -744,9 +744,10 @@ bool VulkanDevice::CreatePersistentDescriptorPool()
     {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 16},
   };
 
-  const VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,     nullptr,
-                                                       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, 16,
-                                                       static_cast<u32>(std::size(pool_sizes)),           pool_sizes};
+  const VkDescriptorPoolCreateInfo pool_create_info = {
+    VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,     nullptr,
+    VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, MAX_SAMPLER_DESCRIPTORS,
+    static_cast<u32>(std::size(pool_sizes)),           pool_sizes};
 
   VkResult res = vkCreateDescriptorPool(m_device, &pool_create_info, nullptr, &m_global_descriptor_pool);
   if (res != VK_SUCCESS)
