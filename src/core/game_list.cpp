@@ -285,7 +285,7 @@ bool GameList::PopulateEntryFromPath(const std::string& path, Entry* entry)
 
 bool GameList::GetGameListEntryFromCache(const std::string& path, Entry* entry)
 {
-  auto iter = UnorderedStringMapFind(s_cache_map, path);
+  auto iter = s_cache_map.find(path);
   if (iter == s_cache_map.end())
     return false;
 
@@ -333,7 +333,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     ge.type = static_cast<EntryType>(type);
     ge.compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility_rating);
 
-    auto iter = UnorderedStringMapFind(s_cache_map, ge.path);
+    auto iter = s_cache_map.find(ge.path);
     if (iter != s_cache_map.end())
       iter->second = std::move(ge);
     else
@@ -512,7 +512,7 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
   if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
     return false;
 
-  auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
+  auto iter = played_time_map.find(entry.serial);
   if (iter != played_time_map.end())
   {
     entry.last_played_time = iter->second.last_played_time;
@@ -544,7 +544,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
       Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
   }
 
-  auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
+  auto iter = played_time_map.find(entry.serial);
   if (iter != played_time_map.end())
   {
     entry.last_played_time = iter->second.last_played_time;
@@ -821,7 +821,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
       if (!ParsePlayedTimeLine(line, serial, entry))
         continue;
 
-      if (UnorderedStringMapFind(ret, serial) != ret.end())
+      if (ret.find(serial) != ret.end())
       {
         Log_WarningPrintf("Duplicate entry: '%s'", serial.c_str());
         continue;

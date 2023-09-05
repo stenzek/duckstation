@@ -115,7 +115,7 @@ const GameDatabase::Entry* GameDatabase::GetEntryForId(const std::string_view& c
 
   EnsureLoaded();
 
-  auto iter = UnorderedStringMapFind(s_code_lookup, code);
+  auto iter = s_code_lookup.find(code);
   return (iter != s_code_lookup.end()) ? &s_entries[iter->second] : nullptr;
 }
 
@@ -1005,7 +1005,7 @@ bool GameDatabase::ParseJsonCodes(u32 index, const rapidjson::Value& value)
     }
 
     const std::string_view code(current_code.GetString(), current_code.GetStringLength());
-    auto iter = UnorderedStringMapFind(s_code_lookup, code);
+    auto iter = s_code_lookup.find(code);
     if (iter != s_code_lookup.end())
     {
       Log_WarningPrintf("Duplicate code '%.*s'", static_cast<int>(code.size()), code.data());
