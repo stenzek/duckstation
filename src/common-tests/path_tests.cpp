@@ -229,18 +229,18 @@ TEST(FileSystem, ChangeFileName)
 
 TEST(FileSystem, SanitizeFileName)
 {
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo"), u8"foo");
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo/bar"), u8"foo_bar");
-  ASSERT_EQ(Path::SanitizeFileName(u8"f🙃o"), u8"f🙃o");
-  ASSERT_EQ(Path::SanitizeFileName(u8"ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱"), u8"ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱");
-  ASSERT_EQ(Path::SanitizeFileName(u8"abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}"), u8"abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}");
-  ASSERT_EQ(Path::SanitizeFileName(u8"some*path**with*asterisks"), u8"some_path__with_asterisks");
+  ASSERT_EQ(Path::SanitizeFileName("foo"), "foo");
+  ASSERT_EQ(Path::SanitizeFileName("foo/bar"), "foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName("f🙃o"), "f🙃o");
+  ASSERT_EQ(Path::SanitizeFileName("ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱"), "ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱");
+  ASSERT_EQ(Path::SanitizeFileName("abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}"), "abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}");
+  ASSERT_EQ(Path::SanitizeFileName("some*path**with*asterisks"), "some_path__with_asterisks");
 #ifdef _WIN32
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo:"), u8"foo_");
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo:bar."), u8"foo_bar_");
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo\\bar"), u8"foo_bar");
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo>bar"), u8"foo_bar");
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo\\bar", false), u8"foo\\bar");
+  ASSERT_EQ(Path::SanitizeFileName("foo:"), "foo_");
+  ASSERT_EQ(Path::SanitizeFileName("foo:bar."), "foo_bar_");
+  ASSERT_EQ(Path::SanitizeFileName("foo\\bar"), "foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName("foo>bar"), "foo_bar");
+  ASSERT_EQ(Path::SanitizeFileName("foo\\bar", false), "foo\\bar");
 #endif
-  ASSERT_EQ(Path::SanitizeFileName(u8"foo/bar", false), u8"foo/bar");
+  ASSERT_EQ(Path::SanitizeFileName("foo/bar", false), "foo/bar");
 }

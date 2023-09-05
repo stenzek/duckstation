@@ -1720,7 +1720,7 @@ void Achievements::DeactivateAchievement(Achievement* achievement)
   if (achievement->primed)
   {
     achievement->primed = false;
-    s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
+    s_primed_achievement_count.fetch_sub(1, std::memory_order_acq_rel);
   }
 
   Log_DevPrintf("Deactivated achievement %s (%u)", achievement->title.c_str(), achievement->id);
@@ -1888,7 +1888,7 @@ void Achievements::AchievementPrimed(u32 achievement_id)
     return;
 
   achievement->primed = true;
-  s_primed_achievement_count.fetch_add(std::memory_order_acq_rel);
+  s_primed_achievement_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
 void Achievements::AchievementUnprimed(u32 achievement_id)
@@ -1899,7 +1899,7 @@ void Achievements::AchievementUnprimed(u32 achievement_id)
     return;
 
   achievement->primed = false;
-  s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
+  s_primed_achievement_count.fetch_sub(1, std::memory_order_acq_rel);
 }
 
 std::pair<u32, u32> Achievements::GetAchievementProgress(const Achievement& achievement)

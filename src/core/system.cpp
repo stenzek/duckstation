@@ -1316,7 +1316,7 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, &error))
   {
     Host::ReportErrorAsync("Error",
-                           fmt::format("Failed to switch to subimage {] in '{}': {}", parameters.media_playlist_index,
+                           fmt::format("Failed to switch to subimage {} in '{}': {}", parameters.media_playlist_index,
                                        parameters.filename, error.GetDescription()));
     s_state = State::Shutdown;
     Host::OnSystemDestroyed();
