@@ -2044,7 +2044,7 @@ void MainWindow::connectSignals()
 
   for (u32 i = 0; GeneralSettingsWidget::THEME_NAMES[i]; i++)
   {
-    const QString key = QString::fromUtf8(GeneralSettingsWidget::THEME_NAMES[i]);
+    const QString key = QString::fromUtf8(GeneralSettingsWidget::THEME_VALUES[i]);
     QAction* action =
       m_ui.menuSettingsTheme->addAction(qApp->translate("MainWindow", GeneralSettingsWidget::THEME_NAMES[i]));
     action->setCheckable(true);
