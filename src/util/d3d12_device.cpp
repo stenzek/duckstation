@@ -1563,7 +1563,7 @@ void D3D12Device::BeginRenderPass()
 
   ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
 
-  if (LIKELY(m_current_framebuffer))
+  if (m_current_framebuffer) [[likely]]
   {
     D3D12Texture* rt = static_cast<D3D12Texture*>(m_current_framebuffer->GetRT());
     if (rt)

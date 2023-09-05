@@ -634,7 +634,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_15Bit:
     {
-      if (UNLIKELY(g_settings.use_old_mdec_routines))
+      if (g_settings.use_old_mdec_routines) [[unlikely]]
       {
         const u16 a = ZeroExtend16(s_status.data_output_bit15.GetValue()) << 15;
         for (u32 i = 0; i < static_cast<u32>(s_block_rgb.size());)
@@ -769,7 +769,7 @@ bool MDEC::rl_decode_block(s16* blk, const u8* qt)
 void MDEC::IDCT(s16* blk)
 {
   // people have made texture packs using the old conversion routines.. best to just leave them be.
-  if (UNLIKELY(g_settings.use_old_mdec_routines))
+  if (g_settings.use_old_mdec_routines) [[unlikely]]
     IDCT_Old(blk);
   else
     IDCT_New(blk);

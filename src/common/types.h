@@ -56,15 +56,6 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define printflike(n,m)
 #endif
 
-#ifdef _MSC_VER
-// TODO: Use C++20 [[likely]] when available.
-#define LIKELY(x)  (!!(x))
-#define UNLIKELY(x)  (!!(x))
-#else
-#define LIKELY(x) __builtin_expect(!!(x), 1)
-#define UNLIKELY(x) __builtin_expect(!!(x), 0)
-#endif
-
 // [[noreturn]] which can be used on function pointers.
 #ifdef _MSC_VER
 // __declspec(noreturn) produces error C3829.

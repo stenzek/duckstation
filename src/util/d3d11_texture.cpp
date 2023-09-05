@@ -114,7 +114,7 @@ void D3D11Framebuffer::SetDebugName(const std::string_view& name)
 
 void D3D11Framebuffer::CommitClear(ID3D11DeviceContext1* context)
 {
-  if (UNLIKELY(m_rt && m_rt->GetState() != GPUTexture::State::Dirty))
+  if (m_rt && m_rt->GetState() != GPUTexture::State::Dirty) [[unlikely]]
   {
     if (m_rt->GetState() == GPUTexture::State::Invalidated)
       context->DiscardView(m_rtv.Get());
@@ -124,7 +124,7 @@ void D3D11Framebuffer::CommitClear(ID3D11DeviceContext1* context)
     m_rt->SetState(GPUTexture::State::Dirty);
   }
 
-  if (UNLIKELY(m_ds && m_ds->GetState() != GPUTexture::State::Dirty))
+  if (m_ds && m_ds->GetState() != GPUTexture::State::Dirty) [[unlikely]]
   {
     if (m_ds->GetState() == GPUTexture::State::Invalidated)
       context->DiscardView(m_dsv.Get());

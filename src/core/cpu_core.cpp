@@ -2125,9 +2125,9 @@ template<PGXPMode pgxp_mode, bool debug>
         if (s_trace_to_log)
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, &g_state.regs);
 
-        if (UNLIKELY(g_state.current_instruction_pc == 0xA0))
+        if (g_state.current_instruction_pc == 0xA0) [[unlikely]]
           HandleA0Syscall();
-        else if (UNLIKELY(g_state.current_instruction_pc == 0xB0))
+        else if (g_state.current_instruction_pc == 0xB0) [[unlikely]]
           HandleB0Syscall();
       }
 

@@ -2686,7 +2686,7 @@ void VulkanDevice::BeginRenderPass()
     VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, VK_NULL_HANDLE, VK_NULL_HANDLE, {}, 0u, nullptr};
   std::array<VkClearValue, 2> clear_values;
 
-  if (LIKELY(m_current_framebuffer))
+  if (m_current_framebuffer) [[likely]]
   {
     VkFormat rt_format = VK_FORMAT_UNDEFINED;
     VkFormat ds_format = VK_FORMAT_UNDEFINED;
