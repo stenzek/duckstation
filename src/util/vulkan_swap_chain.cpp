@@ -209,19 +209,26 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurface
   Assert(res == VK_SUCCESS);
 
   // If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
-  if (surface_formats[0].format == VK_FORMAT_UNDEFINED)
+  const auto has_format = [&surface_formats](VkFormat fmt) {
+    return std::any_of(surface_formats.begin(), surface_formats.end(), [fmt](const VkSurfaceFormatKHR& sf) {
+      return (sf.format == fmt || GetLinearFormat(sf.format) == fmt);
+    });
+  };
+  if (has_format(VK_FORMAT_UNDEFINED))
     return VkSurfaceFormatKHR{VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 
-  // Try to find a suitable format.
-  for (const VkSurfaceFormatKHR& surface_format : surface_formats)
+  // Prefer 8-bit formats.
+  for (VkFormat format : {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R5G6B5_UNORM_PACK16,
+                          VK_FORMAT_R5G5B5A1_UNORM_PACK16})
   {
-    // Some drivers seem to return a SRGB format here (Intel Mesa).
-    // This results in gamma correction when presenting to the screen, which we don't want.
-    // Use a linear format instead, if this is the case.
-    return VkSurfaceFormatKHR{GetLinearFormat(surface_format.format), VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+    if (has_format(format))
+      return VkSurfaceFormatKHR{format, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
   }
 
-  Log_ErrorPrintf("Failed to find a suitable format for swap chain buffers.");
+  Log_ErrorPrintf("Failed to find a suitable format for swap chain buffers. Available formats were:");
+  for (const VkSurfaceFormatKHR& sf : surface_formats)
+    Log_ErrorPrintf("  %u", static_cast<unsigned>(sf.format));
+
   return std::nullopt;
 }
 
