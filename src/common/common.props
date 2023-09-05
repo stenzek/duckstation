@@ -3,6 +3,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\gsl\include;$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include;$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\minizip\include;$(SolutionDir)dep\stb\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
 

@@ -142,9 +142,7 @@ if(ANDROID)
 endif()
 
 
-# Detect C++ version support.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Warning disables.
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     include(CheckCXXFlag)
     check_cxx_flag(-Wall COMPILER_SUPPORTS_WALL)
@@ -229,8 +227,16 @@ if(BUILD_TESTS)
   enable_testing()
 endif()
 
+# Use C++17 for building dependencies (some aren't C++20-aware, e.g. reshadefx).
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Recursively include the source tree.
 add_subdirectory(dep)
+
+# Use C++20 for building the main libraries.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(src)
 
 if(ANDROID)
