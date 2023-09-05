@@ -1,5 +1,4 @@
 add_subdirectory(fmt)
-add_subdirectory(gsl)
 add_subdirectory(stb)
 add_subdirectory(zlib)
 add_subdirectory(zstd)
