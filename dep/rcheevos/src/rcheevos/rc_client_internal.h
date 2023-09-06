@@ -11,21 +11,31 @@ extern "C" {
 #include "rc_runtime.h"
 #include "rc_runtime_types.h"
 
+struct rc_api_fetch_game_data_response_t;
+typedef void (*rc_client_post_process_game_data_response_t)(const rc_api_server_response_t* server_response,
+              struct rc_api_fetch_game_data_response_t* game_data_response, rc_client_t* client, void* userdata);
+typedef int (*rc_client_can_submit_achievement_unlock_t)(uint32_t achievement_id, rc_client_t* client);
+typedef int (*rc_client_can_submit_leaderboard_entry_t)(uint32_t leaderboard_id, rc_client_t* client);
+
 typedef struct rc_client_callbacks_t {
   rc_client_read_memory_func_t read_memory;
   rc_client_event_handler_t event_handler;
   rc_client_server_call_t server_call;
   rc_client_message_callback_t log_call;
+  rc_get_time_millisecs_func_t get_time_millisecs;
+  rc_client_post_process_game_data_response_t post_process_game_data_response;
+  rc_client_can_submit_achievement_unlock_t can_submit_achievement_unlock;
+  rc_client_can_submit_leaderboard_entry_t can_submit_leaderboard_entry;
 
   void* client_data;
 } rc_client_callbacks_t;
 
 struct rc_client_scheduled_callback_data_t;
-typedef void (*rc_client_scheduled_callback_t)(struct rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, clock_t now);
+typedef void (*rc_client_scheduled_callback_t)(struct rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 
 typedef struct rc_client_scheduled_callback_data_t
 {
-  clock_t when;
+  rc_clock_t when;
   unsigned related_id;
   rc_client_scheduled_callback_t callback;
   void* data;
@@ -211,6 +221,13 @@ enum {
   RC_CLIENT_SPECTATOR_MODE_LOCKED
 };
 
+enum {
+  RC_CLIENT_DISCONNECT_HIDDEN = 0,
+  RC_CLIENT_DISCONNECT_VISIBLE = (1 << 0),
+  RC_CLIENT_DISCONNECT_SHOW_PENDING = (1 << 1),
+  RC_CLIENT_DISCONNECT_HIDE_PENDING = (1 << 2)
+};
+
 struct rc_client_load_state_t;
 
 typedef struct rc_client_state_t {
@@ -225,6 +242,7 @@ typedef struct rc_client_state_t {
   uint8_t unofficial_enabled;
   uint8_t log_level;
   uint8_t user;
+  uint8_t disconnect;
 
   struct rc_client_load_state_t* load;
   rc_memref_t* processing_memref;

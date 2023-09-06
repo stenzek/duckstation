@@ -91,16 +91,8 @@ int rc_api_init_start_session_request(rc_api_request_t* request, const rc_api_st
     return RC_INVALID_STATE;
 
   rc_url_builder_init(&builder, &request->buffer, 48);
-  if (rc_api_url_build_dorequest(&builder, "postactivity", api_params->username, api_params->api_token)) {
-    /* activity type enum (only 3 is used )
-     *  1 = earned achievement - handled by awardachievement
-     *  2 = logged in - handled by login
-     *  3 = started playing
-     *  4 = uploaded achievement - handled by uploadachievement
-     *  5 = modified achievement - handled by uploadachievement
-     */
-    rc_url_builder_append_unum_param(&builder, "a", 3);
-    rc_url_builder_append_unum_param(&builder, "m", api_params->game_id);
+  if (rc_api_url_build_dorequest(&builder, "startsession", api_params->username, api_params->api_token)) {
+    rc_url_builder_append_unum_param(&builder, "g", api_params->game_id);
     rc_url_builder_append_str_param(&builder, "l", RCHEEVOS_VERSION_STRING);
     request->post_data = rc_url_builder_finalize(&builder);
     request->content_type = RC_CONTENT_TYPE_URLENCODED;
@@ -120,15 +112,78 @@ int rc_api_process_start_session_response(rc_api_start_session_response_t* respo
 }
 
 int rc_api_process_start_session_server_response(rc_api_start_session_response_t* response, const rc_api_server_response_t* server_response) {
+  rc_api_unlock_entry_t* unlock;
+  rc_json_field_t array_field;
+  rc_json_iterator_t iterator;
+  unsigned timet;
+  int result;
+
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
-    RC_JSON_NEW_FIELD("Error")
+    RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Unlocks"),
+    RC_JSON_NEW_FIELD("HardcoreUnlocks"),
+    RC_JSON_NEW_FIELD("ServerNow")
+  };
+
+  rc_json_field_t unlock_entry_fields[] = {
+    RC_JSON_NEW_FIELD("ID"),
+    RC_JSON_NEW_FIELD("When")
   };
 
   memset(response, 0, sizeof(*response));
   rc_buf_init(&response->response.buffer);
 
-  return rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  if (result != RC_OK || !response->response.succeeded)
+    return result;
+
+  if (rc_json_get_optional_array(&response->num_unlocks, &array_field, &response->response, &fields[2], "Unlocks") && response->num_unlocks) {
+    response->unlocks = (rc_api_unlock_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_unlocks * sizeof(rc_api_unlock_entry_t));
+    if (!response->unlocks)
+      return RC_OUT_OF_MEMORY;
+
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = array_field.value_start;
+    iterator.end = array_field.value_end;
+
+    unlock = response->unlocks;
+    while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
+      if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+        return RC_MISSING_VALUE;
+      unlock->when = (time_t)timet;
+
+      ++unlock;
+    }
+  }
+
+  if (rc_json_get_optional_array(&response->num_hardcore_unlocks, &array_field, &response->response, &fields[3], "HardcoreUnlocks") && response->num_hardcore_unlocks) {
+    response->hardcore_unlocks = (rc_api_unlock_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_hardcore_unlocks * sizeof(rc_api_unlock_entry_t));
+    if (!response->hardcore_unlocks)
+      return RC_OUT_OF_MEMORY;
+
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = array_field.value_start;
+    iterator.end = array_field.value_end;
+
+    unlock = response->hardcore_unlocks;
+    while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
+      if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+        return RC_MISSING_VALUE;
+      unlock->when = (time_t)timet;
+
+      ++unlock;
+    }
+  }
+
+  rc_json_get_optional_unum(&timet, &fields[4], "ServerNow", 0);
+  response->server_now = (time_t)timet;
+
+  return RC_OK;
 }
 
 void rc_api_destroy_start_session_response(rc_api_start_session_response_t* response) {

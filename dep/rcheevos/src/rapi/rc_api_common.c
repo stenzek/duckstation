@@ -422,13 +422,25 @@ int rc_json_get_required_array(unsigned* num_entries, rc_json_field_t* array_fie
 #ifndef NDEBUG
   if (strcmp(field->name, field_name) != 0)
     return 0;
+#endif
+
+  if (!rc_json_get_optional_array(num_entries, array_field, response, field, field_name))
+    return rc_json_missing_field(response, field);
+
+  return 1;
+}
+
+int rc_json_get_optional_array(unsigned* num_entries, rc_json_field_t* array_field, rc_api_response_t* response, const rc_json_field_t* field, const char* field_name) {
+#ifndef NDEBUG
+  if (strcmp(field->name, field_name) != 0)
+    return 0;
 #else
   (void)field_name;
 #endif
 
   if (!field->value_start || *field->value_start != '[') {
     *num_entries = 0;
-    return rc_json_missing_field(response, field);
+    return 0;
   }
 
   memcpy(array_field, field, sizeof(*array_field));

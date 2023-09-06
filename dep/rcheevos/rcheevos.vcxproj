@@ -16,6 +16,7 @@
     <ClCompile Include="src\rcheevos\lboard.c" />
     <ClCompile Include="src\rcheevos\memref.c" />
     <ClCompile Include="src\rcheevos\operand.c" />
+    <ClCompile Include="src\rcheevos\rc_client.c" />
     <ClCompile Include="src\rcheevos\richpresence.c" />
     <ClCompile Include="src\rcheevos\runtime.c" />
     <ClCompile Include="src\rcheevos\runtime_progress.c" />
@@ -33,6 +34,7 @@
     <ClInclude Include="include\rc_api_request.h" />
     <ClInclude Include="include\rc_api_runtime.h" />
     <ClInclude Include="include\rc_api_user.h" />
+    <ClInclude Include="include\rc_client.h" />
     <ClInclude Include="include\rc_consoles.h" />
     <ClInclude Include="include\rc_error.h" />
     <ClInclude Include="include\rc_hash.h" />
@@ -40,6 +42,7 @@
     <ClInclude Include="include\rc_runtime_types.h" />
     <ClInclude Include="include\rc_url.h" />
     <ClInclude Include="src\rapi\rc_api_common.h" />
+    <ClInclude Include="src\rcheevos\rc_client_internal.h" />
     <ClInclude Include="src\rcheevos\rc_compat.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />
     <ClInclude Include="src\rhash\md5.h" />

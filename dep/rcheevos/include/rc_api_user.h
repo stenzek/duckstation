@@ -3,6 +3,8 @@
 
 #include "rc_api_request.h"
 
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,9 +68,33 @@ typedef struct rc_api_start_session_request_t {
 rc_api_start_session_request_t;
 
 /**
+ * Response data for an achievement unlock.
+ */
+typedef struct rc_api_unlock_entry_t {
+  /* The unique identifier of the unlocked achievement */
+  unsigned achievement_id;
+  /* When the achievement was unlocked */
+  time_t when;
+}
+rc_api_unlock_entry_t;
+
+/**
  * Response data for a start session request.
  */
 typedef struct rc_api_start_session_response_t {
+  /* An array of hardcore user unlocks */
+  rc_api_unlock_entry_t* hardcore_unlocks;
+  /* An array of user unlocks */
+  rc_api_unlock_entry_t* unlocks;
+
+  /* The number of items in the hardcore_unlocks array */
+  unsigned num_hardcore_unlocks;
+  /* The number of items in the unlocks array */
+  unsigned num_unlocks;
+
+  /* The server timestamp when the response was generated */
+  time_t server_now;
+
   /* Common server-provided response information */
   rc_api_response_t response;
 }
