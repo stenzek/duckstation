@@ -46,11 +46,6 @@ typedef void (*rc_client_callback_t)(int result, const char* error_message, rc_c
  */
 typedef void (*rc_client_message_callback_t)(const char* message, const rc_client_t* client);
 
-/**
- * Marks an async process as aborted. The associated callback will not be called.
- */
-void rc_client_abort_async(rc_client_t* client, rc_client_async_handle_t* async_handle);
-
 /*****************************************************************************\
 | Runtime                                                                     |
 \*****************************************************************************/
@@ -129,6 +124,19 @@ void* rc_client_get_userdata(const rc_client_t* client);
  * Sets the name of the server to use.
  */
 void rc_client_set_host(const rc_client_t* client, const char* hostname);
+
+typedef uint64_t rc_clock_t;
+typedef rc_clock_t (*rc_get_time_millisecs_func_t)(const rc_client_t* client);
+
+/**
+ * Specifies a function that returns a value that increases once per millisecond.
+ */
+void rc_client_set_get_time_millisecs_function(rc_client_t* client, rc_get_time_millisecs_func_t handler);
+
+/**
+ * Marks an async process as aborted. The associated callback will not be called.
+ */
+void rc_client_abort_async(rc_client_t* client, rc_client_async_handle_t* async_handle);
 
 /*****************************************************************************\
 | Logging                                                                     |
@@ -502,7 +510,9 @@ enum {
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_UPDATE = 12, /* [leaderboard_tracker] updated */
   RC_CLIENT_EVENT_RESET = 13, /* emulated system should be reset (as the result of enabling hardcore) */
   RC_CLIENT_EVENT_GAME_COMPLETED = 14, /* all achievements for the game have been earned */
-  RC_CLIENT_EVENT_SERVER_ERROR = 15 /* an API response returned a [server_error] and will not be retried */
+  RC_CLIENT_EVENT_SERVER_ERROR = 15, /* an API response returned a [server_error] and will not be retried */
+  RC_CLIENT_EVENT_DISCONNECTED = 16, /* an unlock request could not be completed and is pending */
+  RC_CLIENT_EVENT_RECONNECTED = 17 /* all pending unlocks have been completed */
 };
 
 typedef struct rc_client_server_error_t

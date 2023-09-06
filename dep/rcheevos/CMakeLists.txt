@@ -26,6 +26,7 @@ add_library(rcheevos
   src/rcheevos/lboard.c
   src/rcheevos/memref.c
   src/rcheevos/operand.c
+  src/rcheevos/rc_client.c
   src/rcheevos/rc_compat.h
   src/rcheevos/rc_internal.h
   src/rcheevos/richpresence.c
