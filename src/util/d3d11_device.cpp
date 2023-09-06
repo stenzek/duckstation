@@ -635,7 +635,7 @@ GPUDevice::AdapterAndModeList D3D11Device::StaticGetAdapterAndModeList()
   std::unique_lock lock(s_instance_mutex);
 
   // Device shouldn't be torn down since we have the lock.
-  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::D3D12)
+  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::D3D11)
   {
     GetAdapterAndModeList(&ret, D3D11Device::GetInstance().m_dxgi_factory.Get());
   }
