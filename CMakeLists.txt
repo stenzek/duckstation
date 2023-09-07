@@ -31,7 +31,6 @@ option(ENABLE_CUBEB "Build with Cubeb audio output" ON)
 option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
 option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
 option(ENABLE_DISCORD_PRESENCE "Build with Discord Rich Presence support" ON)
-option(ENABLE_CHEEVOS "Build with RetroAchievements support" ON)
 #option(USE_SDL2 "Link with SDL2 for controller support" ON)
 set(USE_SDL2 ON)
 

@@ -160,7 +160,7 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
                   System::SaveScreenshot();
               })
 
-#if !defined(__ANDROID__) && defined(WITH_CHEEVOS)
+#if !defined(__ANDROID__)
 DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
                 if (!pressed)
@@ -184,7 +184,7 @@ DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"),
                   }
                 }
               })
-#endif // !defined(__ANDROID__) && defined(WITH_CHEEVOS)
+#endif // !defined(__ANDROID__)
 
 DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
   if (!pressed)

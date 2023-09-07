@@ -24,54 +24,64 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
   m_ui.setupUi(this);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Cheevos", "Enabled", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresence, "Cheevos", "RichPresence", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.challengeMode, "Cheevos", "ChallengeMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.testMode, "Cheevos", "TestMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialTestMode, "Cheevos", "UnofficialTestMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, "Cheevos", "Notifications", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardNotifications, "Cheevos",
+                                               "LeaderboardNotifications", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.overlays, "Cheevos", "Overlays", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, "Cheevos", "EncoreMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, "Cheevos", "SpectatorMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Cheevos", "UnofficialTestMode",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFirstDiscFromPlaylist, "Cheevos",
                                                "UseFirstDiscFromPlaylist", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboards, "Cheevos", "Leaderboards", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.notifications, "Cheevos", "Notifications", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Cheevos", "PrimedIndicators", true);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.achievementNotificationsDuration, "Cheevos",
+                                                "NotificationsDuration",
+                                                Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.leaderboardNotificationsDuration, "Cheevos",
+                                                "LeaderboardsDuration",
+                                                Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
   dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
                              tr("When enabled and logged in, DuckStation will scan for achievements on startup."));
-  dialog->registerWidgetHelp(m_ui.testMode, tr("Enable Test Mode"), tr("Unchecked"),
-                             tr("When enabled, DuckStation will assume all achievements are locked and not send any "
-                                "unlock notifications to the server."));
-  dialog->registerWidgetHelp(
-    m_ui.unofficialTestMode, tr("Test Unofficial Achievements"), tr("Unchecked"),
-    tr("When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are "
-       "not tracked by RetroAchievements, so they unlock every time."));
-  dialog->registerWidgetHelp(
-    m_ui.richPresence, tr("Enable Rich Presence"), tr("Unchecked"),
-    tr("When enabled, rich presence information will be collected and sent to the server where supported."));
-  dialog->registerWidgetHelp(
-    m_ui.useFirstDiscFromPlaylist, tr("Use First Disc From Playlist"), tr("Unchecked"),
-    tr(
-      "When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active."));
-  dialog->registerWidgetHelp(m_ui.challengeMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
                              tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save "
                                 "state, cheats, and slowdown functions."));
+  dialog->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"),
+                             tr("Displays popup messages on events such as achievement unlocks and game completion."));
   dialog->registerWidgetHelp(
-    m_ui.notifications, tr("Show Notifications"), tr("Checked"),
-    tr("Displays popup messages on events such as achievement unlocks and leaderboard submissions."));
+    m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"),
+    tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
   dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
   dialog->registerWidgetHelp(
-    m_ui.leaderboards, tr("Enable Leaderboards"), tr("Checked"),
-    tr("Enables tracking and submission of leaderboards in supported games. If leaderboards "
-       "are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded."));
-  dialog->registerWidgetHelp(
-    m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
+    m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"),
     tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
+  dialog->registerWidgetHelp(m_ui.encoreMode, tr("Enable Encore Mode"), tr("Unchecked"),
+                             tr("When enabled, each session will behave as if no achievements have been unlocked."));
+  dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"),
+                             tr("When enabled, DuckStation will assume all achievements are locked and not send any "
+                                "unlock notifications to the server."));
+  dialog->registerWidgetHelp(
+    m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"),
+    tr("When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are "
+       "not tracked by RetroAchievements, so they unlock every time."));
+  dialog->registerWidgetHelp(
+    m_ui.useFirstDiscFromPlaylist, tr("Use First Disc From Playlist"), tr("Unchecked"),
+    tr(
+      "When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active."));
 
   connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.notifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onChallengeModeStateChanged);
+  connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
+  connect(m_ui.achievementNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.leaderboardNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this,
+          &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
+  connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this,
+          &AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged);
 
   if (!m_dialog->isPerGameSettings())
   {
@@ -95,6 +105,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
   }
 
   updateEnableState();
+  onAchievementsNotificationDurationSliderChanged();
+  onLeaderboardsNotificationDurationSliderChanged();
 }
 
 AchievementSettingsWidget::~AchievementSettingsWidget() = default;
@@ -102,19 +114,24 @@ AchievementSettingsWidget::~AchievementSettingsWidget() = default;
 void AchievementSettingsWidget::updateEnableState()
 {
   const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
-  const bool challenge = m_dialog->getEffectiveBoolValue("Cheevos", "ChallengeMode", false);
-  m_ui.testMode->setEnabled(enabled);
-  m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
-  m_ui.richPresence->setEnabled(enabled);
-  m_ui.challengeMode->setEnabled(enabled);
-  m_ui.leaderboards->setEnabled(enabled && challenge);
-  m_ui.unofficialTestMode->setEnabled(enabled);
-  m_ui.notifications->setEnabled(enabled);
+  const bool notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "Notifications", true);
+  const bool lb_notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "LeaderboardNotifications", true);
+  m_ui.hardcoreMode->setEnabled(enabled);
+  m_ui.achievementNotifications->setEnabled(enabled);
+  m_ui.leaderboardNotifications->setEnabled(enabled);
+  m_ui.achievementNotificationsDuration->setEnabled(notifications);
+  m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
+  m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
+  m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
   m_ui.soundEffects->setEnabled(enabled);
-  m_ui.primedIndicators->setEnabled(enabled);
+  m_ui.overlays->setEnabled(enabled);
+  m_ui.encoreMode->setEnabled(enabled);
+  m_ui.spectatorMode->setEnabled(enabled);
+  m_ui.unofficialAchievements->setEnabled(enabled);
+  m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
 }
 
-void AchievementSettingsWidget::onChallengeModeStateChanged()
+void AchievementSettingsWidget::onHardcoreModeStateChanged()
 {
   if (!QtHost::IsSystemValid())
     return;
@@ -138,6 +155,20 @@ void AchievementSettingsWidget::onChallengeModeStateChanged()
   }
 
   g_emu_thread->resetSystem();
+}
+
+void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()
+{
+  const float duration = m_dialog->getEffectiveFloatValue("Cheevos", "NotificationsDuration",
+                                                          Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  m_ui.achievementNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
+}
+
+void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged()
+{
+  const float duration = m_dialog->getEffectiveFloatValue("Cheevos", "LeaderboardsDuration",
+                                                          Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  m_ui.leaderboardNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
 }
 
 void AchievementSettingsWidget::updateLoginState()
@@ -173,7 +204,7 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
     return;
   }
 
-  AchievementLoginDialog login(this);
+  AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
   int res = login.exec();
   if (res != 0)
     return;
@@ -193,8 +224,7 @@ void AchievementSettingsWidget::onViewProfilePressed()
     QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
 }
 
-void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total,
-                                                        quint32 points)
+void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string)
 {
   m_ui.gameInfo->setText(game_info_string);
 }

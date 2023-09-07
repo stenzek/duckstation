@@ -16,6 +16,7 @@ add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(cpuinfo EXCLUDE_FROM_ALL)
 add_subdirectory(fast_float EXCLUDE_FROM_ALL)
 add_subdirectory(reshadefx EXCLUDE_FROM_ALL)
+add_subdirectory(rcheevos EXCLUDE_FROM_ALL)
 
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb EXCLUDE_FROM_ALL)
@@ -27,10 +28,6 @@ endif()
 
 if(ENABLE_DISCORD_PRESENCE)
   add_subdirectory(discord-rpc EXCLUDE_FROM_ALL)
-endif()
-
-if(ENABLE_CHEEVOS)
-  add_subdirectory(rcheevos EXCLUDE_FROM_ALL)
 endif()
 
 if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")

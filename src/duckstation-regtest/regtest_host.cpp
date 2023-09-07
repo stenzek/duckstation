@@ -325,14 +325,25 @@ void Host::SetMouseMode(bool relative, bool hide_cursor)
   //
 }
 
-#ifdef WITH_CHEEVOS
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+  // noop
+}
+
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+  // noop
+}
 
 void Host::OnAchievementsRefreshed()
 {
   // noop
 }
 
-#endif
+void Host::OnAchievementsHardcoreModeChanged()
+{
+  // noop
+}
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
