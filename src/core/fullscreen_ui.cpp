@@ -6642,7 +6642,7 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
   const auto points_text =
-    TinyString::FromFmt((cheevo.points != 1) ? FSUI_FSTR("{} point") : FSUI_FSTR("{} points"), cheevo.points);
+    TinyString::FromFmt((cheevo.points != 1) ? FSUI_FSTR("{} points") : FSUI_FSTR("{} point"), cheevo.points);
   const ImVec2 points_template_size(
     g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, FSUI_CSTR("XXX points")));
   const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f,
