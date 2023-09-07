@@ -4,7 +4,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>WITH_CHEEVOS=1;WITH_DISCORD_PRESENCE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_DISCORD_PRESENCE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'!='ARM64')">WITH_RAINTEGRATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64')">WITH_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64')">WITH_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

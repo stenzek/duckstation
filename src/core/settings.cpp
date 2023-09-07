@@ -365,16 +365,20 @@ void Settings::Load(SettingsInterface& si)
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
 
   achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
-  achievements_test_mode = si.GetBoolValue("Cheevos", "TestMode", false);
+  achievements_hardcore_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
+  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
+  achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
+  achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
+  achievements_overlays = si.GetBoolValue("Cheevos", "Overlays", true);
+  achievements_encore_mode = si.GetBoolValue("Cheevos", "EncoreMode", false);
+  achievements_spectator_mode = si.GetBoolValue("Cheevos", "SpectatorMode", false);
   achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
   achievements_use_first_disc_from_playlist = si.GetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
-  achievements_rich_presence = si.GetBoolValue("Cheevos", "RichPresence", true);
-  achievements_challenge_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
-  achievements_leaderboards = si.GetBoolValue("Cheevos", "Leaderboards", true);
-  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
-  achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
-  achievements_primed_indicators = si.GetBoolValue("Cheevos", "PrimedIndicators", true);
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
+  achievements_notification_duration =
+    si.GetFloatValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  achievements_leaderboard_duration =
+    si.GetFloatValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -564,16 +568,18 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
 
   si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
-  si.SetBoolValue("Cheevos", "TestMode", achievements_test_mode);
+  si.SetBoolValue("Cheevos", "ChallengeMode", achievements_hardcore_mode);
+  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
+  si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);
+  si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
+  si.SetBoolValue("Cheevos", "Overlays", achievements_overlays);
+  si.SetBoolValue("Cheevos", "EncoreMode", achievements_encore_mode);
+  si.SetBoolValue("Cheevos", "SpectatorMode", achievements_spectator_mode);
   si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
   si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", achievements_use_first_disc_from_playlist);
-  si.SetBoolValue("Cheevos", "RichPresence", achievements_rich_presence);
-  si.SetBoolValue("Cheevos", "ChallengeMode", achievements_challenge_mode);
-  si.SetBoolValue("Cheevos", "Leaderboards", achievements_leaderboards);
-  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
-  si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
-  si.SetBoolValue("Cheevos", "PrimedIndicators", achievements_primed_indicators);
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
+  si.SetFloatValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
+  si.SetFloatValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
@@ -696,7 +702,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states
-  if (Achievements::ChallengeModeActive())
+  if (Achievements::IsHardcoreModeActive())
   {
     g_settings.emulation_speed =
       (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;

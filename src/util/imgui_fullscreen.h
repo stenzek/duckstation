@@ -244,6 +244,8 @@ void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTT
                           float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 bool NavButton(const char* title, bool is_active, bool enabled = true, float width = -1.0f,
                float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
+            ImFont* font = g_large_font);
 
 using FileSelectorCallback = std::function<void(const std::string& path)>;
 using FileSelectorFilters = std::vector<std::string>;
@@ -286,7 +288,7 @@ void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 m
 void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 void CloseBackgroundProgressDialog(const char* str_id);
 
-void AddNotification(float duration, std::string title, std::string text, std::string image_path);
+void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
 void ClearNotifications();
 
 void ShowToast(std::string title, std::string message, float duration = 10.0f);

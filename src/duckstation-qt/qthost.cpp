@@ -1204,32 +1204,33 @@ void EmuThread::saveScreenshot()
   System::SaveScreenshot(nullptr, true, true);
 }
 
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+  emit g_emu_thread->achievementsLoginRequested(reason);
+}
+
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+  emit g_emu_thread->achievementsLoginSucceeded(QString::fromUtf8(username), points, sc_points, unread_messages);
+}
+
 void Host::OnAchievementsRefreshed()
 {
-#ifdef WITH_CHEEVOS
   u32 game_id = 0;
-  u32 achievement_count = 0;
-  u32 max_points = 0;
 
   QString game_info;
 
   if (Achievements::HasActiveGame())
   {
     game_id = Achievements::GetGameID();
-    achievement_count = Achievements::GetAchievementCount();
-    max_points = Achievements::GetMaximumPointsForGame();
 
     game_info = qApp
-                  ->translate("EmuThread", "Game ID: %1\n"
-                                           "Game Title: %2\n"
-                                           "Achievements: %5 (%6)\n\n")
-                  .arg(game_id)
-                  .arg(QString::fromStdString(Achievements::GetGameTitle()))
-                  .arg(achievement_count)
-                  .arg(qApp->translate("EmuThread", "%n points", "", max_points));
+      ->translate("EmuThread", "Game: %1 (%2)\n")
+      .arg(QString::fromStdString(Achievements::GetGameTitle()))
+      .arg(game_id);
 
-    const std::string rich_presence_string(Achievements::GetRichPresenceString());
-    if (!rich_presence_string.empty())
+    const std::string& rich_presence_string = Achievements::GetRichPresenceString();
+    if (Achievements::HasRichPresence() && !rich_presence_string.empty())
       game_info.append(QString::fromStdString(rich_presence_string));
     else
       game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
@@ -1239,15 +1240,12 @@ void Host::OnAchievementsRefreshed()
     game_info = qApp->translate("EmuThread", "Game not loaded or no RetroAchievements available.");
   }
 
-  emit g_emu_thread->achievementsRefreshed(game_id, game_info, achievement_count, max_points);
-#endif
+  emit g_emu_thread->achievementsRefreshed(game_id, game_info);
 }
 
-void Host::OnAchievementsChallengeModeChanged()
+void Host::OnAchievementsHardcoreModeChanged()
 {
-#ifdef WITH_CHEEVOS
   emit g_emu_thread->achievementsChallengeModeChanged();
-#endif
 }
 
 void EmuThread::doBackgroundControllerPoll()

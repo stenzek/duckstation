@@ -479,6 +479,11 @@ void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
 
+#ifdef WITH_DISCORD_PRESENCE
+/// Called when rich presence changes.
+void UpdateDiscordPresence();
+#endif
+
 namespace Internal {
 /// Called on process startup.
 void ProcessStartup();

@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "mainwindow.h"
 #include "aboutdialog.h"
+#include "achievementlogindialog.h"
 #include "autoupdaterdialog.h"
 #include "cheatmanagerdialog.h"
 #include "coverdownloaddialog.h"
@@ -507,14 +508,14 @@ void MainWindow::onSystemStarting()
   s_system_valid = false;
   s_system_paused = false;
 
-  updateEmulationActions(true, false, Achievements::ChallengeModeActive());
+  updateEmulationActions(true, false, Achievements::IsHardcoreModeActive());
 }
 
 void MainWindow::onSystemStarted()
 {
   m_was_disc_change_request = false;
   s_system_valid = true;
-  updateEmulationActions(false, true, Achievements::ChallengeModeActive());
+  updateEmulationActions(false, true, Achievements::IsHardcoreModeActive());
   updateWindowTitle();
   updateStatusBarWidgetVisibility();
 }
@@ -572,7 +573,7 @@ void MainWindow::onSystemDestroyed()
     return;
   }
 
-  updateEmulationActions(false, false, Achievements::ChallengeModeActive());
+  updateEmulationActions(false, false, Achievements::IsHardcoreModeActive());
   if (m_display_widget)
     updateDisplayWidgetCursor();
   else
@@ -724,7 +725,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   {
     std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial.c_str()));
     const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
-    const bool challenge_mode = Achievements::ChallengeModeActive();
+    const bool challenge_mode = Achievements::IsHardcoreModeActive();
     for (SaveStateInfo& ssi : available_states)
     {
       if (ssi.global)
@@ -1382,7 +1383,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         g_emu_thread->bootSystem(std::move(boot_params));
       });
 
-      if (m_ui.menuDebug->menuAction()->isVisible() && !Achievements::ChallengeModeActive())
+      if (m_ui.menuDebug->menuAction()->isVisible() && !Achievements::IsHardcoreModeActive())
       {
         connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
           m_open_debugger_on_start = true;
@@ -1874,7 +1875,7 @@ void MainWindow::switchToEmulationView()
 
 void MainWindow::connectSignals()
 {
-  updateEmulationActions(false, false, Achievements::ChallengeModeActive());
+  updateEmulationActions(false, false, Achievements::IsHardcoreModeActive());
 
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
 
@@ -1980,10 +1981,10 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::runningGameChanged, this, &MainWindow::onRunningGameChanged);
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
   connect(g_emu_thread, &EmuThread::fullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
-#ifdef WITH_CHEEVOS
+  connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
+  connect(g_emu_thread, &EmuThread::achievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
-#endif
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2619,10 +2620,28 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   }
 }
 
+void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+  const auto lock = pauseAndLockSystem();
+
+  AchievementLoginDialog dlg(lock.getDialogParent(), reason);
+  dlg.exec();
+}
+
+void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
+                                              quint32 unread_messages)
+{
+  const QString message = tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
+                            .arg(display_name)
+                            .arg(points)
+                            .arg(sc_points)
+                            .arg(unread_messages);
+  m_ui.statusBar->showMessage(message);
+}
+
 void MainWindow::onAchievementsChallengeModeChanged()
 {
-#ifdef WITH_CHEEVOS
-  const bool active = Achievements::ChallengeModeActive();
+  const bool active = Achievements::IsHardcoreModeActive();
   if (active)
   {
     if (m_cheat_manager_dialog)
@@ -2641,7 +2660,6 @@ void MainWindow::onAchievementsChallengeModeChanged()
   }
 
   updateEmulationActions(false, System::IsValid(), active);
-#endif
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "settingsdialog.h"
@@ -7,6 +7,7 @@
 #include "biossettingswidget.h"
 #include "consolesettingswidget.h"
 
+#include "achievementsettingswidget.h"
 #include "displaysettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "enhancementsettingswidget.h"
@@ -19,6 +20,7 @@
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
 
+#include "core/achievements.h"
 #include "core/host.h"
 
 #include "util/ini_settings_interface.h"
@@ -28,11 +30,6 @@
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
-
-#ifdef WITH_CHEEVOS
-#include "achievementsettingswidget.h"
-#include "core/achievements.h"
-#endif
 
 static QList<SettingsDialog*> s_open_game_properties_dialogs;
 
@@ -129,7 +126,6 @@ void SettingsDialog::addPages()
     QString help_text(tr("<strong>Achievement Settings</strong><hr>These options control RetroAchievements. Mouse over "
                          "an option for additional information."));
 
-#ifdef WITH_CHEEVOS
     if (!Achievements::IsUsingRAIntegration())
     {
       addWidget(m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), std::move(title),
@@ -144,13 +140,6 @@ void SettingsDialog::addPages()
 
       addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
     }
-#else
-    QLabel* placeholder_label =
-      new QLabel(tr("This DuckStation build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
-    placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-
-    addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
-#endif
   }
 
   if (!isPerGameSettings())

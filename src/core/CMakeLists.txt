@@ -1,4 +1,5 @@
 add_library(core
+    achievements.cpp
     achievements.h
     analog_controller.cpp
     analog_controller.h
@@ -123,7 +124,7 @@ target_precompile_headers(core PRIVATE "pch.h")
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
-target_link_libraries(core PRIVATE stb xxhash imgui rapidjson)
+target_link_libraries(core PRIVATE stb xxhash imgui rapidjson rcheevos)
 
 if(${CPU_ARCH} STREQUAL "x64")
   target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
@@ -152,14 +153,6 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
   message("Building AArch64 recompiler")
 else()
   message("Not building recompiler")
-endif()
-
-if(ENABLE_CHEEVOS)
-  target_sources(core PRIVATE
-    achievements.cpp
-  )
-  target_compile_definitions(core PUBLIC -DWITH_CHEEVOS=1)
-  target_link_libraries(core PRIVATE rcheevos rapidjson)
 endif()
 
 if(ENABLE_DISCORD_PRESENCE)

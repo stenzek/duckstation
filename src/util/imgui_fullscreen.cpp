@@ -15,9 +15,9 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "common/timer.h"
-#include "gpu_device.h"
 #include "core/host.h"
 #include "fmt/core.h"
+#include "gpu_device.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -140,8 +140,12 @@ static std::string s_file_selector_current_directory;
 static std::vector<std::string> s_file_selector_filters;
 static std::vector<FileSelectorItem> s_file_selector_items;
 
+static constexpr float NOTIFICATION_FADE_IN_TIME = 0.2f;
+static constexpr float NOTIFICATION_FADE_OUT_TIME = 0.8f;
+
 struct Notification
 {
+  std::string key;
   std::string title;
   std::string text;
   std::string badge_path;
@@ -272,7 +276,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, con
 {
   std::unique_ptr<GPUTexture> texture =
     g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                  GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
     Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
@@ -1614,6 +1618,84 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
   return pressed;
 }
 
+bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* = true */, float width, float height,
+                             const ImVec4& background, ImFont* font /* = g_large_font */)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return false;
+
+  s_menu_button_index++;
+
+  const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), 0.0f, title));
+  const ImVec2 pos(window->DC.CursorPos);
+  const ImVec2 size = ImVec2(((width < 0.0f) ? text_size.x : LayoutScale(width)), LayoutScale(height));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+  ImGui::ItemSize(ImVec2(size.x, size.y));
+  ImGui::SameLine();
+  ImGui::PopStyleVar();
+
+  ImRect bb(pos, pos + size);
+  const ImGuiID id = window->GetID(title);
+  if (enabled)
+  {
+    // bit contradictory - we don't want this button to be used for *gamepad* navigation, since they're usually
+    // activated with the bumpers and/or the back button.
+    if (!ImGui::ItemAdd(bb, id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_NoNavDefaultFocus))
+      return false;
+  }
+  else
+  {
+    if (ImGui::IsClippedEx(bb, id))
+      return false;
+  }
+
+  bool held;
+  bool pressed;
+  bool hovered;
+  if (enabled)
+  {
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
+  }
+  else
+  {
+    pressed = false;
+    held = false;
+    hovered = false;
+  }
+
+  const ImU32 col =
+    hovered ? ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f) :
+              ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
+
+  ImGui::RenderFrame(bb.Min, bb.Max, col, true, 0.0f);
+
+  if (is_active)
+  {
+    const float line_thickness = LayoutScale(2.0f);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(bb.Min.x, bb.Max.y - line_thickness),
+                                        ImVec2(bb.Max.x, bb.Max.y - line_thickness),
+                                        ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
+  }
+
+  const ImVec2 pad(std::max((size.x - text_size.x) * 0.5f, 0.0f), std::max((size.y - text_size.y) * 0.5f, 0.0f));
+  bb.Min += pad;
+  bb.Max -= pad;
+
+  ImGui::PushStyleColor(
+    ImGuiCol_Text,
+    ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered));
+
+  ImGui::PushFont(font);
+  ImGui::RenderTextClipped(bb.Min, bb.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &bb);
+  ImGui::PopFont();
+
+  ImGui::PopStyleColor();
+
+  return pressed;
+}
+
 void ImGuiFullscreen::PopulateFileSelectorItems()
 {
   s_file_selector_items.clear();
@@ -2335,15 +2417,40 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 // Notifications
 //////////////////////////////////////////////////////////////////////////
 
-void ImGuiFullscreen::AddNotification(float duration, std::string title, std::string text, std::string image_path)
+void ImGuiFullscreen::AddNotification(std::string key, float duration, std::string title, std::string text,
+                                      std::string image_path)
 {
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+
+  if (!key.empty())
+  {
+    for (auto it = s_notifications.begin(); it != s_notifications.end(); ++it)
+    {
+      if (it->key == key)
+      {
+        it->duration = duration;
+        it->title = std::move(title);
+        it->text = std::move(text);
+        it->badge_path = std::move(image_path);
+
+        // Don't fade it in again
+        const float time_passed =
+          static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - it->start_time));
+        it->start_time =
+          current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_FADE_IN_TIME));
+        return;
+      }
+    }
+  }
+
   Notification notif;
+  notif.key = std::move(key);
   notif.duration = duration;
   notif.title = std::move(title);
   notif.text = std::move(text);
   notif.badge_path = std::move(image_path);
-  notif.start_time = Common::Timer::GetCurrentValue();
-  notif.move_time = notif.start_time;
+  notif.start_time = current_time;
+  notif.move_time = current_time;
   notif.target_y = -1.0f;
   notif.last_y = -1.0f;
   s_notifications.push_back(std::move(notif));
@@ -2359,8 +2466,6 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   if (s_notifications.empty())
     return;
 
-  static constexpr float FADE_IN_TIME = 0.2f;
-  static constexpr float FADE_OUT_TIME = 0.8f;
   static constexpr float MOVE_DURATION = 0.5f;
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 
@@ -2413,10 +2518,10 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
       std::max((vertical_padding * 2.0f) + title_size.y + vertical_spacing + text_size.y, min_height);
 
     u8 opacity;
-    if (time_passed < FADE_IN_TIME)
-      opacity = static_cast<u8>((time_passed / FADE_IN_TIME) * 255.0f);
-    else if (time_passed > (notif.duration - FADE_OUT_TIME))
-      opacity = static_cast<u8>(std::min((notif.duration - time_passed) / FADE_OUT_TIME, 1.0f) * 255.0f);
+    if (time_passed < NOTIFICATION_FADE_IN_TIME)
+      opacity = static_cast<u8>((time_passed / NOTIFICATION_FADE_IN_TIME) * 255.0f);
+    else if (time_passed > (notif.duration - NOTIFICATION_FADE_OUT_TIME))
+      opacity = static_cast<u8>(std::min((notif.duration - time_passed) / NOTIFICATION_FADE_OUT_TIME, 1.0f) * 255.0f);
     else
       opacity = 255;
 
@@ -2431,7 +2536,8 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     }
     else if (actual_y != expected_y)
     {
-      const float time_since_move = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.move_time));
+      const float time_since_move =
+        static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.move_time));
       if (time_since_move >= MOVE_DURATION)
       {
         notif.move_time = current_time;

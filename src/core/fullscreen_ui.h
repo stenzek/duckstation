@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-class GPUTexture;
+class String;
 
 struct Settings;
 
@@ -23,11 +23,15 @@ void OnSystemDestroyed();
 void OnRunningGameChanged();
 void OpenPauseMenu();
 bool OpenAchievementsWindow();
+bool IsAchievementsWindowOpen();
 bool OpenLeaderboardsWindow();
+bool IsLeaderboardsWindowOpen();
+void ReturnToMainWindow();
 
 void Shutdown();
 void Render();
 void InvalidateCoverCache();
+void TimeToPrintableString(String* str, time_t t);
 
 // Returns true if the message has been dismissed.
 bool DrawErrorWindow(const char* message);

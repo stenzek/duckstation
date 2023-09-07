@@ -751,7 +751,22 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
   NoGUIHost::UpdateWindowTitle(game_name);
 }
 
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+  // noop
+}
+
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+  // noop
+}
+
 void Host::OnAchievementsRefreshed()
+{
+  // noop
+}
+
+void Host::OnAchievementsHardcoreModeChanged()
 {
   // noop
 }

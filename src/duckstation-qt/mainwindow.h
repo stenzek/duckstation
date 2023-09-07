@@ -33,6 +33,9 @@ class DebuggerWindow;
 class MainWindow;
 
 class GPUDevice;
+namespace Achievements {
+enum class LoginRequestReason;
+}
 namespace GameList {
 struct Entry;
 }
@@ -128,6 +131,9 @@ private Q_SLOTS:
   void onSystemPaused();
   void onSystemResumed();
   void onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
+  void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
+                                    quint32 unread_messages);
   void onAchievementsChallengeModeChanged();
   void onApplicationStateChanged(Qt::ApplicationState state);
 

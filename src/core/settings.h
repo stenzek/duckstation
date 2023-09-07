@@ -180,16 +180,18 @@ struct Settings
 
   // achievements
   bool achievements_enabled = false;
-  bool achievements_test_mode = false;
+  bool achievements_hardcore_mode = false;
+  bool achievements_notifications = true;
+  bool achievements_leaderboard_notifications = true;
+  bool achievements_sound_effects = true;
+  bool achievements_overlays = true;
+  bool achievements_encore_mode = false;
+  bool achievements_spectator_mode = false;
   bool achievements_unofficial_test_mode = false;
   bool achievements_use_first_disc_from_playlist = true;
-  bool achievements_rich_presence = true;
-  bool achievements_challenge_mode = false;
-  bool achievements_leaderboards = true;
-  bool achievements_notifications = true;
-  bool achievements_sound_effects = true;
-  bool achievements_primed_indicators = true;
   bool achievements_use_raintegration = false;
+  float achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
+  float achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
 
   struct DebugSettings
   {
@@ -472,6 +474,9 @@ struct Settings
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_2_TYPE = MemoryCardType::None;
   static constexpr MultitapMode DEFAULT_MULTITAP_MODE = MultitapMode::Disabled;
+
+  static constexpr float DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 10.0f;
+  static constexpr float DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10.0f;
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
