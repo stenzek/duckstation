@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qthost.h"
@@ -1939,7 +1939,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
     QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));
-    return EXIT_FAILURE;
+    return false;
   }
 
   // Check the file we're starting actually exists.
