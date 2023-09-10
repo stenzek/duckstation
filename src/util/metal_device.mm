@@ -434,133 +434,22 @@ GPUDevice::AdapterAndModeList MetalDevice::GetAdapterAndModeList()
   return StaticGetAdapterAndModeList();
 }
 
-#if 0
-bool MetalDevice::CreateTimestampQueries()
-{
-  for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)
-  {
-    for (u32 j = 0; j < 3; j++)
-    {
-      const CMetal_QUERY_DESC qdesc((j == 0) ? Metal_QUERY_TIMESTAMP_DISJOINT : Metal_QUERY_TIMESTAMP);
-      const HRESULT hr = m_device->CreateQuery(&qdesc, m_timestamp_queries[i][j].ReleaseAndGetAddressOf());
-      if (FAILED(hr))
-      {
-        m_timestamp_queries = {};
-        return false;
-      }
-    }
-  }
-
-  KickTimestampQuery();
-  return true;
-}
-
-void MetalDevice::DestroyTimestampQueries()
-{
-  if (!m_timestamp_queries[0][0])
-    return;
-
-  if (m_timestamp_query_started)
-    m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
-
-  m_timestamp_queries = {};
-  m_read_timestamp_query = 0;
-  m_write_timestamp_query = 0;
-  m_waiting_timestamp_queries = 0;
-  m_timestamp_query_started = 0;
-}
-
-void MetalDevice::PopTimestampQuery()
-{
-  while (m_waiting_timestamp_queries > 0)
-  {
-    Metal_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
-    const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].Get(), &disjoint,
-                                                   sizeof(disjoint), Metal_ASYNC_GETDATA_DONOTFLUSH);
-    if (disjoint_hr != S_OK)
-      break;
-
-    if (disjoint.Disjoint)
-    {
-      Log_VerbosePrintf("GPU timing disjoint, resetting.");
-      m_read_timestamp_query = 0;
-      m_write_timestamp_query = 0;
-      m_waiting_timestamp_queries = 0;
-      m_timestamp_query_started = 0;
-    }
-    else
-    {
-      u64 start = 0, end = 0;
-      const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].Get(), &start,
-                                                  sizeof(start), Metal_ASYNC_GETDATA_DONOTFLUSH);
-      const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].Get(), &end, sizeof(end),
-                                                Metal_ASYNC_GETDATA_DONOTFLUSH);
-      if (start_hr == S_OK && end_hr == S_OK)
-      {
-        const float delta =
-          static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
-        m_accumulated_gpu_time += delta;
-        m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
-        m_waiting_timestamp_queries--;
-      }
-    }
-  }
-
-  if (m_timestamp_query_started)
-  {
-    m_context->End(m_timestamp_queries[m_write_timestamp_query][2].Get());
-    m_context->End(m_timestamp_queries[m_write_timestamp_query][0].Get());
-    m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
-    m_timestamp_query_started = false;
-    m_waiting_timestamp_queries++;
-  }
-}
-
-void MetalDevice::KickTimestampQuery()
-{
-  if (m_timestamp_query_started || !m_timestamp_queries[0][0] || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
-    return;
-
-  m_context->Begin(m_timestamp_queries[m_write_timestamp_query][0].Get());
-  m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
-  m_timestamp_query_started = true;
-}
-#endif
-
 bool MetalDevice::SetGPUTimingEnabled(bool enabled)
 {
-#if 0
   if (m_gpu_timing_enabled == enabled)
     return true;
 
+  std::unique_lock lock(m_fence_mutex);
   m_gpu_timing_enabled = enabled;
-  if (m_gpu_timing_enabled)
-  {
-    if (!CreateTimestampQueries())
-      return false;
-
-    KickTimestampQuery();
-    return true;
-  }
-  else
-  {
-    DestroyTimestampQueries();
-    return true;
-  }
-#else
-  return false;
-#endif
+  m_accumulated_gpu_time = 0.0;
+  m_last_gpu_time_end = 0.0;
+  return true;
 }
 
 float MetalDevice::GetAndResetAccumulatedGPUTime()
 {
-#if 0
-  const float value = m_accumulated_gpu_time;
-  m_accumulated_gpu_time = 0.0f;
-  return value;
-#else
-  return 0.0f;
-#endif
+  std::unique_lock lock(m_fence_mutex);
+  return std::exchange(m_accumulated_gpu_time, 0.0) * 1000.0;
 }
 
 MetalShader::MetalShader(GPUShaderStage stage, id<MTLLibrary> library, id<MTLFunction> function)
@@ -2042,19 +1931,30 @@ void MetalDevice::CreateCommandBuffer()
     DebugAssert(m_render_cmdbuf == nil);
     const u64 fence_counter = ++m_current_fence_counter;
     m_render_cmdbuf = [[m_queue commandBufferWithUnretainedReferences] retain];
-    [m_render_cmdbuf addCompletedHandler:[this, fence_counter](id<MTLCommandBuffer>) {
-      CommandBufferCompletedOffThread(fence_counter);
+    [m_render_cmdbuf addCompletedHandler:[this, fence_counter](id<MTLCommandBuffer> buffer) {
+      CommandBufferCompletedOffThread(buffer, fence_counter);
     }];
   }
 
   CleanupObjects();
 }
 
-void MetalDevice::CommandBufferCompletedOffThread(u64 fence_counter)
+void MetalDevice::CommandBufferCompletedOffThread(id<MTLCommandBuffer> buffer, u64 fence_counter)
 {
   std::unique_lock lock(m_fence_mutex);
   m_completed_fence_counter.store(std::max(m_completed_fence_counter.load(std::memory_order_acquire), fence_counter),
                                   std::memory_order_release);
+
+  if (m_gpu_timing_enabled)
+  {
+    const double begin = std::max(m_last_gpu_time_end, [buffer GPUStartTime]);
+    const double end = [buffer GPUEndTime];
+    if (end > begin)
+    {
+      m_accumulated_gpu_time += end - begin;
+      m_last_gpu_time_end = end;
+    }
+  }
 }
 
 void MetalDevice::SubmitCommandBuffer(bool wait_for_completion)

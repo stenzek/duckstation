@@ -306,7 +306,7 @@ private:
   id<MTLDepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds);
 
   void CreateCommandBuffer();
-  void CommandBufferCompletedOffThread(u64 fence_counter);
+  void CommandBufferCompletedOffThread(id<MTLCommandBuffer> buffer, u64 fence_counter);
   void WaitForPreviousCommandBuffers();
   void CleanupObjects();
 
@@ -331,11 +331,6 @@ private:
 
   bool CreateBuffers();
   void DestroyBuffers();
-
-  bool CreateTimestampQueries();
-  void DestroyTimestampQueries();
-  void PopTimestampQuery();
-  void KickTimestampQuery();
 
   id<MTLDevice> m_device;
   id<MTLCommandQueue> m_queue;
@@ -381,10 +376,6 @@ private:
 
   bool m_vsync_enabled = false;
 
-  //  std::array<std::array<ComPtr<IMetalQuery>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
-  //  u8 m_read_timestamp_query = 0;
-  //  u8 m_write_timestamp_query = 0;
-  //  u8 m_waiting_timestamp_queries = 0;
-  //  bool m_timestamp_query_started = false;
-  //  float m_accumulated_gpu_time = 0.0f;
+  double m_accumulated_gpu_time = 0;
+  double m_last_gpu_time_end = 0;
 };
