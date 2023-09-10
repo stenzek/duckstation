@@ -565,12 +565,17 @@ bool GPU_HW::CreateBuffers()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
   const u8 samples = static_cast<u8>(m_multisamples);
 
+  // Needed for Metal resolve.
+  const GPUTexture::Type read_texture_type = (g_gpu_device->GetRenderAPI() == RenderAPI::Metal && m_multisamples > 1) ?
+                                               GPUTexture::Type::RWTexture :
+                                               GPUTexture::Type::Texture;
+
   if (!(m_vram_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, samples,
                                                      GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
       !(m_vram_depth_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, samples,
                                                            GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT)) ||
-      !(m_vram_read_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, 1,
-                                                          GPUTexture::Type::Texture, VRAM_RT_FORMAT)) ||
+      !(m_vram_read_texture =
+          g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
       !(m_display_private_texture = g_gpu_device->CreateTexture(
           ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) *
             m_resolution_scale,

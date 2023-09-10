@@ -264,6 +264,8 @@ if(WIN32)
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
   endif()
 elseif(APPLE)
+  include(AddMetalSources)
+
   set(MAC_SOURCES
     cocoa_tools.h
     metal_device.h
@@ -272,6 +274,10 @@ elseif(APPLE)
     metal_stream_buffer.mm
     platform_misc_mac.mm
   )
+  set(METAL_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/metal_shaders.metal"
+  )
+  set_property(GLOBAL PROPERTY UTIL_METAL_SOURCES ${METAL_SOURCES})
   target_sources(util PRIVATE ${MAC_SOURCES})
   find_library(IOK_LIBRARY IOKit REQUIRED)
   find_library(METAL_LIBRARY Metal)
@@ -286,6 +292,9 @@ endif()
 
 function(add_util_resources target)
   if(APPLE)
+    get_property(UTIL_METAL_SOURCES GLOBAL PROPERTY UTIL_METAL_SOURCES)
+    add_metal_sources(${target} ${UTIL_METAL_SOURCES})
+
     # Copy MoltenVK into the bundle
     unset(MOLTENVK_PATH CACHE)
     find_file(MOLTENVK_PATH NAMES
