@@ -299,6 +299,10 @@ private:
   ALWAYS_INLINE NSView* GetWindowView() const { return (__bridge NSView*)m_window_info.window_handle; }
 
   void SetFeatures();
+  bool LoadShaders();
+
+  id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
+  id<MTLComputePipelineState> CreateComputePipeline(id<MTLFunction> function, NSString* name);
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, const std::string_view& source,
                                                  const std::string_view& entry_point);
@@ -353,6 +357,10 @@ private:
   MetalStreamBuffer m_index_buffer;
   MetalStreamBuffer m_uniform_buffer;
   MetalStreamBuffer m_texture_upload_buffer;
+
+  id<MTLLibrary> m_shaders = nil;
+  std::vector<std::pair<std::pair<GPUTexture::Format, GPUTexture::Format>, id<MTLComputePipelineState>>>
+    m_resolve_pipelines;
 
   id<MTLCommandBuffer> m_upload_cmdbuf = nil;
   id<MTLBlitCommandEncoder> m_upload_encoder = nil;

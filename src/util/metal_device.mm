@@ -174,6 +174,12 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
     CreateCommandBuffer();
     RenderBlankFrame();
 
+    if (!LoadShaders())
+    {
+      Log_ErrorPrint("Failed to load shaders.");
+      return false;
+    }
+
     if (!CreateBuffers())
     {
       Log_ErrorPrintf("Failed to create buffers.");
@@ -198,7 +204,7 @@ void MetalDevice::SetFeatures()
   }
 
   m_max_multisamples = 0;
-  for (u32 multisamples = 1; multisamples < 16; multisamples++)
+  for (u32 multisamples = 1; multisamples < 16; multisamples *= 2)
   {
     if (![m_device supportsTextureSampleCount:multisamples])
       break;
@@ -211,9 +217,69 @@ void MetalDevice::SetFeatures()
   m_features.supports_texture_buffers = true;
   m_features.texture_buffers_emulated_with_ssbo = true;
   m_features.geometry_shaders = false;
-  m_features.partial_msaa_resolve = true;
+  m_features.partial_msaa_resolve = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
+}
+
+bool MetalDevice::LoadShaders()
+{
+  @autoreleasepool
+  {
+    auto try_lib = [this](NSString* name) -> id<MTLLibrary> {
+      NSBundle* bundle = [NSBundle mainBundle];
+      NSString* path = [bundle pathForResource:name ofType:@"metallib"];
+      if (path == nil)
+      {
+        // Xcode places it alongside the binary.
+        path = [NSString stringWithFormat:@"%@/%@.metallib", [bundle bundlePath], name];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:path])
+          return nil;
+      }
+
+      id<MTLLibrary> lib = [m_device newLibraryWithFile:path error:nil];
+      if (lib == nil)
+        return nil;
+
+      return [lib retain];
+    };
+
+    if (!(m_shaders = try_lib(@"Metal23")) && !(m_shaders = try_lib(@"Metal22")) &&
+        !(m_shaders = try_lib(@"Metal21")) && !(m_shaders = try_lib(@"default")))
+    {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+id<MTLFunction> MetalDevice::GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name)
+{
+  id<MTLFunction> function = [library newFunctionWithName:name];
+  return function;
+}
+
+id<MTLComputePipelineState> MetalDevice::CreateComputePipeline(id<MTLFunction> function, NSString* name)
+{
+  MTLComputePipelineDescriptor* desc = [MTLComputePipelineDescriptor new];
+  if (name != nil)
+    [desc setLabel:name];
+  [desc setComputeFunction:function];
+
+  NSError* err = nil;
+  id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
+                                                                                 options:MTLPipelineOptionNone
+                                                                              reflection:nil
+                                                                                   error:&err];
+  [desc release];
+  if (pipeline == nil)
+  {
+    LogNSError(err, "Create compute pipeline failed:");
+    return nil;
+  }
+
+  return pipeline;
 }
 
 void MetalDevice::DestroyDevice()
@@ -243,6 +309,17 @@ void MetalDevice::DestroyDevice()
     [it.second release];
   m_cleanup_objects.clear();
 
+  for (auto& it : m_resolve_pipelines)
+  {
+    if (it.second != nil)
+      [it.second release];
+  }
+  m_resolve_pipelines.clear();
+  if (m_shaders != nil)
+  {
+    [m_shaders release];
+    m_shaders = nil;
+  }
   if (m_queue != nil)
   {
     [m_queue release];
@@ -736,7 +813,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     // General
     const MTLPrimitiveType primitive = primitives[static_cast<u8>(config.primitive)];
-    desc.rasterSampleCount = config.per_sample_shading ? config.samples : 1;
+    desc.rasterSampleCount = config.samples;
 
     // Metal-specific stuff
     desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
@@ -959,6 +1036,15 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     desc.depth = levels;
     desc.pixelFormat = pixel_format;
     desc.mipmapLevelCount = levels;
+    if (samples > 1)
+    {
+      desc.textureType = (layers > 1) ? MTLTextureType2DMultisampleArray : MTLTextureType2DMultisample;
+      desc.sampleCount = samples;
+    }
+    else if (layers > 1)
+    {
+      desc.textureType = MTLTextureType2DArray;
+    }
 
     switch (type)
     {
@@ -1339,30 +1425,62 @@ void MetalDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
 void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
                                        GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height)
 {
-#if 0
-	DebugAssert(src_level < src->GetLevels() && src_layer < src->GetLayers());
-	DebugAssert((src_x + width) <= src->GetMipWidth(src_level));
-	DebugAssert((src_y + height) <= src->GetMipHeight(src_level));
-	DebugAssert(dst_level < dst->GetLevels() && dst_layer < dst->GetLayers());
-	DebugAssert((dst_x + width) <= dst->GetMipWidth(dst_level));
-	DebugAssert((dst_y + height) <= dst->GetMipHeight(dst_level));
-	DebugAssert(!dst->IsMultisampled() && src->IsMultisampled());
+  DebugAssert((src_x + width) <= src->GetWidth());
+  DebugAssert((src_y + height) <= src->GetHeight());
+  DebugAssert(dst_level < dst->GetLevels() && dst_layer < dst->GetLayers());
+  DebugAssert((dst_x + width) <= dst->GetMipWidth(dst_level));
+  DebugAssert((dst_y + height) <= dst->GetMipHeight(dst_level));
+  DebugAssert(!dst->IsMultisampled() && src->IsMultisampled());
 
-	// DX11 can't resolve partial rects.
-	Assert(src_x == dst_x && src_y == dst_y);
+  // Only does first level for now..
+  DebugAssert(dst_level == 0 && dst_layer == 0);
 
-	MetalTexture* dst11 = static_cast<MetalTexture*>(dst);
-	MetalTexture* src11 = static_cast<MetalTexture*>(src);
+  const GPUTexture::Format src_format = dst->GetFormat();
+  const GPUTexture::Format dst_format = dst->GetFormat();
+  id<MTLComputePipelineState> resolve_pipeline = nil;
+  if (auto iter = std::find_if(m_resolve_pipelines.begin(), m_resolve_pipelines.end(),
+                               [src_format, dst_format](const auto& it) {
+                                 return it.first.first == src_format && it.first.second == dst_format;
+                               });
+      iter != m_resolve_pipelines.end())
+  {
+    resolve_pipeline = iter->second;
+  }
+  else
+  {
+    // Need to compile it.
+    @autoreleasepool
+    {
+      const bool is_depth = GPUTexture::IsDepthFormat(src_format);
+      id<MTLFunction> function =
+        [GetFunctionFromLibrary(m_shaders, is_depth ? @"depthResolveKernel" : @"colorResolveKernel") autorelease];
+      if (function == nil)
+        Panic("Failed to get resolve kernel");
 
-	src11->CommitClear(m_context.Get());
-	dst11->CommitClear(m_context.Get());
+      resolve_pipeline = [CreateComputePipeline(function, is_depth ? @"Depth Resolve" : @"Color Resolve") autorelease];
+      if (resolve_pipeline != nil)
+        [resolve_pipeline retain];
+      m_resolve_pipelines.emplace_back(std::make_pair(src_format, dst_format), resolve_pipeline);
+    }
+  }
+  if (resolve_pipeline == nil)
+    Panic("Failed to get resolve pipeline");
 
-	m_context->ResolveSubresource(dst11->GetD3DTexture(), MetalCalcSubresource(dst_level, dst_layer, dst->GetLevels()),
-																src11->GetD3DTexture(), MetalCalcSubresource(src_level, src_layer, src->GetLevels()),
-																dst11->GetDXGIFormat());
-#else
-  Panic("Fixme");
-#endif
+  if (InRenderPass())
+    EndRenderPass();
+
+  const u32 threadgroupHeight = resolve_pipeline.maxTotalThreadsPerThreadgroup / resolve_pipeline.threadExecutionWidth;
+  const MTLSize intrinsicThreadgroupSize = MTLSizeMake(resolve_pipeline.threadExecutionWidth, threadgroupHeight, 1);
+  const MTLSize threadgroupsInGrid =
+    MTLSizeMake((src->GetWidth() + intrinsicThreadgroupSize.width - 1) / intrinsicThreadgroupSize.width,
+                (src->GetHeight() + intrinsicThreadgroupSize.height - 1) / intrinsicThreadgroupSize.height, 1);
+
+  id<MTLComputeCommandEncoder> computeEncoder = [m_render_cmdbuf computeCommandEncoder];
+  [computeEncoder setComputePipelineState:resolve_pipeline];
+  [computeEncoder setTexture:static_cast<MetalTexture*>(src)->GetMTLTexture() atIndex:0];
+  [computeEncoder setTexture:static_cast<MetalTexture*>(dst)->GetMTLTexture() atIndex:1];
+  [computeEncoder dispatchThreadgroups:threadgroupsInGrid threadsPerThreadgroup:intrinsicThreadgroupSize];
+  [computeEncoder endEncoding];
 }
 
 void MetalDevice::ClearRenderTarget(GPUTexture* t, u32 c)
