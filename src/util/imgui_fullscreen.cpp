@@ -146,7 +146,10 @@ struct Notification
   std::string text;
   std::string badge_path;
   Common::Timer::Value start_time;
+  Common::Timer::Value move_time;
   float duration;
+  float target_y;
+  float last_y;
 };
 
 static std::vector<Notification> s_notifications;
@@ -2340,6 +2343,9 @@ void ImGuiFullscreen::AddNotification(float duration, std::string title, std::st
   notif.text = std::move(text);
   notif.badge_path = std::move(image_path);
   notif.start_time = Common::Timer::GetCurrentValue();
+  notif.move_time = notif.start_time;
+  notif.target_y = -1.0f;
+  notif.last_y = -1.0f;
   s_notifications.push_back(std::move(notif));
 }
 
@@ -2353,8 +2359,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   if (s_notifications.empty())
     return;
 
-  static constexpr float EASE_IN_TIME = 0.6f;
-  static constexpr float EASE_OUT_TIME = 0.6f;
+  static constexpr float FADE_IN_TIME = 0.2f;
+  static constexpr float FADE_OUT_TIME = 0.8f;
+  static constexpr float MOVE_DURATION = 0.5f;
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 
   const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
@@ -2386,7 +2393,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 
   for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
   {
-    const Notification& notif = s_notifications[index];
+    Notification& notif = s_notifications[index];
     const float time_passed = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.start_time));
     if (time_passed >= notif.duration)
     {
@@ -2405,29 +2412,50 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const float box_height =
       std::max((vertical_padding * 2.0f) + title_size.y + vertical_spacing + text_size.y, min_height);
 
-    float x_offset = 0.0f;
-    if (time_passed < EASE_IN_TIME)
+    u8 opacity;
+    if (time_passed < FADE_IN_TIME)
+      opacity = static_cast<u8>((time_passed / FADE_IN_TIME) * 255.0f);
+    else if (time_passed > (notif.duration - FADE_OUT_TIME))
+      opacity = static_cast<u8>(std::min((notif.duration - time_passed) / FADE_OUT_TIME, 1.0f) * 255.0f);
+    else
+      opacity = 255;
+
+    const float expected_y = position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f);
+    float actual_y = notif.last_y;
+    if (notif.target_y != expected_y)
     {
-      const float disp = (box_width + position.x);
-      x_offset = -(disp - (disp * Easing::InBack(time_passed / EASE_IN_TIME)));
+      notif.move_time = current_time;
+      notif.target_y = expected_y;
+      notif.last_y = (notif.last_y < 0.0f) ? expected_y : notif.last_y;
+      actual_y = notif.last_y;
     }
-    else if (time_passed > (notif.duration - EASE_OUT_TIME))
+    else if (actual_y != expected_y)
     {
-      const float disp = (box_width + position.x);
-      x_offset = -(disp - (disp * Easing::OutBack((notif.duration - time_passed) / EASE_OUT_TIME)));
+      const float time_since_move = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.move_time));
+      if (time_since_move >= MOVE_DURATION)
+      {
+        notif.move_time = current_time;
+        notif.last_y = notif.target_y;
+        actual_y = notif.last_y;
+      }
+      else
+      {
+        const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
+        actual_y = notif.last_y - ((notif.last_y - notif.target_y) * frac);
+      }
     }
 
-    const ImVec2 box_min(position.x + x_offset,
-                         position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f));
+    const ImVec2 box_min(position.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
+    const u32 background_color = (toast_background_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
+    const u32 border_color = (toast_border_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
     dl->AddRectFilled(ImVec2(box_min.x + shadow_size, box_min.y + shadow_size),
-                      ImVec2(box_max.x + shadow_size, box_max.y + shadow_size), IM_COL32(20, 20, 20, 180), rounding,
-                      ImDrawCornerFlags_All);
-    dl->AddRectFilled(box_min, box_max, toast_background_color, rounding, ImDrawCornerFlags_All);
-    dl->AddRect(box_min, box_max, toast_border_color, rounding, ImDrawCornerFlags_All,
-                ImGuiFullscreen::LayoutScale(1.0f));
+                      ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
+                      IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawCornerFlags_All);
+    dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawCornerFlags_All);
+    dl->AddRect(box_min, box_max, border_color, rounding, ImDrawCornerFlags_All, ImGuiFullscreen::LayoutScale(1.0f));
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
@@ -2435,17 +2463,22 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     {
       GPUTexture* tex = GetCachedTexture(notif.badge_path.c_str());
       if (tex)
-        dl->AddImage(tex, badge_min, badge_max);
+      {
+        dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                     IM_COL32(255, 255, 255, opacity));
+      }
     }
 
     const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
     const ImVec2 title_max(title_min.x + title_size.x, title_min.y + title_size.y);
-    dl->AddText(title_font, title_font->FontSize, title_min, toast_title_color, notif.title.c_str(),
+    const u32 title_col = (toast_title_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
+    dl->AddText(title_font, title_font->FontSize, title_min, title_col, notif.title.c_str(),
                 notif.title.c_str() + notif.title.size(), max_text_width);
 
     const ImVec2 text_min(badge_max.x + horizontal_spacing, title_max.y + vertical_spacing);
     const ImVec2 text_max(text_min.x + text_size.x, text_min.y + text_size.y);
-    dl->AddText(text_font, text_font->FontSize, text_min, toast_text_color, notif.text.c_str(),
+    const u32 text_col = (toast_text_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
+    dl->AddText(text_font, text_font->FontSize, text_min, text_col, notif.text.c_str(),
                 notif.text.c_str() + notif.text.size(), max_text_width);
 
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);

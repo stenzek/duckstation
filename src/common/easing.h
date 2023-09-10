@@ -132,7 +132,7 @@ ALWAYS_INLINE_RELEASE static T InExpo(T t)
 template<typename T>
 ALWAYS_INLINE_RELEASE static T OutExpo(T t)
 {
-  return 1 - std::pow(2, -8 * t);
+  return 1.0f - std::pow(2.0f, -8.0f * t);
 }
 
 template<typename T>
