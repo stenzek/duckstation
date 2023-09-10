@@ -164,13 +164,15 @@ set(TS_FILES
   translations/duckstation-qt_zh-cn.ts
 )
 
-set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
-qt6_add_translation(QM_FILES ${TS_FILES})
-
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_precompile_headers(duckstation-qt PRIVATE "pch.h")
 target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+
+# Our Qt builds may have exceptions on, so force them off.
+target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS)
+
+add_core_resources(duckstation-qt)
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE duckstation-qt.rc)
@@ -196,60 +198,45 @@ if(WIN32)
   add_custom_command(TARGET duckstation-qt POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf.win" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
   )
-endif()
+  #set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
+elseif(APPLE)
+  # Don't generate a bundle for XCode, it makes code signing fail...
+  if(NOT CMAKE_GENERATOR MATCHES "Xcode")
+    set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
+      set_target_properties(duckstation-qt PROPERTIES
+      MACOSX_BUNDLE true
+      MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+      OUTPUT_NAME DuckStation
+    )
 
-if(APPLE AND NOT CMAKE_GENERATOR MATCHES "Xcode")
-  set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
-
-  # Ask for an application bundle.
-  set_target_properties(duckstation-qt PROPERTIES
-    MACOSX_BUNDLE true
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
-    OUTPUT_NAME DuckStation
-  )
-
-  # Use macdeployqt to inject Qt into the bundle.
-  get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
-  get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
-  find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
-  add_custom_target(duckstation-postprocess-bundle ALL
-    COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}" -no-strip
-  )
-  add_dependencies(duckstation-postprocess-bundle duckstation-qt)
+    # Inject Qt Libraries into bundle.
+    if(NOT SKIP_POSTPROCESS_BUNDLE)
+      find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
+      add_custom_target(duckstation-postprocess-bundle ALL
+        COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}" -no-strip
+      )
+      add_dependencies(duckstation-postprocess-bundle duckstation-qt)
+    endif()
+  endif()
 
   # Copy icon into the bundle
   target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns")
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
-  # Copy resources into the bundle
-  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/data/resources")
-  file(GLOB_RECURSE resources RELATIVE "${CMAKE_SOURCE_DIR}/data/resources" "${CMAKE_SOURCE_DIR}/data/resources/*")
-  foreach(res ${resources})
-    target_sources(duckstation-qt PRIVATE "${CMAKE_SOURCE_DIR}/data/resources/${res}")
-    get_filename_component(resdir "${res}" DIRECTORY)
-    set_source_files_properties("${CMAKE_SOURCE_DIR}/data/resources/${res}" PROPERTIES
-      MACOSX_PACKAGE_LOCATION "Resources/${resdir}")
-    source_group("Resources" FILES "${CMAKE_SOURCE_DIR}/data/resources/${res}")
-  endforeach()
-
-  # Copy translations into the bundle
-  add_custom_command(TARGET duckstation-qt
-                     POST_BUILD
-                     COMMAND mkdir -p $<TARGET_FILE_DIR:duckstation-qt>/translations
-                     COMMAND cp ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations/*.qm $<TARGET_FILE_DIR:duckstation-qt>/translations)
-
-  # Copy MoltenVK into the bundle
-  unset(MOLTENVK_PATH CACHE)
-  find_file(MOLTENVK_PATH NAMES
-    libMoltenVK.dylib
-    lib/libMoltenVK.dylib
-  )
-  if (MOLTENVK_PATH)
-    target_sources(duckstation-qt PRIVATE "${MOLTENVK_PATH}")
-    set_source_files_properties("${MOLTENVK_PATH}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
-    message(STATUS "Using MoltenVK from ${MOLTENVK_PATH}")
-  else()
-    message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
-  endif()
+  # Translation setup
+  qt_add_lrelease(duckstation-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+	foreach (QM_FILE IN LISTS QM_FILES)
+		target_sources(duckstation-qt PRIVATE ${QM_FILE})
+		set_source_files_properties(${QM_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations)
+	endforeach()
+else()
+	# TODO: Copy base translations.
+	qt_add_lrelease(duckstation-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+	set(QM_OUTPUT_DIR "$<TARGET_FILE_DIR:duckstation-qt>/translations")
+	add_custom_command(TARGET duckstation-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E make_directory "${QM_OUTPUT_DIR}")
+	foreach (QM_FILE IN LISTS QM_FILES)
+		get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
+		add_custom_command(TARGET duckstation-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QM_FILE}" "${QM_OUTPUT_DIR}/${QM_FILE_NAME}")
+	endforeach()
 endif()
 

@@ -1904,6 +1904,13 @@ void System::Throttle()
   Common::Timer::SleepUntil(s_next_frame_time, false);
 #endif
 
+#if 0
+  Log_DevPrintf("Asked for %.2f ms, slept for %.2f ms, %.2f ms late",
+                Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - current_time),
+                Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - current_time),
+                Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - s_next_frame_time));
+#endif
+
   s_next_frame_time += s_frame_period;
 }
 

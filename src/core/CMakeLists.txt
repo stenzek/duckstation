@@ -167,7 +167,30 @@ if(ENABLE_DISCORD_PRESENCE)
   target_link_libraries(core PRIVATE discord-rpc)
 endif()
 
-# Copy the provided data directory to the output directory.
-add_custom_command(TARGET core POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-)
+# Copy the provided data directory to the output directory. Borrowed from PCSX2.
+function(add_resources target path basedir)
+	get_filename_component(dir ${path} DIRECTORY)
+	file(RELATIVE_PATH subdir ${basedir} ${dir})
+	if(APPLE)
+		target_sources(${target} PRIVATE ${path})
+		set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${subdir})
+	else()
+		add_custom_command(TARGET ${target} POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/resources/${subdir}"
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/resources/${subdir}")
+	endif()
+	source_group(Resources/${subdir} FILES ${path})
+endfunction()
+
+function(add_core_resources target)
+  add_util_resources(${target})
+
+  file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/data/resources/*)
+  foreach(path IN LISTS RESOURCE_FILES)
+    get_filename_component(file ${path} NAME)
+    if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+      continue()
+    endif()
+    add_resources(${target} ${path} ${CMAKE_SOURCE_DIR}/data/resources/)
+  endforeach()
+endfunction()

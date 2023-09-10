@@ -157,6 +157,7 @@ if(ENABLE_OPENGL)
       gl/context_agl.mm
       gl/context_agl.h
     )
+    set_source_files_properties(gl/context_agl.mm PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
   endif()
 endif()
 
@@ -191,11 +192,6 @@ if(ENABLE_VULKAN)
     vulkan_texture.h
   )
   target_compile_definitions(util PUBLIC "WITH_VULKAN=1")
-
-  if(APPLE)
-    # Needed for Vulkan Swap Chain.
-    target_link_libraries(util PRIVATE "objc")
-  endif()
 endif()
 
 if(USE_SDL2)
@@ -287,3 +283,21 @@ elseif(NOT ANDROID)
     platform_misc_unix.cpp
   )
 endif()
+
+function(add_util_resources target)
+  if(APPLE)
+    # Copy MoltenVK into the bundle
+    unset(MOLTENVK_PATH CACHE)
+    find_file(MOLTENVK_PATH NAMES
+      libMoltenVK.dylib
+      lib/libMoltenVK.dylib
+    )
+    if (MOLTENVK_PATH)
+      target_sources(${target} PRIVATE "${MOLTENVK_PATH}")
+      set_source_files_properties("${MOLTENVK_PATH}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+      message(STATUS "Using MoltenVK from ${MOLTENVK_PATH}")
+    else()
+      message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
+    endif()
+  endif()
+endfunction()
