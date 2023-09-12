@@ -152,7 +152,8 @@ enum
   RC_CLIENT_LOG_LEVEL_ERROR = 1,
   RC_CLIENT_LOG_LEVEL_WARN = 2,
   RC_CLIENT_LOG_LEVEL_INFO = 3,
-  RC_CLIENT_LOG_LEVEL_VERBOSE = 4
+  RC_CLIENT_LOG_LEVEL_VERBOSE = 4,
+  NUM_RC_CLIENT_LOG_LEVELS = 5
 };
 
 /*****************************************************************************\
@@ -286,7 +287,8 @@ enum {
   RC_CLIENT_ACHIEVEMENT_STATE_INACTIVE = 0, /* unprocessed */
   RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE = 1,   /* eligible to trigger */
   RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED = 2, /* earned by user */
-  RC_CLIENT_ACHIEVEMENT_STATE_DISABLED = 3  /* not supported by this version of the runtime */
+  RC_CLIENT_ACHIEVEMENT_STATE_DISABLED = 3, /* not supported by this version of the runtime */
+  NUM_RC_CLIENT_ACHIEVEMENT_STATES = 4
 };
 
 enum {
@@ -304,7 +306,8 @@ enum {
   RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL = 4,
   RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED = 5,
   RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE = 6,
-  RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE = 7
+  RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE = 7,
+  NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS = 8
 };
 
 enum {
@@ -370,6 +373,11 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
  */
 void rc_client_destroy_achievement_list(rc_client_achievement_list_t* list);
 
+/**
+ * Returns non-zero if there are any achievements that can be queried through rc_client_create_achievement_list().
+ */
+int rc_client_has_achievements(rc_client_t* client);
+
 /*****************************************************************************\
 | Leaderboards                                                                |
 \*****************************************************************************/
@@ -378,8 +386,18 @@ enum {
   RC_CLIENT_LEADERBOARD_STATE_INACTIVE = 0,
   RC_CLIENT_LEADERBOARD_STATE_ACTIVE = 1,
   RC_CLIENT_LEADERBOARD_STATE_TRACKING = 2,
-  RC_CLIENT_LEADERBOARD_STATE_DISABLED = 3
+  RC_CLIENT_LEADERBOARD_STATE_DISABLED = 3,
+  NUM_RC_CLIENT_LEADERBOARD_STATES = 4
 };
+
+enum {
+  RC_CLIENT_LEADERBOARD_FORMAT_TIME = 0,
+  RC_CLIENT_LEADERBOARD_FORMAT_SCORE = 1,
+  RC_CLIENT_LEADERBOARD_FORMAT_VALUE = 2,
+  NUM_RC_CLIENT_LEADERBOARD_FORMATS = 3
+};
+
+#define RC_CLIENT_LEADERBOARD_DISPLAY_SIZE 24
 
 typedef struct rc_client_leaderboard_t {
   const char* title;
@@ -387,6 +405,7 @@ typedef struct rc_client_leaderboard_t {
   const char* tracker_value;
   uint32_t id;
   uint8_t state;
+  uint8_t format;
   uint8_t lower_is_better;
 } rc_client_leaderboard_t;
 
@@ -396,7 +415,7 @@ typedef struct rc_client_leaderboard_t {
 const rc_client_leaderboard_t* rc_client_get_leaderboard_info(const rc_client_t* client, uint32_t id);
 
 typedef struct rc_client_leaderboard_tracker_t {
-  char display[24];
+  char display[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
   uint32_t id;
 } rc_client_leaderboard_tracker_t;
 
@@ -419,7 +438,8 @@ enum {
   RC_CLIENT_LEADERBOARD_BUCKET_INACTIVE = 1,
   RC_CLIENT_LEADERBOARD_BUCKET_ACTIVE = 2,
   RC_CLIENT_LEADERBOARD_BUCKET_UNSUPPORTED = 3,
-  RC_CLIENT_LEADERBOARD_BUCKET_ALL = 4
+  RC_CLIENT_LEADERBOARD_BUCKET_ALL = 4,
+  NUM_RC_CLIENT_LEADERBOARD_BUCKETS = 5
 };
 
 enum {
@@ -438,9 +458,14 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
  */
 void rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list);
 
+/**
+ * Returns non-zero if the current game has any leaderboards.
+ */
+int rc_client_has_leaderboards(rc_client_t* client);
+
 typedef struct rc_client_leaderboard_entry_t {
   const char* user;
-  char display[24];
+  char display[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
   time_t submitted;
   uint32_t rank;
   uint32_t index;
@@ -480,9 +505,45 @@ int rc_client_leaderboard_entry_get_user_image_url(const rc_client_leaderboard_e
  */
 void rc_client_destroy_leaderboard_entry_list(rc_client_leaderboard_entry_list_t* list);
 
+/**
+ * Used for scoreboard events. Contains the response from the server when a leaderboard entry is submitted.
+ * NOTE: This structure is only valid within the event callback. If you want to make use of the data outside
+ * of the callback, you should create copies of both the top entries and usernames within.
+ */
+typedef struct rc_client_leaderboard_scoreboard_entry_t {
+  /* The user associated to the entry */
+  const char* username;
+  /* The rank of the entry */
+  unsigned rank;
+  /* The value of the entry */
+  char score[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
+} rc_client_leaderboard_scoreboard_entry_t;
+typedef struct rc_client_leaderboard_scoreboard_t {
+  /* The ID of the leaderboard which was submitted */
+  uint32_t leaderboard_id;
+  /* The value that was submitted */
+  char submitted_score[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
+  /* The player's best submitted value */
+  char best_score[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
+  /* The player's new rank within the leaderboard */
+  unsigned new_rank;
+  /* The total number of entries in the leaderboard */
+  unsigned num_entries;
+
+  /* An array of the top entries for the leaderboard */
+  rc_client_leaderboard_scoreboard_entry_t* top_entries;
+  /* The number of items in the top_entries array */
+  unsigned num_top_entries;
+} rc_client_leaderboard_scoreboard_t;
+
 /*****************************************************************************\
 | Rich Presence                                                               |
 \*****************************************************************************/
+
+/**
+ * Returns non-zero if the current game supports rich presence.
+ */
+int rc_client_has_rich_presence(rc_client_t* client);
 
 /**
  * Gets the current rich presence message.
@@ -508,11 +569,12 @@ enum {
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_SHOW = 10, /* [leaderboard_tracker] should be shown */
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_HIDE = 11, /* [leaderboard_tracker] should be hidden */
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_UPDATE = 12, /* [leaderboard_tracker] updated */
-  RC_CLIENT_EVENT_RESET = 13, /* emulated system should be reset (as the result of enabling hardcore) */
-  RC_CLIENT_EVENT_GAME_COMPLETED = 14, /* all achievements for the game have been earned */
-  RC_CLIENT_EVENT_SERVER_ERROR = 15, /* an API response returned a [server_error] and will not be retried */
-  RC_CLIENT_EVENT_DISCONNECTED = 16, /* an unlock request could not be completed and is pending */
-  RC_CLIENT_EVENT_RECONNECTED = 17 /* all pending unlocks have been completed */
+  RC_CLIENT_EVENT_LEADERBOARD_SCOREBOARD = 13, /* [leaderboard_scoreboard] possibly-new ranking received */
+  RC_CLIENT_EVENT_RESET = 14, /* emulated system should be reset (as the result of enabling hardcore) */
+  RC_CLIENT_EVENT_GAME_COMPLETED = 15, /* all achievements for the game have been earned */
+  RC_CLIENT_EVENT_SERVER_ERROR = 16, /* an API response returned a [server_error] and will not be retried */
+  RC_CLIENT_EVENT_DISCONNECTED = 17, /* an unlock request could not be completed and is pending */
+  RC_CLIENT_EVENT_RECONNECTED = 18 /* all pending unlocks have been completed */
 };
 
 typedef struct rc_client_server_error_t
@@ -528,6 +590,7 @@ typedef struct rc_client_event_t
   rc_client_achievement_t* achievement;
   rc_client_leaderboard_t* leaderboard;
   rc_client_leaderboard_tracker_t* leaderboard_tracker;
+  rc_client_leaderboard_scoreboard_t* leaderboard_scoreboard;
   rc_client_server_error_t* server_error;
 
 } rc_client_event_t;
