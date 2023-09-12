@@ -251,7 +251,11 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
     }
     else
     {
-      restoreDisplayWindowGeometryFromConfig();
+      if (use_main_window_pos)
+        container->setGeometry(geometry());
+      else
+        restoreDisplayWindowGeometryFromConfig();
+
       container->showNormal();
     }
 
@@ -1828,7 +1832,7 @@ bool MainWindow::shouldHideMouseCursor() const
 bool MainWindow::shouldHideMainWindow() const
 {
   return Host::GetBaseBoolSettingValue("Main", "HideMainWindowWhenRunning", false) ||
-         (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) || QtHost::InNoGUIMode();
+         (g_emu_thread->shouldRenderToMain() && !isRenderingToMain()) || QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -2784,13 +2788,29 @@ void MainWindow::onUpdateCheckComplete()
 
 MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 {
-  const bool was_fullscreen = isRenderingFullscreen();
-  const bool was_paused = s_system_paused;
+  // To switch out of fullscreen when displaying a popup, or not to?
+  // For Windows, with driver's direct scanout, what renders behind tends to be hit and miss.
+  // We can't draw anything over exclusive fullscreen, so get out of it in that case.
+  // Wayland's a pain as usual, we need to recreate the window, which means there'll be a brief
+  // period when there's no window, and Qt might shut us down. So avoid it there.
+  // On MacOS, it forces a workspace switch, which is kinda jarring.
 
-  // We use surfaceless rather than switching out of fullscreen, because
-  // we're paused, so we're not going to be rendering anyway.
+#ifndef __APPLE__
+  const bool was_fullscreen = g_emu_thread->isFullscreen() && !s_use_central_widget;
+#else
+  const bool was_fullscreen = false;
+#endif
+  const bool was_paused = !s_system_valid || s_system_paused;
+
+  // We need to switch out of exclusive fullscreen before we can display our popup.
+  // However, we do not want to switch back to render-to-main, the window might have generated this event.
   if (was_fullscreen)
-    g_emu_thread->setSurfaceless(true);
+  {
+    g_emu_thread->setFullscreen(false, false);
+    while (s_system_valid && g_emu_thread->isFullscreen())
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+  }
+
   if (!was_paused)
   {
     g_emu_thread->setSystemPaused(true);
@@ -2803,9 +2823,8 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
     QApplication::sync();
   }
 
-  // We want to parent dialogs to the display widget, except if we were fullscreen,
-  // since it's going to get destroyed by the surfaceless call above.
-  QWidget* dialog_parent = was_fullscreen ? static_cast<QWidget*>(this) : getDisplayContainer();
+  // Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
+  QWidget* dialog_parent = getDisplayContainer();
 
   return SystemLock(dialog_parent, was_paused, was_fullscreen);
 }
@@ -2826,7 +2845,7 @@ MainWindow::SystemLock::SystemLock(SystemLock&& lock)
 MainWindow::SystemLock::~SystemLock()
 {
   if (m_was_fullscreen)
-    g_emu_thread->setSurfaceless(false);
+    g_emu_thread->setFullscreen(true, true);
   if (!m_was_paused)
     g_emu_thread->setSystemPaused(false);
 }

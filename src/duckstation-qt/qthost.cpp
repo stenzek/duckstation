@@ -696,7 +696,7 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
 
   const bool window_fullscreen = m_is_fullscreen && !m_is_exclusive_fullscreen;
   const bool render_to_main = !m_is_exclusive_fullscreen && !window_fullscreen && m_is_rendering_to_main;
-  const bool use_main_window_pos = m_is_exclusive_fullscreen && shouldRenderToMain();
+  const bool use_main_window_pos = shouldRenderToMain();
 
   return emit onAcquireRenderWindowRequested(recreate_window, window_fullscreen, render_to_main, m_is_surfaceless,
                                              use_main_window_pos);
