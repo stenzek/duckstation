@@ -1433,6 +1433,31 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
   subset->achievements = achievements;
 }
 
+static uint8_t rc_client_map_leaderboard_format(const rc_api_leaderboard_definition_t* defn)
+{
+  switch (defn->format) {
+    case RC_FORMAT_SECONDS:
+    case RC_FORMAT_CENTISECS:
+    case RC_FORMAT_MINUTES:
+    case RC_FORMAT_SECONDS_AS_MINUTES:
+    case RC_FORMAT_FRAMES:
+      return RC_CLIENT_LEADERBOARD_FORMAT_TIME;
+
+    case RC_FORMAT_SCORE:
+      return RC_CLIENT_LEADERBOARD_FORMAT_SCORE;
+
+    case RC_FORMAT_VALUE:
+    case RC_FORMAT_FLOAT1:
+    case RC_FORMAT_FLOAT2:
+    case RC_FORMAT_FLOAT3:
+    case RC_FORMAT_FLOAT4:
+    case RC_FORMAT_FLOAT5:
+    case RC_FORMAT_FLOAT6:
+    default:
+      return RC_CLIENT_LEADERBOARD_FORMAT_VALUE;
+  }
+}
+
 static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
     rc_client_subset_info_t* subset,
     const rc_api_leaderboard_definition_t* leaderboard_definitions, uint32_t num_leaderboards)
@@ -1477,6 +1502,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
     leaderboard->public_.title = rc_buf_strcpy(buffer, read->title);
     leaderboard->public_.description = rc_buf_strcpy(buffer, read->description);
     leaderboard->public_.id = read->id;
+    leaderboard->public_.format = rc_client_map_leaderboard_format(read);
     leaderboard->public_.lower_is_better = read->lower_is_better;
     leaderboard->format = (uint8_t)read->format;
     leaderboard->hidden = (uint8_t)read->hidden;
@@ -2706,6 +2732,34 @@ void rc_client_destroy_achievement_list(rc_client_achievement_list_t* list)
     free(list);
 }
 
+int rc_client_has_achievements(rc_client_t* client)
+{
+  rc_client_subset_info_t* subset;
+  int result;
+
+  if (!client || !client->game)
+    return 0;
+
+  rc_mutex_lock(&client->state.mutex);
+
+  subset = client->game->subsets;
+  result = 0;
+  for (; subset; subset = subset->next)
+  {
+    if (!subset->active)
+      continue;
+
+    if (subset->public_.num_achievements > 0) {
+      result = 1;
+      break;
+    }
+  }
+
+  rc_mutex_unlock(&client->state.mutex);
+
+  return result;
+}
+
 static const rc_client_achievement_t* rc_client_subset_get_achievement_info(
     rc_client_t* client, rc_client_subset_info_t* subset, uint32_t id)
 {
@@ -2989,14 +3043,14 @@ static void rc_client_reset_achievements(rc_client_t* client)
 
 /* ===== Leaderboards ===== */
 
-static const rc_client_leaderboard_t* rc_client_subset_get_leaderboard_info(const rc_client_subset_info_t* subset, uint32_t id)
+static rc_client_leaderboard_info_t* rc_client_subset_get_leaderboard_info(const rc_client_subset_info_t* subset, uint32_t id)
 {
   rc_client_leaderboard_info_t* leaderboard = subset->leaderboards;
   rc_client_leaderboard_info_t* stop = leaderboard + subset->public_.num_leaderboards;
 
   for (; leaderboard < stop; ++leaderboard) {
     if (leaderboard->public_.id == id)
-      return &leaderboard->public_;
+      return leaderboard;
   }
 
   return NULL;
@@ -3010,9 +3064,9 @@ const rc_client_leaderboard_t* rc_client_get_leaderboard_info(const rc_client_t*
     return NULL;
 
   for (subset = client->game->subsets; subset; subset = subset->next) {
-    const rc_client_leaderboard_t* leaderboard = rc_client_subset_get_leaderboard_info(subset, id);
+    const rc_client_leaderboard_info_t* leaderboard = rc_client_subset_get_leaderboard_info(subset, id);
     if (leaderboard != NULL)
-      return leaderboard;
+      return &leaderboard->public_;
   }
  
   return NULL;
@@ -3242,6 +3296,34 @@ void rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list)
     free(list);
 }
 
+int rc_client_has_leaderboards(rc_client_t* client)
+{
+  rc_client_subset_info_t* subset;
+  int result;
+
+  if (!client || !client->game)
+    return 0;
+
+  rc_mutex_lock(&client->state.mutex);
+
+  subset = client->game->subsets;
+  result = 0;
+  for (; subset; subset = subset->next)
+  {
+    if (!subset->active)
+      continue;
+
+    if (subset->public_.num_leaderboards > 0) {
+      result = 1;
+      break;
+    }
+  }
+
+  rc_mutex_unlock(&client->state.mutex);
+
+  return result;
+}
+
 static void rc_client_allocate_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard)
 {
   rc_client_leaderboard_tracker_info_t* tracker;
@@ -3345,6 +3427,61 @@ static void rc_client_submit_leaderboard_entry_retry(rc_client_scheduled_callbac
   rc_client_submit_leaderboard_entry_server_call(lboard_data);
 }
 
+static void rc_client_raise_scoreboard_event(rc_client_submit_leaderboard_entry_callback_data_t* lboard_data,
+    const rc_api_submit_lboard_entry_response_t* response)
+{
+  rc_client_leaderboard_scoreboard_t sboard;
+  rc_client_event_t client_event;
+  rc_client_subset_info_t* subset;
+  rc_client_t* client = lboard_data->client;
+  rc_client_leaderboard_info_t* leaderboard = NULL;
+
+  if (!client || !client->game)
+    return;
+
+  for (subset = client->game->subsets; subset; subset = subset->next) {
+    leaderboard = rc_client_subset_get_leaderboard_info(subset, lboard_data->id);
+    if (leaderboard != NULL)
+      break;
+  }
+  if (leaderboard == NULL) {
+    RC_CLIENT_LOG_ERR_FORMATTED(client, "Trying to raise scoreboard for unknown leaderboard %u", lboard_data->id);
+    return;
+  }
+
+  memset(&sboard, 0, sizeof(sboard));
+  sboard.leaderboard_id = lboard_data->id;
+  rc_format_value(sboard.submitted_score, sizeof(sboard.submitted_score), response->submitted_score, leaderboard->format);
+  rc_format_value(sboard.best_score, sizeof(sboard.best_score), response->best_score, leaderboard->format);
+  sboard.new_rank = response->new_rank;
+  sboard.num_entries = response->num_entries;
+  sboard.num_top_entries = response->num_top_entries;
+  if (sboard.num_top_entries > 0) {
+    sboard.top_entries = (rc_client_leaderboard_scoreboard_entry_t*)calloc(
+      response->num_top_entries, sizeof(rc_client_leaderboard_scoreboard_entry_t));
+    if (sboard.top_entries != NULL) {
+      unsigned i;
+      for (i = 0; i < response->num_top_entries; i++) {
+        sboard.top_entries[i].username = response->top_entries[i].username;
+        sboard.top_entries[i].rank = response->top_entries[i].rank;
+        rc_format_value(sboard.top_entries[i].score, sizeof(sboard.top_entries[i].score), response->top_entries[i].score,
+            leaderboard->format);
+      }
+    }
+  }
+
+  memset(&client_event, 0, sizeof(client_event));
+  client_event.type = RC_CLIENT_EVENT_LEADERBOARD_SCOREBOARD;
+  client_event.leaderboard = &leaderboard->public_;
+  client_event.leaderboard_scoreboard = &sboard;
+
+  lboard_data->client->callbacks.event_handler(&client_event, lboard_data->client);
+
+  if (sboard.top_entries != NULL) {
+    free(sboard.top_entries);
+  }
+}
+
 static void rc_client_submit_leaderboard_entry_callback(const rc_api_server_response_t* server_response, void* callback_data)
 {
   rc_client_submit_leaderboard_entry_callback_data_t* lboard_data =
@@ -3394,7 +3531,10 @@ static void rc_client_submit_leaderboard_entry_callback(const rc_api_server_resp
     }
   }
   else {
-    /* TODO: raise event for scoreboard (if retry_count < 2) */
+    /* raise event for scoreboard */
+    if (lboard_data->retry_count < 2) {
+      rc_client_raise_scoreboard_event(lboard_data, &submit_lboard_entry_response);
+    }
 
     /* not currently doing anything with the response */
     if (lboard_data->retry_count) {
@@ -3698,6 +3838,17 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
 
   callback_data->when = now + 120 * 1000;
   rc_client_schedule_callback(client, callback_data);
+}
+
+int rc_client_has_rich_presence(rc_client_t* client)
+{
+  if (!client || !client->game)
+    return 0;
+
+  if (!client->game->runtime.richpresence || !client->game->runtime.richpresence)
+    return 0;
+
+  return 1;
 }
 
 size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], size_t buffer_size)
