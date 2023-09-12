@@ -249,6 +249,10 @@ public:
   {
     return IsEmpty() ? std::string_view() : std::string_view(GetCharArray(), GetLength());
   }
+  std::string ToStdString() const
+  {
+    return std::string(GetStringView());
+  }
 
   // creates a new string from the specified format
   static String FromFormat(const char* FormatString, ...) printflike(1, 2);
