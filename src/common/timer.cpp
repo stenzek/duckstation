@@ -288,6 +288,39 @@ double Timer::GetTimeNanosecondsAndReset()
   return ret;
 }
 
+bool Timer::ResetIfSecondsPassed(double s)
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToSeconds(value - m_tvStartValue);
+  if (ret < s)
+    return false;
+
+  m_tvStartValue = value;
+  return true;
+}
+
+bool Timer::ResetIfMillisecondsPassed(double s)
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToMilliseconds(value - m_tvStartValue);
+  if (ret < s)
+    return false;
+
+  m_tvStartValue = value;
+  return true;
+}
+
+bool Timer::ResetIfNanosecondsPassed(double s)
+{
+  const Value value = GetCurrentValue();
+  const double ret = ConvertValueToNanoseconds(value - m_tvStartValue);
+  if (ret < s)
+    return false;
+
+  m_tvStartValue = value;
+  return true;
+}
+
 void Timer::BusyWait(std::uint64_t ns)
 {
   const Value start = GetCurrentValue();

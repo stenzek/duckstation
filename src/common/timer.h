@@ -40,6 +40,10 @@ public:
   double GetTimeMillisecondsAndReset();
   double GetTimeNanosecondsAndReset();
 
+  bool ResetIfSecondsPassed(double s);
+  bool ResetIfMillisecondsPassed(double s);
+  bool ResetIfNanosecondsPassed(double s);
+
 private:
   Value m_tvStartValue;
 };
