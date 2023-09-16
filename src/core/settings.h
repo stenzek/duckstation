@@ -446,7 +446,7 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#if defined(WITH_CUBEB)
+#if defined(USE_CUBEB)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
 #elif defined(_WIN32)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::XAudio2;

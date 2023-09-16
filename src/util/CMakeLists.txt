@@ -74,25 +74,22 @@ target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
 target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd reshadefx)
 
-if(ENABLE_CUBEB)
+if(USE_CUBEB)
   target_sources(util PRIVATE
     cubeb_audio_stream.cpp
     cubeb_audio_stream.h
   )
-  target_compile_definitions(util PUBLIC "WITH_CUBEB=1")
+  target_compile_definitions(util PUBLIC "USE_CUBEB=1")
   target_link_libraries(util PRIVATE cubeb)
 endif()
 
 if(USE_X11)
   target_compile_definitions(util PRIVATE "-DUSE_X11=1")
-  target_include_directories(util PRIVATE "${X11_INCLUDE_DIR}" "${X11_Xrandr_INCLUDE_PATH}")
-  target_link_libraries(util PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
+  target_link_libraries(util PRIVATE X11::X11 X11::Xrandr)
 endif()
 
 if(USE_WAYLAND)
   target_compile_definitions(util PRIVATE "-DUSE_WAYLAND=1")
-elseif(SUPPORTS_WAYLAND)
-  message(WARNING "Wayland support for renderers is disabled.\nDuckStation will FAIL to start on Wayland.")
 endif()
 
 if(ENABLE_OPENGL)
@@ -199,7 +196,7 @@ if(USE_SDL2)
     sdl_input_source.cpp
     sdl_input_source.h
   )
-  target_compile_definitions(util PUBLIC "WITH_SDL2=1")
+  target_compile_definitions(util PUBLIC "USE_SDL2=1")
   target_link_libraries(util PUBLIC SDL2::SDL2)
 
   # Copy bundled SDL2 to output on Windows.
@@ -213,14 +210,6 @@ if(USE_SDL2)
     add_custom_command(TARGET util POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL_PATH}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/SDL2.dll")
   endif()
-endif()
-
-if(USE_DBUS)
-	target_compile_definitions(util PRIVATE USE_DBUS)
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(DBUS REQUIRED dbus-1)
-	target_include_directories(util PRIVATE ${DBUS_INCLUDE_DIRS})
-	target_link_libraries(util PRIVATE ${DBUS_LINK_LIBRARIES})
 endif()
 
 if(WIN32)
@@ -288,6 +277,10 @@ elseif(NOT ANDROID)
   target_sources(util PRIVATE
     platform_misc_unix.cpp
   )
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(DBUS REQUIRED dbus-1)
+  target_include_directories(util PRIVATE ${DBUS_INCLUDE_DIRS})
+  target_link_libraries(util PRIVATE ${DBUS_LINK_LIBRARIES})
 endif()
 
 function(add_util_resources target)

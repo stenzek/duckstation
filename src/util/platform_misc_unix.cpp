@@ -1,47 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
+#include "input_manager.h"
+#include "platform_misc.h"
 
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string.h"
-#include "input_manager.h"
-#include "platform_misc.h"
-#include <cinttypes>
-Log_SetChannel(PlatformMisc);
 
+#include <cinttypes>
 #include <spawn.h>
 #include <unistd.h>
-
-#if !defined(USE_DBUS) && defined(USE_X11)
-#include <cstdio>
-#include <sys/wait.h>
-
-static bool SetScreensaverInhibitX11(bool inhibit, const WindowInfo& wi)
-{
-  TinyString command;
-  command.AppendString("xdg-screensaver");
-
-  TinyString operation;
-  operation.AppendString(inhibit ? "suspend" : "resume");
-
-  TinyString id;
-  id.Format("0x%" PRIx64, static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
-
-  char* argv[4] = {command.GetWriteableCharArray(), operation.GetWriteableCharArray(), id.GetWriteableCharArray(),
-                   nullptr};
-  pid_t pid;
-  int res = posix_spawnp(&pid, "xdg-screensaver", nullptr, nullptr, argv, environ);
-  if (res != 0)
-  {
-    Log_ErrorPrintf("posix_spawnp() failed: %d", res);
-    return false;
-  }
-
-  return true;
-}
-
-#elif defined(USE_DBUS)
 #include <dbus/dbus.h>
+
+Log_SetChannel(PlatformMisc);
+
 static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
   static dbus_uint32_t s_cookie;
@@ -115,33 +88,9 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
   return true;
 }
 
-#endif
-
 static bool SetScreensaverInhibit(bool inhibit)
 {
-#ifdef USE_DBUS
   return SetScreensaverInhibitDBus(inhibit, "DuckStation", "DuckStation VM is running.");
-#else
-
-  std::optional<WindowInfo> wi(Host::GetTopLevelWindowInfo());
-  if (!wi.has_value())
-  {
-    Log_ErrorPrintf("No top-level window.");
-    return false;
-  }
-
-  switch (wi->type)
-  {
-#ifdef USE_X11
-    case WindowInfo::Type::X11:
-      return SetScreensaverInhibitX11(inhibit, wi.value());
-#endif
-
-    default:
-      Log_ErrorPrintf("Unknown type: %u", static_cast<unsigned>(wi->type));
-      return false;
-  }
-#endif
 }
 
 static bool s_screensaver_suspended;

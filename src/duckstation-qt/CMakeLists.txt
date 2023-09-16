@@ -9,6 +9,12 @@ set(SRCS
   aboutdialog.cpp
   aboutdialog.h
   aboutdialog.ui
+  achievementlogindialog.cpp
+  achievementlogindialog.h
+  achievementlogindialog.ui
+  achievementsettingswidget.cpp
+  achievementsettingswidget.h
+  achievementsettingswidget.ui
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
@@ -135,17 +141,6 @@ set(SRCS
   setupwizarddialog.h
   setupwizarddialog.ui
 )
-
-if(ENABLE_CHEEVOS)
-  set(SRCS ${SRCS}
-    achievementlogindialog.cpp
-    achievementlogindialog.h
-    achievementlogindialog.ui
-    achievementsettingswidget.cpp
-    achievementsettingswidget.h
-    achievementsettingswidget.ui
-  )
-endif()
 
 set(TS_FILES
   translations/duckstation-qt_de.ts

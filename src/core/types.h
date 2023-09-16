@@ -144,7 +144,7 @@ enum class DisplayScalingMode : u8
 enum class AudioBackend : u8
 {
   Null,
-#ifdef WITH_CUBEB
+#ifdef USE_CUBEB
   Cubeb,
 #endif
 #ifdef _WIN32
