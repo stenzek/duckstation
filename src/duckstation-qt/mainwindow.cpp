@@ -277,9 +277,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
   createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
 
-  // we need the surface visible.. this might be able to be replaced with something else
-  QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-
   std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
   if (!wi.has_value())
   {
@@ -447,7 +444,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
   if (m_display_widget)
   {
-    m_display_widget->deleteLater();
+    m_display_widget->destroy();
     m_display_widget = nullptr;
   }
 

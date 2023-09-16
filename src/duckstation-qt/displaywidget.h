@@ -32,6 +32,7 @@ public:
   void updateCursor(bool hidden);
 
   void handleCloseEvent(QCloseEvent* event);
+  void destroy();
 
 Q_SIGNALS:
   void windowResizedEvent(int width, int height, float scale);
@@ -54,6 +55,7 @@ private:
   bool m_clip_mouse_enabled = false;
 #endif
   bool m_cursor_hidden = false;
+  bool m_destroying = false;
 
   std::vector<u32> m_keys_pressed_with_modifiers;
 

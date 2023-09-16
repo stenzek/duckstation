@@ -5,10 +5,10 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
-#include "util/imgui_manager.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "util/imgui_manager.h"
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
@@ -146,6 +146,20 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
   }
 
   event->ignore();
+}
+
+void DisplayWidget::destroy()
+{
+  m_destroying = true;
+
+#ifdef __APPLE__
+  // See Qt documentation, entire application is in full screen state, and the main
+  // window will get reopened fullscreen instead of windowed if we don't close the
+  // fullscreen window first.
+  if (isFullScreen())
+    close();
+#endif
+  deleteLater();
 }
 
 void DisplayWidget::updateCenterPos()
@@ -339,6 +353,9 @@ bool DisplayWidget::event(QEvent* event)
 
     case QEvent::Close:
     {
+      if (m_destroying)
+        return QWidget::event(event);
+
       handleCloseEvent(static_cast<QCloseEvent*>(event));
       return true;
     }
@@ -358,7 +375,9 @@ bool DisplayWidget::event(QEvent* event)
   }
 }
 
-DisplayContainer::DisplayContainer() : QStackedWidget(nullptr) {}
+DisplayContainer::DisplayContainer() : QStackedWidget(nullptr)
+{
+}
 
 DisplayContainer::~DisplayContainer() = default;
 
