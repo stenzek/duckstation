@@ -220,7 +220,7 @@ Verifique seu nome de usuário e senha e tente novamente.</translation>
         <location filename="../achievementsettingswidget.ui" line="59"/>
         <location filename="../achievementsettingswidget.cpp" line="62"/>
         <source>Enable Encore Mode</source>
-        <translation>Ativar modo hardcore</translation>
+        <translation>Ativar modo de repetição</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="83"/>
