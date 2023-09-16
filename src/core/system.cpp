@@ -2256,19 +2256,20 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
         {
           if (old_media)
           {
-            Host::AddFormattedOSDMessage(
-              30.0f,
-              TRANSLATE("OSDMessage", "Failed to open CD image from save state '%s': %s. Using "
-                                      "existing image '%s', this may result in instability."),
-              media_filename.c_str(), error.GetDescription().c_str(), old_media->GetFileName().c_str());
+            Host::AddOSDMessage(
+              fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
+                                                     "existing image '{}', this may result in instability."),
+                          media_filename, error.GetDescription(), old_media->GetFileName()),
+              Host::OSD_CRITICAL_ERROR_DURATION);
             media = std::move(old_media);
             header.media_subimage_index = media->GetCurrentSubImage();
           }
           else
           {
-            Host::ReportFormattedErrorAsync("Error",
-                                            TRANSLATE("System", "Failed to open CD image '%s' used by save state: %s."),
-                                            media_filename.c_str(), error.GetDescription().c_str());
+            Host::ReportErrorAsync(
+              TRANSLATE_SV("OSDMessage", "Error"),
+              fmt::format(TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state: {}."),
+                          media_filename, error.GetDescription()));
             return false;
           }
         }
@@ -2284,9 +2285,11 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
           (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
            !media->SwitchSubImage(header.media_subimage_index, &error)))
       {
-        Host::ReportFormattedErrorAsync(
-          "Error", TRANSLATE("System", "Failed to switch to subimage %u in CD image '%s' used by save state: %s."),
-          header.media_subimage_index + 1u, media_filename.c_str(), error.GetDescription().c_str());
+        Host::ReportErrorAsync(
+          TRANSLATE_SV("OSDMessage", "Error"),
+          fmt::format(
+            TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state: {}."),
+            header.media_subimage_index + 1u, media_filename, error.GetDescription()));
         return false;
       }
       else
