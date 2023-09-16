@@ -3219,7 +3219,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   MenuHeading("Input Sources");
 
-#ifdef WITH_SDL2
+#ifdef USE_SDL2
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable SDL Input Source"),
                     FSUI_CSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
                     false);

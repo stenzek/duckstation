@@ -1247,7 +1247,7 @@ const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 
 static constexpr const char* s_audio_backend_names[] = {
   "Null",
-#ifdef WITH_CUBEB
+#ifdef USE_CUBEB
   "Cubeb",
 #endif
 #ifdef _WIN32
@@ -1259,7 +1259,7 @@ static constexpr const char* s_audio_backend_names[] = {
 };
 static constexpr const char* s_audio_backend_display_names[] = {
   TRANSLATE_NOOP("AudioBackend", "Null (No Output)"),
-#ifdef WITH_CUBEB
+#ifdef USE_CUBEB
   TRANSLATE_NOOP("AudioBackend", "Cubeb"),
 #endif
 #ifdef _WIN32

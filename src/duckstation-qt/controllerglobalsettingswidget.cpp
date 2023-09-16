@@ -16,17 +16,12 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-#ifdef WITH_SDL2
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                "SDLControllerEnhancedMode", false);
   connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
-#else
-  m_ui.enableSDLSource->setEnabled(false);
-  m_ui.ledSettings->setEnabled(false);
-#endif
 
 #ifdef _WIN32
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
@@ -129,7 +124,6 @@ ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;
 
 void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 player_id)
 {
-#ifdef WITH_SDL2
   std::string key(fmt::format("Player{}LED", player_id));
   const u32 current_value =
     SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
@@ -138,5 +132,4 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
   connect(button, &ColorPickerButton::colorChanged, this, [this, key = std::move(key)](u32 new_rgb) {
     m_dialog->setStringValue("SDLExtra", key.c_str(), fmt::format("{:06X}", new_rgb).c_str());
   });
-#endif
 }

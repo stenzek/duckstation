@@ -103,7 +103,7 @@ void AudioSettingsWidget::updateDriverNames()
   std::vector<std::string> names;
   std::vector<std::pair<std::string, std::string>> devices;
 
-#ifdef WITH_CUBEB
+#ifdef USE_CUBEB
   if (backend == AudioBackend::Cubeb)
   {
     names = AudioStream::GetCubebDriverNames();

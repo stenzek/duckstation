@@ -5,7 +5,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);SOUNDTOUCH_FLOAT_SAMPLES;SOUNDTOUCH_ALLOW_SSE;ST_NO_EXCEPTION_HANDLING=1</PreprocessorDefinitions>
-      <PreprocessorDefinitions>WITH_CUBEB=1;WITH_SDL2=1;WITH_DINPUT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_CUBEB=1;USE_SDL2=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);WITH_OPENGL=1;WITH_VULKAN=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
