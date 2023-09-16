@@ -329,7 +329,7 @@ static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const 
                                const char* key, int default_value, const char* const* options, size_t option_count,
                                bool translate_options, int option_offset = 0, bool enabled = true,
                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                               ImFont* summary_font = g_medium_font);
+                               ImFont* summary_font = g_medium_font, const char* tr_context = TR_CONTEXT);
 static void DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                 const char* key, int default_value, int min_value, int max_value,
                                 const char* format = "%d", bool enabled = true,
@@ -1555,7 +1555,8 @@ bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, 
 void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                       const char* section, const char* key, int default_value,
                                       const char* const* options, size_t option_count, bool translate_options,
-                                      int option_offset, bool enabled, float height, ImFont* font, ImFont* summary_font)
+                                      int option_offset, bool enabled, float height, ImFont* font, ImFont* summary_font,
+                                      const char* tr_context)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -1572,7 +1573,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
     (value.has_value()) ?
       ((index < 0 || static_cast<size_t>(index) >= option_count) ?
          FSUI_CSTR("Unknown") :
-         (translate_options ? Host::TranslateToCString(TR_CONTEXT, options[index]) : options[index])) :
+         (translate_options ? Host::TranslateToCString(tr_context, options[index]) : options[index])) :
       FSUI_CSTR("Use Global Setting");
 
   if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
@@ -1583,7 +1584,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
     {
-      cd_options.emplace_back(translate_options ? Host::TranslateToString(TR_CONTEXT, options[i]) :
+      cd_options.emplace_back(translate_options ? Host::TranslateToString(tr_context, options[i]) :
                                                   std::string(options[i]),
                               (i == static_cast<size_t>(index)));
     }
@@ -3045,8 +3046,8 @@ void FullscreenUI::DrawEmulationSettingsPage()
   }
   else
   {
-    rewind_summary = FSUI_VSTR(
-      "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
+    rewind_summary = FSUI_VSTR("Rewind is not enabled. Please note that enabling rewind may significantly increase "
+                               "system requirements.");
   }
 
   ActiveButton(rewind_summary, false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
@@ -3217,7 +3218,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     DoSaveInputProfile();
   }
 
-  MenuHeading("Input Sources");
+  MenuHeading(FSUI_CSTR("Input Sources"));
 
 #ifdef USE_SDL2
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable SDL Input Source"),
@@ -3474,7 +3475,8 @@ void FullscreenUI::DrawControllerSettingsPage()
             break;
           case SettingInfo::Type::IntegerList:
             DrawIntListSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
-                               si.options, 0, false, si.IntegerMinValue(), true);
+                               si.options, 0, false, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT,
+                               g_large_font, g_medium_font, ci->name);
             break;
           case SettingInfo::Type::Float:
             DrawFloatSpinBoxSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
@@ -3524,7 +3526,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Settings and Operations");
+  MenuHeading(FSUI_CSTR("Settings and Operations"));
   if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
                  FSUI_CSTR("Creates a new memory card file or folder.")))
   {
@@ -3826,7 +3828,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                               "having speed or sound issues."),
                     "Display", "DisplayAllFrames", false);
 
-  MenuHeading("Rendering");
+  MenuHeading(FSUI_CSTR("Rendering"));
 
   DrawIntListSetting(
     bsi, FSUI_CSTR("Internal Resolution Scale"),
@@ -3924,7 +3926,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                               "applies to the hardware renderers."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
-  MenuHeading("PGXP (Precision Geometry Transform Pipeline)");
+  MenuHeading(FSUI_CSTR("PGXP (Precision Geometry Transform Pipeline)"));
 
   const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
   const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
@@ -4435,7 +4437,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Settings");
+  MenuHeading(FSUI_CSTR("Settings"));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Enable Achievements"),
                     FSUI_CSTR("When enabled and logged in, DuckStation will scan for achievements on startup."),
                     "Cheevos", "Enabled", false);
@@ -4482,7 +4484,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
   if (!IsEditingGameSettings(bsi))
   {
-    MenuHeading("Account");
+    MenuHeading(FSUI_CSTR("Account"));
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
@@ -4513,7 +4515,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
         Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason::UserInitiated);
     }
 
-    MenuHeading("Current Game");
+    MenuHeading(FSUI_CSTR("Current Game"));
     if (Achievements::HasActiveGame())
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
@@ -4762,7 +4764,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
     static constexpr u32 submenu_item_count[] = {
       12, // None
       4,  // Exit
-      3, // Achievements
+      3,  // Achievements
     };
 
     const bool just_focused = ResetFocusHere();
@@ -6791,11 +6793,10 @@ TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
 TRANSLATE_NOOP("FullscreenUI", "A memory card with the name '{}' already exists.");
 TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
+TRANSLATE_NOOP("FullscreenUI", "Account");
+TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
-TRANSLATE_NOOP("FullscreenUI", "Achievements are disabled.");
-TRANSLATE_NOOP("FullscreenUI", "Achievements: {} ({} points)");
-TRANSLATE_NOOP("FullscreenUI", "Active Challenge Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Add Shader");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
@@ -6883,6 +6884,7 @@ TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
+TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
@@ -6915,6 +6917,7 @@ TRANSLATE_NOOP("FullscreenUI", "Discord Server");
 TRANSLATE_NOOP("FullscreenUI", "Display FPS Limit");
 TRANSLATE_NOOP("FullscreenUI", "Display Settings");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
@@ -6931,6 +6934,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable 8MB RAM");
 TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
 TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
 TRANSLATE_NOOP("FullscreenUI", "Enable PGXP Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");
@@ -6940,7 +6944,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Memory Exceptions");
 TRANSLATE_NOOP("FullscreenUI", "Enable Region Check");
 TRANSLATE_NOOP("FullscreenUI", "Enable Rewinding");
 TRANSLATE_NOOP("FullscreenUI", "Enable SDL Input Source");
-TRANSLATE_NOOP("FullscreenUI", "Enable Sound Effects");
 TRANSLATE_NOOP("FullscreenUI", "Enable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Enable TTY Logging");
 TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Texture Replacement");
@@ -6952,7 +6955,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a tot
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of battery life.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
-TRANSLATE_NOOP("FullscreenUI", "Enables tracking and submission of leaderboards in supported games.");
+TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
@@ -6985,13 +6988,11 @@ TRANSLATE_NOOP("FullscreenUI", "GPU Adapter");
 TRANSLATE_NOOP("FullscreenUI", "GPU Renderer");
 TRANSLATE_NOOP("FullscreenUI", "GPU adapter will be applied after restarting.");
 TRANSLATE_NOOP("FullscreenUI", "Game Grid");
-TRANSLATE_NOOP("FullscreenUI", "Game ID: {}");
 TRANSLATE_NOOP("FullscreenUI", "Game List");
 TRANSLATE_NOOP("FullscreenUI", "Game List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Game Properties");
 TRANSLATE_NOOP("FullscreenUI", "Game Quick Save");
 TRANSLATE_NOOP("FullscreenUI", "Game Slot {0}##game_slot_{0}");
-TRANSLATE_NOOP("FullscreenUI", "Game Title: {}");
 TRANSLATE_NOOP("FullscreenUI", "Game compatibility rating copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
 TRANSLATE_NOOP("FullscreenUI", "Game path copied to clipboard.");
@@ -7001,11 +7002,13 @@ TRANSLATE_NOOP("FullscreenUI", "Game settings have been cleared for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
 TRANSLATE_NOOP("FullscreenUI", "Genre: %s");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will be enabled on next game restart.");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
 TRANSLATE_NOOP("FullscreenUI", "Hotkey Settings");
@@ -7019,6 +7022,7 @@ TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chos
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Infinite/Instantaneous");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
+TRANSLATE_NOOP("FullscreenUI", "Input Sources");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Integration");
@@ -7030,6 +7034,7 @@ TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game by selecting a file/disc image.");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game directories.");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Limits how many frames are displayed to the screen. These frames are still rendered.");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
@@ -7039,7 +7044,6 @@ TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Loads a global save state.");
 TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
 TRANSLATE_NOOP("FullscreenUI", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.");
-TRANSLATE_NOOP("FullscreenUI", "Locked Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Log Level");
 TRANSLATE_NOOP("FullscreenUI", "Log To Debug Console");
 TRANSLATE_NOOP("FullscreenUI", "Log To File");
@@ -7097,11 +7101,11 @@ TRANSLATE_NOOP("FullscreenUI", "Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Output Volume");
 TRANSLATE_NOOP("FullscreenUI", "Overclocking Percentage");
 TRANSLATE_NOOP("FullscreenUI", "Overlays or replaces normal triangle drawing with a wireframe/line view.");
+TRANSLATE_NOOP("FullscreenUI", "PGXP (Precision Geometry Transform Pipeline)");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Settings");
-TRANSLATE_NOOP("FullscreenUI", "Password: ");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Path");
@@ -7117,7 +7121,6 @@ TRANSLATE_NOOP("FullscreenUI", "Performance enhancement - jumps directly between
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Colors");
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Textures");
 TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
-TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Position");
 TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
@@ -7149,6 +7152,7 @@ TRANSLATE_NOOP("FullscreenUI", "Remove From List");
 TRANSLATE_NOOP("FullscreenUI", "Removed stage {} ({}).");
 TRANSLATE_NOOP("FullscreenUI", "Removes this shader from the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Renames existing save states when saving to a backup file.");
+TRANSLATE_NOOP("FullscreenUI", "Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved input profile.");
 TRANSLATE_NOOP("FullscreenUI", "Rescan All Games");
 TRANSLATE_NOOP("FullscreenUI", "Reset Memory Card Directory");
@@ -7164,7 +7168,6 @@ TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
 TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.");
-TRANSLATE_NOOP("FullscreenUI", "Rich Presence");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
@@ -7206,16 +7209,15 @@ TRANSLATE_NOOP("FullscreenUI", "Sets the verbosity of messages logged. Higher le
 TRANSLATE_NOOP("FullscreenUI", "Sets which sort of memory card image will be used for slot {}.");
 TRANSLATE_NOOP("FullscreenUI", "Setting {} binding {}.");
 TRANSLATE_NOOP("FullscreenUI", "Settings");
+TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Shader {} added as stage {}.");
 TRANSLATE_NOOP("FullscreenUI", "Shared Card Name");
 TRANSLATE_NOOP("FullscreenUI", "Show CPU Usage");
-TRANSLATE_NOOP("FullscreenUI", "Show Challenge Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Show Controller Input");
 TRANSLATE_NOOP("FullscreenUI", "Show Enhancement Settings");
 TRANSLATE_NOOP("FullscreenUI", "Show FPS");
 TRANSLATE_NOOP("FullscreenUI", "Show Frame Times");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Usage");
-TRANSLATE_NOOP("FullscreenUI", "Show Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Show OSD Messages");
 TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Show Speed");
@@ -7241,6 +7243,8 @@ TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transition
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
 TRANSLATE_NOOP("FullscreenUI", "Sort By");
 TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");
+TRANSLATE_NOOP("FullscreenUI", "Sound Effects");
+TRANSLATE_NOOP("FullscreenUI", "Spectator Mode");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
 TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.");
 TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.");
@@ -7261,7 +7265,6 @@ TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when t
 TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
 TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.");
 TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
-TRANSLATE_NOOP("FullscreenUI", "Test Mode");
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Texture Dumping");
 TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
@@ -7270,7 +7273,6 @@ TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers."
 TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
-TRANSLATE_NOOP("FullscreenUI", "This build was not compiled with RetroAchivements support.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Time Played");
@@ -7286,7 +7288,6 @@ TRANSLATE_NOOP("FullscreenUI", "Type");
 TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
-TRANSLATE_NOOP("FullscreenUI", "Unlocked Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
@@ -7294,7 +7295,6 @@ TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Use Serial File Names");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
-TRANSLATE_NOOP("FullscreenUI", "User Name: ");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
@@ -7308,25 +7308,19 @@ TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum:
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, each session will behave as if no achievements have been unlocked.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, memory cards and controllers will be overwritten when save states are loaded.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.");
-TRANSLATE_NOOP("FullscreenUI", "When enabled, rich presence information will be collected and sent to the server where supported.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.");
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
-TRANSLATE_NOOP("FullscreenUI", "XXX points");
 TRANSLATE_NOOP("FullscreenUI", "Yes");
-TRANSLATE_NOOP("FullscreenUI", "You have unlocked all achievements and earned {} points!");
-TRANSLATE_NOOP("FullscreenUI", "You have unlocked {} of {} achievements, earning {} of {} possible points.");
-TRANSLATE_NOOP("FullscreenUI", "Your password will not be saved in DuckStation, an access token will be generated and used instead.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
-TRANSLATE_NOOP("FullscreenUI", "{} point");
-TRANSLATE_NOOP("FullscreenUI", "{} points");
 // TRANSLATION-STRING-AREA-END
 #endif
