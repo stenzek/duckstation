@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -43,10 +43,10 @@ public:
 
   void initialize();
   void resizeTableViewColumnsToFit();
-  void reloadCommonImages();
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();
+  void reloadThemeSpecificImages();
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
@@ -76,6 +76,7 @@ private Q_SLOTS:
   void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onListViewItemActivated(const QModelIndex& index);
   void onListViewContextMenuRequested(const QPoint& point);
+  void onCoverScaleChanged();
 
 public Q_SLOTS:
   void showGameList();
@@ -96,7 +97,6 @@ private:
   void loadTableViewColumnSortSettings();
   void saveTableViewColumnSortSettings();
   void listZoom(float delta);
-  void updateListFont();
   void updateToolbar();
 
   Ui::GameListWidget m_ui;

@@ -11,6 +11,7 @@
 #include "core/settings.h"
 
 #include "common/assert.h"
+#include "common/file_system.h"
 #include "common/path.h"
 
 #include <QtCore/QtCore>
@@ -22,6 +23,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 #include <optional>
@@ -1030,22 +1032,20 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
   }
 }
 
-template<typename WidgetType>
-static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button,
-                                      QAbstractButton* open_button, QAbstractButton* reset_button, std::string section,
-                                      std::string key, std::string default_value)
+static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
+                                             QAbstractButton* open_button, QAbstractButton* reset_button,
+                                             std::string section, std::string key, std::string default_value,
+                                             bool use_relative = true)
 {
-  using Accessor = SettingAccessor<WidgetType>;
+  using Accessor = SettingAccessor<QLineEdit>;
 
   std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
   if (current_path.empty())
     current_path = default_value;
-  else if (!Path::IsAbsolute(current_path))
-    current_path = Path::Combine(EmuFolders::DataRoot, current_path);
-
+  else if (use_relative && !Path::IsAbsolute(current_path))
+    current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
   const QString value(QString::fromStdString(current_path));
   Accessor::setStringValue(widget, value);
-
   // if we're doing per-game settings, disable the widget, we only allow folder changes in the base config
   if (sif)
   {
@@ -1057,32 +1057,65 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
     return;
   }
 
-  Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
-    const std::string new_value(Accessor::getStringValue(widget).toStdString());
+  auto value_changed = [widget, section = std::move(section), key = std::move(key), default_value, use_relative]() {
+    const std::string new_value(widget->text().toStdString());
     if (!new_value.empty())
     {
-      std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
-      Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+      if (FileSystem::DirectoryExists(new_value.c_str()) ||
+          QMessageBox::question(
+            QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Confirm Folder"),
+            qApp
+              ->translate(
+                "SettingWidgetBinder",
+                "The chosen directory does not currently exist:\n\n%1\n\nDo you want to create this directory?")
+              .arg(QString::fromStdString(new_value)),
+            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+      {
+        if (use_relative)
+        {
+          const std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
+          Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+        }
+        else
+        {
+          Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
+        }
+
+        Host::CommitBaseSettingChanges();
+        g_emu_thread->updateEmuFolders();
+        return;
+      }
     }
     else
     {
-      Host::DeleteBaseSettingValue(section.c_str(), key.c_str());
+      QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
+                            qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
     }
 
-    Host::CommitBaseSettingChanges();
-    g_emu_thread->updateEmuFolders();
-  });
+    // reset to old value
+    std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+    if (current_path.empty())
+      current_path = default_value;
+    else if (use_relative && !Path::IsAbsolute(current_path))
+      current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+
+    widget->setText(QString::fromStdString(current_path));
+  };
 
   if (browse_button)
   {
-    QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key]() {
+    QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key, value_changed]() {
       const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
         QtUtils::GetRootWidget(widget),
+        // It seems that the latter half should show the types of folders that can be selected within Settings ->
+        // Folders, but right now it's broken. It would be best for localization purposes to duplicate this into
+        // multiple lines, each per type of folder.
         qApp->translate("SettingWidgetBinder", "Select folder for %1").arg(QString::fromStdString(key)))));
       if (path.isEmpty())
         return;
 
-      Accessor::setStringValue(widget, path);
+      widget->setText(path);
+      value_changed();
     });
   }
   if (open_button)
@@ -1096,9 +1129,12 @@ static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget
   if (reset_button)
   {
     QObject::connect(reset_button, &QAbstractButton::clicked, reset_button,
-                     [widget, default_value = std::move(default_value)]() {
-                       Accessor::setStringValue(widget, QString::fromStdString(default_value));
+                     [widget, default_value = std::move(default_value), value_changed]() {
+                       widget->setText(QString::fromStdString(default_value));
+                       value_changed();
                      });
   }
+
+  widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
 }
 } // namespace SettingWidgetBinder

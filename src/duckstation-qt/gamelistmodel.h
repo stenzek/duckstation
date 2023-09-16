@@ -45,7 +45,7 @@ public:
   static std::optional<Column> getColumnIdForName(std::string_view name);
   static const char* getColumnName(Column col);
 
-  GameListModel(QObject* parent = nullptr);
+  GameListModel(float cover_scale, bool show_cover_titles, QObject* parent = nullptr);
   ~GameListModel();
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -56,6 +56,7 @@ public:
   ALWAYS_INLINE const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
   void refresh();
+  void reloadThemeSpecificImages();
 
   bool titlesLessThan(int left_row, int right_row) const;
 
@@ -71,10 +72,13 @@ public:
   int getCoverArtSpacing() const;
   void refreshCovers();
   void updateCacheSize(int width, int height);
-  void reloadCommonImages();
+
+Q_SIGNALS:
+  void coverScaleChanged();
 
 private:
   void loadCommonImages();
+  void loadThemeSpecificImages();
   void setColumnDisplayNames();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);

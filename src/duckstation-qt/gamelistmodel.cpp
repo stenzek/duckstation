@@ -114,11 +114,11 @@ const char* GameListModel::getColumnName(Column col)
   return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(QObject* parent /* = nullptr */)
-  : QAbstractTableModel(parent), m_cover_pixmap_cache(MIN_COVER_CACHE_SIZE)
+GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject* parent /* = nullptr */)
+  : QAbstractTableModel(parent), m_show_titles_for_covers(show_cover_titles)
 {
   loadCommonImages();
-  setCoverScale(1.0f);
+  setCoverScale(cover_scale);
   setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
@@ -132,6 +132,8 @@ void GameListModel::setCoverScale(float scale)
   m_cover_scale = scale;
   m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
   m_loading_pixmap.fill(QColor(0, 0, 0, 0));
+
+  emit coverScaleChanged();
 }
 
 void GameListModel::refreshCovers()
@@ -150,9 +152,9 @@ void GameListModel::updateCacheSize(int width, int height)
   m_cover_pixmap_cache.SetMaxCapacity(static_cast<int>(std::max(num_columns * num_rows, MIN_COVER_CACHE_SIZE)));
 }
 
-void GameListModel::reloadCommonImages()
+void GameListModel::reloadThemeSpecificImages()
 {
-  loadCommonImages();
+  loadThemeSpecificImages();
   refresh();
 }
 
@@ -585,17 +587,24 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
   }
 }
 
-void GameListModel::loadCommonImages()
+void GameListModel::loadThemeSpecificImages()
 {
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::Count); i++)
     m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(QSize(24, 24));
 
   for (u32 i = 0; i < static_cast<u32>(DiscRegion::Count); i++)
     m_region_pixmaps[i] = QtUtils::GetIconForRegion(static_cast<DiscRegion>(i)).pixmap(42, 30);
+}
+
+void GameListModel::loadCommonImages()
+{
+  loadThemeSpecificImages();
 
   for (int i = 0; i < static_cast<int>(GameDatabase::CompatibilityRating::Count); i++)
+  {
     m_compatibility_pixmaps[i] =
       QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
+  }
 
   m_placeholder_pixmap.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
 }

@@ -239,6 +239,7 @@ private:
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void setTheme(const QString& theme);
   void updateTheme();
+  void reloadThemeSpecificImages();
   void recreate();
 
   void registerForDeviceNotifications();
