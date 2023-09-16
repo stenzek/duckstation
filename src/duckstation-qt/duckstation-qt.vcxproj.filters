@@ -243,16 +243,16 @@
     <QtTs Include="translations\duckstation-qt_nl.ts">
       <Filter>translations</Filter>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_pt-br.ts">
+    <QtTs Include="translations\duckstation-qt_pt-BR.ts">
       <Filter>translations</Filter>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_pt-pt.ts">
+    <QtTs Include="translations\duckstation-qt_pt-PT.ts">
       <Filter>translations</Filter>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_ru.ts">
       <Filter>translations</Filter>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_zh-cn.ts">
+    <QtTs Include="translations\duckstation-qt_zh-CN.ts">
       <Filter>translations</Filter>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_pl.ts">

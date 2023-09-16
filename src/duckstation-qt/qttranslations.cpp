@@ -49,6 +49,7 @@ struct GlyphInfo
   const char16_t* used_glyphs;
 };
 
+static QString FixLanguageName(const QString& language);
 static std::string GetFontPath(const GlyphInfo* gi);
 static void UpdateGlyphRanges(const std::string_view& language);
 static const GlyphInfo* GetGlyphInfo(const std::string_view& language);
@@ -67,25 +68,28 @@ void QtHost::InstallTranslator()
   }
   s_translators.clear();
 
-  const QString language(
-    QString::fromStdString(Host::GetBaseStringSettingValue("Main", "Language", GetDefaultLanguage())));
+  // Fix old language names.
+  const QString language =
+    FixLanguageName(QString::fromStdString(Host::GetBaseStringSettingValue("Main", "Language", GetDefaultLanguage())));
 
   // install the base qt translation first
 #ifndef __APPLE__
   const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
 #else
-	const QString base_dir = QStringLiteral("%1/../Resources/translations").arg(qApp->applicationDirPath());
+  const QString base_dir = QStringLiteral("%1/../Resources/translations").arg(qApp->applicationDirPath());
 #endif
-  
-  QString base_path(QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language));
+
+  // Qt base uses underscores instead of hyphens.
+  const QString qt_language = QString(language).replace(QChar('-'), QChar('_'));
+  QString base_path(QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qt_language));
   bool has_base_ts = QFile::exists(base_path);
   if (!has_base_ts)
   {
     // Try without the country suffix.
-    const int index = language.indexOf('-');
+    const int index = language.lastIndexOf('_');
     if (index > 0)
     {
-      base_path = QStringLiteral("%1/qtbase_%2.qm").arg(base_dir).arg(language.left(index));
+      base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language.left(index));
       has_base_ts = QFile::exists(base_path);
     }
   }
@@ -132,6 +136,18 @@ void QtHost::InstallTranslator()
   UpdateGlyphRanges(language.toStdString());
 
   Host::ClearTranslationCache();
+}
+
+QString QtHost::FixLanguageName(const QString& language)
+{
+  if (language == QStringLiteral("pt-br"))
+    return QStringLiteral("pt-BR");
+  else if (language == QStringLiteral("pt-pt"))
+    return QStringLiteral("pt-PT");
+  else if (language == QStringLiteral("zh-cn"))
+    return QStringLiteral("zh-CN");
+  else
+    return language;
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
@@ -184,7 +200,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
   return {{QStringLiteral("English"), QStringLiteral("en")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
           {QStringLiteral("Español de Hispanoamérica"), QStringLiteral("es")},
-          {QStringLiteral("Español de España"), QStringLiteral("es-es")},
+          {QStringLiteral("Español de España"), QStringLiteral("es-ES")},
           {QStringLiteral("Français"), QStringLiteral("fr")},
           {QStringLiteral("עברית"), QStringLiteral("he")},
           {QStringLiteral("日本語"), QStringLiteral("ja")},
@@ -192,11 +208,11 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
           {QStringLiteral("Italiano"), QStringLiteral("it")},
           {QStringLiteral("Nederlands"), QStringLiteral("nl")},
           {QStringLiteral("Polski"), QStringLiteral("pl")},
-          {QStringLiteral("Português (Pt)"), QStringLiteral("pt-pt")},
-          {QStringLiteral("Português (Br)"), QStringLiteral("pt-br")},
+          {QStringLiteral("Português (Pt)"), QStringLiteral("pt-PT")},
+          {QStringLiteral("Português (Br)"), QStringLiteral("pt-BR")},
           {QStringLiteral("Русский"), QStringLiteral("ru")},
           {QStringLiteral("Türkçe"), QStringLiteral("tr")},
-          {QStringLiteral("简体中文"), QStringLiteral("zh-cn")}};
+          {QStringLiteral("简体中文"), QStringLiteral("zh-CN")}};
 }
 
 const char* QtHost::GetDefaultLanguage()

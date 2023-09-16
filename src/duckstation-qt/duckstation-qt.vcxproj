@@ -309,16 +309,16 @@
     <QtTs Include="translations\duckstation-qt_pl.ts">
       <FileType>Document</FileType>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_pt-br.ts">
+    <QtTs Include="translations\duckstation-qt_pt-BR.ts">
       <FileType>Document</FileType>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_pt-pt.ts">
+    <QtTs Include="translations\duckstation-qt_pt-PT.ts">
       <FileType>Document</FileType>
     </QtTs>
     <QtTs Include="translations\duckstation-qt_ru.ts">
       <FileType>Document</FileType>
     </QtTs>
-    <QtTs Include="translations\duckstation-qt_zh-cn.ts">
+    <QtTs Include="translations\duckstation-qt_zh-CN.ts">
       <FileType>Document</FileType>
     </QtTs>
   </ItemGroup>
