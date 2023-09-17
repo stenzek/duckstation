@@ -202,7 +202,7 @@ void CrashHandler::Uninstall()
   }
 }
 
-#elif defined(USE_LIBBACKTRACE)
+#elif defined(ENABLE_LIBBACKTRACE)
 
 #include <backtrace.h>
 #include <cstdarg>

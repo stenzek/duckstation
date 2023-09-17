@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -74,7 +74,7 @@ public:
   static std::unique_ptr<InputSource> CreateXInputSource();
   static std::unique_ptr<InputSource> CreateWin32RawInputSource();
 #endif
-#ifdef USE_SDL2
+#ifdef ENABLE_SDL2
   static std::unique_ptr<InputSource> CreateSDLSource();
 #endif
 #ifdef __ANDROID__

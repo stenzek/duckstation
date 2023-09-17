@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "input_manager.h"
@@ -481,7 +481,7 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
   "XInput",
   "RawInput",
 #endif
-#ifdef USE_SDL2
+#ifdef ENABLE_SDL2
   "SDL",
 #endif
 #ifdef __ANDROID__
@@ -517,7 +517,7 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
       return false;
 #endif
 
-#ifdef USE_SDL2
+#ifdef ENABLE_SDL2
     case InputSourceType::SDL:
       return true;
 #endif
@@ -1926,7 +1926,7 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
 #endif
-#ifdef USE_SDL2
+#ifdef ENABLE_SDL2
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
 #endif
 #ifdef __ANDROID__

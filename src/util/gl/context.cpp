@@ -19,11 +19,11 @@
 #elif defined(__APPLE__)
 #include "context_agl.h"
 #else
-#ifdef USE_EGL
-#ifdef USE_WAYLAND
+#ifdef ENABLE_EGL
+#ifdef ENABLE_WAYLAND
 #include "context_egl_wayland.h"
 #endif
-#ifdef USE_X11
+#ifdef ENABLE_X11
 #include "context_egl_x11.h"
 #endif
 #endif
@@ -121,11 +121,11 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
 #elif defined(__APPLE__)
   context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
 #else
-#if defined(USE_X11)
+#if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
     context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
 #endif
-#if defined(USE_WAYLAND)
+#if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)
     context = ContextEGLWayland::Create(wi, versions_to_try, num_versions_to_try);
 #endif

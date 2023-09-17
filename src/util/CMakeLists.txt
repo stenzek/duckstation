@@ -74,22 +74,22 @@ target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
 target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd reshadefx)
 
-if(USE_CUBEB)
+if(ENABLE_CUBEB)
   target_sources(util PRIVATE
     cubeb_audio_stream.cpp
     cubeb_audio_stream.h
   )
-  target_compile_definitions(util PUBLIC "USE_CUBEB=1")
+  target_compile_definitions(util PUBLIC "ENABLE_CUBEB=1")
   target_link_libraries(util PRIVATE cubeb)
 endif()
 
-if(USE_X11)
-  target_compile_definitions(util PRIVATE "-DUSE_X11=1")
+if(ENABLE_X11)
+  target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
   target_link_libraries(util PRIVATE X11::X11 X11::Xrandr)
 endif()
 
-if(USE_WAYLAND)
-  target_compile_definitions(util PRIVATE "-DUSE_WAYLAND=1")
+if(ENABLE_WAYLAND)
+  target_compile_definitions(util PRIVATE "-DENABLE_WAYLAND=1")
 endif()
 
 if(ENABLE_OPENGL)
@@ -106,7 +106,7 @@ if(ENABLE_OPENGL)
     opengl_texture.cpp
     opengl_texture.h
   )
-  target_compile_definitions(util PUBLIC "WITH_OPENGL=1")
+  target_compile_definitions(util PUBLIC "ENABLE_OPENGL=1")
   target_link_libraries(util PRIVATE glad)
 
   if(WIN32)
@@ -122,9 +122,9 @@ if(ENABLE_OPENGL)
       gl/context_egl.cpp
       gl/context_egl.h
     )
-    target_compile_definitions(util PRIVATE "-DUSE_EGL=1")
+    target_compile_definitions(util PRIVATE "-DENABLE_EGL=1")
 
-    if(USE_X11)
+    if(ENABLE_X11)
       target_sources(util PRIVATE
         gl/context_egl_x11.cpp
         gl/context_egl_x11.h
@@ -135,7 +135,7 @@ if(ENABLE_OPENGL)
       # makes the data types opaque, we can still use it with X11 if needed.
       target_compile_definitions(util PRIVATE "-DEGL_NO_X11=1")
     endif()
-    if(USE_WAYLAND)
+    if(ENABLE_WAYLAND)
       target_sources(util PRIVATE
         gl/context_egl_wayland.cpp
         gl/context_egl_wayland.h
@@ -188,15 +188,15 @@ if(ENABLE_VULKAN)
     vulkan_texture.cpp
     vulkan_texture.h
   )
-  target_compile_definitions(util PUBLIC "WITH_VULKAN=1")
+  target_compile_definitions(util PUBLIC "ENABLE_VULKAN=1")
 endif()
 
-if(USE_SDL2)
+if(ENABLE_SDL2)
   target_sources(util PRIVATE 
     sdl_input_source.cpp
     sdl_input_source.h
   )
-  target_compile_definitions(util PUBLIC "USE_SDL2=1")
+  target_compile_definitions(util PUBLIC "ENABLE_SDL2=1")
   target_link_libraries(util PUBLIC SDL2::SDL2)
 
   # Copy bundled SDL2 to output on Windows.

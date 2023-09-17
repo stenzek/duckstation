@@ -65,10 +65,10 @@ enum class GPURenderer : u8
 #ifdef __APPLE__
   HardwareMetal,
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
   HardwareVulkan,
 #endif
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   HardwareOpenGL,
 #endif
   Software,
@@ -144,7 +144,7 @@ enum class DisplayScalingMode : u8
 enum class AudioBackend : u8
 {
   Null,
-#ifdef USE_CUBEB
+#ifdef ENABLE_CUBEB
   Cubeb,
 #endif
 #ifdef _WIN32

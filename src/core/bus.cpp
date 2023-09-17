@@ -116,7 +116,7 @@ static Common::MemoryArena m_memory_arena;
 
 static CPUFastmemMode m_fastmem_mode = CPUFastmemMode::Disabled;
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
 static u8* m_fastmem_base = nullptr;
 static std::vector<Common::MemoryArena::View> m_fastmem_ram_views;
 static std::vector<Common::MemoryArena::View> m_fastmem_reserved_views;
@@ -164,7 +164,7 @@ void Shutdown()
   std::free(m_fastmem_lut);
   m_fastmem_lut = nullptr;
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   m_fastmem_base = nullptr;
   m_fastmem_ram_views.clear();
 #endif
@@ -381,7 +381,7 @@ CPUFastmemMode GetFastmemMode()
 
 u8* GetFastmemBase()
 {
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   if (m_fastmem_mode == CPUFastmemMode::MMap)
     return m_fastmem_base;
 #endif
@@ -393,7 +393,7 @@ u8* GetFastmemBase()
 
 void UpdateFastmemViews(CPUFastmemMode mode)
 {
-#ifndef WITH_MMAP_FASTMEM
+#ifndef ENABLE_MMAP_FASTMEM
   Assert(mode != CPUFastmemMode::MMap);
 #else
   m_fastmem_ram_views.clear();
@@ -403,7 +403,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
   m_fastmem_mode = mode;
   if (mode == CPUFastmemMode::Disabled)
   {
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
     m_fastmem_base = nullptr;
 #endif
     std::free(m_fastmem_lut);
@@ -411,7 +411,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
     return;
   }
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   if (mode == CPUFastmemMode::MMap)
   {
     std::free(m_fastmem_lut);
@@ -488,7 +488,7 @@ void UpdateFastmemViews(CPUFastmemMode mode)
   }
 #endif
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   m_fastmem_base = nullptr;
 #endif
 
@@ -533,7 +533,7 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address)
 
   switch (m_fastmem_mode)
   {
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
     case CPUFastmemMode::MMap:
     {
       // Currently since we don't map the mirrors, don't use fastmem for them.
@@ -578,7 +578,7 @@ void ClearRAMCodePage(u32 index)
 
 void SetCodePageFastmemProtection(u32 page_index, bool writable)
 {
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   if (m_fastmem_mode == CPUFastmemMode::MMap)
   {
     // unprotect fastmem pages
@@ -609,7 +609,7 @@ void ClearRAMCodePageFlags()
 {
   m_ram_code_bits.reset();
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   if (m_fastmem_mode == CPUFastmemMode::MMap)
   {
     // unprotect fastmem pages

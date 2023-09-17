@@ -22,7 +22,7 @@ if(WIN32)
     DEBUG_POSTFIX "-debug")
 endif()
 
-if(USE_X11)
+if(ENABLE_X11)
   message(STATUS "Building X11 NoGUI Platform.")
   target_compile_definitions(duckstation-nogui PRIVATE "NOGUI_PLATFORM_X11=1")
   target_sources(duckstation-nogui PRIVATE
@@ -33,7 +33,7 @@ if(USE_X11)
   target_link_libraries(duckstation-nogui PRIVATE "${X11_LIBRARIES}" "${X11_Xrandr_LIB}")
 endif()
 
-if(USE_WAYLAND)
+if(ENABLE_WAYLAND)
   message(STATUS "Building Wayland NoGUI Platform.")
   find_package(ECM REQUIRED NO_MODULE)
   list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")

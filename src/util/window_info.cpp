@@ -82,7 +82,7 @@ bool WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_
 
 #else
 
-#ifdef USE_X11
+#ifdef ENABLE_X11
 
 #include "common/scoped_guard.h"
 #include "common/log.h"
@@ -220,11 +220,11 @@ static bool GetRefreshRateFromXRandR(const WindowInfo& wi, float* refresh_rate)
   return true;
 }
 
-#endif // USE_X11
+#endif // ENABLE_X11
 
 bool WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_rate)
 {
-#if defined(USE_X11)
+#if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
     return GetRefreshRateFromXRandR(wi, refresh_rate);
 #endif

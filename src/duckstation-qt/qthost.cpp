@@ -1764,7 +1764,7 @@ void QtHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -settings <filename>: Loads a custom settings configuration from the\n"
                        "    specified filename. Default settings applied if file not found.\n");
   std::fprintf(stderr, "  -earlyconsole: Creates console as early as possible, for logging.\n");
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
 #endif
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
@@ -1905,7 +1905,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         InitializeEarlyConsole();
         continue;
       }
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
       else if (CHECK_ARG("-raintegration"))
       {
         Achievements::SwitchToRAIntegration();

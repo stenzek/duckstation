@@ -14,7 +14,7 @@
 #include "util/d3d11_device.h"
 #include "util/d3d12_device.h"
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
 #include "util/vulkan_device.h"
 #endif
 
@@ -199,7 +199,7 @@ void DisplaySettingsWidget::populateGPUAdaptersAndResolutions()
       aml = GPUDevice::WrapGetMetalAdapterAndModeList();
       break;
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
     case GPURenderer::HardwareVulkan:
       aml = VulkanDevice::StaticGetAdapterAndModeList();
       threaded_presentation_supported = true;

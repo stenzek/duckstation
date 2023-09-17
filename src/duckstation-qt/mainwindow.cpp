@@ -144,7 +144,7 @@ void MainWindow::initialize()
   switchToGameListView();
   updateWindowTitle();
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
     Achievements::RAIntegration::MainWindowChanged((void*)winId());
 #endif
@@ -1616,7 +1616,7 @@ void MainWindow::setupAdditionalUi()
     connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(scale); });
   }
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
   {
     QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menu_Tools);

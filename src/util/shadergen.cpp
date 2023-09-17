@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cstring>
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
 #include "opengl_loader.h"
 #endif
 
@@ -18,10 +18,10 @@ ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
     m_spirv(render_api == RenderAPI::Vulkan || render_api == RenderAPI::Metal),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
-#if defined(WITH_OPENGL) || defined(WITH_VULKAN)
+#if defined(ENABLE_OPENGL) || defined(ENABLE_VULKAN)
   if (m_glsl)
   {
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
     if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
       SetGLSLVersionString();
 
@@ -47,7 +47,7 @@ ShaderGen::~ShaderGen() = default;
 
 bool ShaderGen::UseGLSLBindingLayout()
 {
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   return (GLAD_GL_ES_VERSION_3_1 || GLAD_GL_VERSION_4_3 ||
           (GLAD_GL_ARB_explicit_attrib_location && GLAD_GL_ARB_explicit_uniform_location &&
            GLAD_GL_ARB_shading_language_420pack));
@@ -61,7 +61,7 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, bool enable
   ss << "#define " << name << " " << BoolToUInt32(enabled) << "\n";
 }
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
 void ShaderGen::SetGLSLVersionString()
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -113,7 +113,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   else if (m_spirv)
     ss << "#version 450 core\n\n";
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   // Extension enabling for OpenGL.
   if (m_render_api == RenderAPI::OpenGLES)
   {
@@ -160,7 +160,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_VULKAN", m_render_api == RenderAPI::Vulkan);
   DefineMacro(ss, "API_METAL", m_render_api == RenderAPI::Metal);
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   if (m_render_api == RenderAPI::OpenGLES)
   {
     ss << "precision highp float;\n";
@@ -356,7 +356,7 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
 const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
                                                  bool sample_interpolation, bool is_out) const
 {
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   const bool shading_language_420pack = GLAD_GL_ARB_shading_language_420pack;
 #else
   const bool shading_language_420pack = false;

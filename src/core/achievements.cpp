@@ -52,7 +52,7 @@
 
 Log_SetChannel(Achievements);
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
 // RA_Interface ends up including windows.h, with its silly macros.
 #ifdef _WIN32
 #include "common/windows_headers.h"
@@ -184,7 +184,7 @@ static void CloseLeaderboard();
 
 static bool s_hardcore_mode = false;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
 static bool s_using_raintegration = false;
 #endif
 
@@ -317,7 +317,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 
 bool Achievements::IsActive()
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   return (s_client != nullptr) || s_using_raintegration;
 #else
   return (s_client != nullptr);
@@ -326,7 +326,7 @@ bool Achievements::IsActive()
 
 bool Achievements::IsHardcoreModeActive()
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
     return RA_HardcoreModeIsActive() != 0;
 #endif
@@ -500,7 +500,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
 
 bool Achievements::Shutdown(bool allow_cancel)
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     if (System::IsValid() && allow_cancel && !RA_ConfirmLoadNewRom(true))
@@ -612,7 +612,7 @@ void Achievements::IdleUpdate()
   if (!IsActive())
     return;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
     return;
 #endif
@@ -628,7 +628,7 @@ void Achievements::FrameUpdate()
   if (!IsActive())
     return;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     RA_DoAchievementsFrame();
@@ -748,7 +748,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
   Log_InfoPrintf("Rich presence updated: %s", s_rich_presence_string.c_str());
   Host::OnAchievementsRefreshed();
 
-#ifdef WITH_DISCORD_PRESCENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   lock.unlock();
   System::UpdateDiscordPresence();
   lock.lock();
@@ -780,7 +780,7 @@ void Achievements::CancelGameLoad()
   DisableHardcoreMode();
   Host::OnAchievementsRefreshed();
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     RAIntegration::GameChanged();
@@ -828,7 +828,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   s_game_path = path;
   s_game_hash = std::move(game_hash);
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     RAIntegration::GameChanged();
@@ -1280,7 +1280,7 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 
 void Achievements::ResetClient()
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     RA_OnReset();
@@ -1297,7 +1297,7 @@ void Achievements::ResetClient()
 
 void Achievements::OnSystemPaused(bool paused)
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
     RA_SetPaused(paused);
 #endif
@@ -1308,7 +1308,7 @@ void Achievements::DisableHardcoreMode()
   if (!IsActive())
     return;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     if (RA_HardcoreModeIsActive())
@@ -1397,7 +1397,7 @@ bool Achievements::DoState(StateWrapper& sw)
     {
       // reset runtime, no data (state might've been created without cheevos)
       Log_DevPrintf("State is missing cheevos data, resetting runtime");
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
       if (IsUsingRAIntegration())
         RA_OnReset();
       else
@@ -1414,7 +1414,7 @@ bool Achievements::DoState(StateWrapper& sw)
     if (sw.HasError())
       return false;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
       RA_RestoreState(reinterpret_cast<const char*>(data.get()));
@@ -1437,7 +1437,7 @@ bool Achievements::DoState(StateWrapper& sw)
     u32 data_size;
     std::unique_ptr<u8[]> data;
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
       const int size = RA_CaptureState(nullptr, 0);
@@ -1712,7 +1712,7 @@ void Achievements::Logout()
 
 bool Achievements::ConfirmSystemReset()
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
     return RA_ConfirmLoadNewRom(false);
 #endif
@@ -1722,7 +1722,7 @@ bool Achievements::ConfirmSystemReset()
 
 bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
     return (RA_WarnDisableHardcore(trigger) != 0);
 #endif
@@ -2829,7 +2829,7 @@ void Achievements::CloseLeaderboard()
   s_open_leaderboard = nullptr;
 }
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
 
 #include "RA_Consoles.h"
 

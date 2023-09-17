@@ -32,11 +32,11 @@ if(NOT ANDROID)
 
   set(ENABLE_CUBEB ON)
   set(ENABLE_DISCORD_PRESENCE ON)
-  set(USE_SDL2 ON)
+  set(ENABLE_SDL2 ON)
 
   if(LINUX OR FREEBSD)
-    option(USE_X11 "Support X11 window system" ON)
-    option(USE_WAYLAND "Support Wayland window system" ON)
+    option(ENABLE_X11 "Support X11 window system" ON)
+    option(ENABLE_WAYLAND "Support Wayland window system" ON)
   endif()
   if(APPLE)
     option(SKIP_POSTPROCESS_BUNDLE "Disable bundle post-processing, including Qt additions" OFF)
@@ -45,7 +45,7 @@ endif()
 
 
 # Required libraries.
-if(USE_SDL2)
+if(ENABLE_SDL2)
   find_package(SDL2 2.28.2 REQUIRED)
 endif()
 if(NOT WIN32 AND NOT ANDROID)
@@ -65,17 +65,17 @@ endif()
 # Everything except Windows/Mac use EGL.
 if(ENABLE_OPENGL AND (LINUX OR FREEBSD OR ANDROID))
   find_package(EGL REQUIRED)
-  set(USE_EGL TRUE)
+  set(ENABLE_EGL TRUE)
 endif()
 
 
-if(USE_X11)
+if(ENABLE_X11)
   find_package(X11 REQUIRED)
   if (NOT X11_Xrandr_FOUND)
     message(FATAL_ERROR "XRandR extension is required")
   endif()
 endif()
-if(USE_WAYLAND)
+if(ENABLE_WAYLAND)
   message(STATUS "Wayland support enabled")
 endif()
 

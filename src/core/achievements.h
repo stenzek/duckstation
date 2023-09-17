@@ -126,7 +126,7 @@ bool PrepareLeaderboardsWindow();
 /// Renders the leaderboard list.
 void DrawLeaderboardsWindow();
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
 /// Prevents the internal implementation from being used. Instead, RAIntegration will be
 /// called into when achievement-related events occur.
 void SwitchToRAIntegration();

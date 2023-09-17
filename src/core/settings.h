@@ -420,9 +420,9 @@ struct Settings
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareD3D11;
 #elif defined(__APPLE__)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareMetal;
-#elif defined(WITH_OPENGL)
+#elif defined(ENABLE_OPENGL)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareOpenGL;
-#elif defined(WITH_VULKAN)
+#elif defined(ENABLE_VULKAN)
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::HardwareVulkan;
 #else
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Software;
@@ -434,9 +434,9 @@ struct Settings
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
   static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;
 
-#ifdef WITH_RECOMPILER
+#ifdef ENABLE_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::MMap;
 #else
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;
@@ -446,7 +446,7 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#if defined(USE_CUBEB)
+#if defined(ENABLE_CUBEB)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
 #elif defined(_WIN32)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::XAudio2;

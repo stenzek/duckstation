@@ -659,7 +659,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     }
   }
 
-#ifndef WITH_MMAP_FASTMEM
+#ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
     Log_WarningPrintf("mmap fastmem is not available on this platform, using LUT instead.");
@@ -929,10 +929,10 @@ static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef __APPLE__
   "Metal",
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
   "Vulkan",
 #endif
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   "OpenGL",
 #endif
   "Software");
@@ -943,10 +943,10 @@ static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef __APPLE__
   TRANSLATE_NOOP("GPURenderer", "Hardware (Metal)"),
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
   TRANSLATE_NOOP("GPURenderer", "Hardware (Vulkan)"),
 #endif
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   TRANSLATE_NOOP("GPURenderer", "Hardware (OpenGL)"),
 #endif
   TRANSLATE_NOOP("GPURenderer", "Software"));
@@ -988,11 +988,11 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
 #ifdef __APPLE__
       return RenderAPI::Metal;
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
     case GPURenderer::HardwareVulkan:
       return RenderAPI::Vulkan;
 #endif
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
     case GPURenderer::HardwareOpenGL:
       return RenderAPI::OpenGL;
 #endif
@@ -1247,7 +1247,7 @@ const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 
 static constexpr const char* s_audio_backend_names[] = {
   "Null",
-#ifdef USE_CUBEB
+#ifdef ENABLE_CUBEB
   "Cubeb",
 #endif
 #ifdef _WIN32
@@ -1259,7 +1259,7 @@ static constexpr const char* s_audio_backend_names[] = {
 };
 static constexpr const char* s_audio_backend_display_names[] = {
   TRANSLATE_NOOP("AudioBackend", "Null (No Output)"),
-#ifdef USE_CUBEB
+#ifdef ENABLE_CUBEB
   TRANSLATE_NOOP("AudioBackend", "Cubeb"),
 #endif
 #ifdef _WIN32

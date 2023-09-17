@@ -25,11 +25,11 @@ Log_SetChannel(GPUDevice);
 #include "d3d_common.h"
 #endif
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
 #include "opengl_device.h"
 #endif
 
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
 #include "vulkan_device.h"
 #endif
 
@@ -337,12 +337,12 @@ std::string GPUDevice::GetShaderCacheBaseName(const std::string_view& type) cons
       ret = fmt::format("d3d12_{}{}", type, debug_suffix);
       break;
 #endif
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
     case RenderAPI::Vulkan:
       ret = fmt::format("vulkan_{}{}", type, debug_suffix);
       break;
 #endif
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
     case RenderAPI::OpenGL:
       ret = fmt::format("opengl_{}{}", type, debug_suffix);
       break;
@@ -747,12 +747,12 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 {
   switch (api)
   {
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
     case RenderAPI::Vulkan:
       return std::make_unique<VulkanDevice>();
 #endif
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
       return std::make_unique<OpenGLDevice>();

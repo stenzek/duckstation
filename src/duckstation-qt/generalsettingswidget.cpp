@@ -99,7 +99,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* pa
   dialog->registerWidgetHelp(m_ui.autoLoadCheats, tr("Automatically Load Cheats"), tr("Unchecked"),
                              tr("Automatically loads and applies cheats on game start."));
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence",
                                                  false);

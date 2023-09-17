@@ -31,7 +31,7 @@ protected:
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;
 
-#ifdef WITH_OPENGL
+#ifdef ENABLE_OPENGL
   void SetGLSLVersionString();
 #endif
 

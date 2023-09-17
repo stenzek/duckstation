@@ -94,7 +94,7 @@ if(NOT WIN32 AND NOT ANDROID)
   )
 
   if(LIBBACKTRACE_FOUND)
-    target_compile_definitions(common PRIVATE "-DUSE_LIBBACKTRACE=1")
+    target_compile_definitions(common PRIVATE "-DENABLE_LIBBACKTRACE=1")
     target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
   endif()
 endif()

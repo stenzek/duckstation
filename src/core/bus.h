@@ -89,7 +89,7 @@ enum : size_t
   // Offsets within the memory arena.
   MEMORY_ARENA_RAM_OFFSET = 0,
 
-#ifdef WITH_MMAP_FASTMEM
+#ifdef ENABLE_MMAP_FASTMEM
   // Fastmem region size is 4GB to cover the entire 32-bit address space.
   FASTMEM_REGION_SIZE = UINT64_C(0x100000000),
 #endif

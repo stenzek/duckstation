@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
-#ifdef WITH_RECOMPILER
+#ifdef ENABLE_RECOMPILER
 #include "cpu_recompiler_types.h"
 #endif
 
@@ -88,7 +88,7 @@ struct CodeBlock
   TickCount uncached_fetch_ticks = 0;
   u32 icache_line_count = 0;
 
-#ifdef WITH_RECOMPILER
+#ifdef ENABLE_RECOMPILER
   std::vector<Recompiler::LoadStoreBackpatchInfo> loadstore_backpatch_info;
 #endif
 
@@ -127,14 +127,14 @@ void Initialize();
 void Shutdown();
 [[noreturn]] void Execute();
 
-#ifdef WITH_RECOMPILER
+#ifdef ENABLE_RECOMPILER
 using DispatcherFunction = void (*)();
 using SingleBlockDispatcherFunction = void (*)(const CodeBlock::HostCodePointer);
 
 FastMapTable* GetFastMapPointer();
 #endif
 
-#if defined(WITH_RECOMPILER)
+#if defined(ENABLE_RECOMPILER)
 JitCodeBuffer& GetCodeBuffer();
 #endif
 

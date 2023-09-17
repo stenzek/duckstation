@@ -74,7 +74,7 @@ Log_SetChannel(System);
 #include <mmsystem.h>
 #endif
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
 #include "discord_rpc.h"
 #endif
 
@@ -132,7 +132,7 @@ static void UpdateSessionTime(const std::string& prev_serial);
 
 static void SetTimerResolutionIncreased(bool enabled);
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
 static void InitializeDiscordPresence();
 static void ShutdownDiscordPresence();
 static void PollDiscordPresence();
@@ -231,7 +231,7 @@ static u32 s_runahead_replay_frames = 0;
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
 static u64 s_session_start_time = 0;
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
 #endif
 
@@ -245,7 +245,7 @@ void System::Internal::ProcessStartup()
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
     Achievements::SwitchToRAIntegration();
 #endif
@@ -255,7 +255,7 @@ void System::Internal::ProcessStartup()
 
 void System::Internal::ProcessShutdown()
 {
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
 #endif
 
@@ -268,7 +268,7 @@ void System::Internal::IdlePollUpdate()
 {
   InputManager::PollSources();
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   PollDiscordPresence();
 #endif
 
@@ -1664,7 +1664,7 @@ void System::ClearRunningGame()
 
   Achievements::GameChanged(s_running_game_path, nullptr);
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   UpdateDiscordPresence();
 #endif
 }
@@ -1740,7 +1740,7 @@ void System::FrameDone()
   if (Achievements::IsActive())
     Achievements::FrameUpdate();
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   PollDiscordPresence();
 #endif
 
@@ -3316,7 +3316,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
 
   SaveStateSelectorUI::RefreshList();
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   UpdateDiscordPresence();
 #endif
 
@@ -4718,7 +4718,7 @@ u64 System::GetSessionPlayedTime()
   return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
 }
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
 
 void System::InitializeDiscordPresence()
 {

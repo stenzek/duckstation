@@ -2746,7 +2746,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
   }
 
-#ifdef WITH_DISCORD_PRESENCE
+#ifdef ENABLE_DISCORD_PRESENCE
   MenuHeading(FSUI_CSTR("Integration"));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
                     "Shows the game you are currently playing as part of your profile on Discord.", "Main",
@@ -3220,7 +3220,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   MenuHeading(FSUI_CSTR("Input Sources"));
 
-#ifdef USE_SDL2
+#ifdef ENABLE_SDL2
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable SDL Input Source"),
                     FSUI_CSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
                     false);
@@ -3781,7 +3781,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
     break;
 #endif
 
-#ifdef WITH_VULKAN
+#ifdef ENABLE_VULKAN
     case GPURenderer::HardwareVulkan:
     {
       DrawToggleSetting(bsi, FSUI_CSTR("Threaded Presentation"),
@@ -4416,7 +4416,7 @@ void FullscreenUI::DrawAudioSettingsPage()
 
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
-#ifdef WITH_RAINTEGRATION
+#ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
   {
     BeginMenuButtons();

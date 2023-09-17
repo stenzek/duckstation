@@ -15,18 +15,18 @@
 #elif defined(__ANDROID__)
 #define VK_USE_PLATFORM_ANDROID_KHR
 #else
-#ifdef USE_X11
+#ifdef ENABLE_X11
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
-#ifdef USE_WAYLAND
+#ifdef ENABLE_WAYLAND
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #endif
 #endif
 
 #include "vulkan/vulkan.h"
 
-#if defined(USE_X11)
+#if defined(ENABLE_X11)
 
 // This breaks a bunch of our code. They shouldn't be #defines in the first place.
 #ifdef None

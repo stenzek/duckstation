@@ -79,7 +79,7 @@ public:
 
   static std::unique_ptr<AudioStream> CreateNullStream(u32 sample_rate, u32 channels, u32 buffer_ms);
 
-#ifdef USE_CUBEB
+#ifdef ENABLE_CUBEB
   static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms,
                                                              u32 latency_ms, AudioStretchMode stretch);
   static std::vector<std::string> GetCubebDriverNames();
