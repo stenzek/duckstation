@@ -885,9 +885,7 @@ bool GPU_HW::CompilePipelines()
 
   std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader =
     g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader());
-  std::unique_ptr<GPUShader> uv_quad_vertex_shader =
-    g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateUVQuadVertexShader());
-  if (!fullscreen_quad_vertex_shader || !uv_quad_vertex_shader)
+  if (!fullscreen_quad_vertex_shader)
     return false;
 
   progress.Increment();
@@ -1156,6 +1154,8 @@ void GPU_HW::DestroyPipelines()
   destroy(m_downsample_blur_pass_pipeline);
   destroy(m_downsample_composite_pass_pipeline);
   m_downsample_composite_sampler.reset();
+
+  m_copy_pipeline.reset();
 
   m_display_pipelines.enumerate(destroy);
 }
