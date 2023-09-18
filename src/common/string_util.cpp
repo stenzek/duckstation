@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "assert.h"
 #include "string_util.h"
+
 #include <cctype>
 #include <codecvt>
 #include <cstdio>
@@ -393,6 +395,47 @@ size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
 invalid:
   *ch = 0xFFFFFFFFu;
   return 1;
+}
+
+std::string StringUtil::Ellipsise(const std::string_view& str, u32 max_length, const char* ellipsis /*= "..."*/)
+{
+  std::string ret;
+  ret.reserve(max_length);
+
+  const u32 str_length = static_cast<u32>(str.length());
+  const u32 ellipsis_len = static_cast<u32>(std::strlen(ellipsis));
+  DebugAssert(ellipsis_len > 0 && ellipsis_len <= max_length);
+
+  if (str_length > max_length)
+  {
+    const u32 copy_size = std::min(str_length, max_length - ellipsis_len);
+    if (copy_size > 0)
+      ret.append(str.data(), copy_size);
+    if (copy_size != str_length)
+      ret.append(ellipsis);
+  }
+  else
+  {
+    ret.append(str);
+  }
+
+  return ret;
+}
+
+void StringUtil::EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis /*= "..."*/)
+{
+  const u32 str_length = static_cast<u32>(str.length());
+  const u32 ellipsis_len = static_cast<u32>(std::strlen(ellipsis));
+  DebugAssert(ellipsis_len > 0 && ellipsis_len <= max_length);
+
+  if (str_length > max_length)
+  {
+    const u32 keep_size = std::min(static_cast<u32>(str.length()), max_length - ellipsis_len);
+    if (keep_size != str_length)
+      str.erase(keep_size);
+
+    str.append(ellipsis);
+  }
 }
 
 size_t StringUtil::DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch)

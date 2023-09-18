@@ -3,6 +3,7 @@ add_executable(common-tests
   file_system_tests.cpp
   path_tests.cpp
   rectangle_tests.cpp
+  string_tests.cpp
 )
 
 target_link_libraries(common-tests PRIVATE common gtest gtest_main)

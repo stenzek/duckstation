@@ -7,6 +7,7 @@
     <ClCompile Include="file_system_tests.cpp" />
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
+    <ClCompile Include="string_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">
