@@ -1231,7 +1231,7 @@ void Host::OnAchievementsRefreshed()
 
     const std::string& rich_presence_string = Achievements::GetRichPresenceString();
     if (Achievements::HasRichPresence() && !rich_presence_string.empty())
-      game_info.append(QString::fromStdString(rich_presence_string));
+      game_info.append(QString::fromStdString(StringUtil::Ellipsise(rich_presence_string, 128)));
     else
       game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
   }
@@ -1243,9 +1243,9 @@ void Host::OnAchievementsRefreshed()
   emit g_emu_thread->achievementsRefreshed(game_id, game_info);
 }
 
-void Host::OnAchievementsHardcoreModeChanged()
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
-  emit g_emu_thread->achievementsChallengeModeChanged();
+  emit g_emu_thread->achievementsChallengeModeChanged(enabled);
 }
 
 void EmuThread::doBackgroundControllerPoll()

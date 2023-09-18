@@ -92,6 +92,9 @@ u32 GetGameID();
 bool HasAchievementsOrLeaderboards();
 
 /// Returns true if the current game has any leaderboards.
+bool HasAchievements();
+
+/// Returns true if the current game has any leaderboards.
 bool HasLeaderboards();
 
 /// Returns true if the game supports rich presence.
@@ -153,5 +156,5 @@ void OnAchievementsLoginSuccess(const char* display_name, u32 points, u32 sc_poi
 void OnAchievementsRefreshed();
 
 /// Called whenever hardcore mode is toggled.
-void OnAchievementsHardcoreModeChanged();
+void OnAchievementsHardcoreModeChanged(bool enabled);
 } // namespace Host

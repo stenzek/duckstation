@@ -121,11 +121,10 @@ static void ClearGameInfo();
 static void ClearGameHash();
 static std::string GetUserAgent();
 static std::string GetGameHash(CDImage* image);
-static void SetChallengeMode(bool enabled);
+static void SetHardcoreMode(bool enabled);
 static bool IsLoggedIn();
 static void ShowLoginSuccess(const rc_client_t* client);
 static void ShowLoginNotification();
-static void CancelGameLoad();
 static void IdentifyGame(const std::string& path, CDImage* image);
 static void BeginLoadGame();
 static void UpdateGameSummary();
@@ -349,6 +348,11 @@ bool Achievements::HasAchievementsOrLeaderboards()
   return s_has_achievements || s_has_leaderboards;
 }
 
+bool Achievements::HasAchievements()
+{
+  return s_has_achievements;
+}
+
 bool Achievements::HasLeaderboards()
 {
   return s_has_leaderboards;
@@ -389,7 +393,7 @@ bool Achievements::Initialize()
   rc_client_set_event_handler(s_client, ClientEventHandler);
 
   rc_client_set_hardcore_enabled(s_client, s_hardcore_mode);
-  rc_client_set_encore_mode_enabled(s_client, g_settings.achievements_spectator_mode);
+  rc_client_set_encore_mode_enabled(s_client, g_settings.achievements_encore_mode);
   rc_client_set_unofficial_enabled(s_client, g_settings.achievements_unofficial_test_mode);
   rc_client_set_spectator_mode_enabled(s_client, g_settings.achievements_spectator_mode);
 
@@ -476,22 +480,35 @@ void Achievements::UpdateSettings(const Settings& old_config)
     }
     else if (!s_hardcore_mode && g_settings.achievements_hardcore_mode)
     {
-      ImGuiFullscreen::ShowToast(std::string(),
-                                 TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
-                                 Host::OSD_WARNING_DURATION);
+      if (HasActiveGame() && FullscreenUI::Initialize())
+      {
+        ImGuiFullscreen::ShowToast(std::string(),
+                                   TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
+                                   Host::OSD_WARNING_DURATION);
+      }
     }
   }
 
   // These cannot be modified while a game is loaded, so just toss state and reload.
-  if (HasActiveGame() &&
-      (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
-       g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
-       g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode ||
-       g_settings.achievements_use_first_disc_from_playlist != old_config.achievements_use_first_disc_from_playlist))
+  if (HasActiveGame())
   {
-    Shutdown(false);
-    Initialize();
-    return;
+    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
+        g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
+        g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
+    {
+      Shutdown(false);
+      Initialize();
+      return;
+    }
+  }
+  else
+  {
+    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
+      rc_client_set_encore_mode_enabled(s_client, g_settings.achievements_encore_mode);
+    if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
+      rc_client_set_spectator_mode_enabled(s_client, g_settings.achievements_spectator_mode);
+    if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
+      rc_client_set_unofficial_enabled(s_client, g_settings.achievements_unofficial_test_mode);
   }
 
   // in case cache directory changed
@@ -520,6 +537,7 @@ bool Achievements::Shutdown(bool allow_cancel)
 
   ClearGameInfo();
   ClearGameHash();
+  DisableHardcoreMode();
 
   if (s_load_game_request)
   {
@@ -765,30 +783,6 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
   IdentifyGame(path, image);
 }
 
-void Achievements::CancelGameLoad()
-{
-  Log_ErrorPrint("Cancelling game load");
-
-  if (s_load_game_request)
-  {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
-  }
-  rc_client_unload_game(s_client);
-  ClearGameHash();
-  ClearGameInfo();
-  DisableHardcoreMode();
-  Host::OnAchievementsRefreshed();
-
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    RAIntegration::GameChanged();
-    return;
-  }
-#endif
-}
-
 void Achievements::IdentifyGame(const std::string& path, CDImage* image)
 {
   if (s_game_path == path)
@@ -804,24 +798,19 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     temp_image = CDImage::Open(path.c_str(), g_settings.cdrom_load_image_patches, nullptr);
     image = temp_image.get();
     if (!temp_image)
-    {
       Log_ErrorPrintf("Failed to open temporary CD image '%s'", path.c_str());
-      CancelGameLoad();
-      return;
-    }
   }
 
   std::string game_hash;
   if (image)
-  {
     game_hash = GetGameHash(image);
-    if (s_game_hash == game_hash)
-    {
-      // only the path has changed - different format/save state/etc.
-      Log_InfoPrintf("Detected path change from '%s' to '%s'", s_game_path.c_str(), path.c_str());
-      s_game_path = path;
-      return;
-    }
+
+  if (s_game_hash == game_hash)
+  {
+    // only the path has changed - different format/save state/etc.
+    Log_InfoPrintf("Detected path change from '%s' to '%s'", s_game_path.c_str(), path.c_str());
+    s_game_path = path;
+    return;
   }
 
   ClearGameHash();
@@ -843,6 +832,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   if (!IsLoggedIn())
   {
     Log_InfoPrintf("Skipping load game because we're not logged in.");
+    DisableHardcoreMode();
     return;
   }
 
@@ -859,7 +849,6 @@ void Achievements::BeginLoadGame()
   }
 
   ClearGameInfo();
-  Host::OnAchievementsRefreshed();
 
   if (s_game_hash.empty())
   {
@@ -870,7 +859,7 @@ void Achievements::BeginLoadGame()
                                "Failed to read executable from disc. Achievements disabled.", Host::OSD_ERROR_DURATION);
     }
 
-    rc_client_unload_game(s_client);
+    DisableHardcoreMode();
     return;
   }
 
@@ -881,10 +870,17 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 {
   s_load_game_request = nullptr;
 
-  if (result != RC_OK)
+  if (result == RC_NO_GAME_LOADED)
+  {
+    // Unknown game.
+    Log_InfoPrintf("Unknown game '%s', disabling achievements.", s_game_hash.c_str());
+    DisableHardcoreMode();
+    return;
+  }
+  else if (result != RC_OK)
   {
     ReportFmtError("Loading game failed: {}", error_message);
-    SetChallengeMode(false);
+    DisableHardcoreMode();
     return;
   }
 
@@ -892,7 +888,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (!info)
   {
     ReportError("rc_client_get_game_info() returned NULL");
-    SetChallengeMode(false);
+    DisableHardcoreMode();
     return;
   }
 
@@ -935,6 +931,14 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 void Achievements::ClearGameInfo()
 {
   ClearUIState();
+
+  if (s_load_game_request)
+  {
+    rc_client_abort_async(s_client, s_load_game_request);
+    s_load_game_request = nullptr;
+  }
+  rc_client_unload_game(s_client);
+
   s_active_leaderboard_trackers = {};
   s_active_challenge_indicators = {};
   s_active_progress_indicator.reset();
@@ -946,6 +950,8 @@ void Achievements::ClearGameInfo()
   s_has_rich_presence = false;
   s_rich_presence_string = {};
   s_game_summary = {};
+
+  Host::OnAchievementsRefreshed();
 }
 
 void Achievements::ClearGameHash()
@@ -1014,8 +1020,8 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
     std::string badge_path = GetAchievementBadgePath(cheevo, cheevo->state);
 
     ImGuiFullscreen::AddNotification(fmt::format("achievement_unlock_{}", cheevo->id),
-                                     g_settings.achievements_notification_duration, std::move(title),
-                                     cheevo->description, std::move(badge_path));
+                                     static_cast<float>(g_settings.achievements_notification_duration),
+                                     std::move(title), cheevo->description, std::move(badge_path));
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1075,21 +1081,22 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
   if (g_settings.achievements_leaderboard_notifications && FullscreenUI::Initialize())
   {
     static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
-      TRANSLATE_NOOP("Achievements", "Your Time: {} (Submitting)"),
-      TRANSLATE_NOOP("Achievements", "Your Score: {} (Submitting)"),
-      TRANSLATE_NOOP("Achievements", "Your Value: {} (Submitting)"),
+      TRANSLATE_NOOP("Achievements", "Your Time: {}{}"),
+      TRANSLATE_NOOP("Achievements", "Your Score: {}{}"),
+      TRANSLATE_NOOP("Achievements", "Your Value: {}{}"),
     };
 
     std::string title = event->leaderboard->title;
-    std::string message =
-      fmt::format(fmt::runtime(Host::TranslateToStringView(
-                    "Achievements",
-                    value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
-                  event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown");
+    std::string message = fmt::format(
+      fmt::runtime(Host::TranslateToStringView(
+        "Achievements",
+        value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
+      event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown",
+      g_settings.achievements_spectator_mode ? std::string_view() : TRANSLATE_SV("Achievements", " (Submitting)"));
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                     g_settings.achievements_leaderboard_duration, std::move(title), std::move(message),
-                                     s_game_icon);
+                                     static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
+                                     std::move(message), s_game_icon);
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1119,8 +1126,8 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
       event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                     g_settings.achievements_leaderboard_duration, std::move(title), std::move(message),
-                                     s_game_icon);
+                                     static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
+                                     std::move(message), s_game_icon);
   }
 }
 
@@ -1319,7 +1326,7 @@ void Achievements::DisableHardcoreMode()
 #endif
 
   if (s_hardcore_mode)
-    SetChallengeMode(false);
+    SetHardcoreMode(false);
 }
 
 bool Achievements::ResetHardcoreMode()
@@ -1335,11 +1342,11 @@ bool Achievements::ResetHardcoreMode()
   if (s_hardcore_mode == wanted_hardcore_mode)
     return false;
 
-  SetChallengeMode(wanted_hardcore_mode);
+  SetHardcoreMode(wanted_hardcore_mode);
   return true;
 }
 
-void Achievements::SetChallengeMode(bool enabled)
+void Achievements::SetHardcoreMode(bool enabled)
 {
   if (enabled == s_hardcore_mode)
     return;
@@ -1347,7 +1354,7 @@ void Achievements::SetChallengeMode(bool enabled)
   // new mode
   s_hardcore_mode = enabled;
 
-  if (HasActiveGame())
+  if (HasActiveGame() && FullscreenUI::Initialize())
   {
     ImGuiFullscreen::ShowToast(std::string(),
                                enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
@@ -1363,7 +1370,7 @@ void Achievements::SetChallengeMode(bool enabled)
   // Toss away UI state, because it's invalid now
   ClearUIState();
 
-  Host::OnAchievementsHardcoreModeChanged();
+  Host::OnAchievementsHardcoreModeChanged(enabled);
 }
 
 bool Achievements::DoState(StateWrapper& sw)
@@ -1693,11 +1700,7 @@ void Achievements::Logout()
     const auto lock = GetLock();
 
     if (HasActiveGame())
-    {
       ClearGameInfo();
-      ClearGameHash();
-      Host::OnAchievementsRefreshed();
-    }
 
     Log_InfoPrint("Logging out...");
     rc_client_logout(s_client);
@@ -1743,7 +1746,7 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 void Achievements::ClearUIState()
 {
   if (FullscreenUI::IsAchievementsWindowOpen() || FullscreenUI::IsLeaderboardsWindowOpen())
-    FullscreenUI::ReturnToMainWindow();
+    FullscreenUI::ReturnToPreviousWindow();
 
   s_achievement_badge_paths = {};
 
@@ -2008,9 +2011,6 @@ void Achievements::DrawAchievementsWindow()
 
   auto lock = Achievements::GetLock();
 
-  // ensure image downloads still happen while we're paused
-  Achievements::IdleUpdate();
-
   static constexpr float alpha = 0.8f;
   static constexpr float heading_alpha = 0.95f;
   static constexpr float heading_height_unscaled = 110.0f;
@@ -2058,7 +2058,7 @@ void Achievements::DrawAchievementsWindow()
                                           g_large_font) ||
           ImGuiFullscreen::WantsToCloseMenu())
       {
-        FullscreenUI::ReturnToMainWindow();
+        FullscreenUI::ReturnToPreviousWindow();
       }
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
@@ -2124,6 +2124,12 @@ void Achievements::DrawAchievementsWindow()
                                              background, 0.0f, 0.0f, 0))
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
+    static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
+      TRANSLATE_NOOP("Achievements", "Unknown"),           TRANSLATE_NOOP("Achievements", "Locked"),
+      TRANSLATE_NOOP("Achievements", "Unlocked"),          TRANSLATE_NOOP("Achievements", "Unsupported"),
+      TRANSLATE_NOOP("Achievements", "Unofficial"),        TRANSLATE_NOOP("Achievements", "Recently Unlocked"),
+      TRANSLATE_NOOP("Achievements", "Active Challenges"), TRANSLATE_NOOP("Achievements", "Almost There"),
+    };
 
     ImGuiFullscreen::BeginMenuButtons();
 
@@ -2140,10 +2146,11 @@ void Achievements::DrawAchievementsWindow()
 
         DebugAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
-        // TODO: This should be translated.
+        // TODO: Once subsets are supported, this will need to change.
         bool& bucket_collapsed = buckets_collapsed[bucket.bucket_type];
-        bucket_collapsed ^= ImGuiFullscreen::MenuHeadingButton(bucket.label, bucket_collapsed ? ICON_FA_CHEVRON_DOWN :
-                                                                                                ICON_FA_CHEVRON_UP);
+        bucket_collapsed ^=
+          ImGuiFullscreen::MenuHeadingButton(Host::TranslateToCString("Achievements", bucket_names[bucket.bucket_type]),
+                                             bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
         if (!bucket_collapsed)
         {
           for (u32 i = 0; i < bucket.num_achievements; i++)
@@ -2310,9 +2317,6 @@ void Achievements::DrawLeaderboardsWindow()
 
   auto lock = Achievements::GetLock();
 
-  // ensure image downloads still happen while we're paused
-  Achievements::IdleUpdate();
-
   const bool is_leaderboard_open = (s_open_leaderboard != nullptr);
   bool close_leaderboard_on_exit = false;
 
@@ -2381,7 +2385,7 @@ void Achievements::DrawLeaderboardsWindow()
                                             g_large_font) ||
             ImGuiFullscreen::WantsToCloseMenu())
         {
-          FullscreenUI::ReturnToMainWindow();
+          FullscreenUI::ReturnToPreviousWindow();
         }
       }
       else

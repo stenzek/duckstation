@@ -22,11 +22,12 @@ void OnSystemResumed();
 void OnSystemDestroyed();
 void OnRunningGameChanged();
 void OpenPauseMenu();
-bool OpenAchievementsWindow();
+void OpenAchievementsWindow();
 bool IsAchievementsWindowOpen();
-bool OpenLeaderboardsWindow();
+void OpenLeaderboardsWindow();
 bool IsLeaderboardsWindowOpen();
 void ReturnToMainWindow();
+void ReturnToPreviousWindow();
 
 void Shutdown();
 void Render();

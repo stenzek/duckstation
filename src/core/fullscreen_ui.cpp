@@ -217,11 +217,11 @@ static void CancelAsyncOps();
 // Main
 //////////////////////////////////////////////////////////////////////////
 static void ToggleTheme();
-static void PauseForMenuOpen();
+static void PauseForMenuOpen(bool set_pause_menu_open);
 static void ClosePauseMenu();
 static void OpenPauseSubMenu(PauseSubMenu submenu);
 static void DrawLandingWindow();
-static void DrawPauseMenu(MainWindowType type);
+static void DrawPauseMenu();
 static void ExitFullscreenAndOpenURL(const std::string_view& url);
 static void CopyTextToClipboard(std::string title, const std::string_view& text);
 static void DrawAboutWindow();
@@ -616,7 +616,7 @@ void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
   if (old_settings.achievements_enabled && !g_settings.achievements_enabled)
   {
     if (s_current_main_window == MainWindowType::Achievements || s_current_main_window == MainWindowType::Leaderboards)
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
   }
 }
 
@@ -647,6 +647,8 @@ void FullscreenUI::OnSystemDestroyed()
     return;
 
   s_pause_menu_was_open = false;
+  s_was_paused_on_quick_menu_open = false;
+  s_current_pause_submenu = PauseSubMenu::None;
   SwitchToLanding();
 }
 
@@ -671,13 +673,13 @@ void FullscreenUI::ToggleTheme()
   ImGuiFullscreen::SetTheme(new_light);
 }
 
-void FullscreenUI::PauseForMenuOpen()
+void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
   s_was_paused_on_quick_menu_open = (System::GetState() == System::State::Paused);
   if (g_settings.pause_on_menu && !s_was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(true); });
 
-  s_pause_menu_was_open = true;
+  s_pause_menu_was_open |= set_pause_menu_open;
 }
 
 void FullscreenUI::OpenPauseMenu()
@@ -688,7 +690,7 @@ void FullscreenUI::OpenPauseMenu()
   if (!Initialize() || s_current_main_window != MainWindowType::None)
     return;
 
-  PauseForMenuOpen();
+  PauseForMenuOpen(true);
   s_current_main_window = MainWindowType::PauseMenu;
   s_current_pause_submenu = PauseSubMenu::None;
   QueueResetFocus();
@@ -762,7 +764,7 @@ void FullscreenUI::Render()
       DrawSettingsWindow();
       break;
     case MainWindowType::PauseMenu:
-      DrawPauseMenu(s_current_main_window);
+      DrawPauseMenu();
       break;
     case MainWindowType::Achievements:
       Achievements::DrawAchievementsWindow();
@@ -818,11 +820,22 @@ void FullscreenUI::InvalidateCoverCache()
   Host::RunOnCPUThread([]() { s_cover_image_map.clear(); });
 }
 
+void FullscreenUI::ReturnToPreviousWindow()
+{
+  if (System::IsValid() && s_pause_menu_was_open)
+  {
+    s_current_main_window = MainWindowType::PauseMenu;
+    QueueResetFocus();
+  }
+  else
+  {
+    ReturnToMainWindow();
+  }
+}
+
 void FullscreenUI::ReturnToMainWindow()
 {
-  if (s_pause_menu_was_open)
-    ClosePauseMenu();
-
+  ClosePauseMenu();
   s_current_main_window = System::IsValid() ? MainWindowType::None : MainWindowType::Landing;
 }
 
@@ -956,7 +969,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 
     QueueResetFocus();
     CloseFileSelector();
-    ReturnToMainWindow();
+    ReturnToPreviousWindow();
   };
 
   OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
@@ -991,7 +1004,7 @@ void FullscreenUI::DoChangeDisc()
 
       QueueResetFocus();
       CloseChoiceDialog();
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
     };
 
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
@@ -1055,7 +1068,7 @@ void FullscreenUI::DoCheatsMenu()
     {
       Host::AddKeyedOSDMessage("load_cheat_list",
                                fmt::format(FSUI_FSTR("No cheats found for {}."), System::GetGameTitle()), 10.0f);
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
       return;
     }
   }
@@ -1071,7 +1084,7 @@ void FullscreenUI::DoCheatsMenu()
   auto callback = [](s32 index, const std::string& title, bool checked) {
     if (index < 0)
     {
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
       return;
     }
 
@@ -2537,7 +2550,7 @@ void FullscreenUI::DrawSettingsWindow()
     }
 
     if (NavButton(ICON_FA_BACKWARD, true, true))
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
 
     if (s_game_settings_entry)
       NavTitle(s_game_settings_entry->title.c_str());
@@ -2568,7 +2581,7 @@ void FullscreenUI::DrawSettingsWindow()
     if (WantsToCloseMenu())
     {
       if (ImGui::IsWindowFocused())
-        ReturnToMainWindow();
+        ReturnToPreviousWindow();
     }
 
     auto lock = Host::GetSettingsLock();
@@ -4429,10 +4442,6 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   }
 #endif
 
-  const auto lock = Achievements::GetLock();
-  if (Achievements::IsActive() && !System::IsRunning())
-    Achievements::IdleUpdate();
-
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
@@ -4443,7 +4452,6 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                     "Cheevos", "Enabled", false);
 
   const bool enabled = bsi->GetBoolValue("Cheevos", "Enabled", false);
-  const bool hardcore = bsi->GetBoolValue("Cheevos", "ChallengeMode", false);
 
   if (DrawToggleSetting(
         bsi, FSUI_ICONSTR(ICON_FA_HARD_HAT, "Hardcore Mode"),
@@ -4460,7 +4468,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     "Notifications", true, enabled);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
                     FSUI_CSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
-                    "Cheevos", "LeaderboardNotifications", true, enabled && hardcore);
+                    "Cheevos", "LeaderboardNotifications", true, enabled);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_HEADPHONES, "Sound Effects"),
     FSUI_CSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
@@ -4518,6 +4526,8 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     MenuHeading(FSUI_CSTR("Current Game"));
     if (Achievements::HasActiveGame())
     {
+      const auto lock = Achievements::GetLock();
+
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
       ActiveButton(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
                                         Achievements::GetGameID(), Achievements::GetGameTitle()),
@@ -4656,7 +4666,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::DrawPauseMenu(MainWindowType type)
+void FullscreenUI::DrawPauseMenu()
 {
   SmallString buffer;
 
@@ -4779,6 +4789,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
         const bool has_game = System::IsValid() && !System::GetGameSerial().empty();
 
+        if (just_focused)
+          ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game")), ImGui::GetCurrentWindow());
+
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false) || WantsToCloseMenu())
           ClosePauseMenu();
 
@@ -4819,7 +4832,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
         }
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false,
-                         Achievements::HasActiveGame() && Achievements::HasAchievementsOrLeaderboards()))
+                         Achievements::HasAchievementsOrLeaderboards()))
         {
           // skip second menu and go straight to cheevos if there's no lbs
           if (!Achievements::HasLeaderboards())
@@ -4857,13 +4870,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
       case PauseSubMenu::Exit:
       {
         if (just_focused)
+        {
           ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving")),
                             ImGui::GetCurrentWindow());
-
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false))
-        {
-          OpenPauseSubMenu(PauseSubMenu::None);
         }
+
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+          OpenPauseSubMenu(PauseSubMenu::None);
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
         {
@@ -4881,7 +4894,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
       case PauseSubMenu::Achievements:
       {
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false))
+        if (just_focused)
+        {
+          ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu")),
+                            ImGui::GetCurrentWindow());
+        }
+
+        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
           OpenPauseSubMenu(PauseSubMenu::None);
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
@@ -5057,8 +5076,6 @@ void FullscreenUI::CloseSaveStateSelector()
   s_save_state_selector_loading = false;
   s_save_state_selector_resuming = false;
   s_save_state_selector_game_path = {};
-  if (s_current_main_window != MainWindowType::GameList)
-    ReturnToMainWindow();
 }
 
 void FullscreenUI::DrawSaveStateSelector(bool is_loading)
@@ -5089,7 +5106,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
     ImGui::PopStyleVar(5);
     if (!is_open)
+    {
       CloseSaveStateSelector();
+      ReturnToPreviousWindow();
+    }
     return;
   }
 
@@ -5102,7 +5122,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   {
     BeginNavBar();
     if (NavButton(ICON_FA_BACKWARD, true, true))
+    {
       CloseSaveStateSelector();
+      ReturnToPreviousWindow();
+    }
 
     NavTitle(is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State"));
     EndNavBar();
@@ -5206,12 +5229,14 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           {
             DoLoadState(entry.path);
             CloseSaveStateSelector();
+            ReturnToPreviousWindow();
             break;
           }
           else
           {
             DoSaveState(entry.slot, entry.global);
             CloseSaveStateSelector();
+            ReturnToPreviousWindow();
             break;
           }
         }
@@ -5268,6 +5293,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
                 DoSaveState(entry.slot, entry.global);
 
               CloseSaveStateSelector();
+              ReturnToPreviousWindow();
               closed = true;
             }
 
@@ -5287,6 +5313,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
                 if (s_save_state_selector_slots.empty())
                 {
                   CloseSaveStateSelector();
+                  ReturnToPreviousWindow();
                   closed = true;
                 }
                 else
@@ -5352,7 +5379,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   ImGui::PopStyleVar(5);
 
   if (!close_handled && WantsToCloseMenu())
+  {
     CloseSaveStateSelector();
+    ReturnToPreviousWindow();
+  }
 }
 
 bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
@@ -5599,7 +5629,7 @@ void FullscreenUI::DrawGameListWindow()
     }
 
     if (NavButton(ICON_FA_BACKWARD, true, true))
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
 
     NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_game_list_page)]));
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -5851,7 +5881,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (WantsToCloseMenu())
   {
     if (ImGui::IsWindowFocused())
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
   }
 
   ResetFocusHere();
@@ -6018,7 +6048,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
   if (WantsToCloseMenu())
   {
     if (ImGui::IsWindowFocused())
-      ReturnToMainWindow();
+      ReturnToPreviousWindow();
   }
 
   auto lock = Host::GetSettingsLock();
@@ -6459,20 +6489,29 @@ bool FullscreenUI::DrawConfirmWindow(const char* message, bool* result)
   return !is_open;
 }
 
-bool FullscreenUI::OpenAchievementsWindow()
+void FullscreenUI::OpenAchievementsWindow()
 {
-  if (!System::IsValid() || !Achievements::HasActiveGame() || !Initialize() ||
-      !Achievements::PrepareAchievementsWindow())
+  if (!Achievements::IsActive())
   {
-    return false;
+    Host::AddKeyedOSDMessage("achievements_disabled", FSUI_STR("Achievements are not enabled."),
+                             Host::OSD_INFO_DURATION);
+    return;
+  }
+
+  if (!System::IsValid() || !Initialize())
+    return;
+
+  if (!Achievements::HasAchievements() || !Achievements::PrepareAchievementsWindow())
+  {
+    ShowToast(std::string(), FSUI_STR("This game has no achievements."));
+    return;
   }
 
   if (s_current_main_window != MainWindowType::PauseMenu)
-    PauseForMenuOpen();
+    PauseForMenuOpen(false);
 
   s_current_main_window = MainWindowType::Achievements;
   QueueResetFocus();
-  return true;
 }
 
 bool FullscreenUI::IsAchievementsWindowOpen()
@@ -6480,17 +6519,29 @@ bool FullscreenUI::IsAchievementsWindowOpen()
   return (s_current_main_window == MainWindowType::Achievements);
 }
 
-bool FullscreenUI::OpenLeaderboardsWindow()
+void FullscreenUI::OpenLeaderboardsWindow()
 {
-  if (!Achievements::HasLeaderboards() || !Initialize() || !Achievements::PrepareLeaderboardsWindow())
-    return false;
+  if (!Achievements::IsActive())
+  {
+    Host::AddKeyedOSDMessage("achievements_disabled", FSUI_STR("Leaderboards are not enabled."),
+                             Host::OSD_INFO_DURATION);
+    return;
+  }
+
+  if (!System::IsValid() || !Initialize())
+    return;
+
+  if (!Achievements::HasLeaderboards() || !Achievements::PrepareLeaderboardsWindow())
+  {
+    ShowToast(std::string(), FSUI_STR("This game has no leaderboards."));
+    return;
+  }
 
   if (s_current_main_window != MainWindowType::PauseMenu)
-    PauseForMenuOpen();
+    PauseForMenuOpen(false);
 
   s_current_main_window = MainWindowType::Leaderboards;
   QueueResetFocus();
-  return true;
 }
 
 bool FullscreenUI::IsLeaderboardsWindowOpen()

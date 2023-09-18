@@ -376,9 +376,9 @@ void Settings::Load(SettingsInterface& si)
   achievements_use_first_disc_from_playlist = si.GetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
   achievements_notification_duration =
-    si.GetFloatValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+    si.GetIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
   achievements_leaderboard_duration =
-    si.GetFloatValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+    si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
@@ -578,8 +578,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
   si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", achievements_use_first_disc_from_playlist);
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
-  si.SetFloatValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
-  si.SetFloatValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
+  si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
+  si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());

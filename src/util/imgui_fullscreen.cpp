@@ -80,6 +80,7 @@ ImVec4 UISecondaryTextColor;
 static u32 s_menu_button_index = 0;
 static u32 s_close_button_state = 0;
 static bool s_focus_reset_queued = false;
+static bool s_light_theme = false;
 
 static LRUCache<std::string, std::shared_ptr<GPUTexture>> s_texture_cache(128, true);
 static std::shared_ptr<GPUTexture> s_placeholder_texture;
@@ -2484,17 +2485,10 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   ImFont* const title_font = ImGuiFullscreen::g_large_font;
   ImFont* const text_font = ImGuiFullscreen::g_medium_font;
 
-#if 0
-  static constexpr u32 toast_background_color = IM_COL32(241, 241, 241, 255);
-  static constexpr u32 toast_border_color = IM_COL32(0x88, 0x88, 0x88, 255);
-  static constexpr u32 toast_title_color = IM_COL32(1, 1, 1, 255);
-  static constexpr u32 toast_text_color = IM_COL32(0, 0, 0, 255);
-#else
-  static constexpr u32 toast_background_color = IM_COL32(0x21, 0x21, 0x21, 255);
-  static constexpr u32 toast_border_color = IM_COL32(0x48, 0x48, 0x48, 255);
-  static constexpr u32 toast_title_color = IM_COL32(0xff, 0xff, 0xff, 255);
-  static constexpr u32 toast_text_color = IM_COL32(0xff, 0xff, 0xff, 255);
-#endif
+  const u32 toast_background_color = s_light_theme ? IM_COL32(241, 241, 241, 255) : IM_COL32(0x21, 0x21, 0x21, 255);
+  const u32 toast_border_color = s_light_theme ? IM_COL32(0x88, 0x88, 0x88, 255) : IM_COL32(0x48, 0x48, 0x48, 255);
+  const u32 toast_title_color = s_light_theme ? IM_COL32(1, 1, 1, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
+  const u32 toast_text_color = s_light_theme ? IM_COL32(0, 0, 0, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
 
   for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
   {
@@ -2668,6 +2662,8 @@ void ImGuiFullscreen::DrawToast()
 
 void ImGuiFullscreen::SetTheme(bool light)
 {
+  s_light_theme = light;
+
   if (!light)
   {
     // dark

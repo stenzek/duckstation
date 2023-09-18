@@ -134,7 +134,7 @@ private Q_SLOTS:
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
                                     quint32 unread_messages);
-  void onAchievementsChallengeModeChanged();
+  void onAchievementsChallengeModeChanged(bool enabled);
   void onApplicationStateChanged(Qt::ApplicationState state);
 
   void onStartFileActionTriggered();

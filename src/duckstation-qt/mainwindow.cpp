@@ -2657,10 +2657,9 @@ void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint
   m_ui.statusBar->showMessage(message);
 }
 
-void MainWindow::onAchievementsChallengeModeChanged()
+void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
 {
-  const bool active = Achievements::IsHardcoreModeActive();
-  if (active)
+  if (enabled)
   {
     if (m_cheat_manager_dialog)
     {
@@ -2677,7 +2676,7 @@ void MainWindow::onAchievementsChallengeModeChanged()
     }
   }
 
-  updateEmulationActions(false, System::IsValid(), active);
+  updateEmulationActions(false, System::IsValid(), enabled);
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

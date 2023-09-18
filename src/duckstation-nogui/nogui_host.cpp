@@ -766,7 +766,7 @@ void Host::OnAchievementsRefreshed()
   // noop
 }
 
-void Host::OnAchievementsHardcoreModeChanged()
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
   // noop
 }

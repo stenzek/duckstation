@@ -4752,31 +4752,15 @@ void System::UpdateDiscordPresence()
   rp.largeImageKey = "duckstation_logo";
   rp.largeImageText = "DuckStation PS1/PSX Emulator";
   rp.startTimestamp = std::time(nullptr);
+  rp.details = System::IsValid() ? System::GetGameTitle().c_str() : "No Game Running";
 
-  SmallString details_string;
-  if (!System::IsShutdown())
-  {
-    details_string.AppendFormattedString("%s (%s)", System::GetGameTitle().c_str(), System::GetGameSerial().c_str());
-  }
-  else
-  {
-    details_string.AppendString("No Game Running");
-  }
-
-  SmallString state_string;
-
+  std::string state_string;
   if (Achievements::HasRichPresence())
   {
     const auto lock = Achievements::GetLock();
-    const std::string_view richp = Achievements::GetRichPresenceString();
-    if (richp.length() >= 128)
-      state_string.AppendFmtString("{}...", richp.substr(0, 124));
-    else
-      state_string.Assign(richp);
-
-    rp.state = state_string;
+    state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
+    rp.state = state_string.c_str();
   }
-  rp.details = details_string;
 
   Discord_UpdatePresence(&rp);
 }

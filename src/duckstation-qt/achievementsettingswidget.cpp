@@ -159,16 +159,16 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 
 void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()
 {
-  const float duration = m_dialog->getEffectiveFloatValue("Cheevos", "NotificationsDuration",
-                                                          Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
-  m_ui.achievementNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
+  const int duration =
+    m_dialog->getEffectiveIntValue("Cheevos", "NotificationsDuration", Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  m_ui.achievementNotificationsDurationLabel->setText(tr("%n seconds", nullptr, duration));
 }
 
 void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged()
 {
-  const float duration = m_dialog->getEffectiveFloatValue("Cheevos", "LeaderboardsDuration",
-                                                          Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
-  m_ui.leaderboardNotificationsDurationLabel->setText(tr("%n seconds", nullptr, static_cast<int>(duration)));
+  const int duration =
+    m_dialog->getEffectiveIntValue("Cheevos", "LeaderboardsDuration", Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+  m_ui.leaderboardNotificationsDurationLabel->setText(tr("%n seconds", nullptr, duration));
 }
 
 void AchievementSettingsWidget::updateLoginState()

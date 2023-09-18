@@ -164,25 +164,13 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
 DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
                 if (!pressed)
-                {
-                  if (!FullscreenUI::OpenAchievementsWindow())
-                  {
-                    Host::AddOSDMessage(
-                      TRANSLATE_STR("OSDMessage", "Achievements are disabled or unavailable for  game."), 10.0f);
-                  }
-                }
+                  FullscreenUI::OpenAchievementsWindow();
               })
 
 DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"), [](s32 pressed) {
                 if (!pressed)
-                {
-                  if (!FullscreenUI::OpenLeaderboardsWindow())
-                  {
-                    Host::AddOSDMessage(
-                      TRANSLATE_STR("OSDMessage", "Leaderboards are disabled or unavailable for  game."), 10.0f);
-                  }
-                }
+                  FullscreenUI::OpenLeaderboardsWindow();
               })
 #endif // !defined(__ANDROID__)
 
