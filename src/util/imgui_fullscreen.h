@@ -49,8 +49,8 @@ extern ImVec4 UIPrimaryTextColor;
 extern ImVec4 UITextHighlightColor;
 extern ImVec4 UIPrimaryLineColor;
 extern ImVec4 UISecondaryColor;
-extern ImVec4 UISecondaryLightColor;
-extern ImVec4 UISecondaryDarkColor;
+extern ImVec4 UISecondaryWeakColor; // Not currently used.
+extern ImVec4 UISecondaryStrongColor;
 extern ImVec4 UISecondaryTextColor;
 
 static ALWAYS_INLINE float DPIScale(float v)
@@ -150,8 +150,6 @@ void ResetCloseMenuIfNeeded();
 
 void PushPrimaryColor();
 void PopPrimaryColor();
-void PushSecondaryColor();
-void PopSecondaryColor();
 
 void DrawWindowTitle(const char* title);
 

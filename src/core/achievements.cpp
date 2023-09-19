@@ -2015,9 +2015,9 @@ void Achievements::DrawAchievementsWindow()
   static constexpr float heading_alpha = 0.95f;
   static constexpr float heading_height_unscaled = 110.0f;
 
-  const ImVec4 background(0.13f, 0.13f, 0.13f, alpha);
-  const ImVec4 heading_background(0.13f, 0.13f, 0.13f, heading_alpha);
-  const ImVec2 display_size(ImGui::GetIO().DisplaySize);
+  const ImVec4 background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIBackgroundColor, alpha);
+  const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIBackgroundColor, heading_alpha);
+  const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
 
   if (ImGuiFullscreen::BeginFullscreenWindow(
@@ -2322,9 +2322,9 @@ void Achievements::DrawLeaderboardsWindow()
 
   ImRect bb;
 
-  const ImVec4 background(0.13f, 0.13f, 0.13f, alpha);
-  const ImVec4 heading_background(0.13f, 0.13f, 0.13f, heading_alpha);
-  const ImVec2 display_size(ImGui::GetIO().DisplaySize);
+  const ImVec4 background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIBackgroundColor, alpha);
+  const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIBackgroundColor, heading_alpha);
+  const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float padding = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
   const float spacing_small = spacing / 2.0f;

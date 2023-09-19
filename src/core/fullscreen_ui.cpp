@@ -96,8 +96,8 @@ using ImGuiFullscreen::UIPrimaryLightColor;
 using ImGuiFullscreen::UIPrimaryLineColor;
 using ImGuiFullscreen::UIPrimaryTextColor;
 using ImGuiFullscreen::UISecondaryColor;
-using ImGuiFullscreen::UISecondaryDarkColor;
-using ImGuiFullscreen::UISecondaryLightColor;
+using ImGuiFullscreen::UISecondaryWeakColor;
+using ImGuiFullscreen::UISecondaryStrongColor;
 using ImGuiFullscreen::UISecondaryTextColor;
 using ImGuiFullscreen::UITextHighlightColor;
 
@@ -4672,7 +4672,9 @@ void FullscreenUI::DrawPauseMenu()
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
-  dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(0x21, 0x21, 0x21, 200));
+  const ImU32 text_color = ImGui::GetColorU32(UIBackgroundTextColor) | IM_COL32_A_MASK;
+  dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size,
+                    (ImGui::GetColorU32(UIBackgroundColor) & ~IM_COL32_A_MASK) | (200 << IM_COL32_A_SHIFT));
 
   // title info
   {
@@ -4713,13 +4715,13 @@ void FullscreenUI::DrawPauseMenu()
         subtitle_pos.x -= rp_height;
         subtitle_pos.y -= rp_height;
 
-        DrawShadowedText(dl, g_medium_font, rp_pos, IM_COL32(255, 255, 255, 255), rp.data(), rp.data() + rp.size(),
+        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(),
                          wrap_width);
       }
     }
 
-    DrawShadowedText(dl, g_large_font, title_pos, IM_COL32(255, 255, 255, 255), title.c_str());
-    DrawShadowedText(dl, g_medium_font, subtitle_pos, IM_COL32(255, 255, 255, 255), buffer);
+    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str());
+    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer);
 
     const ImVec2 image_min(display_size.x - LayoutScale(20.0f + 50.0f) - rp_height,
                            display_size.y - LayoutScale(20.0f + 50.0f) - rp_height);
@@ -4735,7 +4737,7 @@ void FullscreenUI::DrawPauseMenu()
                                                        buffer.GetCharArray(),
                                                        buffer.GetCharArray() + buffer.GetLength()));
     const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
-    DrawShadowedText(dl, g_large_font, time_pos, IM_COL32(255, 255, 255, 255), buffer.GetCharArray(),
+    DrawShadowedText(dl, g_large_font, time_pos, text_color, buffer.GetCharArray(),
                      buffer.GetCharArray() + buffer.GetLength());
 
     const std::string& serial = System::GetGameSerial();
@@ -4750,7 +4752,7 @@ void FullscreenUI::DrawPauseMenu()
                                                              buffer.GetCharArray() + buffer.GetLength()));
       const ImVec2 session_pos(display_size.x - LayoutScale(10.0f) - session_size.x,
                                time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, session_pos, IM_COL32(255, 255, 255, 255), buffer.GetCharArray(),
+      DrawShadowedText(dl, g_medium_font, session_pos, text_color, buffer.GetCharArray(),
                        buffer.GetCharArray() + buffer.GetLength());
 
       buffer.Fmt(FSUI_FSTR("All Time: {}"),
@@ -4760,7 +4762,7 @@ void FullscreenUI::DrawPauseMenu()
                                                            buffer.GetCharArray() + buffer.GetLength()));
       const ImVec2 total_pos(display_size.x - LayoutScale(10.0f) - total_size.x,
                              session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, total_pos, IM_COL32(255, 255, 255, 255), buffer.GetCharArray(),
+      DrawShadowedText(dl, g_medium_font, total_pos, text_color, buffer.GetCharArray(),
                        buffer.GetCharArray() + buffer.GetLength());
     }
   }
