@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "ui_autoupdaterdialog.h"
-#include <string>
+
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
+#include <string>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -23,6 +25,7 @@ public:
   static bool isSupported();
   static QStringList getTagList();
   static std::string getDefaultTag();
+  static void cleanupAfterUpdate();
 
 Q_SIGNALS:
   void updateCheckCompleted();

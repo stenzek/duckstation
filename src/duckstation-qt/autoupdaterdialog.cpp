@@ -1,16 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "autoupdaterdialog.h"
-#include "common/file_system.h"
-#include "common/log.h"
-#include "common/minizip_helpers.h"
-#include "common/string_util.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
 #include "unzip.h"
+
+#include "common/file_system.h"
+#include "common/log.h"
+#include "common/minizip_helpers.h"
+#include "common/string_util.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>
 #include <QtCore/QJsonArray>
@@ -25,11 +27,12 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
+
 Log_SetChannel(AutoUpdaterDialog);
 
 // Logic to detect whether we can use the auto updater.
-// Currently Windows-only, and requires that the channel be defined by the buildbot.
-#ifdef _WIN32
+// Currently Windows and Linux-only, and requires that the channel be defined by the buildbot.
+#if defined(_WIN32) || defined(__linux__)
 #if defined(__has_include) && __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
 #ifdef SCM_RELEASE_TAGS
@@ -68,7 +71,19 @@ AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 bool AutoUpdaterDialog::isSupported()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
+#ifdef __linux__
+  // For Linux, we need to check whether we're running from the appimage.
+  if (!std::getenv("APPIMAGE"))
+  {
+    Log_InfoPrintf("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
+    return false;
+  }
+
   return true;
+#else
+  // Windows - always supported.
+  return true;
+#endif
 #else
   return false;
 #endif
@@ -120,9 +135,6 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 
   QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL)));
   QNetworkRequest request(url);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-#endif
   m_network_access_mgr->get(request);
 #else
   emit updateCheckCompleted();
@@ -139,9 +151,6 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 
   QUrl url(QUrl::fromEncoded(QByteArray(url_string)));
   QNetworkRequest request(url);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-#endif
   m_network_access_mgr->get(request);
 #endif
 }
@@ -274,9 +283,6 @@ void AutoUpdaterDialog::queueGetChanges()
     StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag().c_str()));
   QUrl url(QUrl::fromEncoded(QByteArray(url_string.c_str(), static_cast<int>(url_string.size()))));
   QNetworkRequest request(url);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-#endif
   m_network_access_mgr->get(request);
 #endif
 }
@@ -364,9 +370,6 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 {
   QUrl url(m_download_url);
   QNetworkRequest request(url);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-#endif
   QNetworkReply* reply = m_network_access_mgr->get(request);
 
   QProgressDialog progress(tr("Downloading %1...").arg(m_download_url), tr("Cancel"), 0, 1);
@@ -575,11 +578,119 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
   return true;
 }
 
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+}
+
+#elif defined(__linux__)
+
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+{
+  const char* appimage_path = std::getenv("APPIMAGE");
+  if (!appimage_path || !FileSystem::FileExists(appimage_path))
+  {
+    reportError("Missing APPIMAGE.");
+    return false;
+  }
+
+  const QString qappimage_path(QString::fromUtf8(appimage_path));
+  if (!QFile::exists(qappimage_path))
+  {
+    reportError("Current AppImage does not exist: %s", appimage_path);
+    return false;
+  }
+
+  const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
+  const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
+  Log_InfoPrintf("APPIMAGE = %s", appimage_path);
+  Log_InfoPrintf("Backup AppImage path = %s", backup_appimage_path.toUtf8().constData());
+  Log_InfoPrintf("New AppImage path = %s", new_appimage_path.toUtf8().constData());
+
+  // Remove old "new" appimage and existing backup appimage.
+  if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))
+  {
+    reportError("Failed to remove old destination AppImage: %s", new_appimage_path.toUtf8().constData());
+    return false;
+  }
+  if (QFile::exists(backup_appimage_path) && !QFile::remove(backup_appimage_path))
+  {
+    reportError("Failed to remove old backup AppImage: %s", new_appimage_path.toUtf8().constData());
+    return false;
+  }
+
+  // Write "new" appimage.
+  {
+    // We want to copy the permissions from the old appimage to the new one.
+    QFile old_file(qappimage_path);
+    const QFileDevice::Permissions old_permissions = old_file.permissions();
+    QFile new_file(new_appimage_path);
+    if (!new_file.open(QIODevice::WriteOnly) || new_file.write(update_data) != update_data.size() ||
+        !new_file.setPermissions(old_permissions))
+    {
+      QFile::remove(new_appimage_path);
+      reportError("Failed to write new destination AppImage: %s", new_appimage_path.toUtf8().constData());
+      return false;
+    }
+  }
+
+  // Rename "old" appimage.
+  if (!QFile::rename(qappimage_path, backup_appimage_path))
+  {
+    reportError("Failed to rename old AppImage to %s", backup_appimage_path.toUtf8().constData());
+    QFile::remove(new_appimage_path);
+    return false;
+  }
+
+  // Rename "new" appimage.
+  if (!QFile::rename(new_appimage_path, qappimage_path))
+  {
+    reportError("Failed to rename new AppImage to %s", qappimage_path.toUtf8().constData());
+    return false;
+  }
+
+  // Execute new appimage.
+  QProcess* new_process = new QProcess();
+  new_process->setProgram(qappimage_path);
+  new_process->setArguments(QStringList{QStringLiteral("-updatecleanup")});
+  if (!new_process->startDetached())
+  {
+    reportError("Failed to execute new AppImage.");
+    return false;
+  }
+
+  // We exit once we return.
+  return true;
+}
+
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+  // Remove old/backup AppImage.
+  const char* appimage_path = std::getenv("APPIMAGE");
+  if (!appimage_path)
+    return;
+
+  const QString qappimage_path(QString::fromUtf8(appimage_path));
+  const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
+  if (!QFile::exists(backup_appimage_path))
+    return;
+
+  Log_InfoPrint(QStringLiteral("Removing backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
+  if (!QFile::remove(backup_appimage_path))
+  {
+    Log_ErrorPrint(
+      QStringLiteral("Failed to remove backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
+  }
+}
+
 #else
 
 bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
 {
   return false;
+}
+
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
 }
 
 #endif

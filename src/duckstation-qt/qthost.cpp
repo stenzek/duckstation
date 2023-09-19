@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qthost.h"
+#include "autoupdaterdialog.h"
 #include "displaywidget.h"
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
@@ -1224,10 +1225,9 @@ void Host::OnAchievementsRefreshed()
   {
     game_id = Achievements::GetGameID();
 
-    game_info = qApp
-      ->translate("EmuThread", "Game: %1 (%2)\n")
-      .arg(QString::fromStdString(Achievements::GetGameTitle()))
-      .arg(game_id);
+    game_info = qApp->translate("EmuThread", "Game: %1 (%2)\n")
+                  .arg(QString::fromStdString(Achievements::GetGameTitle()))
+                  .arg(game_id);
 
     const std::string& rich_presence_string = Achievements::GetRichPresenceString();
     if (Achievements::HasRichPresence() && !rich_presence_string.empty())
@@ -1903,6 +1903,13 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       else if (CHECK_ARG("-earlyconsole"))
       {
         InitializeEarlyConsole();
+        continue;
+      }
+      else if (CHECK_ARG("-updatecleanup"))
+      {
+        if (AutoUpdaterDialog::isSupported())
+          AutoUpdaterDialog::cleanupAfterUpdate();
+
         continue;
       }
 #ifdef ENABLE_RAINTEGRATION
