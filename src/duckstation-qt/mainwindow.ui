@@ -890,7 +890,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable GDB server</string>
+    <string>Enable GDB Server</string>
    </property>
   </action>
   <action name="actionViewGameGrid">
