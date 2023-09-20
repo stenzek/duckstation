@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-class String;
+class SmallStringBase;
 
 struct Settings;
 
@@ -32,7 +32,7 @@ void ReturnToPreviousWindow();
 void Shutdown();
 void Render();
 void InvalidateCoverCache();
-void TimeToPrintableString(String* str, time_t t);
+void TimeToPrintableString(SmallStringBase* str, time_t t);
 
 // Returns true if the message has been dismissed.
 bool DrawErrorWindow(const char* message);

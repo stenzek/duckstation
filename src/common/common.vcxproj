@@ -34,7 +34,7 @@
     <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="sha1_digest.h" />
-    <ClInclude Include="string.h" />
+    <ClInclude Include="small_string.h" />
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
@@ -62,7 +62,7 @@
     <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
-    <ClCompile Include="string.cpp" />
+    <ClCompile Include="small_string.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="threading.cpp" />

@@ -799,7 +799,7 @@ bool CompileBlock(CodeBlock* block, bool allow_flush)
     {
       CPU::DisassembleInstruction(&disasm, cbi.pc, cbi.instruction.bits);
       Log_DebugPrintf("[%s %s 0x%08X] %08X %s", cbi.is_branch_delay_slot ? "BD" : "  ",
-                      cbi.is_load_delay_slot ? "LD" : "  ", cbi.pc, cbi.instruction.bits, disasm.GetCharArray());
+                      cbi.is_load_delay_slot ? "LD" : "  ", cbi.pc, cbi.instruction.bits, disasm.c_str());
     }
 #endif
   }

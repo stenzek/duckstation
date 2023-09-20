@@ -12,7 +12,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -358,7 +358,7 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
       {
         glBindAttribLocation(
           program_id, i,
-          TinyString::FromFmt("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())], va.semantic_index));
+          TinyString::from_fmt("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())], va.semantic_index));
       }
     }
 
@@ -418,7 +418,7 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
     const u32 num_textures = std::max<u32>(GetActiveTexturesForLayout(plconfig.layout), 1);
     for (u32 i = 0; i < num_textures; i++)
     {
-      location = glGetUniformLocation(program_id, TinyString::FromFmt("samp{}", i));
+      location = glGetUniformLocation(program_id, TinyString::from_fmt("samp{}", i));
       if (location >= 0)
         glUniform1i(location, i);
     }

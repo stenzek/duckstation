@@ -182,7 +182,7 @@ void BIOS::PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask
   CPU::DisassembleInstruction(&old_disasm, address, existing_value);
   CPU::DisassembleInstruction(&new_disasm, address, new_value);
   Log_DevPrintf("BIOS-Patch 0x%08X (+0x%X): 0x%08X %s -> %08X %s", address, offset, existing_value,
-                old_disasm.GetCharArray(), new_value, new_disasm.GetCharArray());
+                old_disasm.c_str(), new_value, new_disasm.c_str());
 }
 
 bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size)

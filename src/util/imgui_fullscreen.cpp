@@ -2375,12 +2375,12 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
       dl->AddRectFilled(pos, ImVec2(pos.x + fraction * (box_end.x - pos.x), box_end.y),
                         ImGui::GetColorU32(UISecondaryColor));
 
-      const auto text = TinyString::FromFmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+      const auto text = TinyString::from_fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
       const ImVec2 text_size(ImGui::CalcTextSize(text));
       const ImVec2 text_pos(pos.x + ((box_end.x - pos.x) / 2.0f) - (text_size.x / 2.0f),
                             pos.y + ((box_end.y - pos.y) / 2.0f) - (text_size.y / 2.0f));
       dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(UIPrimaryTextColor),
-                  text.GetCharArray(), text.GetCharArray() + text.GetLength());
+                  text.c_str(), text.end_ptr());
     }
     else
     {

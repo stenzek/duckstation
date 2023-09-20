@@ -6,7 +6,7 @@
 
 #include "common/log.h"
 #include "common/scoped_guard.h"
-#include "common/string.h"
+#include "common/small_string.h"
 
 #include <cinttypes>
 #include <spawn.h>

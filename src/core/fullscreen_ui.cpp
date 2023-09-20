@@ -32,7 +32,7 @@
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/path.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/threading.h"
 
@@ -54,19 +54,23 @@ Log_SetChannel(FullscreenUI);
 
 #define TR_CONTEXT "FullscreenUI"
 
-namespace FullscreenUI {
+namespace {
 template<size_t L>
-class IconStackString : public StackString<L>
+class IconStackString : public SmallStackString<L>
 {
 public:
   ALWAYS_INLINE IconStackString(const char* icon, const char* str)
   {
-    StackString<L>::Fmt("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
+    SmallStackString<L>::fmt("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
+  }
+  ALWAYS_INLINE IconStackString(const char* icon, const char* str, const char* suffix)
+  {
+    SmallStackString<L>::fmt("{} {}##{}", icon, Host::TranslateToStringView(TR_CONTEXT, str), suffix);
   }
 };
-} // namespace FullscreenUI
+} // namespace
 
-#define FSUI_ICONSTR(icon, str) FullscreenUI::IconStackString<128>(icon, str).GetCharArray()
+#define FSUI_ICONSTR(icon, str) IconStackString<128>(icon, str).c_str()
 #define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str)
 #define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str)
 #define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str)
@@ -472,7 +476,7 @@ static GameListPage s_game_list_page = GameListPage::Grid;
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::TimeToPrintableString(String* str, time_t t)
+void FullscreenUI::TimeToPrintableString(SmallStringBase* str, time_t t)
 {
   struct tm lt = {};
 #ifdef _MSC_VER
@@ -483,7 +487,7 @@ void FullscreenUI::TimeToPrintableString(String* str, time_t t)
 
   char buf[256];
   std::strftime(buf, sizeof(buf), "%c", &lt);
-  str->Assign(buf);
+  str->assign(buf);
 }
 
 void FullscreenUI::StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name)
@@ -1342,7 +1346,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
                                           const char* name, const char* display_name, bool show_type)
 {
   TinyString title;
-  title.Fmt("{}/{}", section, name);
+  title.fmt("{}/{}", section, name);
 
   ImRect bb;
   bool visible, hovered, clicked;
@@ -1360,17 +1364,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     switch (type)
     {
       case InputBindingInfo::Type::Button:
-        title = fmt::format(ICON_FA_DOT_CIRCLE "{}", display_name);
+        title.fmt(ICON_FA_DOT_CIRCLE "{}", display_name);
         break;
       case InputBindingInfo::Type::Axis:
       case InputBindingInfo::Type::HalfAxis:
-        title = fmt::format(ICON_FA_BULLSEYE "{}", display_name);
+        title.fmt(ICON_FA_BULLSEYE "{}", display_name);
         break;
       case InputBindingInfo::Type::Motor:
-        title = fmt::format(ICON_FA_BELL "{}", display_name);
+        title.fmt(ICON_FA_BELL "{}", display_name);
         break;
       case InputBindingInfo::Type::Macro:
-        title = fmt::format(ICON_FA_PIZZA_SLICE "{}", display_name);
+        title.fmt(ICON_FA_PIZZA_SLICE "{}", display_name);
         break;
       default:
         title = display_name;
@@ -1379,8 +1383,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   }
 
   ImGui::PushFont(g_large_font);
-  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.GetCharArray() : display_name, nullptr,
-                           nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
+                           ImVec2(0.0f, 0.0f), &title_bb);
   ImGui::PopFont();
 
   const std::string value(bsi->GetStringValue(section, name));
@@ -1521,12 +1525,12 @@ void FullscreenUI::DrawInputBindingWindow()
   if (ImGui::BeginPopupModal(title, nullptr,
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs))
   {
-    ImGui::TextWrapped("%s", SmallString::FromFmt(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section,
-                                                  s_input_binding_display_name)
-                               .GetCharArray());
+    ImGui::TextWrapped("%s", SmallString::from_fmt(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section,
+                                                   s_input_binding_display_name)
+                               .c_str());
     ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
     ImGui::NewLine();
-    ImGui::TextUnformatted(SmallString::FromFmt(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
+    ImGui::TextUnformatted(SmallString::from_fmt(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
     ImGui::EndPopup();
   }
 
@@ -2004,7 +2008,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
   TinyString value_text;
   if (value.has_value())
-    value_text.Format(format, value.value());
+    value_text.format(format, value.value());
   else
     value_text = FSUI_VSTR("Use Global Setting");
 
@@ -2821,14 +2825,14 @@ void FullscreenUI::DrawBIOSSettingsPage()
       continue;
 
     TinyString title;
-    title.Fmt(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
+    title.fmt(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
 
     const std::optional<std::string> filename(bsi->GetOptionalStringValue(
       "BIOS", config_keys[i], game_settings ? std::nullopt : std::optional<const char*>("")));
 
     if (MenuButtonWithValue(title,
-                            SmallString::FromFmt(FSUI_FSTR("BIOS to use when emulating {} consoles."),
-                                                 Settings::GetConsoleRegionDisplayName(region)),
+                            SmallString::from_fmt(FSUI_FSTR("BIOS to use when emulating {} consoles."),
+                                                  Settings::GetConsoleRegionDisplayName(region)),
                             filename.has_value() ? (filename->empty() ? FSUI_CSTR("Auto-Detect") : filename->c_str()) :
                                                    FSUI_CSTR("Use Global Setting")))
     {
@@ -3052,7 +3056,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, &ram_usage, &vram_usage);
-    rewind_summary.Fmt(
+    rewind_summary.fmt(
       FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM."),
       rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
   }
@@ -3277,18 +3281,18 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     if (mtap_enabled[mtap_port])
     {
-      MenuHeading(TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1,
-                                      mtap_slot_names[mtap_slot]));
+      MenuHeading(TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1,
+                                       mtap_slot_names[mtap_slot]));
     }
     else
     {
-      MenuHeading(TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
+      MenuHeading(TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
     }
 
     const std::string section(fmt::format("Pad{}", global_slot + 1));
     const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
-    if (MenuButton(TinyString::FromFmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
+    if (MenuButton(TinyString::from_fmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
                    ci ? ci->display_name : FSUI_CSTR("Unknown")))
     {
       std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
@@ -3298,7 +3302,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         options.emplace_back(std::move(it.second), type == it.first);
       }
-      OpenChoiceDialog(TinyString::FromFmt(FSUI_FSTR("Port {} Controller Type"), global_slot + 1), false,
+      OpenChoiceDialog(TinyString::from_fmt(FSUI_FSTR("Port {} Controller Type"), global_slot + 1), false,
                        std::move(options),
                        [game_settings, section,
                         raw_options = std::move(raw_options)](s32 index, const std::string& title, bool checked) {
@@ -3327,25 +3331,25 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     if (mtap_enabled[mtap_port])
     {
-      MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {}{} Macros")),
-                                       mtap_port + 1, mtap_slot_names[mtap_slot]));
+      MenuHeading(SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {}{} Macros")),
+                                        mtap_port + 1, mtap_slot_names[mtap_slot]));
     }
     else
     {
-      MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
-                                       mtap_port + 1));
+      MenuHeading(SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
+                                        mtap_port + 1));
     }
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
-                             TinyString::FromFmt("Macro{}", macro_index + 1),
-                             TinyString::FromFmt(FSUI_FSTR("Macro {} Trigger"), macro_index + 1));
+                             TinyString::from_fmt("Macro{}", macro_index + 1),
+                             TinyString::from_fmt(FSUI_FSTR("Macro {} Trigger"), macro_index + 1));
 
       std::string binds_string(
         bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
       if (MenuButton(
-            TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Macro {} Buttons")), macro_index + 1),
+            TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Macro {} Buttons")), macro_index + 1),
             binds_string.empty() ? FSUI_CSTR("No Buttons Selected") : binds_string.c_str()))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
@@ -3363,7 +3367,7 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
 
         OpenChoiceDialog(
-          TinyString::FromFmt(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1), true, std::move(options),
+          TinyString::from_fmt(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1), true, std::move(options),
           [game_settings, section, macro_index, ci](s32 index, const std::string& title, bool checked) {
             // convert display name back to bind name
             std::string_view to_modify;
@@ -3409,13 +3413,13 @@ void FullscreenUI::DrawControllerSettingsPage()
 
       const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
       const SmallString freq_title =
-        SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Macro {} Frequency")), macro_index + 1);
+        SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Macro {} Frequency")), macro_index + 1);
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
       SmallString freq_summary;
       if (frequency == 0)
         freq_summary = FSUI_VSTR("Macro will not auto-toggle.");
       else
-        freq_summary.Fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency);
+        freq_summary.fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency);
       if (MenuButton(freq_title, freq_summary))
         ImGui::OpenPopup(freq_title);
 
@@ -3456,19 +3460,20 @@ void FullscreenUI::DrawControllerSettingsPage()
     {
       if (mtap_enabled[mtap_port])
       {
-        MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {}{} Settings")),
-                                         mtap_port + 1, mtap_slot_names[mtap_slot]));
+        MenuHeading(
+          SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {}{} Settings")),
+                                mtap_port + 1, mtap_slot_names[mtap_slot]));
       }
       else
       {
-        MenuHeading(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")),
-                                         mtap_port + 1));
+        MenuHeading(SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")),
+                                          mtap_port + 1));
       }
 
       for (const SettingInfo& si : ci->settings)
       {
         TinyString title;
-        title.Fmt(ICON_FA_COG "{}", si.display_name);
+        title.fmt(ICON_FA_COG "{}", si.display_name);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
@@ -3583,13 +3588,13 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   for (u32 i = 0; i < 2; i++)
   {
-    MenuHeading(TinyString::FromFmt(FSUI_FSTR("Memory Card Port {}"), i + 1));
+    MenuHeading(TinyString::from_fmt(FSUI_FSTR("Memory Card Port {}"), i + 1));
 
     const MemoryCardType default_type =
       (i == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
     DrawEnumSetting(
-      bsi, TinyString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SD_CARD, "Memory Card {} Type")), i + 1),
-      SmallString::FromFmt(FSUI_FSTR("Sets which sort of memory card image will be used for slot {}."), i + 1),
+      bsi, TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_SD_CARD, "Memory Card {} Type")), i + 1),
+      SmallString::from_fmt(FSUI_FSTR("Sets which sort of memory card image will be used for slot {}."), i + 1),
       "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
       &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
 
@@ -3605,7 +3610,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                                    std::optional<const char*>((i == 0) ? "shared_card_1.mcd" : "shared_card_2.mcd")));
 
     TinyString title;
-    title.Fmt("{}##card_name_{}", FSUI_ICONSTR(ICON_FA_FILE, "Shared Card Name"), i);
+    title.fmt("{}##card_name_{}", FSUI_ICONSTR(ICON_FA_FILE, "Shared Card Name"), i);
     if (MenuButtonWithValue(title,
                             FSUI_CSTR("The selected memory card image will be used in shared mode for this slot."),
                             path_value.has_value() ? path_value->c_str() : "Use Global Setting", is_shared))
@@ -4075,7 +4080,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     PostProcessingStageInfo& si = s_postprocessing_stages[stage_index];
 
     ImGui::PushID(stage_index);
-    str.Fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
+    str.fmt(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
     MenuHeading(str);
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_TIMES, "Remove From Chain"), FSUI_CSTR("Removes this shader from the chain.")))
@@ -4109,7 +4114,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         case PostProcessing::ShaderOption::Type::Bool:
         {
           bool value = (opt.value[0].int_value != 0);
-          tstr.Fmt(ICON_FA_COGS "{}", opt.ui_name);
+          tstr.fmt(ICON_FA_COGS "{}", opt.ui_name);
           if (ToggleButton(tstr,
                            (opt.default_value[0].int_value != 0) ? FSUI_CSTR("Default: Enabled") :
                                                                    FSUI_CSTR("Default: Disabled"),
@@ -4124,8 +4129,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         case PostProcessing::ShaderOption::Type::Float:
         {
-          tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
-          str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
+          tstr.fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          str.fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
                   opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
@@ -4223,8 +4228,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         case PostProcessing::ShaderOption::Type::Int:
         {
-          tstr.Fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
-          str.Fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
+          tstr.fmt(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          str.fmt(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
                   opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
@@ -4489,17 +4494,17 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      ActiveButton(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
-                                        bsi->GetStringValue("Cheevos", "Username")),
+      ActiveButton(SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
+                                         bsi->GetStringValue("Cheevos", "Username")),
                    false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       TinyString ts_string;
-      ts_string.AppendFmtString(
+      ts_string.fmt(
         "{:%Y-%m-%d %H:%M:%S}",
         fmt::localtime(StringUtil::FromChars<u64>(bsi->GetStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
-      ActiveButton(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")),
-                                        ts_string.GetCharArray()),
-                   false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      ActiveButton(
+        SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
+        false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
       ImGui::PopStyleColor();
 
       if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
@@ -4522,14 +4527,14 @@ void FullscreenUI::DrawAchievementsSettingsPage()
       const auto lock = Achievements::GetLock();
 
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      ActiveButton(SmallString::FromFmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
-                                        Achievements::GetGameID(), Achievements::GetGameTitle()),
+      ActiveButton(SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
+                                         Achievements::GetGameID(), Achievements::GetGameTitle()),
                    false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       const std::string& rich_presence_string = Achievements::GetRichPresenceString();
       if (!rich_presence_string.empty())
       {
-        ActiveButton(SmallString::FromFmt(ICON_FA_MAP "{}", rich_presence_string), false, false,
+        ActiveButton(SmallString::from_fmt(ICON_FA_MAP "{}", rich_presence_string), false, false,
                      LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
       }
       else
@@ -4675,8 +4680,8 @@ void FullscreenUI::DrawPauseMenu()
     const std::string& serial = System::GetGameSerial();
 
     if (!serial.empty())
-      buffer.Format("%s - ", serial.c_str());
-    buffer.AppendString(Path::GetFileName(System::GetDiscPath()));
+      buffer.fmt("{} - ", serial);
+    buffer.append(Path::GetFileName(System::GetDiscPath()));
 
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
@@ -4712,8 +4717,8 @@ void FullscreenUI::DrawPauseMenu()
       }
     }
 
-    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str());
-    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer);
+    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str(), title.c_str() + title.length());
+    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer.c_str(), buffer.end_ptr());
 
     const ImVec2 image_min(display_size.x - LayoutScale(20.0f + 50.0f) - rp_height,
                            display_size.y - LayoutScale(20.0f + 50.0f) - rp_height);
@@ -4723,14 +4728,12 @@ void FullscreenUI::DrawPauseMenu()
 
   // current time / play time
   {
-    buffer.Fmt("{:%X}", fmt::localtime(std::time(nullptr)));
+    buffer.fmt("{:%X}", fmt::localtime(std::time(nullptr)));
 
     const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
-                                                       buffer.GetCharArray(),
-                                                       buffer.GetCharArray() + buffer.GetLength()));
+                                                       buffer.c_str(), buffer.end_ptr()));
     const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
-    DrawShadowedText(dl, g_large_font, time_pos, text_color, buffer.GetCharArray(),
-                     buffer.GetCharArray() + buffer.GetLength());
+    DrawShadowedText(dl, g_large_font, time_pos, text_color, buffer.c_str(), buffer.end_ptr());
 
     const std::string& serial = System::GetGameSerial();
     if (!serial.empty())
@@ -4738,24 +4741,19 @@ void FullscreenUI::DrawPauseMenu()
       const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(serial);
       const std::time_t session_time = static_cast<std::time_t>(System::GetSessionPlayedTime());
 
-      buffer.Fmt(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true).GetStringView());
+      buffer.fmt(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true));
       const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                             -1.0f, buffer.GetCharArray(),
-                                                             buffer.GetCharArray() + buffer.GetLength()));
+                                                             -1.0f, buffer.c_str(), buffer.end_ptr()));
       const ImVec2 session_pos(display_size.x - LayoutScale(10.0f) - session_size.x,
                                time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, session_pos, text_color, buffer.GetCharArray(),
-                       buffer.GetCharArray() + buffer.GetLength());
+      DrawShadowedText(dl, g_medium_font, session_pos, text_color, buffer.c_str(), buffer.end_ptr());
 
-      buffer.Fmt(FSUI_FSTR("All Time: {}"),
-                 GameList::FormatTimespan(cached_played_time + session_time, true).GetStringView());
+      buffer.fmt(FSUI_FSTR("All Time: {}"), GameList::FormatTimespan(cached_played_time + session_time, true));
       const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                           -1.0f, buffer.GetCharArray(),
-                                                           buffer.GetCharArray() + buffer.GetLength()));
+                                                           -1.0f, buffer.c_str(), buffer.end_ptr()));
       const ImVec2 total_pos(display_size.x - LayoutScale(10.0f) - total_size.x,
                              session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, total_pos, text_color, buffer.GetCharArray(),
-                       buffer.GetCharArray() + buffer.GetLength());
+      DrawShadowedText(dl, g_medium_font, total_pos, text_color, buffer.c_str(), buffer.end_ptr());
     }
   }
 
@@ -5413,7 +5411,7 @@ void FullscreenUI::DrawResumeStateSelector()
     TimeToPrintableString(&time, entry.timestamp);
     ImGui::TextWrapped(
       FSUI_CSTR("A resume save state created at %s was found.\n\nDo you want to load this save and continue?"),
-      time.GetCharArray());
+      time.c_str());
 
     const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
     const float image_height = LayoutScale(250.0f);
@@ -5692,16 +5690,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       GPUTexture* cover_texture = GetGameListCover(entry);
 
       if (entry->serial.empty())
-      {
-        summary.Fmt("{} - ", Settings::GetDiscRegionDisplayName(entry->region));
-      }
+        summary.fmt("{} - ", Settings::GetDiscRegionDisplayName(entry->region));
       else
-      {
-        summary.Fmt("{} - {} - ", entry->serial, Settings::GetDiscRegionDisplayName(entry->region));
-      }
+        summary.fmt("{} - {} - ", entry->serial, Settings::GetDiscRegionDisplayName(entry->region));
 
-      const std::string_view filename(Path::GetFileName(entry->path));
-      summary.AppendString(filename);
+      summary.append(Path::GetFileName(entry->path));
 
       const ImRect image_rect(
         CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
@@ -5720,12 +5713,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
                                entry->title.c_str() + entry->title.size(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
       ImGui::PopFont();
 
-      if (!summary.IsEmpty())
+      if (!summary.empty())
       {
         ImGui::PushFont(g_medium_font);
-        ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary.GetCharArray(),
-                                 summary.GetCharArray() + summary.GetLength(), nullptr, ImVec2(0.0f, 0.0f),
-                                 &summary_bb);
+        ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary.c_str(), summary.end_ptr(), nullptr,
+                                 ImVec2(0.0f, 0.0f), &summary_bb);
         ImGui::PopFont();
       }
 
@@ -5832,10 +5824,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(selected_entry->compatibility));
 
       // play time
-      ImGui::Text(FSUI_CSTR("Time Played: %s"),
-                  GameList::FormatTimespan(selected_entry->total_played_time).GetCharArray());
-      ImGui::Text(FSUI_CSTR("Last Played: %s"),
-                  GameList::FormatTimestamp(selected_entry->last_played_time).GetCharArray());
+      ImGui::Text(FSUI_CSTR("Time Played: %s"), GameList::FormatTimespan(selected_entry->total_played_time).c_str());
+      ImGui::Text(FSUI_CSTR("Last Played: %s"), GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
 
       // size
       ImGui::Text(FSUI_CSTR("Size: %.2f MB"), static_cast<float>(selected_entry->total_size) / 1048576.0f);
@@ -5941,11 +5931,10 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
       const std::string_view title(
         std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
-      draw_title.Fmt("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
+      draw_title.fmt("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
       ImGui::PushFont(g_medium_font);
-      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.GetCharArray(),
-                               draw_title.GetCharArray() + draw_title.GetLength(), nullptr, ImVec2(0.5f, 0.0f),
-                               &title_bb);
+      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.end_ptr(), nullptr,
+                               ImVec2(0.5f, 0.0f), &title_bb);
       ImGui::PopFont();
 
       if (pressed)
@@ -6073,7 +6062,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   for (const auto& it : s_game_list_directories_cache)
   {
-    if (MenuButton(SmallString::FromFmt(ICON_FA_FOLDER "{}", it.first),
+    if (MenuButton(SmallString::from_fmt(ICON_FA_FOLDER "{}", it.first),
                    it.second ? FSUI_CSTR("Scanning Subdirectories") : FSUI_CSTR("Not Scanning Subdirectories")))
     {
       ImGuiFullscreen::ChoiceDialogOptions options = {
@@ -6609,8 +6598,7 @@ void FullscreenUI::ProgressCallback::Redraw(bool force)
     return;
 
   m_last_progress_percent = percent;
-  ImGuiFullscreen::UpdateBackgroundProgressDialog(
-    m_name.c_str(), std::string(m_status_text.GetCharArray(), m_status_text.GetLength()), 0, 100, percent);
+  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text, 0, 100, percent);
 }
 
 void FullscreenUI::ProgressCallback::DisplayError(const char* message)

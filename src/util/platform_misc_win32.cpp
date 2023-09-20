@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "common/log.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 #include "platform_misc.h"
 #include <cinttypes>

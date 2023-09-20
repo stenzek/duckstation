@@ -7,7 +7,7 @@
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 #include "controller.h"
 #include "cpu_code_cache.h"
@@ -397,9 +397,9 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
 
   for (u32 i = 0; i < num_cheats; i++)
   {
-    const std::string* desc = FindKey(kvp, TinyString::FromFormat("cheat%u_desc", i));
-    const std::string* code = FindKey(kvp, TinyString::FromFormat("cheat%u_code", i));
-    const std::string* enable = FindKey(kvp, TinyString::FromFormat("cheat%u_enable", i));
+    const std::string* desc = FindKey(kvp, TinyString::from_fmt("cheat{}_desc", i));
+    const std::string* code = FindKey(kvp, TinyString::from_fmt("cheat{}_code", i));
+    const std::string* enable = FindKey(kvp, TinyString::from_fmt("cheat{}_enable", i));
     if (!desc || !code || !enable)
     {
       Log_WarningPrintf("Missing desc/code/enable for cheat %u", i);

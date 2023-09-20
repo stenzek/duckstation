@@ -6,7 +6,7 @@
 #include "cocoa_tools.h"
 
 #include "common/log.h"
-#include "common/string.h"
+#include "common/small_string.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <Cocoa/Cocoa.h>

@@ -8,7 +8,7 @@
 
 #include "util/cd_image.h"
 
-#include "common/string.h"
+#include "common/small_string.h"
 
 #include <ctime>
 #include <functional>

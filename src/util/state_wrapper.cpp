@@ -3,7 +3,7 @@
 
 #include "state_wrapper.h"
 #include "common/log.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include <cinttypes>
 #include <cstring>
 Log_SetChannel(StateWrapper);
@@ -67,14 +67,14 @@ void StateWrapper::Do(std::string* value_ptr)
   value_ptr->resize(std::strlen(&(*value_ptr)[0]));
 }
 
-void StateWrapper::Do(String* value_ptr)
+void StateWrapper::Do(SmallStringBase* value_ptr)
 {
-  u32 length = static_cast<u32>(value_ptr->GetLength());
+  u32 length = static_cast<u32>(value_ptr->length());
   Do(&length);
   if (m_mode == Mode::Read)
-    value_ptr->Resize(length);
-  DoBytes(value_ptr->GetWriteableCharArray(), length);
-  value_ptr->UpdateSize();
+    value_ptr->resize(length);
+  DoBytes(value_ptr->data(), length);
+  value_ptr->update_size();
 }
 
 bool StateWrapper::DoMarker(const char* marker)
@@ -84,11 +84,11 @@ bool StateWrapper::DoMarker(const char* marker)
   if (m_error)
     return false;
 
-  if (m_mode == Mode::Write || file_value.Compare(marker))
+  if (m_mode == Mode::Write || file_value.equals(marker))
     return true;
 
   Log_ErrorPrintf("Marker mismatch at offset %" PRIu64 ": found '%s' expected '%s'", m_stream->GetPosition(),
-                  file_value.GetCharArray(), marker);
+                  file_value.c_str(), marker);
 
   return false;
 }

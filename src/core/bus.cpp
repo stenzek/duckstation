@@ -770,22 +770,22 @@ static TickCount DoInvalidAccess(MemoryAccessType type, MemoryAccessSize size, P
                                  u32& value)
 {
   SmallString str;
-  str.AppendString("Invalid bus ");
+  str.append("Invalid bus ");
   if (size == MemoryAccessSize::Byte)
-    str.AppendString("byte");
+    str.append("byte");
   if (size == MemoryAccessSize::HalfWord)
-    str.AppendString("word");
+    str.append("word");
   if (size == MemoryAccessSize::Word)
-    str.AppendString("dword");
-  str.AppendCharacter(' ');
+    str.append("dword");
+  str.append(' ');
   if (type == MemoryAccessType::Read)
-    str.AppendString("read");
+    str.append("read");
   else
-    str.AppendString("write");
+    str.append("write");
 
-  str.AppendFormattedString(" at address 0x%08X", address);
+  str.append_fmt(" at address 0x{:08X}", address);
   if (type == MemoryAccessType::Write)
-    str.AppendFormattedString(" (value 0x%08X)", value);
+    str.append_fmt(" (value 0x{:08X})", value);
 
   Log_ErrorPrint(str);
   if (type == MemoryAccessType::Read)

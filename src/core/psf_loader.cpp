@@ -214,7 +214,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   u32 lib_counter = 2;
   for (;;)
   {
-    lib_name = file.GetTagString(TinyString::FromFormat("_lib%u", lib_counter++));
+    lib_name = file.GetTagString(TinyString::from_fmt("_lib{}", lib_counter++));
     if (!lib_name.has_value())
       break;
 

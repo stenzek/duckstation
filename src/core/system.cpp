@@ -237,7 +237,7 @@ static bool s_discord_presence_active = false;
 
 static TinyString GetTimestampStringForFileName()
 {
-  return TinyString::FromFmt("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
+  return TinyString::from_fmt("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
 void System::Internal::ProcessStartup()
@@ -3341,25 +3341,21 @@ bool System::CheckForSBIFile(CDImage* image)
   {
     return Host::ConfirmMessage(
       "Confirm Unsupported Configuration",
-      StringUtil::StdStringFromFormat(
-        TRANSLATE(
-          "System",
-          "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nThe game will "
-          "likely not run properly.\n\nPlease check the README for instructions on how to add an SBI file.\n\nDo "
-          "you wish to continue?"),
-        s_running_game_serial.c_str(), s_running_game_title.c_str())
-        .c_str());
+      LargeString::from_fmt(
+        TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                               "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
+                               "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
+        s_running_game_serial, s_running_game_title));
   }
   else
   {
     Host::ReportErrorAsync(
       TRANSLATE("System", "Error"),
-      SmallString::FromFormat(
-        TRANSLATE("System",
-                  "You are attempting to run a libcrypt protected game without an SBI file:\n\n%s: %s\n\nYour dump is "
-                  "incomplete, you must add the SBI file to run this game. \n\n"
-                  "The name of the SBI file must match the name of the disc image."),
-        s_running_game_serial.c_str(), s_running_game_title.c_str()));
+      LargeString::from_fmt(
+        TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                               "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
+                               "name of the SBI file must match the name of the disc image."),
+        s_running_game_serial, s_running_game_title));
     return false;
   }
 }

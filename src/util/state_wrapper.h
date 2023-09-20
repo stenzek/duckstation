@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <vector>
 
-class String;
+class SmallStringBase;
 
 class StateWrapper
 {
@@ -108,7 +108,7 @@ public:
 
   void Do(bool* value_ptr);
   void Do(std::string* value_ptr);
-  void Do(String* value_ptr);
+  void Do(SmallStringBase* value_ptr);
 
   template<typename T, size_t N>
   void Do(std::array<T, N>* data)

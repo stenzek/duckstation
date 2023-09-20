@@ -4,7 +4,7 @@
 #pragma once
 #include "common/log.h"
 #include "common/settings_interface.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "types.h"
 #include "util/audio_stream.h"
 #include <array>
@@ -245,8 +245,6 @@ struct Settings
 
   std::string pcdrv_root;
   bool pcdrv_enable_writes = false;
-
-  std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> GeneratePortLabels() const;
 
   LOGLEVEL log_level = DEFAULT_LOG_LEVEL;
   std::string log_filter;

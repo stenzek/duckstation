@@ -19,7 +19,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 #include "fmt/format.h"
@@ -120,20 +120,20 @@ TinyString PostProcessing::ValueToString(ShaderOption::Type type, u32 vector_siz
   for (u32 i = 0; i < vector_size; i++)
   {
     if (i > 0)
-      ret.AppendCharacter(',');
+      ret.append(',');
 
     switch (type)
     {
       case ShaderOption::Type::Bool:
-        ret.AppendString((value[i].int_value != 0) ? "true" : "false");
+        ret.append((value[i].int_value != 0) ? "true" : "false");
         break;
 
       case ShaderOption::Type::Int:
-        ret.AppendFmtString("{}", value[i].int_value);
+        ret.append_fmt("{}", value[i].int_value);
         break;
 
       case ShaderOption::Type::Float:
-        ret.AppendFmtString("{}", value[i].float_value);
+        ret.append_fmt("{}", value[i].float_value);
         break;
 
       default:
@@ -207,7 +207,7 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
 
 TinyString PostProcessing::GetStageConfigSection(u32 index)
 {
-  return TinyString::FromFmt("PostProcessing/Stage{}", index + 1);
+  return TinyString::from_fmt("PostProcessing/Stage{}", index + 1);
 }
 
 void PostProcessing::CopyStageConfig(SettingsInterface& si, u32 old_index, u32 new_index)

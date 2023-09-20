@@ -147,7 +147,7 @@ void AutoUpdaterDialog::queueGetLatestRelease()
   connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestReleaseComplete);
 
   SmallString url_string;
-  url_string.Format(LATEST_RELEASE_URL, getCurrentUpdateTag().c_str());
+  url_string.format(LATEST_RELEASE_URL, getCurrentUpdateTag().c_str());
 
   QUrl url(QUrl::fromEncoded(QByteArray(url_string)));
   QNetworkRequest request(url);

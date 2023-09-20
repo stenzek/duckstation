@@ -994,7 +994,7 @@ TinyString GameList::FormatTimestamp(std::time_t timestamp)
     {
       char buf[128];
       std::strftime(buf, std::size(buf), "%x", &ttime);
-      ret.Assign(buf);
+      ret.assign(buf);
     }
   }
 
@@ -1011,22 +1011,22 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   if (!long_format)
   {
     if (hours >= 100)
-      ret.Fmt(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
+      ret.fmt(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
     else if (hours > 0)
-      ret.Fmt(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
+      ret.fmt(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
     else if (minutes > 0)
-      ret.Fmt(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
+      ret.fmt(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
     else if (seconds > 0)
-      ret.Fmt(TRANSLATE_FS("GameList", "{}s"), seconds);
+      ret.fmt(TRANSLATE_FS("GameList", "{}s"), seconds);
     else
       ret = TRANSLATE_SV("GameList", "None");
   }
   else
   {
     if (hours > 0)
-      ret = fmt::format(TRANSLATE_FS("GameList", "{} hours"), hours);
+      ret.fmt(TRANSLATE_FS("GameList", "{} hours"), hours);
     else
-      ret = fmt::format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
+      ret.fmt(TRANSLATE_FS("GameList", "{} minutes"), minutes);
   }
 
   return ret;

@@ -54,7 +54,7 @@
 Log_SetChannel(ImGuiManager);
 
 namespace ImGuiManager {
-static void FormatProcessorStat(String& text, double usage, double time);
+static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
 static void DrawPerformanceOverlay();
 static void DrawEnhancementsOverlay();
 static void DrawInputsOverlay();
@@ -179,12 +179,12 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
       ImGui::TextUnformatted(message);
 
       TinyString buf;
-      buf.Fmt("{}/{}", progress_value, progress_max);
+      buf.fmt("{}/{}", progress_value, progress_max);
 
-      const ImVec2 prog_size = ImGui::CalcTextSize(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      const ImVec2 prog_size = ImGui::CalcTextSize(buf.c_str(), buf.end_ptr());
       ImGui::SameLine();
       ImGui::SetCursorPosX(width - padding_and_rounding - prog_size.x);
-      ImGui::TextUnformatted(buf.GetCharArray(), buf.GetCharArray() + buf.GetLength());
+      ImGui::TextUnformatted(buf.c_str(), buf.end_ptr());
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 
       ImGui::ProgressBar(static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min),
@@ -259,15 +259,15 @@ void ImGuiManager::RenderOverlayWindows()
   }
 }
 
-void ImGuiManager::FormatProcessorStat(String& text, double usage, double time)
+void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
 {
   // Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
   // which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
   // so that people don't get confused, and remove the decimal places when it's there while we're at it.
   if (usage >= 99.95)
-    text.AppendFmtString("100% ({:.2f}ms)", time);
+    text.append_fmt("100% ({:.2f}ms)", time);
   else
-    text.AppendFmtString("{:.1f}% ({:.2f}ms)", usage, time);
+    text.append_fmt("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
 void ImGuiManager::DrawPerformanceOverlay()
@@ -301,7 +301,7 @@ void ImGuiManager::DrawPerformanceOverlay()
     dl->AddText(                                                                                                       \
       font, font->FontSize,                                                                                            \
       ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),         \
-      IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());                                           \
+      IM_COL32(0, 0, 0, 100), text.c_str(), text.end_ptr());                                                           \
     dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color,  \
                 (text));                                                                                               \
     position_y += text_size.y + spacing;                                                                               \
@@ -313,22 +313,22 @@ void ImGuiManager::DrawPerformanceOverlay()
     const float speed = System::GetEmulationSpeed();
     if (g_settings.display_show_fps)
     {
-      text.AppendFmtString("G: {:.2f} | V: {:.2f}", System::GetFPS(), System::GetVPS());
+      text.append_fmt("G: {:.2f} | V: {:.2f}", System::GetFPS(), System::GetVPS());
       first = false;
     }
     if (g_settings.display_show_speed)
     {
-      text.AppendFmtString("{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
+      text.append_fmt("{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
       const float target_speed = System::GetTargetSpeed();
       if (target_speed <= 0.0f)
-        text.AppendString(" (Max)");
+        text.append(" (Max)");
       else
-        text.AppendFmtString(" ({:.0f}%)", target_speed * 100.0f);
+        text.append_fmt(" ({:.0f}%)", target_speed * 100.0f);
 
       first = false;
     }
-    if (!text.IsEmpty())
+    if (!text.empty())
     {
       ImU32 color;
       if (speed < 95.0f)
@@ -347,65 +347,63 @@ void ImGuiManager::DrawPerformanceOverlay()
       const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
-      text.Fmt("{}x{} {} {}", effective_width, effective_height, pal ? "PAL" : "NTSC",
+      text.fmt("{}x{} {} {}", effective_width, effective_height, pal ? "PAL" : "NTSC",
                interlaced ? "Interlaced" : "Progressive");
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
     if (g_settings.display_show_cpu)
     {
-      text.Clear();
-      text.AppendFmtString("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(),
-                           System::GetAverageFrameTime(), System::GetMaximumFrameTime());
+      text.fmt("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetAverageFrameTime(),
+               System::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      text.Clear();
       if (g_settings.cpu_overclock_active || (!g_settings.IsUsingRecompiler() || g_settings.cpu_recompiler_icache ||
                                               g_settings.cpu_recompiler_memory_exceptions))
       {
         first = true;
-        text.AppendString("CPU[");
+        text.assign("CPU[");
         if (g_settings.cpu_overclock_active)
         {
-          text.AppendFmtString("{}", g_settings.GetCPUOverclockPercent());
+          text.append_fmt("{}", g_settings.GetCPUOverclockPercent());
           first = false;
         }
         if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
         {
-          text.AppendFmtString("{}{}", first ? "" : "/", "I");
+          text.append_fmt("{}{}", first ? "" : "/", "I");
           first = false;
         }
         else if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
         {
-          text.AppendFmtString("{}{}", first ? "" : "/", "CI");
+          text.append_fmt("{}{}", first ? "" : "/", "CI");
           first = false;
         }
         else
         {
           if (g_settings.cpu_recompiler_icache)
           {
-            text.AppendFmtString("{}{}", first ? "" : "/", "IC");
+            text.append_fmt("{}{}", first ? "" : "/", "IC");
             first = false;
           }
           if (g_settings.cpu_recompiler_memory_exceptions)
           {
-            text.AppendFmtString("{}{}", first ? "" : "/", "ME");
+            text.append_fmt("{}{}", first ? "" : "/", "ME");
             first = false;
           }
         }
 
-        text.AppendString("]: ");
+        text.append("]: ");
       }
       else
       {
-        text.Assign("CPU: ");
+        text.assign("CPU: ");
       }
       FormatProcessorStat(text, System::GetCPUThreadUsage(), System::GetCPUThreadAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       if (g_gpu->GetSWThread())
       {
-        text.Assign("SW: ");
+        text.assign("SW: ");
         FormatProcessorStat(text, System::GetSWThreadUsage(), System::GetSWThreadAverageTime());
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
@@ -414,8 +412,7 @@ void ImGuiManager::DrawPerformanceOverlay()
       {
         AudioStream* stream = g_spu.GetOutputStream();
         const u32 frames = stream->GetBufferedFramesRelaxed();
-        text.Clear();
-        text.Fmt("Audio: {:<4u}f/{:<3u}ms", frames, AudioStream::GetMSForBufferSize(stream->GetSampleRate(), frames));
+        text.fmt("Audio: {:<4u}f/{:<3u}ms", frames, AudioStream::GetMSForBufferSize(stream->GetSampleRate(), frames));
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
 #endif
@@ -423,7 +420,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 
     if (g_settings.display_show_gpu && g_gpu_device->IsGPUTimingEnabled())
     {
-      text.Assign("GPU: ");
+      text.assign("GPU: ");
       FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
@@ -433,7 +430,7 @@ void ImGuiManager::DrawPerformanceOverlay()
       const bool rewinding = System::IsRewinding();
       if (rewinding || System::IsFastForwardEnabled() || System::IsTurboEnabled())
       {
-        text.Assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
+        text.assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
         DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
       }
     }
@@ -477,25 +474,21 @@ void ImGuiManager::DrawPerformanceOverlay()
         ImDrawList* win_dl = ImGui::GetCurrentWindow()->DrawList;
         const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);
 
-        text.Clear();
-        text.AppendFmtString("{:.1f} ms", max);
-        text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.GetCharArray(),
-                                              text.GetCharArray() + text.GetLength());
+        text.fmt("{:.1f} ms", max);
+        text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
         win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset, wpos.y + shadow_offset),
-                        IM_COL32(0, 0, 0, 100), text.GetCharArray(), text.GetCharArray() + text.GetLength());
+                        IM_COL32(0, 0, 0, 100), text.c_str(), text.end_ptr());
         win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing, wpos.y), IM_COL32(255, 255, 255, 255),
-                        text.GetCharArray(), text.GetCharArray() + text.GetLength());
+                        text.c_str(), text.end_ptr());
 
-        text.Clear();
-        text.AppendFmtString("{:.1f} ms", min);
-        text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.GetCharArray(),
-                                              text.GetCharArray() + text.GetLength());
+        text.fmt("{:.1f} ms", min);
+        text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
         win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset,
                                wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
-                        IM_COL32(0, 0, 0, 100), text.GetCharArray(), text.GetCharArray() + text.GetLength());
+                        IM_COL32(0, 0, 0, 100), text.c_str(), text.end_ptr());
         win_dl->AddText(
           ImVec2(wpos.x + history_size.x - text_size.x - spacing, wpos.y + history_size.y - fixed_font->FontSize),
-          IM_COL32(255, 255, 255, 255), text.GetCharArray(), text.GetCharArray() + text.GetLength());
+          IM_COL32(255, 255, 255, 255), text.c_str(), text.end_ptr());
         ImGui::PopFont();
       }
       ImGui::End();
@@ -506,7 +499,7 @@ void ImGuiManager::DrawPerformanceOverlay()
   else if (g_settings.display_show_status_indicators && state == System::State::Paused &&
            !FullscreenUI::HasActiveWindow())
   {
-    text.Assign(ICON_FA_PAUSE);
+    text.assign(ICON_FA_PAUSE);
     DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
   }
 
@@ -516,58 +509,57 @@ void ImGuiManager::DrawPerformanceOverlay()
 void ImGuiManager::DrawEnhancementsOverlay()
 {
   LargeString text;
-  text.AppendFmtString("{} {}-{}", Settings::GetConsoleRegionName(System::GetRegion()),
-                       GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
-                       g_gpu->IsHardwareRenderer() ? "HW" : "SW");
+  text.append_fmt("{} {}-{}", Settings::GetConsoleRegionName(System::GetRegion()),
+                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
+                  g_gpu->IsHardwareRenderer() ? "HW" : "SW");
 
   if (g_settings.rewind_enable)
-    text.AppendFormattedString(" RW=%g/%u", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
+    text.append_fmt(" RW={}/{}", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
   if (g_settings.IsRunaheadEnabled())
-    text.AppendFormattedString(" RA=%u", g_settings.runahead_frames);
+    text.append_fmt(" RA={}", g_settings.runahead_frames);
 
   if (g_settings.cpu_overclock_active)
-    text.AppendFormattedString(" CPU=%u%%", g_settings.GetCPUOverclockPercent());
+    text.append_fmt(" CPU={}%", g_settings.GetCPUOverclockPercent());
   if (g_settings.enable_8mb_ram)
-    text.AppendString(" 8MB");
+    text.append(" 8MB");
   if (g_settings.cdrom_read_speedup != 1)
-    text.AppendFormattedString(" CDR=%ux", g_settings.cdrom_read_speedup);
+    text.append_fmt(" CDR={}x", g_settings.cdrom_read_speedup);
   if (g_settings.cdrom_seek_speedup != 1)
-    text.AppendFormattedString(" CDS=%ux", g_settings.cdrom_seek_speedup);
+    text.append_fmt(" CDS={}x", g_settings.cdrom_seek_speedup);
   if (g_settings.gpu_resolution_scale != 1)
-    text.AppendFormattedString(" IR=%ux", g_settings.gpu_resolution_scale);
+    text.append_fmt(" IR={}x", g_settings.gpu_resolution_scale);
   if (g_settings.gpu_multisamples != 1)
   {
-    text.AppendFormattedString(" %ux%s", g_settings.gpu_multisamples,
-                               g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
+    text.append_fmt(" {}x{}", g_settings.gpu_multisamples, g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
   if (g_settings.gpu_true_color)
-    text.AppendString(" TrueCol");
+    text.append(" TrueCol");
   if (g_settings.gpu_disable_interlacing)
-    text.AppendString(" ForceProg");
+    text.append(" ForceProg");
   if (g_settings.gpu_force_ntsc_timings && System::GetRegion() == ConsoleRegion::PAL)
-    text.AppendString(" PAL60");
+    text.append(" PAL60");
   if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
-    text.AppendFormattedString(" %s", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+    text.append_fmt(" {}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
   if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
       g_settings.display_aspect_ratio != DisplayAspectRatio::R4_3)
   {
-    text.AppendString(" WSHack");
+    text.append(" WSHack");
   }
   if (g_settings.gpu_pgxp_enable)
   {
-    text.AppendString(" PGXP");
+    text.append(" PGXP");
     if (g_settings.gpu_pgxp_culling)
-      text.AppendString("/Cull");
+      text.append("/Cull");
     if (g_settings.gpu_pgxp_texture_correction)
-      text.AppendString("/Tex");
+      text.append("/Tex");
     if (g_settings.gpu_pgxp_color_correction)
-      text.AppendString("/Col");
+      text.append("/Col");
     if (g_settings.gpu_pgxp_vertex_cache)
-      text.AppendString("/VC");
+      text.append("/VC");
     if (g_settings.gpu_pgxp_cpu)
-      text.AppendString("/CPU");
+      text.append("/CPU");
     if (g_settings.gpu_pgxp_depth_buffer)
-      text.AppendString("/Depth");
+      text.append("/Depth");
   }
 
   const float scale = ImGuiManager::GetGlobalScale();
@@ -577,13 +569,13 @@ void ImGuiManager::DrawEnhancementsOverlay()
   const float position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
-  ImVec2 text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text,
-                                         text.GetCharArray() + text.GetLength(), nullptr);
+  ImVec2 text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text.c_str(),
+                                         text.end_ptr(), nullptr);
   dl->AddText(font, font->FontSize,
               ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),
-              IM_COL32(0, 0, 0, 100), text, text.GetCharArray() + text.GetLength());
+              IM_COL32(0, 0, 0, 100), text.c_str(), text.end_ptr());
   dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),
-              IM_COL32(255, 255, 255, 255), text, text.GetCharArray() + text.GetLength());
+              IM_COL32(255, 255, 255, 255), text.c_str(), text.end_ptr());
 }
 
 void ImGuiManager::DrawInputsOverlay()
@@ -612,7 +604,7 @@ void ImGuiManager::DrawInputsOverlay()
 
   const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y - margin);
 
-  LargeString text;
+  SmallString text;
 
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
   {
@@ -625,7 +617,7 @@ void ImGuiManager::DrawInputsOverlay()
     if (!cinfo)
       continue;
 
-    text.Fmt("P{} |", port + 1u);
+    text.fmt("P{} |", port + 1u);
 
     for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
@@ -637,9 +629,9 @@ void ImGuiManager::DrawInputsOverlay()
           // axes are always shown
           const float value = controller->GetBindState(bi.bind_index);
           if (value >= (254.0f / 255.0f))
-            text.AppendFmtString(" {}", bi.name);
+            text.append_fmt(" {}", bi.name);
           else if (value > (1.0f / 255.0f))
-            text.AppendFmtString(" {}: {:.2f}", bi.name, value);
+            text.append_fmt(" {}: {:.2f}", bi.name, value);
         }
         break;
 
@@ -648,7 +640,7 @@ void ImGuiManager::DrawInputsOverlay()
           // buttons only shown when active
           const float value = controller->GetBindState(bi.bind_index);
           if (value >= 0.5f)
-            text.AppendFmtString(" {}", bi.name);
+            text.append_fmt(" {}", bi.name);
         }
         break;
 
@@ -662,9 +654,9 @@ void ImGuiManager::DrawInputsOverlay()
     }
 
     dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
-                text.GetCharArray(), text.GetCharArray() + text.GetLength(), 0.0f, &clip_rect);
-    dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), text_color, text.GetCharArray(),
-                text.GetCharArray() + text.GetLength(), 0.0f, &clip_rect);
+                text.c_str(), text.end_ptr(), 0.0f, &clip_rect);
+    dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.end_ptr(), 0.0f,
+                &clip_rect);
 
     current_y += font->FontSize + spacing;
   }

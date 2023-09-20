@@ -5,6 +5,7 @@
 
 #include "common/types.h"
 
+#include "fmt/core.h"
 #include "fmt/format.h"
 
 #include <array>

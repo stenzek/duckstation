@@ -180,8 +180,8 @@ bool GPU::HandleUnknownGP0Command()
 
   SmallString dump;
   for (u32 i = 0; i < m_fifo.GetSize(); i++)
-    dump.AppendFormattedString("%s0x%08X", (i > 0) ? " " : "", FifoPeek(i));
-  Log_ErrorPrintf("FIFO: %s", dump.GetCharArray());
+    dump.append_fmt("{}{:08X}", (i > 0) ? " " : "", FifoPeek(i));
+  Log_ErrorPrintf("FIFO: %s", dump.c_str());
 
   m_fifo.RemoveOne();
   EndCommand();

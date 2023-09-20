@@ -463,18 +463,19 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
           if ((supported_controllers & BIT_FOR(supported_ctype)) == 0)
             continue;
 
-          if (!supported_controller_string.IsEmpty())
-            supported_controller_string.AppendString(", ");
+          if (!supported_controller_string.empty())
+            supported_controller_string.append(", ");
 
-          supported_controller_string.AppendString(Settings::GetControllerTypeDisplayName(supported_ctype));
+          supported_controller_string.append(Settings::GetControllerTypeDisplayName(supported_ctype));
         }
 
-        Host::AddKeyedFormattedOSDMessage(
-          "gamedb_controller_unsupported", 30.0f,
-          TRANSLATE("OSDMessage", "Controller in port %u (%s) is not supported for %s.\nSupported controllers: "
-                                  "%s\nPlease configure a supported controller from the list above."),
-          i + 1u, Settings::GetControllerTypeDisplayName(ctype), System::GetGameTitle().c_str(),
-          supported_controller_string.GetCharArray());
+        Host::AddKeyedOSDMessage(
+          "gamedb_controller_unsupported",
+          fmt::format(
+            TRANSLATE_FS("OSDMessage", "Controller in port {0} ({1}) is not supported for {2}.\nSupported controllers: "
+                                       "{3}\nPlease configure a supported controller from the list above."),
+            i + 1u, Settings::GetControllerTypeDisplayName(ctype), System::GetGameTitle(), supported_controller_string),
+          Host::OSD_CRITICAL_ERROR_DURATION);
       }
     }
   }

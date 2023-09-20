@@ -803,7 +803,7 @@ bool CDROM::PrecacheMedia()
 TinyString CDROM::LBAToMSFString(CDImage::LBA lba)
 {
   const auto pos = CDImage::Position::FromLBA(lba);
-  return TinyString::FromFmt("{:02d}:{:02d}:{:02d}", pos.minute, pos.second, pos.frame);
+  return TinyString::from_fmt("{:02d}:{:02d}:{:02d}", pos.minute, pos.second, pos.frame);
 }
 
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)
@@ -2436,7 +2436,7 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     const CDImage::LBA new_physical_lba = base + new_offset;
 #ifdef _DEBUG
     Log_DevPrintf("Tick diff %u, sector diff %u, old pos %s, new pos %s", diff, sector_diff,
-                  LBAToMSFString(s_physical_lba).GetCharArray(), LBAToMSFString(new_physical_lba).GetCharArray());
+                  LBAToMSFString(s_physical_lba).c_str(), LBAToMSFString(new_physical_lba).c_str());
 #endif
     if (s_physical_lba != new_physical_lba)
     {
@@ -2575,7 +2575,7 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   else
   {
     Log_WarningPrintf("%s seek to [%s] failed", logical ? "Logical" : "Physical",
-                      LBAToMSFString(m_reader.GetLastReadSector()).GetCharArray());
+                      LBAToMSFString(m_reader.GetLastReadSector()).c_str());
     s_secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     s_last_sector_header_valid = false;
@@ -2733,8 +2733,7 @@ void CDROM::DoSectorRead()
   }
   else
   {
-    Log_DevPrintf("Sector %u [%s] has invalid subchannel Q", s_current_lba,
-                  LBAToMSFString(s_current_lba).GetCharArray());
+    Log_DevPrintf("Sector %u [%s] has invalid subchannel Q", s_current_lba, LBAToMSFString(s_current_lba).c_str());
   }
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
@@ -2806,7 +2805,7 @@ void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
 {
   const u32 sb_num = (s_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
   Log_DevPrintf("Read sector %u [%s]: mode %u submode 0x%02X into buffer %u", s_current_lba,
-                LBAToMSFString(s_current_lba).GetCharArray(), ZeroExtend32(s_last_sector_header.sector_mode),
+                LBAToMSFString(s_current_lba).c_str(), ZeroExtend32(s_last_sector_header.sector_mode),
                 ZeroExtend32(s_last_sector_subheader.submode.bits), sb_num);
 
   if (s_mode.xa_enable && s_last_sector_header.sector_mode == 2)

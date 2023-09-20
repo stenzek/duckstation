@@ -5,7 +5,7 @@
 
 #include "util/host.h"
 
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/types.h"
 
 #include <ctime>

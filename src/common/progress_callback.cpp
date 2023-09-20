@@ -18,7 +18,7 @@ void ProgressCallback::SetFormattedStatusText(const char* Format, ...)
   va_list ap;
 
   va_start(ap, Format);
-  str.FormatVA(Format, ap);
+  str.format_va(Format, ap);
   va_end(ap);
 
   SetStatusText(str);
@@ -30,7 +30,7 @@ void ProgressCallback::DisplayFormattedError(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   DisplayError(str);
@@ -42,7 +42,7 @@ void ProgressCallback::DisplayFormattedWarning(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   DisplayWarning(str);
@@ -54,7 +54,7 @@ void ProgressCallback::DisplayFormattedInformation(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   DisplayInformation(str);
@@ -66,7 +66,7 @@ void ProgressCallback::DisplayFormattedDebugMessage(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   DisplayDebugMessage(str);
@@ -78,7 +78,7 @@ void ProgressCallback::DisplayFormattedModalError(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   ModalError(str);
@@ -90,7 +90,7 @@ bool ProgressCallback::DisplayFormattedModalConfirmation(const char* format, ...
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   return ModalConfirmation(str);
@@ -102,7 +102,7 @@ void ProgressCallback::DisplayFormattedModalInformation(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
   ModalInformation(str);
@@ -312,10 +312,10 @@ void ConsoleProgressCallback::Clear()
 {
   SmallString message;
   for (u32 i = 0; i < COLUMNS; i++)
-    message.AppendCharacter(' ');
-  message.AppendCharacter('\r');
+    message.append(' ');
+  message.append('\r');
 
-  std::fwrite(message.GetCharArray(), message.GetLength(), 1, stderr);
+  std::fwrite(message.c_str(), message.length(), 1, stderr);
   std::fflush(stderr);
 }
 
@@ -325,7 +325,7 @@ void ConsoleProgressCallback::Redraw(bool update_value_only)
   if (percent_complete > 100.0f)
     percent_complete = 100.0f;
 
-  const u32 current_length = m_status_text.GetLength() + 14;
+  const u32 current_length = static_cast<u32>(m_status_text.length()) + 14;
   const u32 max_bar_length = (current_length < COLUMNS) ? COLUMNS - current_length : 0;
   const u32 current_bar_length =
     (max_bar_length > 0) ? (static_cast<u32>(percent_complete / 100.0f * (float)max_bar_length)) : 0;
@@ -340,25 +340,25 @@ void ConsoleProgressCallback::Redraw(bool update_value_only)
   m_last_percent_complete = percent_complete;
 
   SmallString message;
-  message.AppendString(m_status_text);
-  message.AppendFormattedString(" [%.2f%%]", percent_complete);
+  message.append(m_status_text);
+  message.append_fmt(" [{:.2f}%]", percent_complete);
 
   if (max_bar_length > 0)
   {
-    message.AppendString(" |");
+    message.append(" |");
 
     u32 i;
     for (i = 0; i < current_bar_length; i++)
-      message.AppendCharacter('=');
+      message.append('=');
     for (; i < max_bar_length; i++)
-      message.AppendCharacter(' ');
+      message.append(' ');
 
-    message.AppendString("|");
+    message.append('|');
   }
 
-  message.AppendCharacter('\r');
+  message.append('\r');
 
-  std::fwrite(message.GetCharArray(), message.GetLength(), 1, stderr);
+  std::fwrite(message.c_str(), message.length(), 1, stderr);
   std::fflush(stderr);
 }
 

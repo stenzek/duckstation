@@ -571,15 +571,15 @@ static void TracePrintInstruction()
   TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
   DisassembleInstructionComment(&comment, pc, bits, &g_state.regs);
-  if (!comment.IsEmpty())
+  if (!comment.empty())
   {
-    for (u32 i = instr.GetLength(); i < 30; i++)
-      instr.AppendCharacter(' ');
-    instr.AppendString("; ");
-    instr.AppendString(comment);
+    for (u32 i = instr.length(); i < 30; i++)
+      instr.append(' ');
+    instr.append("; ");
+    instr.append(comment);
   }
 
-  std::printf("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
+  std::printf("%08x: %08x %s\n", pc, bits, instr.c_str());
 }
 
 #endif
@@ -590,15 +590,15 @@ static void PrintInstruction(u32 bits, u32 pc, Registers* regs, const char* pref
   TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
   DisassembleInstructionComment(&comment, pc, bits, regs);
-  if (!comment.IsEmpty())
+  if (!comment.empty())
   {
-    for (u32 i = instr.GetLength(); i < 30; i++)
-      instr.AppendCharacter(' ');
-    instr.AppendString("; ");
-    instr.AppendString(comment);
+    for (u32 i = instr.length(); i < 30; i++)
+      instr.append(' ');
+    instr.append("; ");
+    instr.append(comment);
   }
 
-  Log_DevPrintf("%s%08x: %08x %s", prefix, pc, bits, instr.GetCharArray());
+  Log_DevPrintf("%s%08x: %08x %s", prefix, pc, bits, instr.c_str());
 }
 
 static void LogInstruction(u32 bits, u32 pc, Registers* regs)
@@ -607,15 +607,15 @@ static void LogInstruction(u32 bits, u32 pc, Registers* regs)
   TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
   DisassembleInstructionComment(&comment, pc, bits, regs);
-  if (!comment.IsEmpty())
+  if (!comment.empty())
   {
-    for (u32 i = instr.GetLength(); i < 30; i++)
-      instr.AppendCharacter(' ');
-    instr.AppendString("; ");
-    instr.AppendString(comment);
+    for (u32 i = instr.length(); i < 30; i++)
+      instr.append(' ');
+    instr.append("; ");
+    instr.append(comment);
   }
 
-  WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.GetCharArray());
+  WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.c_str());
 }
 
 static void HandleWriteSyscall()

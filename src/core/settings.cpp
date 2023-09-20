@@ -101,34 +101,6 @@ bool Settings::HasAnyPerGameMemoryCards() const
   });
 }
 
-std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> Settings::GeneratePortLabels() const
-{
-  static constexpr std::array<std::array<bool, NUM_MULTITAPS>, static_cast<size_t>(MultitapMode::Count)>
-    multitap_enabled_on_port = {{{false, false}, {true, false}, {false, true}, {true, true}}};
-
-  std::array<TinyString, NUM_CONTROLLER_AND_CARD_PORTS> labels;
-
-  u32 logical_port = 0;
-  for (u32 physical_port = 0; physical_port < NUM_MULTITAPS; physical_port++)
-  {
-    if (multitap_enabled_on_port[static_cast<size_t>(multitap_mode)][physical_port])
-    {
-      for (u32 i = 0; i < 4; i++)
-      {
-        labels[logical_port] = TinyString::FromFormat("Port %u%c", physical_port + 1u, 'A' + i);
-        logical_port++;
-      }
-    }
-    else
-    {
-      labels[logical_port] = TinyString::FromFormat("Port %u", physical_port + 1u);
-      logical_port++;
-    }
-  }
-
-  return labels;
-}
-
 void Settings::CPUOverclockPercentToFraction(u32 percent, u32* numerator, u32* denominator)
 {
   const u32 percent_gcd = std::gcd(percent, 100);

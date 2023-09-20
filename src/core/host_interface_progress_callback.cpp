@@ -6,7 +6,9 @@
 #include "host.h"
 Log_SetChannel(HostInterfaceProgressCallback);
 
-HostInterfaceProgressCallback::HostInterfaceProgressCallback() : BaseProgressCallback() {}
+HostInterfaceProgressCallback::HostInterfaceProgressCallback() : BaseProgressCallback()
+{
+}
 
 void HostInterfaceProgressCallback::PushState()
 {
@@ -64,7 +66,8 @@ void HostInterfaceProgressCallback::Redraw(bool force)
     return;
 
   m_last_progress_percent = percent;
-  Host::DisplayLoadingScreen(m_status_text, 0, static_cast<int>(m_progress_range), static_cast<int>(m_progress_value));
+  Host::DisplayLoadingScreen(m_status_text.c_str(), 0, static_cast<int>(m_progress_range),
+                             static_cast<int>(m_progress_value));
 }
 
 void HostInterfaceProgressCallback::DisplayError(const char* message)

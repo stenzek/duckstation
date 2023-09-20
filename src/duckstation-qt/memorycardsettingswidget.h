@@ -3,6 +3,7 @@
 
 #pragma once
 #include "core/types.h"
+
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLineEdit>

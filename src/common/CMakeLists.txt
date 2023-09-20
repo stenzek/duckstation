@@ -46,8 +46,8 @@ add_library(common
   settings_interface.h
   sha1_digest.cpp
   sha1_digest.h
-  string.cpp
-  string.h
+  small_string.cpp
+  small_string.h
   string_util.cpp
   string_util.h
   thirdparty/thread_pool.cpp

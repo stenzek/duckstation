@@ -17,7 +17,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
-#include "common/string.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include "D3D12MemAlloc.h"

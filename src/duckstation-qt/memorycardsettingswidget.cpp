@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memorycardsettingswidget.h"
-#include "common/string_util.h"
+
 #include "core/controller.h"
 #include "core/settings.h"
 #include "inputbindingwidgets.h"
@@ -11,6 +11,10 @@
 #include "qtutils.h"
 #include "settingsdialog.h"
 #include "settingwidgetbinder.h"
+
+#include "common/small_string.h"
+#include "common/string_util.h"
+
 #include <QtCore/QUrl>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
@@ -168,7 +172,7 @@ void MemoryCardSettingsWidget::onBrowseMemoryCardPathClicked(int index)
 
 void MemoryCardSettingsWidget::onMemoryCardPathChanged(int index)
 {
-  const auto key = TinyString::FromFormat("Card%dPath", index + 1);
+  const auto key = TinyString::from_fmt("Card{}Path", index + 1);
   std::string relative_path(
     Path::MakeRelative(m_port_ui[index].memory_card_path->text().toStdString(), EmuFolders::MemoryCards));
   m_dialog->setStringSettingValue("MemoryCards", key, relative_path.c_str());
@@ -176,7 +180,7 @@ void MemoryCardSettingsWidget::onMemoryCardPathChanged(int index)
 
 void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(int index)
 {
-  const auto key = TinyString::FromFormat("Card%dPath", index + 1);
+  const auto key = TinyString::from_fmt("Card{}Path", index + 1);
   if (m_dialog->isPerGameSettings())
     m_dialog->removeSettingValue("MemoryCards", key);
   else
@@ -187,7 +191,7 @@ void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(int index)
 
 void MemoryCardSettingsWidget::updateMemoryCardPath(int index)
 {
-  const auto key = TinyString::FromFormat("Card%dPath", index + 1);
+  const auto key = TinyString::from_fmt("Card{}Path", index + 1);
   std::string path(
     m_dialog->getEffectiveStringValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index).c_str()));
   if (!Path::IsAbsolute(path))

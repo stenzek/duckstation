@@ -71,10 +71,10 @@ void File::SetError(u32 line_number, Error* error, const char* format, ...)
   std::va_list ap;
   SmallString str;
   va_start(ap, format);
-  str.FormatVA(format, ap);
+  str.format_va(format, ap);
   va_end(ap);
 
-  Log_ErrorPrintf("Cue parse error at line %u: %s", line_number, str.GetCharArray());
+  Log_ErrorPrintf("Cue parse error at line %u: %s", line_number, str.c_str());
   Error::SetString(error, fmt::format("Cue parse error at line {}: {}", line_number, str));
 }
 

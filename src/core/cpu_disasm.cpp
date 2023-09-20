@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cpu_disasm.h"
-#include "common/assert.h"
 #include "cpu_core.h"
+
+#include "common/assert.h"
+#include "common/small_string.h"
+
 #include <array>
 
 namespace CPU {
@@ -169,9 +172,9 @@ static const std::array<std::pair<CopCommonInstruction, const char*>, 4> s_cop_c
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
-static void FormatInstruction(String* dest, const Instruction inst, u32 pc, const char* format)
+static void FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format)
 {
-  dest->Clear();
+  dest->clear();
 
   const char* str = format;
   while (*str != '\0')
@@ -179,77 +182,77 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
     const char ch = *(str++);
     if (ch != '$')
     {
-      dest->AppendCharacter(ch);
+      dest->append(ch);
       continue;
     }
 
     if (std::strncmp(str, "rs", 2) == 0)
     {
-      dest->AppendString(GetRegName(inst.r.rs));
+      dest->append(GetRegName(inst.r.rs));
       str += 2;
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
-      dest->AppendString(GetRegName(inst.r.rt));
+      dest->append(GetRegName(inst.r.rt));
       str += 2;
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
-      dest->AppendString(GetRegName(inst.r.rd));
+      dest->append(GetRegName(inst.r.rd));
       str += 2;
     }
     else if (std::strncmp(str, "shamt", 5) == 0)
     {
-      dest->AppendFormattedString("%d", ZeroExtend32(inst.r.shamt.GetValue()));
+      dest->append_fmt("{}", ZeroExtend32(inst.r.shamt.GetValue()));
       str += 5;
     }
     else if (std::strncmp(str, "immu", 4) == 0)
     {
-      dest->AppendFormattedString("%u", inst.i.imm_zext32());
+      dest->append_fmt("{}", inst.i.imm_zext32());
       str += 4;
     }
     else if (std::strncmp(str, "imm", 3) == 0)
     {
       // dest->AppendFormattedString("%d", static_cast<int>(inst.i.imm_sext32()));
-      dest->AppendFormattedString("%04x", inst.i.imm_zext32());
+      dest->append_fmt("{:04x}", inst.i.imm_zext32());
       str += 3;
     }
     else if (std::strncmp(str, "rel", 3) == 0)
     {
       const u32 target = (pc + UINT32_C(4)) + (inst.i.imm_sext32() << 2);
-      dest->AppendFormattedString("%08x", target);
+      dest->append_fmt("{:08x}", target);
       str += 3;
     }
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->AppendFormattedString("%d(%s)", offset, GetRegName(inst.i.rs));
+      dest->append_fmt("{}({})", offset, GetRegName(inst.i.rs));
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
     {
       const u32 target = ((pc + UINT32_C(4)) & UINT32_C(0xF0000000)) | (inst.j.target << 2);
-      dest->AppendFormattedString("%08x", target);
+      dest->append_fmt("{:08x}", target);
       str += 2;
     }
     else if (std::strncmp(str, "copcc", 5) == 0)
     {
-      dest->AppendCharacter(((inst.bits & (UINT32_C(1) << 24)) != 0) ? 't' : 'f');
+      dest->append(((inst.bits & (UINT32_C(1) << 24)) != 0) ? 't' : 'f');
       str += 5;
     }
     else if (std::strncmp(str, "coprd", 5) == 0)
     {
-      dest->AppendFormattedString("%u", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
+      dest->append_fmt("{}", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
       str += 5;
     }
     else if (std::strncmp(str, "coprt", 5) == 0)
     {
-      dest->AppendFormattedString("%u", ZeroExtend32(static_cast<u8>(inst.r.rt.GetValue())));
+      dest->append_fmt("{}", ZeroExtend32(static_cast<u8>(inst.r.rt.GetValue())));
       str += 5;
     }
     else if (std::strncmp(str, "cop", 3) == 0)
     {
-      dest->AppendFormattedString("%u", static_cast<u8>(inst.op.GetValue()) & INSTRUCTION_COP_N_MASK);
+      dest->append_fmt("{}", static_cast<u8>(inst.op.GetValue()) & INSTRUCTION_COP_N_MASK);
       str += 3;
     }
     else
@@ -259,7 +262,7 @@ static void FormatInstruction(String* dest, const Instruction inst, u32 pc, cons
   }
 }
 
-static void FormatComment(String* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
+static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
 {
   const char* str = format;
   while (*str != '\0')
@@ -270,21 +273,21 @@ static void FormatComment(String* dest, const Instruction inst, u32 pc, Register
 
     if (std::strncmp(str, "rs", 2) == 0)
     {
-      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rs),
-                                  regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
+      dest->append_fmt("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rs),
+                       regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
 
       str += 2;
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
-      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rt),
-                                  regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
+      dest->append_fmt("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rt),
+                       regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
       str += 2;
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
-      dest->AppendFormattedString("%s%s=0x%08X", dest->IsEmpty() ? "" : ", ", GetRegName(inst.r.rd),
-                                  regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
+      dest->append_fmt("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rd),
+                       regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
       str += 2;
     }
     else if (std::strncmp(str, "shamt", 5) == 0)
@@ -306,8 +309,8 @@ static void FormatComment(String* dest, const Instruction inst, u32 pc, Register
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->AppendFormattedString("%saddr=0x%08X", dest->IsEmpty() ? "" : ", ",
-                                  regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+      dest->append_fmt("{}addr={:08X}", dest->empty() ? "" : ", ",
+                       regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
@@ -338,8 +341,8 @@ static void FormatComment(String* dest, const Instruction inst, u32 pc, Register
 }
 
 template<typename T>
-void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const std::pair<T, const char*>* table,
-                          size_t table_size, T table_key)
+static void FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction inst,
+                                 const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
@@ -350,12 +353,12 @@ void FormatCopInstruction(String* dest, u32 pc, const Instruction inst, const st
     }
   }
 
-  dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+  dest->fmt("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
 template<typename T>
-void FormatCopComment(String* dest, u32 pc, Registers* regs, const Instruction inst,
-                      const std::pair<T, const char*>* table, size_t table_size, T table_key)
+static void FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
+                             const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
@@ -367,7 +370,7 @@ void FormatCopComment(String* dest, u32 pc, Registers* regs, const Instruction i
   }
 }
 
-void DisassembleInstruction(String* dest, u32 pc, u32 bits)
+void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
 {
   const Instruction inst{bits};
   switch (inst.op)
@@ -400,7 +403,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
           case InstructionOp::cop3:
           default:
           {
-            dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+            dest->fmt("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
           }
           break;
         }
@@ -427,7 +430,7 @@ void DisassembleInstruction(String* dest, u32 pc, u32 bits)
   }
 }
 
-void DisassembleInstructionComment(String* dest, u32 pc, u32 bits, Registers* regs)
+void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs)
 {
   const Instruction inst{bits};
   switch (inst.op)
@@ -461,7 +464,7 @@ void DisassembleInstructionComment(String* dest, u32 pc, u32 bits, Registers* re
           case InstructionOp::cop3:
           default:
           {
-            dest->Format("<cop%u 0x%08X>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+            dest->fmt("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
           }
           break;
         }

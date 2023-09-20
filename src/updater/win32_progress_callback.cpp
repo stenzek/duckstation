@@ -128,7 +128,7 @@ void Win32ProgressCallback::Redraw(bool force)
 
   SendMessageA(m_progress_hwnd, PBM_SETRANGE, 0, MAKELPARAM(0, m_progress_range));
   SendMessageA(m_progress_hwnd, PBM_SETPOS, static_cast<WPARAM>(m_progress_value), 0);
-  SetWindowTextA(m_text_hwnd, m_status_text);
+  SetWindowTextA(m_text_hwnd, m_status_text.c_str());
   RedrawWindow(m_text_hwnd, nullptr, nullptr, RDW_INVALIDATE);
   PumpMessages();
 }

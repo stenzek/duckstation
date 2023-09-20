@@ -4,7 +4,7 @@
 #include "log.h"
 #include "assert.h"
 #include "file_system.h"
-#include "string.h"
+#include "small_string.h"
 #include "timer.h"
 #include <cstdio>
 #include <mutex>
@@ -36,7 +36,7 @@ static LOGLEVEL s_filter_level = LOGLEVEL_TRACE;
 static Common::Timer::Value s_startTimeStamp = Common::Timer::GetCurrentValue();
 
 static bool s_console_output_enabled = false;
-static String s_console_output_channel_filter;
+static std::string s_console_output_channel_filter;
 static LOGLEVEL s_console_output_level_filter = LOGLEVEL_TRACE;
 
 #ifdef _WIN32
@@ -46,12 +46,12 @@ static HANDLE s_hConsoleStdErr = NULL;
 #endif
 
 static bool s_debug_output_enabled = false;
-static String s_debug_output_channel_filter;
+static std::string s_debug_output_channel_filter;
 static LOGLEVEL s_debug_output_level_filter = LOGLEVEL_TRACE;
 
 static bool s_file_output_enabled = false;
 static bool s_file_output_timestamp = false;
-static String s_file_output_channel_filter;
+static std::string s_file_output_channel_filter;
 static LOGLEVEL s_file_output_level_filter = LOGLEVEL_TRACE;
 std::unique_ptr<std::FILE, void (*)(std::FILE*)> s_fileOutputHandle(nullptr, [](std::FILE* fp) {
   if (fp)
@@ -242,7 +242,7 @@ static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, 
                                      LOGLEVEL level, const char* message)
 {
   if (!s_console_output_enabled || level > s_console_output_level_filter ||
-      s_console_output_channel_filter.Find(channelName) >= 0)
+      s_console_output_channel_filter.find(channelName) != std::string::npos)
   {
     return;
   }
@@ -267,7 +267,7 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
                                    const char* message)
 {
   if (!s_debug_output_enabled || level > s_debug_output_level_filter ||
-      s_debug_output_channel_filter.Find(functionName) >= 0)
+      s_debug_output_channel_filter.find(functionName) != std::string::npos)
   {
     return;
   }
@@ -393,7 +393,7 @@ void SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr *
 static void FileOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                                   const char* message)
 {
-  if (level > s_file_output_level_filter || s_file_output_channel_filter.Find(channelName) >= 0)
+  if (level > s_file_output_level_filter || s_file_output_channel_filter.find(channelName) != std::string::npos)
     return;
 
   FormatLogMessageAndPrint(

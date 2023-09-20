@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "string.h"
+#include "small_string.h"
 #include "types.h"
 
 class ByteStream;
@@ -73,7 +73,7 @@ protected:
   struct State
   {
     State* next_saved_state;
-    String status_text;
+    std::string status_text;
     u32 progress_range;
     u32 progress_value;
     u32 base_progress_value;
@@ -82,7 +82,7 @@ protected:
 
   bool m_cancellable;
   bool m_cancelled;
-  String m_status_text;
+  std::string m_status_text;
   u32 m_progress_range;
   u32 m_progress_value;
 

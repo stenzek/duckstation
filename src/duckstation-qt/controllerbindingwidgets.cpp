@@ -402,11 +402,11 @@ QString ControllerMacroEditWidget::getSummary() const
   SmallString str;
   for (const Controller::ControllerBindingInfo* bi : m_binds)
   {
-    if (!str.IsEmpty())
-      str.AppendCharacter('/');
-    str.AppendString(bi->name);
+    if (!str.empty())
+      str.append('/');
+    str.append(bi->name);
   }
-  return str.IsEmpty() ? tr("Not Configured") : QString::fromUtf8(str.GetCharArray(), str.GetLength());
+  return str.empty() ? tr("Not Configured") : QString::fromUtf8(str.c_str(), static_cast<int>(str.length()));
 }
 
 void ControllerMacroEditWidget::onSetFrequencyClicked()
