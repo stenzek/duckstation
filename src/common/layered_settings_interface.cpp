@@ -139,7 +139,7 @@ bool LayeredSettingsInterface::ContainsValue(const char* section, const char* ke
   {
     if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
     {
-      if (sif->ContainsValue(key, section))
+      if (sif->ContainsValue(section, key))
         return true;
     }
   }
