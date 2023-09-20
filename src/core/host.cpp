@@ -242,10 +242,15 @@ bool Host::CreateGPUDevice(RenderAPI api)
                                              SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, vsync,
                                              g_settings.gpu_threaded_presentation))
   {
-    Log_ErrorPrintf("Failed to initialize GPU device.");
+    Log_ErrorPrintf("Failed to create GPU device.");
     if (g_gpu_device)
       g_gpu_device->Destroy();
     g_gpu_device.reset();
+
+    Host::ReportErrorAsync("Error",
+                           fmt::format("Failed to create render device. This may be due to your GPU not supporting the "
+                                       "chosen renderer ({}), or because your graphics drivers need to be updated.",
+                                       GPUDevice::RenderAPIToString(api)));
     return false;
   }
 
