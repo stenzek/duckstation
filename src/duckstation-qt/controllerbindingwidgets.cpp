@@ -378,7 +378,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
       continue;
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setText(tr(cinfo->name, bi.display_name));
+    item->setText(qApp->translate(cinfo->name, bi.display_name));
     item->setCheckState((std::find(m_binds.begin(), m_binds.end(), &bi) != m_binds.end()) ? Qt::Checked :
                                                                                             Qt::Unchecked);
     m_ui.bindList->addItem(item);

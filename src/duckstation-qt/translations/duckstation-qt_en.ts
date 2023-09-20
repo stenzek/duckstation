@@ -2,11 +2,22 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>AchievementSettingsWidget</name>
+    <message numerus="yes">
+        <location filename="../achievementsettingswidget.cpp" line="164"/>
+        <location filename="../achievementsettingswidget.cpp" line="171"/>
+        <source>%n seconds</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>EmuThread</name>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1211"/>
         <source>%n points</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n point</numerusform>
             <numerusform>%n points</numerusform>
         </translation>
@@ -26,7 +37,7 @@
 <context>
     <name>InputBindingWidget</name>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="68"/>
+        <location filename="../inputbindingwidgets.cpp" line="69"/>
         <source>%n bindings</source>
         <translation>
             <numerusform>%n binding</numerusform>
