@@ -958,6 +958,9 @@ void OpenGLDevice::SetFramebuffer(GPUFramebuffer* fb)
     UpdateViewport();
     UpdateScissor();
   }
+
+  if (FB)
+    CommitClear(FB);
 }
 
 void OpenGLDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
