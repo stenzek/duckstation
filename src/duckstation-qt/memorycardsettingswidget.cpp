@@ -127,7 +127,7 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int 
 
   const MemoryCardType default_value = (index == 0) ? MemoryCardType::PerGameTitle : MemoryCardType::None;
   SettingWidgetBinder::BindWidgetToEnumSetting(m_dialog->getSettingsInterface(), ui->memory_card_type, "MemoryCards",
-                                               StringUtil::StdStringFromFormat("Card%dType", index + 1),
+                                               fmt::format("Card{}Type", index + 1),
                                                &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
                                                default_value);
   ui->layout->addWidget(new QLabel(tr("Memory Card Type:"), ui->container));

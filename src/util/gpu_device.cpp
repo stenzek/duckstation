@@ -635,7 +635,7 @@ bool GPUDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, flo
 
 std::string GPUDevice::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
 {
-  return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+  return fmt::format("{} x {} @ {} hz", width, height, refresh_rate);
 }
 
 std::string GPUDevice::GetShaderDumpPath(const std::string_view& name)

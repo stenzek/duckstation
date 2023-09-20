@@ -748,7 +748,7 @@ void CheatManagerDialog::addToWatchClicked()
   for (int index = indexFirst; index <= indexLast; index++)
   {
     const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
-    m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", res.address), res.address, m_scanner.GetSize(),
+    m_watch.AddEntry(fmt::format("0x{:08x}", res.address), res.address, m_scanner.GetSize(),
                      m_scanner.GetValueSigned(), false);
     updateWatch();
   }
@@ -775,7 +775,7 @@ void CheatManagerDialog::addManualWatchAddressClicked()
   else if (index == 2 || index == 5)
     address.value() &= 0xFFFFFFFC;
 
-  m_watch.AddEntry(StringUtil::StdStringFromFormat("0x%08x", address.value()), address.value(),
+  m_watch.AddEntry(fmt::format("0x{:08x}", address.value()), address.value(),
                    static_cast<MemoryAccessSize>(index % 3), (index > 3), false);
   updateWatch();
 }

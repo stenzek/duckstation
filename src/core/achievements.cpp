@@ -269,7 +269,7 @@ std::string Achievements::GetGameHash(CDImage* image)
     std::memcpy(&header, executable_data.data(), sizeof(header));
   if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(executable_data.size())))
   {
-    Log_ErrorPrintf("PS-EXE header is invalid in '%s' (%zu bytes)", executable_name.c_str(), executable_data.size());
+    Log_ErrorFmt("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
     return {};
   }
 
@@ -286,12 +286,11 @@ std::string Achievements::GetGameHash(CDImage* image)
   u8 hash[16];
   digest.Final(hash);
 
-  std::string hash_str(StringUtil::StdStringFromFormat(
-    "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hash[0], hash[1], hash[2], hash[3], hash[4],
-    hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]));
+  const std::string hash_str = fmt::format(
+    "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", hash[0], hash[1], hash[2], hash[3], hash[4],
+    hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
 
-  Log_InfoPrintf("Hash for '%s' (%zu bytes, %u bytes hashed): %s", executable_name.c_str(), executable_data.size(),
-                 hash_size, hash_str.c_str());
+  Log_InfoFmt("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size, hash_str);
   return hash_str;
 }
 
@@ -304,7 +303,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 
     if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
     {
-      Log_ErrorPrintf("Failed to write badge image to '%s'", cache_filename.c_str());
+      Log_ErrorFmt("Failed to write badge image to '{}'", cache_filename);
       return;
     }
 

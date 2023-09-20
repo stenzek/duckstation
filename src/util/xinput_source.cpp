@@ -215,8 +215,7 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
     if (!m_controllers[i].connected)
       continue;
 
-    ret.emplace_back(StringUtil::StdStringFromFormat("XInput-%u", i),
-                     StringUtil::StdStringFromFormat("XInput Controller %u", i));
+    ret.emplace_back(fmt::format("XInput-{}", i), fmt::format("XInput Controller {}", i));
   }
 
   return ret;
@@ -297,15 +296,15 @@ std::string XInputSource::ConvertKeyToString(InputBindingKey key)
     if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
     {
       const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-      ret = StringUtil::StdStringFromFormat("XInput-%u/%c%s", key.source_index, modifier, s_axis_names[key.data]);
+      ret = fmt::format("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
     {
-      ret = StringUtil::StdStringFromFormat("XInput-%u/%s", key.source_index, s_button_names[key.data]);
+      ret = fmt::format("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret = StringUtil::StdStringFromFormat("XInput-%u/%sMotor", key.source_index, key.data ? "Large" : "Small");
+      ret = fmt::format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
     }
   }
 
@@ -351,24 +350,22 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view& device, Gene
     const GenericInputBinding negative = s_xinput_generic_binding_axis_mapping[i][0];
     const GenericInputBinding positive = s_xinput_generic_binding_axis_mapping[i][1];
     if (negative != GenericInputBinding::Unknown)
-      mapping->emplace_back(negative, StringUtil::StdStringFromFormat("XInput-%d/-%s", pid, s_axis_names[i]));
+      mapping->emplace_back(negative, fmt::format("XInput-{}/-{}", pid, s_axis_names[i]));
 
     if (positive != GenericInputBinding::Unknown)
-      mapping->emplace_back(positive, StringUtil::StdStringFromFormat("XInput-%d/+%s", pid, s_axis_names[i]));
+      mapping->emplace_back(positive, fmt::format("XInput-{}/+{}", pid, s_axis_names[i]));
   }
   for (u32 i = 0; i < std::size(s_xinput_generic_binding_button_mapping); i++)
   {
     const GenericInputBinding binding = s_xinput_generic_binding_button_mapping[i];
     if (binding != GenericInputBinding::Unknown)
-      mapping->emplace_back(binding, StringUtil::StdStringFromFormat("XInput-%d/%s", pid, s_button_names[i]));
+      mapping->emplace_back(binding, fmt::format("XInput-{}/{}", pid, s_button_names[i]));
   }
 
   if (m_controllers[pid].has_small_motor)
-    mapping->emplace_back(GenericInputBinding::SmallMotor,
-                          StringUtil::StdStringFromFormat("XInput-%d/SmallMotor", pid));
+    mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("XInput-{}/SmallMotor", pid));
   if (m_controllers[pid].has_large_motor)
-    mapping->emplace_back(GenericInputBinding::LargeMotor,
-                          StringUtil::StdStringFromFormat("XInput-%d/LargeMotor", pid));
+    mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("XInput-{}/LargeMotor", pid));
 
   return true;
 }
@@ -387,14 +384,14 @@ void XInputSource::HandleControllerConnection(u32 index)
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
   cd.last_state = {};
 
-  InputManager::OnInputDeviceConnected(StringUtil::StdStringFromFormat("XInput-%u", index),
-                                       StringUtil::StdStringFromFormat("XInput Controller %u", index));
+  InputManager::OnInputDeviceConnected(fmt::format("XInput-{}", index),
+    fmt::format("XInput Controller {}", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
   Log_InfoPrintf("XInput controller %u disconnected.", index);
-  InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
+  InputManager::OnInputDeviceDisconnected(fmt::format("XInput-{}", index));
   m_controllers[index] = {};
 }
 

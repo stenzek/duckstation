@@ -773,8 +773,7 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
       setting = setting.substr(slash_pos + 1);
     }
 
-    return StringUtil::StdStringFromFormat("%.*s - %.*s", static_cast<int>(setting.size()), setting.data(),
-                                           static_cast<int>(caption.size()), caption.data());
+    return fmt::format("{} - {}", setting, caption);
   };
 
   s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),

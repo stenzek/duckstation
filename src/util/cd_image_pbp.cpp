@@ -876,7 +876,7 @@ std::string CDImagePBP::GetSubImageMetadata(u32 index, const std::string_view& t
   {
     const std::string* title = LookupStringSFOTableEntry("TITLE", m_sfo_table);
     if (title && !title->empty())
-      return StringUtil::StdStringFromFormat("%s (Disc %u)", title->c_str(), index + 1);
+      return fmt::format("{} (Disc {})", *title, index + 1);
   }
 
   return CDImage::GetSubImageMetadata(index, type);

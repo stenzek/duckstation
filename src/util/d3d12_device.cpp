@@ -1039,7 +1039,7 @@ std::string D3D12Device::GetDriverInfo() const
   DXGI_ADAPTER_DESC desc;
   if (m_adapter && SUCCEEDED(m_adapter->GetDesc(&desc)))
   {
-    ret += StringUtil::StdStringFromFormat("VID: 0x%04X PID: 0x%04X\n", desc.VendorId, desc.DeviceId);
+    fmt::format_to(std::back_inserter(ret), "VID: 0x{:04X} PID: 0x{:04X}\n", desc.VendorId, desc.DeviceId);
     ret += StringUtil::WideStringToUTF8String(desc.Description);
     ret += "\n";
 

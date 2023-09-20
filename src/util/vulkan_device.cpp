@@ -1982,8 +1982,8 @@ std::string VulkanDevice::GetDriverInfo() const
   if (m_optional_extensions.vk_khr_driver_properties)
   {
     const VkPhysicalDeviceDriverProperties& props = m_device_driver_properties;
-    ret = StringUtil::StdStringFromFormat(
-      "Driver %u.%u.%u\nVulkan %u.%u.%u\nConformance Version %u.%u.%u.%u\n%s\n%s\n%s", VK_VERSION_MAJOR(driver_version),
+    ret = fmt::format(
+      "Driver {}.{}.{}\nVulkan {}.{}.{}\nConformance Version {}.{}.{}.{}\n{}\n{}\n{}", VK_VERSION_MAJOR(driver_version),
       VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version), VK_API_VERSION_MAJOR(api_version),
       VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version), props.conformanceVersion.major,
       props.conformanceVersion.minor, props.conformanceVersion.subminor, props.conformanceVersion.patch,
@@ -1991,10 +1991,10 @@ std::string VulkanDevice::GetDriverInfo() const
   }
   else
   {
-    ret = StringUtil::StdStringFromFormat("Driver %u.%u.%u\nVulkan %u.%u.%u\n%s", VK_VERSION_MAJOR(driver_version),
-                                          VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version),
-                                          VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version),
-                                          VK_API_VERSION_PATCH(api_version), m_device_properties.deviceName);
+    ret =
+      fmt::format("Driver {}.{}.{}\nVulkan {}.{}.{}\n{}", VK_VERSION_MAJOR(driver_version),
+                  VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version), VK_API_VERSION_MAJOR(api_version),
+                  VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version), m_device_properties.deviceName);
   }
 
   return ret;

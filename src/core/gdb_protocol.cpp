@@ -8,6 +8,7 @@
 #include "system.h"
 
 #include "common/log.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include <functional>
@@ -65,7 +66,7 @@ static std::optional<std::string_view> DeserializePacket(const std::string_view&
 static std::string SerializePacket(const std::string_view& in)
 {
   std::stringstream ss;
-  ss << '$' << in << '#' << StringUtil::StdStringFromFormat("%02x", ComputeChecksum(in));
+  ss << '$' << in << '#' << TinyString::from_fmt("{:02x}", ComputeChecksum(in));
   return ss.str();
 }
 

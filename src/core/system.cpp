@@ -542,7 +542,7 @@ ConsoleRegion System::GetConsoleRegionForDiscRegion(DiscRegion region)
 
 std::string System::GetGameHashId(GameHash hash)
 {
-  return StringUtil::StdStringFromFormat("HASH-%" PRIX64, hash);
+  return fmt::format("HASH-{:X}", hash);
 }
 
 bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash)
@@ -4255,10 +4255,9 @@ std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(By
   ExtendedSaveStateInfo ssi;
   if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
   {
-    ssi.title = StringUtil::StdStringFromFormat(
-      TRANSLATE("CommonHostInterface", "Invalid version %u (%s version %u)"), header.version,
-      header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
-      header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION);
+    ssi.title = fmt::format(TRANSLATE_FS("System", "Invalid version {} ({} version {})"), header.version,
+                            header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
+                            header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION);
     return ssi;
   }
 

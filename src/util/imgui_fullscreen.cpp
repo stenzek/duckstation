@@ -1691,10 +1691,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
   if (s_file_selector_current_directory.empty())
   {
     for (std::string& root_path : FileSystem::GetRootDirectoryList())
-    {
-      s_file_selector_items.emplace_back(StringUtil::StdStringFromFormat(ICON_FA_FOLDER " %s", root_path.c_str()),
-                                         std::move(root_path), false);
-    }
+      s_file_selector_items.emplace_back(fmt::format(ICON_FA_FOLDER " {}", root_path), std::move(root_path), false);
   }
   else
   {
@@ -1722,12 +1719,12 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 
     for (const FILESYSTEM_FIND_DATA& fd : results)
     {
-      std::string full_path(StringUtil::StdStringFromFormat(
-        "%s" FS_OSPATH_SEPARATOR_STR "%s", s_file_selector_current_directory.c_str(), fd.FileName.c_str()));
+      std::string full_path =
+        fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}", s_file_selector_current_directory, fd.FileName);
 
       if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
       {
-        std::string title(StringUtil::StdStringFromFormat(ICON_FA_FOLDER " %s", fd.FileName.c_str()));
+        std::string title = fmt::format(ICON_FA_FOLDER " {}", fd.FileName);
         s_file_selector_items.emplace_back(std::move(title), std::move(full_path), false);
       }
       else
@@ -1741,7 +1738,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
           continue;
         }
 
-        std::string title(StringUtil::StdStringFromFormat(ICON_FA_FILE " %s", fd.FileName.c_str()));
+        std::string title = fmt::format(ICON_FA_FILE " {}", fd.FileName);
         s_file_selector_items.emplace_back(std::move(title), std::move(full_path), true);
       }
     }
@@ -1770,7 +1767,7 @@ void ImGuiFullscreen::OpenFileSelector(const char* title, bool select_directory,
 
   s_file_selector_open = true;
   s_file_selector_directory = select_directory;
-  s_file_selector_title = StringUtil::StdStringFromFormat("%s##file_selector", title);
+  s_file_selector_title = fmt::format("{}##file_selector", title);
   s_file_selector_callback = std::move(callback);
   s_file_selector_filters = std::move(filters);
 
@@ -1894,7 +1891,7 @@ void ImGuiFullscreen::OpenChoiceDialog(const char* title, bool checkable, Choice
 
   s_choice_dialog_open = true;
   s_choice_dialog_checkable = checkable;
-  s_choice_dialog_title = StringUtil::StdStringFromFormat("%s##choice_dialog", title);
+  s_choice_dialog_title = fmt::format("{}##choice_dialog", title);
   s_choice_dialog_options = std::move(options);
   s_choice_dialog_callback = std::move(callback);
 }

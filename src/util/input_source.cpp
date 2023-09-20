@@ -141,13 +141,13 @@ std::string InputSource::ConvertGenericControllerKeyToString(InputBindingKey key
         modifier = "Full";
         break;
     }
-    return StringUtil::StdStringFromFormat("%s-%u/%sAxis%u", InputManager::InputSourceToString(key.source_type),
-                                           key.source_index, modifier, key.data);
+    return fmt::format("{}-{}/{}Axis{}", InputManager::InputSourceToString(key.source_type),
+                       static_cast<u32>(key.source_index), modifier, key.data);
   }
   else if (key.source_subtype == InputSubclass::ControllerButton)
   {
-    return StringUtil::StdStringFromFormat("%s%u/Button%u", InputManager::InputSourceToString(key.source_type),
-                                           key.source_index, key.data);
+    return fmt::format("{}{}/Button{}", InputManager::InputSourceToString(key.source_type),
+                       static_cast<u32>(key.source_index), key.data);
   }
   else
   {

@@ -36,11 +36,12 @@ CubebAudioStream::~CubebAudioStream()
 
 void CubebAudioStream::LogCallback(const char* fmt, ...)
 {
+  LargeString str;
   std::va_list ap;
   va_start(ap, fmt);
-  std::string msg(StringUtil::StdStringFromFormatV(fmt, ap));
+  str.format_va(fmt, ap);
   va_end(ap);
-  Log_DevPrintf("(Cubeb): %s", msg.c_str());
+  Log_DevPrint(str);
 }
 
 void CubebAudioStream::DestroyContextAndStream()

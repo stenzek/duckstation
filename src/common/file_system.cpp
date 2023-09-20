@@ -915,13 +915,13 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
   if (path)
   {
     if (parent_path)
-      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\%s\\*", origin_path, parent_path, path);
+      tempStr = fmt::format("{}\\{}\\{}\\*", origin_path, parent_path, path);
     else
-      tempStr = StringUtil::StdStringFromFormat("%s\\%s\\*", origin_path, path);
+      tempStr = fmt::format("{}\\{}\\*", origin_path, path);
   }
   else
   {
-    tempStr = StringUtil::StdStringFromFormat("%s\\*", origin_path);
+    tempStr = fmt::format("{}\\*", origin_path);
   }
 
   // holder for utf-8 conversion
@@ -969,7 +969,7 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
         // recurse into this directory
         if (parent_path != nullptr)
         {
-          const std::string recurseDir = StringUtil::StdStringFromFormat("%s\\%s", parent_path, path);
+          const std::string recurseDir = fmt::format("{}\\{}", parent_path, path);
           nFiles += RecursiveFindFiles(origin_path, recurseDir.c_str(), utf8_filename.c_str(), pattern, flags, results);
         }
         else
@@ -1009,19 +1009,18 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
     if (!(flags & FILESYSTEM_FIND_RELATIVE_PATHS))
     {
       if (parent_path != nullptr)
-        outData.FileName =
-          StringUtil::StdStringFromFormat("%s\\%s\\%s\\%s", origin_path, parent_path, path, utf8_filename.c_str());
+        outData.FileName = fmt::format("{}\\{}\\{}\\{}", origin_path, parent_path, path, utf8_filename.c_str());
       else if (path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", origin_path, path, utf8_filename.c_str());
+        outData.FileName = fmt::format("{}\\{}\\{}", origin_path, path, utf8_filename.c_str());
       else
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", origin_path, utf8_filename.c_str());
+        outData.FileName = fmt::format("{}\\{}", origin_path, utf8_filename.c_str());
     }
     else
     {
       if (parent_path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s\\%s", parent_path, path, utf8_filename.c_str());
+        outData.FileName = fmt::format("{}\\{}\\{}", parent_path, path, utf8_filename.c_str());
       else if (path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s\\%s", path, utf8_filename.c_str());
+        outData.FileName = fmt::format("{}\\{}", path, utf8_filename.c_str());
       else
         outData.FileName = utf8_filename;
     }
@@ -1447,13 +1446,13 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
   if (Path)
   {
     if (ParentPath)
-      tempStr = StringUtil::StdStringFromFormat("%s/%s/%s", OriginPath, ParentPath, Path);
+      tempStr = fmt::format("{}/{}/{}", OriginPath, ParentPath, Path);
     else
-      tempStr = StringUtil::StdStringFromFormat("%s/%s", OriginPath, Path);
+      tempStr = fmt::format("{}/{}", OriginPath, Path);
   }
   else
   {
-    tempStr = StringUtil::StdStringFromFormat("%s", OriginPath);
+    tempStr = OriginPath;
   }
 
   DIR* pDir = opendir(tempStr.c_str());
@@ -1485,11 +1484,11 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
     std::string full_path;
     if (ParentPath != nullptr)
-      full_path = StringUtil::StdStringFromFormat("%s/%s/%s/%s", OriginPath, ParentPath, Path, pDirEnt->d_name);
+      full_path = fmt::format("{}/{}/{}/{}", OriginPath, ParentPath, Path, pDirEnt->d_name);
     else if (Path != nullptr)
-      full_path = StringUtil::StdStringFromFormat("%s/%s/%s", OriginPath, Path, pDirEnt->d_name);
+      full_path = fmt::format("{}/{}/{}", OriginPath, Path, pDirEnt->d_name);
     else
-      full_path = StringUtil::StdStringFromFormat("%s/%s", OriginPath, pDirEnt->d_name);
+      full_path = fmt::format("{}/{}", OriginPath, pDirEnt->d_name);
 
     FILESYSTEM_FIND_DATA outData;
     outData.Attributes = 0;
@@ -1512,7 +1511,7 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
         // recurse into this directory
         if (ParentPath != nullptr)
         {
-          std::string recursiveDir = StringUtil::StdStringFromFormat("%s/%s", ParentPath, Path);
+          std::string recursiveDir = fmt::format("{}/{}", ParentPath, Path);
           nFiles += RecursiveFindFiles(OriginPath, recursiveDir.c_str(), pDirEnt->d_name, Pattern, Flags, pResults);
         }
         else
@@ -1557,9 +1556,9 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     else
     {
       if (ParentPath != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s/%s", ParentPath, Path, pDirEnt->d_name);
+        outData.FileName = fmt::format("{}/{}/{}", ParentPath, Path, pDirEnt->d_name);
       else if (Path != nullptr)
-        outData.FileName = StringUtil::StdStringFromFormat("%s/%s", Path, pDirEnt->d_name);
+        outData.FileName = fmt::format("{}/{}", Path, pDirEnt->d_name);
       else
         outData.FileName = pDirEnt->d_name;
     }

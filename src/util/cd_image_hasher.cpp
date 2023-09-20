@@ -80,20 +80,21 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
 
 std::string HashToString(const Hash& hash)
 {
-  return StringUtil::StdStringFromFormat("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hash[0],
-                                         hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8],
-                                         hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
+  return fmt::format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                     hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
+                     hash[11], hash[12], hash[13], hash[14], hash[15]);
 }
 
-std::optional<Hash> HashFromString(const std::string_view& str) {
-    auto decoded = StringUtil::DecodeHex(str);
-    if (decoded && decoded->size() == std::tuple_size_v<Hash>)
-    {
-        Hash result;
-        std::copy(decoded->begin(), decoded->end(), result.begin());
-        return result;
-    }
-    return std::nullopt;
+std::optional<Hash> HashFromString(const std::string_view& str)
+{
+  auto decoded = StringUtil::DecodeHex(str);
+  if (decoded && decoded->size() == std::tuple_size_v<Hash>)
+  {
+    Hash result;
+    std::copy(decoded->begin(), decoded->end(), result.begin());
+    return result;
+  }
+  return std::nullopt;
 }
 
 bool GetImageHash(CDImage* image, Hash* out_hash,
