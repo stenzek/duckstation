@@ -56,6 +56,9 @@ public:
   std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override final;
   std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override final;
 
+  void ClearDisplay() override;
+  void UpdateDisplay() override;
+
 private:
   enum : u32
   {
@@ -78,35 +81,10 @@ private:
     u16 v;
     u32 uv_limits;
 
-    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 packed_texcoord,
-                           u32 uv_limits_)
-    {
-      Set(x_, y_, z_, w_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8), uv_limits_);
-    }
-
-    ALWAYS_INLINE void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_, u16 v_,
-                           u32 uv_limits_)
-    {
-      x = x_;
-      y = y_;
-      z = z_;
-      w = w_;
-      color = color_;
-      texpage = texpage_;
-      u = u_;
-      v = v_;
-      uv_limits = uv_limits_;
-    }
-
-    ALWAYS_INLINE static u32 PackUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
-    {
-      return min_u | (min_v << 8) | (max_u << 16) | (max_v << 24);
-    }
-
-    ALWAYS_INLINE void SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
-    {
-      uv_limits = PackUVLimits(min_u, max_u, min_v, max_v);
-    }
+    void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 packed_texcoord, u32 uv_limits_);
+    void Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_, u16 v_, u32 uv_limits_);
+    static u32 PackUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v);
+    void SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v);
   };
 
   struct BatchConfig
@@ -120,11 +98,7 @@ private:
     bool use_depth_buffer = false;
 
     // Returns the render mode for this batch.
-    BatchRenderMode GetRenderMode() const
-    {
-      return transparency_mode == GPUTransparencyMode::Disabled ? BatchRenderMode::TransparencyDisabled :
-                                                                  BatchRenderMode::TransparentAndOpaque;
-    }
+    BatchRenderMode GetRenderMode() const;
   };
 
   struct BatchUBOData
@@ -151,6 +125,16 @@ private:
   bool CompilePipelines();
   void DestroyPipelines();
 
+  void LoadVertices();
+
+  void AddVertex(const BatchVertex& v);
+
+  template<typename... Args>
+  void AddNewVertex(Args&&... args);
+
+  void PrintSettingsToLog();
+  void CheckSettings();
+
   void UpdateVRAMReadTexture();
   void UpdateDepthBufferFromMaskBit();
   void ClearDepthBuffer();
@@ -158,8 +142,6 @@ private:
   void MapBatchVertexPointer(u32 required_vertices);
   void UnmapBatchVertexPointer(u32 used_vertices);
   void DrawBatchVertices(BatchRenderMode render_mode, u32 num_vertices, u32 base_vertex);
-  void ClearDisplay() override;
-  void UpdateDisplay() override;
 
   u32 CalculateResolutionScale() const;
   GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
@@ -171,37 +153,21 @@ private:
   void ClearVRAMDirtyRectangle();
   void IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect);
 
-  ALWAYS_INLINE bool IsFlushed() const { return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr; }
-  ALWAYS_INLINE u32 GetBatchVertexSpace() const
-  {
-    return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr);
-  }
-  ALWAYS_INLINE u32 GetBatchVertexCount() const
-  {
-    return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr);
-  }
+  bool IsFlushed() const;
+  u32 GetBatchVertexSpace() const;
+  u32 GetBatchVertexCount() const;
   void EnsureVertexBufferSpace(u32 required_vertices);
   void EnsureVertexBufferSpaceForCurrentCommand();
   void ResetBatchVertexDepth();
 
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
-  ALWAYS_INLINE float GetCurrentNormalizedVertexDepth() const
-  {
-    return 1.0f - (static_cast<float>(m_current_depth) / 65535.0f);
-  }
+  float GetCurrentNormalizedVertexDepth() const;
 
   /// Returns the interlaced mode to use when scanning out/displaying.
   InterlacedRenderMode GetInterlacedRenderMode() const;
 
-  /// We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
-  /// on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
-  ALWAYS_INLINE bool NeedsTwoPassRendering() const
-  {
-    // TODO: see if there's a better way we can do this. definitely can with fbfetch.
-    return (m_batch.texture_mode != GPUTextureMode::Disabled &&
-            (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
-             (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
-  }
+  /// Returns if the draw needs to be broken into opaque/transparent passes.
+  bool NeedsTwoPassRendering() const;
 
   void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
   void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
@@ -329,23 +295,4 @@ private:
   // Statistics
   RendererStats m_renderer_stats = {};
   RendererStats m_last_renderer_stats = {};
-
-private:
-  void LoadVertices();
-
-  ALWAYS_INLINE void AddVertex(const BatchVertex& v)
-  {
-    std::memcpy(m_batch_current_vertex_ptr, &v, sizeof(BatchVertex));
-    m_batch_current_vertex_ptr++;
-  }
-
-  template<typename... Args>
-  ALWAYS_INLINE void AddNewVertex(Args&&... args)
-  {
-    m_batch_current_vertex_ptr->Set(std::forward<Args>(args)...);
-    m_batch_current_vertex_ptr++;
-  }
-
-  void PrintSettingsToLog();
-  void CheckSettings();
 };

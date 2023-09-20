@@ -146,6 +146,49 @@ GPU_HW::~GPU_HW()
   }
 }
 
+ALWAYS_INLINE void GPU_HW::BatchVertex::Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_,
+                                            u16 packed_texcoord, u32 uv_limits_)
+{
+  Set(x_, y_, z_, w_, color_, texpage_, packed_texcoord & 0xFF, (packed_texcoord >> 8), uv_limits_);
+}
+
+ALWAYS_INLINE void GPU_HW::BatchVertex::Set(float x_, float y_, float z_, float w_, u32 color_, u32 texpage_, u16 u_,
+                                            u16 v_, u32 uv_limits_)
+{
+  x = x_;
+  y = y_;
+  z = z_;
+  w = w_;
+  color = color_;
+  texpage = texpage_;
+  u = u_;
+  v = v_;
+  uv_limits = uv_limits_;
+}
+
+ALWAYS_INLINE u32 GPU_HW::BatchVertex::PackUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
+{
+  return min_u | (min_v << 8) | (max_u << 16) | (max_v << 24);
+}
+
+ALWAYS_INLINE void GPU_HW::BatchVertex::SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v)
+{
+  uv_limits = PackUVLimits(min_u, max_u, min_v, max_v);
+}
+
+ALWAYS_INLINE void GPU_HW::AddVertex(const BatchVertex& v)
+{
+  std::memcpy(m_batch_current_vertex_ptr, &v, sizeof(BatchVertex));
+  m_batch_current_vertex_ptr++;
+}
+
+template<typename... Args>
+ALWAYS_INLINE void GPU_HW::AddNewVertex(Args&&... args)
+{
+  m_batch_current_vertex_ptr->Set(std::forward<Args>(args)...);
+  m_batch_current_vertex_ptr++;
+}
+
 const Threading::Thread* GPU_HW::GetSWThread() const
 {
   return m_sw_renderer ? m_sw_renderer->GetThread() : nullptr;
@@ -1160,6 +1203,12 @@ void GPU_HW::DestroyPipelines()
   m_display_pipelines.enumerate(destroy);
 }
 
+GPU_HW::BatchRenderMode GPU_HW::BatchConfig::GetRenderMode() const
+{
+  return transparency_mode == GPUTransparencyMode::Disabled ? BatchRenderMode::TransparencyDisabled :
+                                                              BatchRenderMode::TransparentAndOpaque;
+}
+
 void GPU_HW::UpdateVRAMReadTexture()
 {
   GL_SCOPE("UpdateVRAMReadTexture()");
@@ -1969,6 +2018,11 @@ void GPU_HW::IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect)
   }
 }
 
+ALWAYS_INLINE bool GPU_HW::IsFlushed() const
+{
+  return m_batch_current_vertex_ptr == m_batch_start_vertex_ptr;
+}
+
 GPU_HW::InterlacedRenderMode GPU_HW::GetInterlacedRenderMode() const
 {
   if (IsInterlacedDisplayEnabled())
@@ -1980,6 +2034,27 @@ GPU_HW::InterlacedRenderMode GPU_HW::GetInterlacedRenderMode() const
   {
     return InterlacedRenderMode::None;
   }
+}
+
+ALWAYS_INLINE bool GPU_HW::NeedsTwoPassRendering() const
+{
+  // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
+  // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
+
+  // TODO: see if there's a better way we can do this. definitely can with fbfetch.
+  return (m_batch.texture_mode != GPUTextureMode::Disabled &&
+          (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
+           (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
+}
+
+ALWAYS_INLINE u32 GPU_HW::GetBatchVertexSpace() const
+{
+  return static_cast<u32>(m_batch_end_vertex_ptr - m_batch_current_vertex_ptr);
+}
+
+ALWAYS_INLINE u32 GPU_HW::GetBatchVertexCount() const
+{
+  return static_cast<u32>(m_batch_current_vertex_ptr - m_batch_start_vertex_ptr);
 }
 
 void GPU_HW::EnsureVertexBufferSpace(u32 required_vertices)
@@ -2039,6 +2114,11 @@ void GPU_HW::ResetBatchVertexDepth()
   UpdateDepthBufferFromMaskBit();
 
   m_current_depth = 1;
+}
+
+ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
+{
+  return 1.0f - (static_cast<float>(m_current_depth) / 65535.0f);
 }
 
 void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
