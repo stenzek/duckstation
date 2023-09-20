@@ -6840,12 +6840,12 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6971"/>
         <source>Downsampling</source>
-        <translation type="unfinished">Десемплинг</translation>
+        <translation>Понижение разрешения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6972"/>
         <source>Downsampling Display Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштаб отображения с понижением разрешения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6973"/>
@@ -6967,12 +6967,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7323"/>
         <source>This game has no achievements.</source>
-        <translation type="unfinished">В этой игре нет достижений.</translation>
+        <translation>В этой игре нет достижений.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7324"/>
         <source>This game has no leaderboards.</source>
-        <translation type="unfinished"></translation>
+        <translation>В этой игре нет списка лидеров.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7329"/>
