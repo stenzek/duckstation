@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controller.h"
@@ -26,18 +26,24 @@ static const Controller::ControllerInfo* s_controller_info[] = {
   &GunCon::INFO, &PlayStationMouse::INFO,
 };
 
-Controller::Controller(u32 index) : m_index(index) {}
+Controller::Controller(u32 index) : m_index(index)
+{
+}
 
 Controller::~Controller() = default;
 
-void Controller::Reset() {}
+void Controller::Reset()
+{
+}
 
 bool Controller::DoState(StateWrapper& sw, bool apply_input_state)
 {
   return !sw.HasError();
 }
 
-void Controller::ResetTransferState() {}
+void Controller::ResetTransferState()
+{
+}
 
 bool Controller::Transfer(const u8 data_in, u8* data_out)
 {
@@ -50,7 +56,9 @@ float Controller::GetBindState(u32 index) const
   return 0.0f;
 }
 
-void Controller::SetBindState(u32 index, float value) {}
+void Controller::SetBindState(u32 index, float value)
+{
+}
 
 u32 Controller::GetButtonStateBits() const
 {
@@ -67,11 +75,8 @@ std::optional<u32> Controller::GetAnalogInputBytes() const
   return std::nullopt;
 }
 
-void Controller::LoadSettings(SettingsInterface& si, const char* section) {}
-
-bool Controller::GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode)
+void Controller::LoadSettings(SettingsInterface& si, const char* section)
 {
-  return false;
 }
 
 std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)

@@ -71,6 +71,8 @@ static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_fixed_font_data;
 static std::vector<u8> s_icon_font_data;
 
+static float s_window_width;
+static float s_window_height;
 static Common::Timer s_last_render_time;
 
 // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
@@ -160,9 +162,10 @@ bool ImGuiManager::Initialize(float global_scale, bool show_osd_messages)
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 #endif
 
+  s_window_width = static_cast<float>(g_gpu_device->GetWindowWidth());
+  s_window_height = static_cast<float>(g_gpu_device->GetWindowHeight());
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-  io.DisplaySize.x = static_cast<float>(g_gpu_device->GetWindowWidth());
-  io.DisplaySize.y = static_cast<float>(g_gpu_device->GetWindowHeight());
+  io.DisplaySize = ImVec2(s_window_width, s_window_height);
 
   SetKeyMap();
   SetStyle();
@@ -197,12 +200,24 @@ void ImGuiManager::Shutdown()
   ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
 }
 
+float ImGuiManager::GetWindowWidth()
+{
+  return s_window_width;
+}
+
+float ImGuiManager::GetWindowHeight()
+{
+  return s_window_height;
+}
+
 void ImGuiManager::WindowResized()
 {
   const u32 new_width = g_gpu_device ? g_gpu_device->GetWindowWidth() : 0;
   const u32 new_height = g_gpu_device ? g_gpu_device->GetWindowHeight() : 0;
 
-  ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
+  s_window_width = static_cast<float>(new_width);
+  s_window_height = static_cast<float>(new_height);
+  ImGui::GetIO().DisplaySize = ImVec2(s_window_width, s_window_height);
 
   // restart imgui frame on the new window size to pick it up, otherwise we draw to the old size
   ImGui::EndFrame();
@@ -727,7 +742,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
   const float margin = std::ceil(10.0f * scale);
   const float padding = std::ceil(8.0f * scale);
   const float rounding = std::ceil(5.0f * scale);
-  const float max_width = ImGui::GetIO().DisplaySize.x - (margin + padding) * 2.0f;
+  const float max_width = s_window_width - (margin + padding) * 2.0f;
   float position_x = margin;
   float position_y = margin;
 
@@ -938,7 +953,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 
 void ImGuiManager::CreateSoftwareCursorTextures()
 {
-  for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
+  for (u32 i = 0; i < static_cast<u32>(s_software_cursors.size()); i++)
   {
     if (!s_software_cursors[i].image_path.empty())
       UpdateSoftwareCursorTexture(i);
@@ -947,10 +962,8 @@ void ImGuiManager::CreateSoftwareCursorTextures()
 
 void ImGuiManager::DestroySoftwareCursorTextures()
 {
-  for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
-  {
-    s_software_cursors[i].texture.reset();
-  }
+  for (SoftwareCursor& sc : s_software_cursors)
+    sc.texture.reset();
 }
 
 void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)

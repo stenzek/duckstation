@@ -1566,13 +1566,6 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
-  // TODO: Find a better home for this.
-  if (InputManager::HasPointerAxisBinds())
-  {
-    relative = true;
-    hide_cursor = true;
-  }
-
   emit g_emu_thread->mouseModeRequested(relative, hide_cursor);
 }
 

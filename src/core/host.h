@@ -79,9 +79,6 @@ void ReportFormattedDebuggerMessage(const char* format, ...);
 /// such as compiling shaders when starting up.
 void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
 
-/// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
-void SetMouseMode(bool relative, bool hide_cursor);
-
 /// Safely executes a function on the VM thread.
 void RunOnCPUThread(std::function<void()> function, bool block = false);
 

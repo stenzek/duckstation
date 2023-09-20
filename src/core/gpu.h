@@ -171,8 +171,10 @@ public:
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
-  bool ConvertScreenCoordinatesToBeamTicksAndLines(s32 window_x, s32 window_y, float x_scale, u32* out_tick,
-                                                   u32* out_line) const;
+  void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
+                                                    float* display_y) const;
+  bool ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
+                                                    u32* out_line) const;
 
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;

@@ -1398,7 +1398,6 @@ bool System::BootSystem(SystemBootParameters parameters)
 
   // Good to go.
   s_state = State::Running;
-  UpdateSoftwareCursor();
   SPU::GetOutputStream()->SetPaused(false);
 
   FullscreenUI::OnSystemStarted();
@@ -1632,7 +1631,6 @@ void System::DestroySystem()
   if (s_keep_gpu_device_on_shutdown && g_gpu_device)
   {
     g_gpu_device->SetDisplayMaxFPS(0.0f);
-    UpdateSoftwareCursor();
   }
   else
   {
@@ -3673,17 +3671,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       {
         UpdateControllers();
         ResetControllers();
-        UpdateSoftwareCursor();
         controllers_updated = true;
       }
     }
-
-    if (IsValid() && !controllers_updated)
-    {
-      UpdateControllerSettings();
-      UpdateSoftwareCursor();
-    }
   }
+
+  if (IsValid() && !controllers_updated)
+    UpdateControllerSettings();
 
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     UpdateMultitaps();
@@ -4562,38 +4556,6 @@ void System::ToggleSoftwareRendering()
   ResetPerformanceCounters();
 }
 
-void System::UpdateSoftwareCursor()
-{
-  if (!IsValid())
-  {
-    Host::SetMouseMode(false, false);
-    ImGuiManager::ClearSoftwareCursor(0);
-    return;
-  }
-
-  std::string image_path;
-  float image_scale = 1.0f;
-  bool relative_mode = false;
-  bool hide_cursor = false;
-
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-  {
-    Controller* controller = System::GetController(i);
-    if (controller && controller->GetSoftwareCursor(&image_path, &image_scale, &relative_mode))
-    {
-      hide_cursor = true;
-      break;
-    }
-  }
-
-  Host::SetMouseMode(relative_mode, hide_cursor);
-
-  if (!image_path.empty())
-    ImGuiManager::SetSoftwareCursor(0, std::move(image_path), image_scale);
-  else
-    ImGuiManager::ClearSoftwareCursor(0);
-}
-
 void System::RequestDisplaySize(float scale /*= 0.0f*/)
 {
   if (!IsValid())
@@ -4638,7 +4600,9 @@ bool System::PresentDisplay(bool allow_skip_present)
     FullscreenUI::Render();
     ImGuiManager::RenderTextOverlays();
     ImGuiManager::RenderOSDMessages();
-    ImGuiManager::RenderSoftwareCursors();
+
+    if (s_state == State::Running)
+      ImGuiManager::RenderSoftwareCursors();
   }
 
   // Debug windows are always rendered, otherwise mouse input breaks on skip.

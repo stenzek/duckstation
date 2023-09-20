@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "guncon.h"
@@ -6,11 +6,13 @@
 #include "host.h"
 #include "system.h"
 
+#include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
 #include "common/path.h"
+#include "common/string_util.h"
 
 #include <array>
 
@@ -19,13 +21,21 @@
 Log_SetChannel(GunCon);
 #endif
 
-static constexpr std::array<u8, static_cast<size_t>(GunCon::Button::Count)> s_button_indices = {{13, 3, 14}};
+static constexpr std::array<u8, static_cast<size_t>(GunCon::Binding::ButtonCount)> s_button_indices = {{13, 3, 14}};
 
 GunCon::GunCon(u32 index) : Controller(index)
 {
 }
 
-GunCon::~GunCon() = default;
+GunCon::~GunCon()
+{
+  if (!m_cursor_path.empty())
+  {
+    const u32 cursor_index = GetSoftwarePointerIndex();
+    if (cursor_index < InputManager::MAX_SOFTWARE_CURSORS)
+      ImGuiManager::ClearSoftwareCursor(cursor_index);
+  }
+}
 
 ControllerType GunCon::GetType() const
 {
@@ -71,12 +81,25 @@ float GunCon::GetBindState(u32 index) const
 void GunCon::SetBindState(u32 index, float value)
 {
   const bool pressed = (value >= 0.5f);
-  if (index == static_cast<u32>(Button::ShootOffscreen))
+  if (index == static_cast<u32>(Binding::ShootOffscreen))
   {
     if (m_shoot_offscreen != pressed)
     {
       m_shoot_offscreen = pressed;
-      SetBindState(static_cast<u32>(Button::Trigger), pressed);
+      SetBindState(static_cast<u32>(Binding::Trigger), pressed);
+    }
+
+    return;
+  }
+  else if (index >= static_cast<u32>(Binding::ButtonCount))
+  {
+    if (index >= static_cast<u32>(Binding::BindingCount) || !m_has_relative_binds)
+      return;
+
+    if (m_relative_pos[index - static_cast<u32>(Binding::RelativeLeft)] != value)
+    {
+      m_relative_pos[index - static_cast<u32>(Binding::RelativeLeft)] = value;
+      UpdateSoftwarePointerPosition();
     }
 
     return;
@@ -181,18 +204,18 @@ bool GunCon::Transfer(const u8 data_in, u8* data_out)
 
 void GunCon::UpdatePosition()
 {
-  // get screen coordinates
-  const auto& [fmouse_x, fmouse_y] = InputManager::GetPointerAbsolutePosition(0);
-  const s32 mouse_x = static_cast<s32>(fmouse_x);
-  const s32 mouse_y = static_cast<s32>(fmouse_y);
+  float display_x, display_y;
+  const auto& [window_x, window_y] =
+    (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(0);
+  g_gpu->ConvertScreenCoordinatesToDisplayCoordinates(window_x, window_y, &display_x, &display_y);
 
   // are we within the active display area?
   u32 tick, line;
-  if (mouse_x < 0 || mouse_y < 0 ||
-      !g_gpu->ConvertScreenCoordinatesToBeamTicksAndLines(mouse_x, mouse_y, m_x_scale, &tick, &line) ||
+  if (display_x < 0 || display_y < 0 ||
+      !g_gpu->ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
       m_shoot_offscreen)
   {
-    Log_DebugPrintf("Lightgun out of range for window coordinates %d,%d", mouse_x, mouse_y);
+    Log_DebugPrintf("Lightgun out of range for window coordinates %.0f,%.0f", window_x, window_y);
     m_position_x = 0x01;
     m_position_y = 0x0A;
     return;
@@ -202,8 +225,34 @@ void GunCon::UpdatePosition()
   const double divider = static_cast<double>(g_gpu->GetCRTCFrequency()) / 8000000.0;
   m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
-  Log_DebugPrintf("Lightgun window coordinates %d,%d -> tick %u line %u 8mhz ticks %u", mouse_x, mouse_y, tick, line,
-                  m_position_x);
+  Log_DebugPrintf("Lightgun window coordinates %.0f,%.0f -> tick %u line %u 8mhz ticks %u", display_x, display_y, tick,
+                  line, m_position_x);
+}
+
+std::pair<float, float> GunCon::GetAbsolutePositionFromRelativeAxes() const
+{
+  const float screen_rel_x = (((m_relative_pos[1] > 0.0f) ? m_relative_pos[1] : -m_relative_pos[0]) + 1.0f) * 0.5f;
+  const float screen_rel_y = (((m_relative_pos[3] > 0.0f) ? m_relative_pos[3] : -m_relative_pos[2]) + 1.0f) * 0.5f;
+  return std::make_pair(screen_rel_x * ImGuiManager::GetWindowWidth(), screen_rel_y * ImGuiManager::GetWindowHeight());
+}
+
+bool GunCon::CanUseSoftwareCursor() const
+{
+  return (InputManager::MAX_POINTER_DEVICES + m_index) < InputManager::MAX_SOFTWARE_CURSORS;
+}
+
+u32 GunCon::GetSoftwarePointerIndex() const
+{
+  return m_has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + m_index) : 0;
+}
+
+void GunCon::UpdateSoftwarePointerPosition()
+{
+  if (m_cursor_path.empty() || !CanUseSoftwareCursor())
+    return;
+
+  const auto& [window_x, window_y] = GetAbsolutePositionFromRelativeAxes();
+  ImGuiManager::SetSoftwareCursorPosition(GetSoftwarePointerIndex(), window_x, window_y);
 }
 
 std::unique_ptr<GunCon> GunCon::Create(u32 index)
@@ -212,16 +261,25 @@ std::unique_ptr<GunCon> GunCon::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, button, genb)                                                                       \
+#define BUTTON(name, display_name, binding, genb)                                                                      \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
+    name, display_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb                                \
+  }
+#define HALFAXIS(name, display_name, binding, genb)                                                                    \
+  {                                                                                                                    \
+    name, display_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb                              \
   }
 
   // clang-format off
-  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), GunCon::Button::Trigger, GenericInputBinding::R2),
-  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), GunCon::Button::ShootOffscreen, GenericInputBinding::L2),
-  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), GunCon::Button::A, GenericInputBinding::Cross),
-  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), GunCon::Button::B, GenericInputBinding::Circle),
+  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), GunCon::Binding::Trigger, GenericInputBinding::R2),
+  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
+  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), GunCon::Binding::A, GenericInputBinding::Cross),
+  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), GunCon::Binding::B, GenericInputBinding::Circle),
+
+  HALFAXIS("RelativeLeft", TRANSLATE_NOOP("GunCon", "Relative Left"), GunCon::Binding::RelativeLeft, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeRight", TRANSLATE_NOOP("GunCon", "Relative Right"), GunCon::Binding::RelativeRight, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeUp", TRANSLATE_NOOP("GunCon", "Relative Up"), GunCon::Binding::RelativeUp, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeDown", TRANSLATE_NOOP("GunCon", "Relative Down"),  GunCon::Binding::RelativeDown, GenericInputBinding::Unknown),
 // clang-format on
 
 #undef BUTTON
@@ -234,6 +292,10 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "CrosshairScale", TRANSLATE_NOOP("GunCon", "Crosshair Image Scale"),
    TRANSLATE_NOOP("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
    100.0f},
+  {SettingInfo::Type::String, "CrosshairColor", TRANSLATE_NOOP("GunCon", "Cursor Color"),
+   TRANSLATE_NOOP("USB", "Applies a color to the chosen crosshair images, can be used for multiple players. Specify in "
+                         "HTML/CSS format (e.g. #aabbcc)"),
+   "#ffffff"},
   {SettingInfo::Type::Float, "XScale", TRANSLATE_NOOP("GunCon", "X Scale"),
    TRANSLATE_NOOP("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
    "%.0f%%", nullptr, 100.0f}};
@@ -251,24 +313,59 @@ void GunCon::LoadSettings(SettingsInterface& si, const char* section)
 {
   Controller::LoadSettings(si, section);
 
-  m_crosshair_image_path = si.GetStringValue(section, "CrosshairImagePath");
+  m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
+
+  std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath");
+  const float cursor_scale = si.GetFloatValue(section, "CrosshairScale", 1.0f);
+  u32 cursor_color = 0xFFFFFF;
+  if (std::string cursor_color_str = si.GetStringValue(section, "CrosshairColor", ""); !cursor_color_str.empty())
+  {
+    // Strip the leading hash, if it's a CSS style colour.
+    const std::optional<u32> cursor_color_opt(StringUtil::FromChars<u32>(
+      cursor_color_str[0] == '#' ? std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str),
+      16));
+    if (cursor_color_opt.has_value())
+      cursor_color = cursor_color_opt.value();
+  }
+
 #ifndef __ANDROID__
-  if (m_crosshair_image_path.empty())
-    m_crosshair_image_path = Path::Combine(EmuFolders::Resources, "images/crosshair.png");
+  if (cursor_path.empty())
+    cursor_path = Path::Combine(EmuFolders::Resources, "images/crosshair.png");
 #endif
 
-  m_crosshair_image_scale = si.GetFloatValue(section, "CrosshairScale", 1.0f);
+  const s32 prev_pointer_index = GetSoftwarePointerIndex();
 
-  m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
-}
+  m_has_relative_binds = (si.ContainsValue(section, "RelativeLeft") || si.ContainsValue(section, "RelativeRight") ||
+                          si.ContainsValue(section, "RelativeUp") || si.ContainsValue(section, "RelativeDown"));
 
-bool GunCon::GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode)
-{
-  if (m_crosshair_image_path.empty())
-    return false;
+  const s32 new_pointer_index = GetSoftwarePointerIndex();
 
-  *image_path = m_crosshair_image_path;
-  *image_scale = m_crosshair_image_scale;
-  *relative_mode = false;
-  return true;
+  if (prev_pointer_index != new_pointer_index || m_cursor_path != cursor_path || m_cursor_scale != cursor_scale ||
+      m_cursor_color != cursor_color)
+  {
+    if (prev_pointer_index != new_pointer_index &&
+        static_cast<u32>(prev_pointer_index) < InputManager::MAX_SOFTWARE_CURSORS)
+    {
+      ImGuiManager::ClearSoftwareCursor(prev_pointer_index);
+    }
+
+    // Pointer changed, so need to update software cursor.
+    const bool had_software_cursor = m_cursor_path.empty();
+    m_cursor_path = std::move(cursor_path);
+    m_cursor_scale = cursor_scale;
+    m_cursor_color = cursor_color;
+    if (static_cast<u32>(new_pointer_index) < InputManager::MAX_SOFTWARE_CURSORS)
+    {
+      if (!m_cursor_path.empty())
+      {
+        ImGuiManager::SetSoftwareCursor(new_pointer_index, m_cursor_path, m_cursor_scale, m_cursor_color);
+        if (m_has_relative_binds)
+          UpdateSoftwarePointerPosition();
+      }
+      else if (had_software_cursor)
+      {
+        ImGuiManager::ClearSoftwareCursor(new_pointer_index);
+      }
+    }
+  }
 }

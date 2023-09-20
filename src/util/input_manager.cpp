@@ -174,6 +174,9 @@ static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis:
   s_pointer_state;
 static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_scale;
 
+using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
+static std::vector<std::pair<u32, PointerMoveCallback>> s_pointer_move_callbacks;
+
 // ------------------------------------------------------------------------
 // Binding Parsing
 // ------------------------------------------------------------------------
@@ -699,16 +702,60 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
   {
     const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
-    if (!bindings.empty())
-    {
-      AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
-                    if (!System::IsValid())
-                      return;
 
-                    Controller* c = System::GetController(pad_index);
-                    if (c)
-                      c->SetBindState(bind_index, value);
-                  }});
+    switch (bi.type)
+    {
+      case InputBindingInfo::Type::Button:
+      case InputBindingInfo::Type::HalfAxis:
+      case InputBindingInfo::Type::Axis:
+      {
+        if (!bindings.empty())
+        {
+          AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
+                        if (!System::IsValid())
+                          return;
+
+                        Controller* c = System::GetController(pad_index);
+                        if (c)
+                          c->SetBindState(bind_index, value);
+                      }});
+        }
+      }
+      break;
+
+      case InputBindingInfo::Type::Pointer:
+      {
+        auto cb = [pad_index, base = bi.bind_index](InputBindingKey key, float value) {
+          if (!System::IsValid())
+            return;
+
+          Controller* c = System::GetController(pad_index);
+          if (c)
+            c->SetBindState(base + key.data, value);
+        };
+
+        // bind pointer 0 by default
+        if (bindings.empty())
+        {
+          s_pointer_move_callbacks.emplace_back(0, std::move(cb));
+        }
+        else
+        {
+          for (const std::string& binding : bindings)
+          {
+            const std::optional<u32> key(GetIndexFromPointerBinding(binding));
+            if (!key.has_value())
+              continue;
+
+            s_pointer_move_callbacks.emplace_back(0, cb);
+          }
+        }
+      }
+      break;
+
+      default:
+        Log_ErrorPrintf("Unhandled binding info type %u", static_cast<u32>(bi.type));
+        break;
     }
   }
 
@@ -996,6 +1043,8 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 
 void InputManager::GenerateRelativeMouseEvents()
 {
+  const bool system_running = System::IsRunning();
+
   for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
   {
     for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
@@ -1011,11 +1060,23 @@ void InputManager::GenerateRelativeMouseEvents()
         continue;
       }
 
+      if (!system_running)
+        continue;
+
       const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
       if (value != state.last_value)
       {
         state.last_value = value;
         InvokeEvents(key, value, GenericInputBinding::Unknown);
+      }
+
+      if (delta != 0.0f)
+      {
+        for (const std::pair<u32, PointerMoveCallback>& pmc : s_pointer_move_callbacks)
+        {
+          if (pmc.first == device)
+            pmc.second(key, delta);
+        }
       }
     }
   }
@@ -1062,7 +1123,24 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 
 void InputManager::UpdateHostMouseMode()
 {
-  // TODO: Move from System to here.
+  // Check for relative mode bindings, and enable if there's anything using it.
+  bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty();
+  if (!has_relative_mode_bindings)
+  {
+    for (const auto& it : s_binding_map)
+    {
+      const InputBindingKey& key = it.first;
+      if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerAxis &&
+          key.data >= static_cast<u32>(InputPointerAxis::X) && key.data <= static_cast<u32>(InputPointerAxis::Y))
+      {
+        has_relative_mode_bindings = true;
+        break;
+      }
+    }
+  }
+
+  const bool has_software_cursor = ImGuiManager::HasSoftwareCursor(0);
+  Host::SetMouseMode(has_relative_mode_bindings, has_relative_mode_bindings || has_software_cursor);
 }
 
 bool InputManager::IsUsingRawInput()
@@ -1072,22 +1150,6 @@ bool InputManager::IsUsingRawInput()
 #else
   return false;
 #endif
-}
-
-bool InputManager::HasPointerAxisBinds()
-{
-  std::unique_lock lock(s_binding_map_write_lock);
-  for (const auto& it : s_binding_map)
-  {
-    const InputBindingKey& key = it.first;
-    if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerAxis &&
-        key.data >= static_cast<u32>(InputPointerAxis::X) && key.data <= static_cast<u32>(InputPointerAxis::Y))
-    {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
@@ -1546,6 +1608,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 
   s_binding_map.clear();
   s_pad_vibration_array.clear();
+  s_pointer_move_callbacks.clear();
 
   // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
   const bool use_profile_hotkeys = si.GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
@@ -1573,6 +1636,8 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
                                        default_scale),
                       1.0f);
   }
+
+  UpdateHostMouseMode();
 }
 
 bool InputManager::MigrateBindings(SettingsInterface& si)

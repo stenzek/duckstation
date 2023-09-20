@@ -515,6 +515,7 @@ void MainWindow::onSystemStarted()
   updateEmulationActions(false, true, Achievements::IsHardcoreModeActive());
   updateWindowTitle();
   updateStatusBarWidgetVisibility();
+  updateDisplayWidgetCursor();
 }
 
 void MainWindow::onSystemPaused()

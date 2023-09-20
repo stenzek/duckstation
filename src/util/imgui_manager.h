@@ -30,6 +30,10 @@ bool Initialize(float global_scale, bool show_osd_messages);
 /// Frees all ImGui resources.
 void Shutdown();
 
+/// Returns the size of the display window. Can be safely called from any thread.
+float GetWindowWidth();
+float GetWindowHeight();
+
 /// Updates internal state when the window is size.
 void WindowResized();
 

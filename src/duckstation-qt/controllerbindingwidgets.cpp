@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllerbindingwidgets.h"
@@ -597,7 +597,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
           }
 
           SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, sb, section, std::move(key_name), si.multiplier,
-                                                             si.FloatDefaultValue() * multiplier);
+                                                             si.FloatDefaultValue());
         }
         else
         {

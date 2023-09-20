@@ -773,16 +773,7 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
-#if 0
-  // TODO: Find a better home for this.
-  if (InputManager::HasPointerAxisBinds())
-  {
-    relative = true;
-    hide_cursor = true;
-  }
-
-  // emit g_emu_thread->mouseModeRequested(relative, hide_cursor);
-#endif
+  // noop
 }
 
 void Host::PumpMessagesOnCPUThread()

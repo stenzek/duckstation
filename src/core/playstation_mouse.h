@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -10,11 +10,15 @@
 class PlayStationMouse final : public Controller
 {
 public:
-  enum class Button : u8
+  enum class Binding : u8
   {
     Left = 0,
     Right = 1,
-    Count
+    ButtonCount = 2,
+
+    PointerX = 2,
+    PointerY = 3,
+    BindingCount = 4,
   };
 
   static const Controller::ControllerInfo INFO;
@@ -36,11 +40,8 @@ public:
   bool Transfer(const u8 data_in, u8* data_out) override;
 
   void LoadSettings(SettingsInterface& si, const char* section) override;
-  bool GetSoftwareCursor(std::string* image_path, float* image_scale, bool* relative_mode) override;
 
 private:
-  void UpdatePosition();
-
   enum class TransferState : u8
   {
     Idle,
@@ -52,15 +53,13 @@ private:
     DeltaY
   };
 
-  s32 m_last_host_position_x = 0;
-  s32 m_last_host_position_y = 0;
+  float m_sensitivity_x = 1.0f;
+  float m_sensitivity_y = 1.0f;
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
-  s8 m_delta_x = 0;
-  s8 m_delta_y = 0;
+  float m_delta_x = 0;
+  float m_delta_y = 0;
 
   TransferState m_transfer_state = TransferState::Idle;
-
-  bool m_use_relative_mode = false;
 };
