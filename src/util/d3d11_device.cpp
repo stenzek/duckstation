@@ -170,6 +170,7 @@ void D3D11Device::SetFeatures()
   }
 
   m_features.dual_source_blend = true;
+  m_features.framebuffer_fetch = false;
   m_features.per_sample_shading = (feature_level >= D3D_FEATURE_LEVEL_10_1);
   m_features.noperspective_interpolation = true;
   m_features.supports_texture_buffers = true;

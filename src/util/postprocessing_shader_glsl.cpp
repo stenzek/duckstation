@@ -18,7 +18,7 @@ namespace {
 class PostProcessingGLSLShaderGen : public ShaderGen
 {
 public:
-  PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
+  PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~PostProcessingGLSLShaderGen();
 
   std::string GeneratePostProcessingVertexShader(const PostProcessing::GLSLShader& shader);
@@ -117,7 +117,8 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   if (m_pipeline)
     m_pipeline.reset();
 
-  PostProcessingGLSLShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend);
+  PostProcessingGLSLShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
+                                        g_gpu_device->GetFeatures().framebuffer_fetch);
 
   std::unique_ptr<GPUShader> vs =
     g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GeneratePostProcessingVertexShader(*this));
@@ -320,8 +321,9 @@ void PostProcessing::GLSLShader::LoadOptions()
   }
 }
 
-PostProcessingGLSLShaderGen::PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
-  : ShaderGen(render_api, supports_dual_source_blend)
+PostProcessingGLSLShaderGen::PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend,
+                                                         bool supports_framebuffer_fetch)
+  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch)
 {
 }
 

@@ -10,12 +10,13 @@ class GPU_HW_ShaderGen : public ShaderGen
 public:
   GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
                    bool true_color, bool scaled_dithering, GPUTextureFilter texture_filtering, bool uv_limits,
-                   bool pgxp_depth, bool disable_color_perspective, bool supports_dual_source_blend);
+                   bool pgxp_depth, bool disable_color_perspective, bool supports_dual_source_blend,
+                   bool supports_framebuffer_fetch);
   ~GPU_HW_ShaderGen();
 
   std::string GenerateBatchVertexShader(bool textured);
-  std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency, GPUTextureMode texture_mode,
-                                          bool dithering, bool interlacing);
+  std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
+                                          GPUTextureMode texture_mode, bool dithering, bool interlacing);
   std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode,
                                             bool smooth_chroma);
   std::string GenerateWireframeGeometryShader();

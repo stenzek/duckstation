@@ -3,8 +3,8 @@
 
 #include "gpu_shadergen.h"
 
-GPUShaderGen::GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
-  : ShaderGen(render_api, supports_dual_source_blend)
+GPUShaderGen::GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch)
+  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch)
 {
 }
 
@@ -62,7 +62,8 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader()
   WriteDisplayUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
 
-  // Based on https://github.com/rsn8887/Sharp-Bilinear-Shaders/blob/master/Copy_To_RetroPie/shaders/sharp-bilinear-simple.glsl
+  // Based on
+  // https://github.com/rsn8887/Sharp-Bilinear-Shaders/blob/master/Copy_To_RetroPie/shaders/sharp-bilinear-simple.glsl
   DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
   ss << R"(
 {

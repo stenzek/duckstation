@@ -410,7 +410,7 @@ bool GPUDevice::CreateResources()
   if (!(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig())))
     return false;
 
-  ShaderGen shadergen(GetRenderAPI(), m_features.dual_source_blend);
+  ShaderGen shadergen(GetRenderAPI(), m_features.dual_source_blend, m_features.framebuffer_fetch);
 
   std::unique_ptr<GPUShader> imgui_vs = CreateShader(GPUShaderStage::Vertex, shadergen.GenerateImGuiVertexShader());
   std::unique_ptr<GPUShader> imgui_fs = CreateShader(GPUShaderStage::Fragment, shadergen.GenerateImGuiFragmentShader());

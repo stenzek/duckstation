@@ -1569,7 +1569,8 @@ void GPU::SetTextureWindow(u32 value)
 
 bool GPU::CompileDisplayPipeline()
 {
-  GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend);
+  GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
+                         g_gpu_device->GetFeatures().framebuffer_fetch);
 
   GPUPipeline::GraphicsConfig plconfig;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;

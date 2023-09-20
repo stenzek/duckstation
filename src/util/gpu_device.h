@@ -446,6 +446,7 @@ public:
   struct Features
   {
     bool dual_source_blend : 1;
+    bool framebuffer_fetch : 1;
     bool per_sample_shading : 1;
     bool noperspective_interpolation : 1;
     bool supports_texture_buffers : 1;

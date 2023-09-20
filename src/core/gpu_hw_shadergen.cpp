@@ -8,8 +8,9 @@
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool pgxp_depth,
-                                   bool disable_color_perspective, bool supports_dual_source_blend)
-  : ShaderGen(render_api, supports_dual_source_blend), m_resolution_scale(resolution_scale),
+                                   bool disable_color_perspective, bool supports_dual_source_blend,
+                                   bool supports_framebuffer_fetch)
+  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch), m_resolution_scale(resolution_scale),
     m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
     m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective)
@@ -629,22 +630,29 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   }
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode transparency,
-                                                          GPUTextureMode texture_mode, bool dithering, bool interlacing)
+std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode,
+                                                          GPUTransparencyMode transparency, GPUTextureMode texture_mode,
+                                                          bool dithering, bool interlacing)
 {
+  // Shouldn't be using shader blending without fbfetch.
+  DebugAssert(m_supports_framebuffer_fetch || transparency == GPUTransparencyMode::Disabled);
+
   const GPUTextureMode actual_texture_mode = texture_mode & ~GPUTextureMode::RawTextureBit;
   const bool raw_texture = (texture_mode & GPUTextureMode::RawTextureBit) == GPUTextureMode::RawTextureBit;
   const bool textured = (texture_mode != GPUTextureMode::Disabled);
-  const bool use_dual_source =
-    m_supports_dual_source_blend && ((transparency != GPU_HW::BatchRenderMode::TransparencyDisabled &&
-                                      transparency != GPU_HW::BatchRenderMode::OnlyOpaque) ||
-                                     m_texture_filter != GPUTextureFilter::Nearest);
+  const bool use_framebuffer_fetch = (m_supports_framebuffer_fetch && transparency != GPUTransparencyMode::Disabled);
+  const bool use_dual_source = !use_framebuffer_fetch && m_supports_dual_source_blend &&
+                               ((render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
+                                 render_mode != GPU_HW::BatchRenderMode::OnlyOpaque) ||
+                                m_texture_filter != GPUTextureFilter::Nearest);
 
   std::stringstream ss;
   WriteHeader(ss);
-  DefineMacro(ss, "TRANSPARENCY", transparency != GPU_HW::BatchRenderMode::TransparencyDisabled);
-  DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", transparency == GPU_HW::BatchRenderMode::OnlyOpaque);
-  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", transparency == GPU_HW::BatchRenderMode::OnlyTransparent);
+  DefineMacro(ss, "TRANSPARENCY", render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", render_mode == GPU_HW::BatchRenderMode::OnlyOpaque);
+  DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", render_mode == GPU_HW::BatchRenderMode::OnlyTransparent);
+  DefineMacro(ss, "TRANSPARENCY_MODE", static_cast<s32>(transparency));
+  DefineMacro(ss, "SHADER_BLENDING", use_framebuffer_fetch);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
               actual_texture_mode == GPUTextureMode::Palette4Bit || actual_texture_mode == GPUTextureMode::Palette8Bit);
@@ -771,19 +779,19 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
                                 true, use_dual_source ? 2 : 1, !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading(),
-                                false, m_disable_color_perspective);
+                                false, m_disable_color_perspective, use_framebuffer_fetch);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
-                                !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading(), false,
-                                m_disable_color_perspective);
+                                !m_pgxp_depth, UsingMSAA(), UsingPerSampleShading(), false, m_disable_color_perspective,
+                                use_framebuffer_fetch);
     }
   }
   else
   {
     DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, !m_pgxp_depth, UsingMSAA(),
-                              UsingPerSampleShading(), false, m_disable_color_perspective);
+                              UsingPerSampleShading(), false, m_disable_color_perspective, use_framebuffer_fetch);
   }
 
   ss << R"(
@@ -883,7 +891,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 
   // Premultiply alpha so we don't need to use a colour output for it.
   float premultiply_alpha = ialpha;
-  #if TRANSPARENCY
+  #if TRANSPARENCY && !SHADER_BLENDING
     premultiply_alpha = ialpha * (semitransparent ? u_src_alpha_factor : 1.0);
   #endif
 
@@ -897,7 +905,34 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     color = (float3(icolor) * premultiply_alpha) / float3(255.0, 255.0, 255.0);
   #endif
 
-  #if TRANSPARENCY && TEXTURED
+  #if SHADER_BLENDING
+    float4 bg_col = LAST_FRAG_COLOR;
+    float4 fg_col = float4(color, oalpha);
+
+    #if TEXTURE_FILTERING
+      #if TRANSPARENCY_MODE == 0 || TRANSPARENCY_MODE == 3
+        bg_col.rgb /= ialpha;
+      #endif
+      fg_col.rgb *= ialpha;
+    #endif
+
+    o_col0.a = fg_col.a;
+    #if TRANSPARENCY_MODE == 0 // Half BG + Half FG.
+      o_col0.rgb = (bg_col.rgb * 0.5) + (fg_col.rgb * 0.5);
+    #elif TRANSPARENCY_MODE == 1 // BG + FG
+      o_col0.rgb = bg_col.rgb + fg_col.rgb;
+    #elif TRANSPARENCY_MODE == 2 // BG - FG
+      o_col0.rgb = bg_col.rgb - fg_col.rgb;
+    #elif TRANSPARENCY_MODE == 3 // BG + 1/4 FG.
+      o_col0.rgb = bg_col.rgb + (fg_col.rgb * 0.25);
+    #else
+      o_col0.rgb = fg_col.rgb;
+    #endif
+    #if TRANSPARENCY
+      // If pixel isn't marked as semitransparent, replace with previous colour.
+      o_col0 = semitransparent ? o_col0 : fg_col;
+    #endif
+  #elif TRANSPARENCY && TEXTURED
     // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
     if (semitransparent)
     {

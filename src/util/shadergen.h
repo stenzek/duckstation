@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -11,7 +11,7 @@
 class ShaderGen
 {
 public:
-  ShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
+  ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~ShaderGen();
 
   static bool UseGLSLBindingLayout();
@@ -36,6 +36,7 @@ protected:
 #endif
 
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
+  void DefineMacro(std::stringstream& ss, const char* name, s32 value);
   void WriteHeader(std::stringstream& ss);
   void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan);
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
@@ -51,12 +52,13 @@ protected:
                                  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
                                  bool declare_fragcoord = false, u32 num_color_outputs = 1, bool depth_output = false,
                                  bool msaa = false, bool ssaa = false, bool declare_sample_id = false,
-                                 bool noperspective_color = false);
+                                 bool noperspective_color = false, bool framebuffer_fetch = false);
 
   RenderAPI m_render_api;
   bool m_glsl;
   bool m_spirv;
   bool m_supports_dual_source_blend;
+  bool m_supports_framebuffer_fetch;
   bool m_use_glsl_interface_blocks;
   bool m_use_glsl_binding_layout;
   bool m_has_uniform_buffer = false;

@@ -212,6 +212,7 @@ void MetalDevice::SetFeatures()
   }
 
   m_features.dual_source_blend = true;
+  m_features.framebuffer_fetch = false; // TODO
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.supports_texture_buffers = true;

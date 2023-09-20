@@ -8,7 +8,7 @@
 class GPUShaderGen : public ShaderGen
 {
 public:
-  GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend);
+  GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPUShaderGen();
 
   std::string GenerateDisplayVertexShader();

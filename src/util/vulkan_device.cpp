@@ -2194,6 +2194,7 @@ bool VulkanDevice::CheckFeatures()
     m_max_multisamples = 1;
 
   m_features.dual_source_blend = m_device_features.dualSrcBlend; // TODO: Option to disable
+  m_features.framebuffer_fetch = false; // TODO: Option to disable
 
   if (!m_features.dual_source_blend)
     Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
