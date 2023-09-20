@@ -24,6 +24,7 @@
     <ClInclude Include="log.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="make_array.h" />
+    <ClInclude Include="memmap.h" />
     <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="path.h" />
@@ -55,6 +56,7 @@
     <ClCompile Include="image.cpp" />
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
+    <ClCompile Include="memmap.cpp" />
     <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />

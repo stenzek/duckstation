@@ -26,6 +26,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/make_array.h"
+#include "common/memmap.h"
 
 #include <cstdio>
 #include <tuple>
@@ -99,11 +100,12 @@ union MEMCTRL
 } // namespace
 
 std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
-static u32 s_ram_code_page_count = 0;
-u8* g_ram = nullptr; // 2MB RAM
+u8* g_ram = nullptr;
 u32 g_ram_size = 0;
 u32 g_ram_mask = 0;
-u8 g_bios[BIOS_SIZE]{}; // 512K BIOS ROM
+u8 g_bios[BIOS_SIZE]{};
+
+static void* s_ram_handle = nullptr;
 
 static std::array<TickCount, 3> s_exp1_access_time = {};
 static std::array<TickCount, 3> s_exp2_access_time = {};
@@ -118,14 +120,11 @@ static u32 s_ram_size_reg = 0;
 
 static std::string s_tty_line_buffer;
 
-static Common::MemoryArena s_memory_arena;
-
 static CPUFastmemMode s_fastmem_mode = CPUFastmemMode::Disabled;
 
 #ifdef ENABLE_MMAP_FASTMEM
-static u8* s_fastmem_base = nullptr;
-static std::vector<Common::MemoryArena::View> s_fastmem_ram_views;
-static std::vector<Common::MemoryArena::View> s_fastmem_reserved_views;
+static SharedMemoryMappingArea s_fastmem_arena;
+static std::vector<std::pair<u8*, size_t>> s_fastmem_ram_views;
 #endif
 
 static u8** s_fastmem_lut = nullptr;
@@ -133,14 +132,10 @@ static constexpr auto s_fastmem_ram_mirrors =
   make_array(0x00000000u, 0x00200000u, 0x00400000u, 0x00600000u, 0x80000000u, 0x80200000u, 0x80400000u, 0x80600000u,
              0xA0000000u, 0xA0200000u, 0xA0400000u, 0xA0600000u);
 
-static u32 FastmemAddressToLUTPageIndex(u32 address);
-static void SetLUTFastmemPage(u32 address, u8* ptr, bool writable);
+static void SetRAMSize(bool enable_8mb_ram);
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
-
-static bool AllocateMemory(bool enable_8mb_ram);
-static void ReleaseMemory();
 
 static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 } // namespace Bus
@@ -157,32 +152,90 @@ static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 #define FIXUP_WORD_WRITE_VALUE(size, offset, value)                                                                    \
   ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset)&3u) * 8)))
 
-bool Bus::Initialize()
+bool Bus::AllocateMemory()
 {
-  if (!AllocateMemory(g_settings.enable_8mb_ram))
+  s_ram_handle = MemMap::CreateSharedMemory("duckstation_ram", RAM_8MB_SIZE);
+  if (!s_ram_handle)
   {
     Host::ReportErrorAsync("Error", "Failed to allocate memory");
     return false;
   }
 
+  g_ram = static_cast<u8*>(MemMap::MapSharedMemory(s_ram_handle, 0, nullptr, RAM_8MB_SIZE, PageProtect::ReadWrite));
+  if (!g_ram)
+  {
+    Host::ReportErrorAsync("Error", "Failed to map memory");
+    ReleaseMemory();
+    return false;
+  }
+
+  Log_InfoPrintf("RAM is mapped at %p.", g_ram);
+
+#ifdef ENABLE_MMAP_FASTMEM
+  if (!s_fastmem_arena.Create(FASTMEM_ARENA_SIZE))
+  {
+    // TODO: maybe make this non-fatal?
+    Host::ReportErrorAsync("Error", "Failed to create fastmem arena");
+    ReleaseMemory();
+    return false;
+  }
+
+  Log_InfoPrintf("Fastmem base: %p", s_fastmem_arena.BasePointer());
+#endif
+  return true;
+}
+
+void Bus::ReleaseMemory()
+{
+#ifdef ENABLE_MMAP_FASTMEM
+  DebugAssert(s_fastmem_ram_views.empty());
+  s_fastmem_arena.Destroy();
+#endif
+
+  std::free(s_fastmem_lut);
+  s_fastmem_lut = nullptr;
+
+  if (g_ram)
+  {
+    MemMap::UnmapSharedMemory(g_ram, RAM_8MB_SIZE);
+    g_ram = nullptr;
+  }
+
+  if (s_ram_handle)
+  {
+    MemMap::DestroySharedMemory(s_ram_handle);
+    s_ram_handle = nullptr;
+  }
+}
+
+bool Bus::Initialize()
+{
+  SetRAMSize(g_settings.enable_8mb_ram);
   Reset();
   return true;
 }
 
+void Bus::SetRAMSize(bool enable_8mb_ram)
+{
+  g_ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
+  g_ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
+
+  Exports::RAM = reinterpret_cast<uintptr_t>(g_ram);
+  Exports::RAM_SIZE = g_ram_size;
+  Exports::RAM_MASK = g_ram_mask;
+}
+
 void Bus::Shutdown()
 {
-  std::free(s_fastmem_lut);
-  s_fastmem_lut = nullptr;
-
-#ifdef ENABLE_MMAP_FASTMEM
-  s_fastmem_base = nullptr;
-  s_fastmem_ram_views.clear();
-#endif
-
+  UpdateFastmemViews(CPUFastmemMode::Disabled);
   CPU::g_state.fastmem_base = nullptr;
-  s_fastmem_mode = CPUFastmemMode::Disabled;
 
-  ReleaseMemory();
+  g_ram_mask = 0;
+  g_ram_size = 0;
+
+  Exports::RAM = 0;
+  Exports::RAM_SIZE = 0;
+  Exports::RAM_MASK = 0;
 }
 
 void Bus::Reset()
@@ -238,10 +291,7 @@ bool Bus::DoState(StateWrapper& sw)
   if (ram_size != g_ram_size)
   {
     const bool using_8mb_ram = (ram_size == RAM_8MB_SIZE);
-    ReleaseMemory();
-    if (!AllocateMemory(using_8mb_ram))
-      return false;
-
+    SetRAMSize(using_8mb_ram);
     UpdateFastmemViews(s_fastmem_mode);
     CPU::UpdateFastmemBase();
   }
@@ -326,64 +376,6 @@ void Bus::RecalculateMemoryTimings()
                   s_spu_access_time[2] + 1);
 }
 
-bool Bus::AllocateMemory(bool enable_8mb_ram)
-{
-  if (!s_memory_arena.Create(MEMORY_ARENA_SIZE, true, false))
-  {
-    Log_ErrorPrint("Failed to create memory arena");
-    return false;
-  }
-
-  // Create the base views.
-  const u32 ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
-  const u32 ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
-  g_ram = static_cast<u8*>(s_memory_arena.CreateViewPtr(MEMORY_ARENA_RAM_OFFSET, ram_size, true, false));
-  if (!g_ram)
-  {
-    Log_ErrorPrintf("Failed to create base views of memory (%u bytes RAM)", ram_size);
-    return false;
-  }
-
-  g_ram_mask = ram_mask;
-  g_ram_size = ram_size;
-  s_ram_code_page_count = enable_8mb_ram ? RAM_8MB_CODE_PAGE_COUNT : RAM_2MB_CODE_PAGE_COUNT;
-
-  Exports::RAM = reinterpret_cast<uintptr_t>(g_ram);
-  Exports::RAM_SIZE = g_ram_size;
-  Exports::RAM_MASK = g_ram_mask;
-
-  Log_InfoPrintf("RAM is %u bytes at %p", g_ram_size, g_ram);
-  return true;
-}
-
-void Bus::ReleaseMemory()
-{
-  if (g_ram)
-  {
-    s_memory_arena.ReleaseViewPtr(g_ram, g_ram_size);
-    g_ram = nullptr;
-    g_ram_mask = 0;
-    g_ram_size = 0;
-
-    Exports::RAM = 0;
-    Exports::RAM_SIZE = 0;
-    Exports::RAM_MASK = 0;
-  }
-
-  s_memory_arena.Destroy();
-}
-
-ALWAYS_INLINE u32 Bus::FastmemAddressToLUTPageIndex(u32 address)
-{
-  return address >> 12;
-}
-
-ALWAYS_INLINE_RELEASE void Bus::SetLUTFastmemPage(u32 address, u8* ptr, bool writable)
-{
-  s_fastmem_lut[FastmemAddressToLUTPageIndex(address)] = ptr;
-  s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + FastmemAddressToLUTPageIndex(address)] = writable ? ptr : nullptr;
-}
-
 CPUFastmemMode Bus::GetFastmemMode()
 {
   return s_fastmem_mode;
@@ -393,7 +385,7 @@ u8* Bus::GetFastmemBase()
 {
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
-    return s_fastmem_base;
+    return s_fastmem_arena.BasePointer();
 #endif
   if (s_fastmem_mode == CPUFastmemMode::LUT)
     return reinterpret_cast<u8*>(s_fastmem_lut);
@@ -406,115 +398,75 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
 #ifndef ENABLE_MMAP_FASTMEM
   Assert(mode != CPUFastmemMode::MMap);
 #else
+  for (const auto& it : s_fastmem_ram_views)
+    s_fastmem_arena.Unmap(it.first, it.second);
   s_fastmem_ram_views.clear();
-  s_fastmem_reserved_views.clear();
 #endif
 
   s_fastmem_mode = mode;
   if (mode == CPUFastmemMode::Disabled)
-  {
-#ifdef ENABLE_MMAP_FASTMEM
-    s_fastmem_base = nullptr;
-#endif
-    std::free(s_fastmem_lut);
-    s_fastmem_lut = nullptr;
     return;
-  }
 
 #ifdef ENABLE_MMAP_FASTMEM
   if (mode == CPUFastmemMode::MMap)
   {
-    std::free(s_fastmem_lut);
-    s_fastmem_lut = nullptr;
-
-    if (!s_fastmem_base)
-    {
-      s_fastmem_base = static_cast<u8*>(s_memory_arena.FindBaseAddressForMapping(FASTMEM_REGION_SIZE));
-      if (!s_fastmem_base)
-      {
-        Log_ErrorPrint("Failed to find base address for fastmem");
-        return;
-      }
-
-      Log_InfoPrintf("Fastmem base: %p", s_fastmem_base);
-    }
-
     auto MapRAM = [](u32 base_address) {
-      u8* map_address = s_fastmem_base + base_address;
-      auto view = s_memory_arena.CreateView(MEMORY_ARENA_RAM_OFFSET, g_ram_size, true, false, map_address);
-      if (!view)
+      u8* map_address = s_fastmem_arena.BasePointer() + base_address;
+      if (!s_fastmem_arena.Map(s_ram_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite))
       {
         Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, g_ram_size);
         return;
       }
 
       // mark all pages with code as non-writable
-      for (u32 i = 0; i < s_ram_code_page_count; i++)
+      for (u32 i = 0; i < static_cast<u32>(g_ram_code_bits.size()); i++)
       {
         if (g_ram_code_bits[i])
         {
           u8* page_address = map_address + (i * HOST_PAGE_SIZE);
-          if (!s_memory_arena.SetPageProtection(page_address, HOST_PAGE_SIZE, true, false, false))
+          if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, PageProtect::ReadOnly))
           {
             Log_ErrorPrintf("Failed to write-protect code page at %p", page_address);
+            s_fastmem_arena.Unmap(map_address, g_ram_size);
             return;
           }
         }
       }
 
-      s_fastmem_ram_views.push_back(std::move(view.value()));
-    };
-
-    auto ReserveRegion = [](u32 start_address, u32 end_address_inclusive) {
-    // We don't reserve memory regions on Android because the app could be subject to address space size limitations.
-#ifndef __ANDROID__
-      Assert(end_address_inclusive >= start_address);
-      u8* map_address = s_fastmem_base + start_address;
-      auto view = s_memory_arena.CreateReservedView(end_address_inclusive - start_address + 1, map_address);
-      if (!view)
-      {
-        Log_ErrorPrintf("Failed to map reserved region %p (size 0x%08X)", map_address,
-                        end_address_inclusive - start_address + 1);
-        return;
-      }
-
-      s_fastmem_reserved_views.push_back(std::move(view.value()));
-#endif
+      s_fastmem_ram_views.emplace_back(map_address, g_ram_size);
     };
 
     // KUSEG - cached
     MapRAM(0x00000000);
-    ReserveRegion(0x00000000 + g_ram_size, 0x80000000 - 1);
 
     // KSEG0 - cached
     MapRAM(0x80000000);
-    ReserveRegion(0x80000000 + g_ram_size, 0xA0000000 - 1);
 
     // KSEG1 - uncached
     MapRAM(0xA0000000);
-    ReserveRegion(0xA0000000 + g_ram_size, 0xFFFFFFFF);
 
     return;
   }
 #endif
 
-#ifdef ENABLE_MMAP_FASTMEM
-  s_fastmem_base = nullptr;
-#endif
-
   if (!s_fastmem_lut)
   {
-    s_fastmem_lut = static_cast<u8**>(std::calloc(FASTMEM_LUT_NUM_SLOTS, sizeof(u8*)));
+    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_NUM_SLOTS));
     Assert(s_fastmem_lut);
 
     Log_InfoPrintf("Fastmem base (software): %p", s_fastmem_lut);
   }
 
+  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_NUM_SLOTS);
+
   auto MapRAM = [](u32 base_address) {
-    for (u32 address = 0; address < g_ram_size; address += HOST_PAGE_SIZE)
+    u8* ram_ptr = g_ram;
+    for (u32 address = 0; address < g_ram_size; address += FASTMEM_LUT_PAGE_SIZE)
     {
-      SetLUTFastmemPage(base_address + address, &g_ram[address],
-                        !g_ram_code_bits[FastmemAddressToLUTPageIndex(address)]);
+      const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
+      s_fastmem_lut[lut_index] = ram_ptr;
+      s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + lut_index] = g_ram_code_bits[address >> HOST_PAGE_SHIFT] ? nullptr : ram_ptr;
+      ram_ptr += FASTMEM_LUT_PAGE_SIZE;
     }
   };
 
@@ -591,11 +543,13 @@ void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
   {
+    const PageProtect protect = writable ? PageProtect::ReadWrite : PageProtect::ReadOnly;
+
     // unprotect fastmem pages
-    for (const auto& view : s_fastmem_ram_views)
+    for (const auto& it : s_fastmem_ram_views)
     {
-      u8* page_address = static_cast<u8*>(view.GetBasePointer()) + (page_index * HOST_PAGE_SIZE);
-      if (!s_memory_arena.SetPageProtection(page_address, HOST_PAGE_SIZE, true, writable, false))
+      u8* page_address = it.first + (page_index * HOST_PAGE_SIZE);
+      if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect))
       {
         Log_ErrorPrintf("Failed to %s code page %u (0x%08X) @ %p", writable ? "unprotect" : "protect", page_index,
                         page_index * static_cast<u32>(HOST_PAGE_SIZE), page_address);
@@ -609,9 +563,19 @@ void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
   if (s_fastmem_mode == CPUFastmemMode::LUT)
   {
     // mirrors...
-    const u32 ram_address = page_index * HOST_PAGE_SIZE;
+    const u32 code_addr = page_index << HOST_PAGE_SHIFT;
+    u8* code_ptr = &g_ram[code_addr];
     for (u32 mirror_start : s_fastmem_ram_mirrors)
-      SetLUTFastmemPage(mirror_start + ram_address, &g_ram[ram_address], writable);
+    {
+      u32 ram_offset = code_addr;
+      u8* ram_ptr = code_ptr;
+      for (u32 i = 0; i < FASTMEM_LUT_PAGES_PER_CODE_PAGE; i++)
+      {
+        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + ((mirror_start + ram_offset) >> FASTMEM_LUT_PAGE_SHIFT)] = ram_ptr;
+        ram_offset += FASTMEM_LUT_PAGE_SIZE;
+        ram_ptr += FASTMEM_LUT_PAGE_SIZE;
+      }
+    }
   }
 }
 
@@ -623,11 +587,11 @@ void Bus::ClearRAMCodePageFlags()
   if (s_fastmem_mode == CPUFastmemMode::MMap)
   {
     // unprotect fastmem pages
-    for (const auto& view : s_fastmem_ram_views)
+    for (const auto& it : s_fastmem_ram_views)
     {
-      if (!s_memory_arena.SetPageProtection(view.GetBasePointer(), view.GetMappingSize(), true, true, false))
+      if (!MemMap::MemProtect(it.first, it.second, PageProtect::ReadWrite))
       {
-        Log_ErrorPrintf("Failed to unprotect code pages for fastmem view @ %p", view.GetBasePointer());
+        Log_ErrorPrintf("Failed to unprotect code pages for fastmem view @ %p", it.first);
       }
     }
   }
@@ -635,11 +599,19 @@ void Bus::ClearRAMCodePageFlags()
 
   if (s_fastmem_mode == CPUFastmemMode::LUT)
   {
-    for (u32 i = 0; i < s_ram_code_page_count; i++)
+    for (u32 i = 0; i < static_cast<u32>(g_ram_code_bits.size()); i++)
     {
-      const u32 addr = (i * HOST_PAGE_SIZE);
+      const u32 code_addr = (i * HOST_PAGE_SIZE);
       for (u32 mirror_start : s_fastmem_ram_mirrors)
-        SetLUTFastmemPage(mirror_start + addr, &g_ram[addr], true);
+      {
+        u32 ram_offset = code_addr;
+        for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
+        {
+          s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + ((mirror_start + ram_offset) >> FASTMEM_LUT_PAGE_SHIFT)] =
+            &g_ram[ram_offset];
+          ram_offset += FASTMEM_LUT_PAGE_SIZE;
+        }
+      }
     }
   }
 }

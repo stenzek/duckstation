@@ -436,7 +436,9 @@ struct Settings
 
 #ifdef ENABLE_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
-#ifdef ENABLE_MMAP_FASTMEM
+
+  // LUT still ends up faster on Apple Silicon for now, because of 16K pages.
+#if defined(ENABLE_MMAP_FASTMEM) && (!defined(__APPLE__) || !defined(__aarch64__))
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::MMap;
 #else
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;

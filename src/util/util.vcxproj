@@ -58,7 +58,6 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="pbp_types.h" />
-    <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="pch.h" />
@@ -174,7 +173,6 @@
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="shiftjis.cpp" />
-    <ClCompile Include="memory_arena.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="spirv_compiler.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>

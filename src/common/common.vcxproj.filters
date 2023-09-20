@@ -43,6 +43,7 @@
     <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="sha1_digest.h" />
     <ClInclude Include="fastjmp.h" />
+    <ClInclude Include="memmap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="string.cpp" />
@@ -68,6 +69,7 @@
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="fastjmp.cpp" />
+    <ClCompile Include="memmap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

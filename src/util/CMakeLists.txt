@@ -43,8 +43,6 @@ add_library(util
   iso_reader.h
   jit_code_buffer.cpp
   jit_code_buffer.h
-  memory_arena.cpp
-  memory_arena.h
   page_fault_handler.cpp
   page_fault_handler.h
   platform_misc.h

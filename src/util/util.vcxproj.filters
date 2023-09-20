@@ -11,7 +11,6 @@
     <ClInclude Include="wav_writer.h" />
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="shiftjis.h" />
-    <ClInclude Include="memory_arena.h" />
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="pbp_types.h" />
     <ClInclude Include="cue_parser.h" />
@@ -87,7 +86,6 @@
     <ClCompile Include="cd_image_hasher.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="shiftjis.cpp" />
-    <ClCompile Include="memory_arena.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />

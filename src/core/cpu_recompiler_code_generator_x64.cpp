@@ -1877,8 +1877,8 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
     // TODO: We could mask the LSBs here for unaligned protection.
     EmitCopyValue(RARG1, address);
     m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), 12);
-    m_emit->and_(GetHostReg32(RARG2), HOST_PAGE_OFFSET_MASK);
+    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
     m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
 
     switch (size)
@@ -1985,8 +1985,8 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     // TODO: We could mask the LSBs here for unaligned protection.
     EmitCopyValue(RARG1, address);
     m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), 12);
-    m_emit->and_(GetHostReg32(RARG2), HOST_PAGE_OFFSET_MASK);
+    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
     m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
     bpi.host_pc = GetCurrentNearCodePointer();
 
@@ -2248,8 +2248,8 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     // TODO: We could mask the LSBs here for unaligned protection.
     EmitCopyValue(RARG1, address);
     m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), 12);
-    m_emit->and_(GetHostReg32(RARG2), HOST_PAGE_OFFSET_MASK);
+    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
     m_emit->mov(GetHostReg64(RARG1),
                 m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8 + (Bus::FASTMEM_LUT_NUM_PAGES * 8)]);
     bpi.host_pc = GetCurrentNearCodePointer();

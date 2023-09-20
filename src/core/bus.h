@@ -3,7 +3,6 @@
 
 #pragma once
 #include "common/bitfield.h"
-#include "util/memory_arena.h"
 #include "types.h"
 #include <array>
 #include <bitset>
@@ -81,28 +80,25 @@ enum : TickCount
   RAM_READ_TICKS = 6
 };
 
-enum : size_t
-{
-  // Our memory arena contains storage for RAM.
-  MEMORY_ARENA_SIZE = RAM_8MB_SIZE,
-
-  // Offsets within the memory arena.
-  MEMORY_ARENA_RAM_OFFSET = 0,
-
-#ifdef ENABLE_MMAP_FASTMEM
-  // Fastmem region size is 4GB to cover the entire 32-bit address space.
-  FASTMEM_REGION_SIZE = UINT64_C(0x100000000),
-#endif
-};
-
 enum : u32
 {
   RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
   RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
 
+  FASTMEM_LUT_PAGE_SIZE = 4096,
+  FASTMEM_LUT_PAGE_MASK = FASTMEM_LUT_PAGE_SIZE - 1,
+  FASTMEM_LUT_PAGE_SHIFT = 12,
+  FASTMEM_LUT_PAGES_PER_CODE_PAGE = HOST_PAGE_SIZE / FASTMEM_LUT_PAGE_SIZE,
+
   FASTMEM_LUT_NUM_PAGES = 0x100000, // 0x100000000 >> 12
   FASTMEM_LUT_NUM_SLOTS = FASTMEM_LUT_NUM_PAGES * 2,
 };
+
+// Fastmem region size is 4GB to cover the entire 32-bit address space.
+static constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
+
+bool AllocateMemory();
+void ReleaseMemory();
 
 bool Initialize();
 void Shutdown();

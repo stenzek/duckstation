@@ -88,6 +88,17 @@ using u32 = uint32_t;
 using s64 = int64_t;
 using u64 = uint64_t;
 
+// Host page sizes.
+#if defined(__APPLE__) && defined(__aarch64__)
+static constexpr u32 HOST_PAGE_SIZE = 0x4000;
+static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+static constexpr u32 HOST_PAGE_SHIFT = 14;
+#else
+static constexpr u32 HOST_PAGE_SIZE = 0x1000;
+static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+static constexpr u32 HOST_PAGE_SHIFT = 12;
+#endif
+
 // Enable use of static_assert in constexpr if
 template<class T>
 struct dependent_false : std::false_type

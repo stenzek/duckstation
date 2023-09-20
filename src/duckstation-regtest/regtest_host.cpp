@@ -566,6 +566,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  System::Internal::ProcessStartup();
   RegTestHost::HookSignals();
 
   int result = -1;
@@ -594,5 +595,6 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
+  System::Internal::ProcessShutdown();
   return result;
 }

@@ -29,6 +29,8 @@ add_library(common
   log.cpp
   log.h
   make_array.h
+  memmap.cpp
+  memmap.h
   md5_digest.cpp
   md5_digest.h
   memory_settings_interface.cpp
@@ -70,7 +72,7 @@ if(WIN32)
     thirdparty/StackWalker.h
     windows_headers.h
   )
-  target_link_libraries(common PRIVATE winhttp.lib)
+  target_link_libraries(common PRIVATE winhttp.lib OneCore.lib)
 endif()
 
 if(MSVC)

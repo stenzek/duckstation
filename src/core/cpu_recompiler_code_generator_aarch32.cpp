@@ -1209,8 +1209,8 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
     address_reg = address.host_reg;
   }
 
-  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), 12);
-  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), HOST_PAGE_OFFSET_MASK);
+  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
   m_emit->ldr(GetHostReg32(RARG1),
               a32::MemOperand(GetHostReg32(fastmem_base), GetHostReg32(RARG1), a32::LSL, 2)); // pointer load
 
@@ -1257,8 +1257,8 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     address_reg = address.host_reg;
   }
 
-  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), 12);
-  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), HOST_PAGE_OFFSET_MASK);
+  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
   m_emit->ldr(GetHostReg32(RARG1),
               a32::MemOperand(GetHostReg32(fastmem_base), GetHostReg32(RARG1), a32::LSL, 2)); // pointer load
 
@@ -1417,8 +1417,8 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
 
   // TODO: if this gets backpatched, these instructions are wasted
 
-  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), 12);
-  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), HOST_PAGE_OFFSET_MASK);
+  m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
   m_emit->ldr(GetHostReg32(RARG1),
               a32::MemOperand(GetHostReg32(fastmem_base), GetHostReg32(RARG1), a32::LSL, 2)); // pointer load
 

@@ -242,6 +242,9 @@ static TinyString GetTimestampStringForFileName()
 
 void System::Internal::ProcessStartup()
 {
+  if (!Bus::AllocateMemory())
+    Panic("Failed to allocate memory for emulated bus.");
+
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
@@ -262,6 +265,8 @@ void System::Internal::ProcessShutdown()
   Achievements::Shutdown(false);
 
   InputManager::CloseSources();
+
+  Bus::ReleaseMemory();
 }
 
 void System::Internal::IdlePollUpdate()

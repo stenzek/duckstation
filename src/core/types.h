@@ -202,9 +202,3 @@ enum class CPUFastmemMode
   LUT,
   Count
 };
-
-enum : size_t
-{
-  HOST_PAGE_SIZE = 4096,
-  HOST_PAGE_OFFSET_MASK = HOST_PAGE_SIZE - 1,
-};
