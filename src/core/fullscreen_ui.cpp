@@ -96,9 +96,9 @@ using ImGuiFullscreen::UIPrimaryLightColor;
 using ImGuiFullscreen::UIPrimaryLineColor;
 using ImGuiFullscreen::UIPrimaryTextColor;
 using ImGuiFullscreen::UISecondaryColor;
-using ImGuiFullscreen::UISecondaryWeakColor;
 using ImGuiFullscreen::UISecondaryStrongColor;
 using ImGuiFullscreen::UISecondaryTextColor;
+using ImGuiFullscreen::UISecondaryWeakColor;
 using ImGuiFullscreen::UITextHighlightColor;
 
 using ImGuiFullscreen::ActiveButton;
@@ -1114,9 +1114,8 @@ void FullscreenUI::DoToggleAnalogMode()
     if (!cinfo)
       continue;
 
-    for (u32 j = 0; j < cinfo->num_bindings; j++)
+    for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
-      const Controller::ControllerBindingInfo& bi = cinfo->bindings[j];
       if (std::strcmp(bi.name, "Analog") == 0)
       {
         ctrl->SetBindState(bi.bind_index, 1.0f);
@@ -3314,7 +3313,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                        });
     }
 
-    if (!ci || ci->num_bindings == 0)
+    if (!ci || ci->bindings.empty() == 0)
       continue;
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_MAGIC, "Automatic Mapping"),
@@ -3323,11 +3322,8 @@ void FullscreenUI::DrawControllerSettingsPage()
       StartAutomaticBinding(global_slot);
     }
 
-    for (u32 i = 0; i < ci->num_bindings; i++)
-    {
-      const Controller::ControllerBindingInfo& bi = ci->bindings[i];
+    for (const Controller::ControllerBindingInfo& bi : ci->bindings)
       DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, bi.display_name, true);
-    }
 
     if (mtap_enabled[mtap_port])
     {
@@ -3354,9 +3350,8 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
         ImGuiFullscreen::ChoiceDialogOptions options;
-        for (u32 i = 0; i < ci->num_bindings; i++)
+        for (const Controller::ControllerBindingInfo& bi : ci->bindings)
         {
-          const Controller::ControllerBindingInfo& bi = ci->bindings[i];
           if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
               bi.type != InputBindingInfo::Type::HalfAxis)
           {
@@ -3372,9 +3367,8 @@ void FullscreenUI::DrawControllerSettingsPage()
           [game_settings, section, macro_index, ci](s32 index, const std::string& title, bool checked) {
             // convert display name back to bind name
             std::string_view to_modify;
-            for (u32 j = 0; j < ci->num_bindings; j++)
+            for (const Controller::ControllerBindingInfo& bi : ci->bindings)
             {
-              const Controller::ControllerBindingInfo& bi = ci->bindings[j];
               if (bi.display_name == title)
               {
                 to_modify = bi.name;
@@ -3458,7 +3452,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       ImGui::PopFont();
     }
 
-    if (ci->num_settings > 0)
+    if (!ci->settings.empty())
     {
       if (mtap_enabled[mtap_port])
       {
@@ -3471,9 +3465,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                                          mtap_port + 1));
       }
 
-      for (u32 i = 0; i < ci->num_settings; i++)
+      for (const SettingInfo& si : ci->settings)
       {
-        const SettingInfo& si = ci->settings[i];
         TinyString title;
         title.Fmt(ICON_FA_COG "{}", si.display_name);
         switch (si.type)
@@ -4715,8 +4708,7 @@ void FullscreenUI::DrawPauseMenu()
         subtitle_pos.x -= rp_height;
         subtitle_pos.y -= rp_height;
 
-        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(),
-                         wrap_width);
+        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(), wrap_width);
       }
     }
 

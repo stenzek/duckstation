@@ -875,9 +875,7 @@ const Controller::ControllerInfo AnalogController::INFO = {ControllerType::Analo
                                                            "AnalogController",
                                                            TRANSLATE_NOOP("ControllerType", "Analog Controller"),
                                                            s_binding_info,
-                                                           countof(s_binding_info),
                                                            s_settings,
-                                                           countof(s_settings),
                                                            Controller::VibrationCapabilities::LargeSmallMotors};
 
 void AnalogController::LoadSettings(SettingsInterface& si, const char* section)

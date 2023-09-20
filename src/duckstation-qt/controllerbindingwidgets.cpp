@@ -98,8 +98,8 @@ void ControllerBindingWidget::populateWidgets()
   }
 
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(m_controller_type);
-  const bool has_settings = (cinfo && cinfo->num_settings > 0);
-  const bool has_macros = (cinfo && cinfo->num_bindings > 0);
+  const bool has_settings = (cinfo && !cinfo->settings.empty());
+  const bool has_macros = (cinfo && !cinfo->bindings.empty());
   m_ui.settings->setEnabled(has_settings);
   m_ui.macros->setEnabled(has_macros);
 
@@ -360,20 +360,19 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
   for (const std::string_view& button : buttons_split)
   {
-    for (u32 i = 0; i < cinfo->num_bindings; i++)
+    for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
-      if (button == cinfo->bindings[i].name)
+      if (button == bi.name)
       {
-        m_binds.push_back(&cinfo->bindings[i]);
+        m_binds.push_back(&bi);
         break;
       }
     }
   }
 
   // populate list view
-  for (u32 i = 0; i < cinfo->num_bindings; i++)
+  for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
   {
-    const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
     if (bi.type == InputBindingInfo::Type::Motor)
       continue;
 
@@ -455,9 +454,9 @@ void ControllerMacroEditWidget::updateBinds()
     return;
 
   std::vector<const Controller::ControllerBindingInfo*> new_binds;
-  for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
+  u32 bind_index = 0;
+  for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
   {
-    const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
     if (bi.type == InputBindingInfo::Type::Motor)
       continue;
 
@@ -471,7 +470,7 @@ void ControllerMacroEditWidget::updateBinds()
     }
 
     if (item->checkState() == Qt::Checked)
-      new_binds.push_back(&cinfo->bindings[i]);
+      new_binds.push_back(&bi);
   }
   if (m_binds == new_binds)
     return;
@@ -502,7 +501,7 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
   : QWidget(parent), m_parent(parent)
 {
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(parent->getControllerType());
-  if (!cinfo || cinfo->num_settings == 0)
+  if (!cinfo || cinfo->settings.empty())
     return;
 
   QGroupBox* gbox = new QGroupBox(tr("%1 Settings").arg(qApp->translate("ControllerType", cinfo->display_name)), this);
@@ -534,9 +533,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
   SettingsInterface* sif = parent->getDialog()->getProfileSettingsInterface();
   int current_row = 0;
 
-  for (u32 i = 0; i < cinfo->num_settings; i++)
+  for (const SettingInfo& si : cinfo->settings)
   {
-    const SettingInfo& si = cinfo->settings[i];
     std::string key_name = si.name;
 
     switch (si.type)
@@ -658,12 +656,11 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 void ControllerCustomSettingsWidget::restoreDefaults()
 {
   const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(m_parent->getControllerType());
-  if (!cinfo || cinfo->num_settings == 0)
+  if (!cinfo || cinfo->settings.empty())
     return;
 
-  for (u32 i = 0; i < cinfo->num_settings; i++)
+  for (const SettingInfo& si : cinfo->settings)
   {
-    const SettingInfo& si = cinfo->settings[i];
     const QString key(QString::fromStdString(si.name));
 
     switch (si.type)
@@ -748,9 +745,8 @@ void ControllerBindingWidget_Base::initBindingWidgets()
     return;
 
   const std::string& config_section = getConfigSection();
-  for (u32 i = 0; i < cinfo->num_bindings; i++)
+  for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
   {
-    const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
         bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer)
     {

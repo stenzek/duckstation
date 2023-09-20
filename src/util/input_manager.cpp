@@ -698,9 +698,8 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 void InputManager::AddPadBindings(SettingsInterface& si, const std::string& section, u32 pad_index,
                                   const Controller::ControllerInfo* cinfo)
 {
-  for (u32 i = 0; i < cinfo->num_bindings; i++)
+  for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
   {
-    const Controller::ControllerBindingInfo& bi = cinfo->bindings[i];
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
 
     switch (bi.type)
@@ -1170,8 +1169,8 @@ void InputManager::ClearPortBindings(SettingsInterface& si, u32 port)
   if (!info)
     return;
 
-  for (u32 i = 0; i < info->num_bindings; i++)
-    si.DeleteValue(section.c_str(), info->bindings[i].name);
+  for (const Controller::ControllerBindingInfo& bi : info->bindings)
+    si.DeleteValue(section.c_str(), bi.name);
 }
 
 void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
@@ -1201,11 +1200,8 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
     if (copy_pad_bindings)
     {
-      for (u32 i = 0; i < info->num_bindings; i++)
-      {
-        const Controller::ControllerBindingInfo& bi = info->bindings[i];
+      for (const Controller::ControllerBindingInfo& bi : info->bindings)
         dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
-      }
 
       for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
       {
@@ -1217,9 +1213,8 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
     if (copy_pad_config)
     {
-      for (u32 i = 0; i < info->num_settings; i++)
+      for (const SettingInfo& csi : info->settings)
       {
-        const SettingInfo& csi = info->settings[i];
         switch (csi.type)
         {
           case SettingInfo::Type::Boolean:
@@ -1289,9 +1284,8 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
     return false;
 
   u32 num_mappings = 0;
-  for (u32 i = 0; i < info->num_bindings; i++)
+  for (const Controller::ControllerBindingInfo& bi : info->bindings)
   {
-    const Controller::ControllerBindingInfo& bi = info->bindings[i];
     if (bi.generic_mapping == GenericInputBinding::Unknown)
       continue;
 
@@ -1464,7 +1458,7 @@ void InputManager::LoadMacroButtonConfig(SettingsInterface& si, const std::strin
                                          const Controller::ControllerInfo* cinfo)
 {
   s_macro_buttons[pad] = {};
-  if (cinfo->num_bindings == 0)
+  if (cinfo->bindings.empty())
     return;
 
   for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
@@ -1483,11 +1477,11 @@ void InputManager::LoadMacroButtonConfig(SettingsInterface& si, const std::strin
     for (const std::string_view& button : buttons_split)
     {
       const Controller::ControllerBindingInfo* binding = nullptr;
-      for (u32 j = 0; j < cinfo->num_bindings; j++)
+      for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
       {
-        if (button == cinfo->bindings[j].name)
+        if (button == bi.name)
         {
-          binding = &cinfo->bindings[j];
+          binding = &bi;
           break;
         }
       }

@@ -15,10 +15,8 @@
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
                                                        TRANSLATE_NOOP("ControllerType", "Not Connected"),
-                                                       nullptr,
-                                                       0,
-                                                       nullptr,
-                                                       0,
+                                                       {},
+                                                       {},
                                                        Controller::VibrationCapabilities::NoVibration};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
@@ -144,53 +142,13 @@ std::vector<std::pair<std::string, std::string>> Controller::GetControllerTypeNa
   return ret;
 }
 
-std::vector<std::string> Controller::GetControllerBinds(const std::string_view& type)
-{
-  std::vector<std::string> ret;
-
-  const ControllerInfo* info = GetControllerInfo(type);
-  if (info)
-  {
-    for (u32 i = 0; i < info->num_bindings; i++)
-    {
-      const ControllerBindingInfo& bi = info->bindings[i];
-      if (bi.type == InputBindingInfo::Type::Unknown || bi.type == InputBindingInfo::Type::Motor)
-        continue;
-
-      ret.emplace_back(info->bindings[i].name);
-    }
-  }
-
-  return ret;
-}
-
-std::vector<std::string> Controller::GetControllerBinds(ControllerType type)
-{
-  std::vector<std::string> ret;
-
-  const ControllerInfo* info = GetControllerInfo(type);
-  if (info)
-  {
-    for (u32 i = 0; i < info->num_bindings; i++)
-    {
-      const ControllerBindingInfo& bi = info->bindings[i];
-      if (bi.type == InputBindingInfo::Type::Unknown || bi.type == InputBindingInfo::Type::Motor)
-        continue;
-
-      ret.emplace_back(info->bindings[i].name);
-    }
-  }
-
-  return ret;
-}
-
 std::optional<u32> Controller::GetBindIndex(ControllerType type, const std::string_view& bind_name)
 {
   const ControllerInfo* info = GetControllerInfo(type);
   if (!info)
     return std::nullopt;
 
-  for (u32 i = 0; i < info->num_bindings; i++)
+  for (u32 i = 0; i < static_cast<u32>(info->bindings.size()); i++)
   {
     if (bind_name == info->bindings[i].name)
       return i;

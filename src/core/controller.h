@@ -1,13 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/image.h"
+
 #include "input_types.h"
 #include "settings.h"
 #include "types.h"
+
+#include "common/image.h"
+
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -42,10 +46,8 @@ public:
     ControllerType type;
     const char* name;
     const char* display_name;
-    const ControllerBindingInfo* bindings;
-    u32 num_bindings;
-    const SettingInfo* settings;
-    u32 num_settings;
+    std::span<const ControllerBindingInfo> bindings;
+    std::span<const SettingInfo> settings;
     VibrationCapabilities vibration_caps;
   };
 
@@ -95,10 +97,6 @@ public:
 
   /// Returns a list of controller type names. Pair of [name, display name].
   static std::vector<std::pair<std::string, std::string>> GetControllerTypeNames();
-
-  /// Returns the list of binds for the specified controller type.
-  static std::vector<std::string> GetControllerBinds(const std::string_view& type);
-  static std::vector<std::string> GetControllerBinds(ControllerType type);
 
   /// Gets the integer code for an axis in the specified controller type.
   static std::optional<u32> GetBindIndex(ControllerType type, const std::string_view& bind_name);

@@ -627,9 +627,8 @@ void ImGuiManager::DrawInputsOverlay()
 
     text.Fmt("P{} |", port + 1u);
 
-    for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
+    for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
-      const Controller::ControllerBindingInfo& bi = cinfo->bindings[bind];
       switch (bi.type)
       {
         case InputBindingInfo::Type::Axis:

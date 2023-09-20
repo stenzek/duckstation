@@ -178,9 +178,7 @@ const Controller::ControllerInfo DigitalController::INFO = {ControllerType::Digi
                                                             "DigitalController",
                                                             TRANSLATE_NOOP("ControllerType", "Digital Controller"),
                                                             s_binding_info,
-                                                            countof(s_binding_info),
                                                             s_settings,
-                                                            countof(s_settings),
                                                             Controller::VibrationCapabilities::NoVibration};
 
 void DigitalController::LoadSettings(SettingsInterface& si, const char* section)

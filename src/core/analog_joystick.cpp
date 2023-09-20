@@ -407,9 +407,7 @@ const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJ
                                                          "AnalogJoystick",
                                                          TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
                                                          s_binding_info,
-                                                         countof(s_binding_info),
                                                          s_settings,
-                                                         countof(s_settings),
                                                          Controller::VibrationCapabilities::NoVibration};
 
 void AnalogJoystick::LoadSettings(SettingsInterface& si, const char* section)

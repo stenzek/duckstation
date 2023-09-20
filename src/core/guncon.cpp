@@ -304,9 +304,7 @@ const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
                                                  "GunCon",
                                                  TRANSLATE_NOOP("ControllerType", "GunCon"),
                                                  s_binding_info,
-                                                 countof(s_binding_info),
                                                  s_settings,
-                                                 countof(s_settings),
                                                  Controller::VibrationCapabilities::NoVibration};
 
 void GunCon::LoadSettings(SettingsInterface& si, const char* section)

@@ -269,9 +269,7 @@ const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
                                                  "NeGcon",
                                                  TRANSLATE_NOOP("ControllerType", "NeGcon"),
                                                  s_binding_info,
-                                                 countof(s_binding_info),
                                                  s_settings,
-                                                 countof(s_settings),
                                                  Controller::VibrationCapabilities::NoVibration};
 
 void NeGcon::LoadSettings(SettingsInterface& si, const char* section)
