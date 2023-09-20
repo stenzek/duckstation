@@ -299,7 +299,8 @@ GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& k
   item.file_compressed_size = 0;
   if (item.program_id != 0)
   {
-    AddToPipelineCache(&item);
+    if (m_pipeline_disk_cache_file)
+      AddToPipelineCache(&item);
     item.reference_count++;
   }
 
@@ -938,8 +939,11 @@ bool OpenGLDevice::DiscardPipelineCache()
 void OpenGLDevice::ClosePipelineCache()
 {
   const ScopedGuard file_closer = [this]() {
-    std::fclose(m_pipeline_disk_cache_file);
-    m_pipeline_disk_cache_file = nullptr;
+    if (m_pipeline_disk_cache_file)
+    {
+      std::fclose(m_pipeline_disk_cache_file);
+      m_pipeline_disk_cache_file = nullptr;
+    }
   };
 
   if (!m_pipeline_disk_cache_changed)
