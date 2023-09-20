@@ -293,19 +293,16 @@ static const SettingInfo s_settings[] = {
    TRANSLATE_NOOP("GunCon", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%", nullptr,
    100.0f},
   {SettingInfo::Type::String, "CrosshairColor", TRANSLATE_NOOP("GunCon", "Cursor Color"),
-   TRANSLATE_NOOP("USB", "Applies a color to the chosen crosshair images, can be used for multiple players. Specify in "
-                         "HTML/CSS format (e.g. #aabbcc)"),
+   TRANSLATE_NOOP("GunCon", "Applies a color to the chosen crosshair images, can be used for multiple players. Specify "
+                            "in HTML/CSS format (e.g. #aabbcc)"),
    "#ffffff"},
   {SettingInfo::Type::Float, "XScale", TRANSLATE_NOOP("GunCon", "X Scale"),
    TRANSLATE_NOOP("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
    "%.0f%%", nullptr, 100.0f}};
 
-const Controller::ControllerInfo GunCon::INFO = {ControllerType::GunCon,
-                                                 "GunCon",
-                                                 TRANSLATE_NOOP("ControllerType", "GunCon"),
-                                                 s_binding_info,
-                                                 s_settings,
-                                                 Controller::VibrationCapabilities::NoVibration};
+const Controller::ControllerInfo GunCon::INFO = {
+  ControllerType::GunCon, "GunCon",   TRANSLATE_NOOP("ControllerType", "GunCon"),
+  s_binding_info,         s_settings, Controller::VibrationCapabilities::NoVibration};
 
 void GunCon::LoadSettings(SettingsInterface& si, const char* section)
 {
