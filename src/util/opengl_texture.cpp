@@ -205,7 +205,7 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   {
     GL_INS("Not using PBO for map size %u", map_size);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / GetPixelSize());
-    glTextureSubImage2D(target, layer, x, y, width, height, gl_format, gl_type, data);
+    glTexSubImage2D(target, layer, x, y, width, height, gl_format, gl_type, data);
   }
   else
   {
@@ -215,8 +215,8 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
     sb->Bind();
 
     glPixelStorei(GL_UNPACK_ROW_LENGTH, preferred_pitch / GetPixelSize());
-    glTextureSubImage2D(GL_TEXTURE_2D, layer, x, y, width, height, gl_format, gl_type,
-                        reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
+    glTexSubImage2D(GL_TEXTURE_2D, layer, x, y, width, height, gl_format, gl_type,
+                    reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
 
     sb->Unbind();
   }
@@ -261,7 +261,7 @@ void OpenGLTexture::Unmap()
   sb->Unmap(upload_size);
   sb->Bind();
 
-  glPixelStorei(GL_UNPACK_ROW_LENGTH, m_map_width);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / GetPixelSize());
 
   OpenGLDevice::BindUpdateTextureUnit();
 

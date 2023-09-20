@@ -395,7 +395,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   const bool is_shitty_mobile_driver = (vendor_id_powervr || vendor_id_qualcomm || vendor_id_arm);
   const bool is_buggy_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
-  *buggy_pbo = true;// is_buggy_pbo;
+  *buggy_pbo = is_buggy_pbo;
   if (is_buggy_pbo && !is_shitty_mobile_driver)
     Log_WarningPrint("Not using PBOs for texture uploads because buffer_storage is unavailable.");
 

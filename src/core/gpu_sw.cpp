@@ -255,9 +255,6 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::BGRA8, u32>(const u16* src_p
 template<GPUTexture::Format display_format>
 void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field, bool interlaced, bool interleaved)
 {
-  u8* dst_ptr;
-  u32 dst_stride;
-
   using OutputPixelType =
     std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
                        u16>;
@@ -266,16 +263,11 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
   if (!texture)
     return;
 
-  if (!interlaced)
-  {
-    if (!texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height))
-      return;
-  }
-  else
-  {
-    dst_stride = GPU_MAX_DISPLAY_WIDTH * sizeof(OutputPixelType);
-    dst_ptr = m_display_texture_buffer.data() + (field != 0 ? dst_stride : 0);
-  }
+  u32 dst_stride = GPU_MAX_DISPLAY_WIDTH * sizeof(OutputPixelType);
+  u8* dst_ptr = m_display_texture_buffer.data() + (interlaced ? (field != 0 ? dst_stride : 0) : 0);
+
+  const bool mapped =
+    (!interlaced && texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height));
 
   const u32 output_stride = dst_stride;
   const u8 interlaced_shift = BoolToUInt8(interlaced);
@@ -315,7 +307,7 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
     }
   }
 
-  if (!interlaced)
+  if (mapped)
     texture->Unmap();
   else
     texture->Update(0, 0, width, height, m_display_texture_buffer.data(), output_stride);
@@ -349,9 +341,6 @@ template<GPUTexture::Format display_format>
 void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 field, bool interlaced,
                           bool interleaved)
 {
-  u8* dst_ptr;
-  u32 dst_stride;
-
   using OutputPixelType =
     std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
                        u16>;
@@ -360,16 +349,10 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   if (!texture)
     return;
 
-  if (!interlaced)
-  {
-    if (!texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height))
-      return;
-  }
-  else
-  {
-    dst_stride = Common::AlignUpPow2<u32>(width * sizeof(OutputPixelType), 4);
-    dst_ptr = m_display_texture_buffer.data() + (field != 0 ? dst_stride : 0);
-  }
+  u32 dst_stride = Common::AlignUpPow2<u32>(width * sizeof(OutputPixelType), 4);
+  u8* dst_ptr = m_display_texture_buffer.data() + (interlaced ? (field != 0 ? dst_stride : 0) : 0);
+  const bool mapped =
+    (!interlaced && texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height));
 
   const u32 output_stride = dst_stride;
   const u8 interlaced_shift = BoolToUInt8(interlaced);
@@ -473,7 +456,7 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
     }
   }
 
-  if (!interlaced)
+  if (mapped)
     texture->Unmap();
   else
     texture->Update(0, 0, width, height, m_display_texture_buffer.data(), output_stride);
