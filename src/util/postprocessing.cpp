@@ -401,7 +401,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
       return shader;
   }
 
-  Log_ErrorPrint(fmt::format("Failed to load shader '{}'", shader_name).c_str());
+  Log_ErrorFmt("Failed to load shader '{}'", shader_name);
   return {};
 }
 
@@ -611,7 +611,7 @@ GPUSampler* PostProcessing::GetSampler(const GPUSampler::Config& config)
 
   std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config);
   if (!sampler)
-    Log_ErrorPrint(fmt::format("Failed to create GPU sampler with config={:X}", config.key).c_str());
+    Log_ErrorFmt("Failed to create GPU sampler with config={:X}", config.key);
 
   it = s_samplers.emplace(config.key, std::move(sampler)).first;
   return it->second.get();

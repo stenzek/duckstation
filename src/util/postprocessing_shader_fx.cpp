@@ -448,9 +448,8 @@ GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::stri
       }
       else
       {
-        Log_ErrorPrint(fmt::format("Unhandled string value for '{}' (annotation type: {}, uniform type {})",
-                                   uniform.name, an.type.description(), uniform.type.description())
-                         .c_str());
+        Log_ErrorFmt("Unhandled string value for '{}' (annotation type: {}, uniform type {})", uniform.name,
+                     an.type.description(), uniform.type.description());
       }
 
       break;
@@ -499,7 +498,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
       return false;
     if (so != SourceOptionType::None)
     {
-      Log_DevPrintf("Add source based option %u at offset %u (%s)", static_cast<u32>(so), ui.offset, ui.name.c_str());
+      Log_DevFmt("Add source based option {} at offset {} ({})", static_cast<u32>(so), ui.offset, ui.name);
 
       SourceOption sopt;
       sopt.source = so;
@@ -758,15 +757,14 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
     if (!ti.semantic.empty())
     {
-      Log_DevPrint(fmt::format("Ignoring semantic {} texture {}", ti.semantic, ti.unique_name).c_str());
+      Log_DevFmt("Ignoring semantic {} texture {}", ti.semantic, ti.unique_name);
       continue;
     }
     if (ti.render_target)
     {
       tex.rt_scale = 1.0f;
       tex.format = MapTextureFormat(ti.format);
-      Log_DevPrint(
-        fmt::format("Creating render target '{}' {}", ti.unique_name, GPUTexture::GetFormatName(tex.format)).c_str());
+      Log_DevFmt("Creating render target '{}' {}", ti.unique_name, GPUTexture::GetFormatName(tex.format));
     }
     else
     {
@@ -796,7 +794,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      Log_DevPrint(fmt::format("Loaded {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source).c_str());
+      Log_DevFmt("Loaded {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
     }
 
     tex.reshade_name = ti.unique_name;
@@ -863,9 +861,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             }
             else if (ti.semantic == "DEPTH")
             {
-              Log_WarningPrint(
-                fmt::format("Shader '{}' uses input depth as '{}' which is not supported.", m_name, si.texture_name)
-                  .c_str());
+              Log_WarningFmt("Shader '{}' uses input depth as '{}' which is not supported.", m_name, si.texture_name);
               sampler.texture_id = INPUT_DEPTH_TEXTURE;
               break;
             }
@@ -896,7 +892,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
           return false;
         }
 
-        Log_DevPrint(fmt::format("Pass {} Texture {} => {}", pi.name, si.texture_name, sampler.texture_id).c_str());
+        Log_DevFmt("Pass {} Texture {} => {}", pi.name, si.texture_name, sampler.texture_id);
 
         sampler.sampler = GetSampler(MapSampler(si));
         if (!sampler.sampler)

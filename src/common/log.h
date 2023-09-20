@@ -1,11 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "types.h"
+
+#include "fmt/core.h"
+
 #include <cinttypes>
 #include <cstdarg>
 #include <mutex>
+#include <string_view>
 
 enum LOGLEVEL
 {
@@ -25,7 +30,7 @@ enum LOGLEVEL
 namespace Log {
 // log message callback type
 using CallbackFunctionType = void (*)(void* pUserParam, const char* channelName, const char* functionName,
-                                      LOGLEVEL level, const char* message);
+                                      LOGLEVEL level, std::string_view message);
 
 // registers a log callback
 void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam);
@@ -49,33 +54,52 @@ void SetFileOutputParams(bool enabled, const char* filename, bool timestamps = t
 void SetFilterLevel(LOGLEVEL level);
 
 // writes a message to the log
-void Write(const char* channelName, const char* functionName, LOGLEVEL level, const char* message);
-void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...) printflike(4, 5);
+void Write(const char* channelName, const char* functionName, LOGLEVEL level, std::string_view message);
+void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...)
+  printflike(4, 5);
 void Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap);
+void WriteFmtArgs(const char* channelName, const char* functionName, LOGLEVEL level, fmt::string_view fmt,
+                  fmt::format_args args);
+
+template<typename... T>
+ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* functionName, LOGLEVEL level,
+                                   fmt::format_string<T...> fmt, T&&... args)
+{
+  return WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
+}
 } // namespace Log
 
 // log wrappers
 #define Log_SetChannel(ChannelName) static const char* ___LogChannel___ = #ChannelName;
 #define Log_ErrorPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_ERROR, msg)
 #define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
+#define Log_ErrorFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
 #define Log_WarningPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_WARNING, msg)
 #define Log_WarningPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
+#define Log_WarningFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
 #define Log_PerfPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PERF, msg)
 #define Log_PerfPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
+#define Log_PerfFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
 #define Log_InfoPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_INFO, msg)
 #define Log_InfoPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
+#define Log_InfoFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
 #define Log_VerbosePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_VERBOSE, msg)
 #define Log_VerbosePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_VERBOSE, __VA_ARGS__)
+#define Log_VerboseFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_VERBOSE, __VA_ARGS__)
 #define Log_DevPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEV, msg)
 #define Log_DevPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
+#define Log_DevFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
 #define Log_ProfilePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PROFILE, msg)
 #define Log_ProfilePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
+#define Log_ProfileFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
 
 #ifdef _DEBUG
 #define Log_DebugPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEBUG, msg)
 #define Log_DebugPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
+#define Log_DebugFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
 #define Log_TracePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_TRACE, msg)
 #define Log_TracePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
+#define Log_TraceFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
 #else
 #define Log_DebugPrint(msg)                                                                                            \
   do                                                                                                                   \
@@ -85,11 +109,19 @@ void Writev(const char* channelName, const char* functionName, LOGLEVEL level, c
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)
+#define Log_DebugFmt(...)                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+  } while (0)
 #define Log_TracePrint(msg)                                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)
 #define Log_TracePrintf(...)                                                                                           \
+  do                                                                                                                   \
+  {                                                                                                                    \
+  } while (0)
+#define Log_TraceFmt(...)                                                                                              \
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)

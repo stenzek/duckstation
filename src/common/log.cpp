@@ -6,6 +6,9 @@
 #include "file_system.h"
 #include "small_string.h"
 #include "timer.h"
+
+#include "fmt/format.h"
+
 #include <cstdio>
 #include <mutex>
 #include <vector>
@@ -18,13 +21,13 @@
 #include <unistd.h>
 #endif
 
-namespace Log {
+using namespace std::string_view_literals;
 
 static const char s_log_level_characters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'P', 'I', 'V', 'D', 'R', 'B', 'T'};
 
 struct RegisteredCallback
 {
-  CallbackFunctionType Function;
+  Log::CallbackFunctionType Function;
   void* Parameter;
 };
 
@@ -60,7 +63,7 @@ std::unique_ptr<std::FILE, void (*)(std::FILE*)> s_fileOutputHandle(nullptr, [](
   }
 });
 
-void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
+void Log::RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 {
   RegisteredCallback Callback;
   Callback.Function = callbackFunction;
@@ -70,7 +73,7 @@ void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
   s_callbacks.push_back(std::move(Callback));
 }
 
-void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
+void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 {
   std::lock_guard<std::mutex> guard(s_callback_mutex);
 
@@ -84,43 +87,47 @@ void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
   }
 }
 
-bool IsConsoleOutputEnabled()
+bool Log::IsConsoleOutputEnabled()
 {
   return s_console_output_enabled;
 }
 
-bool IsDebugOutputEnabled()
+bool Log::IsDebugOutputEnabled()
 {
   return s_debug_output_enabled;
 }
 
-static void ExecuteCallbacks(const char* channelName, const char* functionName, LOGLEVEL level, const char* message)
+static void ExecuteCallbacks(const char* channelName, const char* functionName, LOGLEVEL level,
+                             std::string_view message)
 {
   std::lock_guard<std::mutex> guard(s_callback_mutex);
   for (RegisteredCallback& callback : s_callbacks)
     callback.Function(callback.Parameter, channelName, functionName, level, message);
 }
 
-static int FormatLogMessageForDisplay(char* buffer, size_t buffer_size, const char* channelName,
-                                      const char* functionName, LOGLEVEL level, const char* message, bool timestamp,
-                                      bool ansi_color_code, bool newline)
+ALWAYS_INLINE_RELEASE static void FormatLogMessageForDisplay(fmt::memory_buffer& buffer, const char* channelName,
+                                                             const char* functionName, LOGLEVEL level,
+                                                             std::string_view message, bool timestamp,
+                                                             bool ansi_color_code, bool newline)
 {
-  static const char* s_ansi_color_codes[LOGLEVEL_COUNT] = {
-    "\033[0m",    // NONE
-    "\033[1;31m", // ERROR
-    "\033[1;33m", // WARNING
-    "\033[1;35m", // PERF
-    "\033[1;37m", // INFO
-    "\033[1;32m", // VERBOSE
-    "\033[0;37m", // DEV
-    "\033[1;36m", // PROFILE
-    "\033[0;32m", // DEBUG
-    "\033[0;34m", // TRACE
+  static constexpr std::string_view s_ansi_color_codes[LOGLEVEL_COUNT] = {
+    "\033[0m"sv,    // NONE
+    "\033[1;31m"sv, // ERROR
+    "\033[1;33m"sv, // WARNING
+    "\033[1;35m"sv, // PERF
+    "\033[1;37m"sv, // INFO
+    "\033[1;32m"sv, // VERBOSE
+    "\033[0;37m"sv, // DEV
+    "\033[1;36m"sv, // PROFILE
+    "\033[0;32m"sv, // DEBUG
+    "\033[0;34m"sv, // TRACE
   };
 
-  const char* color_start = ansi_color_code ? s_ansi_color_codes[level] : "";
-  const char* color_end = ansi_color_code ? s_ansi_color_codes[0] : "";
-  const char* message_end = newline ? "\n" : "";
+  std::string_view color_start = ansi_color_code ? s_ansi_color_codes[level] : ""sv;
+  std::string_view color_end = ansi_color_code ? s_ansi_color_codes[0] : ""sv;
+  std::string_view message_end = newline ? "\n"sv : ""sv;
+
+  auto appender = std::back_inserter(buffer);
 
   if (timestamp)
   {
@@ -130,97 +137,71 @@ static int FormatLogMessageForDisplay(char* buffer, size_t buffer_size, const ch
 
     if (level <= LOGLEVEL_PERF)
     {
-      return std::snprintf(buffer, buffer_size, "[%10.4f] %s%c(%s): %s%s%s", message_time, color_start,
-                           s_log_level_characters[level], functionName, message, color_end, message_end);
+      fmt::format_to(appender, "[{:10.4f}] {}{}({}): {}{}{}", message_time, color_start, s_log_level_characters[level],
+                     functionName, message, color_end, message_end);
     }
     else
     {
-      return std::snprintf(buffer, buffer_size, "[%10.4f] %s%c/%s: %s%s%s", message_time, color_start,
-                           s_log_level_characters[level], channelName, message, color_end, message_end);
+      fmt::format_to(appender, "[{:10.4f}] {}{}/{}: {}{}{}", message_time, color_start, s_log_level_characters[level],
+                     channelName, message, color_end, message_end);
     }
   }
   else
   {
     if (level <= LOGLEVEL_PERF)
     {
-      return std::snprintf(buffer, buffer_size, "%s%c(%s): %s%s%s", color_start, s_log_level_characters[level],
-                           functionName, message, color_end, message_end);
+      fmt::format_to(appender, "{}{}({}): {}{}{}", color_start, s_log_level_characters[level], functionName, message,
+                     color_end, message_end);
     }
     else
     {
-      return std::snprintf(buffer, buffer_size, "%s%c/%s: %s%s%s", color_start, s_log_level_characters[level],
-                           channelName, message, color_end, message_end);
+      fmt::format_to(appender, "{}{}/{}: {}{}{}", color_start, s_log_level_characters[level], channelName, message,
+                     color_end, message_end);
     }
   }
 }
 
 template<typename T>
-static ALWAYS_INLINE void FormatLogMessageAndPrint(const char* channelName, const char* functionName, LOGLEVEL level,
-                                                   const char* message, bool timestamp, bool ansi_color_code,
-                                                   bool newline, const T& callback)
+ALWAYS_INLINE_RELEASE static void FormatLogMessageAndPrint(const char* channelName, const char* functionName,
+                                                           LOGLEVEL level, std::string_view message, bool timestamp,
+                                                           bool ansi_color_code, bool newline, const T& callback)
 {
-  char buf[512];
-  char* message_buf = buf;
-  int message_len;
-  if ((message_len = FormatLogMessageForDisplay(message_buf, sizeof(buf), channelName, functionName, level, message,
-                                                timestamp, ansi_color_code, newline)) >
-      static_cast<int>(sizeof(buf) - 1))
-  {
-    message_buf = static_cast<char*>(std::malloc(message_len + 1));
-    message_len = FormatLogMessageForDisplay(message_buf, message_len + 1, channelName, functionName, level, message,
-                                             timestamp, ansi_color_code, newline);
-  }
-
-  callback(message_buf, message_len);
-
-  if (message_buf != buf)
-    std::free(message_buf);
+  fmt::memory_buffer buffer;
+  FormatLogMessageForDisplay(buffer, channelName, functionName, level, message, timestamp, ansi_color_code, newline);
+  callback(std::string_view(buffer.data(), buffer.size()));
 }
 
 #ifdef _WIN32
 
 template<typename T>
-static ALWAYS_INLINE void FormatLogMessageAndPrintW(const char* channelName, const char* functionName, LOGLEVEL level,
-                                                    const char* message, bool timestamp, bool ansi_color_code,
-                                                    bool newline, const T& callback)
+ALWAYS_INLINE_RELEASE static void FormatLogMessageAndPrintW(const char* channelName, const char* functionName,
+                                                            LOGLEVEL level, std::string_view message, bool timestamp,
+                                                            bool ansi_color_code, bool newline, const T& callback)
 {
-  char buf[512];
-  char* message_buf = buf;
-  int message_len;
-  if ((message_len = FormatLogMessageForDisplay(message_buf, sizeof(buf), channelName, functionName, level, message,
-                                                timestamp, ansi_color_code, newline)) >
-      static_cast<int>(sizeof(buf) - 1))
-  {
-    message_buf = static_cast<char*>(std::malloc(message_len + 1));
-    message_len = FormatLogMessageForDisplay(message_buf, message_len + 1, channelName, functionName, level, message,
-                                             timestamp, ansi_color_code, newline);
-  }
-  if (message_len <= 0)
-    return;
+  fmt::memory_buffer buffer;
+  FormatLogMessageForDisplay(buffer, channelName, functionName, level, message, timestamp, ansi_color_code, newline);
 
   // Convert to UTF-16 first so unicode characters display correctly. NT is going to do it
   // anyway...
   wchar_t wbuf[512];
   wchar_t* wmessage_buf = wbuf;
   int wmessage_buflen = static_cast<int>(std::size(wbuf) - 1);
-  if (message_len >= static_cast<int>(std::size(wbuf)))
+  if (buffer.size() >= std::size(wbuf))
   {
-    wmessage_buflen = message_len;
-    wmessage_buf = static_cast<wchar_t*>(std::malloc((wmessage_buflen + 1) * sizeof(wchar_t)));
+    wmessage_buflen = static_cast<int>(buffer.size());
+    wmessage_buf = static_cast<wchar_t*>(std::malloc((buffer.size() + 1) * sizeof(wchar_t)));
   }
 
-  wmessage_buflen = MultiByteToWideChar(CP_UTF8, 0, message_buf, message_len, wmessage_buf, wmessage_buflen);
+  wmessage_buflen =
+    MultiByteToWideChar(CP_UTF8, 0, buffer.data(), static_cast<int>(buffer.size()), wmessage_buf, wmessage_buflen);
   if (wmessage_buflen <= 0)
     return;
 
   wmessage_buf[wmessage_buflen] = '\0';
-  callback(wmessage_buf, wmessage_buflen);
+  callback(std::wstring_view(wmessage_buf, wmessage_buflen));
 
   if (wmessage_buf != wbuf)
     std::free(wmessage_buf);
-
-  if (message_buf != buf)
-    std::free(message_buf);
 }
 
 static bool EnableVirtualTerminalProcessing(HANDLE hConsole)
@@ -239,7 +220,7 @@ static bool EnableVirtualTerminalProcessing(HANDLE hConsole)
 #endif
 
 static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName,
-                                     LOGLEVEL level, const char* message)
+                                     LOGLEVEL level, std::string_view message)
 {
   if (!s_console_output_enabled || level > s_console_output_level_filter ||
       s_console_output_channel_filter.find(channelName) != std::string::npos)
@@ -248,23 +229,23 @@ static void ConsoleOutputLogCallback(void* pUserParam, const char* channelName, 
   }
 
 #if defined(_WIN32)
-  FormatLogMessageAndPrintW(channelName, functionName, level, message, true, true, true,
-                            [level](const wchar_t* message, int message_len) {
-                              HANDLE hOutput = (level <= LOGLEVEL_WARNING) ? s_hConsoleStdErr : s_hConsoleStdOut;
-                              DWORD chars_written;
-                              WriteConsoleW(hOutput, message, message_len, &chars_written, nullptr);
-                            });
+  FormatLogMessageAndPrintW(
+    channelName, functionName, level, message, true, true, true, [level](const std::wstring_view& message) {
+      HANDLE hOutput = (level <= LOGLEVEL_WARNING) ? s_hConsoleStdErr : s_hConsoleStdOut;
+      DWORD chars_written;
+      WriteConsoleW(hOutput, message.data(), static_cast<DWORD>(message.length()), &chars_written, nullptr);
+    });
 #elif !defined(__ANDROID__)
   FormatLogMessageAndPrint(channelName, functionName, level, message, true, true, true,
-                           [level](const char* message, int message_len) {
+                           [level](const std::string_view& message) {
                              const int outputFd = (level <= LOGLEVEL_WARNING) ? STDERR_FILENO : STDOUT_FILENO;
-                             write(outputFd, message, message_len);
+                             write(outputFd, message.data(), message.length());
                            });
 #endif
 }
 
 static void DebugOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
-                                   const char* message)
+                                   std::string_view message)
 {
   if (!s_debug_output_enabled || level > s_debug_output_level_filter ||
       s_debug_output_channel_filter.find(functionName) != std::string::npos)
@@ -274,7 +255,7 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
 
 #if defined(_WIN32)
   FormatLogMessageAndPrintW(channelName, functionName, level, message, true, false, true,
-                            [](const wchar_t* message, int message_len) { OutputDebugStringW(message); });
+                            [](const std::wstring_view& message) { OutputDebugStringW(message.data()); });
 #elif defined(__ANDROID__)
   static const int logPriority[LOGLEVEL_COUNT] = {
     ANDROID_LOG_INFO,  // NONE
@@ -294,7 +275,7 @@ static void DebugOutputLogCallback(void* pUserParam, const char* channelName, co
 #endif
 }
 
-void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL LevelFilter)
+void Log::SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL LevelFilter)
 {
   s_console_output_channel_filter = (ChannelFilter != NULL) ? ChannelFilter : "";
   s_console_output_level_filter = LevelFilter;
@@ -374,8 +355,8 @@ void SetConsoleOutputParams(bool Enabled, const char* ChannelFilter, LOGLEVEL Le
     UnregisterCallback(ConsoleOutputLogCallback, nullptr);
 }
 
-void SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr */,
-                          LOGLEVEL levelFilter /* = LOGLEVEL_TRACE */)
+void Log::SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr */,
+                               LOGLEVEL levelFilter /* = LOGLEVEL_TRACE */)
 {
   if (s_debug_output_enabled != enabled)
   {
@@ -391,18 +372,18 @@ void SetDebugOutputParams(bool enabled, const char* channelFilter /* = nullptr *
 }
 
 static void FileOutputLogCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
-                                  const char* message)
+                                  std::string_view message)
 {
   if (level > s_file_output_level_filter || s_file_output_channel_filter.find(channelName) != std::string::npos)
     return;
 
   FormatLogMessageAndPrint(
     channelName, functionName, level, message, true, false, true,
-    [](const char* message, int message_len) { std::fwrite(message, 1, message_len, s_fileOutputHandle.get()); });
+    [](const std::string_view& message) { std::fwrite(message.data(), 1, message.size(), s_fileOutputHandle.get()); });
 }
 
-void SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */,
-                         const char* channelFilter /* = nullptr */, LOGLEVEL levelFilter /* = LOGLEVEL_TRACE */)
+void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */,
+                              const char* channelFilter /* = nullptr */, LOGLEVEL levelFilter /* = LOGLEVEL_TRACE */)
 {
   if (s_file_output_enabled != enabled)
   {
@@ -432,13 +413,13 @@ void SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* 
   s_file_output_timestamp = timestamps;
 }
 
-void SetFilterLevel(LOGLEVEL level)
+void Log::SetFilterLevel(LOGLEVEL level)
 {
   DebugAssert(level < LOGLEVEL_COUNT);
   s_filter_level = level;
 }
 
-void Write(const char* channelName, const char* functionName, LOGLEVEL level, const char* message)
+void Log::Write(const char* channelName, const char* functionName, LOGLEVEL level, std::string_view message)
 {
   if (level > s_filter_level)
     return;
@@ -446,7 +427,7 @@ void Write(const char* channelName, const char* functionName, LOGLEVEL level, co
   ExecuteCallbacks(channelName, functionName, level, message);
 }
 
-void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...)
+void Log::Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...)
 {
   if (level > s_filter_level)
     return;
@@ -457,7 +438,7 @@ void Writef(const char* channelName, const char* functionName, LOGLEVEL level, c
   va_end(ap);
 }
 
-void Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap)
+void Log::Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap)
 {
   if (level > s_filter_level)
     return;
@@ -487,4 +468,14 @@ void Writev(const char* channelName, const char* functionName, LOGLEVEL level, c
   }
 }
 
-} // namespace Log
+void Log::WriteFmtArgs(const char* channelName, const char* functionName, LOGLEVEL level, fmt::string_view fmt,
+                       fmt::format_args args)
+{
+  if (level > s_filter_level)
+    return;
+
+  fmt::memory_buffer buffer;
+  fmt::vformat_to(std::back_inserter(buffer), fmt, args);
+
+  ExecuteCallbacks(channelName, functionName, level, std::string_view(buffer.data(), buffer.size()));
+}

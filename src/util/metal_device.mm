@@ -142,7 +142,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
       }
 
       if (device == nil)
-        Log_ErrorPrint(fmt::format("Failed to find device named '{}'. Trying default.", adapter).c_str());
+        Log_ErrorFmt("Failed to find device named '{}'. Trying default.", adapter);
     }
 
     if (device == nil)

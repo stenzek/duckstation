@@ -1557,12 +1557,12 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 
   // Check the first GPU, should be enough.
   const std::string& name = aml.adapter_names.front();
-  Log_InfoPrintf(fmt::format("Using Vulkan GPU '{}' for automatic renderer check.", name).c_str());
+  Log_InfoFmt("Using Vulkan GPU '{}' for automatic renderer check.", name);
 
   // Any software rendering (LLVMpipe, SwiftShader).
   if (StringUtil::StartsWithNoCase(name, "llvmpipe") || StringUtil::StartsWithNoCase(name, "SwiftShader"))
   {
-    Log_InfoPrintf("Not using Vulkan for software renderer.");
+    Log_InfoPrint("Not using Vulkan for software renderer.");
     return false;
   }
 
@@ -1570,11 +1570,11 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
   // Plus, the Ivy Bridge and Haswell drivers are incomplete.
   if (StringUtil::StartsWithNoCase(name, "Intel"))
   {
-    Log_InfoPrintf("Not using Vulkan for Intel GPU.");
+    Log_InfoPrint("Not using Vulkan for Intel GPU.");
     return false;
   }
 
-  Log_InfoPrintf("Allowing Vulkan as default renderer.");
+  Log_InfoPrint("Allowing Vulkan as default renderer.");
   return true;
 #endif
 }
@@ -1640,7 +1640,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
     u32 gpu_index = 0;
     for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
     {
-      Log_InfoPrint(fmt::format("GPU {}: {}", gpu_index, gpus[gpu_index].second).c_str());
+      Log_InfoFmt("GPU {}: {}", gpu_index, gpus[gpu_index].second);
       if (gpus[gpu_index].second == adapter)
       {
         m_physical_device = gpus[gpu_index].first;
@@ -1650,13 +1650,13 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
 
     if (gpu_index == static_cast<u32>(gpus.size()))
     {
-      Log_WarningPrint(fmt::format("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second).c_str());
+      Log_WarningFmt("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second);
       m_physical_device = gpus[0].first;
     }
   }
   else
   {
-    Log_InfoPrint(fmt::format("No GPU requested, using first ({})", gpus[0].second).c_str());
+    Log_InfoFmt("No GPU requested, using first ({})", gpus[0].second);
     m_physical_device = gpus[0].first;
   }
 

@@ -616,7 +616,7 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
   if (request->post_data)
   {
     // const auto pd = std::string_view(request->post_data);
-    // Log_DevPrint(fmt::format("Server POST: {}", pd.substr(0, std::min<size_t>(pd.length(), 10))).c_str());
+    // Log_DevFmt("Server POST: {}", pd.substr(0, std::min<size_t>(pd.length(), 10)));
     http->CreatePostRequest(request->url, request->post_data, std::move(hd_callback));
   }
   else

@@ -258,7 +258,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5*
     adapter_names.push_back(std::move(adapter_name));
   }
 
-  Log_ErrorPrintf(fmt::format("Adapter '{}' not found.", name).c_str());
+  Log_ErrorFmt("Adapter '{}' not found.", name);
   return {};
 }
 
