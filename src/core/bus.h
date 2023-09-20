@@ -116,7 +116,7 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);
 
-extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> m_ram_code_bits;
+extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
 extern u8* g_ram;            // 2MB-8MB RAM
 extern u32 g_ram_size;       // Active size of RAM.
 extern u32 g_ram_mask;       // Active address bits for RAM.
