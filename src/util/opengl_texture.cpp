@@ -203,7 +203,7 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
 
   if (!sb || map_size > sb->GetChunkSize())
   {
-    GL_INS("Not using PBO for map size %u", map_size);
+    GL_INS_FMT("Not using PBO for map size {}", map_size);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / GetPixelSize());
     glTexSubImage2D(target, layer, x, y, width, height, gl_format, gl_type, data);
   }

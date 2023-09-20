@@ -2109,16 +2109,11 @@ static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, 
 }
 #endif
 
-void VulkanDevice::PushDebugGroup(const char* fmt, ...)
+void VulkanDevice::PushDebugGroup(const char* name)
 {
 #ifdef _DEBUG
   if (!vkCmdBeginDebugUtilsLabelEXT || !m_debug_device)
     return;
-
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
 
   const std::array<float, 3> color = Palette(static_cast<float>(++s_debug_scope_depth), {0.5f, 0.5f, 0.5f},
                                              {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
@@ -2126,7 +2121,7 @@ void VulkanDevice::PushDebugGroup(const char* fmt, ...)
   const VkDebugUtilsLabelEXT label = {
     VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
     nullptr,
-    buf.c_str(),
+    name,
     {color[0], color[1], color[2], 1.0f},
   };
   vkCmdBeginDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
@@ -2145,22 +2140,13 @@ void VulkanDevice::PopDebugGroup()
 #endif
 }
 
-void VulkanDevice::InsertDebugMessage(const char* fmt, ...)
+void VulkanDevice::InsertDebugMessage(const char* msg)
 {
 #ifdef _DEBUG
   if (!vkCmdInsertDebugUtilsLabelEXT || !m_debug_device)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-
-  if (buf.empty())
-    return;
-
-  const VkDebugUtilsLabelEXT label = {
-    VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, buf.c_str(), {0.0f, 0.0f, 0.0f, 1.0f}};
+  const VkDebugUtilsLabelEXT label = {VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, msg, {0.0f, 0.0f, 0.0f, 1.0f}};
   vkCmdInsertDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
 #endif
 }

@@ -10,6 +10,7 @@
 #include "common/bitfield.h"
 #include "common/heap_array.h"
 #include "common/rectangle.h"
+#include "common/small_string.h"
 #include "common/types.h"
 
 #include <memory>
@@ -564,9 +565,9 @@ public:
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) = 0;
 
   /// Debug messaging.
-  virtual void PushDebugGroup(const char* fmt, ...) = 0;
+  virtual void PushDebugGroup(const char* name) = 0;
   virtual void PopDebugGroup() = 0;
-  virtual void InsertDebugMessage(const char* fmt, ...) = 0;
+  virtual void InsertDebugMessage(const char* msg) = 0;
 
   /// Vertex/index buffer abstraction.
   virtual void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
@@ -694,15 +695,25 @@ struct GLAutoPop
   ~GLAutoPop() { g_gpu_device->PopDebugGroup(); }
 };
 
-#define GL_SCOPE(...) GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(__VA_ARGS__), 0))
-#define GL_PUSH(...) g_gpu_device->PushDebugGroup(__VA_ARGS__)
+#define GL_SCOPE(name) GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(name), 0))
+#define GL_PUSH(name) g_gpu_device->PushDebugGroup(name)
 #define GL_POP() g_gpu_device->PopDebugGroup()
-#define GL_INS(...) g_gpu_device->InsertDebugMessage(__VA_ARGS__)
-#define GL_OBJECT_NAME(obj, ...) (obj)->SetDebugName(StringUtil::StdStringFromFormat(__VA_ARGS__))
+#define GL_INS(msg) g_gpu_device->InsertDebugMessage(msg)
+#define GL_OBJECT_NAME(obj, name) (obj)->SetDebugName(name)
+
+#define GL_SCOPE_FMT(...) GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(SmallString::from_fmt(__VA_ARGS__)), 0))
+#define GL_PUSH_FMT(...) g_gpu_device->PushDebugGroup(SmallString::from_fmt(__VA_ARGS__))
+#define GL_INS_FMT(...) g_gpu_device->InsertDebugMessage(SmallString::from_fmt(__VA_ARGS__))
+#define GL_OBJECT_NAME_FMT(obj, ...) (obj)->SetDebugName(SmallString::from_fmt(__VA_ARGS__))
 #else
-#define GL_SCOPE(...) (void)0
-#define GL_PUSH(...) (void)0
+#define GL_SCOPE(name) (void)0
+#define GL_PUSH(name) (void)0
 #define GL_POP() (void)0
-#define GL_INS(...) (void)0
-#define GL_OBJECT_NAME(...) (void)0
+#define GL_INS(msg) (void)0
+#define GL_OBJECT_NAME(obj, name) (void)0
+
+#define GL_SCOPE_FMT(...) (void)0
+#define GL_PUSH_FMT(...) (void)0
+#define GL_INS_FMT(...) (void)0
+#define GL_OBJECT_NAME_FMT(obj, ...) (void)0
 #endif

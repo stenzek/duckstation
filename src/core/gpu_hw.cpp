@@ -979,7 +979,7 @@ bool GPU_HW::CompilePipelines()
       if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig)))
         return false;
 
-      GL_OBJECT_NAME(m_vram_copy_pipelines[depth_test], "VRAM Write Pipeline, depth=%u", depth_test);
+      GL_OBJECT_NAME_FMT(m_vram_copy_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
 
       progress.Increment();
     }
@@ -1004,7 +1004,7 @@ bool GPU_HW::CompilePipelines()
       if (!(m_vram_write_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig)))
         return false;
 
-      GL_OBJECT_NAME(m_vram_write_pipelines[depth_test], "VRAM Write Pipeline, depth=%u", depth_test);
+      GL_OBJECT_NAME_FMT(m_vram_write_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
 
       progress.Increment();
     }
@@ -2547,7 +2547,7 @@ void GPU_HW::FlushRender()
     return;
 
 #ifdef _DEBUG
-  GL_SCOPE("Hardware Draw %u", ++s_draw_number);
+  GL_SCOPE_FMT("Hardware Draw {}", ++s_draw_number);
 #endif
 
   if (m_batch_ubo_dirty)
@@ -2682,7 +2682,7 @@ void GPU_HW::DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 wi
 
 void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
-  GL_PUSH("DownsampleFramebufferAdaptive (%u,%u => %u,%d)", left, top, left + width, left + height);
+  GL_PUSH_FMT("DownsampleFramebufferAdaptive ({},{} => {},{})", left, top, left + width, left + height);
 
   struct SmoothingUBOData
   {
@@ -2701,7 +2701,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
   // create mip chain
   for (u32 level = 1; level < levels; level++)
   {
-    GL_SCOPE("Create miplevel %u", level);
+    GL_SCOPE_FMT("Create miplevel {}", level);
 
     const u32 level_width = width >> level;
     const u32 level_height = height >> level;

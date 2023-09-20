@@ -160,7 +160,7 @@ bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUFramebuffer* final_
                                        s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
                                        u32 target_width, u32 target_height)
 {
-  GL_SCOPE("GLSL Shader %s", m_name.c_str());
+  GL_SCOPE_FMT("GLSL Shader {}", m_name);
 
   // Assumes final stage has been cleared already.
   if (!final_target)

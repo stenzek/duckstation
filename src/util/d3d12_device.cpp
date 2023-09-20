@@ -1125,20 +1125,15 @@ static UINT64 Palette(float phase, const std::array<float, 3>& a, const std::arr
 }
 #endif
 
-void D3D12Device::PushDebugGroup(const char* fmt, ...)
+void D3D12Device::PushDebugGroup(const char* name)
 {
 #ifdef _DEBUG
   if (!m_debug_device)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-
   const UINT64 color = Palette(static_cast<float>(++s_debug_scope_depth), {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f},
                                {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
-  PIXBeginEvent(GetCommandList(), color, "%s", buf.c_str());
+  PIXBeginEvent(GetCommandList(), color, "%s", name);
 #endif
 }
 
@@ -1153,21 +1148,13 @@ void D3D12Device::PopDebugGroup()
 #endif
 }
 
-void D3D12Device::InsertDebugMessage(const char* fmt, ...)
+void D3D12Device::InsertDebugMessage(const char* msg)
 {
 #ifdef _DEBUG
   if (!m_debug_device)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-
-  if (buf.empty())
-    return;
-
-  PIXSetMarker(GetCommandList(), PIX_COLOR(0, 0, 0), "%s", buf.c_str());
+  PIXSetMarker(GetCommandList(), PIX_COLOR(0, 0, 0), "%s", msg);
 #endif
 }
 

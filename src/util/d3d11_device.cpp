@@ -781,18 +781,13 @@ float D3D11Device::GetAndResetAccumulatedGPUTime()
   return value;
 }
 
-void D3D11Device::PushDebugGroup(const char* fmt, ...)
+void D3D11Device::PushDebugGroup(const char* name)
 {
 #ifdef _DEBUG
   if (!m_annotation)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-
-  m_annotation->BeginEvent(StringUtil::UTF8StringToWideString(str).c_str());
+  m_annotation->BeginEvent(StringUtil::UTF8StringToWideString(name).c_str());
 #endif
 }
 
@@ -806,18 +801,13 @@ void D3D11Device::PopDebugGroup()
 #endif
 }
 
-void D3D11Device::InsertDebugMessage(const char* fmt, ...)
+void D3D11Device::InsertDebugMessage(const char* msg)
 {
 #ifdef _DEBUG
   if (!m_annotation)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-
-  m_annotation->SetMarker(StringUtil::UTF8StringToWideString(str).c_str());
+  m_annotation->SetMarker(StringUtil::UTF8StringToWideString(msg).c_str());
 #endif
 }
 

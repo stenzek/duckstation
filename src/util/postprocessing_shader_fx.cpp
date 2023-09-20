@@ -612,7 +612,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
   }
 
   m_uniforms_size = mod.total_uniform_size;
-  Log_DevPrintf("%s: %zu options", m_filename.c_str(), m_options.size());
+  Log_DevFmt("{}: {} options", m_filename, m_options.size());
   return true;
 }
 
@@ -1136,7 +1136,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
                                             s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
                                             s32 orig_height, u32 target_width, u32 target_height)
 {
-  GL_PUSH("PostProcessingShaderFX %s", m_name.c_str());
+  GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
   m_frame_count++;
 
@@ -1145,7 +1145,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
 
   if (m_uniforms_size > 0)
   {
-    GL_SCOPE("Uniforms: %u bytes", m_uniforms_size);
+    GL_SCOPE_FMT("Uniforms: {} bytes", m_uniforms_size);
 
     u8* uniforms = static_cast<u8*>(g_gpu_device->MapUniformBuffer(m_uniforms_size));
     for (const ShaderOption& opt : m_options)
@@ -1280,9 +1280,9 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
 
   for (const Pass& pass : m_passes)
   {
-    GL_SCOPE("Draw pass %s", pass.name.c_str());
+    GL_SCOPE_FMT("Draw pass {}", pass.name.c_str());
 
-    GL_INS("Render Target: ID %d [%s]", pass.render_target, GetTextureNameForID(pass.render_target));
+    GL_INS_FMT("Render Target: ID {} [{}]", pass.render_target, GetTextureNameForID(pass.render_target));
     GPUFramebuffer* output_fb = GetFramebufferByID(pass.render_target, input, final_target);
     g_gpu_device->SetFramebuffer(output_fb);
     g_gpu_device->SetPipeline(pass.pipeline.get());
@@ -1291,7 +1291,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
     std::bitset<GPUDevice::MAX_TEXTURE_SAMPLERS> bound_textures = {};
     for (const Sampler& sampler : pass.samplers)
     {
-      GL_INS("Texture Sampler %u: ID %d [%s]", sampler.slot, sampler.texture_id,
+      GL_INS_FMT("Texture Sampler {}: ID {} [{}]", sampler.slot, sampler.texture_id,
              GetTextureNameForID(sampler.texture_id));
       g_gpu_device->SetTextureSampler(sampler.slot, GetTextureByID(sampler.texture_id, input, final_target),
                                       sampler.sampler);

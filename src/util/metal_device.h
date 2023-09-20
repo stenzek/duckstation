@@ -230,9 +230,9 @@ public:
                                                     DynamicHeapArray<u8>* out_binary = nullptr) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
 
-  void PushDebugGroup(const char* fmt, ...) override;
+  void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
-  void InsertDebugMessage(const char* fmt, ...) override;
+  void InsertDebugMessage(const char* msg) override;
 
   void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                        u32* map_base_vertex) override;

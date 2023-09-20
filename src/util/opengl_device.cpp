@@ -210,17 +210,13 @@ void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
     CommitClear(m_current_framebuffer);
 }
 
-void OpenGLDevice::PushDebugGroup(const char* fmt, ...)
+void OpenGLDevice::PushDebugGroup(const char* name)
 {
 #ifdef _DEBUG
   if (!glPushDebugGroup)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>(buf.size()), buf.c_str());
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>(std::strlen(name)), name);
 #endif
 }
 
@@ -234,20 +230,16 @@ void OpenGLDevice::PopDebugGroup()
 #endif
 }
 
-void OpenGLDevice::InsertDebugMessage(const char* fmt, ...)
+void OpenGLDevice::InsertDebugMessage(const char* msg)
 {
 #ifdef _DEBUG
   if (!glDebugMessageInsert)
     return;
 
-  std::va_list ap;
-  va_start(ap, fmt);
-  const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
-  va_end(ap);
-  if (!buf.empty())
+  if (msg[0] != '\0')
   {
     glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_OTHER, 0, GL_DEBUG_SEVERITY_NOTIFICATION,
-                         static_cast<GLsizei>(buf.size()), buf.c_str());
+                         static_cast<GLsizei>(std::strlen(msg)), msg);
   }
 #endif
 }
@@ -349,7 +341,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   const bool is_gles = m_gl_context->IsGLES();
 
   bool vendor_id_amd = false;
-  //bool vendor_id_nvidia = false;
+  // bool vendor_id_nvidia = false;
   bool vendor_id_intel = false;
   bool vendor_id_arm = false;
   bool vendor_id_qualcomm = false;

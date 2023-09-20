@@ -1602,7 +1602,7 @@ std::unique_ptr<GPUTextureBuffer> MetalDevice::CreateTextureBuffer(GPUTextureBuf
   return tb;
 }
 
-void MetalDevice::PushDebugGroup(const char* fmt, ...)
+void MetalDevice::PushDebugGroup(const char* name)
 {
 }
 
@@ -1610,7 +1610,7 @@ void MetalDevice::PopDebugGroup()
 {
 }
 
-void MetalDevice::InsertDebugMessage(const char* fmt, ...)
+void MetalDevice::InsertDebugMessage(const char* msg)
 {
 }
 

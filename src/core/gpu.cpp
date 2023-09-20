@@ -1608,15 +1608,15 @@ bool GPU::CompileDisplayPipeline()
   if (!vso || !fso)
     return false;
   GL_OBJECT_NAME(vso, "Display Vertex Shader");
-  GL_OBJECT_NAME(fso, "Display Fragment Shader [%s]", Settings::GetDisplayScalingName(g_settings.display_scaling));
+  GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]", Settings::GetDisplayScalingName(g_settings.display_scaling));
 
   plconfig.vertex_shader = vso.get();
   plconfig.fragment_shader = fso.get();
   plconfig.geometry_shader = nullptr;
   if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
-  GL_OBJECT_NAME(m_display_pipeline, "Display Pipeline [%s]",
-                 Settings::GetDisplayScalingName(g_settings.display_scaling));
+  GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
+                     Settings::GetDisplayScalingName(g_settings.display_scaling));
 
   return true;
 }
@@ -1672,7 +1672,7 @@ bool GPU::PresentDisplay()
 
 bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool postfx)
 {
-  GL_SCOPE("RenderDisplay: %dx%d at %d,%d", draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
+  GL_SCOPE_FMT("RenderDisplay: {}x{} at {},{}", draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
 
   if (m_display_texture)
     m_display_texture->MakeReadyForSampling();
