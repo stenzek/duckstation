@@ -389,6 +389,7 @@ int rc_json_get_required_unum_array(unsigned** entries, unsigned* num_entries, r
   rc_json_field_t value;
   unsigned* entry;
 
+  memset(&array, 0, sizeof(array));
   if (!rc_json_get_required_array(num_entries, &array, response, field, field_name))
     return RC_MISSING_VALUE;
 

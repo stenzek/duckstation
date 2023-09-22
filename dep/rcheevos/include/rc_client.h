@@ -514,10 +514,11 @@ typedef struct rc_client_leaderboard_scoreboard_entry_t {
   /* The user associated to the entry */
   const char* username;
   /* The rank of the entry */
-  unsigned rank;
+  uint32_t rank;
   /* The value of the entry */
   char score[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
 } rc_client_leaderboard_scoreboard_entry_t;
+
 typedef struct rc_client_leaderboard_scoreboard_t {
   /* The ID of the leaderboard which was submitted */
   uint32_t leaderboard_id;
@@ -526,14 +527,14 @@ typedef struct rc_client_leaderboard_scoreboard_t {
   /* The player's best submitted value */
   char best_score[RC_CLIENT_LEADERBOARD_DISPLAY_SIZE];
   /* The player's new rank within the leaderboard */
-  unsigned new_rank;
+  uint32_t new_rank;
   /* The total number of entries in the leaderboard */
-  unsigned num_entries;
+  uint32_t num_entries;
 
   /* An array of the top entries for the leaderboard */
   rc_client_leaderboard_scoreboard_entry_t* top_entries;
   /* The number of items in the top_entries array */
-  unsigned num_top_entries;
+  uint32_t num_top_entries;
 } rc_client_leaderboard_scoreboard_t;
 
 /*****************************************************************************\
@@ -569,7 +570,7 @@ enum {
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_SHOW = 10, /* [leaderboard_tracker] should be shown */
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_HIDE = 11, /* [leaderboard_tracker] should be hidden */
   RC_CLIENT_EVENT_LEADERBOARD_TRACKER_UPDATE = 12, /* [leaderboard_tracker] updated */
-  RC_CLIENT_EVENT_LEADERBOARD_SCOREBOARD = 13, /* [leaderboard_scoreboard] possibly-new ranking received */
+  RC_CLIENT_EVENT_LEADERBOARD_SCOREBOARD = 13, /* [leaderboard_scoreboard] possibly-new ranking received for [leaderboard] */
   RC_CLIENT_EVENT_RESET = 14, /* emulated system should be reset (as the result of enabling hardcore) */
   RC_CLIENT_EVENT_GAME_COMPLETED = 15, /* all achievements for the game have been earned */
   RC_CLIENT_EVENT_SERVER_ERROR = 16, /* an API response returned a [server_error] and will not be retried */

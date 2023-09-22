@@ -1942,7 +1942,7 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
     rc_client_begin_fetch_game_data(load_state);
   }
 
-  return &load_state->async_handle;
+  return (client->state.load == load_state) ? &load_state->async_handle : NULL;
 }
 
 rc_hash_iterator_t* rc_client_get_load_state_hash_iterator(rc_client_t* client)
@@ -2526,7 +2526,21 @@ static int rc_client_compare_achievement_unlock_times(const void* a, const void*
 {
   const rc_client_achievement_t* unlock_a = *(const rc_client_achievement_t**)a;
   const rc_client_achievement_t* unlock_b = *(const rc_client_achievement_t**)b;
-  return (int)(unlock_b->unlock_time - unlock_a->unlock_time);
+  if (unlock_b->unlock_time == unlock_a->unlock_time)
+    return 0;
+  return (unlock_b->unlock_time < unlock_a->unlock_time) ? -1 : 1;
+}
+
+static int rc_client_compare_achievement_progress(const void* a, const void* b)
+{
+  const rc_client_achievement_t* unlock_a = *(const rc_client_achievement_t**)a;
+  const rc_client_achievement_t* unlock_b = *(const rc_client_achievement_t**)b;
+  if (unlock_b->measured_percent == unlock_a->measured_percent) {
+    if (unlock_a->id == unlock_b->id)
+      return 0;
+    return (unlock_a->id < unlock_b->id) ? -1 : 1;
+  }
+  return (unlock_b->measured_percent < unlock_a->measured_percent) ? -1 : 1;
 }
 
 static uint8_t rc_client_map_bucket(uint8_t bucket, int grouping)
@@ -2678,6 +2692,8 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
 
         if (bucket_type == RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED)
           qsort(bucket_ptr->achievements, bucket_ptr->num_achievements, sizeof(rc_client_achievement_t*), rc_client_compare_achievement_unlock_times);
+        else if (bucket_type == RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE)
+          qsort(bucket_ptr->achievements, bucket_ptr->num_achievements, sizeof(rc_client_achievement_t*), rc_client_compare_achievement_progress);
 
         ++bucket_ptr;
       }
@@ -3845,7 +3861,7 @@ int rc_client_has_rich_presence(rc_client_t* client)
   if (!client || !client->game)
     return 0;
 
-  if (!client->game->runtime.richpresence || !client->game->runtime.richpresence)
+  if (!client->game->runtime.richpresence || !client->game->runtime.richpresence->richpresence)
     return 0;
 
   return 1;

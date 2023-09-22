@@ -444,11 +444,13 @@ static const rc_memory_regions_t rc_memory_regions_gameboy = { _rc_memory_region
 static const rc_memory_regions_t rc_memory_regions_gameboy_color = { _rc_memory_regions_gameboy, 17 };
 
 /* ===== GameBoy Advance ===== */
+/* http://problemkaputt.de/gbatek-gba-memory-map.htm */
 static const rc_memory_region_t _rc_memory_regions_gameboy_advance[] = {
-    { 0x000000U, 0x007FFFU, 0x03000000U, RC_MEMORY_TYPE_SAVE_RAM, "Cartridge RAM" },
-    { 0x008000U, 0x047FFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+    { 0x000000U, 0x007FFFU, 0x03000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* 32KB  Internal Work RAM */
+    { 0x008000U, 0x047FFFU, 0x02000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* 256KB External Work RAM */
+    { 0x048000U, 0x057FFFU, 0x0E000000U, RC_MEMORY_TYPE_SAVE_RAM, "Save RAM" }      /* 64KB  Game Pak SRAM */
 };
-static const rc_memory_regions_t rc_memory_regions_gameboy_advance = { _rc_memory_regions_gameboy_advance, 2 };
+static const rc_memory_regions_t rc_memory_regions_gameboy_advance = { _rc_memory_regions_gameboy_advance, 3 };
 
 /* ===== GameCube ===== */
 /* https://wiibrew.org/wiki/Memory_map */
