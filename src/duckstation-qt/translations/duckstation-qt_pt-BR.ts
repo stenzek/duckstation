@@ -4819,7 +4819,7 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Controle analógico</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="305"/>
+        <location filename="../../core/guncon.cpp" line="304"/>
         <location filename="../../core/settings.cpp" line="1303"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
@@ -12041,6 +12041,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Cor do cursor</translation>
     </message>
     <message>
+        <location filename="../../core/guncon.cpp" line="296"/>
+        <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
+        <translation>Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
+    </message>
+    <message>
         <location filename="../../core/guncon.cpp" line="299"/>
         <source>X Scale</source>
         <translation>Dimensão X (verticalmente)</translation>
@@ -16717,9 +16722,8 @@ Please check the README for instructions on how to add a SBI file.</source>
 <context>
     <name>USB</name>
     <message>
-        <location filename="../../core/guncon.cpp" line="296"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
-        <translation>Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
+        <translation type="vanished">Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
     </message>
 </context>
 </TS>
