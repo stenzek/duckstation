@@ -267,9 +267,15 @@ public:
     DebugAssert((m_position + used_size) <= m_size);
     if (!m_coherent)
     {
-      // TODO: shouldn't be needed anymore
-      Bind();
-      glFlushMappedBufferRange(m_target, m_position, used_size);
+      if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_direct_state_access)
+      {
+        glFlushMappedNamedBufferRange(m_buffer_id, m_position, used_size);
+      }
+      else
+      {
+        Bind();
+        glFlushMappedBufferRange(m_target, m_position, used_size);
+      }
     }
 
     const u32 prev_position = m_position;
