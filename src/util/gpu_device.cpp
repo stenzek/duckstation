@@ -176,10 +176,24 @@ GPUDevice::~GPUDevice() = default;
 
 RenderAPI GPUDevice::GetPreferredAPI()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_M_ARM64)
+  // Perfer DX11 on Windows, except ARM64, where QCom has slow DX11 drivers.
   return RenderAPI::D3D11;
-#else
+#elif defined(_WIN32) && defined(_M_ARM64)
+  return RenderAPI::D3D12;
+#elif defined(__APPLE__)
+  // Prefer Metal on MacOS.
   return RenderAPI::Metal;
+#elif defined(ENABLE_OPENGL) && defined(ENABLE_VULKAN)
+  // On Linux, if we have both GL and Vulkan, prefer VK if the driver isn't software.
+  return VulkanDevice::IsSuitableDefaultRenderer() ? RenderAPI::Vulkan : RenderAPI::OpenGL;
+#elif defined(ENABLE_OPENGL)
+  return RenderAPI::OpenGL;
+#elif defined(ENABLE_VULKAN)
+  return RenderAPI::Vulkan;
+#else
+  // Uhhh, what?
+  return RenderAPI::None;
 #endif
 }
 

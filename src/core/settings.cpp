@@ -894,9 +894,11 @@ const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
   return Host::TranslateToCString("CPUFastmemMode", s_cpu_fastmem_mode_display_names[static_cast<u8>(mode)]);
 }
 
-static constexpr auto s_gpu_renderer_names = make_array(
+static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s_gpu_renderer_names = {{
+  "Automatic",
 #ifdef _WIN32
-  "D3D11", "D3D12",
+  "D3D11",
+  "D3D12",
 #endif
 #ifdef __APPLE__
   "Metal",
@@ -907,10 +909,13 @@ static constexpr auto s_gpu_renderer_names = make_array(
 #ifdef ENABLE_OPENGL
   "OpenGL",
 #endif
-  "Software");
-static constexpr auto s_gpu_renderer_display_names = make_array(
+  "Software",
+}};
+static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s_gpu_renderer_display_names = {{
+  TRANSLATE_NOOP("GPURenderer", "Automatic"),
 #ifdef _WIN32
-  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D11)"), TRANSLATE_NOOP("GPURenderer", "Hardware (D3D12)"),
+  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D11)"),
+  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D12)"),
 #endif
 #ifdef __APPLE__
   TRANSLATE_NOOP("GPURenderer", "Hardware (Metal)"),
@@ -921,7 +926,8 @@ static constexpr auto s_gpu_renderer_display_names = make_array(
 #ifdef ENABLE_OPENGL
   TRANSLATE_NOOP("GPURenderer", "Hardware (OpenGL)"),
 #endif
-  TRANSLATE_NOOP("GPURenderer", "Software"));
+  TRANSLATE_NOOP("GPURenderer", "Software"),
+}};
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -969,6 +975,7 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
       return RenderAPI::OpenGL;
 #endif
     case GPURenderer::Software:
+    case GPURenderer::Automatic:
     default:
       return GPUDevice::GetPreferredAPI();
   }
