@@ -9,12 +9,12 @@
   "command": "duckstation-qt",
   "finish-args": [
     "--device=all",
+    "--allow=bluetooth",
     "--share=network",
     "--share=ipc",
     "--socket=fallback-x11",
     "--socket=wayland",
     "--socket=pulseaudio",
-    "--filesystem=host:ro",
     "--talk-name=org.freedesktop.ScreenSaver"
   ],
   "modules": [
