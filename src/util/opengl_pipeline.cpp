@@ -595,9 +595,6 @@ ALWAYS_INLINE static void ApplyRasterizationState(const GPUPipeline::Rasterizati
     glEnable(GL_CULL_FACE);
     glCullFace((rs.cull_mode == GPUPipeline::CullMode::Front) ? GL_FRONT : GL_BACK);
   }
-
-  // TODO: always enabled, should be done at init time
-  glEnable(GL_SCISSOR_TEST);
 }
 
 ALWAYS_INLINE static void ApplyDepthState(const GPUPipeline::DepthState& ds)

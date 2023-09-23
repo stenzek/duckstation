@@ -333,6 +333,9 @@ bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   if (!CreateBuffers(buggy_pbo))
     return false;
 
+  // Scissor test should always be enabled.
+  glEnable(GL_SCISSOR_TEST);
+
   return true;
 }
 
