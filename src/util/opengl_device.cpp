@@ -663,10 +663,6 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   }
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glDisable(GL_SCISSOR_TEST);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glEnable(GL_SCISSOR_TEST);
 
   const Common::Rectangle<s32> window_rc =
     Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);
@@ -675,6 +671,9 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   m_last_scissor = window_rc;
   UpdateViewport();
   UpdateScissor();
+
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
   return true;
 }
 

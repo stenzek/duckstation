@@ -612,7 +612,8 @@ ALWAYS_INLINE static void ApplyDepthState(const GPUPipeline::DepthState& ds)
     GL_EQUAL,   // Equal
   }};
 
-  (ds.depth_test != GPUPipeline::DepthFunc::Never) ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+  (ds.depth_test != GPUPipeline::DepthFunc::Always || ds.depth_write) ? glEnable(GL_DEPTH_TEST) :
+                                                                        glDisable(GL_DEPTH_TEST);
   glDepthFunc(func_mapping[static_cast<u8>(ds.depth_test.GetValue())]);
   glDepthMask(ds.depth_write);
 }
