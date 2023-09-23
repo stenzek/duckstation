@@ -179,6 +179,7 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 endif()
 
+
 # Write binaries to a seperate directory.
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/${CPU_ARCH}")
@@ -204,6 +205,9 @@ endif()
 if(BUILD_TESTS)
   enable_testing()
 endif()
+
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
 
 # Use C++17 for building dependencies (some aren't C++20-aware, e.g. reshadefx).
 set(CMAKE_CXX_STANDARD 17)
