@@ -290,21 +290,23 @@ GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& k
     return it->second.program_id;
   }
 
+  const GLuint program_id = CompileProgram(plconfig);
+  if (program_id == 0)
+  {
+    // Compile failed, don't add to map, it just gets confusing.
+    return 0;
+  }
+
   OpenGLPipeline::ProgramCacheItem item;
-  item.program_id = CompileProgram(plconfig);
-  item.reference_count = 0;
+  item.program_id = program_id;
+  item.reference_count = 1;
   item.file_format = 0;
   item.file_offset = 0;
   item.file_uncompressed_size = 0;
   item.file_compressed_size = 0;
-  if (item.program_id != 0)
-  {
-    if (m_pipeline_disk_cache_file)
-      AddToPipelineCache(&item);
-    item.reference_count++;
-  }
+  if (m_pipeline_disk_cache_file)
+    AddToPipelineCache(&item);
 
-  // Insert into cache even if we failed, so we don't compile it again, but don't increment reference count.
   m_program_cache.emplace(key, item);
   return item.program_id;
 }
@@ -443,6 +445,10 @@ void OpenGLDevice::UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key)
 
   glDeleteProgram(it->second.program_id);
   it->second.program_id = 0;
+
+  // If it's not in the pipeline cache, we need to remove it completely, otherwise we won't recreate it.
+  if (it->second.file_uncompressed_size == 0)
+    m_program_cache.erase(it);
 }
 
 GLuint OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
