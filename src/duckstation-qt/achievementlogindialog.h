@@ -30,4 +30,5 @@ private:
 
   Ui::AchievementLoginDialog m_ui;
   QPushButton* m_login;
+  Achievements::LoginRequestReason m_reason;
 };

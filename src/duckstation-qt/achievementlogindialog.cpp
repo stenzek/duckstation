@@ -11,7 +11,7 @@
 #include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
-  : QDialog(parent)
+  : QDialog(parent), m_reason(reason)
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -51,6 +51,15 @@ void AchievementLoginDialog::loginClicked()
 
 void AchievementLoginDialog::cancelClicked()
 {
+  // Disable hardcore mode if we cancelled reauthentication.
+  if (m_reason == Achievements::LoginRequestReason::TokenInvalid && QtHost::IsSystemValid())
+  {
+    Host::RunOnCPUThread([]() {
+      if (System::IsValid() && !Achievements::HasActiveGame())
+        Achievements::DisableHardcoreMode();
+    });
+  }
+
   done(1);
 }
 

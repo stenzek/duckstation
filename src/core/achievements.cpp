@@ -161,6 +161,7 @@ static void ClientLoginWithTokenCallback(int result, const char* error_message, 
 static void ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 
+static void DisplayHardcoreDeferredMessage();
 static void DisplayAchievementSummary();
 static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
 
@@ -411,6 +412,10 @@ bool Achievements::Initialize()
                                                        ClientLoginWithTokenCallback, nullptr);
   }
 
+  // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
+  if (System::IsValid() && IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
+    DisplayHardcoreDeferredMessage();
+
   return true;
 }
 
@@ -481,12 +486,8 @@ void Achievements::UpdateSettings(const Settings& old_config)
     }
     else if (!s_hardcore_mode && g_settings.achievements_hardcore_mode)
     {
-      if (HasActiveGame() && FullscreenUI::Initialize())
-      {
-        ImGuiFullscreen::ShowToast(std::string(),
-                                   TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
-                                   Host::OSD_WARNING_DURATION);
-      }
+      if (HasActiveGame())
+        DisplayHardcoreDeferredMessage();
     }
   }
 
@@ -878,6 +879,12 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     DisableHardcoreMode();
     return;
   }
+  else if (result == RC_LOGIN_REQUIRED)
+  {
+    // We would've asked to re-authenticate, so leave HC on for now.
+    // Once we've done so, we'll reload the game.
+    return;
+  }
   else if (result != RC_OK)
   {
     ReportFmtError("Loading game failed: {}", error_message);
@@ -990,6 +997,16 @@ void Achievements::DisplayAchievementSummary()
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
   if (g_settings.achievements_sound_effects)
     PlatformMisc::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+}
+
+void Achievements::DisplayHardcoreDeferredMessage()
+{
+  if (g_settings.achievements_hardcore_mode && !s_hardcore_mode && System::IsValid() && FullscreenUI::Initialize())
+  {
+    ImGuiFullscreen::ShowToast(std::string(),
+                               TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
+                               Host::OSD_WARNING_DURATION);
+  }
 }
 
 void Achievements::HandleResetEvent(const rc_client_event_t* event)
