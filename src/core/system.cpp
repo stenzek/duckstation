@@ -1954,7 +1954,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching)
 {
   const RenderAPI api = Settings::GetRenderAPIForRenderer(renderer);
 
-  if (!g_gpu_device || (renderer != GPURenderer::Software && g_gpu_device->GetRenderAPI() != api))
+  if (!g_gpu_device ||
+      (renderer != GPURenderer::Software && !GPUDevice::IsSameRenderAPI(g_gpu_device->GetRenderAPI(), api)))
   {
     if (g_gpu_device)
     {

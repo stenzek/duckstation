@@ -108,10 +108,9 @@ bool GPUPipeline::InputLayout::operator==(const InputLayout& rhs) const
 
 bool GPUPipeline::InputLayout::operator!=(const InputLayout& rhs) const
 {
-  return (vertex_stride != rhs.vertex_stride ||
-          vertex_attributes.size() != rhs.vertex_attributes.size() ||
-            std::memcmp(vertex_attributes.data(), rhs.vertex_attributes.data(),
-                        sizeof(VertexAttribute) * rhs.vertex_attributes.size()) != 0);
+  return (vertex_stride != rhs.vertex_stride || vertex_attributes.size() != rhs.vertex_attributes.size() ||
+          std::memcmp(vertex_attributes.data(), rhs.vertex_attributes.data(),
+                      sizeof(VertexAttribute) * rhs.vertex_attributes.size()) != 0);
 }
 
 GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState()
@@ -199,7 +198,6 @@ RenderAPI GPUDevice::GetPreferredAPI()
 
 const char* GPUDevice::RenderAPIToString(RenderAPI api)
 {
-  // TODO: Combine ES
   switch (api)
   {
     // clang-format off
@@ -216,6 +214,12 @@ const char* GPUDevice::RenderAPIToString(RenderAPI api)
     default:
       return "Unknown";
   }
+}
+
+bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
+{
+  return (lhs == rhs || ((lhs == RenderAPI::OpenGL || lhs == RenderAPI::OpenGLES) &&
+                         (rhs == RenderAPI::OpenGL || rhs == RenderAPI::OpenGLES)));
 }
 
 bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,

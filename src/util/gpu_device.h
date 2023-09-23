@@ -472,6 +472,9 @@ public:
   /// Returns a new device for the specified API.
   static std::unique_ptr<GPUDevice> CreateDeviceForAPI(RenderAPI api);
 
+  /// Returns true if the render API is the same (e.g. GLES and GL).
+  static bool IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs);
+
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
 
