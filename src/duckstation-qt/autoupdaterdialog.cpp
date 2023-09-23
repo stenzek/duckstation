@@ -11,6 +11,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/minizip_helpers.h"
+#include "common/path.h"
 #include "common/string_util.h"
 
 #include <QtCore/QCoreApplication>
@@ -28,16 +29,16 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 
-Log_SetChannel(AutoUpdaterDialog);
+#ifdef __APPLE__
+#include "common/cocoa_tools.h"
+#endif
 
 // Logic to detect whether we can use the auto updater.
-// Currently Windows and Linux-only, and requires that the channel be defined by the buildbot.
-#if defined(_WIN32) || defined(__linux__)
+// Requires that the channel be defined by the buildbot.
 #if defined(__has_include) && __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
 #ifdef SCM_RELEASE_TAGS
 #define AUTO_UPDATER_SUPPORTED
-#endif
 #endif
 #endif
 
@@ -51,6 +52,8 @@ static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
 static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #endif
+
+Log_SetChannel(AutoUpdaterDialog);
 
 AutoUpdaterDialog::AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent /* = nullptr */)
   : QDialog(parent), m_host_interface(host_interface)
@@ -81,7 +84,7 @@ bool AutoUpdaterDialog::isSupported()
 
   return true;
 #else
-  // Windows - always supported.
+  // Windows/Mac - always supported.
   return true;
 #endif
 #else
@@ -580,6 +583,78 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 
 void AutoUpdaterDialog::cleanupAfterUpdate()
 {
+}
+
+#elif defined(__APPLE__)
+
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+{
+  std::optional<std::string> bundle_path = CocoaTools::GetNonTranslocatedBundlePath();
+  if (!bundle_path.has_value())
+  {
+    reportError("Couldn't obtain non-translocated bundle path.");
+    return false;
+  }
+
+  QFileInfo info(QString::fromStdString(bundle_path.value()));
+  if (!info.isBundle())
+  {
+    reportError("Application %s isn't a bundle.", bundle_path->c_str());
+    return false;
+  }
+  if (info.suffix() != QStringLiteral("app"))
+  {
+    reportError("Unexpected application suffix %s on %s.", info.suffix().toUtf8().constData(), bundle_path->c_str());
+    return false;
+  }
+
+  // Use the updater from this version to unpack the new version.
+  const std::string updater_app = Path::Combine(bundle_path.value(), "Contents/Resources/Updater.app");
+  if (!FileSystem::DirectoryExists(updater_app.c_str()))
+  {
+    reportError("Failed to find updater at %s.", updater_app.c_str());
+    return false;
+  }
+
+  // We use the user data directory to temporarily store the update zip.
+  const std::string zip_path = Path::Combine(EmuFolders::DataRoot, "update.zip");
+  const std::string staging_directory = Path::Combine(EmuFolders::DataRoot, "UPDATE_STAGING");
+  if (FileSystem::FileExists(zip_path.c_str()) && !FileSystem::DeleteFile(zip_path.c_str()))
+  {
+    reportError("Failed to remove old update zip.");
+    return false;
+  }
+
+  // Save update.
+  {
+    QFile zip_file(QString::fromStdString(zip_path));
+    if (!zip_file.open(QIODevice::WriteOnly) || zip_file.write(update_data) != update_data.size())
+    {
+      reportError("Writing update zip to '%s' failed", zip_path.c_str());
+      return false;
+    }
+    zip_file.close();
+  }
+
+  Log_InfoFmt("Beginning update:\nUpdater path: {}\nZip path: {}\nStaging directory: {}\nOutput directory: {}",
+              updater_app, zip_path, staging_directory, bundle_path.value());
+
+  const std::string_view args[] = {
+    zip_path,
+    staging_directory,
+    bundle_path.value(),
+  };
+
+  // Kick off updater!
+  CocoaTools::DelayedLaunch(updater_app, args);
+  return true;
+}
+
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+  const QString zip_path = QString::fromStdString(Path::Combine(EmuFolders::DataRoot, "update.zip"));
+  if (QFile::exists(zip_path))
+    QFile::remove(zip_path);
 }
 
 #elif defined(__linux__)

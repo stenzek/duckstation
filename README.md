@@ -173,7 +173,6 @@ Requirements (Debian/Ubuntu package names):
 5. Run the binary, located in the build directory under `bin/duckstation-qt`.
 
 ### macOS
-**NOTE:** macOS is highly experimental and not tested by the developer. Use at your own risk; things may be horribly broken. Vulkan support may be unstable, so sticking to OpenGL or software renderer is recommended.
 
 Requirements:
  - CMake

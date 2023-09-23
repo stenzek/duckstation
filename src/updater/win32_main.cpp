@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "updater.h"
@@ -6,6 +6,7 @@
 
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "common/windows_headers.h"
 
@@ -42,9 +43,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
   }
 
   const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[0])).value_or(0);
-  const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[1]);
-  const std::string zip_path = StringUtil::WideStringToUTF8String(argv[2]);
-  const std::wstring program_to_launch(argv[3]);
+  std::string destination_directory = StringUtil::WideStringToUTF8String(argv[1]);
+  std::string staging_directory = Path::Combine(destination_directory, "UPDATE_STAGING");
+  std::string zip_path = StringUtil::WideStringToUTF8String(argv[2]);
+  std::wstring program_to_launch(argv[3]);
   LocalFree(argv);
 
   if (parent_process_id <= 0 || destination_directory.empty() || zip_path.empty() || program_to_launch.empty())
@@ -53,11 +55,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     return 1;
   }
 
+  Log::SetFileOutputParams(true, Path::Combine(destination_directory, "updater.log").c_str());
+
   progress.SetFormattedStatusText("Waiting for parent process %d to exit...", parent_process_id);
   WaitForProcessToExit(parent_process_id);
 
   Updater updater(&progress);
-  if (!updater.Initialize(destination_directory))
+  if (!updater.Initialize(std::move(staging_directory), std::move(destination_directory)))
   {
     progress.ModalError("Failed to initialize updater.");
     return 1;

@@ -3,7 +3,7 @@ add_subdirectory(util)
 add_subdirectory(core)
 add_subdirectory(scmversion)
 
-if(WIN32)
+if(WIN32 OR APPLE)
   add_subdirectory(updater)
 endif()
 
