@@ -121,8 +121,8 @@ static void ClearGameInfo();
 static void ClearGameHash();
 static std::string GetUserAgent();
 static std::string GetGameHash(CDImage* image);
-static void SetHardcoreMode(bool enabled);
-static bool IsLoggedIn();
+static void SetHardcoreMode(bool enabled, bool force_display_message);
+static bool IsLoggedInOrLoggingIn();
 static void ShowLoginSuccess(const rc_client_t* client);
 static void ShowLoginNotification();
 static void IdentifyGame(const std::string& path, CDImage* image);
@@ -286,11 +286,13 @@ std::string Achievements::GetGameHash(CDImage* image)
   u8 hash[16];
   digest.Final(hash);
 
-  const std::string hash_str = fmt::format(
-    "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", hash[0], hash[1], hash[2], hash[3], hash[4],
-    hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
+  const std::string hash_str =
+    fmt::format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
+                hash[11], hash[12], hash[13], hash[14], hash[15]);
 
-  Log_InfoFmt("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size, hash_str);
+  Log_InfoFmt("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size,
+              hash_str);
   return hash_str;
 }
 
@@ -825,10 +827,10 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
 #endif
 
   // shouldn't have a load game request when we're not logged in.
-  Assert(IsLoggedIn() || !s_load_game_request);
+  Assert(IsLoggedInOrLoggingIn() || !s_load_game_request);
 
   // bail out if we're not logged in, just save the hash
-  if (!IsLoggedIn())
+  if (!IsLoggedInOrLoggingIn())
   {
     Log_InfoPrintf("Skipping load game because we're not logged in.");
     DisableHardcoreMode();
@@ -1323,8 +1325,10 @@ void Achievements::DisableHardcoreMode()
   }
 #endif
 
-  if (s_hardcore_mode)
-    SetHardcoreMode(false);
+  if (!s_hardcore_mode)
+    return;
+
+  SetHardcoreMode(false, true);
 }
 
 bool Achievements::ResetHardcoreMode()
@@ -1336,15 +1340,16 @@ bool Achievements::ResetHardcoreMode()
 
   // If we're not logged in, don't apply hardcore mode restrictions.
   // If we later log in, we'll start with it off anyway.
-  const bool wanted_hardcore_mode = (IsLoggedIn() || s_load_game_request) && g_settings.achievements_hardcore_mode;
+  const bool wanted_hardcore_mode =
+    (IsLoggedInOrLoggingIn() || s_load_game_request) && g_settings.achievements_hardcore_mode;
   if (s_hardcore_mode == wanted_hardcore_mode)
     return false;
 
-  SetHardcoreMode(wanted_hardcore_mode);
+  SetHardcoreMode(wanted_hardcore_mode, false);
   return true;
 }
 
-void Achievements::SetHardcoreMode(bool enabled)
+void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 {
   if (enabled == s_hardcore_mode)
     return;
@@ -1352,7 +1357,7 @@ void Achievements::SetHardcoreMode(bool enabled)
   // new mode
   s_hardcore_mode = enabled;
 
-  if (HasActiveGame() && FullscreenUI::Initialize())
+  if (System::IsValid() && (HasActiveGame() || force_display_message) && FullscreenUI::Initialize())
   {
     ImGuiFullscreen::ShowToast(std::string(),
                                enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
@@ -1363,7 +1368,10 @@ void Achievements::SetHardcoreMode(bool enabled)
   rc_client_set_hardcore_enabled(s_client, enabled);
   DebugAssert((rc_client_get_hardcore_enabled(s_client) != 0) == enabled);
   if (HasActiveGame())
+  {
     UpdateGameSummary();
+    DisplayAchievementSummary();
+  }
 
   // Toss away UI state, because it's invalid now
   ClearUIState();
@@ -1537,9 +1545,9 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
   return path;
 }
 
-bool Achievements::IsLoggedIn()
+bool Achievements::IsLoggedInOrLoggingIn()
 {
-  return (rc_client_get_user_info(s_client) != nullptr);
+  return (rc_client_get_user_info(s_client) != nullptr || s_login_request);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)

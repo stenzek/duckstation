@@ -2322,12 +2322,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
   ClearMemorySaveStates();
 
   // Updating game/loading settings can turn on hardcore mode. Catch this.
-  if (Achievements::IsHardcoreModeActive())
-  {
-    Host::AddKeyedOSDMessage("challenge_mode_reset",
-                             TRANSLATE_STR("Achievements", "Hardcore mode disabled by state switch."), 10.0f);
-    Achievements::DisableHardcoreMode();
-  }
+  Achievements::DisableHardcoreMode();
 
   if (!state->SeekAbsolute(header.offset_to_data))
     return false;
