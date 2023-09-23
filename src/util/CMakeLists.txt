@@ -254,9 +254,9 @@ elseif(APPLE)
   include(AddMetalSources)
 
   set(MAC_SOURCES
-    cocoa_tools.h
     metal_device.h
     metal_device.mm
+    metal_layer.h
     metal_stream_buffer.h
     metal_stream_buffer.mm
     platform_misc_mac.mm

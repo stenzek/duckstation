@@ -3,7 +3,7 @@
 
 #include "platform_misc.h"
 #include "window_info.h"
-#include "cocoa_tools.h"
+#include "metal_layer.h"
 
 #include "common/log.h"
 #include "common/small_string.h"
@@ -78,74 +78,6 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
   [sound release];
   [nspath release];
   return result;
-}
-
-NSString* CocoaTools::StringViewToNSString(const std::string_view& str)
-{
-  if (str.empty())
-    return nil;
-
-  return [[[NSString alloc] initWithBytes:str.data()
-                                                length:static_cast<NSUInteger>(str.length())
-                                              encoding:NSUTF8StringEncoding] autorelease];
-}
-
-// From https://github.com/PCSX2/pcsx2/blob/1b673d9dd0829a48f5f0b6604c1de2108e981399/common/CocoaTools.mm
-
-@interface PCSX2KVOHelper : NSObject
-
-- (void)addCallback:(void*)ctx run:(void(*)(void*))callback;
-- (void)removeCallback:(void*)ctx;
-
-@end
-
-@implementation PCSX2KVOHelper
-{
-	std::vector<std::pair<void*, void(*)(void*)>> _callbacks;
-}
-
-- (void)addCallback:(void*)ctx run:(void(*)(void*))callback
-{
-	_callbacks.push_back(std::make_pair(ctx, callback));
-}
-
-- (void)removeCallback:(void*)ctx
-{
-	auto new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [ctx](const auto& entry){
-		return ctx == entry.first;
-	});
-	_callbacks.erase(new_end, _callbacks.end());
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
-{
-	for (const auto& callback : _callbacks)
-		callback.second(callback.first);
-}
-
-@end
-
-static PCSX2KVOHelper* s_themeChangeHandler;
-
-void CocoaTools::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
-{
-	assert([NSThread isMainThread]);
-	if (!s_themeChangeHandler)
-	{
-		s_themeChangeHandler = [[PCSX2KVOHelper alloc] init];
-		NSApplication* app = [NSApplication sharedApplication];
-		[app addObserver:s_themeChangeHandler
-		      forKeyPath:@"effectiveAppearance"
-		         options:0
-		         context:nil];
-	}
-	[s_themeChangeHandler addCallback:ctx run:handler];
-}
-
-void CocoaTools::RemoveThemeChangeHandler(void* ctx)
-{
-	assert([NSThread isMainThread]);
-	[s_themeChangeHandler removeCallback:ctx];
 }
 
 bool CocoaTools::CreateMetalLayer(WindowInfo *wi)

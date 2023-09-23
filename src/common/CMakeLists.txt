@@ -86,6 +86,17 @@ if(MSVC)
   endif()
 endif()
 
+if(APPLE)
+  set(MAC_SOURCES
+    cocoa_tools.h
+    cocoa_tools.mm
+  )
+  target_sources(common PRIVATE ${MAC_SOURCES})
+  set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+  find_library(COCOA_LIBRARY Cocoa REQUIRED)
+  target_link_libraries(common PRIVATE ${COCOA_LIBRARY})
+endif()
+
 if(NOT WIN32 AND NOT ANDROID)
   target_sources(common PRIVATE
     http_downloader_curl.cpp

@@ -17,7 +17,7 @@
 #endif
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-#include "util/cocoa_tools.h"
+#include "util/metal_layer.h"
 #endif
 
 Log_SetChannel(VulkanDevice);

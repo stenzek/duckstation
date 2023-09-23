@@ -53,7 +53,7 @@
 #endif
 
 #ifdef __APPLE__
-#include "util/cocoa_tools.h"
+#include "common/cocoa_tools.h"
 #endif
 
 Log_SetChannel(MainWindow);
