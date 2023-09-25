@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
 
@@ -12,6 +8,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/hash_combine.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/platform.h"
@@ -25,7 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include <map>
+#include <mutex>
 #include <optional>
 
 Log_SetChannel(CDImageCHD);
@@ -52,6 +49,9 @@ static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
     return std::nullopt;
 }
 
+static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
+static std::recursive_mutex s_chd_hash_cache_mutex;
+
 namespace {
 class CDImageCHD : public CDImage
 {
@@ -74,7 +74,7 @@ private:
   static constexpr u32 CHD_CD_TRACK_ALIGNMENT = 4;
   static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enough to go beyond this...
 
-  chd_file* OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
+  chd_file* OpenCHD(std::string_view filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
   bool ReadHunk(u32 hunk_index);
 
   chd_file* m_chd = nullptr;
@@ -97,7 +97,8 @@ CDImageCHD::~CDImageCHD()
     chd_close(m_chd);
 }
 
-chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
+chd_file* CDImageCHD::OpenCHD(std::string_view filename, FileSystem::ManagedCFilePtr fp, Error* error,
+                              u32 recursion_level)
 {
   chd_file* chd;
   chd_error err = chd_open_file(fp.get(), CHD_OPEN_READ | CHD_OPEN_TRANSFER_FILE, nullptr, &chd);
@@ -133,31 +134,77 @@ chd_file* CDImageCHD::OpenCHD(const char* filename, FileSystem::ManagedCFilePtr 
 
   // Find a chd with a matching sha1 in the same directory.
   // Have to do *.* and filter on the extension manually because Linux is case sensitive.
-  // We _could_ memoize the CHD headers here, but is anyone actually going to nest CHDs that deep?
   chd_file* parent_chd = nullptr;
   const std::string parent_dir(Path::GetDirectory(filename));
-  FileSystem::FindResultsArray parent_files;
-  FileSystem::FindFiles(parent_dir.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &parent_files);
-  for (FILESYSTEM_FIND_DATA& fd : parent_files)
+  const std::unique_lock hash_cache_lock(s_chd_hash_cache_mutex);
+
+  // Memoize which hashes came from what files, to avoid reading them repeatedly.
+  for (auto it = s_chd_hash_cache.begin(); it != s_chd_hash_cache.end(); ++it)
   {
-    if (StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), ".chd"))
+    if (!StringUtil::EqualNoCase(parent_dir, Path::GetDirectory(it->first)))
       continue;
 
-    auto parent_fp =
-      FileSystem::OpenManagedSharedCFile(fd.FileName.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
-    if (!parent_fp)
+    if (!chd_is_matching_parent(&header, &it->second))
       continue;
 
+    // Re-check the header, it might have changed since we last opened.
     chd_header parent_header;
-    err = chd_read_header_file(parent_fp.get(), &parent_header);
-    if (err != CHDERR_NONE || !chd_is_matching_parent(&header, &parent_header))
-      continue;
-
-    // Match! Open this one.
-    if ((parent_chd = OpenCHD(fd.FileName.c_str(), std::move(parent_fp), error, recursion_level + 1)) != nullptr)
+    auto parent_fp = FileSystem::OpenManagedSharedCFile(it->first.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+    if (parent_fp && chd_read_header_file(parent_fp.get(), &parent_header) == CHDERR_NONE &&
+        chd_is_matching_parent(&header, &parent_header))
     {
-      Log_DevFmt("Found parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename));
-      break;
+      // Need to take a copy of the string, because the parent might add to the list and invalidate the iterator.
+      const std::string filename_to_open = it->first;
+
+      // Match! Open this one.
+      parent_chd = OpenCHD(filename_to_open, std::move(parent_fp), error, recursion_level + 1);
+      if (parent_chd)
+      {
+        Log_VerboseFmt("Using parent CHD '{}' from cache for '{}'.", Path::GetFileName(filename_to_open),
+                       Path::GetFileName(filename));
+      }
+    }
+
+    // No point checking any others. Since we recursively call OpenCHD(), the iterator is invalidated anyway.
+    break;
+  }
+  if (!parent_chd)
+  {
+    // Look for files in the same directory as the chd.
+    FileSystem::FindResultsArray parent_files;
+    FileSystem::FindFiles(parent_dir.c_str(), "*.*",
+                          FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY,
+                          &parent_files);
+    for (FILESYSTEM_FIND_DATA& fd : parent_files)
+    {
+      if (StringUtil::EndsWithNoCase(Path::GetExtension(fd.FileName), ".chd"))
+        continue;
+
+      // Re-check the header, it might have changed since we last opened.
+      chd_header parent_header;
+      auto parent_fp =
+        FileSystem::OpenManagedSharedCFile(fd.FileName.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+      if (!parent_fp || chd_read_header_file(parent_fp.get(), &parent_header) != CHDERR_NONE)
+        continue;
+
+      // Don't duplicate in the cache. But update it, in case the file changed.
+      auto cache_it = std::find_if(s_chd_hash_cache.begin(), s_chd_hash_cache.end(),
+                                   [&fd](const auto& it) { return it.first == fd.FileName; });
+      if (cache_it != s_chd_hash_cache.end())
+        std::memcpy(&cache_it->second, &parent_header, sizeof(parent_header));
+      else
+        s_chd_hash_cache.emplace_back(fd.FileName, parent_header);
+
+      if (!chd_is_matching_parent(&header, &parent_header))
+        continue;
+
+      // Match! Open this one.
+      parent_chd = OpenCHD(fd.FileName, std::move(parent_fp), error, recursion_level + 1);
+      if (parent_chd)
+      {
+        Log_VerboseFmt("Using parent CHD '{}' for '{}'.", Path::GetFileName(fd.FileName), Path::GetFileName(filename));
+        break;
+      }
     }
   }
   if (!parent_chd)

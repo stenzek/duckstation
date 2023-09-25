@@ -60,6 +60,15 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 #endif
 }
 
+// Case-insensitive equality of string views.
+static inline bool EqualNoCase(std::string_view s1, std::string_view s2)
+{
+  if (s1.empty() || s2.empty())
+    return (s1.empty() == s2.empty());
+
+  return (Strncasecmp(s1.data(), s2.data(), std::min(s1.length(), s2.length())) == 0);
+}
+
 /// Wrapper around std::from_chars
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline std::optional<T> FromChars(const std::string_view& str, int base = 10)
