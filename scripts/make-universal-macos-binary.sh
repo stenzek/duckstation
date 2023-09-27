@@ -31,7 +31,9 @@ cd ..
 echo "Combine binary..."
 unset MACOSX_DEPLOYMENT_TARGET
 BINPATH=bin/DuckStation.app/Contents/MacOS/DuckStation
+UPDATERPATH=bin/DuckStation.app/Contents/Resources/Updater.app/Contents/MacOS/Updater
 lipo -create "build-x64/$BINPATH" "build-arm64/$BINPATH" -o "build-x64/$BINPATH"
+lipo -create "build-x64/$UPDATERPATH" "build-arm64/$UPDATERPATH" -o "build-x64/$UPDATERPATH"
 
 # For some reason, the svg image format plugin doesn't get included in combined builds...
 if [ -f $HOME/deps/plugins/imageformats/libqsvg.dylib ]; then
