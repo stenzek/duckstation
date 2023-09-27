@@ -40,7 +40,7 @@ Other features include:
  - Namco GunCon lightgun support (simulated with mouse).
  - NeGcon support.
  - Qt and "Big Picture" UI.
- - Automatic updates for Windows builds.
+ - Automatic updates for Windows builds (Mac and Linux AppImage in Preview channel).
  - Automatic content scanning - game titles/hashes are provided by redump.org.
  - Optional automatic switching of memory cards for each game.
  - Supports loading cheats from existing lists.
