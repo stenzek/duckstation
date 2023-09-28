@@ -24,6 +24,8 @@ option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
 option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
 
 # Global options.
+option(DISABLE_GEN_SCM_VERSION "Disable generation of SCM version, must manually populate" OFF)
+mark_as_advanced(DISABLE_GEN_SCM_VERSION)
 if(NOT ANDROID)
   option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
   option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
