@@ -87,6 +87,7 @@ public:
   static void stop();
 
   ALWAYS_INLINE bool isOnThread() const { return QThread::currentThread() == this; }
+  ALWAYS_INLINE bool isOnUIThread() const { return QThread::currentThread() == m_ui_thread; }
 
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
@@ -276,4 +277,9 @@ void QueueSettingsSave();
 /// VM state, safe to access on UI thread.
 bool IsSystemValid();
 bool IsSystemPaused();
+
+/// Accessors for game information.
+const QString& GetCurrentGameTitle();
+const QString& GetCurrentGameSerial();
+const QString& GetCurrentGamePath();
 } // namespace QtHost

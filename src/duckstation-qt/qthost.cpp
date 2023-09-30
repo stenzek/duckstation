@@ -4,6 +4,7 @@
 #include "qthost.h"
 #include "autoupdaterdialog.h"
 #include "displaywidget.h"
+#include "logwindow.h"
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
@@ -201,7 +202,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
   if (!Log::IsConsoleOutputEnabled() &&
       s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE))
   {
-    Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_NONE);
+    Log::SetConsoleOutputParams(true, s_base_settings_interface->GetBoolValue("Logging", "LogTimestamps", true));
   }
 
   // TEMPORARY: Migrate controller settings to new interface.
@@ -2028,6 +2029,9 @@ int main(int argc, char* argv[])
   // Set theme before creating any windows.
   MainWindow::updateApplicationTheme();
 
+  // Start logging early.
+  LogWindow::updateSettings();
+
   // Start up the CPU thread.
   QtHost::HookSignals();
   EmuThread::start();
@@ -2043,7 +2047,6 @@ int main(int argc, char* argv[])
 
   // Create all window objects, the emuthread might still be starting up at this point.
   main_window = new MainWindow();
-  main_window->initialize();
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
   if (!s_batch_mode)

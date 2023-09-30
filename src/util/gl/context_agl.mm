@@ -5,7 +5,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include <dlfcn.h>
-Log_SetChannel(GL::ContextAGL);
+Log_SetChannel(GL::Context);
 
 namespace GL {
 ContextAGL::ContextAGL(const WindowInfo& wi) : Context(wi)

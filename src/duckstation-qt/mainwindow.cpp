@@ -12,6 +12,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "generalsettingswidget.h"
+#include "logwindow.h"
 #include "memorycardeditordialog.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -83,6 +84,9 @@ static bool s_use_central_widget = false;
 // UI thread VM validity.
 static bool s_system_valid = false;
 static bool s_system_paused = false;
+static QString s_current_game_title;
+static QString s_current_game_serial;
+static QString s_current_game_path;
 
 bool QtHost::IsSystemPaused()
 {
@@ -94,6 +98,21 @@ bool QtHost::IsSystemValid()
   return s_system_valid;
 }
 
+const QString& QtHost::GetCurrentGameTitle()
+{
+  return s_current_game_title;
+}
+
+const QString& QtHost::GetCurrentGameSerial()
+{
+  return s_current_game_serial;
+}
+
+const QString& QtHost::GetCurrentGamePath()
+{
+  return s_current_game_path;
+}
+
 MainWindow::MainWindow() : QMainWindow(nullptr)
 {
   Assert(!g_main_window);
@@ -102,6 +121,8 @@ MainWindow::MainWindow() : QMainWindow(nullptr)
 #if !defined(_WIN32) && !defined(__APPLE__)
   s_use_central_widget = DisplayContainer::isRunningOnWayland();
 #endif
+
+  initialize();
 }
 
 MainWindow::~MainWindow()
@@ -596,12 +617,11 @@ void MainWindow::onSystemDestroyed()
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
 {
-  m_current_game_path = filename;
-  m_current_game_title = game_title;
-  m_current_game_serial = game_serial;
+  s_current_game_path = filename;
+  s_current_game_title = game_title;
+  s_current_game_serial = game_serial;
 
   updateWindowTitle();
-  // updateSaveStateMenus(path, serial, crc);
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -934,7 +954,7 @@ void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* actio
       QAction* action = action_group->addAction(QString::fromStdString(title));
       QString path = QString::fromStdString(glentry->path);
       action->setCheckable(true);
-      action->setChecked(path == m_current_game_path);
+      action->setChecked(path == s_current_game_path);
       connect(action, &QAction::triggered, [path = std::move(path)]() { g_emu_thread->changeDisc(path); });
       menu->addAction(action);
     }
@@ -1165,12 +1185,12 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
-  populateLoadStateMenu(m_current_game_serial.toUtf8().constData(), m_ui.menuLoadState);
+  populateLoadStateMenu(s_current_game_serial.toUtf8().constData(), m_ui.menuLoadState);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
-  populateSaveStateMenu(m_current_game_serial.toUtf8().constData(), m_ui.menuSaveState);
+  populateSaveStateMenu(s_current_game_serial.toUtf8().constData(), m_ui.menuSaveState);
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
@@ -1742,9 +1762,9 @@ void MainWindow::updateWindowTitle()
 {
   QString suffix(QtHost::GetAppConfigSuffix());
   QString main_title(QtHost::GetAppNameAndVersion() + suffix);
-  QString display_title(m_current_game_title + suffix);
+  QString display_title(s_current_game_title + suffix);
 
-  if (!s_system_valid || m_current_game_title.isEmpty())
+  if (!s_system_valid || s_current_game_title.isEmpty())
     display_title = main_title;
   else if (isRenderingToMain())
     main_title = display_title;
@@ -1759,6 +1779,9 @@ void MainWindow::updateWindowTitle()
     if (container->windowTitle() != display_title)
       container->setWindowTitle(display_title);
   }
+
+  if (g_log_window)
+    g_log_window->updateWindowTitle();
 }
 
 void MainWindow::updateWindowState(bool force_visible)
@@ -2474,6 +2497,22 @@ void MainWindow::dropEvent(QDropEvent* event)
     startFileOrChangeDisc(qfilename);
 }
 
+void MainWindow::moveEvent(QMoveEvent* event)
+{
+  QMainWindow::moveEvent(event);
+
+  if (g_log_window && g_log_window->isAttachedToMainWindow())
+    g_log_window->reattachToMainWindow();
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+  QMainWindow::resizeEvent(event);
+
+  if (g_log_window && g_log_window->isAttachedToMainWindow())
+    g_log_window->reattachToMainWindow();
+}
+
 void MainWindow::startupUpdateCheck()
 {
   if (!Host::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
@@ -2510,7 +2549,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     return true;
 
   // If we don't have a serial, we can't save state.
-  allow_save_to_state &= !m_current_game_serial.isEmpty();
+  allow_save_to_state &= !s_current_game_serial.isEmpty();
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
@@ -2574,6 +2613,7 @@ void MainWindow::checkForSettingChanges()
     m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
 #endif
 
+  LogWindow::updateSettings();
   updateWindowState();
 }
 

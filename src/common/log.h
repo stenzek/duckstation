@@ -38,20 +38,25 @@ void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserParam);
 // unregisters a log callback
 void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam);
 
+// returns the time in seconds since the start of the process
+float GetCurrentMessageTime();
+
 // adds a standard console output
 bool IsConsoleOutputEnabled();
-void SetConsoleOutputParams(bool enabled, const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
+void SetConsoleOutputParams(bool enabled, bool timestamps = true);
 
 // adds a debug console output [win32/android only]
 bool IsDebugOutputEnabled();
-void SetDebugOutputParams(bool enabled, const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
+void SetDebugOutputParams(bool enabled);
 
 // adds a file output
-void SetFileOutputParams(bool enabled, const char* filename, bool timestamps = true,
-                         const char* channelFilter = nullptr, LOGLEVEL levelFilter = LOGLEVEL_TRACE);
+void SetFileOutputParams(bool enabled, const char* filename, bool timestamps = true);
 
 // Sets global filtering level, messages below this level won't be sent to any of the logging sinks.
-void SetFilterLevel(LOGLEVEL level);
+void SetLogLevel(LOGLEVEL level);
+
+// Sets global filter, any messages from these channels won't be sent to any of the logging sinks.
+void SetLogfilter(std::string_view filter);
 
 // writes a message to the log
 void Write(const char* channelName, const char* functionName, LOGLEVEL level, std::string_view message);
@@ -70,7 +75,7 @@ ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* function
 } // namespace Log
 
 // log wrappers
-#define Log_SetChannel(ChannelName) static const char* ___LogChannel___ = #ChannelName;
+#define Log_SetChannel(ChannelName) [[maybe_unused]] static const char* ___LogChannel___ = #ChannelName;
 #define Log_ErrorPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_ERROR, msg)
 #define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
 #define Log_ErrorFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)

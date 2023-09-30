@@ -93,6 +93,9 @@
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
+    <ClCompile Include="logwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -154,6 +157,7 @@
     <QtMoc Include="coverdownloaddialog.h" />
     <QtMoc Include="colorpickerbutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
+    <QtMoc Include="logwindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

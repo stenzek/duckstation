@@ -8,7 +8,7 @@
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
-Log_SetChannel(GL::ContextWGL);
+Log_SetChannel(GL::Context);
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wmicrosoft-cast"

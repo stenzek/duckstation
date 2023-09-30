@@ -111,6 +111,8 @@ set(SRCS
   inputbindingdialog.ui
   inputbindingwidgets.cpp
   inputbindingwidgets.h
+  logwindow.cpp
+  logwindow.h
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui

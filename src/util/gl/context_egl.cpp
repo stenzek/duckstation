@@ -9,7 +9,7 @@
 #include <optional>
 #include <vector>
 
-Log_SetChannel(GL::ContextEGL);
+Log_SetChannel(GL::Context);
 
 namespace GL {
 ContextEGL::ContextEGL(const WindowInfo& wi) : Context(wi)

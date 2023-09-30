@@ -7,7 +7,7 @@
 #include <functional>
 #include <pthread.h>
 #include <signal.h>
-Log_SetChannel(HTTPDownloaderCurl);
+Log_SetChannel(HTTPDownloader);
 
 namespace Common {
 

@@ -248,6 +248,7 @@ struct Settings
 
   LOGLEVEL log_level = DEFAULT_LOG_LEVEL;
   std::string log_filter;
+  bool log_timestamps = true;
   bool log_to_console = DEFAULT_LOG_TO_CONSOLE;
   bool log_to_debug = false;
   bool log_to_window = false;
@@ -345,6 +346,7 @@ struct Settings
   static std::optional<LOGLEVEL> ParseLogLevelName(const char* str);
   static const char* GetLogLevelName(LOGLEVEL level);
   static const char* GetLogLevelDisplayName(LOGLEVEL level);
+  static std::span<const char*> GetLogFilters();
 
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
   static const char* GetConsoleRegionName(ConsoleRegion region);

@@ -8,7 +8,7 @@
 #include "timer.h"
 #include <VersionHelpers.h>
 #include <algorithm>
-Log_SetChannel(HTTPDownloaderWinHttp);
+Log_SetChannel(HTTPDownloader);
 
 namespace Common {
 

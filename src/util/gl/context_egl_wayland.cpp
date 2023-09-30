@@ -7,7 +7,7 @@
 
 #include <dlfcn.h>
 
-Log_SetChannel(ContextEGLWayland);
+Log_SetChannel(ContextEGL);
 
 namespace GL {
 static const char* WAYLAND_EGL_MODNAME = "libwayland-egl.so.1";

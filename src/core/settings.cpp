@@ -355,6 +355,7 @@ void Settings::Load(SettingsInterface& si)
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
+  log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
   log_to_console = si.GetBoolValue("Logging", "LogToConsole", DEFAULT_LOG_TO_CONSOLE);
   log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
   log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
@@ -555,6 +556,7 @@ void Settings::Save(SettingsInterface& si) const
 
   si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
   si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
+  si.SetBoolValue("Logging", "LogTimestamps", log_timestamps);
   si.SetBoolValue("Logging", "LogToConsole", log_to_console);
   si.SetBoolValue("Logging", "LogToDebug", log_to_debug);
   si.SetBoolValue("Logging", "LogToWindow", log_to_window);
@@ -703,14 +705,15 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 
 void Settings::UpdateLogSettings()
 {
-  Log::SetFilterLevel(log_level);
-  Log::SetConsoleOutputParams(log_to_console, log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
-  Log::SetDebugOutputParams(log_to_debug, log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
+  Log::SetLogLevel(log_level);
+  Log::SetLogfilter(log_filter);
+  Log::SetConsoleOutputParams(log_to_console, log_timestamps);
+  Log::SetDebugOutputParams(log_to_debug);
 
   if (log_to_file)
   {
-    Log::SetFileOutputParams(log_to_file, Path::Combine(EmuFolders::DataRoot, "duckstation.log").c_str(), true,
-                             log_filter.empty() ? nullptr : log_filter.c_str(), log_level);
+    Log::SetFileOutputParams(log_to_file, Path::Combine(EmuFolders::DataRoot, "duckstation.log").c_str(),
+                             log_timestamps);
   }
   else
   {
@@ -1527,4 +1530,133 @@ bool EmuFolders::EnsureFoldersExist()
            result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
   return result;
+}
+
+static const char* s_log_filters[] = {
+  "Achievements",
+  "AnalogController",
+  "AnalogJoystick",
+  "AudioStream",
+  "AutoUpdaterDialog",
+  "BIOS",
+  "Bus",
+  "ByteStream",
+  "CDImage",
+  "CDImageBin",
+  "CDImageCHD",
+  "CDImageCueSheet",
+  "CDImageDevice",
+  "CDImageEcm",
+  "CDImageMds",
+  "CDImageMemory",
+  "CDImagePBP",
+  "CDImagePPF",
+  "CDROM",
+  "CDROMAsyncReader",
+  "CDSubChannelReplacement",
+  "CPU::CodeCache",
+  "CPU::Core",
+  "CPU::Recompiler",
+  "Common::PageFaultHandler",
+  "ControllerBindingWidget",
+  "CueParser",
+  "Cheats",
+  "DMA",
+  "DisplayWidget",
+  "FileSystem",
+  "FullscreenUI",
+  "GDBConnection",
+  "GDBProtocol",
+  "GDBServer",
+  "GPU",
+  "GPUBackend",
+  "GPUDevice",
+  "GPUShaderCache",
+  "GPUTexture",
+  "GPU_HW",
+  "GPU_SW",
+  "GameDatabase",
+  "GameList",
+  "GunCon",
+  "HTTPDownloader",
+  "Host",
+  "HostInterfaceProgressCallback",
+  "INISettingsInterface",
+  "ISOReader",
+  "ImGuiFullscreen",
+  "ImGuiManager",
+  "Image",
+  "InputManager",
+  "InterruptController",
+  "JitCodeBuffer",
+  "MDEC",
+  "MainWindow",
+  "MemoryArena",
+  "MemoryCard",
+  "Multitap",
+  "NoGUIHost",
+  "PCDrv",
+  "PGXP",
+  "PSFLoader",
+  "Pad",
+  "PlatformMisc",
+  "PlayStationMouse",
+  "PostProcessing",
+  "ProgressCallback",
+  "QTTranslations",
+  "QtHost",
+  "ReShadeFXShader",
+  "Recompiler::CodeGenerator",
+  "RegTestHost",
+  "SDLInputSource",
+  "SIO",
+  "SPIRVCompiler",
+  "SPU",
+  "Settings",
+  "ShaderGen",
+  "StateWrapper",
+  "System",
+  "TextureReplacements",
+  "Timers",
+  "TimingEvents",
+  "WAVWriter",
+  "WindowInfo",
+
+#ifdef ENABLE_CUBEB
+  "CubebAudioStream",
+#endif
+
+#ifdef ENABLE_OPENGL
+  "GL::Context",
+  "OpenGLDevice",
+#endif
+
+#ifdef ENABLE_VULKAN
+  "VulkanDevice",
+#endif
+
+#if defined(_WIN32)
+  "D3D11Device",
+  "D3D12Device",
+  "D3D12StreamBuffer",
+  "D3DCommon",
+  "DInputSource",
+  "Win32ProgressCallback",
+  "Win32RawInputSource",
+  "XAudio2AudioStream",
+  "XInputSource",
+#elif defined(__APPLE__)
+  "CocoaNoGUIPlatform",
+  "CocoaProgressCallback",
+  "MetalDevice",
+#else
+  "ContextEGLWayland",
+  "X11NoGUIPlatform",
+  "WaylandNoGUIPlatform",
+#endif
+};
+
+std::span<const char*> Settings::GetLogFilters()
+{
+  return s_log_filters;
 }

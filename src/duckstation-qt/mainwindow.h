@@ -78,9 +78,6 @@ public:
   /// Sets application theme according to settings.
   static void updateApplicationTheme();
 
-  /// Initializes the window. Call once at startup.
-  void initialize();
-
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
@@ -186,6 +183,8 @@ protected:
   void changeEvent(QEvent* event) override;
   void dragEnterEvent(QDragEnterEvent* event) override;
   void dropEvent(QDropEvent* event) override;
+  void moveEvent(QMoveEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
 
 #ifdef _WIN32
   bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
@@ -194,6 +193,10 @@ protected:
 private:
   static void setStyleFromSettings();
   static void setIconThemeFromSettings();
+
+  /// Initializes the window. Call once at startup.
+  void initialize();
+
   void setupAdditionalUi();
   void connectSignals();
 
@@ -284,10 +287,6 @@ private:
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
-
-  QString m_current_game_path;
-  QString m_current_game_title;
-  QString m_current_game_serial;
 
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;
