@@ -69,5 +69,5 @@ endif()
 
 if(APPLE)
   add_subdirectory(spirv-cross EXCLUDE_FROM_ALL)
-  disable_compiler_warnings_for_target(spriv-cross)
+  disable_compiler_warnings_for_target(spirv-cross)
 endif()
