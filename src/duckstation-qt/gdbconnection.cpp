@@ -91,7 +91,7 @@ void GDBConnection::onEmulationResumed()
 
 void GDBConnection::writePacket(std::string_view packet)
 {
-  Log_DebugPrintf("(%" PRIdPTR ") < %*s", m_descriptor, packet.length(), packet.data());
+  Log_DebugPrintf("(%" PRIdPTR ") < %.*s", m_descriptor, static_cast<int>(packet.length()), packet.data());
   if (write(packet.data(), packet.length()) == -1)
   {
     Log_ErrorPrintf("(%" PRIdPTR ") Failed to write to socket: %s", m_descriptor,

@@ -12,6 +12,8 @@
 #include <cmath>
 Log_SetChannel(CDImageDevice);
 
+#if defined(_WIN32)
+
 static constexpr u32 MAX_TRACK_NUMBER = 99;
 static constexpr int ALL_SUBCODE_SIZE = 96;
 
@@ -55,6 +57,8 @@ static void DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
     }
   }
 }
+
+#endif
 
 #if defined(_WIN32)
 
