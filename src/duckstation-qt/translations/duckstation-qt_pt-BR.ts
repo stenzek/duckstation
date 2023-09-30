@@ -661,6 +661,11 @@ Mensagens não lidas: {}</translation>
         <translation>O modo Hardcore está ativado.</translation>
     </message>
     <message>
+        <location filename="../../core/achievements.cpp" line="984"/>
+        <source>You have unlocked {} of {} achievements, and earned {} of {} points.</source>
+        <translation>Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
+    </message>
+    <message>
         <location filename="../../core/achievements.cpp" line="1102"/>
         <source>Your Time: {}{}</source>
         <translation>Seu tempo: {}{}</translation>
@@ -691,9 +696,8 @@ Mensagens não lidas: {}</translation>
         <translation>{} (Modo dificílimo)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="984"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation>Você ganhou {} de {} conquistas e {} de {} pontos.</translation>
+        <translation type="vanished">Você ganhou {} de {} conquistas e {} de {} pontos.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="990"/>
