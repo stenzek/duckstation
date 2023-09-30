@@ -107,17 +107,14 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
   strip "$i"
 done
 
-echo "Copying desktop file..."
-cp "$ROOTDIR/scripts/duckstation-qt.desktop" "org.duckstation.duckstation.desktop"
-cp "$ROOTDIR/scripts/duckstation-qt.png" "duckstation-qt.png"
-
 echo "Running linuxdeploy to create AppDir..."
 EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" \
---desktop-file="org.duckstation.duckstation.desktop" --icon-file="duckstation-qt.png"
+--desktop-file="$ROOTDIR/scripts/org.duckstation.DuckStation.desktop" \
+--icon-file="$ROOTDIR/scripts/org.duckstation.DuckStation.png"
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
@@ -162,7 +159,7 @@ cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 # Generate AppStream meta-info.
 echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/org.duckstation.duckstation.appdata.xml"
+"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
 
 echo "Generating AppImage..."
 rm -f "$NAME.AppImage"

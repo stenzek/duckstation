@@ -1,5 +1,5 @@
 .flatpak-builder/
 build/
 repo/
-org.duckstation.duckstation.metainfo.xml
+org.duckstation.DuckStation.metainfo.xml
 *.flatpak

@@ -1,5 +1,5 @@
 {
-  "app-id": "org.duckstation.duckstation",
+  "app-id": "org.duckstation.DuckStation",
   "runtime": "org.kde.Platform",
   "runtime-version": "6.5",
   "sdk": "org.kde.Sdk",
@@ -47,10 +47,9 @@
       ],
       "post-install": [
         "cp -a \"${FLATPAK_BUILDER_BUILDDIR}/bin\" ${FLATPAK_DEST}",
-        "install -Dm644 scripts/duckstation-qt.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.duckstation.png",
-        "install -Dm644 scripts/duckstation-qt.desktop ${FLATPAK_DEST}/share/applications/org.duckstation.duckstation.desktop",
-        "desktop-file-edit --set-key=Icon --set-value=org.duckstation.duckstation ${FLATPAK_DEST}/share/applications/org.duckstation.duckstation.desktop",
-        "install -Dm644 scripts/flatpak/org.duckstation.duckstation.metainfo.xml ${FLATPAK_DEST}/share/metainfo/org.duckstation.duckstation.metainfo.xml"
+        "install -Dm644 scripts/org.duckstation.DuckStation.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png",
+        "install -Dm644 scripts/org.duckstation.DuckStation.desktop ${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop",
+        "install -Dm644 scripts/flatpak/org.duckstation.DuckStation.metainfo.xml ${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"
       ]
     }
   ]

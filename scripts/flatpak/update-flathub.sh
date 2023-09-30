@@ -9,34 +9,24 @@ if [[ $# -lt 1 ]]; then
 fi
 
 OUTDIR=$(realpath "$1")
+OUTMANIFEST="${OUTDIR}/${APPID}.json"
 
+echo -n "Get revision: "
+pushd "${SCRIPTDIR}" >/dev/null
+GIT_HASH=$(git rev-parse HEAD)
+popd >/dev/null
+echo "${GIT_HASH}"
+
+echo "Updating files in ${OUTDIR}..."
+mkdir -p "${OUTDIR}"
 rm -fr "${OUTDIR}/modules"
 cp -a "${SCRIPTDIR}/modules" "${OUTDIR}/modules"
-cp "${SCRIPTDIR}/flathub.json" "${OUTDIR}/${APPID}.json"
 
-pushd "${SCRIPTDIR}"
-GIT_DATE=$(git log -1 --pretty=%cd --date=short)
-GIT_VERSION=$(git tag --points-at HEAD)
-GIT_HASH=$(git rev-parse HEAD)
+echo "Generate AppStream XML..."
+"${SCRIPTDIR}/../../scripts/generate-metainfo.sh" "${OUTDIR}"
 
-if [[ "${GIT_VERSION}" == "" ]]; then
-	GIT_VERSION=$(git describe --tags --dirty --exclude latest --exclude preview --exclude legacy --exclude previous-latest | tr -d '\r\n')
-	if [[ "${GIT_VERSION}" == "" ]]; then
-		GIT_VERSION=$(git rev-parse HEAD)
-	fi
-fi
-"${SCRIPTDIR}/../../scripts/generate-metainfo.sh" "${OUTDIR}/${APPID}.metainfo.xml"
-popd
-
-# Change App ID, because flathub uses the wrong name.
-sed -i -e "s/org.duckstation.duckstation/org.duckstation.DuckStation/g" "${OUTDIR}/${APPID}.json" "${OUTDIR}/${APPID}.metainfo.xml"
-
-# Fill in version details.
-sed -i -e "s/@GIT_VERSION@/${GIT_VERSION}/" "${OUTDIR}/${APPID}.json"
-sed -i -e "s/@GIT_DATE@/${GIT_DATE}/" "${OUTDIR}/${APPID}.json"
-sed -i -e "s/@GIT_HASH@/${GIT_HASH}/" "${OUTDIR}/${APPID}.json"
-
-# Apparently we don't have git history.
-pushd "${OUTDIR}"
-"${SCRIPTDIR}/../../src/scmversion/gen_scmversion.sh"
-popd
+echo "Patching Manifest Sources..."
+jq ".modules[2].sources = ["\
+"{\"type\": \"git\", \"url\": \"https://github.com/stenzek/duckstation.git\", \"commit\": \"${GIT_HASH}\", \"disable-shallow-clone\": true},"\
+"{\"type\": \"file\", \"path\": \"org.duckstation.DuckStation.metainfo.xml\", \"dest\": \"scripts/flatpak\"}]" \
+"${SCRIPTDIR}/${APPID}.json" > "${OUTMANIFEST}"
