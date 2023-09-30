@@ -51,10 +51,10 @@ ALWAYS_INLINE static u32 GetMaxResolutionScale()
   return g_gpu_device->GetMaxTextureSize() / VRAM_WIDTH;
 }
 
-ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale()
+ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
 {
-  u32 scale = std::min<u32>(g_settings.gpu_resolution_scale, g_settings.gpu_downsample_scale);
-  while ((g_settings.gpu_resolution_scale % scale) != 0)
+  u32 scale = std::min<u32>(resolution_scale, g_settings.gpu_downsample_scale);
+  while ((resolution_scale % scale) != 0)
     scale--;
   return scale;
 }
@@ -472,15 +472,16 @@ void GPU_HW::CheckSettings()
 
   if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    const u32 scale = GetBoxDownsampleScale();
-    if (scale != g_settings.gpu_downsample_scale || scale == g_settings.gpu_resolution_scale)
+    const u32 resolution_scale = CalculateResolutionScale();
+    const u32 box_downscale = GetBoxDownsampleScale(resolution_scale);
+    if (box_downscale != g_settings.gpu_downsample_scale || box_downscale == resolution_scale)
     {
       Host::AddIconOSDMessage(
         "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
         fmt::format(
           TRANSLATE_FS("OSDMessage",
                        "Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead."),
-          g_settings.gpu_resolution_scale, g_settings.gpu_downsample_scale, scale),
+          resolution_scale, g_settings.gpu_downsample_scale, box_downscale),
         Host::OSD_ERROR_DURATION);
     }
     else
@@ -488,7 +489,7 @@ void GPU_HW::CheckSettings()
       Host::RemoveKeyedOSDMessage("BoxDownsampleUnsupported");
     }
 
-    if (scale == g_settings.gpu_resolution_scale)
+    if (box_downscale == g_settings.gpu_resolution_scale)
       m_downsample_mode = GPUDownsampleMode::Disabled;
   }
 
@@ -676,7 +677,7 @@ bool GPU_HW::CreateBuffers()
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    const u32 downsample_scale = GetBoxDownsampleScale();
+    const u32 downsample_scale = GetBoxDownsampleScale(m_resolution_scale);
     if (!(m_downsample_render_texture =
             g_gpu_device->CreateTexture(VRAM_WIDTH * downsample_scale, VRAM_HEIGHT * downsample_scale, 1, 1, 1,
                                         GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
@@ -1152,8 +1153,8 @@ bool GPU_HW::CompilePipelines()
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment,
-      shadergen.GenerateBoxSampleDownsampleFragmentShader(m_resolution_scale / GetBoxDownsampleScale()));
+      GPUShaderStage::Fragment, shadergen.GenerateBoxSampleDownsampleFragmentShader(
+                                  m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale)));
     if (!fs)
       return false;
 
@@ -2777,7 +2778,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
-  const u32 factor = m_resolution_scale / GetBoxDownsampleScale();
+  const u32 factor = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
   const u32 ds_left = left / factor;
   const u32 ds_top = top / factor;
   const u32 ds_width = width / factor;
