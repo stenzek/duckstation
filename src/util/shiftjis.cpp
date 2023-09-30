@@ -1340,7 +1340,7 @@ void sjis2ascii(char* bData)
 
   for (i = 0; i < len; i += 2)
   {
-    ch = (bData[i] << 8) | bData[i + 1];
+    ch = (static_cast<std::uint8_t>(bData[i]) << 8) | static_cast<std::uint8_t>(bData[i + 1]);
 
     // 'A' .. 'Z'
     // '0' .. '9'
