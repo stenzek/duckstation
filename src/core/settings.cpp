@@ -610,7 +610,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.use_old_mdec_routines = false;
     g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
-    g_settings.bios_tty_logging = false;
   }
 
   if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())
