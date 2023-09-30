@@ -5,9 +5,9 @@
 
 #include "common/log.h"
 
-#include <span>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPlainTextEdit>
+#include <span>
 
 class LogWindow : public QMainWindow
 {
@@ -33,6 +33,9 @@ private:
 
   static void logCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
                           std::string_view message);
+
+protected:
+  void closeEvent(QCloseEvent* event);
 
 private Q_SLOTS:
   void onClearTriggered();

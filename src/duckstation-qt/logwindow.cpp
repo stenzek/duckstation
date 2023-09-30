@@ -29,6 +29,9 @@ LogWindow::LogWindow(bool attach_to_main)
 
 LogWindow::~LogWindow()
 {
+  if (g_log_window == this)
+    g_log_window = nullptr;
+
   Log::UnregisterCallback(&LogWindow::logCallback, this);
 }
 
@@ -39,7 +42,7 @@ void LogWindow::updateSettings()
   const bool curr_enabled = (g_log_window != nullptr);
   if (new_enabled == curr_enabled)
   {
-    if (g_log_window->m_attached_to_main_window != attach_to_main)
+    if (g_log_window && g_log_window->m_attached_to_main_window != attach_to_main)
     {
       g_log_window->m_attached_to_main_window = attach_to_main;
       if (attach_to_main)
@@ -286,6 +289,12 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
                               Q_ARG(const QLatin1StringView&, qchannel), Q_ARG(quint32, static_cast<u32>(level)),
                               Q_ARG(const QString&, qmessage));
   }
+}
+
+void LogWindow::closeEvent(QCloseEvent* event)
+{
+  // TODO: Update config.
+  QMainWindow::closeEvent(event);
 }
 
 void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, const QString& message)
