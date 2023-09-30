@@ -138,6 +138,7 @@ static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELA
 static void RecalculateMemoryTimings();
 
 static void SetCodePageFastmemProtection(u32 page_index, bool writable);
+static void SetLUTFastmemProtection(u32 page_index, bool writable);
 } // namespace Bus
 
 #define FIXUP_HALFWORD_OFFSET(size, offset) ((size >= MemoryAccessSize::HalfWord) ? (offset) : ((offset) & ~1u))
@@ -460,12 +461,13 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
   std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_NUM_SLOTS);
 
   auto MapRAM = [](u32 base_address) {
-    u8* ram_ptr = g_ram;
+    u8* ram_ptr = g_ram + (base_address & g_ram_mask);
     for (u32 address = 0; address < g_ram_size; address += FASTMEM_LUT_PAGE_SIZE)
     {
       const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
       s_fastmem_lut[lut_index] = ram_ptr;
-      s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + lut_index] = g_ram_code_bits[address >> HOST_PAGE_SHIFT] ? nullptr : ram_ptr;
+      s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + lut_index] =
+        g_ram_code_bits[address >> HOST_PAGE_SHIFT] ? nullptr : ram_ptr;
       ram_ptr += FASTMEM_LUT_PAGE_SIZE;
     }
   };
@@ -564,16 +566,16 @@ void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
   {
     // mirrors...
     const u32 code_addr = page_index << HOST_PAGE_SHIFT;
-    u8* code_ptr = &g_ram[code_addr];
     for (u32 mirror_start : s_fastmem_ram_mirrors)
     {
-      u32 ram_offset = code_addr;
-      u8* ram_ptr = code_ptr;
-      for (u32 i = 0; i < FASTMEM_LUT_PAGES_PER_CODE_PAGE; i++)
+      u32 lut_addr = mirror_start + code_addr;
+      u32 ram_offset = (lut_addr & g_ram_mask);
+      for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
       {
-        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + ((mirror_start + ram_offset) >> FASTMEM_LUT_PAGE_SHIFT)] = ram_ptr;
+        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + (lut_addr >> FASTMEM_LUT_PAGE_SHIFT)] =
+          writable ? &g_ram[ram_offset] : nullptr;
+        lut_addr += FASTMEM_LUT_PAGE_SIZE;
         ram_offset += FASTMEM_LUT_PAGE_SIZE;
-        ram_ptr += FASTMEM_LUT_PAGE_SIZE;
       }
     }
   }
@@ -601,16 +603,13 @@ void Bus::ClearRAMCodePageFlags()
   {
     for (u32 i = 0; i < static_cast<u32>(g_ram_code_bits.size()); i++)
     {
-      const u32 code_addr = (i * HOST_PAGE_SIZE);
-      for (u32 mirror_start : s_fastmem_ram_mirrors)
+      u32 lut_addr = (i * HOST_PAGE_SIZE);
+      u32 ram_offset = (lut_addr & g_ram_mask);
+      for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
       {
-        u32 ram_offset = code_addr;
-        for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
-        {
-          s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + ((mirror_start + ram_offset) >> FASTMEM_LUT_PAGE_SHIFT)] =
-            &g_ram[ram_offset];
-          ram_offset += FASTMEM_LUT_PAGE_SIZE;
-        }
+        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + (lut_addr >> FASTMEM_LUT_PAGE_SHIFT)] = &g_ram[ram_offset];
+        lut_addr += FASTMEM_LUT_PAGE_SIZE;
+        ram_offset += FASTMEM_LUT_PAGE_SIZE;
       }
     }
   }
