@@ -11,6 +11,7 @@ message("Build Type: ${CMAKE_BUILD_TYPE}")
 
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
+include(DuckStationUtils)
 
 # Platform detection.
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

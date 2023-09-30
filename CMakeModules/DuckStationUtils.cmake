@@ -1,0 +1,7 @@
+function(disable_compiler_warnings_for_target target)
+	if(MSVC)
+		target_compile_options(${target} PRIVATE "/W0")
+	else()
+		target_compile_options(${target} PRIVATE "-w")
+	endif()
+endfunction()
