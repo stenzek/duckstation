@@ -93,7 +93,7 @@ static std::recursive_mutex s_mutex;
 static GameList::CacheMap s_cache_map;
 static std::unique_ptr<ByteStream> s_cache_write_stream;
 
-static bool m_game_list_loaded = false;
+static bool s_game_list_loaded = false;
 
 const char* GameList::GetEntryTypeName(EntryType type)
 {
@@ -111,7 +111,7 @@ const char* GameList::GetEntryTypeDisplayName(EntryType type)
 
 bool GameList::IsGameListLoaded()
 {
-  return m_game_list_loaded;
+  return s_game_list_loaded;
 }
 
 bool GameList::IsScannableFilename(const std::string_view& path)
@@ -610,7 +610,7 @@ u32 GameList::GetEntryCount()
 
 void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback* progress /* = nullptr */)
 {
-  m_game_list_loaded = true;
+  s_game_list_loaded = true;
 
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;

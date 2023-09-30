@@ -4661,7 +4661,7 @@ void System::SetTimerResolutionIncreased(bool enabled)
 void System::UpdateSessionTime(const std::string& prev_serial)
 {
   const u64 ctime = Common::Timer::GetCurrentValue();
-  if (!prev_serial.empty())
+  if (!prev_serial.empty() && GameList::IsGameListLoaded())
   {
     // round up to seconds
     const std::time_t etime =
