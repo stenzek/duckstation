@@ -33,8 +33,6 @@ int main(int argc, char* argv[])
   const ProcessSerialNumber psn = {0, kCurrentProcess};
   TransformProcessType(&psn, kProcessTransformToForegroundApplication);
 
-  Log::SetConsoleOutputParams(true, "", LOGLEVEL_DEBUG);
-
   CocoaProgressCallback progress;
 
   if (argc != 4)

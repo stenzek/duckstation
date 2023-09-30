@@ -505,7 +505,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
-        Log::SetConsoleOutputParams(true, nullptr, level.value());
+        Log::SetConsoleOutputParams(true, level.value());
         s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
         continue;
       }

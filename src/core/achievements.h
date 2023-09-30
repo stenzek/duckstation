@@ -6,6 +6,7 @@
 #include "common/small_string.h"
 #include "common/types.h"
 
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>

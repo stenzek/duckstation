@@ -281,15 +281,15 @@ jobs:
 
     - name: Generate AppStream XML
       run: |
-        scripts/generate-metainfo.sh scripts/flatpak/org.duckstation.duckstation.metainfo.xml
-        cat scripts/flatpak/org.duckstation.duckstation.metainfo.xml
-        flatpak run org.freedesktop.appstream-glib validate scripts/flatpak/org.duckstation.duckstation.metainfo.xml
+        scripts/generate-metainfo.sh scripts/flatpak
+        cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+        flatpak run org.freedesktop.appstream-glib validate scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
 
     - name: Build Flatpak
       uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
       with:
         bundle: duckstation-x64.flatpak
-        manifest-path: scripts/flatpak/org.duckstation.duckstation.json
+        manifest-path: scripts/flatpak/org.duckstation.DuckStation.json
         arch: x86_64
         build-bundle: true
         verbose: true

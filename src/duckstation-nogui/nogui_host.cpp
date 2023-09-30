@@ -263,7 +263,7 @@ bool NoGUIHost::InitializeConfig(std::string settings_filename)
   if (!Log::IsConsoleOutputEnabled() &&
       s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE))
   {
-    Log::SetConsoleOutputParams(true, nullptr, LOGLEVEL_NONE);
+    Log::SetConsoleOutputParams(true, s_base_settings_interface->GetBoolValue("Logging", "LogTimestamps", true));
   }
 
   return true;
