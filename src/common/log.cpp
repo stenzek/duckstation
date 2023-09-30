@@ -315,7 +315,7 @@ void Log::SetConsoleOutputParams(bool enabled, bool timestamps)
 {
   std::unique_lock lock(s_callback_mutex);
 
-  s_console_output_enabled = timestamps;
+  s_console_output_timestamps = timestamps;
   if (s_console_output_enabled == enabled)
     return;
 
