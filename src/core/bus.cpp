@@ -154,7 +154,7 @@ static void SetCodePageFastmemProtection(u32 page_index, bool writable);
 
 bool Bus::AllocateMemory()
 {
-  s_ram_handle = MemMap::CreateSharedMemory("duckstation_ram", RAM_8MB_SIZE);
+  s_ram_handle = MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation_ram").c_str(), RAM_8MB_SIZE);
   if (!s_ram_handle)
   {
     Host::ReportErrorAsync("Error", "Failed to allocate memory");
