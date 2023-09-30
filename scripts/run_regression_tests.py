@@ -17,7 +17,6 @@ def is_game_path(path):
 
 def run_regression_test(runner, destdir, dump_interval, frames, renderer, gamepath):
     args = [runner,
-            "-renderer", "software",
             "-log", "error",
             "-dumpdir", destdir,
             "-dumpinterval", str(dump_interval),
