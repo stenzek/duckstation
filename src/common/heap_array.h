@@ -11,7 +11,7 @@
 #include <cstring>
 #include <type_traits>
 
-template<typename T, std::size_t SIZE>
+template<typename T, std::size_t SIZE, std::size_t ALIGNMENT = 0>
 class FixedHeapArray
 {
 public:
@@ -24,11 +24,11 @@ public:
   using const_pointer = const T*;
   using this_type = FixedHeapArray<T, SIZE>;
 
-  FixedHeapArray() { m_data = new T[SIZE]; }
+  FixedHeapArray() { allocate(); }
 
   FixedHeapArray(const this_type& copy)
   {
-    m_data = new T[SIZE];
+    allocate();
     std::copy(copy.cbegin(), copy.cend(), begin());
   }
 
@@ -38,7 +38,7 @@ public:
     move.m_data = nullptr;
   }
 
-  ~FixedHeapArray() { delete[] m_data; }
+  ~FixedHeapArray() { deallocate(); }
 
   size_type size() const { return SIZE; }
   size_type capacity() const { return SIZE; }
@@ -107,6 +107,42 @@ public:
 #undef RELATIONAL_OPERATOR
 
 private:
+  void allocate()
+  {
+    if constexpr (ALIGNMENT > 0)
+    {
+#ifdef _MSC_VER
+      m_data = static_cast<T*>(_aligned_malloc(SIZE * sizeof(T), ALIGNMENT));
+      if (!m_data)
+        Panic("Memory allocation failed.");
+#else
+      if (posix_memalign(reinterpret_cast<void**>(&m_data), ALIGNMENT, SIZE * sizeof(T)) != 0)
+        Panic("Memory allocation failed.");
+#endif
+    }
+    else
+    {
+      m_data = static_cast<T*>(std::malloc(SIZE * sizeof(T)));
+      if (!m_data)
+        Panic("Memory allocation failed.");
+    }
+  }
+  void deallocate()
+  {
+    if constexpr (ALIGNMENT > 0)
+    {
+#ifdef _MSC_VER
+      _aligned_free(m_data);
+#else
+      std::free(m_data);
+#endif
+    }
+    else
+    {
+      std::free(m_data);
+    }
+  }
+
   T* m_data;
 };
 
@@ -313,23 +349,23 @@ private:
     if constexpr (alignment > 0)
     {
 #ifdef _MSC_VER
-      m_data = _aligned_realloc(prev_ptr, size, alignment);
+      m_data = static_cast<T*>(_aligned_realloc(prev_ptr, size * sizeof(T), alignment));
       if (!m_data)
         Panic("Memory allocation failed.");
 #else
-      if (posix_memalign(reinterpret_cast<void**>(&m_data), alignment, size) != 0)
+      if (posix_memalign(reinterpret_cast<void**>(&m_data), alignment, size * sizeof(T)) != 0)
         Panic("Memory allocation failed.");
 
       if (prev_ptr)
       {
-        std::memcpy(m_data, prev_ptr, prev_size);
+        std::memcpy(m_data, prev_ptr, prev_size * sizeof(T));
         std::free(prev_ptr);
       }
 #endif
     }
     else
     {
-      m_data = static_cast<T*>(std::realloc(prev_ptr, size));
+      m_data = static_cast<T*>(std::realloc(prev_ptr, size * sizeof(T)));
       if (!m_data)
         Panic("Memory allocation failed.");
     }
