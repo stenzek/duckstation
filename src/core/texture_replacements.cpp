@@ -1,20 +1,25 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "texture_replacements.h"
+#include "host.h"
+#include "settings.h"
+
+#include "common/bitutils.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+
 #include "fmt/format.h"
-#include "host.h"
-#include "settings.h"
 #include "xxhash.h"
 #if defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
 #include "xxh_x86dispatch.h"
 #endif
+
 #include <cinttypes>
+
 Log_SetChannel(TextureReplacements);
 
 TextureReplacements g_texture_replacements;

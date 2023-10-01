@@ -9,6 +9,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"

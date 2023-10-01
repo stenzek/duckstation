@@ -43,6 +43,7 @@
     <ClInclude Include="sha1_digest.h" />
     <ClInclude Include="fastjmp.h" />
     <ClInclude Include="memmap.h" />
+    <ClInclude Include="intrin.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />

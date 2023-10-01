@@ -4,6 +4,7 @@
 #include "gpu_texture.h"
 #include "gpu_device.h"
 
+#include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
 

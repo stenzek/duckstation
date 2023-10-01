@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cdrom.h"
@@ -21,17 +21,15 @@
 #include "common/fifo_queue.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
+#include "common/intrin.h"
 #include "common/log.h"
 
 #include "imgui.h"
 
 #include <cmath>
 #include <vector>
-Log_SetChannel(CDROM);
 
-#if defined(CPU_ARCH_X64)
-#include <emmintrin.h>
-#endif
+Log_SetChannel(CDROM);
 
 namespace CDROM {
 enum : u32
@@ -3073,7 +3071,7 @@ static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
 {
   static constexpr u32 NUM_SAMPLES = CDImage::RAW_SECTOR_SIZE / sizeof(s16);
 
-#if defined(CPU_ARCH_X64)
+#if defined(CPU_ARCH_SSE)
   static_assert(Common::IsAlignedPow2(NUM_SAMPLES, 8));
   const u8* current_ptr = raw_sector;
   __m128i v_peak = _mm_set1_epi16(0);

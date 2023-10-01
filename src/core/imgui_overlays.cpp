@@ -23,6 +23,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/file_system.h"
+#include "common/intrin.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -41,16 +42,6 @@
 #include <span>
 #include <unordered_map>
 
-#if defined(CPU_ARCH_X64)
-#include <emmintrin.h>
-#elif defined(CPU_ARCH_ARM64)
-#ifdef _MSC_VER
-#include <arm64_neon.h>
-#else
-#include <arm_neon.h>
-#endif
-#endif
-
 Log_SetChannel(ImGuiManager);
 
 namespace ImGuiManager {
@@ -66,7 +57,7 @@ static void Draw();
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
-#if defined(CPU_ARCH_X64)
+#if defined(CPU_ARCH_SSE)
   __m128 vmin(_mm_loadu_ps(values.data()));
   __m128 vmax(vmin);
 
@@ -80,7 +71,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
     vmax = _mm_max_ps(vmax, v);
   }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
   float min = std::min(vmin.m128_f32[0], std::min(vmin.m128_f32[1], std::min(vmin.m128_f32[2], vmin.m128_f32[3])));
   float max = std::max(vmax.m128_f32[0], std::max(vmax.m128_f32[1], std::max(vmax.m128_f32[2], vmax.m128_f32[3])));
 #else
@@ -94,7 +85,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   }
 
   return std::tie(min, max);
-#elif defined(CPU_ARCH_ARM64)
+#elif defined(CPU_ARCH_NEON)
   float32x4_t vmin(vld1q_f32(values.data()));
   float32x4_t vmax(vmin);
 

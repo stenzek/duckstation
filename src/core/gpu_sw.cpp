@@ -8,22 +8,13 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/intrin.h"
 #include "common/log.h"
 #include "common/make_array.h"
 
 #include <algorithm>
 
 Log_SetChannel(GPU_SW);
-
-#if defined(CPU_ARCH_X64)
-#include <emmintrin.h>
-#elif defined(CPU_ARCH_ARM64)
-#ifdef _MSC_VER
-#include <arm64_neon.h>
-#else
-#include <arm_neon.h>
-#endif
-#endif
 
 template<typename T>
 ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
@@ -162,7 +153,7 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA5551, u16>(const u16* sr
 {
   u32 col = 0;
 
-#if defined(CPU_ARCH_X64)
+#if defined(CPU_ARCH_SSE)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
@@ -176,7 +167,7 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA5551, u16>(const u16* sr
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
     dst_ptr += 8;
   }
-#elif defined(CPU_ARCH_ARM64)
+#elif defined(CPU_ARCH_NEON)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
@@ -201,7 +192,7 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB565, u16>(const u16* src_
 {
   u32 col = 0;
 
-#if defined(CPU_ARCH_X64)
+#if defined(CPU_ARCH_SSE)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
@@ -216,7 +207,7 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB565, u16>(const u16* src_
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
     dst_ptr += 8;
   }
-#elif defined(CPU_ARCH_ARM64)
+#elif defined(CPU_ARCH_NEON)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   const uint16x8_t single_mask = vdupq_n_u16(0x1F);
   for (; col < aligned_width; col += 8)

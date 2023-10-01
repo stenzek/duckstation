@@ -1,18 +1,23 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memory_card_image.h"
+#include "system.h"
+
+#include "util/shiftjis.h"
+#include "util/state_wrapper.h"
+
+#include "common/bitutils.h"
 #include "common/byte_stream.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "system.h"
-#include "util/shiftjis.h"
-#include "util/state_wrapper.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <optional>
+
 Log_SetChannel(MemoryCard);
 
 namespace MemoryCardImage {

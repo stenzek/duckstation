@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "pad.h"
@@ -15,6 +15,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/bitfield.h"
+#include "common/bitutils.h"
 #include "common/fifo_queue.h"
 #include "common/log.h"
 

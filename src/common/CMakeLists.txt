@@ -19,6 +19,7 @@ add_library(common
   file_system.h
   image.cpp
   image.h
+  intrin.h
   hash_combine.h
   heap_array.h
   heterogeneous_containers.h

@@ -1,12 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "negcon.h"
-#include "common/assert.h"
-#include "common/log.h"
 #include "host.h"
 #include "system.h"
+
 #include "util/state_wrapper.h"
+
+#include "common/assert.h"
+#include "common/bitutils.h"
+#include "common/log.h"
+
 #include <array>
 #include <cmath>
 
@@ -250,7 +254,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), NeGcon::Button::R, GenericInputBinding::R1),
   AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
   AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
-  // clang-format on
+// clang-format on
 
 #undef AXIS
 #undef BUTTON
@@ -265,12 +269,9 @@ static const SettingInfo s_settings[] = {
    nullptr, 100.0f},
 };
 
-const Controller::ControllerInfo NeGcon::INFO = {ControllerType::NeGcon,
-                                                 "NeGcon",
-                                                 TRANSLATE_NOOP("ControllerType", "NeGcon"),
-                                                 s_binding_info,
-                                                 s_settings,
-                                                 Controller::VibrationCapabilities::NoVibration};
+const Controller::ControllerInfo NeGcon::INFO = {
+  ControllerType::NeGcon, "NeGcon",   TRANSLATE_NOOP("ControllerType", "NeGcon"),
+  s_binding_info,         s_settings, Controller::VibrationCapabilities::NoVibration};
 
 void NeGcon::LoadSettings(SettingsInterface& si, const char* section)
 {

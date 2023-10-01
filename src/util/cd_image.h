@@ -3,6 +3,7 @@
 
 #pragma once
 #include "common/bitfield.h"
+#include "common/bitutils.h"
 #include "common/progress_callback.h"
 #include "common/types.h"
 #include <array>

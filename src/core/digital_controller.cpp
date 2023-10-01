@@ -1,11 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "digital_controller.h"
-#include "common/assert.h"
 #include "host.h"
 #include "system.h"
+
 #include "util/state_wrapper.h"
+
+#include "common/assert.h"
+#include "common/bitutils.h"
 
 DigitalController::DigitalController(u32 index) : Controller(index)
 {

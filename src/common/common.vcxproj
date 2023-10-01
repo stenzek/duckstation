@@ -20,6 +20,7 @@
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="lru_cache.h" />

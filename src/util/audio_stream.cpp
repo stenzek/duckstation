@@ -2,29 +2,19 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "audio_stream.h"
-#include "SoundTouch.h"
+
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/intrin.h"
 #include "common/log.h"
 #include "common/make_array.h"
 #include "common/timer.h"
+
+#include "SoundTouch.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-
-#ifdef __APPLE__
-#include <stdlib.h> // alloca
-#else
-#include <malloc.h> // alloca
-#endif
-
-#if defined(_M_ARM64)
-#include <arm64_neon.h>
-#elif defined(__aarch64__)
-#include <arm_neon.h>
-#elif defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
-#include <emmintrin.h>
-#endif
 
 Log_SetChannel(AudioStream);
 
@@ -364,7 +354,7 @@ void AudioStream::EndWrite(u32 num_frames)
 static constexpr float S16_TO_FLOAT = 1.0f / 32767.0f;
 static constexpr float FLOAT_TO_S16 = 32767.0f;
 
-#if defined(CPU_ARCH_ARM64)
+#if defined(CPU_ARCH_NEON)
 
 static void S16ChunkToFloat(const s32* src, float* dst)
 {
@@ -417,7 +407,7 @@ static void FloatChunkToS16(s32* dst, const float* src, uint size)
   }
 }
 
-#elif defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
+#elif defined(CPU_ARCH_SSE)
 
 static void S16ChunkToFloat(const s32* src, float* dst)
 {
