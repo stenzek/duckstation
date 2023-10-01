@@ -3071,9 +3071,13 @@ static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
 {
   static constexpr u32 NUM_SAMPLES = CDImage::RAW_SECTOR_SIZE / sizeof(s16);
 
-#if defined(CPU_ARCH_SSE)
+#if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
+
   static_assert(Common::IsAlignedPow2(NUM_SAMPLES, 8));
   const u8* current_ptr = raw_sector;
+  s16 v_peaks[8];
+
+#if defined(CPU_ARCH_SSE)
   __m128i v_peak = _mm_set1_epi16(0);
   for (u32 i = 0; i < NUM_SAMPLES; i += 8)
   {
@@ -3081,8 +3085,18 @@ static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
     v_peak = _mm_max_epi16(val, v_peak);
     current_ptr += 16;
   }
-  s16 v_peaks[8];
   _mm_store_si128(reinterpret_cast<__m128i*>(v_peaks), v_peak);
+#elif defined(CPU_ARCH_NEON)
+  int16x8_t v_peak = vdupq_n_s16(0);
+  for (u32 i = 0; i < NUM_SAMPLES; i += 8)
+  {
+    int16x8_t val = vld1q_s16(reinterpret_cast<const s16*>(current_ptr));
+    v_peak = vmaxq_s16(val, v_peak);
+    current_ptr += 16;
+  }
+  vst1q_s16(v_peaks, v_peak);
+#endif
+
   if (channel == 0)
     return std::max(v_peaks[0], std::max(v_peaks[2], std::max(v_peaks[4], v_peaks[6])));
   else
