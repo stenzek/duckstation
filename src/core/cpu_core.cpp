@@ -63,6 +63,21 @@ static void ExecuteInstruction();
 template<PGXPMode pgxp_mode, bool debug>
 [[noreturn]] static void ExecuteImpl();
 
+static bool FetchInstruction();
+static bool FetchInstructionForInterpreterFallback();
+template<bool add_ticks, bool icache_read = false, u32 word_count = 1, bool raise_exceptions>
+static bool DoInstructionRead(PhysicalMemoryAddress address, void* data);
+template<MemoryAccessType type, MemoryAccessSize size>
+static bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value);
+template<MemoryAccessType type, MemoryAccessSize size>
+static bool DoAlignmentCheck(VirtualMemoryAddress address);
+static bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
+static bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
+static bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value);
+static bool WriteMemoryByte(VirtualMemoryAddress addr, u32 value);
+static bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value);
+static bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
+
 State g_state;
 bool TRACE_EXECUTION = false;
 
@@ -139,7 +154,7 @@ void CPU::Initialize()
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   s_single_step = false;
 
-  UpdateFastmemBase();
+  UpdateMemoryPointers();
 
   GTE::Initialize();
 }
@@ -154,6 +169,8 @@ void CPU::Reset()
 {
   g_state.pending_ticks = 0;
   g_state.downcount = 0;
+  g_state.exception_raised = false;
+  g_state.bus_error = false;
 
   g_state.regs = {};
 
@@ -168,7 +185,7 @@ void CPU::Reset()
   g_state.cop0_regs.cause.bits = 0;
 
   ClearICache();
-  UpdateFastmemBase();
+  UpdateMemoryPointers();
 
   GTE::Reset();
 
@@ -202,6 +219,7 @@ bool CPU::DoState(StateWrapper& sw)
   sw.Do(&g_state.next_instruction_is_branch_delay_slot);
   sw.Do(&g_state.branch_was_taken);
   sw.Do(&g_state.exception_raised);
+  sw.DoEx(&g_state.bus_error, 61, false);
   if (sw.GetVersion() < 59)
   {
     bool interrupt_delay;
@@ -240,19 +258,11 @@ bool CPU::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    UpdateFastmemBase();
+    UpdateMemoryPointers();
     g_state.gte_completion_tick = 0;
   }
 
   return !sw.HasError();
-}
-
-void CPU::UpdateFastmemBase()
-{
-  if (g_state.cop0_regs.sr.Isc)
-    g_state.fastmem_base = nullptr;
-  else
-    g_state.fastmem_base = Bus::GetFastmemBase();
 }
 
 ALWAYS_INLINE_RELEASE void CPU::SetPC(u32 new_pc)
@@ -527,6 +537,7 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.sr.bits =
         (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
       Log_DebugPrintf("COP0 SR <- %08X (now %08X)", value, g_state.cop0_regs.sr.bits);
+      UpdateMemoryPointers();
       CheckForPendingInterrupt();
     }
     break;
@@ -2357,3 +2368,904 @@ bool CPU::Recompiler::Thunks::InterpretInstructionPGXP()
   ExecuteInstruction<PGXPMode::Memory, false>();
   return g_state.exception_raised;
 }
+
+ALWAYS_INLINE_RELEASE Bus::MemoryReadHandler CPU::GetMemoryReadHandler(VirtualMemoryAddress address,
+                                                                       MemoryAccessSize size)
+{
+  Bus::MemoryReadHandler* base =
+    Bus::OffsetHandlerArray<Bus::MemoryReadHandler>(g_state.memory_handlers, size, MemoryAccessType::Read);
+  return base[address >> Bus::MEMORY_LUT_PAGE_SHIFT];
+}
+
+ALWAYS_INLINE_RELEASE Bus::MemoryWriteHandler CPU::GetMemoryWriteHandler(VirtualMemoryAddress address,
+                                                                         MemoryAccessSize size)
+{
+  Bus::MemoryWriteHandler* base =
+    Bus::OffsetHandlerArray<Bus::MemoryWriteHandler>(g_state.memory_handlers, size, MemoryAccessType::Write);
+  return base[address >> Bus::MEMORY_LUT_PAGE_SHIFT];
+}
+
+void CPU::UpdateMemoryPointers()
+{
+  g_state.memory_handlers = Bus::GetMemoryHandlers(g_state.cop0_regs.sr.Isc, g_state.cop0_regs.sr.Swc);
+  g_state.fastmem_base = g_state.cop0_regs.sr.Isc ? nullptr : Bus::GetFastmemBase();
+}
+
+void CPU::ExecutionModeChanged()
+{
+  g_state.bus_error = false;
+}
+
+template<bool add_ticks, bool icache_read, u32 word_count, bool raise_exceptions>
+ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address, void* data)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    std::memcpy(data, &g_ram[address & g_ram_mask], sizeof(u32) * word_count);
+    if constexpr (add_ticks)
+      g_state.pending_ticks += (icache_read ? 1 : RAM_READ_TICKS) * word_count;
+
+    return true;
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
+    if constexpr (add_ticks)
+      g_state.pending_ticks += g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+
+    return true;
+  }
+  else
+  {
+    if (raise_exceptions)
+      CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+
+    std::memset(data, 0, sizeof(u32) * word_count);
+    return false;
+  }
+}
+
+TickCount CPU::GetInstructionReadTicks(VirtualMemoryAddress address)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    return RAM_READ_TICKS;
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)];
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
+{
+  using namespace Bus;
+
+  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+
+  if (address < RAM_MIRROR_END)
+  {
+    return 1 * ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
+  }
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  {
+    return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] *
+           ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void CPU::CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks)
+{
+  VirtualMemoryAddress current_pc = g_state.pc & ICACHE_TAG_ADDRESS_MASK;
+  if (IsCachedAddress(current_pc))
+  {
+    TickCount ticks = 0;
+    TickCount cached_ticks_per_line = GetICacheFillTicks(current_pc);
+    for (u32 i = 0; i < line_count; i++, current_pc += ICACHE_LINE_SIZE)
+    {
+      const u32 line = GetICacheLine(current_pc);
+      if (g_state.icache_tags[line] != current_pc)
+      {
+        g_state.icache_tags[line] = current_pc;
+        ticks += cached_ticks_per_line;
+      }
+    }
+
+    g_state.pending_ticks += ticks;
+  }
+  else
+  {
+    g_state.pending_ticks += uncached_ticks;
+  }
+}
+
+u32 CPU::FillICache(VirtualMemoryAddress address)
+{
+  const u32 line = GetICacheLine(address);
+  u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
+  u32 line_tag;
+  switch ((address >> 2) & 0x03u)
+  {
+    case 0:
+      DoInstructionRead<true, true, 4, false>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+      line_tag = GetICacheTagForAddress(address);
+      break;
+    case 1:
+      DoInstructionRead<true, true, 3, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), line_data + 0x4);
+      line_tag = GetICacheTagForAddress(address) | 0x1;
+      break;
+    case 2:
+      DoInstructionRead<true, true, 2, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), line_data + 0x8);
+      line_tag = GetICacheTagForAddress(address) | 0x3;
+      break;
+    case 3:
+    default:
+      DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), line_data + 0xC);
+      line_tag = GetICacheTagForAddress(address) | 0x7;
+      break;
+  }
+  g_state.icache_tags[line] = line_tag;
+
+  const u32 offset = GetICacheLineOffset(address);
+  u32 result;
+  std::memcpy(&result, &line_data[offset], sizeof(result));
+  return result;
+}
+
+void CPU::ClearICache()
+{
+  std::memset(g_state.icache_data.data(), 0, ICACHE_SIZE);
+  g_state.icache_tags.fill(ICACHE_INVALID_BITS);
+}
+
+namespace CPU {
+ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
+{
+  const u32 line = GetICacheLine(address);
+  const u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
+  const u32 offset = GetICacheLineOffset(address);
+  u32 result;
+  std::memcpy(&result, &line_data[offset], sizeof(result));
+  return result;
+}
+} // namespace CPU
+
+ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
+{
+  DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
+
+  const PhysicalMemoryAddress address = g_state.npc;
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    {
+#if 0
+      DoInstructionRead<true, false, 1, false>(address, &g_state.next_instruction.bits);
+#else
+      if (CompareICacheTag(address))
+        g_state.next_instruction.bits = ReadICache(address);
+      else
+        g_state.next_instruction.bits = FillICache(address);
+#endif
+    }
+    break;
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      if (!DoInstructionRead<true, false, 1, true>(address, &g_state.next_instruction.bits))
+        return false;
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
+                                                                      g_state.current_instruction_in_branch_delay_slot,
+                                                                      g_state.current_instruction_was_branch_taken, 0),
+                          address);
+      return false;
+    }
+  }
+
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
+  return true;
+}
+
+bool CPU::FetchInstructionForInterpreterFallback()
+{
+  DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
+
+  const PhysicalMemoryAddress address = g_state.npc;
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      // We don't use the icache when doing interpreter fallbacks, because it's probably stale.
+      if (!DoInstructionRead<false, false, 1, true>(address, &g_state.next_instruction.bits))
+        return false;
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
+                                                                      g_state.current_instruction_in_branch_delay_slot,
+                                                                      g_state.current_instruction_was_branch_taken, 0),
+                          address);
+      return false;
+    }
+  }
+
+  g_state.pc = g_state.npc;
+  g_state.npc += sizeof(g_state.next_instruction.bits);
+  return true;
+}
+
+bool CPU::SafeReadInstruction(VirtualMemoryAddress addr, u32* value)
+{
+  switch (addr >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      // TODO: Check icache.
+      return DoInstructionRead<false, false, 1, false>(addr, value);
+    }
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    default:
+    {
+      return false;
+    }
+  }
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value)
+{
+  using namespace Bus;
+
+  switch (address >> 29)
+  {
+    case 0x00: // KUSEG 0M-512M
+    case 0x04: // KSEG0 - physical memory cached
+    {
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+      if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+      {
+        const u32 offset = address & DCACHE_OFFSET_MASK;
+
+        if constexpr (type == MemoryAccessType::Read)
+        {
+          if constexpr (size == MemoryAccessSize::Byte)
+          {
+            value = CPU::g_state.dcache[offset];
+          }
+          else if constexpr (size == MemoryAccessSize::HalfWord)
+          {
+            u16 temp;
+            std::memcpy(&temp, &CPU::g_state.dcache[offset], sizeof(u16));
+            value = ZeroExtend32(temp);
+          }
+          else if constexpr (size == MemoryAccessSize::Word)
+          {
+            std::memcpy(&value, &CPU::g_state.dcache[offset], sizeof(u32));
+          }
+        }
+        else
+        {
+          if constexpr (size == MemoryAccessSize::Byte)
+          {
+            CPU::g_state.dcache[offset] = Truncate8(value);
+          }
+          else if constexpr (size == MemoryAccessSize::HalfWord)
+          {
+            std::memcpy(&CPU::g_state.dcache[offset], &value, sizeof(u16));
+          }
+          else if constexpr (size == MemoryAccessSize::Word)
+          {
+            std::memcpy(&CPU::g_state.dcache[offset], &value, sizeof(u32));
+          }
+        }
+
+        return true;
+      }
+    }
+    break;
+
+    case 0x01: // KUSEG 512M-1024M
+    case 0x02: // KUSEG 1024M-1536M
+    case 0x03: // KUSEG 1536M-2048M
+    case 0x06: // KSEG2
+    case 0x07: // KSEG2
+    {
+      // Above 512mb raises an exception.
+      return false;
+    }
+
+    case 0x05: // KSEG1 - physical memory uncached
+    {
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+    }
+    break;
+  }
+
+  if (address < RAM_MIRROR_END)
+  {
+    const u32 offset = address & g_ram_mask;
+    if constexpr (type == MemoryAccessType::Read)
+    {
+      if constexpr (size == MemoryAccessSize::Byte)
+      {
+        value = g_ram[offset];
+      }
+      else if constexpr (size == MemoryAccessSize::HalfWord)
+      {
+        u16 temp;
+        std::memcpy(&temp, &g_ram[offset], sizeof(temp));
+        value = ZeroExtend32(temp);
+      }
+      else if constexpr (size == MemoryAccessSize::Word)
+      {
+        std::memcpy(&value, &g_ram[offset], sizeof(u32));
+      }
+    }
+    else
+    {
+      const u32 page_index = offset / HOST_PAGE_SIZE;
+
+      if constexpr (size == MemoryAccessSize::Byte)
+      {
+        if (g_ram[offset] != Truncate8(value))
+        {
+          g_ram[offset] = Truncate8(value);
+          if (g_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+      else if constexpr (size == MemoryAccessSize::HalfWord)
+      {
+        const u16 new_value = Truncate16(value);
+        u16 old_value;
+        std::memcpy(&old_value, &g_ram[offset], sizeof(old_value));
+        if (old_value != new_value)
+        {
+          std::memcpy(&g_ram[offset], &new_value, sizeof(u16));
+          if (g_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+      else if constexpr (size == MemoryAccessSize::Word)
+      {
+        u32 old_value;
+        std::memcpy(&old_value, &g_ram[offset], sizeof(u32));
+        if (old_value != value)
+        {
+          std::memcpy(&g_ram[offset], &value, sizeof(u32));
+          if (g_ram_code_bits[page_index])
+            CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+        }
+      }
+    }
+
+    return true;
+  }
+  if constexpr (type == MemoryAccessType::Read)
+  {
+    if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+    {
+      const u32 offset = (address & BIOS_MASK);
+      if constexpr (size == MemoryAccessSize::Byte)
+      {
+        value = ZeroExtend32(g_bios[offset]);
+      }
+      else if constexpr (size == MemoryAccessSize::HalfWord)
+      {
+        u16 halfword;
+        std::memcpy(&halfword, &g_bios[offset], sizeof(u16));
+        value = ZeroExtend32(halfword);
+      }
+      else
+      {
+        std::memcpy(&value, &g_bios[offset], sizeof(u32));
+      }
+
+      return true;
+    }
+  }
+  return false;
+}
+
+bool CPU::SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  u32 temp = 0;
+  if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr, temp))
+    return false;
+
+  *value = Truncate8(temp);
+  return true;
+}
+
+bool CPU::SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  if ((addr & 1) == 0)
+  {
+    u32 temp = 0;
+    if (!DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr, temp))
+      return false;
+
+    *value = Truncate16(temp);
+    return true;
+  }
+
+  u8 low, high;
+  if (!SafeReadMemoryByte(addr, &low) || !SafeReadMemoryByte(addr + 1, &high))
+    return false;
+
+  *value = (ZeroExtend16(high) << 8) | ZeroExtend16(low);
+  return true;
+}
+
+bool CPU::SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  if ((addr & 3) == 0)
+    return DoSafeMemoryAccess<MemoryAccessType::Read, MemoryAccessSize::Word>(addr, *value);
+
+  u16 low, high;
+  if (!SafeReadMemoryHalfWord(addr, &low) || !SafeReadMemoryHalfWord(addr + 2, &high))
+    return false;
+
+  *value = (ZeroExtend32(high) << 16) | ZeroExtend32(low);
+  return true;
+}
+
+bool CPU::SafeReadMemoryCString(VirtualMemoryAddress addr, std::string* value, u32 max_length /*= 1024*/)
+{
+  value->clear();
+
+  u8 ch;
+  while (SafeReadMemoryByte(addr, &ch))
+  {
+    if (ch == 0)
+      return true;
+
+    value->push_back(ch);
+    if (value->size() >= max_length)
+      return true;
+
+    addr++;
+  }
+
+  value->clear();
+  return false;
+}
+
+bool CPU::SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value)
+{
+  u32 temp = ZeroExtend32(value);
+  return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr, temp);
+}
+
+bool CPU::SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value)
+{
+  if ((addr & 1) == 0)
+  {
+    u32 temp = ZeroExtend32(value);
+    return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr, temp);
+  }
+
+  return SafeWriteMemoryByte(addr, Truncate8(value)) && SafeWriteMemoryByte(addr + 1, Truncate8(value >> 8));
+}
+
+bool CPU::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  if ((addr & 3) == 0)
+    return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
+
+  return SafeWriteMemoryHalfWord(addr, Truncate16(value >> 16)) &&
+         SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
+}
+
+void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  if (paddr < RAM_MIRROR_END)
+  {
+    if (read_ticks)
+      *read_ticks = RAM_READ_TICKS;
+
+    return &g_ram[paddr & g_ram_mask];
+  }
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    if (read_ticks)
+      *read_ticks = 0;
+
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+  }
+
+  if (paddr >= BIOS_BASE && paddr < (BIOS_BASE + BIOS_SIZE))
+  {
+    if (read_ticks)
+      *read_ticks = g_bios_access_time[static_cast<u32>(size)];
+
+    return &g_bios[paddr & BIOS_MASK];
+  }
+
+  return nullptr;
+}
+
+void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size)
+{
+  using namespace Bus;
+
+  const u32 seg = (address >> 29);
+  if (seg != 0 && seg != 4 && seg != 5)
+    return nullptr;
+
+  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+
+#if 0
+  // Not enabled until we can protect code regions.
+  if (paddr < RAM_MIRROR_END)
+    return &g_ram[paddr & RAM_MASK];
+#endif
+
+  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+
+  return nullptr;
+}
+
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE_RELEASE bool CPU::DoAlignmentCheck(VirtualMemoryAddress address)
+{
+  if constexpr (size == MemoryAccessSize::HalfWord)
+  {
+    if (Common::IsAlignedPow2(address, 2))
+      return true;
+  }
+  else if constexpr (size == MemoryAccessSize::Word)
+  {
+    if (Common::IsAlignedPow2(address, 4))
+      return true;
+  }
+  else
+  {
+    return true;
+  }
+
+  g_state.cop0_regs.BadVaddr = address;
+  RaiseException(type == MemoryAccessType::Read ? Exception::AdEL : Exception::AdES);
+  return false;
+}
+
+#if 0
+static void MemoryBreakpoint(MemoryAccessType type, MemoryAccessSize size, VirtualMemoryAddress addr, u32 value)
+{
+  static constexpr const char* sizes[3] = { "byte", "halfword", "word" };
+  static constexpr const char* types[2] = { "read", "write" };
+
+  const u32 cycle = TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks;
+
+#if 0
+  static std::FILE* fp = nullptr;
+  if (!fp)
+    fp = std::fopen("D:\\memory.txt", "wb");
+  if (fp)
+  {
+    std::fprintf(fp, "%u %s %s %08X %08X\n", cycle, types[static_cast<u32>(type)], sizes[static_cast<u32>(size)], addr, value);
+    std::fflush(fp);
+  }
+#endif
+
+#if 0
+  if (type == MemoryAccessType::Read && addr == 0x1F000084)
+    __debugbreak();
+#endif
+#if 0
+  if (type == MemoryAccessType::Write && addr == 0x000000B0 /*&& value == 0x3C080000*/)
+    __debugbreak();
+#endif
+
+#if 0 // TODO: MEMBP
+  if (type == MemoryAccessType::Write && address == 0x80113028)
+  {
+    if ((TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks) == 5051485)
+      __debugbreak();
+
+    Log_WarningPrintf("VAL %08X @ %u", value, (TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks));
+  }
+#endif
+}
+#define MEMORY_BREAKPOINT(type, size, addr, value) MemoryBreakpoint((type), (size), (addr), (value))
+#else
+#define MEMORY_BREAKPOINT(type, size, addr, value)
+#endif
+
+bool CPU::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
+{
+  *value = Truncate8(GetMemoryReadHandler(addr, MemoryAccessSize::Byte)(addr));
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Byte, addr, *value);
+  return true;
+}
+
+bool CPU::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  *value = Truncate16(GetMemoryReadHandler(addr, MemoryAccessSize::HalfWord)(addr));
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::HalfWord, addr, *value);
+  return true;
+}
+
+bool CPU::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
+{
+  if (!DoAlignmentCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+    return false;
+
+  *value = GetMemoryReadHandler(addr, MemoryAccessSize::Word)(addr);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Word, addr, *value);
+  return true;
+}
+
+bool CPU::WriteMemoryByte(VirtualMemoryAddress addr, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Byte, addr, value);
+
+  GetMemoryWriteHandler(addr, MemoryAccessSize::Byte)(addr, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  return true;
+}
+
+bool CPU::WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, addr, value);
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+    return false;
+
+  GetMemoryWriteHandler(addr, MemoryAccessSize::HalfWord)(addr, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  return true;
+}
+
+bool CPU::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, addr, value);
+
+  if (!DoAlignmentCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+    return false;
+
+  GetMemoryWriteHandler(addr, MemoryAccessSize::Word)(addr, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    RaiseException(Exception::DBE);
+    return false;
+  }
+
+  return true;
+}
+
+u64 CPU::Recompiler::Thunks::ReadMemoryByte(u32 address)
+{
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Byte)(address);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Byte, address, value);
+  return ZeroExtend64(value);
+}
+
+u64 CPU::Recompiler::Thunks::ReadMemoryHalfWord(u32 address)
+{
+  if (!Common::IsAlignedPow2(address, 2)) [[unlikely]]
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
+  }
+
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::HalfWord)(address);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::HalfWord, address, value);
+  return ZeroExtend64(value);
+}
+
+u64 CPU::Recompiler::Thunks::ReadMemoryWord(u32 address)
+{
+  if (!Common::IsAlignedPow2(address, 4)) [[unlikely]]
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u64>(-static_cast<s64>(Exception::AdEL));
+  }
+
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Word)(address);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u64>(-static_cast<s64>(Exception::DBE));
+  }
+
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Word, address, value);
+  return ZeroExtend64(value);
+}
+
+u32 CPU::Recompiler::Thunks::WriteMemoryByte(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Byte, address, value);
+
+  GetMemoryWriteHandler(address, MemoryAccessSize::Byte)(address, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u32>(Exception::DBE);
+  }
+
+  return 0;
+}
+
+u32 CPU::Recompiler::Thunks::WriteMemoryHalfWord(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, address, value);
+
+  if (!Common::IsAlignedPow2(address, 2)) [[unlikely]]
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u32>(Exception::AdES);
+  }
+
+  GetMemoryWriteHandler(address, MemoryAccessSize::HalfWord)(address, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u32>(Exception::DBE);
+  }
+
+  return 0;
+}
+
+u32 CPU::Recompiler::Thunks::WriteMemoryWord(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, address, value);
+
+  if (!Common::IsAlignedPow2(address, 4)) [[unlikely]]
+  {
+    g_state.cop0_regs.BadVaddr = address;
+    return static_cast<u32>(Exception::AdES);
+  }
+
+  GetMemoryWriteHandler(address, MemoryAccessSize::Word)(address, value);
+  if (g_state.bus_error) [[unlikely]]
+  {
+    g_state.bus_error = false;
+    return static_cast<u32>(Exception::DBE);
+  }
+
+  return 0;
+}
+
+u32 CPU::Recompiler::Thunks::UncheckedReadMemoryByte(u32 address)
+{
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Byte)(address);
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Byte, address, value);
+  return value;
+}
+
+u32 CPU::Recompiler::Thunks::UncheckedReadMemoryHalfWord(u32 address)
+{
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::HalfWord)(address);
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::HalfWord, address, value);
+  return value;
+}
+
+u32 CPU::Recompiler::Thunks::UncheckedReadMemoryWord(u32 address)
+{
+  const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Word)(address);
+  MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Word, address, value);
+  return value;
+}
+
+void CPU::Recompiler::Thunks::UncheckedWriteMemoryByte(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Byte, address, value);
+  GetMemoryWriteHandler(address, MemoryAccessSize::Byte)(address, value);
+}
+
+void CPU::Recompiler::Thunks::UncheckedWriteMemoryHalfWord(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, address, value);
+  GetMemoryWriteHandler(address, MemoryAccessSize::HalfWord)(address, value);
+}
+
+void CPU::Recompiler::Thunks::UncheckedWriteMemoryWord(u32 address, u32 value)
+{
+  MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, address, value);
+  GetMemoryWriteHandler(address, MemoryAccessSize::Word)(address, value);
+}
+
+#undef MEMORY_BREAKPOINT

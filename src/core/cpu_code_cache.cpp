@@ -263,8 +263,7 @@ void Initialize()
   }
 #endif
 
-    AllocateFastMap();
-
+  AllocateFastMap();
 
 #ifdef ENABLE_RECOMPILER
   if (g_settings.IsUsingRecompiler())
@@ -531,7 +530,9 @@ void Flush()
 }
 
 #ifndef _MSC_VER
-void __debugbreak() {}
+void __debugbreak()
+{
+}
 #endif
 
 void LogCurrentState()
@@ -1127,7 +1128,7 @@ bool InitializeFastmem()
   }
 
   Bus::UpdateFastmemViews(mode);
-  CPU::UpdateFastmemBase();
+  CPU::UpdateMemoryPointers();
   return true;
 }
 
@@ -1135,21 +1136,22 @@ void ShutdownFastmem()
 {
   Common::PageFaultHandler::RemoveHandler(&s_host_code_map);
   Bus::UpdateFastmemViews(CPUFastmemMode::Disabled);
-  CPU::UpdateFastmemBase();
+  CPU::UpdateMemoryPointers();
 }
 
 #ifdef ENABLE_MMAP_FASTMEM
 
 Common::PageFaultHandler::HandlerResult MMapPageFaultHandler(void* exception_pc, void* fault_address, bool is_write)
 {
-  if (static_cast<u8*>(fault_address) < g_state.fastmem_base ||
-      (static_cast<u8*>(fault_address) - g_state.fastmem_base) >= static_cast<ptrdiff_t>(Bus::FASTMEM_ARENA_SIZE))
+  if (static_cast<u8*>(fault_address) < static_cast<u8*>(g_state.fastmem_base) ||
+      (static_cast<u8*>(fault_address) - static_cast<u8*>(g_state.fastmem_base)) >=
+        static_cast<ptrdiff_t>(Bus::FASTMEM_ARENA_SIZE))
   {
     return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
   }
 
-  const PhysicalMemoryAddress fastmem_address =
-    static_cast<PhysicalMemoryAddress>(static_cast<ptrdiff_t>(static_cast<u8*>(fault_address) - g_state.fastmem_base));
+  const PhysicalMemoryAddress fastmem_address = static_cast<PhysicalMemoryAddress>(
+    static_cast<ptrdiff_t>(static_cast<u8*>(fault_address) - static_cast<u8*>(g_state.fastmem_base)));
 
   Log_DevPrintf("Page fault handler invoked at PC=%p Address=%p %s, fastmem offset 0x%08X", exception_pc, fault_address,
                 is_write ? "(write)" : "(read)", fastmem_address);

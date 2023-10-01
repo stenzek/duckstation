@@ -3510,6 +3510,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                       TRANSLATE_SV("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(
                                                                          g_settings.cpu_execution_mode))),
                           5.0f);
+      CPU::ExecutionModeChanged();
       CPU::CodeCache::Reinitialize();
       CPU::ClearICache();
     }
@@ -3521,6 +3522,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          g_settings.bios_tty_logging != old_settings.bios_tty_logging))
     {
       Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
+      CPU::ExecutionModeChanged();
 
       // changing memory exceptions can re-enable fastmem
       if (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)

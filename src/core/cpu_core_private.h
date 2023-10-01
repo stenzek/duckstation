@@ -102,16 +102,11 @@ ALWAYS_INLINE static VirtualMemoryAddress PhysicalAddressToVirtual(PhysicalMemor
   return bases[static_cast<u32>(segment)] | address;
 }
 
-// defined in bus.cpp - memory access functions which return false if an exception was thrown.
-bool FetchInstruction();
-bool FetchInstructionForInterpreterFallback();
+Bus::MemoryReadHandler GetMemoryReadHandler(VirtualMemoryAddress address, MemoryAccessSize size);
+Bus::MemoryWriteHandler GetMemoryWriteHandler(VirtualMemoryAddress address, MemoryAccessSize size);
+
+// memory access functions which return false if an exception was thrown.
 bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value);
-bool ReadMemoryByte(VirtualMemoryAddress addr, u8* value);
-bool ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
-bool ReadMemoryWord(VirtualMemoryAddress addr, u32* value);
-bool WriteMemoryByte(VirtualMemoryAddress addr, u32 value);
-bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value);
-bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 void* GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks);
 void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size);
 

@@ -23,9 +23,12 @@ enum : u32
   RAM_8MB_SIZE = 0x800000,
   RAM_8MB_MASK = RAM_8MB_SIZE - 1,
   RAM_MIRROR_END = 0x800000,
+  RAM_MIRROR_SIZE = 0x800000,
   EXP1_BASE = 0x1F000000,
   EXP1_SIZE = 0x800000,
   EXP1_MASK = EXP1_SIZE - 1,
+  HW_BASE = 0x1F801000,
+  HW_SIZE = 0x1000,
   MEMCTRL_BASE = 0x1F801000,
   MEMCTRL_SIZE = 0x40,
   MEMCTRL_MASK = MEMCTRL_SIZE - 1,
@@ -38,9 +41,9 @@ enum : u32
   MEMCTRL2_BASE = 0x1F801060,
   MEMCTRL2_SIZE = 0x10,
   MEMCTRL2_MASK = MEMCTRL2_SIZE - 1,
-  INTERRUPT_CONTROLLER_BASE = 0x1F801070,
-  INTERRUPT_CONTROLLER_SIZE = 0x10,
-  INTERRUPT_CONTROLLER_MASK = INTERRUPT_CONTROLLER_SIZE - 1,
+  INTC_BASE = 0x1F801070,
+  INTC_SIZE = 0x10,
+  INTERRUPT_CONTROLLER_MASK = INTC_SIZE - 1,
   DMA_BASE = 0x1F801080,
   DMA_SIZE = 0x80,
   DMA_MASK = DMA_SIZE - 1,
@@ -63,7 +66,7 @@ enum : u32
   EXP2_SIZE = 0x2000,
   EXP2_MASK = EXP2_SIZE - 1,
   EXP3_BASE = 0x1FA00000,
-  EXP3_SIZE = 0x1,
+  EXP3_SIZE = 0x200000,
   EXP3_MASK = EXP3_SIZE - 1,
   BIOS_BASE = 0x1FC00000,
   BIOS_SIZE = 0x80000,
@@ -85,6 +88,11 @@ enum : u32
   RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
   RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (HOST_PAGE_SIZE + 1)) / HOST_PAGE_SIZE,
 
+  MEMORY_LUT_PAGE_SIZE = 4096,
+  MEMORY_LUT_PAGE_SHIFT = 12,
+  MEMORY_LUT_SIZE = 0x100000,                 // 0x100000000 >> 12
+  MEMORY_LUT_SLOTS = MEMORY_LUT_SIZE * 3 * 2, // [size][read_write]
+
   FASTMEM_LUT_PAGE_SIZE = 4096,
   FASTMEM_LUT_PAGE_MASK = FASTMEM_LUT_PAGE_SIZE - 1,
   FASTMEM_LUT_PAGE_SHIFT = 12,
@@ -105,18 +113,35 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 
+using MemoryReadHandler = u32 (*)(VirtualMemoryAddress address);
+using MemoryWriteHandler = void (*)(VirtualMemoryAddress, u32);
+
+void** GetMemoryHandlers(bool isolate_cache, bool swap_caches);
+
+template<typename FP>
+ALWAYS_INLINE_RELEASE static FP* OffsetHandlerArray(void** handlers, MemoryAccessSize size, MemoryAccessType type)
+{
+  return reinterpret_cast<FP*>(handlers +
+                               (((static_cast<size_t>(size) * 2) + static_cast<size_t>(type)) * MEMORY_LUT_SIZE));
+}
+
 CPUFastmemMode GetFastmemMode();
-u8* GetFastmemBase();
+void* GetFastmemBase();
 void UpdateFastmemViews(CPUFastmemMode mode);
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);
 
 extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
-extern u8* g_ram;            // 2MB-8MB RAM
-extern u32 g_ram_size;       // Active size of RAM.
-extern u32 g_ram_mask;       // Active address bits for RAM.
-extern u8 g_bios[BIOS_SIZE]; // 512K BIOS ROM
+extern u8* g_ram;      // 2MB-8MB RAM
+extern u32 g_ram_size; // Active size of RAM.
+extern u32 g_ram_mask; // Active address bits for RAM.
+extern u8* g_bios;     // 512K BIOS ROM
+extern std::array<TickCount, 3> g_exp1_access_time;
+extern std::array<TickCount, 3> g_exp2_access_time;
+extern std::array<TickCount, 3> g_bios_access_time;
+extern std::array<TickCount, 3> g_cdrom_access_time;
+extern std::array<TickCount, 3> g_spu_access_time;
 
 /// Returns true if the address specified is writable (RAM).
 ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)

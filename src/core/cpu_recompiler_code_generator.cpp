@@ -2687,18 +2687,18 @@ bool CodeGenerator::Compile_cop0(const CodeBlockInstruction& cbi)
               m_speculative_constants.cop0_sr = SpeculativeReadReg(cbi.instruction.r.rt);
 
             // changing SR[Isc] needs to update fastmem views
-            if (reg == Cop0Reg::SR && g_settings.IsUsingFastmem())
+            if (reg == Cop0Reg::SR)
             {
-              LabelType skip_fastmem_update;
+              LabelType skip_mem_update;
               Value old_value = m_register_cache.AllocateScratch(RegSize_32);
               EmitLoadCPUStructField(old_value.host_reg, RegSize_32, offset);
               EmitStoreCPUStructField(offset, value);
               EmitXor(old_value.host_reg, old_value.host_reg, value);
-              EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_fastmem_update);
+              EmitBranchIfBitClear(old_value.host_reg, RegSize_32, 16, &skip_mem_update);
               m_register_cache.InhibitAllocation();
-              EmitFunctionCall(nullptr, &UpdateFastmemBase, m_register_cache.GetCPUPtr());
+              EmitFunctionCall(nullptr, &UpdateMemoryPointers, m_register_cache.GetCPUPtr());
               EmitUpdateFastmemBase();
-              EmitBindLabel(&skip_fastmem_update);
+              EmitBindLabel(&skip_mem_update);
               m_register_cache.UninhibitAllocation();
             }
             else

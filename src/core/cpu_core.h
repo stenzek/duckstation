@@ -68,6 +68,7 @@ struct State
   bool next_instruction_is_branch_delay_slot = false;
   bool branch_was_taken = false;
   bool exception_raised = false;
+  bool bus_error = false;
 
   // load delays
   Reg load_delay_reg = Reg::count;
@@ -84,7 +85,8 @@ struct State
   // 4 bytes of padding here on x64
   bool use_debug_dispatcher = false;
 
-  u8* fastmem_base = nullptr;
+  void* fastmem_base = nullptr;
+  void** memory_handlers = nullptr;
 
   // data cache (used as scratchpad)
   std::array<u8, DCACHE_SIZE> dcache = {};
@@ -102,7 +104,8 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 void ClearICache();
-void UpdateFastmemBase();
+void UpdateMemoryPointers();
+void ExecutionModeChanged();
 
 /// Executes interpreter loop.
 void Execute();
