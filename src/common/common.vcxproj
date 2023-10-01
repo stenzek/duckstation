@@ -74,7 +74,7 @@
   <ItemGroup>
     <MARMASM Include="fastjmp_arm.asm">
       <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64' Or $(Configuration.Contains(Clang))">true</ExcludedFromBuild>
     </MARMASM>
     <MASM Include="fastjmp_x86.asm">
       <FileType>Document</FileType>

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2021 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#ifndef _WIN32
+#if !defined(_MSC_VER) || defined(__clang__)
 
 #include "fastjmp.h"
 

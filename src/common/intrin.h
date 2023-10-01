@@ -14,7 +14,7 @@
 #include <emmintrin.h>
 #elif defined(CPU_ARCH_ARM64)
 #define CPU_ARCH_NEON 1
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #include <arm64_neon.h>
 #else
 #include <arm_neon.h>
