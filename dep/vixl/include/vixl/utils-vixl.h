@@ -48,7 +48,7 @@ namespace vixl {
 #ifdef __GNUC__
 #define VIXL_HAS_DEPRECATED_WITH_MSG
 #elif defined(__clang__)
-#ifdef __has_extension(attribute_deprecated_with_message)
+#if __has_extension(attribute_deprecated_with_message)
 #define VIXL_HAS_DEPRECATED_WITH_MSG
 #endif
 #endif
