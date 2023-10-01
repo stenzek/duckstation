@@ -138,7 +138,6 @@ static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELA
 static void RecalculateMemoryTimings();
 
 static void SetCodePageFastmemProtection(u32 page_index, bool writable);
-static void SetLUTFastmemProtection(u32 page_index, bool writable);
 } // namespace Bus
 
 #define FIXUP_HALFWORD_OFFSET(size, offset) ((size >= MemoryAccessSize::HalfWord) ? (offset) : ((offset) & ~1u))

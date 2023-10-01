@@ -441,6 +441,7 @@ FastMapTable* GetFastMapPointer()
 #else
   s_asm_dispatcher();
 #endif
+  UnreachableCode();
 }
 
 #endif
