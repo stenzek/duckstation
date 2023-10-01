@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/platform.h"
 #include "cpu_types.h"
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
 
 // We need to include windows.h before xbyak does..
 #ifdef _WIN32
@@ -15,13 +14,13 @@
 #define XBYAK_NO_OP_NAMES 1
 #include "xbyak.h"
 
-#elif defined(CPU_AARCH32)
+#elif defined(CPU_ARCH_ARM32)
 
 #include "vixl/aarch32/constants-aarch32.h"
 #include "vixl/aarch32/instructions-aarch32.h"
 #include "vixl/aarch32/macro-assembler-aarch32.h"
 
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
 
 #include "vixl/aarch64/constants-aarch64.h"
 #include "vixl/aarch64/macro-assembler-aarch64.h"
@@ -64,7 +63,7 @@ enum class Condition : u8
   Zero
 };
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
 
 using HostReg = unsigned;
 using CodeEmitter = Xbyak::CodeGenerator;
@@ -92,7 +91,7 @@ constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 #error Unknown ABI.
 #endif
 
-#elif defined(CPU_AARCH32)
+#elif defined(CPU_ARCH_ARM32)
 
 using HostReg = unsigned;
 using CodeEmitter = vixl::aarch32::MacroAssembler;
@@ -111,7 +110,7 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 // Alignment of code stoarge.
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
 
 using HostReg = unsigned;
 using CodeEmitter = vixl::aarch64::MacroAssembler;
@@ -130,7 +129,7 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 // Alignment of code stoarge.
 constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
-#elif defined(CPU_RISCV64)
+#elif defined(CPU_ARCH_RISCV64)
 
 using HostReg = unsigned;
 

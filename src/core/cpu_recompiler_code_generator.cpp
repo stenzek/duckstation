@@ -993,7 +993,7 @@ void CodeGenerator::BlockPrologue()
 
 void CodeGenerator::BlockEpilogue()
 {
-#if defined(_DEBUG) && defined(CPU_X64)
+#if defined(_DEBUG) && defined(CPU_ARCH_X64)
   m_emit->nop();
 #endif
 
@@ -1007,7 +1007,7 @@ void CodeGenerator::BlockEpilogue()
 void CodeGenerator::InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles,
                                         bool force_sync /* = false */)
 {
-#if defined(_DEBUG) && defined(CPU_X64)
+#if defined(_DEBUG) && defined(CPU_ARCH_X64)
   m_emit->nop();
 #endif
 

@@ -11,7 +11,6 @@
 #include "common/hash_combine.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/platform.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -448,7 +447,7 @@ bool CDImageCHD::IsPrecached() const
 ALWAYS_INLINE static void CopyAndSwap(void* dst_ptr, const u8* src_ptr, u32 data_size)
 {
   u8* dst_ptr_byte = static_cast<u8*>(dst_ptr);
-#if defined(CPU_X64) || defined(CPU_AARCH64)
+#if defined(CPU_ARCH_X64) || defined(CPU_ARCH_ARM64)
   const u32 num_values = data_size / 8;
   for (u32 i = 0; i < num_values; i++)
   {
@@ -459,7 +458,7 @@ ALWAYS_INLINE static void CopyAndSwap(void* dst_ptr, const u8* src_ptr, u32 data
     src_ptr += sizeof(value);
     dst_ptr_byte += sizeof(value);
   }
-#elif defined(CPU_X86) || defined(CPU_ARM)
+#elif defined(CPU_ARCH_X86) || defined(CPU_ARCH_ARM32)
   const u32 num_values = data_size / 4;
   for (u32 i = 0; i < num_values; i++)
   {

@@ -5,14 +5,13 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/platform.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 #include "fmt/format.h"
 #include "host.h"
 #include "settings.h"
 #include "xxhash.h"
-#if defined(CPU_X86) || defined(CPU_X64)
+#if defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
 #include "xxh_x86dispatch.h"
 #endif
 #include <cinttypes>

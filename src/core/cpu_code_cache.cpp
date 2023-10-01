@@ -36,7 +36,7 @@ static constexpr u32 INVALIDATE_THRESHOLD_TO_DISABLE_LINKING = 10;
 #define USE_STATIC_CODE_BUFFER 1
 #endif
 
-#if defined(CPU_AARCH32)
+#if defined(CPU_ARCH_ARM32)
 // Use a smaller code buffer size on AArch32 to have a better chance of being in range.
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 8 * 1024 * 1024;

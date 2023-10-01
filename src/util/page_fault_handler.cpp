@@ -3,7 +3,6 @@
 
 #include "page_fault_handler.h"
 #include "common/log.h"
-#include "common/platform.h"
 #include <algorithm>
 #include <cstring>
 #include <mutex>
@@ -36,7 +35,7 @@ static std::vector<RegisteredHandler> m_handlers;
 static std::mutex m_handler_lock;
 static thread_local bool s_in_handler;
 
-#if defined(CPU_AARCH32)
+#if defined(CPU_ARCH_ARM32)
 static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -46,7 +45,7 @@ static bool IsStoreInstruction(const void* ptr)
   return false;
 }
 
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
 static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -81,7 +80,7 @@ static bool IsStoreInstruction(const void* ptr)
       return false;
   }
 }
-#elif defined(CPU_RISCV64)
+#elif defined(CPU_ARCH_RISCV64)
 static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -91,7 +90,7 @@ static bool IsStoreInstruction(const void* ptr)
 }
 #endif
 
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && (defined(CPU_ARCH_X64) || defined(CPU_ARCH_ARM64))
 static PVOID s_veh_handle;
 
 static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
@@ -142,16 +141,16 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
 #if defined(__linux__) || defined(__ANDROID__)
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
-#elif defined(CPU_AARCH32)
+#elif defined(CPU_ARCH_ARM32)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.arm_pc);
   const bool is_write = IsStoreInstruction(exception_pc);
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
   const bool is_write = IsStoreInstruction(exception_pc);
-#elif defined(CPU_RISCV64)
+#elif defined(CPU_ARCH_RISCV64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.__gregs[REG_PC]);
   const bool is_write = IsStoreInstruction(exception_pc);
 #else
@@ -161,12 +160,12 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
 
 #elif defined(__APPLE__)
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
   void* const exception_address =
     reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
   void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);
@@ -178,11 +177,11 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
 
 #elif defined(__FreeBSD__)
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
   void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
   void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
   const bool is_write = IsStoreInstruction(exception_pc);
@@ -238,7 +237,7 @@ bool InstallHandler(const void* owner, void* start_pc, u32 code_size, Callback c
 
   if (was_empty)
   {
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && (defined(CPU_ARCH_X64) || defined(CPU_ARCH_ARM64))
     s_veh_handle = AddVectoredExceptionHandler(1, ExceptionHandler);
     if (!s_veh_handle)
     {
@@ -284,7 +283,7 @@ bool RemoveHandler(const void* owner)
 
   if (m_handlers.empty())
   {
-#if defined(_WIN32) && (defined(CPU_X64) || defined(CPU_AARCH64))
+#if defined(_WIN32) && (defined(CPU_ARCH_X64) || defined(CPU_ARCH_ARM64))
     RemoveVectoredExceptionHandler(s_veh_handle);
     s_veh_handle = nullptr;
 #elif defined(USE_SIGSEGV)

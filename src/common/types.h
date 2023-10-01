@@ -51,9 +51,9 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #endif
 
 #ifdef __GNUC__
-#define printflike(n,m) __attribute__((format(printf,n,m)))
+#define printflike(n, m) __attribute__((format(printf, n, m)))
 #else
-#define printflike(n,m)
+#define printflike(n, m)
 #endif
 
 // [[noreturn]] which can be used on function pointers.
@@ -68,7 +68,12 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #ifdef _MSC_VER
 #define ASSUME(x) __assume(x)
 #else
-#define ASSUME(x) do { if (!(x)) __builtin_unreachable(); } while(0)
+#define ASSUME(x)                                                                                                      \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!(x))                                                                                                          \
+      __builtin_unreachable();                                                                                         \
+  } while (0)
 #endif
 
 // disable warnings that show up at warning level 4
@@ -88,6 +93,82 @@ using u32 = uint32_t;
 using s64 = int64_t;
 using u64 = uint64_t;
 
+// Enable use of static_assert in constexpr if
+template<class T>
+struct dependent_false : std::false_type
+{
+};
+template<int T>
+struct dependent_int_false : std::false_type
+{
+};
+
+// Architecture detection.
+#if defined(_MSC_VER)
+
+#if defined(_M_X64)
+#define CPU_ARCH_X64 1
+#elif defined(_M_IX86)
+#define CPU_ARCH_X86 1
+#elif defined(_M_ARM64)
+#define CPU_ARCH_ARM64 1
+#elif defined(_M_ARM)
+#define CPU_ARCH_ARM32 1
+#else
+#error Unknown architecture.
+#endif
+
+#elif defined(__GNUC__) || defined(__clang__)
+
+#if defined(__x86_64__)
+#define CPU_ARCH_X64 1
+#elif defined(__i386__)
+#define CPU_ARCH_X86 1
+#elif defined(__aarch64__)
+#define CPU_ARCH_ARM64 1
+#elif defined(__arm__)
+#define CPU_ARCH_ARM32 1
+#elif defined(__riscv) && __riscv_xlen == 64
+#define CPU_ARCH_RISCV64 1
+#else
+#error Unknown architecture.
+#endif
+
+#else
+
+#error Unknown compiler.
+
+#endif
+
+#if defined(CPU_ARCH_X64)
+#define CPU_ARCH_STR "x64"
+#elif defined(CPU_ARCH_X86)
+#define CPU_ARCH_STR "x86"
+#elif defined(CPU_ARCH_ARM32)
+#define CPU_ARCH_STR "arm32"
+#elif defined(CPU_ARCH_ARM64)
+#define CPU_ARCH_STR "arm64"
+#elif defined(CPU_ARCH_RISCV64)
+#define CPU_ARCH_STR "riscv64"
+#else
+#define CPU_ARCH_STR "Unknown"
+#endif
+
+// OS detection.
+#if defined(_WIN32)
+#define TARGET_OS_STR "Windows"
+#elif defined(__ANDROID__)
+#define TARGET_OS_STR "Android"
+#elif defined(__linux__)
+#define TARGET_OS_STR "Linux"
+#elif defined(__FreeBSD__)
+#define TARGET_OS_STR "FreeBSD"
+#elif defined(__APPLE__)
+#define TARGET_OS_STR "macOS"
+#else
+#define TARGET_OS_STR "Unknown"
+#endif
+
 // Host page sizes.
 #if defined(__APPLE__) && defined(__aarch64__)
 static constexpr u32 HOST_PAGE_SIZE = 0x4000;
@@ -98,16 +179,6 @@ static constexpr u32 HOST_PAGE_SIZE = 0x1000;
 static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
 static constexpr u32 HOST_PAGE_SHIFT = 12;
 #endif
-
-// Enable use of static_assert in constexpr if
-template<class T>
-struct dependent_false : std::false_type
-{
-};
-template<int T>
-struct dependent_int_false : std::false_type
-{
-};
 
 // Zero-extending helper
 template<typename TReturn, typename TValue>

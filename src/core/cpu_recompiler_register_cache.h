@@ -198,9 +198,9 @@ struct Value
   static Value FromConstantU64(u64 value) { return FromConstant(value, RegSize_64); }
   static Value FromConstantPtr(const void* pointer)
   {
-#if defined(CPU_AARCH64) || defined(CPU_X64)
+#if defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_X64)
     return FromConstant(static_cast<u64>(reinterpret_cast<uintptr_t>(pointer)), RegSize_64);
-#elif defined(CPU_AARCH32)
+#elif defined(CPU_ARCH_ARM32)
     return FromConstant(static_cast<u32>(reinterpret_cast<uintptr_t>(pointer)), RegSize_32);
 #else
     return FromConstant(0, RegSize_32);

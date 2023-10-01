@@ -7,7 +7,6 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/make_array.h"
-#include "common/platform.h"
 #include "common/timer.h"
 #include <algorithm>
 #include <cmath>
@@ -23,7 +22,7 @@
 #include <arm64_neon.h>
 #elif defined(__aarch64__)
 #include <arm_neon.h>
-#elif defined(CPU_X86) || defined(CPU_X64)
+#elif defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
 #include <emmintrin.h>
 #endif
 
@@ -365,7 +364,7 @@ void AudioStream::EndWrite(u32 num_frames)
 static constexpr float S16_TO_FLOAT = 1.0f / 32767.0f;
 static constexpr float FLOAT_TO_S16 = 32767.0f;
 
-#if defined(CPU_AARCH64)
+#if defined(CPU_ARCH_ARM64)
 
 static void S16ChunkToFloat(const s32* src, float* dst)
 {
@@ -418,7 +417,7 @@ static void FloatChunkToS16(s32* dst, const float* src, uint size)
   }
 }
 
-#elif defined(CPU_X86) || defined(CPU_X64)
+#elif defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
 
 static void S16ChunkToFloat(const s32* src, float* dst)
 {

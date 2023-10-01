@@ -41,9 +41,9 @@
 #include <span>
 #include <unordered_map>
 
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
 #include <emmintrin.h>
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
 #ifdef _MSC_VER
 #include <arm64_neon.h>
 #else
@@ -66,7 +66,7 @@ static void Draw();
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
-#if defined(CPU_X64)
+#if defined(CPU_ARCH_X64)
   __m128 vmin(_mm_loadu_ps(values.data()));
   __m128 vmax(vmin);
 
@@ -76,8 +76,8 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   for (; i < aligned_count; i += 4)
   {
     const __m128 v(_mm_loadu_ps(&values[i]));
-    vmin = _mm_min_ps(v);
-    vmax = _mm_max_ps(v);
+    vmin = _mm_min_ps(vmin, v);
+    vmax = _mm_max_ps(vmax, v);
   }
 
 #ifdef _MSC_VER
@@ -94,7 +94,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   }
 
   return std::tie(min, max);
-#elif defined(CPU_AARCH64)
+#elif defined(CPU_ARCH_ARM64)
   float32x4_t vmin(vld1q_f32(values.data()));
   float32x4_t vmax(vmin);
 
@@ -104,8 +104,8 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   for (; i < aligned_count; i += 4)
   {
     const float32x4_t v(vld1q_f32(&values[i]));
-    vmin = vminq_f32(v);
-    vmax = vmaxq_f32(v);
+    vmin = vminq_f32(vmin, v);
+    vmax = vmaxq_f32(vmax, v);
   }
 
   float min = vminvq_f32(vmin);
