@@ -75,7 +75,7 @@ static bool s_loaded = false;
 static bool s_track_hashes_loaded = false;
 
 static std::vector<GameDatabase::Entry> s_entries;
-static UnorderedStringMap<u32> s_code_lookup;
+static PreferUnorderedStringMap<u32> s_code_lookup;
 
 static TrackHashesMap s_track_hashes_map;
 } // namespace GameDatabase

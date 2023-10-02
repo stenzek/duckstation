@@ -1558,6 +1558,8 @@ static constexpr std::array<RT, 256> GetHardwareRegisterHandlerTable()
       ret[i] = UnmappedWriteHandler<size>;
   }
 
+#if 0
+  // Verifies no region has >1 handler, but doesn't compile on older GCC.
 #define SET(raddr, rsize, read_handler, write_handler)                                                                 \
   static_assert(raddr >= 0x1F801000 && (raddr + rsize) <= 0x1F802000);                                                 \
   for (u32 taddr = raddr; taddr < (raddr + rsize); taddr += 16)                                                        \
@@ -1568,6 +1570,18 @@ static constexpr std::array<RT, 256> GetHardwareRegisterHandlerTable()
     else                                                                                                               \
       ret[i] = (ret[i] == UnmappedWriteHandler<size>) ? write_handler<size> : (abort(), write_handler<size>);          \
   }
+#else
+#define SET(raddr, rsize, read_handler, write_handler)                                                                 \
+  static_assert(raddr >= 0x1F801000 && (raddr + rsize) <= 0x1F802000);                                                 \
+  for (u32 taddr = raddr; taddr < (raddr + rsize); taddr += 16)                                                        \
+  {                                                                                                                    \
+    const u32 i = (taddr >> 4) & 0xFFu;                                                                                \
+    if constexpr (type == MemoryAccessType::Read)                                                                      \
+      ret[i] = read_handler<size>;                                                                                     \
+    else                                                                                                               \
+      ret[i] = write_handler<size>;                                                                                    \
+  }
+#endif
 
   SET(MEMCTRL_BASE, MEMCTRL_SIZE, MemCtrlRead, MemCtrlWrite);
   SET(PAD_BASE, PAD_SIZE, PADRead, PADWrite);

@@ -18,8 +18,8 @@ static std::pair<const char*, u32> LookupTranslationString(const std::string_vie
                                                            const std::string_view& msg);
 
 static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
-using TranslationStringMap = UnorderedStringMap<std::pair<u32, u32>>;
-using TranslationStringContextMap = UnorderedStringMap<TranslationStringMap>;
+using TranslationStringMap = PreferUnorderedStringMap<std::pair<u32, u32>>;
+using TranslationStringContextMap = PreferUnorderedStringMap<TranslationStringMap>;
 static std::shared_mutex s_translation_string_mutex;
 static TranslationStringContextMap s_translation_string_map;
 static std::vector<char> s_translation_string_cache;

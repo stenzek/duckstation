@@ -48,6 +48,14 @@ struct transparent_string_less
 } // namespace detail
 
 template<typename ValueType>
+using StringMap = std::map<std::string, ValueType, detail::transparent_string_less>;
+template<typename ValueType>
+using StringMultiMap = std::multimap<std::string, ValueType, detail::transparent_string_less>;
+using StringSet = std::set<std::string, detail::transparent_string_less>;
+using StringMultiSet = std::multiset<std::string, detail::transparent_string_less>;
+
+#if defined(__cpp_lib_generic_unordered_lookup) && __cpp_lib_generic_unordered_lookup >= 201811L
+template<typename ValueType>
 using UnorderedStringMap =
   std::unordered_map<std::string, ValueType, detail::transparent_string_hash, detail::transparent_string_equal>;
 template<typename ValueType>
@@ -59,8 +67,21 @@ using UnorderedStringMultiSet =
   std::unordered_multiset<std::string, detail::transparent_string_hash, detail::transparent_string_equal>;
 
 template<typename ValueType>
-using StringMap = std::map<std::string, ValueType, detail::transparent_string_less>;
+using PreferUnorderedStringMap = UnorderedStringMap<ValueType>;
 template<typename ValueType>
-using StringMultiMap = std::multimap<std::string, ValueType, detail::transparent_string_less>;
-using StringSet = std::set<std::string, detail::transparent_string_less>;
-using StringMultiSet = std::multiset<std::string, detail::transparent_string_less>;
+using PreferUnorderedStringMultimap = UnorderedStringMultimap<ValueType>;
+using PreferUnorderedStringSet = UnorderedStringSet;
+using PreferUnorderedStringMultiSet = UnorderedStringMultiSet;
+#else
+
+#pragma message "__cpp_lib_generic_unordered_lookup is missing, performance will be slower."
+
+// GCC 10 doesn't support generic_unordered_lookup...
+template<typename ValueType>
+using PreferUnorderedStringMap = StringMap<ValueType>;
+template<typename ValueType>
+using PreferUnorderedStringMultimap = StringMultiMap<ValueType>;
+using PreferUnorderedStringSet = StringSet;
+using PreferUnorderedStringMultiSet = StringMultiSet;
+
+#endif

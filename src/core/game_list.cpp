@@ -54,8 +54,8 @@ struct PlayedTimeEntry
   std::time_t total_played_time;
 };
 
-using CacheMap = UnorderedStringMap<Entry>;
-using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
+using CacheMap = PreferUnorderedStringMap<Entry>;
+using PlayedTimeMap = PreferUnorderedStringMap<PlayedTimeEntry>;
 
 static_assert(std::is_same_v<decltype(Entry::hash), System::GameHash>);
 
