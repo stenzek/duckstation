@@ -29,7 +29,6 @@ add_library(common
   layered_settings_interface.h
   log.cpp
   log.h
-  make_array.h
   memmap.cpp
   memmap.h
   md5_digest.cpp

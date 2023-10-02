@@ -48,7 +48,6 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
@@ -502,11 +501,13 @@ bool System::IsPsfFileName(const std::string_view& path)
 
 bool System::IsLoadableFilename(const std::string_view& path)
 {
-  static constexpr auto extensions = make_array(".bin", ".cue", ".img", ".iso", ".chd", ".ecm", ".mds", // discs
-                                                ".exe", ".psexe", ".ps-exe",                            // exes
-                                                ".psf", ".minipsf",                                     // psf
-                                                ".m3u",                                                 // playlists
-                                                ".pbp");
+  static constexpr const std::array extensions = {
+    ".bin", ".cue",     ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
+    ".exe", ".psexe",   ".ps-exe",                                 // exes
+    ".psf", ".minipsf",                                            // psf
+    ".m3u",                                                        // playlists
+    ".pbp",
+  };
 
   for (const char* test_extension : extensions)
   {

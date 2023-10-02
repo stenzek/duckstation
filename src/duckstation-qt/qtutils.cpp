@@ -7,7 +7,6 @@
 #include "core/system.h"
 
 #include "common/byte_stream.h"
-#include "common/make_array.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>

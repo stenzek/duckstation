@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "emulationsettingswidget.h"
-#include "common/make_array.h"
 #include "core/system.h"
 #include "qtutils.h"
 #include "settingsdialog.h"
@@ -128,8 +127,8 @@ void EmulationSettingsWidget::fillComboBoxWithEmulationSpeeds(QComboBox* cb, flo
 
   cb->addItem(tr("Unlimited"), QVariant(0.0f));
 
-  static constexpr auto speeds = make_array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 250, 300, 350,
-                                            400, 450, 500, 600, 700, 800, 900, 1000);
+  static constexpr const std::array speeds = {10,  20,  30,  40,  50,  60,  70,  80,  90,  100, 125, 150, 175,
+                                              200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000};
   for (const int speed : speeds)
   {
     cb->addItem(tr("%1% [%2 FPS (NTSC) / %3 FPS (PAL)]").arg(speed).arg((60 * speed) / 100).arg((50 * speed) / 100),

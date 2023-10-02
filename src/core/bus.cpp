@@ -26,7 +26,6 @@
 #include "common/assert.h"
 #include "common/intrin.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/memmap.h"
 
 #include <cstdio>
@@ -133,9 +132,9 @@ static std::vector<std::pair<u8*, size_t>> s_fastmem_ram_views;
 #endif
 
 static u8** s_fastmem_lut = nullptr;
-static constexpr auto s_fastmem_ram_mirrors =
-  make_array(0x00000000u, 0x00200000u, 0x00400000u, 0x00600000u, 0x80000000u, 0x80200000u, 0x80400000u, 0x80600000u,
-             0xA0000000u, 0xA0200000u, 0xA0400000u, 0xA0600000u);
+static constexpr const std::array s_fastmem_ram_mirrors = {0x00000000u, 0x00200000u, 0x00400000u, 0x00600000u,
+                                                           0x80000000u, 0x80200000u, 0x80400000u, 0x80600000u,
+                                                           0xA0000000u, 0xA0200000u, 0xA0400000u, 0xA0600000u};
 
 static void SetRAMSize(bool enable_8mb_ram);
 

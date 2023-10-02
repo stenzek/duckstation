@@ -30,7 +30,6 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
@@ -2809,7 +2808,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 void FullscreenUI::DrawBIOSSettingsPage()
 {
-  static constexpr auto config_keys = make_array("", "PathNTSCJ", "PathNTSCU", "PathPAL");
+  static constexpr const std::array config_keys = {"", "PathNTSCJ", "PathNTSCU", "PathPAL"};
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
@@ -2881,15 +2880,26 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
 void FullscreenUI::DrawConsoleSettingsPage()
 {
-  static constexpr auto cdrom_read_speeds = make_array(
+  static constexpr const std::array cdrom_read_speeds = {
     FSUI_NSTR("None (Double Speed)"), FSUI_NSTR("2x (Quad Speed)"), FSUI_NSTR("3x (6x Speed)"),
-    FSUI_NSTR("4x (8x Speed)"), FSUI_NSTR("5x (10x Speed)"), FSUI_NSTR("6x (12x Speed)"), FSUI_NSTR("7x (14x Speed)"),
-    FSUI_NSTR("8x (16x Speed)"), FSUI_NSTR("9x (18x Speed)"), FSUI_NSTR("10x (20x Speed)"));
+    FSUI_NSTR("4x (8x Speed)"),       FSUI_NSTR("5x (10x Speed)"),  FSUI_NSTR("6x (12x Speed)"),
+    FSUI_NSTR("7x (14x Speed)"),      FSUI_NSTR("8x (16x Speed)"),  FSUI_NSTR("9x (18x Speed)"),
+    FSUI_NSTR("10x (20x Speed)"),
+  };
 
-  static constexpr auto cdrom_seek_speeds =
-    make_array(FSUI_NSTR("Infinite/Instantaneous"), FSUI_NSTR("None (Normal Speed)"), FSUI_NSTR("2x"), FSUI_NSTR("3x"),
-               FSUI_NSTR("4x"), FSUI_NSTR("5x"), FSUI_NSTR("6x"), FSUI_NSTR("7x"), FSUI_NSTR("8x"), FSUI_NSTR("9x"),
-               FSUI_NSTR("10x"));
+  static constexpr const std::array cdrom_seek_speeds = {
+    FSUI_NSTR("Infinite/Instantaneous"),
+    FSUI_NSTR("None (Normal Speed)"),
+    FSUI_NSTR("2x"),
+    FSUI_NSTR("3x"),
+    FSUI_NSTR("4x"),
+    FSUI_NSTR("5x"),
+    FSUI_NSTR("6x"),
+    FSUI_NSTR("7x"),
+    FSUI_NSTR("8x"),
+    FSUI_NSTR("9x"),
+    FSUI_NSTR("10x"),
+  };
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -2972,23 +2982,38 @@ void FullscreenUI::DrawConsoleSettingsPage()
 
 void FullscreenUI::DrawEmulationSettingsPage()
 {
-  static constexpr auto emulation_speed_values =
-    make_array(0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 2.5f, 3.0f,
-               3.5f, 4.0f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f);
-  static constexpr auto emulation_speed_titles =
-    make_array(FSUI_NSTR("Unlimited"), "10% [6 FPS (NTSC) / 5 FPS (PAL)]",
-               FSUI_NSTR("20% [12 FPS (NTSC) / 10 FPS (PAL)]"), FSUI_NSTR("30% [18 FPS (NTSC) / 15 FPS (PAL)]"),
-               FSUI_NSTR("40% [24 FPS (NTSC) / 20 FPS (PAL)]"), FSUI_NSTR("50% [30 FPS (NTSC) / 25 FPS (PAL)]"),
-               FSUI_NSTR("60% [36 FPS (NTSC) / 30 FPS (PAL)]"), FSUI_NSTR("70% [42 FPS (NTSC) / 35 FPS (PAL)]"),
-               FSUI_NSTR("80% [48 FPS (NTSC) / 40 FPS (PAL)]"), FSUI_NSTR("90% [54 FPS (NTSC) / 45 FPS (PAL)]"),
-               FSUI_NSTR("100% [60 FPS (NTSC) / 50 FPS (PAL)]"), FSUI_NSTR("125% [75 FPS (NTSC) / 62 FPS (PAL)]"),
-               FSUI_NSTR("150% [90 FPS (NTSC) / 75 FPS (PAL)]"), FSUI_NSTR("175% [105 FPS (NTSC) / 87 FPS (PAL)]"),
-               FSUI_NSTR("200% [120 FPS (NTSC) / 100 FPS (PAL)]"), FSUI_NSTR("250% [150 FPS (NTSC) / 125 FPS (PAL)]"),
-               FSUI_NSTR("300% [180 FPS (NTSC) / 150 FPS (PAL)]"), FSUI_NSTR("350% [210 FPS (NTSC) / 175 FPS (PAL)]"),
-               FSUI_NSTR("400% [240 FPS (NTSC) / 200 FPS (PAL)]"), FSUI_NSTR("450% [270 FPS (NTSC) / 225 FPS (PAL)]"),
-               FSUI_NSTR("500% [300 FPS (NTSC) / 250 FPS (PAL)]"), FSUI_NSTR("600% [360 FPS (NTSC) / 300 FPS (PAL)]"),
-               FSUI_NSTR("700% [420 FPS (NTSC) / 350 FPS (PAL)]"), FSUI_NSTR("800% [480 FPS (NTSC) / 400 FPS (PAL)]"),
-               FSUI_NSTR("900% [540 FPS (NTSC) / 450 FPS (PAL)]"), FSUI_NSTR("1000% [600 FPS (NTSC) / 500 FPS (PAL)]"));
+  static constexpr const std::array emulation_speed_values = {
+    0.0f,  0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.25f, 1.5f,
+    1.75f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f,  10.0f,
+  };
+  static constexpr const std::array emulation_speed_titles = {
+    FSUI_NSTR("Unlimited"),
+    "10% [6 FPS (NTSC) / 5 FPS (PAL)]",
+    FSUI_NSTR("20% [12 FPS (NTSC) / 10 FPS (PAL)]"),
+    FSUI_NSTR("30% [18 FPS (NTSC) / 15 FPS (PAL)]"),
+    FSUI_NSTR("40% [24 FPS (NTSC) / 20 FPS (PAL)]"),
+    FSUI_NSTR("50% [30 FPS (NTSC) / 25 FPS (PAL)]"),
+    FSUI_NSTR("60% [36 FPS (NTSC) / 30 FPS (PAL)]"),
+    FSUI_NSTR("70% [42 FPS (NTSC) / 35 FPS (PAL)]"),
+    FSUI_NSTR("80% [48 FPS (NTSC) / 40 FPS (PAL)]"),
+    FSUI_NSTR("90% [54 FPS (NTSC) / 45 FPS (PAL)]"),
+    FSUI_NSTR("100% [60 FPS (NTSC) / 50 FPS (PAL)]"),
+    FSUI_NSTR("125% [75 FPS (NTSC) / 62 FPS (PAL)]"),
+    FSUI_NSTR("150% [90 FPS (NTSC) / 75 FPS (PAL)]"),
+    FSUI_NSTR("175% [105 FPS (NTSC) / 87 FPS (PAL)]"),
+    FSUI_NSTR("200% [120 FPS (NTSC) / 100 FPS (PAL)]"),
+    FSUI_NSTR("250% [150 FPS (NTSC) / 125 FPS (PAL)]"),
+    FSUI_NSTR("300% [180 FPS (NTSC) / 150 FPS (PAL)]"),
+    FSUI_NSTR("350% [210 FPS (NTSC) / 175 FPS (PAL)]"),
+    FSUI_NSTR("400% [240 FPS (NTSC) / 200 FPS (PAL)]"),
+    FSUI_NSTR("450% [270 FPS (NTSC) / 225 FPS (PAL)]"),
+    FSUI_NSTR("500% [300 FPS (NTSC) / 250 FPS (PAL)]"),
+    FSUI_NSTR("600% [360 FPS (NTSC) / 300 FPS (PAL)]"),
+    FSUI_NSTR("700% [420 FPS (NTSC) / 350 FPS (PAL)]"),
+    FSUI_NSTR("800% [480 FPS (NTSC) / 400 FPS (PAL)]"),
+    FSUI_NSTR("900% [540 FPS (NTSC) / 450 FPS (PAL)]"),
+    FSUI_NSTR("1000% [600 FPS (NTSC) / 500 FPS (PAL)]"),
+  };
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -3029,10 +3054,10 @@ void FullscreenUI::DrawEmulationSettingsPage()
   const bool runahead_enabled = (runahead_frames > 0);
   const bool rewind_enabled = GetEffectiveBoolSetting(bsi, "Main", "RewindEnable", false);
 
-  static constexpr auto runahead_options =
-    make_array(FSUI_NSTR("Disabled"), FSUI_NSTR("1 Frame"), FSUI_NSTR("2 Frames"), FSUI_NSTR("3 Frames"),
-               FSUI_NSTR("4 Frames"), FSUI_NSTR("5 Frames"), FSUI_NSTR("6 Frames"), FSUI_NSTR("7 Frames"),
-               FSUI_NSTR("8 Frames"), FSUI_NSTR("9 Frames"), FSUI_NSTR("10 Frames"));
+  static constexpr const std::array runahead_options = {
+    FSUI_NSTR("Disabled"), FSUI_NSTR("1 Frame"),  FSUI_NSTR("2 Frames"), FSUI_NSTR("3 Frames"),
+    FSUI_NSTR("4 Frames"), FSUI_NSTR("5 Frames"), FSUI_NSTR("6 Frames"), FSUI_NSTR("7 Frames"),
+    FSUI_NSTR("8 Frames"), FSUI_NSTR("9 Frames"), FSUI_NSTR("10 Frames")};
 
   DrawIntListSetting(
     bsi, FSUI_CSTR("Runahead"),
@@ -3529,8 +3554,8 @@ void FullscreenUI::DrawHotkeySettingsPage()
 
 void FullscreenUI::DrawMemoryCardSettingsPage()
 {
-  static constexpr const auto type_keys = make_array("Card1Type", "Card2Type");
-  static constexpr const auto path_keys = make_array("Card1Path", "Card2Path");
+  static constexpr const std::array type_keys = {"Card1Type", "Card2Type"};
+  static constexpr const std::array path_keys = {"Card1Path", "Card2Path"};
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
@@ -3664,12 +3689,25 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 void FullscreenUI::DrawDisplaySettingsPage()
 {
-  // TODO: Translation context
-  static constexpr auto resolution_scales =
-    make_array(FSUI_NSTR("Automatic based on window size"), FSUI_NSTR("1x"), FSUI_NSTR("2x"),
-               FSUI_NSTR("3x (for 720p)"), FSUI_NSTR("4x"), FSUI_NSTR("5x (for 1080p)"), FSUI_NSTR("6x (for 1440p)"),
-               FSUI_NSTR("7x"), FSUI_NSTR("8x"), FSUI_NSTR("9x (for 4K)"), FSUI_NSTR("10x"), FSUI_NSTR("11x"),
-               FSUI_NSTR("12x"), FSUI_NSTR("13x"), FSUI_NSTR("14x"), FSUI_NSTR("15x"), FSUI_NSTR("16x"));
+  static constexpr const std::array resolution_scales = {
+    FSUI_NSTR("Automatic based on window size"),
+    FSUI_NSTR("1x"),
+    FSUI_NSTR("2x"),
+    FSUI_NSTR("3x (for 720p)"),
+    FSUI_NSTR("4x"),
+    FSUI_NSTR("5x (for 1080p)"),
+    FSUI_NSTR("6x (for 1440p)"),
+    FSUI_NSTR("7x"),
+    FSUI_NSTR("8x"),
+    FSUI_NSTR("9x (for 4K)"),
+    FSUI_NSTR("10x"),
+    FSUI_NSTR("11x"),
+    FSUI_NSTR("12x"),
+    FSUI_NSTR("13x"),
+    FSUI_NSTR("14x"),
+    FSUI_NSTR("15x"),
+    FSUI_NSTR("16x"),
+  };
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);

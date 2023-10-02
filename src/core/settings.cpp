@@ -14,7 +14,6 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/path.h"
 #include "common/string_util.h"
 
@@ -743,13 +742,14 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
 #endif
 }
 
-static std::array<const char*, LOGLEVEL_COUNT> s_log_level_names = {
-  {"None", "Error", "Warning", "Perf", "Info", "Verbose", "Dev", "Profile", "Debug", "Trace"}};
-static std::array<const char*, LOGLEVEL_COUNT> s_log_level_display_names = {
-  {TRANSLATE_NOOP("LogLevel", "None"), TRANSLATE_NOOP("LogLevel", "Error"), TRANSLATE_NOOP("LogLevel", "Warning"),
-   TRANSLATE_NOOP("LogLevel", "Performance"), TRANSLATE_NOOP("LogLevel", "Information"),
-   TRANSLATE_NOOP("LogLevel", "Verbose"), TRANSLATE_NOOP("LogLevel", "Developer"),
-   TRANSLATE_NOOP("LogLevel", "Profile"), TRANSLATE_NOOP("LogLevel", "Debug"), TRANSLATE_NOOP("LogLevel", "Trace")}};
+static constexpr const std::array s_log_level_names = {"None",    "Error", "Warning", "Perf",  "Info",
+                                                       "Verbose", "Dev",   "Profile", "Debug", "Trace"};
+static constexpr const std::array s_log_level_display_names = {
+  TRANSLATE_NOOP("LogLevel", "None"),        TRANSLATE_NOOP("LogLevel", "Error"),
+  TRANSLATE_NOOP("LogLevel", "Warning"),     TRANSLATE_NOOP("LogLevel", "Performance"),
+  TRANSLATE_NOOP("LogLevel", "Information"), TRANSLATE_NOOP("LogLevel", "Verbose"),
+  TRANSLATE_NOOP("LogLevel", "Developer"),   TRANSLATE_NOOP("LogLevel", "Profile"),
+  TRANSLATE_NOOP("LogLevel", "Debug"),       TRANSLATE_NOOP("LogLevel", "Trace")};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 {
@@ -775,11 +775,10 @@ const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
   return Host::TranslateToCString("LogLevel", s_log_level_display_names[static_cast<int>(level)]);
 }
 
-static std::array<const char*, 4> s_console_region_names = {{"Auto", "NTSC-J", "NTSC-U", "PAL"}};
-static std::array<const char*, 4> s_console_region_display_names = {
-  {TRANSLATE_NOOP("ConsoleRegion", "Auto-Detect"), TRANSLATE_NOOP("ConsoleRegion", "NTSC-J (Japan)"),
-   TRANSLATE_NOOP("ConsoleRegion", "NTSC-U/C (US, Canada)"),
-   TRANSLATE_NOOP("ConsoleRegion", "PAL (Europe, Australia)")}};
+static constexpr const std::array s_console_region_names = {"Auto", "NTSC-J", "NTSC-U", "PAL"};
+static constexpr const std::array s_console_region_display_names = {
+  TRANSLATE_NOOP("ConsoleRegion", "Auto-Detect"), TRANSLATE_NOOP("ConsoleRegion", "NTSC-J (Japan)"),
+  TRANSLATE_NOOP("ConsoleRegion", "NTSC-U/C (US, Canada)"), TRANSLATE_NOOP("ConsoleRegion", "PAL (Europe, Australia)")};
 
 std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 {
@@ -805,11 +804,11 @@ const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
   return Host::TranslateToCString("ConsoleRegion", s_console_region_display_names[static_cast<int>(region)]);
 }
 
-static std::array<const char*, 5> s_disc_region_names = {{"NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1"}};
-static std::array<const char*, 5> s_disc_region_display_names = {
-  {TRANSLATE_NOOP("DiscRegion", "NTSC-J (Japan)"), TRANSLATE_NOOP("DiscRegion", "NTSC-U/C (US, Canada)"),
-   TRANSLATE_NOOP("DiscRegion", "PAL (Europe, Australia)"), TRANSLATE_NOOP("DiscRegion", "Other"),
-   TRANSLATE_NOOP("DiscRegion", "Non-PS1")}};
+static constexpr const std::array s_disc_region_names = {"NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1"};
+static constexpr const std::array s_disc_region_display_names = {
+  TRANSLATE_NOOP("DiscRegion", "NTSC-J (Japan)"), TRANSLATE_NOOP("DiscRegion", "NTSC-U/C (US, Canada)"),
+  TRANSLATE_NOOP("DiscRegion", "PAL (Europe, Australia)"), TRANSLATE_NOOP("DiscRegion", "Other"),
+  TRANSLATE_NOOP("DiscRegion", "Non-PS1")};
 
 std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 {
@@ -835,11 +834,11 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
   return Host::TranslateToCString("DiscRegion", s_disc_region_display_names[static_cast<int>(region)]);
 }
 
-static std::array<const char*, 3> s_cpu_execution_mode_names = {{"Interpreter", "CachedInterpreter", "Recompiler"}};
-static std::array<const char*, 3> s_cpu_execution_mode_display_names = {
-  {TRANSLATE_NOOP("CPUExecutionMode", "Interpreter (Slowest)"),
-   TRANSLATE_NOOP("CPUExecutionMode", "Cached Interpreter (Faster)"),
-   TRANSLATE_NOOP("CPUExecutionMode", "Recompiler (Fastest)")}};
+static constexpr const std::array s_cpu_execution_mode_names = {"Interpreter", "CachedInterpreter", "Recompiler"};
+static constexpr const std::array s_cpu_execution_mode_display_names = {
+  TRANSLATE_NOOP("CPUExecutionMode", "Interpreter (Slowest)"),
+  TRANSLATE_NOOP("CPUExecutionMode", "Cached Interpreter (Faster)"),
+  TRANSLATE_NOOP("CPUExecutionMode", "Recompiler (Fastest)")};
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
 {
@@ -865,12 +864,11 @@ const char* Settings::GetCPUExecutionModeDisplayName(CPUExecutionMode mode)
   return Host::TranslateToCString("CPUExecutionMode", s_cpu_execution_mode_display_names[static_cast<u8>(mode)]);
 }
 
-static std::array<const char*, static_cast<u32>(CPUFastmemMode::Count)> s_cpu_fastmem_mode_names = {
-  {"Disabled", "MMap", "LUT"}};
-static std::array<const char*, static_cast<u32>(CPUFastmemMode::Count)> s_cpu_fastmem_mode_display_names = {
-  {TRANSLATE_NOOP("CPUFastmemMode", "Disabled (Slowest)"),
-   TRANSLATE_NOOP("CPUFastmemMode", "MMap (Hardware, Fastest, 64-Bit Only)"),
-   TRANSLATE_NOOP("CPUFastmemMode", "LUT (Faster)")}};
+static constexpr const std::array s_cpu_fastmem_mode_names = {"Disabled", "MMap", "LUT"};
+static constexpr const std::array s_cpu_fastmem_mode_display_names = {
+  TRANSLATE_NOOP("CPUFastmemMode", "Disabled (Slowest)"),
+  TRANSLATE_NOOP("CPUFastmemMode", "MMap (Hardware, Fastest, 64-Bit Only)"),
+  TRANSLATE_NOOP("CPUFastmemMode", "LUT (Faster)")};
 
 std::optional<CPUFastmemMode> Settings::ParseCPUFastmemMode(const char* str)
 {
@@ -896,11 +894,10 @@ const char* Settings::GetCPUFastmemModeDisplayName(CPUFastmemMode mode)
   return Host::TranslateToCString("CPUFastmemMode", s_cpu_fastmem_mode_display_names[static_cast<u8>(mode)]);
 }
 
-static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s_gpu_renderer_names = {{
+static constexpr const std::array s_gpu_renderer_names = {
   "Automatic",
 #ifdef _WIN32
-  "D3D11",
-  "D3D12",
+  "D3D11",     "D3D12",
 #endif
 #ifdef __APPLE__
   "Metal",
@@ -912,12 +909,11 @@ static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s
   "OpenGL",
 #endif
   "Software",
-}};
-static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s_gpu_renderer_display_names = {{
+};
+static constexpr const std::array s_gpu_renderer_display_names = {
   TRANSLATE_NOOP("GPURenderer", "Automatic"),
 #ifdef _WIN32
-  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D11)"),
-  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D12)"),
+  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D11)"),  TRANSLATE_NOOP("GPURenderer", "Hardware (D3D12)"),
 #endif
 #ifdef __APPLE__
   TRANSLATE_NOOP("GPURenderer", "Hardware (Metal)"),
@@ -929,7 +925,7 @@ static constexpr std::array<const char*, static_cast<u32>(GPURenderer::Count)> s
   TRANSLATE_NOOP("GPURenderer", "Hardware (OpenGL)"),
 #endif
   TRANSLATE_NOOP("GPURenderer", "Software"),
-}};
+};
 
 std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 {
@@ -983,14 +979,16 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
   }
 }
 
-static constexpr auto s_texture_filter_names =
-  make_array("Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha");
-static constexpr auto s_texture_filter_display_names = make_array(
-  TRANSLATE_NOOP("GPUTextureFilter", "Nearest-Neighbor"), TRANSLATE_NOOP("GPUTextureFilter", "Bilinear"),
-  TRANSLATE_NOOP("GPUTextureFilter", "Bilinear (No Edge Blending)"), TRANSLATE_NOOP("GPUTextureFilter", "JINC2 (Slow)"),
+static constexpr const std::array s_texture_filter_names = {"Nearest",       "Bilinear", "BilinearBinAlpha", "JINC2",
+                                                            "JINC2BinAlpha", "xBR",      "xBRBinAlpha"};
+static constexpr const std::array s_texture_filter_display_names = {
+  TRANSLATE_NOOP("GPUTextureFilter", "Nearest-Neighbor"),
+  TRANSLATE_NOOP("GPUTextureFilter", "Bilinear"),
+  TRANSLATE_NOOP("GPUTextureFilter", "Bilinear (No Edge Blending)"),
+  TRANSLATE_NOOP("GPUTextureFilter", "JINC2 (Slow)"),
   TRANSLATE_NOOP("GPUTextureFilter", "JINC2 (Slow, No Edge Blending)"),
   TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow)"),
-  TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)"));
+  TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)")};
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {
@@ -1016,11 +1014,11 @@ const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
   return Host::TranslateToCString("GPUTextureFilter", s_texture_filter_display_names[static_cast<int>(filter)]);
 }
 
-static constexpr auto s_downsample_mode_names = make_array("Disabled", "Box", "Adaptive");
-static constexpr auto s_downsample_mode_display_names =
-  make_array(TRANSLATE_NOOP("GPUDownsampleMode", "Disabled"),
-             TRANSLATE_NOOP("GPUDownsampleMode", "Box (Downsample 3D/Smooth All)"),
-             TRANSLATE_NOOP("GPUDownsampleMode", "Adaptive (Preserve 3D/Smooth 2D)"));
+static constexpr const std::array s_downsample_mode_names = {"Disabled", "Box", "Adaptive"};
+static constexpr const std::array s_downsample_mode_display_names = {
+  TRANSLATE_NOOP("GPUDownsampleMode", "Disabled"),
+  TRANSLATE_NOOP("GPUDownsampleMode", "Box (Downsample 3D/Smooth All)"),
+  TRANSLATE_NOOP("GPUDownsampleMode", "Adaptive (Preserve 3D/Smooth 2D)")};
 
 std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(const char* str)
 {
@@ -1046,10 +1044,10 @@ const char* Settings::GetDownsampleModeDisplayName(GPUDownsampleMode mode)
   return Host::TranslateToCString("GPUDownsampleMode", s_downsample_mode_display_names[static_cast<int>(mode)]);
 }
 
-static constexpr auto s_wireframe_mode_names = make_array("Disabled", "OverlayWireframe", "OnlyWireframe");
-static constexpr auto s_wireframe_mode_display_names =
-  make_array(TRANSLATE_NOOP("GPUWireframeMode", "Disabled"), TRANSLATE_NOOP("GPUWireframeMode", "Overlay Wireframe"),
-             TRANSLATE_NOOP("GPUWireframeMode", "Only Wireframe"));
+static constexpr const std::array s_wireframe_mode_names = {"Disabled", "OverlayWireframe", "OnlyWireframe"};
+static constexpr const std::array s_wireframe_mode_display_names = {
+  TRANSLATE_NOOP("GPUWireframeMode", "Disabled"), TRANSLATE_NOOP("GPUWireframeMode", "Overlay Wireframe"),
+  TRANSLATE_NOOP("GPUWireframeMode", "Only Wireframe")};
 
 std::optional<GPUWireframeMode> Settings::ParseGPUWireframeMode(const char* str)
 {
@@ -1075,10 +1073,10 @@ const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
   return Host::TranslateToCString("GPUWireframeMode", s_wireframe_mode_display_names[static_cast<int>(mode)]);
 }
 
-static std::array<const char*, 3> s_display_crop_mode_names = {{"None", "Overscan", "Borders"}};
-static std::array<const char*, 3> s_display_crop_mode_display_names = {
-  {TRANSLATE_NOOP("DisplayCropMode", "None"), TRANSLATE_NOOP("DisplayCropMode", "Only Overscan Area"),
-   TRANSLATE_NOOP("DisplayCropMode", "All Borders")}};
+static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "Borders"};
+static constexpr const std::array s_display_crop_mode_display_names = {
+  TRANSLATE_NOOP("DisplayCropMode", "None"), TRANSLATE_NOOP("DisplayCropMode", "Only Overscan Area"),
+  TRANSLATE_NOOP("DisplayCropMode", "All Borders")};
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
 {
@@ -1104,11 +1102,17 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
   return Host::TranslateToCString("DisplayCropMode", s_display_crop_mode_display_names[static_cast<int>(crop_mode)]);
 }
 
-static std::array<const char*, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_names = {
-  {TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"), TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"),
-   TRANSLATE_NOOP("DisplayAspectRatio", "Custom"), "4:3", "16:9", "19:9", "20:9", "PAR 1:1"}};
-static constexpr std::array<float, static_cast<size_t>(DisplayAspectRatio::Count)> s_display_aspect_ratio_values = {
-  {-1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f}};
+static constexpr const std::array s_display_aspect_ratio_names = {
+  TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"),
+  TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"),
+  TRANSLATE_NOOP("DisplayAspectRatio", "Custom"),
+  "4:3",
+  "16:9",
+  "19:9",
+  "20:9",
+  "PAR 1:1"};
+static constexpr const std::array s_display_aspect_ratio_values = {
+  -1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
@@ -1159,11 +1163,10 @@ float Settings::GetDisplayAspectRatioValue() const
   }
 }
 
-static std::array<const char*, static_cast<size_t>(DisplayAlignment::Count)> s_display_alignment_names = {
-  {"LeftOrTop", "Center", "RightOrBottom"}};
-static std::array<const char*, static_cast<size_t>(DisplayAlignment::Count)> s_display_alignment_display_names = {
-  {TRANSLATE_NOOP("DisplayAlignment", "Left / Top"), TRANSLATE_NOOP("DisplayAlignment", "Center"),
-   TRANSLATE_NOOP("DisplayAlignment", "Right / Bottom")}};
+static constexpr const std::array s_display_alignment_names = {"LeftOrTop", "Center", "RightOrBottom"};
+static constexpr const std::array s_display_alignment_display_names = {
+  TRANSLATE_NOOP("DisplayAlignment", "Left / Top"), TRANSLATE_NOOP("DisplayAlignment", "Center"),
+  TRANSLATE_NOOP("DisplayAlignment", "Right / Bottom")};
 
 std::optional<DisplayAlignment> Settings::ParseDisplayAlignment(const char* str)
 {
@@ -1189,18 +1192,18 @@ const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
   return Host::TranslateToCString("DisplayAlignment", s_display_alignment_display_names[static_cast<int>(alignment)]);
 }
 
-static std::array<const char*, static_cast<size_t>(DisplayScalingMode::Count)> s_display_scaling_names = {{
+static constexpr const std::array s_display_scaling_names = {
   "Nearest",
   "BilinearSmooth",
   "NearestInteger",
   "BilinearSharp",
-}};
-static std::array<const char*, static_cast<size_t>(DisplayScalingMode::Count)> s_display_scaling_display_names = {{
+};
+static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor"),
   TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Smooth)"),
   TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor (Integer)"),
   TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Sharp)"),
-}};
+};
 
 std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(const char* str)
 {
@@ -1226,7 +1229,7 @@ const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
   return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
 }
 
-static constexpr const char* s_audio_backend_names[] = {
+static constexpr const std::array s_audio_backend_names = {
   "Null",
 #ifdef ENABLE_CUBEB
   "Cubeb",
@@ -1238,7 +1241,7 @@ static constexpr const char* s_audio_backend_names[] = {
   "AAudio",  "OpenSLES",
 #endif
 };
-static constexpr const char* s_audio_backend_display_names[] = {
+static constexpr const std::array s_audio_backend_display_names = {
   TRANSLATE_NOOP("AudioBackend", "Null (No Output)"),
 #ifdef ENABLE_CUBEB
   TRANSLATE_NOOP("AudioBackend", "Cubeb"),
@@ -1276,13 +1279,16 @@ const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
   return Host::TranslateToCString("AudioBackend", s_audio_backend_display_names[static_cast<int>(backend)]);
 }
 
-static std::array<const char*, 7> s_controller_type_names = {
-  {"None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon"}};
-static std::array<const char*, 7> s_controller_display_names = {
-  {TRANSLATE_NOOP("ControllerType", "None"), TRANSLATE_NOOP("ControllerType", "Digital Controller"),
-   TRANSLATE_NOOP("ControllerType", "Analog Controller (DualShock)"),
-   TRANSLATE_NOOP("ControllerType", "Analog Joystick"), TRANSLATE_NOOP("ControllerType", "GunCon"),
-   TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"), TRANSLATE_NOOP("ControllerType", "NeGcon")}};
+static constexpr const std::array s_controller_type_names = {
+  "None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon"};
+static constexpr const std::array s_controller_display_names = {
+  TRANSLATE_NOOP("ControllerType", "None"),
+  TRANSLATE_NOOP("ControllerType", "Digital Controller"),
+  TRANSLATE_NOOP("ControllerType", "Analog Controller (DualShock)"),
+  TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
+  TRANSLATE_NOOP("ControllerType", "GunCon"),
+  TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
+  TRANSLATE_NOOP("ControllerType", "NeGcon")};
 
 std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
 {
@@ -1308,14 +1314,15 @@ const char* Settings::GetControllerTypeDisplayName(ControllerType type)
   return Host::TranslateToCString("ControllerType", s_controller_display_names[static_cast<int>(type)]);
 }
 
-static std::array<const char*, 6> s_memory_card_type_names = {
-  {"None", "Shared", "PerGame", "PerGameTitle", "PerGameFileTitle", "NonPersistent"}};
-static std::array<const char*, 6> s_memory_card_type_display_names = {
-  {TRANSLATE_NOOP("MemoryCardType", "No Memory Card"), TRANSLATE_NOOP("MemoryCardType", "Shared Between All Games"),
-   TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (Serial)"),
-   TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (Title)"),
-   TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (File Title)"),
-   TRANSLATE_NOOP("MemoryCardType", "Non-Persistent Card (Do Not Save)")}};
+static constexpr const std::array s_memory_card_type_names = {"None",         "Shared",           "PerGame",
+                                                              "PerGameTitle", "PerGameFileTitle", "NonPersistent"};
+static constexpr const std::array s_memory_card_type_display_names = {
+  TRANSLATE_NOOP("MemoryCardType", "No Memory Card"),
+  TRANSLATE_NOOP("MemoryCardType", "Shared Between All Games"),
+  TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (Serial)"),
+  TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (Title)"),
+  TRANSLATE_NOOP("MemoryCardType", "Separate Card Per Game (File Title)"),
+  TRANSLATE_NOOP("MemoryCardType", "Non-Persistent Card (Do Not Save)")};
 
 std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 {
@@ -1365,10 +1372,10 @@ std::string Settings::GetGameMemoryCardPath(const std::string_view& serial, u32 
   return Path::Combine(EmuFolders::MemoryCards, fmt::format("{}_{}.mcd", serial, slot + 1));
 }
 
-static std::array<const char*, 4> s_multitap_enable_mode_names = {{"Disabled", "Port1Only", "Port2Only", "BothPorts"}};
-static std::array<const char*, 4> s_multitap_enable_mode_display_names = {
-  {TRANSLATE_NOOP("MultitapMode", "Disabled"), TRANSLATE_NOOP("MultitapMode", "Enable on Port 1 Only"),
-   TRANSLATE_NOOP("MultitapMode", "Enable on Port 2 Only"), TRANSLATE_NOOP("MultitapMode", "Enable on Ports 1 and 2")}};
+static constexpr const std::array s_multitap_enable_mode_names = {"Disabled", "Port1Only", "Port2Only", "BothPorts"};
+static constexpr const std::array s_multitap_enable_mode_display_names = {
+  TRANSLATE_NOOP("MultitapMode", "Disabled"), TRANSLATE_NOOP("MultitapMode", "Enable on Port 1 Only"),
+  TRANSLATE_NOOP("MultitapMode", "Enable on Port 2 Only"), TRANSLATE_NOOP("MultitapMode", "Enable on Ports 1 and 2")};
 
 std::optional<MultitapMode> Settings::ParseMultitapModeName(const char* str)
 {

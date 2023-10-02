@@ -10,7 +10,6 @@
 #include "common/assert.h"
 #include "common/intrin.h"
 #include "common/log.h"
-#include "common/make_array.h"
 
 #include <algorithm>
 
@@ -50,10 +49,10 @@ bool GPU_SW::Initialize()
   if (!GPU::Initialize() || !m_backend.Initialize(false))
     return false;
 
-  static constexpr auto formats_for_16bit = make_array(GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
-                                                       GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8);
-  static constexpr auto formats_for_24bit = make_array(GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8,
-                                                       GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551);
+  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
+                                                         GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8};
+  static constexpr const std::array formats_for_24bit = {GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8,
+                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551};
   for (const GPUTexture::Format format : formats_for_16bit)
   {
     if (g_gpu_device->SupportsTextureFormat(format))

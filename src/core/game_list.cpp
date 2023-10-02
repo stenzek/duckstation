@@ -16,7 +16,6 @@
 #include "common/heterogeneous_containers.h"
 #include "common/http_downloader.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/path.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
@@ -674,7 +673,7 @@ static std::string GetFullCoverPath(const std::string_view& filename, const std:
 
 std::string GameList::GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title)
 {
-  static constexpr auto extensions = make_array("jpg", "jpeg", "png", "webp");
+  static constexpr const std::array extensions = {"jpg", "jpeg", "png", "webp"};
 
   for (const char* extension : extensions)
   {

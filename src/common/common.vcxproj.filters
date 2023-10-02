@@ -21,7 +21,6 @@
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="minizip_helpers.h" />
-    <ClInclude Include="make_array.h" />
     <ClInclude Include="thirdparty\StackWalker.h">
       <Filter>thirdparty</Filter>
     </ClInclude>

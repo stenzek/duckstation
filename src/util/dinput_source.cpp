@@ -9,7 +9,6 @@
 
 #include "common/assert.h"
 #include "common/log.h"
-#include "common/make_array.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
