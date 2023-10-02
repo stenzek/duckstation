@@ -7,7 +7,6 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "core/host.h"
-#include "core/host_settings.h"
 #include "nogui_host.h"
 #include "nogui_platform.h"
 
