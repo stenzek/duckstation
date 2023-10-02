@@ -15,7 +15,8 @@ AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
   setFixedSize(geometry().width(), geometry().height());
 
   m_ui.scmversion->setTextInteractionFlags(Qt::TextSelectableByMouse);
-  m_ui.scmversion->setText(tr("%1 (%2)").arg(QString(g_scm_tag_str)).arg(QString(g_scm_branch_str)));
+  m_ui.scmversion->setText(
+    tr("%1 (%2)").arg(QLatin1StringView(g_scm_tag_str)).arg(QLatin1StringView(g_scm_branch_str)));
 
   m_ui.description->setTextInteractionFlags(Qt::TextBrowserInteraction);
   m_ui.description->setOpenExternalLinks(true);

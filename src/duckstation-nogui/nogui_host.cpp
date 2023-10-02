@@ -515,7 +515,7 @@ void NoGUIHost::SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height)
 
 std::string NoGUIHost::GetAppNameAndVersion()
 {
-  return fmt::format("DuckStation {} ({})", g_scm_tag_str, g_scm_branch_str);
+  return fmt::format("DuckStation {}", g_scm_tag_str);
 }
 
 std::string NoGUIHost::GetAppConfigSuffix()

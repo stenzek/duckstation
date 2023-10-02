@@ -138,7 +138,7 @@ bool QtHost::InNoGUIMode()
 
 QString QtHost::GetAppNameAndVersion()
 {
-  return QStringLiteral("DuckStation %1 (%2)").arg(g_scm_tag_str).arg(g_scm_branch_str);
+  return QStringLiteral("DuckStation %1").arg(QLatin1StringView(g_scm_tag_str));
 }
 
 QString QtHost::GetAppConfigSuffix()
