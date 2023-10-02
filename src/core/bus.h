@@ -102,8 +102,10 @@ enum : u32
   FASTMEM_LUT_NUM_SLOTS = FASTMEM_LUT_NUM_PAGES * 2,
 };
 
+#ifdef ENABLE_MMAP_FASTMEM
 // Fastmem region size is 4GB to cover the entire 32-bit address space.
 static constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
+#endif
 
 bool AllocateMemory();
 void ReleaseMemory();

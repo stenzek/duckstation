@@ -87,6 +87,30 @@ asm(
 	br x30
 )");
 
+#elif defined(__arm__)
+
+asm(
+	"\t.global " PREFIX "fastjmp_set\n"
+	"\t.global " PREFIX "fastjmp_jmp\n"
+	"\t.text\n"
+	"\t" PREFIX "fastjmp_set:" R"(
+        vstmia r0!, {d8-d15}
+        stmia r0!, {r4-r14}
+        fmrx r1, fpscr
+        str r1, [r0]
+        mov r0, #0
+        bx lr
+)"
+
+"\t" PREFIX "fastjmp_jmp:" R"(
+        vldmia r0!, {d8-d15}
+        ldmia r0!, {r4-r14}
+	ldr r0, [r0]
+	fmxr fpscr, r0
+        mov r0, r1
+	bx lr
+)");
+
 #elif defined(__riscv) && __riscv_xlen == 64
 
 asm(

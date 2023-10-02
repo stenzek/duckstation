@@ -82,6 +82,8 @@ bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   }
   else
   {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_read_fbo);
+
     if (T->GetLayers() > 1)
       glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, T->GetGLId(), level, layer);
     else
@@ -91,6 +93,7 @@ bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
     glReadPixels(x, y, width, height, gl_format, gl_type, out_data);
 
     glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   }
 
   return true;
@@ -137,17 +140,24 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
     else
       glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, D->GetGLTarget(), did, dst_level);
     if (S->IsTextureArray())
-      glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sid, src_level, src_layer);
+      glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sid, src_level, src_layer);
     else
-      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, S->GetGLTarget(), sid, src_level);
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, S->GetGLTarget(), sid, src_level);
 
     glDisable(GL_SCISSOR_TEST);
-    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + width, dst_x, dst_y, dst_x + width, dst_y + height,
+    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    if (m_current_framebuffer)
+    {
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
+    else
+    {
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
   }
 }
 
@@ -185,8 +195,15 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
                     GL_COLOR_BUFFER_BIT, GL_LINEAR);
   glEnable(GL_SCISSOR_TEST);
 
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  if (m_current_framebuffer)
+  {
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  }
+  else
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
 }
 
 void OpenGLDevice::ClearRenderTarget(GPUTexture* t, u32 c)
@@ -638,9 +655,6 @@ bool OpenGLDevice::CreateBuffers(bool buggy_pbo)
   m_read_fbo = fbos[0];
   m_write_fbo = fbos[1];
 
-  // Read FBO gets left bound.
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_read_fbo);
-
   return true;
 }
 
@@ -665,7 +679,7 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
     return false;
   }
 
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   const Common::Rectangle<s32> window_rc =
     Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);

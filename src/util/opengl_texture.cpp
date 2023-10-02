@@ -484,7 +484,10 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         glDisable(GL_SCISSOR_TEST);
         if (tex->IsDepthStencil())
         {
-          glClearDepth(tex->GetClearDepth());
+          if (glClearDepthf)
+            glClearDepthf(tex->GetClearDepth());
+          else
+            glClearDepth(tex->GetClearDepth());
           glClear(GL_DEPTH_BUFFER_BIT);
         }
         else
@@ -556,7 +559,10 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
 
       case GPUTexture::State::Cleared:
       {
-        glClearDepth(DS->GetClearDepth());
+        if (glClearDepthf)
+          glClearDepthf(DS->GetClearDepth());
+        else
+          glClearDepth(DS->GetClearDepth());
         clear_flags |= GL_DEPTH_BUFFER_BIT;
         DS->SetState(GPUTexture::State::Dirty);
       }

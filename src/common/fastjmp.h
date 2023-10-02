@@ -14,6 +14,8 @@ struct fastjmp_buf
   static constexpr std::size_t BUF_SIZE = 240;
 #elif defined(_M_ARM64) || defined(__aarch64__)
   static constexpr std::size_t BUF_SIZE = 168;
+#elif defined(_M_ARM) || defined(__arm__)
+  static constexpr std::size_t BUF_SIZE = 112;
 #elif defined(__x86_64__)
   static constexpr std::size_t BUF_SIZE = 64;
 #elif defined(_M_IX86) || defined(__i386__)

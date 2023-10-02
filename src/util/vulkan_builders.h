@@ -11,7 +11,7 @@
 #include <cstdarg>
 #include <string_view>
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(CPU_ARCH_ARM32) && !defined(CPU_ARCH_X86)
 #define ENABLE_VULKAN_DEBUG_OBJECTS 1
 #endif
 

@@ -150,7 +150,13 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86" OR "${CMAKE_SYSTEM_PROCESSOR}"
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
   set(CPU_ARCH "x86")
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-  set(CPU_ARCH "aarch64")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8) # Might have an A64 kernel, e.g. Raspbian.
+    set(CPU_ARCH "aarch64")
+  else()
+    set(CPU_ARCH "aarch32")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
+  endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7-a" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7l")
   set(CPU_ARCH "aarch32")
