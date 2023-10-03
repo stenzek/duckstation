@@ -19,6 +19,7 @@ add_library(core
   controller.h
   cpu_code_cache.cpp
   cpu_code_cache.h
+  cpu_code_cache_private.h
   cpu_core.cpp
   cpu_core.h
   cpu_core_private.h

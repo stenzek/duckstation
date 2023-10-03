@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "cpu_code_cache_private.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_recompiler_code_generator.h"
@@ -12,7 +13,398 @@
 #include "timing_event.h"
 Log_SetChannel(CPU::Recompiler);
 
+#ifdef ENABLE_HOST_DISASSEMBLY
+#include "vixl/aarch64/disasm-aarch64.h"
+#endif
+
 namespace a64 = vixl::aarch64;
+
+namespace CPU::Recompiler {
+constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
+constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
+constexpr u64 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE;
+
+static constexpr u32 TRAMPOLINE_AREA_SIZE = 4 * 1024;
+static std::unordered_map<const void*, u32> s_trampoline_targets;
+static u8* s_trampoline_start_ptr = nullptr;
+static u32 s_trampoline_used = 0;
+} // namespace CPU::Recompiler
+
+bool CPU::Recompiler::armIsCallerSavedRegister(u32 id)
+{
+  // same on both linux and windows
+  return (id <= 18);
+}
+
+void CPU::Recompiler::armEmitMov(a64::Assembler* armAsm, const a64::Register& rd, u64 imm)
+{
+  DebugAssert(vixl::IsUint32(imm) || vixl::IsInt32(imm) || rd.Is64Bits());
+  DebugAssert(rd.GetCode() != a64::sp.GetCode());
+
+  if (imm == 0)
+  {
+    armAsm->mov(rd, a64::Assembler::AppropriateZeroRegFor(rd));
+    return;
+  }
+
+  // The worst case for size is mov 64-bit immediate to sp:
+  //  * up to 4 instructions to materialise the constant
+  //  * 1 instruction to move to sp
+
+  // Immediates on Aarch64 can be produced using an initial value, and zero to
+  // three move keep operations.
+  //
+  // Initial values can be generated with:
+  //  1. 64-bit move zero (movz).
+  //  2. 32-bit move inverted (movn).
+  //  3. 64-bit move inverted.
+  //  4. 32-bit orr immediate.
+  //  5. 64-bit orr immediate.
+  // Move-keep may then be used to modify each of the 16-bit half words.
+  //
+  // The code below supports all five initial value generators, and
+  // applying move-keep operations to move-zero and move-inverted initial
+  // values.
+
+  // Try to move the immediate in one instruction, and if that fails, switch to
+  // using multiple instructions.
+  const unsigned reg_size = rd.GetSizeInBits();
+
+  if (a64::Assembler::IsImmMovz(imm, reg_size) && !rd.IsSP())
+  {
+    // Immediate can be represented in a move zero instruction. Movz can't write
+    // to the stack pointer.
+    armAsm->movz(rd, imm);
+    return;
+  }
+  else if (a64::Assembler::IsImmMovn(imm, reg_size) && !rd.IsSP())
+  {
+    // Immediate can be represented in a move negative instruction. Movn can't
+    // write to the stack pointer.
+    armAsm->movn(rd, rd.Is64Bits() ? ~imm : (~imm & a64::kWRegMask));
+    return;
+  }
+  else if (a64::Assembler::IsImmLogical(imm, reg_size))
+  {
+    // Immediate can be represented in a logical orr instruction.
+    DebugAssert(!rd.IsZero());
+    armAsm->orr(rd, a64::Assembler::AppropriateZeroRegFor(rd), imm);
+    return;
+  }
+
+  // Generic immediate case. Imm will be represented by
+  //   [imm3, imm2, imm1, imm0], where each imm is 16 bits.
+  // A move-zero or move-inverted is generated for the first non-zero or
+  // non-0xffff immX, and a move-keep for subsequent non-zero immX.
+
+  uint64_t ignored_halfword = 0;
+  bool invert_move = false;
+  // If the number of 0xffff halfwords is greater than the number of 0x0000
+  // halfwords, it's more efficient to use move-inverted.
+  if (vixl::CountClearHalfWords(~imm, reg_size) > vixl::CountClearHalfWords(imm, reg_size))
+  {
+    ignored_halfword = 0xffff;
+    invert_move = true;
+  }
+
+  // Iterate through the halfwords. Use movn/movz for the first non-ignored
+  // halfword, and movk for subsequent halfwords.
+  DebugAssert((reg_size % 16) == 0);
+  bool first_mov_done = false;
+  for (unsigned i = 0; i < (reg_size / 16); i++)
+  {
+    uint64_t imm16 = (imm >> (16 * i)) & 0xffff;
+    if (imm16 != ignored_halfword)
+    {
+      if (!first_mov_done)
+      {
+        if (invert_move)
+          armAsm->movn(rd, ~imm16 & 0xffff, 16 * i);
+        else
+          armAsm->movz(rd, imm16, 16 * i);
+        first_mov_done = true;
+      }
+      else
+      {
+        // Construct a wider constant.
+        armAsm->movk(rd, imm16, 16 * i);
+      }
+    }
+  }
+
+  DebugAssert(first_mov_done);
+}
+
+s64 CPU::Recompiler::armGetPCDisplacement(const void* current, const void* target)
+{
+  // pxAssert(Common::IsAlignedPow2(reinterpret_cast<size_t>(current), 4));
+  // pxAssert(Common::IsAlignedPow2(reinterpret_cast<size_t>(target), 4));
+  return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
+}
+
+void CPU::Recompiler::armMoveAddressToReg(a64::Assembler* armAsm, const a64::XRegister& reg, const void* addr)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  const void* current_code_ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(cur) & ~static_cast<uintptr_t>(0xFFF));
+  const void* ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(addr) & ~static_cast<uintptr_t>(0xFFF));
+  const s64 page_displacement = armGetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
+  const u32 page_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(addr) & 0xFFFu);
+  if (vixl::IsInt21(page_displacement) && a64::Assembler::IsImmAddSub(page_offset))
+  {
+    armAsm->adrp(reg, page_displacement);
+    armAsm->add(reg, reg, page_offset);
+  }
+  else if (vixl::IsInt21(page_displacement) && a64::Assembler::IsImmLogical(page_offset, 64))
+  {
+    armAsm->adrp(reg, page_displacement);
+    armAsm->orr(reg, reg, page_offset);
+  }
+  else
+  {
+    armEmitMov(armAsm, reg, reinterpret_cast<uintptr_t>(addr));
+  }
+}
+void CPU::Recompiler::armEmitJmp(a64::Assembler* armAsm, const void* ptr, bool force_inline)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s64 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_blr = !vixl::IsInt26(displacement);
+  if (use_blr && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_blr = !vixl::IsInt26(displacement);
+    }
+  }
+
+  if (use_blr)
+  {
+    armMoveAddressToReg(armAsm, RXSCRATCH, ptr);
+    armAsm->br(RXSCRATCH);
+  }
+  else
+  {
+    armAsm->b(displacement);
+  }
+}
+
+void CPU::Recompiler::armEmitCall(a64::Assembler* armAsm, const void* ptr, bool force_inline)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s64 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_blr = !vixl::IsInt26(displacement);
+  if (use_blr && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_blr = !vixl::IsInt26(displacement);
+    }
+  }
+
+  if (use_blr)
+  {
+    armMoveAddressToReg(armAsm, RXSCRATCH, ptr);
+    armAsm->blr(RXSCRATCH);
+  }
+  else
+  {
+    armAsm->bl(displacement);
+  }
+}
+
+void CPU::Recompiler::armEmitCondBranch(a64::Assembler* armAsm, a64::Condition cond, const void* ptr)
+{
+  const s64 jump_distance = static_cast<s64>(reinterpret_cast<intptr_t>(ptr) -
+                                             reinterpret_cast<intptr_t>(armAsm->GetCursorAddress<const void*>()));
+  // pxAssert(Common::IsAligned(jump_distance, 4));
+
+  if (a64::Instruction::IsValidImmPCOffset(a64::CondBranchType, jump_distance >> 2))
+  {
+    armAsm->b(jump_distance >> 2, cond);
+  }
+  else
+  {
+    a64::Label branch_not_taken;
+    armAsm->b(&branch_not_taken, InvertCondition(cond));
+
+    const s64 new_jump_distance = static_cast<s64>(reinterpret_cast<intptr_t>(ptr) -
+                                                   reinterpret_cast<intptr_t>(armAsm->GetCursorAddress<const void*>()));
+    armAsm->b(new_jump_distance >> 2);
+    armAsm->bind(&branch_not_taken);
+  }
+}
+
+u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
+{
+  auto it = s_trampoline_targets.find(target);
+  if (it != s_trampoline_targets.end())
+    return s_trampoline_start_ptr + it->second;
+
+  // align to 16 bytes?
+  const u32 offset = s_trampoline_used; // Common::AlignUpPow2(s_trampoline_used, 16);
+
+  // 4 movs plus a jump
+  if (TRAMPOLINE_AREA_SIZE - offset < 20)
+  {
+    Panic("Ran out of space in constant pool");
+    return nullptr;
+  }
+
+  u8* start = s_trampoline_start_ptr + offset;
+  a64::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+  armMoveAddressToReg(&armAsm, RXSCRATCH, target);
+  armAsm.br(RXSCRATCH);
+
+  const u32 size = static_cast<u32>(armAsm.GetSizeOfCodeGenerated());
+  DebugAssert(size < 20);
+  s_trampoline_targets.emplace(target, offset);
+  s_trampoline_used = offset + static_cast<u32>(size);
+
+  JitCodeBuffer::FlushInstructionCache(start, size);
+  return start;
+}
+
+void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
+{
+#ifdef ENABLE_HOST_DISASSEMBLY
+  class MyDisassembler : public a64::Disassembler
+  {
+  protected:
+    void ProcessOutput(const a64::Instruction* instr) override
+    {
+      Log_DebugPrintf("0x%016" PRIx64 "  %08" PRIx32 "\t\t%s", reinterpret_cast<uint64_t>(instr),
+                      instr->GetInstructionBits(), GetOutput());
+    }
+  };
+
+  a64::Decoder decoder;
+  MyDisassembler disas;
+  decoder.AppendVisitor(&disas);
+  decoder.Decode(static_cast<const a64::Instruction*>(start),
+                 reinterpret_cast<const a64::Instruction*>(static_cast<const u8*>(start) + size));
+#else
+  Log_ErrorPrint("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+#endif
+}
+
+u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
+{
+  return size / a64::kInstructionSize;
+}
+
+u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
+{
+  using namespace a64;
+  using namespace CPU::Recompiler;
+
+  const s64 disp = armGetPCDisplacement(code, dst);
+  DebugAssert(vixl::IsInt26(disp));
+
+  const u32 new_code = B | Assembler::ImmUncondBranch(disp);
+  std::memcpy(code, &new_code, sizeof(new_code));
+  if (flush_icache)
+    JitCodeBuffer::FlushInstructionCache(code, kInstructionSize);
+
+  return kInstructionSize;
+}
+
+u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
+{
+  using namespace vixl::aarch64;
+  using namespace CPU::Recompiler;
+
+#define PTR(x) a64::MemOperand(RSTATE, (s64)(((u8*)(x)) - ((u8*)&g_state)))
+
+  Assembler actual_asm(static_cast<u8*>(code), code_size);
+  Assembler* armAsm = &actual_asm;
+
+#ifdef VIXL_DEBUG
+  vixl::CodeBufferCheckScope asm_check(armAsm, code_size, vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+#endif
+
+  Label dispatch;
+
+  g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
+  {
+    // reserve some space for saving caller-saved registers
+    armAsm->sub(sp, sp, CPU::Recompiler::FUNCTION_STACK_SIZE);
+
+    // Need the CPU state for basically everything :-)
+    armMoveAddressToReg(armAsm, RSTATE, &g_state);
+
+    // Fastmem setup, oldrec doesn't need it
+    if (IsUsingFastmem() && g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler)
+      armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
+
+    // Fall through to event dispatcher
+  }
+
+  // check events then for frame done
+  g_check_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+  {
+    Label skip_event_check;
+    armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
+    armAsm->ldr(RWARG2, PTR(&g_state.downcount));
+    armAsm->cmp(RWARG1, RWARG2);
+    armAsm->b(&skip_event_check, lt);
+
+    g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
+
+    armAsm->bind(&skip_event_check);
+  }
+
+  // TODO: align?
+  g_dispatcher = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->bind(&dispatch);
+
+    // x9 <- s_fast_map[pc >> 16]
+    armAsm->ldr(RWARG1, PTR(&g_state.pc));
+    armMoveAddressToReg(armAsm, RXARG3, g_code_lut.data());
+    armAsm->lsr(RWARG2, RWARG1, 16);
+    armAsm->lsr(RWARG1, RWARG1, 2);
+    armAsm->ldr(RXARG2, MemOperand(RXARG3, RXARG2, LSL, 3));
+
+    // blr(x9[pc * 2]) (fast_map[pc >> 2])
+    armAsm->ldr(RXARG1, MemOperand(RXARG2, RXARG1, LSL, 3));
+    armAsm->blr(RXARG1);
+  }
+
+  g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->ldr(RWARG1, PTR(&g_state.pc));
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock), true);
+    armAsm->b(&dispatch);
+  }
+
+  g_discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->ldr(RWARG1, PTR(&g_state.pc));
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock), true);
+    armAsm->b(&dispatch);
+  }
+
+  g_interpret_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
+    armAsm->b(&dispatch);
+  }
+
+  armAsm->FinalizeCode();
+
+  // TODO: align?
+  s_trampoline_targets.clear();
+  s_trampoline_start_ptr = static_cast<u8*>(code) + armAsm->GetCursorOffset();
+  s_trampoline_used = 0;
+
+#undef PTR
+  return static_cast<u32>(armAsm->GetCursorOffset()) + TRAMPOLINE_AREA_SIZE;
+}
 
 namespace CPU::Recompiler {
 
@@ -24,18 +416,6 @@ constexpr HostReg RARG2 = 1;
 constexpr HostReg RARG3 = 2;
 constexpr HostReg RARG4 = 3;
 constexpr HostReg RSCRATCH = 8;
-constexpr u64 FUNCTION_CALL_SHADOW_SPACE = 32;
-constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
-constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
-constexpr u64 FUNCTION_STACK_SIZE =
-  FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE + FUNCTION_CALL_SHADOW_SPACE;
-
-static s64 GetPCDisplacement(const void* current, const void* target)
-{
-  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(current), 4));
-  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(target), 4));
-  return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
-}
 
 static const a64::WRegister GetHostReg8(HostReg reg)
 {
@@ -158,6 +538,11 @@ void CodeGenerator::SwitchToNearCode()
   m_emit = &m_near_emitter;
 }
 
+void* CodeGenerator::GetStartNearCodePointer() const
+{
+  return static_cast<u8*>(m_code_buffer->GetFreeCodePointer());
+}
+
 void* CodeGenerator::GetCurrentNearCodePointer() const
 {
   return static_cast<u8*>(m_code_buffer->GetFreeCodePointer()) + m_near_emitter.GetCursorOffset();
@@ -196,8 +581,6 @@ Value CodeGenerator::GetValueInHostOrScratchRegister(const Value& value, bool al
 
 void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
 {
-  m_emit->Sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-
   if (allocate_registers)
   {
     // Save the link register, since we'll be calling functions.
@@ -213,7 +596,7 @@ void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
     UNREFERENCED_VARIABLE(cpu_reg_allocated);
 
     // If there's loadstore instructions, preload the fastmem base.
-    if (m_block->contains_loadstore_instructions)
+    if (m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions))
     {
       const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
       Assert(fastmem_reg_allocated);
@@ -222,11 +605,11 @@ void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
   }
 }
 
-void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_return /* = true */)
+void CodeGenerator::EmitEndBlock(bool free_registers, const void* jump_to)
 {
   if (free_registers)
   {
-    if (m_block->contains_loadstore_instructions)
+    if (m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions))
       m_register_cache.FreeHostReg(RMEMBASEPTR);
 
     m_register_cache.FreeHostReg(RCPUPTR);
@@ -235,10 +618,8 @@ void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, bool emit_ret
     m_register_cache.PopCalleeSavedRegisters(true);
   }
 
-  m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-
-  if (emit_return)
-    m_emit->Ret();
+  if (jump_to)
+    armEmitJmp(m_emit, jump_to, true);
 }
 
 void CodeGenerator::EmitExceptionExit()
@@ -252,8 +633,7 @@ void CodeGenerator::EmitExceptionExit()
 
   m_register_cache.PopCalleeSavedRegisters(false);
 
-  m_emit->Add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  m_emit->Ret();
+  armEmitJmp(m_emit, CodeCache::g_check_events_and_dispatch, true);
 }
 
 void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
@@ -275,19 +655,22 @@ void CodeGenerator::EmitExceptionExitOnBool(const Value& value)
   m_register_cache.PopState();
 }
 
-void CodeGenerator::FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size)
+const void* CodeGenerator::FinalizeBlock(u32* out_host_code_size, u32* out_host_far_code_size)
 {
   m_near_emitter.FinalizeCode();
   m_far_emitter.FinalizeCode();
 
-  *out_host_code = reinterpret_cast<CodeBlock::HostCodePointer>(m_code_buffer->GetFreeCodePointer());
+  const void* code = m_code_buffer->GetFreeCodePointer();
   *out_host_code_size = static_cast<u32>(m_near_emitter.GetSizeOfCodeGenerated());
+  *out_host_far_code_size = static_cast<u32>(m_far_emitter.GetSizeOfCodeGenerated());
 
   m_code_buffer->CommitCode(static_cast<u32>(m_near_emitter.GetSizeOfCodeGenerated()));
   m_code_buffer->CommitFarCode(static_cast<u32>(m_far_emitter.GetSizeOfCodeGenerated()));
 
   m_near_emitter.Reset();
   m_far_emitter.Reset();
+
+  return code;
 }
 
 void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size)
@@ -1028,7 +1411,7 @@ void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
 
 void CodeGenerator::EmitCall(const void* ptr)
 {
-  const s64 displacement = GetPCDisplacement(GetCurrentCodePointer(), ptr);
+  const s64 displacement = armGetPCDisplacement(GetCurrentCodePointer(), ptr);
   const bool use_blr = !vixl::IsInt26(displacement);
   if (use_blr)
   {
@@ -1173,25 +1556,25 @@ void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr, co
 
 void CodeGenerator::EmitPushHostReg(HostReg reg, u32 position)
 {
-  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - (position * 8));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - (position * 8));
   m_emit->str(GetHostReg64(reg), addr);
 }
 
 void CodeGenerator::EmitPushHostRegPair(HostReg reg, HostReg reg2, u32 position)
 {
-  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - ((position + 1) * 8));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - ((position + 1) * 8));
   m_emit->stp(GetHostReg64(reg2), GetHostReg64(reg), addr);
 }
 
 void CodeGenerator::EmitPopHostReg(HostReg reg, u32 position)
 {
-  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - (position * 8));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - (position * 8));
   m_emit->ldr(GetHostReg64(reg), addr);
 }
 
 void CodeGenerator::EmitPopHostRegPair(HostReg reg, HostReg reg2, u32 position)
 {
-  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - FUNCTION_CALL_SHADOW_SPACE - (position * 8));
+  const a64::MemOperand addr(a64::sp, FUNCTION_STACK_SIZE - (position * 8));
   m_emit->ldp(GetHostReg64(reg2), GetHostReg64(reg), addr);
 }
 
@@ -1399,15 +1782,11 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
   }
 }
 
-void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                               Value& result)
+void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                               const Value& address, RegSize size, Value& result)
 {
   // fastmem
-  LoadStoreBackpatchInfo bpi;
-  bpi.address_host_reg = HostReg_Invalid;
-  bpi.value_host_reg = result.host_reg;
-  bpi.guest_pc = m_current_instruction->pc;
-  bpi.fault_count = 0;
+  void* host_pc = GetCurrentNearCodePointer();
 
   HostReg address_reg;
   if (address.IsConstant())
@@ -1424,7 +1803,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
 
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    bpi.host_pc = GetCurrentNearCodePointer();
+    host_pc = GetCurrentNearCodePointer();
 
     switch (size)
     {
@@ -1451,7 +1830,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
     m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(RARG1), a64::LSL, 3));
 
-    bpi.host_pc = GetCurrentNearCodePointer();
+    host_pc = GetCurrentNearCodePointer();
 
     switch (size)
     {
@@ -1473,11 +1852,11 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
     }
   }
 
-  bpi.host_code_size = static_cast<u32>(
-    static_cast<ptrdiff_t>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(bpi.host_pc)));
+  const u32 host_code_size =
+    static_cast<u32>(static_cast<ptrdiff_t>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(host_pc)));
 
   // generate slowmem fallback
-  bpi.host_slowmem_pc = GetCurrentFarCodePointer();
+  const void* host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
 
   // we add the ticks *after* the add here, since we counted incorrectly, then correct for it below
@@ -1485,7 +1864,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
   m_delayed_cycles_add += Bus::RAM_READ_TICKS;
 
-  EmitLoadGuestMemorySlowmem(cbi, address, size, result, true);
+  EmitLoadGuestMemorySlowmem(instruction, info, address, size, result, true);
 
   EmitAddCPUStructField(offsetof(State, pending_ticks),
                         Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
@@ -1496,11 +1875,11 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, 
   SwitchToNearCode();
   m_register_cache.UninhibitAllocation();
 
-  m_block->loadstore_backpatch_info.push_back(bpi);
+  CPU::CodeCache::AddLoadStoreInfo(host_pc, host_code_size, info.pc, host_slowmem_pc);
 }
 
-void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                               Value& result, bool in_far_code)
+void CodeGenerator::EmitLoadGuestMemorySlowmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                               const Value& address, RegSize size, Value& result, bool in_far_code)
 {
   if (g_settings.cpu_recompiler_memory_exceptions)
   {
@@ -1540,7 +1919,7 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, 
     m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
     EmitOr(result.host_reg, result.host_reg,
            Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
-             static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
+             static_cast<Exception>(0), info.is_branch_delay_slot, false, instruction.cop.cop_n)));
     EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
 
     EmitExceptionExit();
@@ -1573,17 +1952,13 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, 
   }
 }
 
-void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                                const Value& value)
+void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                                const Value& address, RegSize size, const Value& value)
 {
   Value value_in_hr = GetValueInHostRegister(value);
 
   // fastmem
-  LoadStoreBackpatchInfo bpi;
-  bpi.address_host_reg = HostReg_Invalid;
-  bpi.value_host_reg = value.host_reg;
-  bpi.guest_pc = m_current_instruction->pc;
-  bpi.fault_count = 0;
+  void* host_pc = GetCurrentNearCodePointer();
 
   HostReg address_reg;
   if (address.IsConstant())
@@ -1599,7 +1974,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   m_register_cache.InhibitAllocation();
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    bpi.host_pc = GetCurrentNearCodePointer();
+    host_pc = GetCurrentNearCodePointer();
 
     switch (size)
     {
@@ -1627,7 +2002,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     m_emit->add(GetHostReg64(RARG3), GetFastmemBasePtrReg(), Bus::FASTMEM_LUT_NUM_PAGES * sizeof(u32*));
     m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetHostReg64(RARG3), GetHostReg32(RARG1), a64::LSL, 3));
 
-    bpi.host_pc = GetCurrentNearCodePointer();
+    host_pc = GetCurrentNearCodePointer();
 
     switch (size)
     {
@@ -1649,17 +2024,17 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
     }
   }
 
-  bpi.host_code_size = static_cast<u32>(
-    static_cast<ptrdiff_t>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(bpi.host_pc)));
+  const u32 host_code_size =
+    static_cast<u32>(static_cast<ptrdiff_t>(static_cast<u8*>(GetCurrentNearCodePointer()) - static_cast<u8*>(host_pc)));
 
   // generate slowmem fallback
-  bpi.host_slowmem_pc = GetCurrentFarCodePointer();
+  void* host_slowmem_pc = GetCurrentFarCodePointer();
   SwitchToFarCode();
 
   DebugAssert(m_delayed_cycles_add > 0);
   EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
 
-  EmitStoreGuestMemorySlowmem(cbi, address, size, value_in_hr, true);
+  EmitStoreGuestMemorySlowmem(instruction, info, address, size, value_in_hr, true);
 
   EmitAddCPUStructField(offsetof(State, pending_ticks),
                         Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
@@ -1670,11 +2045,12 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi,
   SwitchToNearCode();
   m_register_cache.UninhibitAllocation();
 
-  m_block->loadstore_backpatch_info.push_back(bpi);
+  CPU::CodeCache::AddLoadStoreInfo(host_pc, host_code_size, info.pc, host_slowmem_pc);
 }
 
-void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                                const Value& value, bool in_far_code)
+void CodeGenerator::EmitStoreGuestMemorySlowmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                                const Value& address, RegSize size, const Value& value,
+                                                bool in_far_code)
 {
   Value value_in_hr = GetValueInHostRegister(value);
 
@@ -1717,7 +2093,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi,
     m_emit->lsl(GetHostReg32(result.host_reg), GetHostReg32(result.host_reg), 2);
     EmitOr(result.host_reg, result.host_reg,
            Value::FromConstantU32(Cop0Registers::CAUSE::MakeValueForException(
-             static_cast<Exception>(0), cbi.is_branch_delay_slot, false, cbi.instruction.cop.cop_n)));
+             static_cast<Exception>(0), info.is_branch_delay_slot, false, instruction.cop.cop_n)));
     EmitFunctionCall(nullptr, static_cast<void (*)(u32, u32)>(&CPU::RaiseException), result, GetCurrentInstructionPC());
 
     if (!in_far_code)
@@ -1754,64 +2130,26 @@ void CodeGenerator::EmitUpdateFastmemBase()
   m_emit->Ldr(GetFastmemBasePtrReg(), a64::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
 }
 
-bool CodeGenerator::BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi)
+void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi)
 {
-  Log_DevPrintf("Backpatching %p (guest PC 0x%08X) to slowmem at %p", lbi.host_pc, lbi.guest_pc, lbi.host_slowmem_pc);
+  Log_DevFmt("Backpatching {} (guest PC 0x{:08X}) to slowmem at {}", host_pc, lbi.guest_pc, lbi.thunk_address);
 
   // check jump distance
   const s64 jump_distance =
-    static_cast<s64>(reinterpret_cast<intptr_t>(lbi.host_slowmem_pc) - reinterpret_cast<intptr_t>(lbi.host_pc));
+    static_cast<s64>(reinterpret_cast<intptr_t>(lbi.thunk_address) - reinterpret_cast<intptr_t>(host_pc));
   Assert(Common::IsAligned(jump_distance, 4));
   Assert(a64::Instruction::IsValidImmPCOffset(a64::UncondBranchType, jump_distance >> 2));
 
   // turn it into a jump to the slowmem handler
-  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(lbi.host_pc), lbi.host_code_size,
-                                     a64::PositionDependentCode);
+  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(host_pc), lbi.code_size, a64::PositionDependentCode);
   emit.b(jump_distance >> 2);
 
-  const s32 nops = (static_cast<s32>(lbi.host_code_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
+  const s32 nops = (static_cast<s32>(lbi.code_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
   Assert(nops >= 0);
   for (s32 i = 0; i < nops; i++)
     emit.nop();
 
-  JitCodeBuffer::FlushInstructionCache(lbi.host_pc, lbi.host_code_size);
-  return true;
-}
-
-void CodeGenerator::BackpatchReturn(void* pc, u32 pc_size)
-{
-  Log_ProfilePrintf("Backpatching %p to return", pc);
-
-  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
-  emit.ret();
-
-  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
-  Assert(nops >= 0);
-  for (s32 i = 0; i < nops; i++)
-    emit.nop();
-
-  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
-}
-
-void CodeGenerator::BackpatchBranch(void* pc, u32 pc_size, void* target)
-{
-  Log_ProfilePrintf("Backpatching %p to %p [branch]", pc, target);
-
-  // check jump distance
-  const s64 jump_distance = static_cast<s64>(reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(pc));
-  Assert(Common::IsAligned(jump_distance, 4));
-  Assert(a64::Instruction::IsValidImmPCOffset(a64::UncondBranchType, jump_distance >> 2));
-
-  vixl::aarch64::MacroAssembler emit(static_cast<vixl::byte*>(pc), pc_size, a64::PositionDependentCode);
-  emit.b(jump_distance >> 2);
-
-  // shouldn't have any nops
-  const s32 nops = (static_cast<s32>(pc_size) - static_cast<s32>(emit.GetCursorOffset())) / 4;
-  Assert(nops >= 0);
-  for (s32 i = 0; i < nops; i++)
-    emit.nop();
-
-  JitCodeBuffer::FlushInstructionCache(pc, pc_size);
+  JitCodeBuffer::FlushInstructionCache(host_pc, lbi.code_size);
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
@@ -1978,6 +2316,69 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
 
     m_emit->Str(ticks_reg, a64::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
   }
+}
+
+void CodeGenerator::EmitBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
+{
+  // store it first to reduce code size, because we can offset
+  armMoveAddressToReg(m_emit, RXARG1, ram_ptr);
+  armMoveAddressToReg(m_emit, RXARG2, shadow_ptr);
+
+  bool first = true;
+  u32 offset = 0;
+  a64::Label block_changed;
+
+  while (size >= 16)
+  {
+    const a64::VRegister vtmp = a64::v2.V4S();
+    const a64::VRegister dst = first ? a64::v0.V4S() : a64::v1.V4S();
+    m_emit->ldr(dst, a64::MemOperand(RXARG1, offset));
+    m_emit->ldr(vtmp, a64::MemOperand(RXARG2, offset));
+    m_emit->cmeq(dst, dst, vtmp);
+    if (!first)
+      m_emit->and_(dst.V16B(), dst.V16B(), vtmp.V16B());
+    else
+      first = false;
+
+    offset += 16;
+    size -= 16;
+  }
+
+  if (!first)
+  {
+    // TODO: make sure this doesn't choke on ffffffff
+    m_emit->uminv(a64::s0, a64::v0.V4S());
+    m_emit->fcmp(a64::s0, 0.0);
+    m_emit->b(&block_changed, a64::eq);
+  }
+
+  while (size >= 8)
+  {
+    m_emit->ldr(RXARG3, a64::MemOperand(RXARG1, offset));
+    m_emit->ldr(RXSCRATCH, a64::MemOperand(RXARG2, offset));
+    m_emit->cmp(RXARG3, RXSCRATCH);
+    m_emit->b(&block_changed, a64::ne);
+    offset += 8;
+    size -= 8;
+  }
+
+  while (size >= 4)
+  {
+    m_emit->ldr(RWARG3, a64::MemOperand(RXARG1, offset));
+    m_emit->ldr(RWSCRATCH, a64::MemOperand(RXARG2, offset));
+    m_emit->cmp(RWARG3, RWSCRATCH);
+    m_emit->b(&block_changed, a64::ne);
+    offset += 4;
+    size -= 4;
+  }
+
+  DebugAssert(size == 0);
+
+  a64::Label block_unchanged;
+  m_emit->b(&block_unchanged);
+  m_emit->bind(&block_changed);
+  armEmitJmp(m_emit, CodeCache::g_discard_and_recompile_block, false);
+  m_emit->bind(&block_unchanged);
 }
 
 void CodeGenerator::EmitStallUntilGTEComplete()
@@ -2253,7 +2654,7 @@ void CodeGenerator::EmitLoadGlobalAddress(HostReg host_reg, const void* ptr)
     reinterpret_cast<uintptr_t>(GetCurrentCodePointer()) & ~static_cast<uintptr_t>(0xFFF));
   const void* ptr_page =
     reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0xFFF));
-  const s64 page_displacement = GetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
+  const s64 page_displacement = armGetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
   const u32 page_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(ptr) & 0xFFFu);
   if (vixl::IsInt21(page_displacement) && a64::Assembler::IsImmLogical(page_offset, 64))
   {
@@ -2264,83 +2665,6 @@ void CodeGenerator::EmitLoadGlobalAddress(HostReg host_reg, const void* ptr)
   {
     m_emit->Mov(GetHostReg64(host_reg), reinterpret_cast<uintptr_t>(ptr));
   }
-}
-
-CodeCache::DispatcherFunction CodeGenerator::CompileDispatcher()
-{
-  m_emit->sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  m_register_cache.ReserveCalleeSavedRegisters();
-  const u32 stack_adjust = PrepareStackForCall();
-
-  EmitLoadGlobalAddress(RCPUPTR, &g_state);
-
-  a64::Label event_test;
-  m_emit->b(&event_test);
-
-  // main dispatch loop
-  a64::Label main_loop;
-  m_emit->Bind(&main_loop);
-
-  // time to lookup the block
-  // w8 <- pc
-  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pc)));
-
-  // x9 <- s_fast_map[pc >> 16]
-  EmitLoadGlobalAddress(10, CodeCache::GetFastMapPointer());
-  m_emit->lsr(a64::w9, a64::w8, 16);
-  m_emit->lsr(a64::w8, a64::w8, 2);
-  m_emit->ldr(a64::x9, a64::MemOperand(a64::x10, a64::x9, a64::LSL, 3));
-
-  // blr(x9[pc * 2]) (fast_map[pc >> 2])
-  m_emit->ldr(a64::x8, a64::MemOperand(a64::x9, a64::x8, a64::LSL, 3));
-  m_emit->blr(a64::x8);
-
-  // w8 <- pending_ticks
-  // w9 <- downcount
-  m_emit->ldr(a64::w8, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, pending_ticks)));
-  m_emit->ldr(a64::w9, a64::MemOperand(GetHostReg64(RCPUPTR), offsetof(State, downcount)));
-
-  // while downcount < pending_ticks
-  m_emit->cmp(a64::w8, a64::w9);
-  m_emit->b(&main_loop, a64::lt);
-
-  m_emit->Bind(&event_test);
-  EmitCall(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
-  m_emit->b(&main_loop);
-
-  // all done
-  RestoreStackAfterCall(stack_adjust);
-  m_register_cache.PopCalleeSavedRegisters(true);
-  m_emit->add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  m_emit->ret();
-
-  CodeBlock::HostCodePointer ptr;
-  u32 code_size;
-  FinalizeBlock(&ptr, &code_size);
-  Log_DevPrintf("Dispatcher is %u bytes at %p", code_size, ptr);
-  return reinterpret_cast<CodeCache::DispatcherFunction>(ptr);
-}
-
-CodeCache::SingleBlockDispatcherFunction CodeGenerator::CompileSingleBlockDispatcher()
-{
-  m_emit->sub(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  m_register_cache.ReserveCalleeSavedRegisters();
-  const u32 stack_adjust = PrepareStackForCall();
-
-  EmitLoadGlobalAddress(RCPUPTR, &g_state);
-
-  m_emit->blr(GetHostReg64(RARG1));
-
-  RestoreStackAfterCall(stack_adjust);
-  m_register_cache.PopCalleeSavedRegisters(true);
-  m_emit->add(a64::sp, a64::sp, FUNCTION_STACK_SIZE);
-  m_emit->ret();
-
-  CodeBlock::HostCodePointer ptr;
-  u32 code_size;
-  FinalizeBlock(&ptr, &code_size);
-  Log_DevPrintf("Dispatcher is %u bytes at %p", code_size, ptr);
-  return reinterpret_cast<CodeCache::SingleBlockDispatcherFunction>(ptr);
 }
 
 } // namespace CPU::Recompiler

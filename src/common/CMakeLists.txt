@@ -38,6 +38,8 @@ add_library(common
   minizip_helpers.cpp
   minizip_helpers.h
   path.h
+  perf_scope.cpp
+  perf_scope.h
   progress_callback.cpp
   progress_callback.h
   rectangle.h

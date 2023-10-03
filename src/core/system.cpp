@@ -244,6 +244,8 @@ void System::Internal::ProcessStartup()
   if (!Bus::AllocateMemory())
     Panic("Failed to allocate memory for emulated bus.");
 
+  CPU::CodeCache::ProcessStartup();
+
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
@@ -265,6 +267,7 @@ void System::Internal::ProcessShutdown()
 
   InputManager::CloseSources();
 
+  CPU::CodeCache::ProcessShutdown();
   Bus::ReleaseMemory();
 }
 
@@ -1508,6 +1511,8 @@ bool System::Initialize(bool force_software_renderer)
     return false;
   }
 
+  CPU::CodeCache::Initialize();
+
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false))
   {
     Bus::Shutdown();
@@ -1535,9 +1540,6 @@ bool System::Initialize(bool force_software_renderer)
     Bus::Shutdown();
     return false;
   }
-
-  // CPU code cache must happen after GPU, because it might steal our address space.
-  CPU::CodeCache::Initialize();
 
   DMA::Initialize();
   InterruptController::Initialize();
@@ -1704,6 +1706,7 @@ void System::Execute()
 
         // TODO: Purge reset/restore
         g_gpu->RestoreDeviceContext();
+        TimingEvents::UpdateCPUDowncount();
 
         if (s_rewind_load_counter >= 0)
           DoRewind();
@@ -2037,9 +2040,9 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (sw.IsReading())
   {
     if (is_memory_state)
-      CPU::CodeCache::InvalidateAll();
+      CPU::CodeCache::InvalidateAllRAMBlocks();
     else
-      CPU::CodeCache::Flush();
+      CPU::CodeCache::Reset();
   }
 
   // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
@@ -2158,7 +2161,7 @@ void System::InternalReset()
     return;
 
   CPU::Reset();
-  CPU::CodeCache::Flush();
+  CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
     PGXP::Initialize();
 
@@ -3522,7 +3525,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                                                          g_settings.cpu_execution_mode))),
                           5.0f);
       CPU::ExecutionModeChanged();
-      CPU::CodeCache::Reinitialize();
+      if (old_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
+        CPU::CodeCache::Shutdown();
+      if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
+        CPU::CodeCache::Initialize();
       CPU::ClearICache();
     }
 
@@ -3534,12 +3540,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."), 5.0f);
       CPU::ExecutionModeChanged();
-
-      // changing memory exceptions can re-enable fastmem
-      if (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions)
-        CPU::CodeCache::Reinitialize();
-      else
-        CPU::CodeCache::Flush();
+      CPU::CodeCache::Reset();
 
       if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
         CPU::ClearICache();
@@ -3597,20 +3598,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                         g_settings.gpu_pgxp_vertex_cache != old_settings.gpu_pgxp_vertex_cache ||
                                         g_settings.gpu_pgxp_cpu != old_settings.gpu_pgxp_cpu)))
     {
-      if (g_settings.IsUsingCodeCache())
-      {
-        Host::AddOSDMessage(g_settings.gpu_pgxp_enable ?
-                              TRANSLATE_STR("OSDMessage", "PGXP enabled, recompiling all blocks.") :
-                              TRANSLATE_STR("OSDMessage", "PGXP disabled, recompiling all blocks."),
-                            5.0f);
-        CPU::CodeCache::Flush();
-      }
-
       if (old_settings.gpu_pgxp_enable)
         PGXP::Shutdown();
 
       if (g_settings.gpu_pgxp_enable)
         PGXP::Initialize();
+
+      CPU::CodeCache::Reset();
     }
 
     if (g_settings.cdrom_readahead_sectors != old_settings.cdrom_readahead_sectors)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -6,12 +6,71 @@
 #include "cpu_recompiler_types.h"
 #include "cpu_types.h"
 
+#if defined(CPU_ARCH_ARM32)
+#include "vixl/aarch32/macro-assembler-aarch32.h"
+#elif defined(CPU_ARCH_ARM64)
+#include "vixl/aarch64/macro-assembler-aarch64.h"
+#endif
+
 #include <array>
 #include <optional>
 #include <stack>
 #include <tuple>
 
 namespace CPU::Recompiler {
+
+enum RegSize : u8
+{
+  RegSize_8,
+  RegSize_16,
+  RegSize_32,
+  RegSize_64,
+};
+
+#if defined(CPU_ARCH_X64)
+
+using HostReg = unsigned;
+using CodeEmitter = Xbyak::CodeGenerator;
+using LabelType = Xbyak::Label;
+enum : u32
+{
+  HostReg_Count = 16
+};
+constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
+constexpr RegSize HostPointerSize = RegSize_64;
+
+#elif defined(CPU_ARCH_ARM32)
+
+using HostReg = unsigned;
+using CodeEmitter = vixl::aarch32::MacroAssembler;
+using LabelType = vixl::aarch32::Label;
+enum : u32
+{
+  HostReg_Count = vixl::aarch32::kNumberOfRegisters
+};
+constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
+constexpr RegSize HostPointerSize = RegSize_32;
+
+#elif defined(CPU_ARCH_ARM64)
+
+using HostReg = unsigned;
+using CodeEmitter = vixl::aarch64::MacroAssembler;
+using LabelType = vixl::aarch64::Label;
+enum : u32
+{
+  HostReg_Count = vixl::aarch64::kNumberOfRegisters
+};
+constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
+constexpr RegSize HostPointerSize = RegSize_64;
+
+#else
+
+#error Unknown architecture.
+
+#endif
+
+class CodeGenerator;
+class RegisterCache;
 
 enum class HostRegState : u8
 {

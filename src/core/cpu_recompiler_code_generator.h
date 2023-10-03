@@ -9,7 +9,7 @@
 
 #include "util/jit_code_buffer.h"
 
-#include "cpu_code_cache.h"
+#include "cpu_code_cache_private.h"
 #include "cpu_recompiler_register_cache.h"
 #include "cpu_recompiler_thunks.h"
 #include "cpu_recompiler_types.h"
@@ -17,10 +17,37 @@
 
 namespace CPU::Recompiler {
 
+enum class Condition : u8
+{
+  Always,
+  NotEqual,
+  Equal,
+  Overflow,
+  Greater,
+  GreaterEqual,
+  LessEqual,
+  Less,
+  Negative,
+  PositiveOrZero,
+  Above,      // unsigned variant of Greater
+  AboveEqual, // unsigned variant of GreaterEqual
+  Below,      // unsigned variant of Less
+  BelowEqual, // unsigned variant of LessEqual
+
+  NotZero,
+  Zero
+};
+
 class CodeGenerator
 {
 public:
   using SpeculativeValue = std::optional<u32>;
+
+  struct CodeBlockInstruction
+  {
+    const Instruction* instruction;
+    const CodeCache::InstructionInfo* info;
+  };
 
   CodeGenerator(JitCodeBuffer* code_buffer);
   ~CodeGenerator();
@@ -28,23 +55,18 @@ public:
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
   static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
-  static bool BackpatchLoadStore(const LoadStoreBackpatchInfo& lbi);
-  static void BackpatchBranch(void* pc, u32 pc_size, void* target);
-  static void BackpatchReturn(void* pc, u32 pc_size);
+  static void BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi);
 
-  bool CompileBlock(CodeBlock* block, CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
-
-  CodeCache::DispatcherFunction CompileDispatcher();
-  CodeCache::SingleBlockDispatcherFunction CompileSingleBlockDispatcher();
+  const void* CompileBlock(CodeCache::Block* block, u32* out_host_code_size, u32* out_host_far_code_size);
 
   //////////////////////////////////////////////////////////////////////////
   // Code Generation
   //////////////////////////////////////////////////////////////////////////
   void EmitBeginBlock(bool allocate_registers = true);
-  void EmitEndBlock(bool free_registers = true, bool emit_return = true);
+  void EmitEndBlock(bool free_registers, const void* jump_to);
   void EmitExceptionExit();
   void EmitExceptionExitOnBool(const Value& value);
-  void FinalizeBlock(CodeBlock::HostCodePointer* out_host_code, u32* out_host_code_size);
+  const void* FinalizeBlock(u32* out_host_code_size, u32* out_host_far_code_size);
 
   void EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
   void EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from_reg, RegSize from_size);
@@ -77,6 +99,7 @@ public:
   void EmitMoveNextInterpreterLoadDelay();
   void EmitCancelInterpreterLoadDelayForReg(Reg reg);
   void EmitICacheCheckAndUpdate();
+  void EmitBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size);
   void EmitStallUntilGTEComplete();
   void EmitLoadCPUStructField(HostReg host_reg, RegSize size, u32 offset);
   void EmitStoreCPUStructField(u32 offset, const Value& value);
@@ -88,18 +111,19 @@ public:
   // Automatically generates an exception handler.
   Value GetFastmemLoadBase();
   Value GetFastmemStoreBase();
-  Value EmitLoadGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
-                            RegSize size);
+  Value EmitLoadGuestMemory(Instruction instruction, const CodeCache::InstructionInfo& info, const Value& address,
+                            const SpeculativeValue& address_spec, RegSize size);
   void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);
-  void EmitLoadGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result);
-  void EmitLoadGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size, Value& result,
-                                  bool in_far_code);
-  void EmitStoreGuestMemory(const CodeBlockInstruction& cbi, const Value& address, const SpeculativeValue& address_spec,
-                            RegSize size, const Value& value);
-  void EmitStoreGuestMemoryFastmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                   const Value& value);
-  void EmitStoreGuestMemorySlowmem(const CodeBlockInstruction& cbi, const Value& address, RegSize size,
-                                   const Value& value, bool in_far_code);
+  void EmitLoadGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info, const Value& address,
+                                  RegSize size, Value& result);
+  void EmitLoadGuestMemorySlowmem(Instruction instruction, const CodeCache::InstructionInfo& info, const Value& address,
+                                  RegSize size, Value& result, bool in_far_code);
+  void EmitStoreGuestMemory(Instruction instruction, const CodeCache::InstructionInfo& info, const Value& address,
+                            const SpeculativeValue& address_spec, RegSize size, const Value& value);
+  void EmitStoreGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                   const Value& address, RegSize size, const Value& value);
+  void EmitStoreGuestMemorySlowmem(Instruction instruction, const CodeCache::InstructionInfo& info,
+                                   const Value& address, RegSize size, const Value& value, bool in_far_code);
   void EmitUpdateFastmemBase();
 
   // Unconditional branch to pointer. May allocate a scratch register.
@@ -179,7 +203,7 @@ public:
   Value NotValue(const Value& val);
 
   // Raising exception if condition is true.
-  void GenerateExceptionExit(const CodeBlockInstruction& cbi, Exception excode,
+  void GenerateExceptionExit(Instruction instruction, const CodeCache::InstructionInfo& info, Exception excode,
                              Condition condition = Condition::Always);
 
 private:
@@ -194,6 +218,7 @@ private:
 
   void SwitchToFarCode();
   void SwitchToNearCode();
+  void* GetStartNearCodePointer() const;
   void* GetCurrentCodePointer() const;
   void* GetCurrentNearCodePointer() const;
   void* GetCurrentFarCodePointer() const;
@@ -204,8 +229,9 @@ private:
   // branch target, memory address, etc
   void BlockPrologue();
   void BlockEpilogue();
-  void InstructionPrologue(const CodeBlockInstruction& cbi, TickCount cycles, bool force_sync = false);
-  void InstructionEpilogue(const CodeBlockInstruction& cbi);
+  void InstructionPrologue(Instruction instruction, const CodeCache::InstructionInfo& info, TickCount cycles,
+                           bool force_sync = false);
+  void InstructionEpilogue(Instruction instruction, const CodeCache::InstructionInfo& info);
   void TruncateBlockAtCurrentInstruction();
   void AddPendingCycles(bool commit);
   void AddGTETicks(TickCount ticks);
@@ -221,32 +247,33 @@ private:
   //////////////////////////////////////////////////////////////////////////
   // Instruction Code Generators
   //////////////////////////////////////////////////////////////////////////
-  bool CompileInstruction(const CodeBlockInstruction& cbi);
-  bool Compile_Fallback(const CodeBlockInstruction& cbi);
-  bool Compile_Nop(const CodeBlockInstruction& cbi);
-  bool Compile_Bitwise(const CodeBlockInstruction& cbi);
-  bool Compile_Shift(const CodeBlockInstruction& cbi);
-  bool Compile_Load(const CodeBlockInstruction& cbi);
-  bool Compile_Store(const CodeBlockInstruction& cbi);
-  bool Compile_LoadLeftRight(const CodeBlockInstruction& cbi);
-  bool Compile_StoreLeftRight(const CodeBlockInstruction& cbi);
-  bool Compile_MoveHiLo(const CodeBlockInstruction& cbi);
-  bool Compile_Add(const CodeBlockInstruction& cbi);
-  bool Compile_Subtract(const CodeBlockInstruction& cbi);
-  bool Compile_Multiply(const CodeBlockInstruction& cbi);
-  bool Compile_Divide(const CodeBlockInstruction& cbi);
-  bool Compile_SignedDivide(const CodeBlockInstruction& cbi);
-  bool Compile_SetLess(const CodeBlockInstruction& cbi);
-  bool Compile_Branch(const CodeBlockInstruction& cbi);
-  bool Compile_lui(const CodeBlockInstruction& cbi);
-  bool Compile_cop0(const CodeBlockInstruction& cbi);
-  bool Compile_cop2(const CodeBlockInstruction& cbi);
+  bool CompileInstruction(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Fallback(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Nop(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Bitwise(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Shift(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Load(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Store(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_LoadLeftRight(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_StoreLeftRight(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_MoveHiLo(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Add(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Subtract(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Multiply(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Divide(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_SignedDivide(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_SetLess(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_Branch(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_lui(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_cop0(Instruction instruction, const CodeCache::InstructionInfo& info);
+  bool Compile_cop2(Instruction instruction, const CodeCache::InstructionInfo& info);
 
   JitCodeBuffer* m_code_buffer;
-  CodeBlock* m_block = nullptr;
-  const CodeBlockInstruction* m_block_start = nullptr;
-  const CodeBlockInstruction* m_block_end = nullptr;
-  const CodeBlockInstruction* m_current_instruction = nullptr;
+
+  CodeCache::Block* m_block = nullptr;
+  CodeBlockInstruction m_block_start = {};
+  CodeBlockInstruction m_block_end = {};
+  CodeBlockInstruction m_current_instruction = {};
   RegisterCache m_register_cache;
   CodeEmitter m_near_emitter;
   CodeEmitter m_far_emitter;
@@ -266,9 +293,6 @@ private:
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
   bool m_gte_busy_cycles_dirty = false;
-
-  bool m_fastmem_load_base_in_register = false;
-  bool m_fastmem_store_base_in_register = false;
 
   //////////////////////////////////////////////////////////////////////////
   // Speculative Constants

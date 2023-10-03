@@ -28,7 +28,7 @@
 #endif
 
 template<typename T>
-static inline void MemsetPtrs(T* ptr, T value, u32 count)
+ALWAYS_INLINE_RELEASE static void MemsetPtrs(T* ptr, T value, u32 count)
 {
   static_assert(std::is_pointer_v<T>, "T is pointer type");
   static_assert(sizeof(T) == sizeof(void*), "T isn't a fat pointer");

@@ -85,6 +85,7 @@
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="achievements.h" />
+    <ClInclude Include="cpu_code_cache_private.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cpu_disasm.h" />
@@ -175,6 +176,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
       <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj">
+      <Project>{c51a346a-86b2-46df-9bb3-d0aa7e5d8699}</Project>
     </ProjectReference>
     <ProjectReference Include="..\scmversion\scmversion.vcxproj">
       <Project>{075ced82-6a20-46df-94c7-9624ac9ddbeb}</Project>

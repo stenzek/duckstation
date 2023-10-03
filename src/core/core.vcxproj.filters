@@ -124,5 +124,6 @@
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="cpu_code_cache_private.h" />
   </ItemGroup>
 </Project>

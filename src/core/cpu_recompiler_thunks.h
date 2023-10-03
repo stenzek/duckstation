@@ -1,15 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 #include "cpu_code_cache.h"
 #include "cpu_types.h"
 
-namespace CPU {
-struct CodeBlock;
-struct CodeBlockInstruction;
-
-namespace Recompiler::Thunks {
+namespace CPU::Recompiler::Thunks {
 
 //////////////////////////////////////////////////////////////////////////
 // Trampolines for calling back from the JIT
@@ -18,7 +14,6 @@ namespace Recompiler::Thunks {
 //////////////////////////////////////////////////////////////////////////
 bool InterpretInstruction();
 bool InterpretInstructionPGXP();
-void CheckAndUpdateICache(u32 pc, u32 line_count);
 
 // Memory access functions for the JIT - MSB is set on exception.
 u64 ReadMemoryByte(u32 address);
@@ -36,9 +31,6 @@ void UncheckedWriteMemoryByte(u32 address, u32 value);
 void UncheckedWriteMemoryHalfWord(u32 address, u32 value);
 void UncheckedWriteMemoryWord(u32 address, u32 value);
 
-void ResolveBranch(CodeBlock* block, void* host_pc, void* host_resolve_pc, u32 host_pc_size);
 void LogPC(u32 pc);
 
-} // namespace Recompiler::Thunks
-
-} // namespace CPU
+} // namespace CPU::Recompiler::Thunks

@@ -28,6 +28,7 @@
     <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="md5_digest.h" />
     <ClInclude Include="path.h" />
+    <ClInclude Include="perf_scope.h" />
     <ClInclude Include="progress_callback.h" />
     <ClInclude Include="rectangle.h" />
     <ClInclude Include="scoped_guard.h" />
@@ -59,6 +60,7 @@
     <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="minizip_helpers.cpp" />
+    <ClCompile Include="perf_scope.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="small_string.cpp" />

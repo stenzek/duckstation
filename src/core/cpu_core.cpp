@@ -7,6 +7,7 @@
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_thunks.h"
@@ -2262,20 +2263,24 @@ void CPU::SingleStep()
 }
 
 template<PGXPMode pgxp_mode>
-void CPU::CodeCache::InterpretCachedBlock(const CodeBlock& block)
+void CPU::CodeCache::InterpretCachedBlock(const Block* block)
 {
   // set up the state so we've already fetched the instruction
-  DebugAssert(g_state.pc == block.GetPC());
-  g_state.npc = block.GetPC() + 4;
+  DebugAssert(g_state.pc == block->pc);
+  g_state.npc = block->pc + 4;
 
-  for (const CodeBlockInstruction& cbi : block.instructions)
+  const Instruction* instruction = block->Instructions();
+  const Instruction* end_instruction = instruction + block->size;
+  const CodeCache::InstructionInfo* info = block->InstructionsInfo();
+
+  do
   {
     g_state.pending_ticks++;
 
     // now executing the instruction we previously fetched
-    g_state.current_instruction.bits = cbi.instruction.bits;
-    g_state.current_instruction_pc = cbi.pc;
-    g_state.current_instruction_in_branch_delay_slot = cbi.is_branch_delay_slot;
+    g_state.current_instruction.bits = instruction->bits;
+    g_state.current_instruction_pc = info->pc;
+    g_state.current_instruction_in_branch_delay_slot = info->is_branch_delay_slot; // TODO: let int set it instead
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
     g_state.branch_was_taken = false;
     g_state.exception_raised = false;
@@ -2292,15 +2297,18 @@ void CPU::CodeCache::InterpretCachedBlock(const CodeBlock& block)
 
     if (g_state.exception_raised)
       break;
-  }
+
+    instruction++;
+    info++;
+  } while (instruction != end_instruction);
 
   // cleanup so the interpreter can kick in if needed
   g_state.next_instruction_is_branch_delay_slot = false;
 }
 
-template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::Disabled>(const CodeBlock& block);
-template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::Memory>(const CodeBlock& block);
-template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::CPU>(const CodeBlock& block);
+template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::Disabled>(const Block* block);
+template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::Memory>(const Block* block);
+template void CPU::CodeCache::InterpretCachedBlock<PGXPMode::CPU>(const Block* block);
 
 template<PGXPMode pgxp_mode>
 void CPU::CodeCache::InterpretUncachedBlock()
@@ -2989,6 +2997,8 @@ static void MemoryBreakpoint(MemoryAccessType type, MemoryAccessSize size, Virtu
   static constexpr const char* types[2] = { "read", "write" };
 
   const u32 cycle = TimingEvents::GetGlobalTickCounter() + CPU::g_state.pending_ticks;
+  if (cycle == 3301006373)
+    __debugbreak();
 
 #if 0
   static std::FILE* fp = nullptr;

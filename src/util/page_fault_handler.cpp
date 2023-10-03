@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "page_fault_handler.h"
@@ -28,24 +28,12 @@ struct RegisteredHandler
 {
   Callback callback;
   const void* owner;
-  void* start_pc;
-  u32 code_size;
 };
 static std::vector<RegisteredHandler> m_handlers;
 static std::mutex m_handler_lock;
 static thread_local bool s_in_handler;
 
-#if defined(CPU_ARCH_ARM32)
-static bool IsStoreInstruction(const void* ptr)
-{
-  u32 bits;
-  std::memcpy(&bits, ptr, sizeof(bits));
-
-  // TODO
-  return false;
-}
-
-#elif defined(CPU_ARCH_ARM64)
+#if defined(CPU_ARCH_ARM64)
 static bool IsStoreInstruction(const void* ptr)
 {
   u32 bits;
@@ -146,7 +134,7 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
   const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
 #elif defined(CPU_ARCH_ARM32)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.arm_pc);
-  const bool is_write = IsStoreInstruction(exception_pc);
+  const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.error_code & (1 << 11)) != 0; // DFSR.WnR
 #elif defined(CPU_ARCH_ARM64)
   void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
   const bool is_write = IsStoreInstruction(exception_pc);
@@ -221,7 +209,7 @@ static void SIGSEGVHandler(int sig, siginfo_t* info, void* ctx)
 
 #endif
 
-bool InstallHandler(const void* owner, void* start_pc, u32 code_size, Callback callback)
+bool InstallHandler(const void* owner, Callback callback)
 {
   bool was_empty;
   {
@@ -267,7 +255,7 @@ bool InstallHandler(const void* owner, void* start_pc, u32 code_size, Callback c
 #endif
   }
 
-  m_handlers.push_back(RegisteredHandler{callback, owner, start_pc, code_size});
+  m_handlers.push_back(RegisteredHandler{callback, owner});
   return true;
 }
 

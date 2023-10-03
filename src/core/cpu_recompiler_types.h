@@ -1,5 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
+// Shared code between recompiler backends.
 
 #pragma once
 #include "cpu_types.h"
@@ -14,158 +16,118 @@
 #define XBYAK_NO_OP_NAMES 1
 #include "xbyak.h"
 
-#elif defined(CPU_ARCH_ARM32)
-
-#include "vixl/aarch32/constants-aarch32.h"
-#include "vixl/aarch32/instructions-aarch32.h"
-#include "vixl/aarch32/macro-assembler-aarch32.h"
-
-#elif defined(CPU_ARCH_ARM64)
-
-#include "vixl/aarch64/constants-aarch64.h"
-#include "vixl/aarch64/macro-assembler-aarch64.h"
-
-#endif
-
-namespace CPU {
-
-namespace Recompiler {
-
-class CodeGenerator;
-class RegisterCache;
-
-enum RegSize : u8
-{
-  RegSize_8,
-  RegSize_16,
-  RegSize_32,
-  RegSize_64,
-};
-
-enum class Condition : u8
-{
-  Always,
-  NotEqual,
-  Equal,
-  Overflow,
-  Greater,
-  GreaterEqual,
-  LessEqual,
-  Less,
-  Negative,
-  PositiveOrZero,
-  Above,      // unsigned variant of Greater
-  AboveEqual, // unsigned variant of GreaterEqual
-  Below,      // unsigned variant of Less
-  BelowEqual, // unsigned variant of LessEqual
-
-  NotZero,
-  Zero
-};
-
-#if defined(CPU_ARCH_X64)
-
-using HostReg = unsigned;
-using CodeEmitter = Xbyak::CodeGenerator;
-using LabelType = Xbyak::Label;
-enum : u32
-{
-  HostReg_Count = 16
-};
-constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
-constexpr RegSize HostPointerSize = RegSize_64;
+namespace CPU::Recompiler {
 
 // A reasonable "maximum" number of bytes per instruction.
 constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
-
-// Alignment of code stoarge.
-constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
 
 // ABI selection
 #if defined(_WIN32)
 #define ABI_WIN64 1
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
+
+#define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
+#define RWARG1 Xbyak::Reg32(Xbyak::Operand::RCX)
+#define RWARG2 Xbyak::Reg32(Xbyak::Operand::RDX)
+#define RWARG3 Xbyak::Reg32(Xbyak::Operand::R8D)
+#define RWARG4 Xbyak::Reg32(Xbyak::Operand::R9D)
+#define RXRET Xbyak::Reg64(Xbyak::Operand::RAX)
+#define RXARG1 Xbyak::Reg64(Xbyak::Operand::RCX)
+#define RXARG2 Xbyak::Reg64(Xbyak::Operand::RDX)
+#define RXARG3 Xbyak::Reg64(Xbyak::Operand::R8)
+#define RXARG4 Xbyak::Reg64(Xbyak::Operand::R9)
+
+static constexpr u32 FUNCTION_CALL_SHADOW_SPACE = 32;
+
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
 #define ABI_SYSV 1
+
+#define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
+#define RWARG1 Xbyak::Reg32(Xbyak::Operand::EDI)
+#define RWARG2 Xbyak::Reg32(Xbyak::Operand::ESI)
+#define RWARG3 Xbyak::Reg32(Xbyak::Operand::EDX)
+#define RWARG4 Xbyak::Reg32(Xbyak::Operand::ECX)
+#define RXRET Xbyak::Reg64(Xbyak::Operand::RAX)
+#define RXARG1 Xbyak::Reg64(Xbyak::Operand::RDI)
+#define RXARG2 Xbyak::Reg64(Xbyak::Operand::RSI)
+#define RXARG3 Xbyak::Reg64(Xbyak::Operand::RDX)
+#define RXARG4 Xbyak::Reg64(Xbyak::Operand::RCX)
+
+static constexpr u32 FUNCTION_CALL_SHADOW_SPACE = 0;
+
 #else
 #error Unknown ABI.
 #endif
 
+bool IsCallerSavedRegister(u32 id);
+
+} // namespace CPU::Recompiler
+
 #elif defined(CPU_ARCH_ARM32)
 
-using HostReg = unsigned;
-using CodeEmitter = vixl::aarch32::MacroAssembler;
-using LabelType = vixl::aarch32::Label;
-enum : u32
-{
-  HostReg_Count = vixl::aarch32::kNumberOfRegisters
-};
-constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
-constexpr RegSize HostPointerSize = RegSize_32;
+#include "vixl/aarch32/assembler-aarch32.h"
+#include "vixl/aarch32/constants-aarch32.h"
+#include "vixl/aarch32/instructions-aarch32.h"
+
+namespace CPU::Recompiler {
 
 // A reasonable "maximum" number of bytes per instruction.
 constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
-// Alignment of code stoarge.
-constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
+#define RRET vixl::aarch32::r0
+#define RARG1 vixl::aarch32::r0
+#define RARG2 vixl::aarch32::r1
+#define RARG3 vixl::aarch32::r2
+#define RARG4 vixl::aarch32::r3
+#define RSCRATCH vixl::aarch32::r12
+#define RSTATE vixl::aarch32::r4
+#define RMEMBASE vixl::aarch32::r5
+
+s32 armGetPCDisplacement(const void* current, const void* target);
+bool armIsPCDisplacementInImmediateRange(s32 displacement);
+void armMoveAddressToReg(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr);
+void armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& rd, u32 imm);
+void armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
+void armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
+
+} // namespace CPU::Recompiler
 
 #elif defined(CPU_ARCH_ARM64)
 
-using HostReg = unsigned;
-using CodeEmitter = vixl::aarch64::MacroAssembler;
-using LabelType = vixl::aarch64::Label;
-enum : u32
-{
-  HostReg_Count = vixl::aarch64::kNumberOfRegisters
-};
-constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
-constexpr RegSize HostPointerSize = RegSize_64;
+#include "vixl/aarch64/assembler-aarch64.h"
+#include "vixl/aarch64/constants-aarch64.h"
+
+namespace CPU::Recompiler {
 
 // A reasonable "maximum" number of bytes per instruction.
 constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
-// Alignment of code stoarge.
-constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
+#define RWRET vixl::aarch64::w0
+#define RXRET vixl::aarch64::x0
+#define RWARG1 vixl::aarch64::w0
+#define RXARG1 vixl::aarch64::x0
+#define RWARG2 vixl::aarch64::w1
+#define RXARG2 vixl::aarch64::x1
+#define RWARG3 vixl::aarch64::w2
+#define RXARG3 vixl::aarch64::x2
+#define RWARG4 vixl::aarch64::w3
+#define RXARG4 vixl::aarch64::x3
+#define RWSCRATCH vixl::aarch64::w16
+#define RXSCRATCH vixl::aarch64::x16
+#define RSTATE vixl::aarch64::x19
+#define RMEMBASE vixl::aarch64::x20
 
-#elif defined(CPU_ARCH_RISCV64)
+bool armIsCallerSavedRegister(u32 id);
+s64 armGetPCDisplacement(const void* current, const void* target);
+void armMoveAddressToReg(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::XRegister& reg, const void* addr);
+void armEmitMov(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& rd, u64 imm);
+void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
+void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
+void armEmitCondBranch(vixl::aarch64::Assembler* armAsm, vixl::aarch64::Condition cond, const void* ptr);
+u8* armGetJumpTrampoline(const void* target);
 
-using HostReg = unsigned;
-
-// Alignment of code stoarge.
-constexpr u32 CODE_STORAGE_ALIGNMENT = 4096;
-
-#else
-
-using HostReg = int;
-
-class CodeEmitter
-{
-};
-
-enum : u32
-{
-  HostReg_Count = 1
-};
-
-constexpr HostReg HostReg_Invalid = static_cast<HostReg>(HostReg_Count);
-constexpr RegSize HostPointerSize = RegSize_64;
-constexpr bool SHIFTS_ARE_IMPLICITLY_MASKED = false;
+} // namespace CPU::Recompiler
 
 #endif
-
-struct LoadStoreBackpatchInfo
-{
-  void* host_pc;            // pointer to instruction which will fault
-  void* host_slowmem_pc;    // pointer to slowmem callback code
-  u32 host_code_size;       // size of the fastmem load as well as the add for cycles
-  HostReg address_host_reg; // register containing the guest address to load/store
-  HostReg value_host_reg;   // register containing the source/destination
-  PhysicalMemoryAddress guest_pc;
-  u32 fault_count;
-};
-
-} // namespace Recompiler
-
-} // namespace CPU

@@ -349,8 +349,9 @@ void ImGuiManager::DrawPerformanceOverlay()
                System::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      if (g_settings.cpu_overclock_active || (!g_settings.IsUsingRecompiler() || g_settings.cpu_recompiler_icache ||
-                                              g_settings.cpu_recompiler_memory_exceptions))
+      if (g_settings.cpu_overclock_active ||
+          (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler || g_settings.cpu_recompiler_icache ||
+           g_settings.cpu_recompiler_memory_exceptions))
       {
         first = true;
         text.assign("CPU[");
