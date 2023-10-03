@@ -834,11 +834,13 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
   return Host::TranslateToCString("DiscRegion", s_disc_region_display_names[static_cast<int>(region)]);
 }
 
-static constexpr const std::array s_cpu_execution_mode_names = {"Interpreter", "CachedInterpreter", "Recompiler"};
+static constexpr const std::array s_cpu_execution_mode_names = {"Interpreter", "CachedInterpreter", "Recompiler",
+                                                                "NewRec"};
 static constexpr const std::array s_cpu_execution_mode_display_names = {
   TRANSLATE_NOOP("CPUExecutionMode", "Interpreter (Slowest)"),
   TRANSLATE_NOOP("CPUExecutionMode", "Cached Interpreter (Faster)"),
-  TRANSLATE_NOOP("CPUExecutionMode", "Recompiler (Fastest)")};
+  TRANSLATE_NOOP("CPUExecutionMode", "Recompiler (Fastest)"),
+  TRANSLATE_NOOP("CPUExecutionMode", "New Recompiler (Experimental)")};
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)
 {

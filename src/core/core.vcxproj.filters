@@ -60,6 +60,9 @@
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="cpu_newrec_compiler.cpp" />
+    <ClCompile Include="cpu_newrec_compiler_x64.cpp" />
+    <ClCompile Include="cpu_newrec_compiler_aarch64.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -125,5 +128,8 @@
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="cpu_code_cache_private.h" />
+    <ClInclude Include="cpu_newrec_compiler.h" />
+    <ClInclude Include="cpu_newrec_compiler_x64.h" />
+    <ClInclude Include="cpu_newrec_compiler_aarch64.h" />
   </ItemGroup>
 </Project>

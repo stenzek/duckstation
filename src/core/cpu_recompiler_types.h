@@ -6,6 +6,8 @@
 #pragma once
 #include "cpu_types.h"
 
+#include <utility>
+
 #if defined(CPU_ARCH_X64)
 
 // We need to include windows.h before xbyak does..
@@ -127,6 +129,41 @@ void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_in
 void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCondBranch(vixl::aarch64::Assembler* armAsm, vixl::aarch64::Condition cond, const void* ptr);
 u8* armGetJumpTrampoline(const void* target);
+
+} // namespace CPU::Recompiler
+
+#elif defined(CPU_ARCH_RISCV64)
+
+#include "biscuit/assembler.hpp"
+
+namespace CPU::Recompiler {
+
+// A reasonable "maximum" number of bytes per instruction.
+constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+#define RRET biscuit::a0
+#define RARG1 biscuit::a0
+#define RARG2 biscuit::a1
+#define RARG3 biscuit::a2
+#define RSCRATCH biscuit::t6
+#define RSTATE biscuit::s10
+#define RMEMBASE biscuit::s11
+
+bool rvIsCallerSavedRegister(u32 id);
+bool rvIsValidSExtITypeImm(u32 imm);
+std::pair<s32, s32> rvGetAddressImmediates(const void* cur, const void* target);
+void rvMoveAddressToReg(biscuit::Assembler* armAsm, const biscuit::GPR& reg, const void* addr);
+void rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, u32 imm);
+void rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& scratch, u64 imm);
+u32 rvEmitJmp(biscuit::Assembler* armAsm, const void* ptr, const biscuit::GPR& link_reg = biscuit::zero);
+u32 rvEmitCall(biscuit::Assembler* armAsm, const void* ptr);
+void rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+void rvEmitUExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+void rvEmitSExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+void rvEmitUExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+void rvEmitDSExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs); // -> doubleword
+void rvEmitDUExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs); // -> doubleword
 
 } // namespace CPU::Recompiler
 

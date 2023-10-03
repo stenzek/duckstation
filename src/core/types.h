@@ -46,6 +46,7 @@ enum class CPUExecutionMode : u8
   Interpreter,
   CachedInterpreter,
   Recompiler,
+  NewRec,
   Count
 };
 

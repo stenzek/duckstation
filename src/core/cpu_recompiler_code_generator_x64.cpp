@@ -46,7 +46,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   constexpr u32 stack_size = 8;
 #endif
 
-  DebugAssert(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
+  DebugAssert(g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler ||
+              g_settings.cpu_execution_mode == CPUExecutionMode::NewRec);
 
   CodeGenerator acg(code_size, static_cast<u8*>(code));
   CodeGenerator* cg = &acg;

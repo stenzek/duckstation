@@ -2231,6 +2231,7 @@ void CPU::Execute()
   {
     case CPUExecutionMode::Recompiler:
     case CPUExecutionMode::CachedInterpreter:
+    case CPUExecutionMode::NewRec:
       CodeCache::Execute();
       break;
 

@@ -370,6 +370,11 @@ void ImGuiManager::DrawPerformanceOverlay()
           text.append_fmt("{}{}", first ? "" : "/", "CI");
           first = false;
         }
+        else if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
+        {
+          text.append_fmt("{}{}", first ? "" : "/", "NR");
+          first = false;
+        }
         else
         {
           if (g_settings.cpu_recompiler_icache)

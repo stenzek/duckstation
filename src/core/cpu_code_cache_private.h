@@ -227,7 +227,7 @@ void InterpretUncachedBlock();
 
 void LogCurrentState();
 
-#if defined(ENABLE_RECOMPILER)
+#if defined(ENABLE_RECOMPILER) || defined(ENABLE_NEWREC)
 #define ENABLE_RECOMPILER_SUPPORT 1
 
 #if defined(_DEBUG) || false

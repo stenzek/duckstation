@@ -21,6 +21,10 @@ Log_SetChannel(CPU::CodeCache);
 #include "cpu_recompiler_code_generator.h"
 #endif
 
+#ifdef ENABLE_NEWREC
+#include "cpu_newrec_compiler.h"
+#endif
+
 #include <unordered_set>
 #include <zlib.h>
 
@@ -144,7 +148,8 @@ static u32 s_total_host_instructions_emitted = 0;
 bool CPU::CodeCache::IsUsingAnyRecompiler()
 {
 #ifdef ENABLE_RECOMPILER_SUPPORT
-  return g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler;
+  return (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler ||
+          g_settings.cpu_execution_mode == CPUExecutionMode::NewRec);
 #else
   return false;
 #endif
@@ -498,8 +503,8 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
     return block;
   }
 
-  // TODO: Only used by NewRec for now, don't waste time filling it.
-  if constexpr (false)
+  // Old rec doesn't use backprop info, don't waste time filling it.
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
     FillBlockRegInfo(block);
 
   // add it to the tracking list for its page
@@ -1419,6 +1424,10 @@ bool CPU::CodeCache::CompileBlock(Block* block)
     host_code = codegen.CompileBlock(block, &host_code_size, &host_far_code_size);
   }
 #endif
+#ifdef ENABLE_NEWREC
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
+    host_code = NewRec::g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
+#endif
 
   s_code_buffer.WriteProtect(true);
 
@@ -1569,6 +1578,10 @@ void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchI
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
     Recompiler::CodeGenerator::BackpatchLoadStore(host_pc, info);
+#endif
+#ifdef ENABLE_NEWREC
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
+    NewRec::BackpatchLoadStore(host_pc, info);
 #endif
 
   s_code_buffer.WriteProtect(true);

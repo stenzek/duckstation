@@ -23,6 +23,7 @@ endif()
 # Renderer options.
 option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
 option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
+option(ENABLE_NEWREC "Build with experimental new dynarec (needed for RISC-V)" ON)
 
 # Global options.
 if(NOT ANDROID)
@@ -171,6 +172,9 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
   set(CPU_ARCH "riscv64")
+
+  # Not done for us. Or we should inline atomics?
+  link_libraries("-latomic")
 else()
   message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
