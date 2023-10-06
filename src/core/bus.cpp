@@ -1665,8 +1665,27 @@ void Bus::SetHandlers()
   SET(g_memory_handlers, KSEG2 | 0xFFFE0000, 0x1000, CacheControlReadHandler, CacheControlWriteHandler);
 
   // When cache isolated, only allow writes to cache? Or should we still allow KSEG1?
-  SET(g_memory_handlers_isc, KUSEG, 0x1000, ICacheReadHandler, ICacheWriteHandler);
-  SET(g_memory_handlers_isc, KSEG0, 0x1000, ICacheReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | HW_BASE, HW_SIZE, HardwareReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | HW_BASE, HW_SIZE, HardwareReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | HW_BASE, HW_SIZE, HardwareReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG1 | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG2 | 0xFFFE0000, 0x1000, CacheControlReadHandler, CacheControlWriteHandler);
 
 #undef SET
 }
