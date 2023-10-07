@@ -590,8 +590,12 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Gra
                                                          config.blend, primitives[static_cast<u8>(config.primitive)]));
 }
 
-ALWAYS_INLINE static void ApplyRasterizationState(const GPUPipeline::RasterizationState& rs)
+ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyRasterizationState(GPUPipeline::RasterizationState rs)
 {
+  if (m_last_rasterization_state == rs)
+    return;
+
+  // Only one thing, no need to check.
   if (rs.cull_mode == GPUPipeline::CullMode::None)
   {
     glDisable(GL_CULL_FACE);
@@ -601,9 +605,11 @@ ALWAYS_INLINE static void ApplyRasterizationState(const GPUPipeline::Rasterizati
     glEnable(GL_CULL_FACE);
     glCullFace((rs.cull_mode == GPUPipeline::CullMode::Front) ? GL_FRONT : GL_BACK);
   }
+
+  m_last_rasterization_state = rs;
 }
 
-ALWAYS_INLINE static void ApplyDepthState(const GPUPipeline::DepthState& ds)
+ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyDepthState(GPUPipeline::DepthState ds)
 {
   static constexpr std::array<GLenum, static_cast<u32>(GPUPipeline::DepthFunc::MaxCount)> func_mapping = {{
     GL_NEVER,   // Never
@@ -615,13 +621,19 @@ ALWAYS_INLINE static void ApplyDepthState(const GPUPipeline::DepthState& ds)
     GL_EQUAL,   // Equal
   }};
 
+  if (m_last_depth_state == ds)
+    return;
+
   (ds.depth_test != GPUPipeline::DepthFunc::Always || ds.depth_write) ? glEnable(GL_DEPTH_TEST) :
                                                                         glDisable(GL_DEPTH_TEST);
   glDepthFunc(func_mapping[static_cast<u8>(ds.depth_test.GetValue())]);
-  glDepthMask(ds.depth_write);
+  if (m_last_depth_state.depth_write != ds.depth_write)
+    glDepthMask(ds.depth_write);
+
+  m_last_depth_state = ds;
 }
 
-ALWAYS_INLINE static void ApplyBlendState(const GPUPipeline::BlendState& bs)
+ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyBlendState(GPUPipeline::BlendState bs)
 {
   static constexpr std::array<GLenum, static_cast<u32>(GPUPipeline::BlendFunc::MaxCount)> blend_mapping = {{
     GL_ZERO,                     // Zero
@@ -649,24 +661,44 @@ ALWAYS_INLINE static void ApplyBlendState(const GPUPipeline::BlendState& bs)
   }};
 
   // TODO: driver bugs
-  // TODO: rdoc and look for redundant calls
 
-  bs.enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+  if (bs == m_last_blend_state)
+    return;
+
+  if (bs.enable != m_last_blend_state.enable)
+    bs.enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
 
   if (bs.enable)
   {
-    glBlendFuncSeparate(blend_mapping[static_cast<u8>(bs.src_blend.GetValue())],
-                        blend_mapping[static_cast<u8>(bs.dst_blend.GetValue())],
-                        blend_mapping[static_cast<u8>(bs.src_alpha_blend.GetValue())],
-                        blend_mapping[static_cast<u8>(bs.dst_alpha_blend.GetValue())]);
-    glBlendEquationSeparate(op_mapping[static_cast<u8>(bs.blend_op.GetValue())],
-                            op_mapping[static_cast<u8>(bs.alpha_blend_op.GetValue())]);
+    if (bs.blend_factors != m_last_blend_state.blend_factors)
+    {
+      glBlendFuncSeparate(blend_mapping[static_cast<u8>(bs.src_blend.GetValue())],
+                          blend_mapping[static_cast<u8>(bs.dst_blend.GetValue())],
+                          blend_mapping[static_cast<u8>(bs.src_alpha_blend.GetValue())],
+                          blend_mapping[static_cast<u8>(bs.dst_alpha_blend.GetValue())]);
+    }
 
-    // TODO: cache this to avoid calls?
-    glBlendColor(bs.GetConstantRed(), bs.GetConstantGreen(), bs.GetConstantBlue(), bs.GetConstantAlpha());
+    if (bs.blend_ops != m_last_blend_state.blend_ops)
+    {
+      glBlendEquationSeparate(op_mapping[static_cast<u8>(bs.blend_op.GetValue())],
+                              op_mapping[static_cast<u8>(bs.alpha_blend_op.GetValue())]);
+    }
+
+    if (bs.constant != m_last_blend_state.constant)
+      glBlendColor(bs.GetConstantRed(), bs.GetConstantGreen(), bs.GetConstantBlue(), bs.GetConstantAlpha());
+  }
+  else
+  {
+    // Keep old values for blend options to potentially avoid calls when re-enabling.
+    bs.blend_factors.SetValue(m_last_blend_state.blend_factors);
+    bs.blend_ops.SetValue(m_last_blend_state.blend_ops);
+    bs.constant.SetValue(m_last_blend_state.constant);
   }
 
-  glColorMask(bs.write_r, bs.write_g, bs.write_b, bs.write_a);
+  if (bs.write_mask != m_last_blend_state.write_mask)
+    glColorMask(bs.write_r, bs.write_g, bs.write_b, bs.write_a);
+
+  m_last_blend_state = bs;
 }
 
 void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
@@ -677,21 +709,10 @@ void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
   OpenGLPipeline* const P = static_cast<OpenGLPipeline*>(pipeline);
   m_current_pipeline = P;
 
-  if (m_last_rasterization_state != P->GetRasterizationState())
-  {
-    m_last_rasterization_state = P->GetRasterizationState();
-    ApplyRasterizationState(m_last_rasterization_state);
-  }
-  if (m_last_depth_state != P->GetDepthState())
-  {
-    m_last_depth_state = P->GetDepthState();
-    ApplyDepthState(m_last_depth_state);
-  }
-  if (m_last_blend_state != P->GetBlendState())
-  {
-    m_last_blend_state = P->GetBlendState();
-    ApplyBlendState(m_last_blend_state);
-  }
+  ApplyRasterizationState(P->GetRasterizationState());
+  ApplyDepthState(P->GetDepthState());
+  ApplyBlendState(P->GetBlendState());
+
   if (m_last_vao != P->GetVAO())
   {
     m_last_vao = P->GetVAO();

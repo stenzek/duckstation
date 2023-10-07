@@ -160,6 +160,10 @@ private:
   bool DiscardPipelineCache();
   void ClosePipelineCache();
 
+  void ApplyRasterizationState(GPUPipeline::RasterizationState rs);
+  void ApplyDepthState(GPUPipeline::DepthState ds);
+  void ApplyBlendState(GPUPipeline::BlendState bs);
+
   std::unique_ptr<GL::Context> m_gl_context;
   std::unique_ptr<OpenGLFramebuffer> m_window_framebuffer;
 

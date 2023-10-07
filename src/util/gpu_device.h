@@ -348,6 +348,10 @@ public:
     BitField<u64, bool, 27, 1> write_a;
     BitField<u64, u8, 24, 4> write_mask;
     BitField<u64, u32, 32, 32> constant;
+
+    BitField<u64, u16, 1, 16> blend_factors;
+    BitField<u64, u8, 17, 6> blend_ops;
+
     u64 key;
 
     // clang-format off
