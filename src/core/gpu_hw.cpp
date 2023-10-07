@@ -650,8 +650,8 @@ bool GPU_HW::CreateBuffers()
   GL_OBJECT_NAME(m_vram_readback_framebuffer, "VRAM Readback Framebuffer");
   GL_OBJECT_NAME(m_display_framebuffer, "Display Framebuffer");
 
-  if (!(m_vram_upload_buffer = g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI,
-                                                                 VRAM_UPDATE_TEXTURE_BUFFER_SIZE / sizeof(u16))))
+  if (!(m_vram_upload_buffer =
+          g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI, GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS)))
   {
     return false;
   }

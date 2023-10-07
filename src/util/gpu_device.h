@@ -460,6 +460,7 @@ public:
   };
 
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
+  static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
 
   virtual ~GPUDevice();
 

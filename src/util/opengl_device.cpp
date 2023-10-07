@@ -414,7 +414,9 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   GLint max_texture_size = 1024;
   GLint max_samples = 1;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  Log_DevFmt("GL_MAX_TEXTURE_SIZE: {}", max_texture_size);
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+  Log_DevFmt("GL_MAX_SAMPLES: {}", max_samples);
   m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
   m_max_multisamples = std::max(1u, static_cast<u32>(max_samples));
 
@@ -433,6 +435,19 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   // And Samsung's ANGLE/GLES driver?
   if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "ANGLE"))
     m_features.supports_texture_buffers = false;
+
+  if (m_features.supports_texture_buffers)
+  {
+    GLint max_texel_buffer_size = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&max_texel_buffer_size));
+    Log_DevFmt("GL_MAX_TEXTURE_BUFFER_SIZE: {}", max_texel_buffer_size);
+    if (max_texel_buffer_size < static_cast<GLint>(MIN_TEXEL_BUFFER_ELEMENTS))
+    {
+      Log_WarningFmt("GL_MAX_TEXTURE_BUFFER_SIZE ({}) is below required minimum ({}), not using texture buffers.",
+                     max_texel_buffer_size, MIN_TEXEL_BUFFER_ELEMENTS);
+      m_features.supports_texture_buffers = false;
+    }
+  }
 #endif
 
   if (!m_features.supports_texture_buffers)
@@ -446,8 +461,8 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
       glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
     }
 
-    Log_InfoPrintf("Max fragment shader storage blocks: %d", max_fragment_storage_blocks);
-    Log_InfoPrintf("Max shader storage buffer size: %" PRId64, max_ssbo_size);
+    Log_DevFmt("GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS: {}", max_fragment_storage_blocks);
+    Log_DevFmt("GL_MAX_SHADER_STORAGE_BLOCK_SIZE: {}", max_ssbo_size);
     m_features.texture_buffers_emulated_with_ssbo =
       (max_fragment_storage_blocks > 0 && max_ssbo_size >= static_cast<GLint64>(1024 * 512 * sizeof(u16)));
     if (m_features.texture_buffers_emulated_with_ssbo)
@@ -486,7 +501,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
     // check that there's at least one format and the extension isn't being "faked"
     GLint num_formats = 0;
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_formats);
-    Log_InfoPrintf("%u program binary formats supported by driver", num_formats);
+    Log_DevFmt("{} program binary formats supported by driver", num_formats);
     m_features.pipeline_cache = (num_formats > 0);
   }
 

@@ -62,12 +62,11 @@ public:
 private:
   enum : u32
   {
-    VRAM_UPDATE_TEXTURE_BUFFER_SIZE = 4 * 1024 * 1024,
     MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
                                  (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u)
   };
-  static_assert(VRAM_UPDATE_TEXTURE_BUFFER_SIZE >= VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+  static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
 
   struct BatchVertex
   {
