@@ -1367,22 +1367,21 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
   }
 
   m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
-  m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
   m_emit->ldr(GetHostReg32(RARG1),
               a32::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(RARG1), a32::LSL, 2)); // pointer load
 
   switch (size)
   {
     case RegSize_8:
-      m_emit->ldrb(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(RARG2)));
+      m_emit->ldrb(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(address_reg)));
       break;
 
     case RegSize_16:
-      m_emit->ldrh(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(RARG2)));
+      m_emit->ldrh(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(address_reg)));
       break;
 
     case RegSize_32:
-      m_emit->ldr(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(RARG2)));
+      m_emit->ldr(GetHostReg32(result.host_reg), a32::MemOperand(GetHostReg32(RARG1), GetHostReg32(address_reg)));
       break;
 
     default:

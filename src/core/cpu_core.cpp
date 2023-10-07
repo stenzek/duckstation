@@ -2396,7 +2396,7 @@ ALWAYS_INLINE_RELEASE Bus::MemoryWriteHandler CPU::GetMemoryWriteHandler(Virtual
 void CPU::UpdateMemoryPointers()
 {
   g_state.memory_handlers = Bus::GetMemoryHandlers(g_state.cop0_regs.sr.Isc, g_state.cop0_regs.sr.Swc);
-  g_state.fastmem_base = g_state.cop0_regs.sr.Isc ? nullptr : Bus::GetFastmemBase();
+  g_state.fastmem_base = Bus::GetFastmemBase(g_state.cop0_regs.sr.Isc);
 }
 
 void CPU::ExecutionModeChanged()

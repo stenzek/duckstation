@@ -141,6 +141,8 @@ static void SetRAMSize(bool enable_8mb_ram);
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
 
+static u8* GetLUTFastmemPointer(u32 address, u8* ram_ptr);
+
 static void SetRAMPageWritable(u32 page_index, bool writable);
 
 static void SetHandlers();
@@ -460,16 +462,21 @@ CPUFastmemMode Bus::GetFastmemMode()
   return s_fastmem_mode;
 }
 
-void* Bus::GetFastmemBase()
+void* Bus::GetFastmemBase(bool isc)
 {
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
-    return s_fastmem_arena.BasePointer();
+    return isc ? nullptr : s_fastmem_arena.BasePointer();
 #endif
   if (s_fastmem_mode == CPUFastmemMode::LUT)
-    return reinterpret_cast<u8*>(s_fastmem_lut);
+    return reinterpret_cast<u8*>(s_fastmem_lut + (isc ? (FASTMEM_LUT_SIZE * sizeof(void*)) : 0));
 
   return nullptr;
+}
+
+u8* Bus::GetLUTFastmemPointer(u32 address, u8* ram_ptr)
+{
+  return ram_ptr - address;
 }
 
 void Bus::UpdateFastmemViews(CPUFastmemMode mode)
@@ -530,20 +537,20 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
 
   if (!s_fastmem_lut)
   {
-    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SIZE));
+    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SLOTS));
     Assert(s_fastmem_lut);
 
     Log_InfoPrintf("Fastmem base (software): %p", s_fastmem_lut);
   }
 
-  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_SIZE);
+  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_SLOTS);
 
   auto MapRAM = [](u32 base_address) {
     u8* ram_ptr = g_ram + (base_address & g_ram_mask);
     for (u32 address = 0; address < g_ram_size; address += FASTMEM_LUT_PAGE_SIZE)
     {
       const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
-      s_fastmem_lut[lut_index] = ram_ptr;
+      s_fastmem_lut[lut_index] = GetLUTFastmemPointer(base_address + address, ram_ptr);
       ram_ptr += FASTMEM_LUT_PAGE_SIZE;
     }
   };

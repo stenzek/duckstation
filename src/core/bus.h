@@ -96,7 +96,8 @@ enum : u32
   FASTMEM_LUT_PAGE_SIZE = 4096,
   FASTMEM_LUT_PAGE_MASK = FASTMEM_LUT_PAGE_SIZE - 1,
   FASTMEM_LUT_PAGE_SHIFT = 12,
-  FASTMEM_LUT_SIZE = 0x100000, // 0x100000000 >> 12
+  FASTMEM_LUT_SIZE = 0x100000,              // 0x100000000 >> 12
+  FASTMEM_LUT_SLOTS = FASTMEM_LUT_SIZE * 2, // [isc]
 };
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -125,7 +126,7 @@ ALWAYS_INLINE_RELEASE static FP* OffsetHandlerArray(void** handlers, MemoryAcces
 }
 
 CPUFastmemMode GetFastmemMode();
-void* GetFastmemBase();
+void* GetFastmemBase(bool isc);
 void UpdateFastmemViews(CPUFastmemMode mode);
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 

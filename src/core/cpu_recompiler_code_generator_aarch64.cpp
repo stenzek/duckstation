@@ -1734,60 +1734,38 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
     address_reg = address.host_reg;
   }
 
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
-  {
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_16:
-        m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_32:
-        m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-  else
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
     m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(RARG1), a64::LSL, 3));
+    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
+  }
 
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  const a64::XRegister membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
 
-      case RegSize_16:
-        m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  switch (size)
+  {
+    case RegSize_8:
+      m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
 
-      case RegSize_32:
-        m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+    case RegSize_16:
+      m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
 
-      default:
-        UnreachableCode();
-        break;
-    }
+    case RegSize_32:
+      m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
 void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                                const Value& address, RegSize size, Value& result)
 {
-  // fastmem
-  void* host_pc = GetCurrentNearCodePointer();
-
   HostReg address_reg;
   if (address.IsConstant())
   {
@@ -1799,57 +1777,36 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const Co
     address_reg = address.host_reg;
   }
 
-  m_register_cache.InhibitAllocation();
-
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
-  {
-    host_pc = GetCurrentNearCodePointer();
-
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_16:
-        m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_32:
-        m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-  else
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
     m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(RARG1), a64::LSL, 3));
+    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
+  }
 
-    host_pc = GetCurrentNearCodePointer();
+  const a64::XRegister membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
 
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  m_register_cache.InhibitAllocation();
 
-      case RegSize_16:
-        m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  void* host_pc = GetCurrentNearCodePointer();
 
-      case RegSize_32:
-        m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  switch (size)
+  {
+    case RegSize_8:
+      m_emit->ldrb(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
 
-      default:
-        UnreachableCode();
-        break;
-    }
+    case RegSize_16:
+      m_emit->ldrh(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
+
+    case RegSize_32:
+      m_emit->ldr(GetHostReg32(result.host_reg), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 
   const u32 host_code_size =
@@ -1957,9 +1914,6 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const C
 {
   Value value_in_hr = GetValueInHostRegister(value);
 
-  // fastmem
-  void* host_pc = GetCurrentNearCodePointer();
-
   HostReg address_reg;
   if (address.IsConstant())
   {
@@ -1971,56 +1925,37 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const C
     address_reg = address.host_reg;
   }
 
-  m_register_cache.InhibitAllocation();
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
-  {
-    host_pc = GetCurrentNearCodePointer();
-
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->strb(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_16:
-        m_emit->strh(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      case RegSize_32:
-        m_emit->str(GetHostReg32(value_in_hr), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg32(address_reg)));
-        break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-  else
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
     m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetHostReg64(RARG3), GetHostReg32(RARG1), a64::LSL, 3));
+    m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
+  }
 
-    host_pc = GetCurrentNearCodePointer();
+  const a64::XRegister membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
 
-    switch (size)
-    {
-      case RegSize_8:
-        m_emit->strb(GetHostReg32(value_in_hr.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  // fastmem
+  void* host_pc = GetCurrentNearCodePointer();
 
-      case RegSize_16:
-        m_emit->strh(GetHostReg32(value_in_hr.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  m_register_cache.InhibitAllocation();
 
-      case RegSize_32:
-        m_emit->str(GetHostReg32(value_in_hr.host_reg), a64::MemOperand(GetHostReg64(RARG1), GetHostReg32(RARG2)));
-        break;
+  switch (size)
+  {
+    case RegSize_8:
+      m_emit->strb(GetHostReg32(value_in_hr), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
 
-      default:
-        UnreachableCode();
-        break;
-    }
+    case RegSize_16:
+      m_emit->strh(GetHostReg32(value_in_hr), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
+
+    case RegSize_32:
+      m_emit->str(GetHostReg32(value_in_hr), a64::MemOperand(membase, GetHostReg32(address_reg)));
+      break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 
   const u32 host_code_size =

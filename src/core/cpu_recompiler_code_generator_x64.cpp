@@ -2094,200 +2094,117 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
 
 void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result)
 {
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
-    // can't store displacements > 0x80000000 in-line
-    const Value* actual_address = &address;
-    if (address.IsConstant() && address.constant_value >= 0x80000000)
-    {
-      actual_address = &result;
-      m_emit->mov(GetHostReg32(result.host_reg), address.constant_value);
-    }
-
-    // TODO: movsx/zx inline here
-    switch (size)
-    {
-      case RegSize_8:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg8(result.host_reg),
-                      m_emit->byte[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg8(result.host_reg),
-                      m_emit->byte[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      case RegSize_16:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg16(result.host_reg),
-                      m_emit->word[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg16(result.host_reg),
-                      m_emit->word[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      case RegSize_32:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg32(result.host_reg),
-                      m_emit->dword[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg32(result.host_reg),
-                      m_emit->dword[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-  else
-  {
-    // TODO: We could mask the LSBs here for unaligned protection.
     EmitCopyValue(RARG1, address);
-    m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
+    m_emit->shr(GetHostReg64(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
     m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
+  }
 
-    switch (size)
+  const Xbyak::Reg64 membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
+
+  // can't store displacements > 0x80000000 in-line
+  const Value* actual_address = &address;
+  if (address.IsConstant() && address.constant_value >= 0x80000000)
+  {
+    actual_address = &result;
+    m_emit->mov(GetHostReg32(result.host_reg), address.constant_value);
+  }
+
+  // TODO: movsx/zx inline here
+  switch (size)
+  {
+    case RegSize_8:
     {
-      case RegSize_8:
-        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      case RegSize_16:
-        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      case RegSize_32:
-        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      default:
-        UnreachableCode();
-        break;
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[membase + GetHostReg64(actual_address->host_reg)]);
     }
+    break;
+
+    case RegSize_16:
+    {
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[membase + GetHostReg64(actual_address->host_reg)]);
+    }
+    break;
+
+    case RegSize_32:
+    {
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[membase + GetHostReg64(actual_address->host_reg)]);
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 }
 
 void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                                const Value& address, RegSize size, Value& result)
 {
-  // fastmem
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
+  {
+    EmitCopyValue(RARG1, address);
+    m_emit->shr(GetHostReg64(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
+  }
+
+  const Xbyak::Reg64 membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
+
+  // can't store displacements > 0x80000000 in-line
+  const Value* actual_address = &address;
+  if (address.IsConstant() && address.constant_value >= 0x80000000)
+  {
+    actual_address = &result;
+    m_emit->mov(GetHostReg32(result.host_reg), address.constant_value);
+  }
+
   void* host_pc = GetCurrentNearCodePointer();
 
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  m_register_cache.InhibitAllocation();
+
+  switch (size)
   {
-    // can't store displacements > 0x80000000 in-line
-    const Value* actual_address = &address;
-    if (address.IsConstant() && address.constant_value >= 0x80000000)
+    case RegSize_8:
     {
-      actual_address = &result;
-      m_emit->mov(GetHostReg32(result.host_reg), address.constant_value);
-      host_pc = GetCurrentNearCodePointer();
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[membase + GetHostReg64(actual_address->host_reg)]);
     }
+    break;
 
-    m_register_cache.InhibitAllocation();
-
-    switch (size)
+    case RegSize_16:
     {
-      case RegSize_8:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg8(result.host_reg),
-                      m_emit->byte[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg8(result.host_reg),
-                      m_emit->byte[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      case RegSize_16:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg16(result.host_reg),
-                      m_emit->word[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg16(result.host_reg),
-                      m_emit->word[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      case RegSize_32:
-      {
-        if (actual_address->IsConstant())
-        {
-          m_emit->mov(GetHostReg32(result.host_reg),
-                      m_emit->dword[GetFastmemBasePtrReg() + actual_address->constant_value]);
-        }
-        else
-        {
-          m_emit->mov(GetHostReg32(result.host_reg),
-                      m_emit->dword[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)]);
-        }
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[membase + GetHostReg64(actual_address->host_reg)]);
     }
-  }
-  else
-  {
-    m_register_cache.InhibitAllocation();
+    break;
 
-    // TODO: We could mask the LSBs here for unaligned protection.
-    EmitCopyValue(RARG1, address);
-    m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
-    host_pc = GetCurrentNearCodePointer();
-
-    switch (size)
+    case RegSize_32:
     {
-      case RegSize_8:
-        m_emit->mov(GetHostReg8(result.host_reg), m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      case RegSize_16:
-        m_emit->mov(GetHostReg16(result.host_reg), m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      case RegSize_32:
-        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)]);
-        break;
-
-      default:
-        UnreachableCode();
-        break;
+      if (actual_address->IsConstant())
+        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[membase + actual_address->constant_value]);
+      else
+        m_emit->mov(GetHostReg32(result.host_reg), m_emit->dword[membase + GetHostReg64(actual_address->host_reg)]);
     }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 
   // insert nops, we need at least 5 bytes for a relative jump
@@ -2398,168 +2315,93 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(Instruction instruction, const Co
 void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                                 const Value& address, RegSize size, const Value& value)
 {
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
+  {
+    EmitCopyValue(RARG1, address);
+    m_emit->shr(GetHostReg64(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
+  }
+
+  // can't store displacements > 0x80000000 in-line
+  const Value* actual_address = &address;
+  Value temp_address;
+  if (address.IsConstant() && address.constant_value >= 0x80000000)
+  {
+    temp_address.SetHostReg(&m_register_cache, RRETURN, RegSize_32);
+    actual_address = &temp_address;
+    m_emit->mov(GetHostReg32(temp_address), address.constant_value);
+  }
+
+  const Xbyak::Reg64 membase =
+    (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? GetHostReg64(RARG1) : GetFastmemBasePtrReg();
+
   // fastmem
   void* host_pc = GetCurrentNearCodePointer();
 
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  m_register_cache.InhibitAllocation();
+
+  switch (size)
   {
-    // can't store displacements > 0x80000000 in-line
-    const Value* actual_address = &address;
-    Value temp_address;
-    if (address.IsConstant() && address.constant_value >= 0x80000000)
+    case RegSize_8:
     {
-      temp_address.SetHostReg(&m_register_cache, RRETURN, RegSize_32);
-      actual_address = &temp_address;
-      m_emit->mov(GetHostReg32(temp_address), address.constant_value);
-      host_pc = GetCurrentNearCodePointer();
-    }
-
-    m_register_cache.InhibitAllocation();
-
-    switch (size)
-    {
-      case RegSize_8:
-      {
-        if (actual_address->IsConstant())
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->byte[GetFastmemBasePtrReg() + actual_address->constant_value],
-                        value.constant_value & 0xFFu);
-          }
-          else
-          {
-            m_emit->mov(m_emit->byte[GetFastmemBasePtrReg() + actual_address->constant_value],
-                        GetHostReg8(value.host_reg));
-          }
-        }
-        else
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->byte[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        value.constant_value & 0xFFu);
-          }
-          else
-          {
-            m_emit->mov(m_emit->byte[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        GetHostReg8(value.host_reg));
-          }
-        }
-      }
-      break;
-
-      case RegSize_16:
-      {
-        if (actual_address->IsConstant())
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->word[GetFastmemBasePtrReg() + actual_address->constant_value],
-                        value.constant_value & 0xFFFFu);
-          }
-          else
-          {
-            m_emit->mov(m_emit->word[GetFastmemBasePtrReg() + actual_address->constant_value],
-                        GetHostReg16(value.host_reg));
-          }
-        }
-        else
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->word[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        value.constant_value & 0xFFFFu);
-          }
-          else
-          {
-            m_emit->mov(m_emit->word[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        GetHostReg16(value.host_reg));
-          }
-        }
-      }
-      break;
-
-      case RegSize_32:
-      {
-        if (actual_address->IsConstant())
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->dword[GetFastmemBasePtrReg() + actual_address->constant_value], value.constant_value);
-          }
-          else
-          {
-            m_emit->mov(m_emit->dword[GetFastmemBasePtrReg() + actual_address->constant_value],
-                        GetHostReg32(value.host_reg));
-          }
-        }
-        else
-        {
-          if (value.IsConstant())
-          {
-            m_emit->mov(m_emit->dword[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        value.constant_value);
-          }
-          else
-          {
-            m_emit->mov(m_emit->dword[GetFastmemBasePtrReg() + GetHostReg64(actual_address->host_reg)],
-                        GetHostReg32(value.host_reg));
-          }
-        }
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-  else
-  {
-    m_register_cache.InhibitAllocation();
-
-    // TODO: We could mask the LSBs here for unaligned protection.
-    EmitCopyValue(RARG1, address);
-    m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
-    m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
-    m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
-    host_pc = GetCurrentNearCodePointer();
-
-    switch (size)
-    {
-      case RegSize_8:
+      if (actual_address->IsConstant())
       {
         if (value.IsConstant())
-          m_emit->mov(m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value & 0xFFu);
+          m_emit->mov(m_emit->byte[membase + actual_address->constant_value], value.constant_value & 0xFFu);
         else
-          m_emit->mov(m_emit->byte[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg8(value.host_reg));
+          m_emit->mov(m_emit->byte[membase + actual_address->constant_value], GetHostReg8(value.host_reg));
       }
-      break;
-
-      case RegSize_16:
+      else
       {
         if (value.IsConstant())
-          m_emit->mov(m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value & 0xFFFFu);
+          m_emit->mov(m_emit->byte[membase + GetHostReg64(actual_address->host_reg)], value.constant_value & 0xFFu);
         else
-          m_emit->mov(m_emit->word[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg16(value.host_reg));
+          m_emit->mov(m_emit->byte[membase + GetHostReg64(actual_address->host_reg)], GetHostReg8(value.host_reg));
       }
-      break;
-
-      case RegSize_32:
-      {
-        if (value.IsConstant())
-          m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], value.constant_value);
-        else
-          m_emit->mov(m_emit->dword[GetHostReg64(RARG1) + GetHostReg64(RARG2)], GetHostReg32(value.host_reg));
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
     }
+    break;
+
+    case RegSize_16:
+    {
+      if (actual_address->IsConstant())
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->word[membase + actual_address->constant_value], value.constant_value & 0xFFFFu);
+        else
+          m_emit->mov(m_emit->word[membase + actual_address->constant_value], GetHostReg16(value.host_reg));
+      }
+      else
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->word[membase + GetHostReg64(actual_address->host_reg)], value.constant_value & 0xFFFFu);
+        else
+          m_emit->mov(m_emit->word[membase + GetHostReg64(actual_address->host_reg)], GetHostReg16(value.host_reg));
+      }
+    }
+    break;
+
+    case RegSize_32:
+    {
+      if (actual_address->IsConstant())
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->dword[membase + actual_address->constant_value], value.constant_value);
+        else
+          m_emit->mov(m_emit->dword[membase + actual_address->constant_value], GetHostReg32(value.host_reg));
+      }
+      else
+      {
+        if (value.IsConstant())
+          m_emit->mov(m_emit->dword[membase + GetHostReg64(actual_address->host_reg)], value.constant_value);
+        else
+          m_emit->mov(m_emit->dword[membase + GetHostReg64(actual_address->host_reg)], GetHostReg32(value.host_reg));
+      }
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
   }
 
   // insert nops, we need at least 5 bytes for a relative jump
