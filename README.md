@@ -1,9 +1,7 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 [Latest News](#latest-news) | [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows and Linux (AppImage):** https://github.com/stenzek/duckstation/releases/tag/latest
-
-**Latest Builds for Windows, Linux (AppImage/Flatpak), and macOS:** https://github.com/stenzek/duckstation/releases/tag/preview
+**Latest Builds for Windows 10/11, Linux (AppImage/Flatpak), and macOS:** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/1H66MxViRjjE5f8hOl5RQmF5woS1murio2dsLn14kEqo/edit
 
@@ -40,7 +38,7 @@ Other features include:
  - Namco GunCon lightgun support (simulated with mouse).
  - NeGcon support.
  - Qt and "Big Picture" UI.
- - Automatic updates for Windows builds (Mac and Linux AppImage in Preview channel).
+ - Automatic updates with preview and latest channels.
  - Automatic content scanning - game titles/hashes are provided by redump.org.
  - Optional automatic switching of memory cards for each game.
  - Supports loading cheats from existing lists.
@@ -61,30 +59,17 @@ Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage/Flatpak
 
 ### Windows
 
-As of 2023/08/16, Preview releases of DuckStation **require Windows 10**. I have hit several issues in new features I am working on that are present in Qt 6.1, but not in 6.5.
-
-For now, this only applies to the **Preview** build, the "Latest Rolling Release" will still work on Windows 7/8/8.1 for now, with the disclaimer below. Once the new in-progress features are ready for widespread use, this build will move to legacy status.
-
-**Windows 10 is the only version of Windows supported by the developer.** Windows 7/8 may work, but is not supported. I am aware some users are still using Windows 7, but it is no longer supported by Microsoft and too much effort to get running on modern hardware. Game bugs are unlikely to be affected by the operating system, however performance issues should be verified on Windows 10 before reporting.
+DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If you are still using Windows 7/8/8.1, DuckStation **will not run** on your operating system. Running these operating systems in 2023 should be considered a security risk, and I would recommend updating to something which receives vendor support.
+If you must use an older operating system, [v0.1-5624](https://github.com/stenzek/duckstation/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary.
  - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip
  - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
 
-Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`.
-To set up:
-1. Either configure the path to a BIOS image in the settings, or copy one or more PlayStation BIOS images to the bios/ subdirectory. On Windows, by default this will be located in `C:\Users\YOUR_USERNAME\Documents\DuckStation\bios`. If you don't want to use the Documents directory to save the BIOS/memory cards/etc, you can use portable mode. See [User directory](#user-directories).
-2. If using the Qt frontend, add the directories containing your disc images by clicking `Settings->Add Game Directory`.
-2. Select a game from the list, or open a disc image file and enjoy.
-
-If you are using the preview release, the setup wizard will guide you through these steps.
+Once downloaded and extracted, you can launch the emulator with `duckstation-qt-x64-ReleaseLTCG.exe`. Follow the Setup Wizard to get started.
 
 **If you get an error about `vcruntime140_1.dll` being missing, you will need to update your Visual C++ runtime.** You can do that from this page: https://support.microsoft.com/en-au/help/2977003/the-latest-supported-visual-c-downloads. Specifically, you want the x64 runtime, which can be downloaded from https://aka.ms/vs/17/release/vc_redist.x64.exe.
-
-**Windows 7 users, TLS 1.2 is not supported by default and you will not be able to use the automatic updater or RetroAchievements.** This knowledge base article contains instructions for enabling TLS 1.1/1.2: https://support.microsoft.com/en-us/topic/update-to-enable-tls-1-1-and-tls-1-2-as-default-secure-protocols-in-winhttp-in-windows-c4bd73d2-31d7-761e-0178-11268bb10392
-
-The Qt frontend includes an automatic update checker. Builds downloaded after 2020/08/07 will automatically check for updates each time the emulator starts, this can be disabled in Settings. Alternatively, you can force an update check by clicking `Help->Check for Updates`.
 
 ### Linux
 
@@ -94,29 +79,27 @@ The only supported version of DuckStation for Linux are the AppImage and Flatpak
 
 The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
 
- - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-x64.AppImage`.
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.AppImage`.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
 
 #### Flatpak
 
- - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-x64.flatpak`.
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.flatpak`.
  - Run `flatpak install ./duckstation-x64.flatpak`.
 
 or, if you have FlatHub set up:
  - Run `flatpak install org.duckstation.DuckStation`.
 
-Use `flatpak run org.duckstation.DuckStation` to start, or select `DuckStation` in the launcher of your desktop environment.
+Use `flatpak run org.duckstation.DuckStation` to start, or select `DuckStation` in the launcher of your desktop environment. Follow the Setup Wizard to get started.
  
 ### macOS
 
 Universal MacOS builds are provided for both x64 and ARM64 (Apple Silicon).
 
-Using the Preview channel and Metal renderer is recommended, MoltenVK is reported to have issues with some games.
-
 MacOS Big Sir (11.0) is required, as this is also the minimum requirement for Qt.
 
 To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/preview, and download `duckstation-mac-release.zip`.
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
  - Extract the zip by double-clicking it.
  - Open DuckStation.app, optionally moving it to your desired location first.
  - Depending on GateKeeper configuration, you may need to right click -> Open the first time you run it, as code signing certificates are out of the question for a project which brings in zero revenue.
@@ -167,7 +150,7 @@ Requirements (Debian/Ubuntu package names):
  - Qt 6 (at least version 6.5.1) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
- - Optional for RetroAchievements (on by default): libcurl (`libcurl4-gnutls-dev`)
+ - libcurl (`libcurl4-openssl-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
@@ -227,10 +210,10 @@ Controller 1:
  - **Select:** Backspace
 
 Hotkeys:
- - **Escape:** Power off console
- - **F11:** Toggle fullscreen
- - **Tab:** Temporarily disable speed limiter
- - **Space:** Pause/resume emulation
+ - **Escape:** Open Pause Menu
+ - **F11:** Toggle Fullscreen
+ - **Tab:** Temporarily Disable Speed Limiter
+ - **Space:** Pause/Resume Emulation
 
 ## Disclaimers
 
