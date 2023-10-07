@@ -2740,17 +2740,17 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     {
       if constexpr (size == MemoryAccessSize::Byte)
       {
-        value = g_ram[offset];
+        value = g_unprotected_ram[offset];
       }
       else if constexpr (size == MemoryAccessSize::HalfWord)
       {
         u16 temp;
-        std::memcpy(&temp, &g_ram[offset], sizeof(temp));
+        std::memcpy(&temp, &g_unprotected_ram[offset], sizeof(temp));
         value = ZeroExtend32(temp);
       }
       else if constexpr (size == MemoryAccessSize::Word)
       {
-        std::memcpy(&value, &g_ram[offset], sizeof(u32));
+        std::memcpy(&value, &g_unprotected_ram[offset], sizeof(u32));
       }
     }
     else
@@ -2759,9 +2759,9 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
 
       if constexpr (size == MemoryAccessSize::Byte)
       {
-        if (g_ram[offset] != Truncate8(value))
+        if (g_unprotected_ram[offset] != Truncate8(value))
         {
-          g_ram[offset] = Truncate8(value);
+          g_unprotected_ram[offset] = Truncate8(value);
           if (g_ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
@@ -2770,10 +2770,10 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
       {
         const u16 new_value = Truncate16(value);
         u16 old_value;
-        std::memcpy(&old_value, &g_ram[offset], sizeof(old_value));
+        std::memcpy(&old_value, &g_unprotected_ram[offset], sizeof(old_value));
         if (old_value != new_value)
         {
-          std::memcpy(&g_ram[offset], &new_value, sizeof(u16));
+          std::memcpy(&g_unprotected_ram[offset], &new_value, sizeof(u16));
           if (g_ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
@@ -2781,10 +2781,10 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
       else if constexpr (size == MemoryAccessSize::Word)
       {
         u32 old_value;
-        std::memcpy(&old_value, &g_ram[offset], sizeof(u32));
+        std::memcpy(&old_value, &g_unprotected_ram[offset], sizeof(u32));
         if (old_value != value)
         {
-          std::memcpy(&g_ram[offset], &value, sizeof(u32));
+          std::memcpy(&g_unprotected_ram[offset], &value, sizeof(u32));
           if (g_ram_code_bits[page_index])
             CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
         }
@@ -2955,11 +2955,8 @@ void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAcces
 
   const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
 
-#if 0
-  // Not enabled until we can protect code regions.
   if (paddr < RAM_MIRROR_END)
-    return &g_ram[paddr & RAM_MASK];
-#endif
+    return &g_ram[paddr & g_ram_mask];
 
   if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
     return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];

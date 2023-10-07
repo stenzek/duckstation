@@ -37,6 +37,7 @@ Log_SetChannel(Bus);
 // TODO: Get rid of page code bits, instead use page faults to track SMC.
 
 // Exports for external debugger access
+#ifndef __ANDROID__
 namespace Exports {
 
 extern "C" {
@@ -50,6 +51,7 @@ __attribute__((visibility("default"), used)) u32 RAM_SIZE, RAM_MASK;
 }
 
 } // namespace Exports
+#endif
 
 namespace Bus {
 
@@ -105,6 +107,7 @@ static void* s_shmem_handle = nullptr;
 
 std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
 u8* g_ram = nullptr;
+u8* g_unprotected_ram = nullptr;
 u32 g_ram_size = 0;
 u32 g_ram_mask = 0;
 u8* g_bios = nullptr;
@@ -132,16 +135,13 @@ static std::vector<std::pair<u8*, size_t>> s_fastmem_ram_views;
 #endif
 
 static u8** s_fastmem_lut = nullptr;
-static constexpr const std::array s_fastmem_ram_mirrors = {0x00000000u, 0x00200000u, 0x00400000u, 0x00600000u,
-                                                           0x80000000u, 0x80200000u, 0x80400000u, 0x80600000u,
-                                                           0xA0000000u, 0xA0200000u, 0xA0400000u, 0xA0600000u};
 
 static void SetRAMSize(bool enable_8mb_ram);
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
 
-static void SetCodePageFastmemProtection(u32 page_index, bool writable);
+static void SetRAMPageWritable(u32 page_index, bool writable);
 
 static void SetHandlers();
 
@@ -182,7 +182,9 @@ bool Bus::AllocateMemory()
 
   g_ram = static_cast<u8*>(MemMap::MapSharedMemory(s_shmem_handle, MemoryMap::RAM_OFFSET, nullptr, MemoryMap::RAM_SIZE,
                                                    PageProtect::ReadWrite));
-  if (!g_ram)
+  g_unprotected_ram = static_cast<u8*>(MemMap::MapSharedMemory(s_shmem_handle, MemoryMap::RAM_OFFSET, nullptr,
+                                                               MemoryMap::RAM_SIZE, PageProtect::ReadWrite));
+  if (!g_ram || !g_unprotected_ram)
   {
     Host::ReportErrorAsync("Error", "Failed to map memory for RAM");
     ReleaseMemory();
@@ -227,11 +229,21 @@ bool Bus::AllocateMemory()
   Log_InfoPrintf("Fastmem base: %p", s_fastmem_arena.BasePointer());
 #endif
 
+#ifndef __ANDROID__
+  Exports::RAM = reinterpret_cast<uintptr_t>(g_unprotected_ram);
+#endif
+
   return true;
 }
 
 void Bus::ReleaseMemory()
 {
+#ifndef __ANDROID__
+  Exports::RAM = 0;
+  Exports::RAM_SIZE = 0;
+  Exports::RAM_MASK = 0;
+#endif
+
 #ifdef ENABLE_MMAP_FASTMEM
   DebugAssert(s_fastmem_ram_views.empty());
   s_fastmem_arena.Destroy();
@@ -251,6 +263,12 @@ void Bus::ReleaseMemory()
   {
     MemMap::UnmapSharedMemory(g_bios, MemoryMap::BIOS_SIZE);
     g_bios = nullptr;
+  }
+
+  if (g_unprotected_ram)
+  {
+    MemMap::UnmapSharedMemory(g_unprotected_ram, MemoryMap::RAM_SIZE);
+    g_unprotected_ram = nullptr;
   }
 
   if (g_ram)
@@ -278,9 +296,10 @@ void Bus::SetRAMSize(bool enable_8mb_ram)
   g_ram_size = enable_8mb_ram ? RAM_8MB_SIZE : RAM_2MB_SIZE;
   g_ram_mask = enable_8mb_ram ? RAM_8MB_MASK : RAM_2MB_MASK;
 
-  Exports::RAM = reinterpret_cast<uintptr_t>(g_ram);
+#ifndef __ANDROID__
   Exports::RAM_SIZE = g_ram_size;
   Exports::RAM_MASK = g_ram_mask;
+#endif
 }
 
 void Bus::Shutdown()
@@ -291,9 +310,11 @@ void Bus::Shutdown()
   g_ram_mask = 0;
   g_ram_size = 0;
 
+#ifndef __ANDROID__
   Exports::RAM = 0;
   Exports::RAM_SIZE = 0;
   Exports::RAM_MASK = 0;
+#endif
 }
 
 void Bus::Reset()
@@ -509,13 +530,13 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
 
   if (!s_fastmem_lut)
   {
-    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_NUM_SLOTS));
+    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SIZE));
     Assert(s_fastmem_lut);
 
     Log_InfoPrintf("Fastmem base (software): %p", s_fastmem_lut);
   }
 
-  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_NUM_SLOTS);
+  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_SIZE);
 
   auto MapRAM = [](u32 base_address) {
     u8* ram_ptr = g_ram + (base_address & g_ram_mask);
@@ -523,8 +544,6 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
     {
       const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
       s_fastmem_lut[lut_index] = ram_ptr;
-      s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + lut_index] =
-        g_ram_code_bits[address >> HOST_PAGE_SHIFT] ? nullptr : ram_ptr;
       ram_ptr += FASTMEM_LUT_PAGE_SIZE;
     }
   };
@@ -584,7 +603,7 @@ void Bus::SetRAMCodePage(u32 index)
 
   // protect fastmem pages
   g_ram_code_bits[index] = true;
-  SetCodePageFastmemProtection(index, false);
+  SetRAMPageWritable(index, false);
 }
 
 void Bus::ClearRAMCodePage(u32 index)
@@ -594,11 +613,19 @@ void Bus::ClearRAMCodePage(u32 index)
 
   // unprotect fastmem pages
   g_ram_code_bits[index] = false;
-  SetCodePageFastmemProtection(index, true);
+  SetRAMPageWritable(index, true);
 }
 
-void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
+void Bus::SetRAMPageWritable(u32 page_index, bool writable)
 {
+  if (!MemMap::MemProtect(&g_ram[page_index * HOST_PAGE_SIZE], HOST_PAGE_SIZE,
+                          writable ? PageProtect::ReadWrite : PageProtect::ReadOnly)) [[unlikely]]
+  {
+    Log_ErrorFmt("Failed to set RAM host page {} ({}) to {}", page_index,
+                 reinterpret_cast<const void*>(&g_ram[page_index * HOST_PAGE_SIZE]),
+                 writable ? "read-write" : "read-only");
+  }
+
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
   {
@@ -608,7 +635,7 @@ void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
     for (const auto& it : s_fastmem_ram_views)
     {
       u8* page_address = it.first + (page_index * HOST_PAGE_SIZE);
-      if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect))
+      if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect)) [[unlikely]]
       {
         Log_ErrorPrintf("Failed to %s code page %u (0x%08X) @ %p", writable ? "unprotect" : "protect", page_index,
                         page_index * static_cast<u32>(HOST_PAGE_SIZE), page_address);
@@ -618,29 +645,14 @@ void Bus::SetCodePageFastmemProtection(u32 page_index, bool writable)
     return;
   }
 #endif
-
-  if (s_fastmem_mode == CPUFastmemMode::LUT)
-  {
-    // mirrors...
-    const u32 code_addr = page_index << HOST_PAGE_SHIFT;
-    for (u32 mirror_start : s_fastmem_ram_mirrors)
-    {
-      u32 lut_addr = mirror_start + code_addr;
-      u32 ram_offset = (lut_addr & g_ram_mask);
-      for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
-      {
-        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + (lut_addr >> FASTMEM_LUT_PAGE_SHIFT)] =
-          writable ? &g_ram[ram_offset] : nullptr;
-        lut_addr += FASTMEM_LUT_PAGE_SIZE;
-        ram_offset += FASTMEM_LUT_PAGE_SIZE;
-      }
-    }
-  }
 }
 
 void Bus::ClearRAMCodePageFlags()
 {
   g_ram_code_bits.reset();
+
+  if (!MemMap::MemProtect(g_ram, RAM_8MB_SIZE, PageProtect::ReadWrite))
+    Log_ErrorPrint("Failed to restore RAM protection to read-write.");
 
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
@@ -655,21 +667,6 @@ void Bus::ClearRAMCodePageFlags()
     }
   }
 #endif
-
-  if (s_fastmem_mode == CPUFastmemMode::LUT)
-  {
-    for (u32 i = 0; i < static_cast<u32>(g_ram_code_bits.size()); i++)
-    {
-      u32 lut_addr = (i * HOST_PAGE_SIZE);
-      u32 ram_offset = (lut_addr & g_ram_mask);
-      for (u32 j = 0; j < FASTMEM_LUT_PAGES_PER_CODE_PAGE; j++)
-      {
-        s_fastmem_lut[FASTMEM_LUT_NUM_PAGES + (lut_addr >> FASTMEM_LUT_PAGE_SHIFT)] = &g_ram[ram_offset];
-        lut_addr += FASTMEM_LUT_PAGE_SIZE;
-        ram_offset += FASTMEM_LUT_PAGE_SIZE;
-      }
-    }
-  }
 }
 
 bool Bus::IsCodePageAddress(PhysicalMemoryAddress address)
@@ -740,16 +737,16 @@ u8* Bus::GetMemoryRegionPointer(MemoryRegion region)
   switch (region)
   {
     case MemoryRegion::RAM:
-      return g_ram;
+      return g_unprotected_ram;
 
     case MemoryRegion::RAMMirror1:
-      return (g_ram + (RAM_2MB_SIZE & g_ram_mask));
+      return (g_unprotected_ram + (RAM_2MB_SIZE & g_ram_mask));
 
     case MemoryRegion::RAMMirror2:
-      return (g_ram + ((RAM_2MB_SIZE * 2) & g_ram_mask));
+      return (g_unprotected_ram + ((RAM_2MB_SIZE * 2) & g_ram_mask));
 
     case MemoryRegion::RAMMirror3:
-      return (g_ram + ((RAM_8MB_SIZE * 3) & g_ram_mask));
+      return (g_unprotected_ram + ((RAM_8MB_SIZE * 3) & g_ram_mask));
 
     case MemoryRegion::EXP1:
       return nullptr;
@@ -932,9 +929,6 @@ template<MemoryAccessSize size>
 void Bus::RAMWriteHandler(VirtualMemoryAddress address, u32 value)
 {
   const u32 offset = address & g_ram_mask;
-  const u32 page_index = offset / HOST_PAGE_SIZE;
-  if (g_ram_code_bits[page_index])
-    CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
 
   if constexpr (size == MemoryAccessSize::Byte)
   {

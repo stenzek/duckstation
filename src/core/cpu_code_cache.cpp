@@ -672,7 +672,19 @@ void CPU::CodeCache::ClearBlocks()
 Common::PageFaultHandler::HandlerResult CPU::CodeCache::ExceptionHandler(void* exception_pc, void* fault_address,
                                                                          bool is_write)
 {
-  // TODO: Catch general RAM writes, not just fastmem
+  if (static_cast<const u8*>(fault_address) >= Bus::g_ram &&
+      static_cast<const u8*>(fault_address) < (Bus::g_ram + Bus::RAM_8MB_SIZE))
+  {
+    // Writing to protected RAM.
+    DebugAssert(is_write);
+    const u32 guest_address = static_cast<u32>(static_cast<const u8*>(fault_address) - Bus::g_ram);
+    const u32 page_index = Bus::GetRAMCodePageIndex(guest_address);
+    Log_DevFmt("Page fault on protected RAM @ 0x{:08X} (page #{}), invalidating code cache.", guest_address,
+               page_index);
+    InvalidateBlocksWithPageIndex(page_index);
+    return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+  }
+
 #ifdef ENABLE_RECOMPILER_SUPPORT
   return HandleFastmemException(exception_pc, fault_address, is_write);
 #else

@@ -3009,7 +3009,7 @@ unsigned int Achievements::RAIntegration::RACallbackReadMemoryBlock(unsigned int
     return 0;
 
   const u32 copy_size = std::min<u32>(Bus::g_ram_size - nAddress, nBytes);
-  std::memcpy(pBuffer, Bus::g_ram + nAddress, copy_size);
+  std::memcpy(pBuffer, Bus::g_unprotected_ram + nAddress, copy_size);
   return copy_size;
 }
 

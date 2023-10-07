@@ -2524,8 +2524,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const C
     m_emit->mov(GetHostReg32(RARG2), GetHostReg32(RARG1));
     m_emit->shr(GetHostReg32(RARG1), Bus::FASTMEM_LUT_PAGE_SHIFT);
     m_emit->and_(GetHostReg32(RARG2), Bus::FASTMEM_LUT_PAGE_MASK);
-    m_emit->mov(GetHostReg64(RARG1),
-                m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8 + (Bus::FASTMEM_LUT_NUM_PAGES * 8)]);
+    m_emit->mov(GetHostReg64(RARG1), m_emit->qword[GetFastmemBasePtrReg() + GetHostReg64(RARG1) * 8]);
     host_pc = GetCurrentNearCodePointer();
 
     switch (size)

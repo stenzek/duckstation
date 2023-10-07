@@ -739,7 +739,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
 
     const u32 terminator = UINT32_C(0xFFFFFF);
     std::memcpy(&ram_pointer[address], &terminator, sizeof(terminator));
-    CPU::CodeCache::InvalidateCodePages(address, word_count);
     return Bus::GetDMARAMTickCount(word_count);
   }
 
@@ -787,7 +786,6 @@ TickCount DMA::TransferDeviceToMemory(Channel channel, u32 address, u32 incremen
     }
   }
 
-  CPU::CodeCache::InvalidateCodePages(address, word_count);
   return Bus::GetDMARAMTickCount(word_count);
 }
 

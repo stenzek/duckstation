@@ -109,8 +109,6 @@ public:
   void EmitLoadGlobalAddress(HostReg host_reg, const void* ptr);
 
   // Automatically generates an exception handler.
-  Value GetFastmemLoadBase();
-  Value GetFastmemStoreBase();
   Value EmitLoadGuestMemory(Instruction instruction, const CodeCache::InstructionInfo& info, const Value& address,
                             const SpeculativeValue& address_spec, RegSize size);
   void EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result);

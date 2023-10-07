@@ -3191,7 +3191,7 @@ bool System::DumpRAM(const char* filename)
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, Bus::g_ram, Bus::g_ram_size);
+  return FileSystem::WriteBinaryFile(filename, Bus::g_unprotected_ram, Bus::g_ram_size);
 }
 
 bool System::DumpVRAM(const char* filename)

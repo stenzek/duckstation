@@ -96,10 +96,7 @@ enum : u32
   FASTMEM_LUT_PAGE_SIZE = 4096,
   FASTMEM_LUT_PAGE_MASK = FASTMEM_LUT_PAGE_SIZE - 1,
   FASTMEM_LUT_PAGE_SHIFT = 12,
-  FASTMEM_LUT_PAGES_PER_CODE_PAGE = HOST_PAGE_SIZE / FASTMEM_LUT_PAGE_SIZE,
-
-  FASTMEM_LUT_NUM_PAGES = 0x100000, // 0x100000000 >> 12
-  FASTMEM_LUT_NUM_SLOTS = FASTMEM_LUT_NUM_PAGES * 2,
+  FASTMEM_LUT_SIZE = 0x100000, // 0x100000000 >> 12
 };
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -135,10 +132,11 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 void SetExpansionROM(std::vector<u8> data);
 
 extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
-extern u8* g_ram;      // 2MB-8MB RAM
-extern u32 g_ram_size; // Active size of RAM.
-extern u32 g_ram_mask; // Active address bits for RAM.
-extern u8* g_bios;     // 512K BIOS ROM
+extern u8* g_ram;             // 2MB-8MB RAM
+extern u8* g_unprotected_ram; // RAM without page protection, use for debugger access.
+extern u32 g_ram_size;        // Active size of RAM.
+extern u32 g_ram_mask;        // Active address bits for RAM.
+extern u8* g_bios;            // 512K BIOS ROM
 extern std::array<TickCount, 3> g_exp1_access_time;
 extern std::array<TickCount, 3> g_exp2_access_time;
 extern std::array<TickCount, 3> g_bios_access_time;
