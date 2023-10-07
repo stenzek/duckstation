@@ -17,7 +17,7 @@ GIT_VERSION=$(git tag --points-at HEAD)
 GIT_HASH=$(git rev-parse HEAD)
 
 if [[ "${GIT_VERSION}" == "" ]]; then
-	GIT_VERSION=$(git describe --tags --dirty --exclude latest --exclude preview --exclude legacy --exclude previous-latest | tr -d '\r\n')
+	GIT_VERSION=$(git describe --dirty | tr -d '\r\n')
 	if [[ "${GIT_VERSION}" == "" ]]; then
 		GIT_VERSION=$(git rev-parse HEAD)
 	fi
