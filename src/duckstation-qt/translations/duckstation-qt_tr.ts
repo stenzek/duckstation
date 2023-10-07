@@ -14,27 +14,27 @@
         <translation>DuckStation</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="15"/>
+        <location filename="../aboutdialog.cpp" line="18"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="31"/>
+        <location filename="../aboutdialog.cpp" line="34"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>Duckstation beadava bir Playstation Emülatörüdür.&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; Kuallanılabilirlik,hız ve uzun vadede sürüdülebilirliği amaçlar.</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="34"/>
+        <location filename="../aboutdialog.cpp" line="37"/>
         <source>Authors</source>
         <translation>Emeği Geçenler</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="35"/>
+        <location filename="../aboutdialog.cpp" line="38"/>
         <source>Icon by</source>
         <translation>İkonunun Tasarımcısı</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="36"/>
+        <location filename="../aboutdialog.cpp" line="39"/>
         <source>License</source>
         <translation>Lisans</translation>
     </message>
@@ -54,9 +54,13 @@
         <translation>RetroAchievements Giriş</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.ui" line="69"/>
         <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>retroachievements.org için aşağıya kullanıcı adınızı ve şifrenizi giriniz. Şifreniz Duckstationda saklanmayacak bunun yerine tek kullanımlık kod (access token) yöntemi kullanılacaktır.</translation>
+        <translation type="vanished">retroachievements.org için aşağıya kullanıcı adınızı ve şifrenizi giriniz. Şifreniz Duckstationda saklanmayacak bunun yerine tek kullanımlık kod (access token) yöntemi kullanılacaktır.</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.ui" line="69"/>
+        <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="94"/>
@@ -74,7 +78,7 @@
         <translation>Hazır...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="11"/>
+        <location filename="../achievementlogindialog.cpp" line="27"/>
         <source>&amp;Login</source>
         <translation>&amp;Giriş</translation>
     </message>
@@ -83,22 +87,34 @@
         <translation type="vanished">&amp;İptal</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="24"/>
+        <location filename="../achievementlogindialog.cpp" line="22"/>
+        <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="40"/>
         <source>Logging in...</source>
         <translation>Giriş Yapılıyor...</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="42"/>
+        <location filename="../achievementlogindialog.cpp" line="71"/>
         <source>Login Error</source>
         <translation>Giriş Hatası</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="43"/>
-        <source>Login failed. Please check your username and password, and try again.</source>
-        <translation>Giriş Başarılamadı. Lütfen kullanıcı adınızı ve şifrenizi gözden geçirip tekrar deneyin.</translation>
+        <location filename="../achievementlogindialog.cpp" line="72"/>
+        <source>Login failed.
+Error: %1
+
+Please check your username and password, and try again.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="44"/>
+        <source>Login failed. Please check your username and password, and try again.</source>
+        <translation type="vanished">Giriş Başarılamadı. Lütfen kullanıcı adınızı ve şifrenizi gözden geçirip tekrar deneyin.</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="73"/>
         <source>Login failed.</source>
         <translation>Giriş Başarılamadı.</translation>
     </message>
@@ -111,69 +127,122 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="32"/>
         <source>Global Settings</source>
-        <translation>Evrensel Ayarlar</translation>
+        <translation type="vanished">Evrensel Ayarlar</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="38"/>
-        <location filename="../achievementsettingswidget.cpp" line="28"/>
+        <location filename="../achievementsettingswidget.ui" line="45"/>
+        <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Achievements</source>
         <translation>Başarımları Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="45"/>
-        <location filename="../achievementsettingswidget.cpp" line="38"/>
         <source>Enable Rich Presence</source>
-        <translation>Durum Raporlama (Rich Presence) Sistemini Etkinleştir</translation>
+        <translation type="vanished">Durum Raporlama (Rich Presence) Sistemini Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="52"/>
-        <location filename="../achievementsettingswidget.cpp" line="30"/>
         <source>Enable Test Mode</source>
-        <translation>Deney (Test) Modunu Etkinleştir</translation>
+        <translation type="vanished">Deney (Test) Modunu Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="59"/>
-        <location filename="../achievementsettingswidget.cpp" line="41"/>
+        <location filename="../achievementsettingswidget.ui" line="73"/>
+        <location filename="../achievementsettingswidget.cpp" line="72"/>
         <source>Use First Disc From Playlist</source>
         <translation>Oynatma Listesindeki İlk Diski Kullan</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
-        <location filename="../achievementsettingswidget.cpp" line="44"/>
+        <location filename="../achievementsettingswidget.cpp" line="48"/>
         <source>Enable Hardcore Mode</source>
         <translation>Zor (Hardcore) Modunu Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="73"/>
-        <location filename="../achievementsettingswidget.cpp" line="34"/>
+        <location filename="../achievementsettingswidget.ui" line="32"/>
+        <source>Settings</source>
+        <translation type="unfinished">Ayarlar</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="38"/>
+        <location filename="../achievementsettingswidget.cpp" line="64"/>
+        <source>Enable Spectator Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="52"/>
+        <location filename="../achievementsettingswidget.cpp" line="68"/>
         <source>Test Unofficial Achievements</source>
         <translation>Resmi Olmayan Başarımları Dene</translation>
     </message>
     <message>
+        <location filename="../achievementsettingswidget.ui" line="59"/>
+        <location filename="../achievementsettingswidget.cpp" line="62"/>
+        <source>Enable Encore Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../achievementsettingswidget.ui" line="83"/>
+        <source>Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="119"/>
+        <location filename="../achievementsettingswidget.ui" line="165"/>
+        <source>5 seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="128"/>
+        <location filename="../achievementsettingswidget.cpp" line="51"/>
+        <source>Show Achievement Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="174"/>
+        <location filename="../achievementsettingswidget.cpp" line="54"/>
+        <source>Show Leaderboard Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="181"/>
+        <location filename="../achievementsettingswidget.cpp" line="57"/>
+        <source>Enable Sound Effects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="188"/>
+        <location filename="../achievementsettingswidget.cpp" line="60"/>
+        <source>Enable In-Game Overlays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="198"/>
         <source>Account</source>
         <translation>Hesap</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="98"/>
-        <location filename="../achievementsettingswidget.cpp" line="103"/>
+        <location filename="../achievementsettingswidget.ui" line="204"/>
+        <source>Username:
+Login token generated at:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="224"/>
+        <location filename="../achievementsettingswidget.cpp" line="192"/>
         <source>Login...</source>
         <translation>Giriş...</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="105"/>
+        <location filename="../achievementsettingswidget.ui" line="217"/>
         <source>View Profile...</source>
         <translation>Profili Göster...</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="123"/>
+        <location filename="../achievementsettingswidget.ui" line="242"/>
         <source>Game Info</source>
         <translation>Oyun Bilgisi</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="139"/>
+        <location filename="../achievementsettingswidget.ui" line="258"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation, Başarımları takip etmek için RetroAchievements&apos;ı kullanır. Lütfen sitesinde hesap açınız. &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Oyun sırasında başarımlara bakmak için şunun kısayol tuşuna basınız &lt;span style=&quot; font-weight:600;&quot;&gt;Duraklama Menüsü&lt;/span&gt; ve şunu &lt;span style=&quot; font-weight:600;&quot;&gt;Başarımlar&lt;/span&gt; menüden seçiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -182,60 +251,114 @@
         <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Duckstation, Başarım veritabanı ve takibi için RetroAchievements kullanır. Başarımları kullanmak için şu sitede hesap açınız: &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Oyun sırasında başarımlar listesini görüntülemek için şunun kısayol tuşuna basın &lt;span style=&quot; font-weight:600;&quot;&gt;Express Menüyü Aç&lt;/span&gt; ve şunu seçin  &lt;span style=&quot; font-weight:600;&quot;&gt;Başarımlar&lt;/span&gt; Menüden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="28"/>
-        <location filename="../achievementsettingswidget.cpp" line="30"/>
-        <location filename="../achievementsettingswidget.cpp" line="34"/>
-        <location filename="../achievementsettingswidget.cpp" line="38"/>
-        <location filename="../achievementsettingswidget.cpp" line="41"/>
-        <location filename="../achievementsettingswidget.cpp" line="44"/>
+        <location filename="../achievementsettingswidget.cpp" line="46"/>
+        <location filename="../achievementsettingswidget.cpp" line="48"/>
+        <location filename="../achievementsettingswidget.cpp" line="62"/>
+        <location filename="../achievementsettingswidget.cpp" line="64"/>
+        <location filename="../achievementsettingswidget.cpp" line="68"/>
+        <location filename="../achievementsettingswidget.cpp" line="72"/>
         <source>Unchecked</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="29"/>
+        <location filename="../achievementsettingswidget.cpp" line="47"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>Etkinleştirilip Giriş Yapıldığında, Duckstation Başarımları her açılışta tarayacaktır.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="31"/>
+        <location filename="../achievementsettingswidget.cpp" line="49"/>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="51"/>
+        <location filename="../achievementsettingswidget.cpp" line="54"/>
+        <location filename="../achievementsettingswidget.cpp" line="57"/>
+        <location filename="../achievementsettingswidget.cpp" line="60"/>
+        <source>Checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="52"/>
+        <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="55"/>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="58"/>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="61"/>
+        <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="63"/>
+        <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="65"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="35"/>
+        <location filename="../achievementsettingswidget.cpp" line="69"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
         <translation>Etkinleştirildiğinde, Duckstation resmi olmayan setlerdeki başarımları listeleyecek. Aklınızda bulunsunki RetroAchievements bu başarımları takip etmez bu yüzden her defasında tekrar bu başarımları kazanıcaksınız.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="39"/>
-        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translatorcomment>Etkinleştirildiğinde, durum raporlama verisi toplanıp sunucuya gönderilecektir.</translatorcomment>
-        <translation>Etkinleştirildiğinde, durum raporlama verisi toplanıp sunucuya gönderilecektir.</translation>
+        <location filename="../achievementsettingswidget.cpp" line="150"/>
+        <source>Reset System</source>
+        <translation type="unfinished">Sisteme Reset At</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="42"/>
+        <location filename="../achievementsettingswidget.cpp" line="151"/>
+        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../achievementsettingswidget.cpp" line="164"/>
+        <location filename="../achievementsettingswidget.cpp" line="171"/>
+        <source>%n seconds</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
+        <translatorcomment>Etkinleştirildiğinde, durum raporlama verisi toplanıp sunucuya gönderilecektir.</translatorcomment>
+        <translation type="vanished">Etkinleştirildiğinde, durum raporlama verisi toplanıp sunucuya gönderilecektir.</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.cpp" line="73"/>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
         <translation>Etkinleştirildiğinde, oynatma listesindeki ilk disk başarımlar için kullanılacaktır, hangi disk kullanımda olursa olsun.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="45"/>
         <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation>Başarımlar için meydan okuma modu. Durum kayıtları, hileler ve zaman yavaşlatma fonksiyonları kilitlenir ama iki katı başarım puanı verilir.</translation>
+        <translation type="vanished">Başarımlar için meydan okuma modu. Durum kayıtları, hileler ve zaman yavaşlatma fonksiyonları kilitlenir ama iki katı başarım puanı verilir.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="95"/>
+        <location filename="../achievementsettingswidget.cpp" line="184"/>
         <source>Username: %1
 Login token generated on %2.</source>
         <translation>Kullanıcı Adı: %1
 Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="98"/>
+        <location filename="../achievementsettingswidget.cpp" line="187"/>
         <source>Logout</source>
         <translation>Sistem Çıkışı</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="102"/>
+        <location filename="../achievementsettingswidget.cpp" line="191"/>
         <source>Not Logged In.</source>
         <translation>Giriş Yapılmamış.</translation>
     </message>
@@ -263,99 +386,319 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="925"/>
+        <location filename="../../core/system.cpp" line="1123"/>
         <source>Loading state</source>
         <translation>Durum Yükleniyor</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1126"/>
+        <location filename="../../core/system.cpp" line="1341"/>
         <source>Resuming state</source>
         <translation>Durumdan Devam Ediliyor</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1814"/>
         <source>Hardcore mode disabled by state switch.</source>
-        <translation>Zor (Hardcore) modu durum değişikliğinden kapatıldı.</translation>
+        <translation type="vanished">Zor (Hardcore) modu durum değişikliğinden kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="481"/>
+        <location filename="../../core/achievements.cpp" line="1007"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>Zor (Hardcore) modu sistem resetlenince açılacak.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="509"/>
+        <location filename="../../core/achievements.cpp" line="1034"/>
+        <source>{} (Unofficial)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1056"/>
+        <source>Mastered {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1057"/>
+        <source>{} achievements, {} points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1072"/>
+        <source>Leaderboard attempt started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1087"/>
+        <source>Leaderboard attempt failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1102"/>
+        <source>Your Time: {}{}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1103"/>
+        <source>Your Score: {}{}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1104"/>
+        <source>Your Value: {}{}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1113"/>
+        <source> (Submitting)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1132"/>
+        <source>Your Time: {} (Best: {})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1133"/>
+        <source>Your Score: {} (Best: {})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1134"/>
+        <source>Your Value: {} (Best: {})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1139"/>
+        <source>{}
+Leaderboard Position: {} of {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1272"/>
+        <source>Server error in {}:
+{}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1286"/>
+        <source>Achievements Disconnected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1287"/>
+        <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1299"/>
+        <source>Achievements Reconnected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1300"/>
+        <source>All pending unlock requests have completed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1711"/>
+        <source>Score: {} ({} softcore)
+Unread messages: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1758"/>
         <source>Confirm Hardcore Mode</source>
         <translation>Zor (Hardcore) modunu onayla</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="510"/>
+        <location filename="../../core/achievements.cpp" line="1759"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>{0} Zor (Hardcore) durumu açıkken kullanılamaz. Zor(Hardcore) modunu kapatmak ister misiniz? {0} Hayır&apos;ı seçerseniz kapatılacak.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="561"/>
+        <location filename="../../core/achievements.cpp" line="1963"/>
+        <source>Active Challenge Achievements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2091"/>
+        <source> (Hardcore Mode)</source>
+        <translation type="unfinished"> (Hardcore)</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2103"/>
+        <source>You have unlocked all achievements and earned {} points!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2109"/>
+        <source>You have unlocked {} of {} achievements, earning {} of {} possible points.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2150"/>
+        <source>Unknown</source>
+        <translation type="unfinished">Bilinmiyor</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2150"/>
+        <source>Locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2151"/>
+        <source>Unlocked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2151"/>
+        <source>Unsupported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2152"/>
+        <source>Unofficial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2152"/>
+        <source>Recently Unlocked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2153"/>
+        <source>Active Challenges</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2153"/>
+        <source>Almost There</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2244"/>
+        <source>{} points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2244"/>
+        <source>{} point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2247"/>
+        <source>XXX points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2280"/>
+        <source>Unlocked: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2623"/>
+        <location filename="../../core/achievements.cpp" line="2632"/>
+        <source>Loading...</source>
+        <translation type="unfinished">Yükleniyor...</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2793"/>
+        <location filename="../../core/achievements.cpp" line="2813"/>
+        <source>Leaderboard download failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1380"/>
         <source>Hardcore mode is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="562"/>
+        <location filename="../../core/achievements.cpp" line="984"/>
+        <source>You have unlocked {} of {} achievements, and earned {} of {} points.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1381"/>
         <source>Hardcore mode is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="966"/>
+        <location filename="../../core/achievements.cpp" line="977"/>
         <source>{} (Hardcore Mode)</source>
         <translation>{} (Zor Hardcore Modu)</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="974"/>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation>Şu kadar başarımdan {} şu kadarını {} aldınız, ve şu kadar puandan {} şu kadarını {} aldınız.</translation>
+        <translation type="vanished">Şu kadar başarımdan {} şu kadarını {} aldınız, ve şu kadar puandan {} şu kadarını {} aldınız.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="980"/>
+        <location filename="../../core/achievements.cpp" line="990"/>
         <source>This game has no achievements.</source>
         <translation>Bu oyunun başarımları yok.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="987"/>
         <source>Leaderboards are enabled.</source>
-        <translation>Liderler sıralamsı açık.</translation>
+        <translation type="vanished">Liderler sıralamsı açık.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="991"/>
         <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation>Liderler sıralaması kapalı çünkü Zor (Hardcore) modu kapalı.</translation>
+        <translation type="vanished">Liderler sıralaması kapalı çünkü Zor (Hardcore) modu kapalı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/achievements.cpp" line="1680"/>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
-        <translation>Puanınız: {} (Rekor: {})
+        <translation type="vanished">Puanınız: {} (Rekor: {})
 Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5209"/>
+        <location filename="../../core/achievements.cpp" line="2452"/>
         <source>This game has {} leaderboards.</source>
         <translation>Bu oyunun {} tane lider sıralaması var.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5227"/>
+        <location filename="../../core/achievements.cpp" line="2469"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>Puanları sisteme geçirmek kapalı çünkü Zor (Hardcore) Modu kapalı. Liderler sıralaması salt okunur.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5262"/>
+        <location filename="../../core/achievements.cpp" line="2490"/>
+        <source>Show Best</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2490"/>
+        <source>Show Nearby</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2518"/>
+        <source>Rank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2523"/>
+        <source>Name</source>
+        <translation type="unfinished">İsim</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2528"/>
         <source>Time</source>
         <translation>Zaman</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5263"/>
+        <location filename="../../core/achievements.cpp" line="2529"/>
         <source>Score</source>
         <translation>Puan</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/fullscreen_ui.cpp" line="5319"/>
+        <location filename="../../core/achievements.cpp" line="2530"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2543"/>
+        <source>Date Submitted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2604"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Liderler sıralaması indirliyor. Bekleyiniz...</translation>
     </message>
@@ -384,25 +727,25 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
-        <location filename="../advancedsettingswidget.cpp" line="265"/>
+        <location filename="../advancedsettingswidget.cpp" line="255"/>
         <source>Log To System Console</source>
         <translation>Log To System Console</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="71"/>
-        <location filename="../advancedsettingswidget.cpp" line="269"/>
+        <location filename="../advancedsettingswidget.cpp" line="259"/>
         <source>Log To Window</source>
         <translation>Log To Window</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="78"/>
-        <location filename="../advancedsettingswidget.cpp" line="267"/>
+        <location filename="../advancedsettingswidget.cpp" line="257"/>
         <source>Log To Debug Console</source>
         <translation>Log To Debug Console</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
-        <location filename="../advancedsettingswidget.cpp" line="271"/>
+        <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>Log To File</source>
         <translation>Log To File</translation>
     </message>
@@ -413,7 +756,7 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="103"/>
-        <location filename="../advancedsettingswidget.cpp" line="273"/>
+        <location filename="../advancedsettingswidget.cpp" line="263"/>
         <source>Show Debug Menu</source>
         <translation>Show Debug Menu</translation>
     </message>
@@ -438,7 +781,7 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation>Varsayılanlara Döndür</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="202"/>
+        <location filename="../advancedsettingswidget.cpp" line="271"/>
         <source>Disable All Enhancements</source>
         <translation>Tüm İyileştirmeleri Kapat</translation>
     </message>
@@ -447,56 +790,55 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Tüm Ekran Durum Göstergelerini Göster</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="206"/>
+        <location filename="../advancedsettingswidget.cpp" line="273"/>
         <source>Show Status Indicators</source>
         <translation>Show Status Indicators</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="204"/>
         <source>Show Enhancement Settings</source>
-        <translation>Show Enhancement Settings</translation>
+        <translation type="vanished">Show Enhancement Settings</translation>
     </message>
     <message>
         <source>Controller Enhanced Mode (PS4/PS5)</source>
         <translation type="vanished">Gelişmiş Kontrolcü Modu (PS4/PS5)</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="210"/>
+        <location filename="../advancedsettingswidget.cpp" line="278"/>
         <source>Display FPS Limit</source>
         <translation>FPS Sınırını Göster</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="212"/>
+        <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>Multisample Antialiasing</source>
         <translation>Kenar Yumuşatma</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="214"/>
+        <location filename="../advancedsettingswidget.cpp" line="299"/>
         <source>PGXP Vertex Cache</source>
         <translation>PGXP Koordinat Önbelleği</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="215"/>
+        <location filename="../advancedsettingswidget.cpp" line="300"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXP Geometri Toleransı</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="217"/>
+        <location filename="../advancedsettingswidget.cpp" line="302"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP Derinlik Temizleme Sınırı</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="220"/>
+        <location filename="../advancedsettingswidget.cpp" line="305"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Enable Recompiler Memory Exceptions</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="222"/>
+        <location filename="../advancedsettingswidget.cpp" line="307"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>Enable Recompiler Block Linking</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="224"/>
+        <location filename="../advancedsettingswidget.cpp" line="309"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>Enable Recompiler Fast Memory Access</translation>
     </message>
@@ -505,130 +847,195 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Enable Recompiler ICache</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
+        <location filename="../advancedsettingswidget.cpp" line="275"/>
+        <source>Show Frame Times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="276"/>
         <source>Apply Compatibility Settings</source>
         <translation>Uyumluluk Ayarlarını Uygula</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="229"/>
+        <location filename="../advancedsettingswidget.cpp" line="282"/>
+        <source>Wireframe Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="289"/>
+        <source>Display Active Start Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="291"/>
+        <source>Display Active End Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="293"/>
+        <source>Display Line Start Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="295"/>
+        <source>Display Line End Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="314"/>
+        <source>Use Old MDEC Routines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="316"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>Enable VRAM Write Texture Replacement</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="231"/>
+        <location filename="../advancedsettingswidget.cpp" line="318"/>
         <source>Preload Texture Replacements</source>
         <translation>Preload Texture Replacements</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="233"/>
+        <location filename="../advancedsettingswidget.cpp" line="320"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>Dump Replaceable VRAM Writes</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="235"/>
+        <location filename="../advancedsettingswidget.cpp" line="322"/>
         <source>Set Dumped VRAM Write Alpha Channel</source>
         <translation>Set Dumped VRAM Write Alpha Channel</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="237"/>
+        <location filename="../advancedsettingswidget.cpp" line="324"/>
         <source>Minimum Dumped VRAM Write Width</source>
         <translation>Minimum Dumped VRAM Write Width</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="240"/>
+        <location filename="../advancedsettingswidget.cpp" line="327"/>
         <source>Minimum Dumped VRAM Write Height</source>
         <translation>Minimum Dumped VRAM Write Height</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="244"/>
+        <location filename="../advancedsettingswidget.cpp" line="331"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA Max Slice Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="246"/>
+        <location filename="../advancedsettingswidget.cpp" line="333"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA Halt Ticks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="248"/>
+        <location filename="../advancedsettingswidget.cpp" line="335"/>
         <source>GPU FIFO Size</source>
         <translation>GPU FIFO Boyutu</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="250"/>
+        <location filename="../advancedsettingswidget.cpp" line="337"/>
         <source>GPU Max Run-Ahead</source>
         <translation>GPU En Fazla İleri Hesaplama</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="252"/>
+        <location filename="../advancedsettingswidget.cpp" line="339"/>
         <source>Use Debug Host GPU Device</source>
         <translation>Use Debug Host GPU Device</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="254"/>
+        <location filename="../advancedsettingswidget.cpp" line="341"/>
+        <source>Disable Shader Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="344"/>
+        <source>Stretch Display Vertically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="347"/>
         <source>Increase Timer Resolution</source>
         <translation>Increase Timer Resolution</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="257"/>
+        <location filename="../advancedsettingswidget.cpp" line="350"/>
         <source>Allow Booting Without SBI File</source>
         <translation>Allow Booting Without SBI File</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="260"/>
+        <location filename="../advancedsettingswidget.cpp" line="353"/>
         <source>Create Save State Backups</source>
         <translation>Durum Kaydı Yedekleri Oluştur</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="263"/>
+        <location filename="../advancedsettingswidget.cpp" line="356"/>
+        <source>Enable PCDrv</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="357"/>
+        <source>Enable PCDrv Writes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="358"/>
+        <source>PCDrv Root Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="253"/>
         <source>Log Level</source>
         <translation>Log Level</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="263"/>
+        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <source>Select folder for %1</source>
+        <translation type="unfinished">Şunun için dizin seçiniz %1</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="253"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="264"/>
+        <location filename="../advancedsettingswidget.cpp" line="254"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>Sets the verbosity of messages logged. Higher levels will log more messages.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="265"/>
-        <location filename="../advancedsettingswidget.cpp" line="267"/>
-        <location filename="../advancedsettingswidget.cpp" line="269"/>
-        <location filename="../advancedsettingswidget.cpp" line="271"/>
+        <location filename="../advancedsettingswidget.cpp" line="255"/>
+        <location filename="../advancedsettingswidget.cpp" line="257"/>
+        <location filename="../advancedsettingswidget.cpp" line="259"/>
+        <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>User Preference</source>
         <translation>User Preference</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="266"/>
+        <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Logs messages to the console window.</source>
         <translation>Logs messages to the console window.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="268"/>
+        <location filename="../advancedsettingswidget.cpp" line="258"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>Logs messages to the debug console where supported.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="270"/>
+        <location filename="../advancedsettingswidget.cpp" line="260"/>
         <source>Logs messages to the window.</source>
         <translation>Logs messages to the window.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="272"/>
+        <location filename="../advancedsettingswidget.cpp" line="262"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>Logs messages to duckstation.log in the user directory.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="273"/>
+        <location filename="../advancedsettingswidget.cpp" line="263"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="274"/>
+        <location filename="../advancedsettingswidget.cpp" line="264"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>Shows a debug menu bar with additional statistics and quick settings.</translation>
     </message>
@@ -644,14 +1051,12 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Kol %u ,dijital moda alındı.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="266"/>
         <source>Controller %u is locked to analog mode by the game.</source>
-        <translation>Kol %u , oyun tarafından analog moda kitlendi.</translation>
+        <translation type="vanished">Kol %u , oyun tarafından analog moda kitlendi.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="267"/>
         <source>Controller %u is locked to digital mode by the game.</source>
-        <translation>Kol %u , oyun tarafından dijital moda kitlendi.</translation>
+        <translation type="vanished">Kol %u , oyun tarafından dijital moda kitlendi.</translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -686,106 +1091,247 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Sağ</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="810"/>
         <source>Select</source>
-        <translation type="vanished">Select</translation>
+        <translation>Select</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="811"/>
         <source>Start</source>
-        <translation type="vanished">Start</translation>
+        <translation>Start</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="806"/>
         <source>Triangle</source>
-        <translation type="vanished">Üçgen</translation>
+        <translation>Üçgen</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="808"/>
         <source>Cross</source>
-        <translation type="vanished">Çapraz</translation>
+        <translation>Çapraz</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="807"/>
         <source>Circle</source>
-        <translation type="vanished">Halka</translation>
+        <translation>Halka</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="317"/>
+        <source>Controller {} is locked to analog mode by the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="318"/>
+        <source>Controller {} is locked to digital mode by the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="802"/>
+        <source>D-Pad Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="803"/>
+        <source>D-Pad Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="804"/>
+        <source>D-Pad Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="805"/>
+        <source>D-Pad Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="809"/>
         <source>Square</source>
-        <translation type="vanished">Kare</translation>
+        <translation>Kare</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="812"/>
+        <source>Analog Toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="813"/>
         <source>L1</source>
-        <translation type="vanished">Sol Üst L1</translation>
+        <translation>Sol Üst L1</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="815"/>
         <source>L2</source>
-        <translation type="vanished">Sol Üst L2</translation>
+        <translation>Sol Üst L2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="814"/>
         <source>R1</source>
-        <translation type="vanished">Sağ Üst R2</translation>
+        <translation>Sağ Üst R2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="816"/>
         <source>R2</source>
-        <translation type="vanished">Sağ Üst R2</translation>
+        <translation>Sağ Üst R2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="817"/>
         <source>L3</source>
-        <translation type="vanished">Sol Analog Tuş L3</translation>
+        <translation>Sol Analog Tuş L3</translation>
     </message>
     <message>
+        <location filename="../../core/analog_controller.cpp" line="818"/>
         <source>R3</source>
-        <translation type="vanished">Sağ Analog Tuş R3</translation>
+        <translation>Sağ Analog Tuş R3</translation>
     </message>
     <message>
         <source>Analog</source>
         <translation type="vanished">Analog</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="104"/>
-        <location filename="../../core/analog_controller.cpp" line="250"/>
+        <location filename="../../core/analog_controller.cpp" line="116"/>
+        <location filename="../../core/analog_controller.cpp" line="302"/>
         <source>Controller {} switched to analog mode.</source>
         <translation>Kol {} analog moda geçirildi.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="105"/>
-        <location filename="../../core/analog_controller.cpp" line="251"/>
+        <location filename="../../core/analog_controller.cpp" line="117"/>
+        <location filename="../../core/analog_controller.cpp" line="303"/>
         <source>Controller {} switched to digital mode.</source>
         <translation>Kol {} dijital moda geçirildi.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="783"/>
+        <location filename="../../core/analog_controller.cpp" line="820"/>
+        <source>Left Stick Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="821"/>
+        <source>Left Stick Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="822"/>
+        <source>Left Stick Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="823"/>
+        <source>Left Stick Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="824"/>
+        <source>Right Stick Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="825"/>
+        <source>Right Stick Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="826"/>
+        <source>Right Stick Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="827"/>
+        <source>Right Stick Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="834"/>
+        <source>Not Inverted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="835"/>
+        <source>Invert Left/Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="836"/>
+        <source>Invert Up/Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="837"/>
+        <source>Invert Left/Right + Up/Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="840"/>
         <source>Force Analog Mode on Reset</source>
         <translation>Reset Atılınca Analog Modunu Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="784"/>
-        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
-        <translation>Konsol açıldığında veya reset atıldığında analog modunu zorlar. Oyunlarla sorun çıkarabileceğinden dolayı kapalı tutulması tavsiye edilir.</translation>
+        <location filename="../../core/analog_controller.cpp" line="841"/>
+        <source>Forces the controller to analog mode when the console is reset/powered on.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="788"/>
+        <location filename="../../core/analog_controller.cpp" line="858"/>
+        <source>Button/Trigger Deadzone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="859"/>
+        <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="866"/>
+        <source>Invert Left Stick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="867"/>
+        <source>Inverts the direction of the left analog stick.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="869"/>
+        <source>Invert Right Stick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="870"/>
+        <source>Inverts the direction of the right analog stick.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
+        <translation type="vanished">Konsol açıldığında veya reset atıldığında analog modunu zorlar. Oyunlarla sorun çıkarabileceğinden dolayı kapalı tutulması tavsiye edilir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="844"/>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
         <translation>Dijital Modda Analog Kolları Yön Tuşları Olarak Kullan</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="789"/>
+        <location filename="../../core/analog_controller.cpp" line="845"/>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
         <translation>Analog kolları, dijital moddeyken hem yön tuşları hemde tuşlar olarak kullanmazını sağlar.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="792"/>
+        <location filename="../../core/analog_controller.cpp" line="848"/>
         <source>Analog Deadzone</source>
         <translation>Analog Ölü Bölge</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="793"/>
+        <location filename="../../core/analog_controller.cpp" line="849"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Analog kolun ölü bölgesini ayarlar. Bu hareketin işlenmesi için minimum hareketi ayarlar.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="796"/>
+        <location filename="../../core/analog_controller.cpp" line="852"/>
         <source>Analog Sensitivity</source>
         <translation>Analog Hassasiyeti</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="797"/>
+        <location filename="../../core/analog_controller.cpp" line="853"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Analog çubuğun eksen ölçeğini ayarlar. Şu iki değer arası 130% ve 140% günümüz kollarını kullanırken tavsiye edilir mesela DualShock 4 ve Xbox One Kolu.</translation>
     </message>
@@ -798,12 +1344,12 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Analog çubukların eksen ölçeğini ayarlar. 1.30 ve 1.40 arası bir değer modern oyun kolları için tavsiye edilir. (Dualshock 4 Xbox One X vb.).</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="802"/>
+        <location filename="../../core/analog_controller.cpp" line="862"/>
         <source>Vibration Bias</source>
         <translation>Titreşim Eğilimi</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="803"/>
+        <location filename="../../core/analog_controller.cpp" line="863"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
         <translation>Titreşim motoru eğilim değerini ayarlar. Oyunlarda titreşimler az bulursanız bu değeri yükseltmeyi deneyebilirsiniz.</translation>
     </message>
@@ -811,36 +1357,141 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
 <context>
     <name>AnalogJoystick</name>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="54"/>
-        <location filename="../../core/analog_joystick.cpp" line="188"/>
+        <location filename="../../core/analog_joystick.cpp" line="66"/>
+        <location filename="../../core/analog_joystick.cpp" line="241"/>
         <source>Controller %u switched to analog mode.</source>
         <translation>Kol %u ,analog moduna alındı.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="55"/>
-        <location filename="../../core/analog_joystick.cpp" line="189"/>
+        <location filename="../../core/analog_joystick.cpp" line="67"/>
+        <location filename="../../core/analog_joystick.cpp" line="242"/>
         <source>Controller %u switched to digital mode.</source>
         <translation>Kol %u ,dijital moda alındı.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="328"/>
+        <location filename="../../core/analog_joystick.cpp" line="350"/>
+        <source>D-Pad Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="351"/>
+        <source>D-Pad Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="352"/>
+        <source>D-Pad Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="353"/>
+        <source>D-Pad Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="360"/>
+        <source>Mode Toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="368"/>
+        <source>Left Stick Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="369"/>
+        <source>Left Stick Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="370"/>
+        <source>Left Stick Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="371"/>
+        <source>Left Stick Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="372"/>
+        <source>Right Stick Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="373"/>
+        <source>Right Stick Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="374"/>
+        <source>Right Stick Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="375"/>
+        <source>Right Stick Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="382"/>
+        <source>Not Inverted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="383"/>
+        <source>Invert Left/Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="384"/>
+        <source>Invert Up/Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="385"/>
+        <source>Invert Left/Right + Up/Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="388"/>
         <source>Analog Deadzone</source>
         <translation>Analog Ölü Bölge</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="329"/>
+        <location filename="../../core/analog_joystick.cpp" line="389"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>Analog kolun ölü bölgesini ayarlar. Bu hareketin işlenmesi için minimum hareketi ayarlar.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="332"/>
+        <location filename="../../core/analog_joystick.cpp" line="392"/>
         <source>Analog Sensitivity</source>
         <translation>Analog Hassasiyeti</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="333"/>
+        <location filename="../../core/analog_joystick.cpp" line="393"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>Analog çubuğun eksen ölçeğini ayarlar. Şu iki değer arası 130% ve 140% günümüz kollarını kullanırken tavsiye edilir mesela DualShock 4 ve Xbox One Kolu.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="398"/>
+        <source>Invert Left Stick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="399"/>
+        <source>Inverts the direction of the left analog stick.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="401"/>
+        <source>Invert Right Stick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="402"/>
+        <source>Inverts the direction of the right analog stick.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>LeftX</source>
@@ -875,52 +1526,64 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Sağ</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="358"/>
         <source>Select</source>
-        <translation type="vanished">Select</translation>
+        <translation>Select</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="359"/>
         <source>Start</source>
-        <translation type="vanished">Start</translation>
+        <translation>Start</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="354"/>
         <source>Triangle</source>
-        <translation type="vanished">Üçgen</translation>
+        <translation>Üçgen</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="356"/>
         <source>Cross</source>
-        <translation type="vanished">Çapraz</translation>
+        <translation>Çapraz</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="355"/>
         <source>Circle</source>
-        <translation type="vanished">Halka</translation>
+        <translation>Halka</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="357"/>
         <source>Square</source>
-        <translation type="vanished">Kare</translation>
+        <translation>Kare</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="361"/>
         <source>L1</source>
-        <translation type="vanished">Sol Üst L1</translation>
+        <translation>Sol Üst L1</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="363"/>
         <source>L2</source>
-        <translation type="vanished">Sol Üst L2</translation>
+        <translation>Sol Üst L2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="362"/>
         <source>R1</source>
-        <translation type="vanished">Sağ Üst R2</translation>
+        <translation>Sağ Üst R2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="364"/>
         <source>R2</source>
-        <translation type="vanished">Sağ Üst R2</translation>
+        <translation>Sağ Üst R2</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="365"/>
         <source>L3</source>
-        <translation type="vanished">L3</translation>
+        <translation>L3</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="366"/>
         <source>R3</source>
-        <translation type="vanished">R3</translation>
+        <translation>R3</translation>
     </message>
     <message>
         <source>Analog</source>
@@ -938,17 +1601,17 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1034"/>
+        <location filename="../../core/settings.cpp" line="1242"/>
         <source>Null (No Output)</source>
         <translation>Null (Ses Kapalı)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1036"/>
+        <location filename="../../core/settings.cpp" line="1244"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1039"/>
+        <location filename="../../core/settings.cpp" line="1247"/>
         <source>XAudio2</source>
         <translation>XAudio2</translation>
     </message>
@@ -974,17 +1637,17 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation>Kurulum</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="52"/>
+        <location filename="../audiosettingswidget.ui" line="112"/>
         <source>Backend:</source>
         <translation>Arayüz:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="38"/>
+        <location filename="../audiosettingswidget.ui" line="76"/>
         <source>Buffer Size:</source>
         <translation>Tampon Bellek Boyutu:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="132"/>
+        <location filename="../audiosettingswidget.ui" line="102"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
         <translation>Maksimum Gecikme: 0 Kare (0.00ms)</translation>
     </message>
@@ -997,86 +1660,91 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Yeniden Örnekleme</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="45"/>
-        <location filename="../audiosettingswidget.cpp" line="73"/>
+        <location filename="../audiosettingswidget.ui" line="136"/>
+        <location filename="../audiosettingswidget.cpp" line="75"/>
         <source>Start Dumping On Boot</source>
         <translation>Açılışta Depolamaya Başla</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="77"/>
+        <location filename="../audiosettingswidget.ui" line="161"/>
         <source>Minimal</source>
         <translation>Minimal</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="90"/>
+        <location filename="../audiosettingswidget.ui" line="84"/>
         <source>Off (Noisy)</source>
         <translation>Kapalı (Gürültülü)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="95"/>
+        <location filename="../audiosettingswidget.ui" line="89"/>
         <source>Resampling (Pitch Shift)</source>
         <translation>Tekrar Örnekleme (Ses Perdesi/Pitch Kaydırma)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="100"/>
+        <location filename="../audiosettingswidget.ui" line="94"/>
         <source>Time Stretch (Tempo Change, Best Sound)</source>
         <translation>Zamana Gerdirme (Tempo Değiştirme. En İyi Ses)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="108"/>
+        <location filename="../audiosettingswidget.ui" line="122"/>
         <source>Output Latency:</source>
         <translation>Çıkış Gecikmesi:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="118"/>
+        <location filename="../audiosettingswidget.ui" line="129"/>
         <source>Driver:</source>
         <translation>Sürücü:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="125"/>
+        <location filename="../audiosettingswidget.ui" line="69"/>
         <source>Stretch Mode:</source>
         <translation>Germe Modu:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="173"/>
+        <location filename="../audiosettingswidget.ui" line="170"/>
+        <source>Output Device:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.ui" line="183"/>
         <source>Controls</source>
         <translation>Kontroller</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="179"/>
+        <location filename="../audiosettingswidget.ui" line="189"/>
         <source>Output Volume:</source>
         <translation>Çıkış Gücü:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="213"/>
-        <location filename="../audiosettingswidget.ui" line="252"/>
+        <location filename="../audiosettingswidget.ui" line="223"/>
+        <location filename="../audiosettingswidget.ui" line="262"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="264"/>
+        <location filename="../audiosettingswidget.ui" line="274"/>
         <source>Fast Forward Volume:</source>
         <translation>İleri Sarma Ses Şiddeti:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="271"/>
-        <location filename="../audiosettingswidget.cpp" line="79"/>
+        <location filename="../audiosettingswidget.ui" line="281"/>
+        <location filename="../audiosettingswidget.cpp" line="81"/>
         <source>Mute All Sound</source>
         <translation>Tüm Sesleri Sustur</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="278"/>
-        <location filename="../audiosettingswidget.cpp" line="81"/>
+        <location filename="../audiosettingswidget.ui" line="288"/>
+        <location filename="../audiosettingswidget.cpp" line="83"/>
         <source>Mute CD Audio</source>
         <translation>CD Müziğini Kapat</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="62"/>
+        <location filename="../audiosettingswidget.cpp" line="64"/>
         <source>Audio Backend</source>
         <translation>Ses Arayüzü</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="63"/>
+        <location filename="../audiosettingswidget.cpp" line="65"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
         <translation>Ses arayüzü karelerin emülatör tarafından nasıl sisteme aktarılacağını belirler. Cubeb en az gecikeyi verir. Sorun yaşarsanız SDL arayüzünü seçiniz. Null sisteme ses aktarımını kapatır.</translation>
     </message>
@@ -1085,7 +1753,7 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Tampon Hafıza Boyutu</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="68"/>
+        <location filename="../audiosettingswidget.cpp" line="70"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
         <translation>Tampon bellek boyutu, sistem tarafından alınacak ses parçalarının boyutunu belirler. Düşük sayılar çıkış gecikmesini düşürür ama emülasyon hızı dengesiz olursa anlık donmalara yol açar. Aklınızda bulunsunki Cubeb arayüzü bu değere bakmaksızın düşük parça boyutu kullanır ve burada düşük değer ayarlamak gecikmelere fark edilebilir sonuçlar doğurmayabilir.</translation>
     </message>
@@ -1098,74 +1766,85 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Emülasyonun hızını ses arayüzünün hızına eşitler. Bu ise emülasyon hızı fazla ise oluşabilecek cızırtı ve çatlamaları engeller. Senkronize işlemi oyun 100% hızda çalışmıyorsa kapatılır..</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="67"/>
+        <location filename="../audiosettingswidget.cpp" line="69"/>
         <source>Output Latency</source>
         <translation>Çıkış Gecikmesi</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="73"/>
-        <location filename="../audiosettingswidget.cpp" line="79"/>
+        <location filename="../audiosettingswidget.cpp" line="69"/>
+        <source>50 ms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="75"/>
         <location filename="../audiosettingswidget.cpp" line="81"/>
+        <location filename="../audiosettingswidget.cpp" line="83"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="74"/>
+        <location filename="../audiosettingswidget.cpp" line="76"/>
         <source>Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option.</source>
         <translation>Emülatör başladığı gibi ses kayıdını başlatır. Hata ayıklama için işe yarar.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="75"/>
+        <location filename="../audiosettingswidget.cpp" line="77"/>
         <source>Output Volume</source>
         <translation>Ses Çıkış Şiddeti</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="76"/>
+        <location filename="../audiosettingswidget.cpp" line="78"/>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>Sistemde çalınacak sesin şiddetini ayarlar.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="77"/>
+        <location filename="../audiosettingswidget.cpp" line="79"/>
         <source>Fast Forward Volume</source>
         <translation>Sesi İleri Sarma</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="78"/>
+        <location filename="../audiosettingswidget.cpp" line="80"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>İleri sarma işlemi sırasında çalınacak sesin şiddetini ayarlar.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="80"/>
+        <location filename="../audiosettingswidget.cpp" line="82"/>
         <source>Prevents the emulator from producing any audible sound.</source>
         <translation>Emülatörün duyulabilecek şiddette ses çıkarmasını engeller.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="82"/>
+        <location filename="../audiosettingswidget.cpp" line="84"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>Hem müzik CD&apos;si formatındaki sesleri hem Playstation formatindeki sesleri zorla kapatır. Bazı oyunlardaki müzikleri kapatmak için işe yarayabilir.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="85"/>
+        <location filename="../audiosettingswidget.cpp" line="87"/>
         <source>Stretch Mode</source>
         <translation>Germe Modu</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="85"/>
+        <location filename="../audiosettingswidget.cpp" line="87"/>
         <source>Time Stretching</source>
         <translation>Zamana Gerdirme</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="86"/>
+        <location filename="../audiosettingswidget.cpp" line="88"/>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
         <translation>Oyun 100% hızda emülasyon edilemediğinde, kare kaybetmek yerine küçük bir performans kaybıyla sesin temposunu ayarlar. Daha hoş ileri sarma/yavaşlama sağlar.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="132"/>
+        <location filename="../audiosettingswidget.cpp" line="118"/>
+        <location filename="../audiosettingswidget.cpp" line="136"/>
+        <source>Default</source>
+        <translation type="unfinished">Varsayılan</translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="158"/>
         <source>Maximum Latency: %1 frames / %2 ms (%3ms buffer + %5ms output)</source>
         <translation>Maksimum Gecikme: %1 kare / %2 ms (%3ms tampon + %5ms çıkış)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="140"/>
+        <location filename="../audiosettingswidget.cpp" line="166"/>
         <source>Maximum Latency: %1 frames / %2 ms</source>
         <translation>Maksimum Gecikme: %1 kare / %2 ms</translation>
     </message>
@@ -1180,8 +1859,8 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="146"/>
-        <location filename="../audiosettingswidget.cpp" line="147"/>
+        <location filename="../audiosettingswidget.cpp" line="172"/>
+        <location filename="../audiosettingswidget.cpp" line="173"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -1190,8 +1869,8 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../autoupdaterdialog.ui" line="17"/>
-        <location filename="../autoupdaterdialog.cpp" line="184"/>
-        <location filename="../autoupdaterdialog.cpp" line="370"/>
+        <location filename="../autoupdaterdialog.cpp" line="199"/>
+        <location filename="../autoupdaterdialog.cpp" line="379"/>
         <source>Automatic Updater</source>
         <translation>Otomatik Güncelleştirme</translation>
     </message>
@@ -1226,57 +1905,57 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation>Sonra Hatırlat</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="108"/>
+        <location filename="../autoupdaterdialog.cpp" line="129"/>
         <source>Updater Error</source>
         <translation>Güncelleştirme Hatası</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="185"/>
+        <location filename="../autoupdaterdialog.cpp" line="200"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation>Şimdilik bir güncelleştirme yok. Sonra tekrar deneyiniz.</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="237"/>
+        <location filename="../autoupdaterdialog.cpp" line="252"/>
         <source>Current Version: %1 (%2)</source>
         <translation>Kullandığınız Sürüm: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="239"/>
+        <location filename="../autoupdaterdialog.cpp" line="254"/>
         <source>New Version: %1 (%2)</source>
         <translation>Yeni Sürüm: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="240"/>
+        <location filename="../autoupdaterdialog.cpp" line="255"/>
         <source>Loading...</source>
         <translation>Yükleniyor...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="296"/>
+        <location filename="../autoupdaterdialog.cpp" line="308"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;Değişiklikler:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="329"/>
+        <location filename="../autoupdaterdialog.cpp" line="341"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Durum Kaydı İkazı&lt;/h2&gt;&lt;p&gt;Bu güncellemeyi kurmak durum kayıtlarınızı &lt;b&gt;uyumsuz kılar&lt;/b&gt;. Lütfen güncellemeyi kurmadan önce oyunlarınızı hafıza kartına kayıt ettiğinizden emin olun ki ilerleyişinizi kayıp olmasın.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="337"/>
+        <location filename="../autoupdaterdialog.cpp" line="349"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Ayarlar İkazı&lt;/h2&gt;&lt;p&gt;Bu güncelleştirmeyi kurmak ayarlarınızı silecek. Lütfen güncelleştirmeden sonra ayarlarınızı tekrar ayarlamayı unutmayınız..&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="341"/>
+        <location filename="../autoupdaterdialog.cpp" line="353"/>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
         <translation>&lt;h4&gt;Bu güncellemeyi kurmak %1 Megabyte tutacak..&lt;/h4&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="369"/>
+        <location filename="../autoupdaterdialog.cpp" line="378"/>
         <source>Downloading %1...</source>
         <translation>İndiriliyor %1...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="369"/>
+        <location filename="../autoupdaterdialog.cpp" line="378"/>
         <source>Cancel</source>
         <translation>İptal</translation>
     </message>
@@ -1340,44 +2019,52 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="162"/>
-        <location filename="../biossettingswidget.cpp" line="19"/>
+        <location filename="../biossettingswidget.cpp" line="25"/>
         <source>Fast Boot</source>
         <translation>Hızlı Açılış</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="169"/>
-        <location filename="../biossettingswidget.cpp" line="23"/>
-        <source>Enable TTY Output</source>
-        <translation>TTY Çıktı Modunu Aç</translation>
+        <location filename="../biossettingswidget.cpp" line="28"/>
+        <source>Enable TTY Logging</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="93"/>
+        <source>Enable TTY Output</source>
+        <translation type="vanished">TTY Çıktı Modunu Aç</translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="29"/>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../biossettingswidget.cpp" line="107"/>
         <source>Auto-Detect</source>
         <translation>Otomatikmen Algıla</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="111"/>
+        <location filename="../biossettingswidget.cpp" line="125"/>
         <source>Unknown</source>
         <translation>Bilinmiyor</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="19"/>
-        <location filename="../biossettingswidget.cpp" line="23"/>
+        <location filename="../biossettingswidget.cpp" line="25"/>
+        <location filename="../biossettingswidget.cpp" line="28"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="20"/>
+        <location filename="../biossettingswidget.cpp" line="26"/>
         <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
         <translation>BIOS&apos;u, konsolun açılış animasyonunu kapatacak şekilde yamalar. Tüm oyunlarla uyumlu değildir ama genellikle zarar gelmez.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="24"/>
         <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation>BIOS&apos;u işlem kayıdı çağrılarını printf() fonksiyonuna bağlar. Sadece hata ayıklama için kullanın. Oyunları Bozabilir.</translation>
+        <translation type="vanished">BIOS&apos;u işlem kayıdı çağrılarını printf() fonksiyonuna bağlar. Sadece hata ayıklama için kullanın. Oyunları Bozabilir.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.cpp" line="91"/>
+        <location filename="../biossettingswidget.cpp" line="105"/>
         <source>Use Global Setting</source>
         <translation>Evrensel Ayarı Kullan</translation>
     </message>
@@ -1389,17 +2076,17 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="749"/>
+        <location filename="../../core/settings.cpp" line="840"/>
         <source>Interpreter (Slowest)</source>
         <translation>Yorumlayıcı (En Yavaş)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="750"/>
+        <location filename="../../core/settings.cpp" line="841"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Önbellekli Yorumlayıcı (Daha Hızlı)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="751"/>
+        <location filename="../../core/settings.cpp" line="842"/>
         <source>Recompiler (Fastest)</source>
         <translation>Derleyici (En Hızlı)</translation>
     </message>
@@ -1407,17 +2094,17 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="780"/>
+        <location filename="../../core/settings.cpp" line="871"/>
         <source>Disabled (Slowest)</source>
         <translation>Kapalı (En Yavaş)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="781"/>
+        <location filename="../../core/settings.cpp" line="872"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (Donanım, En Hızlı, Sadece 64-Bit)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="782"/>
+        <location filename="../../core/settings.cpp" line="873"/>
         <source>LUT (Faster)</source>
         <translation>LUT (Daha Hızlı)</translation>
     </message>
@@ -1458,18 +2145,18 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">İptal</translation>
     </message>
     <message>
-        <location filename="../cheatcodeeditordialog.cpp" line="20"/>
-        <location filename="../cheatcodeeditordialog.cpp" line="26"/>
+        <location filename="../cheatcodeeditordialog.cpp" line="23"/>
+        <location filename="../cheatcodeeditordialog.cpp" line="29"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../cheatcodeeditordialog.cpp" line="20"/>
+        <location filename="../cheatcodeeditordialog.cpp" line="23"/>
         <source>Description cannot be empty.</source>
         <translation>Açıklama boş bırakılamaz.</translation>
     </message>
     <message>
-        <location filename="../cheatcodeeditordialog.cpp" line="26"/>
+        <location filename="../cheatcodeeditordialog.cpp" line="29"/>
         <source>Instructions are invalid.</source>
         <translation>Komutlar Geçersiz.</translation>
     </message>
@@ -1508,9 +2195,9 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="66"/>
-        <location filename="../cheatmanagerdialog.cpp" line="395"/>
-        <location filename="../cheatmanagerdialog.cpp" line="433"/>
-        <location filename="../cheatmanagerdialog.cpp" line="438"/>
+        <location filename="../cheatmanagerdialog.cpp" line="398"/>
+        <location filename="../cheatmanagerdialog.cpp" line="436"/>
+        <location filename="../cheatmanagerdialog.cpp" line="441"/>
         <source>Activate</source>
         <translation>Etkinleştir</translation>
     </message>
@@ -1815,147 +2502,147 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation>Takip Kaydet</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="22"/>
+        <location filename="../cheatmanagerdialog.cpp" line="25"/>
         <source>Byte</source>
         <translation>Byte</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="22"/>
+        <location filename="../cheatmanagerdialog.cpp" line="25"/>
         <source>Halfword</source>
         <translation>Halfword</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="23"/>
+        <location filename="../cheatmanagerdialog.cpp" line="26"/>
         <source>Word</source>
         <translation>Word</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="23"/>
+        <location filename="../cheatmanagerdialog.cpp" line="26"/>
         <source>Signed Byte</source>
         <translation>İmzalı Byte</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="24"/>
+        <location filename="../cheatmanagerdialog.cpp" line="27"/>
         <source>Signed Halfword</source>
         <translation>İmzalı Halfword</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="24"/>
+        <location filename="../cheatmanagerdialog.cpp" line="27"/>
         <source>Signed Word</source>
         <translation>İmzalı Word</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="438"/>
+        <location filename="../cheatmanagerdialog.cpp" line="441"/>
         <source>Toggle</source>
         <translation>Değiştir</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="522"/>
+        <location filename="../cheatmanagerdialog.cpp" line="525"/>
         <source>Add Group</source>
         <translation>Grup Ekle</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="522"/>
+        <location filename="../cheatmanagerdialog.cpp" line="525"/>
         <source>Group Name:</source>
         <translation>Grup Adı:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="528"/>
-        <location filename="../cheatmanagerdialog.cpp" line="662"/>
-        <location filename="../cheatmanagerdialog.cpp" line="685"/>
-        <location filename="../cheatmanagerdialog.cpp" line="707"/>
+        <location filename="../cheatmanagerdialog.cpp" line="531"/>
+        <location filename="../cheatmanagerdialog.cpp" line="665"/>
+        <location filename="../cheatmanagerdialog.cpp" line="688"/>
+        <location filename="../cheatmanagerdialog.cpp" line="710"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="528"/>
+        <location filename="../cheatmanagerdialog.cpp" line="531"/>
         <source>This group name already exists.</source>
         <translation>Bu grup adı zaten var.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="619"/>
+        <location filename="../cheatmanagerdialog.cpp" line="622"/>
         <source>Delete Code</source>
         <translation>Kodu Sil</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="620"/>
+        <location filename="../cheatmanagerdialog.cpp" line="623"/>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
         <translation>Seçilmiş kodu silmek istediğinizden emin misiniz? Geri alamazsınız.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="647"/>
+        <location filename="../cheatmanagerdialog.cpp" line="650"/>
         <source>From File...</source>
         <translation>Dosyadan...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="648"/>
+        <location filename="../cheatmanagerdialog.cpp" line="651"/>
         <source>From Text...</source>
         <translation>Yazıdan...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="654"/>
+        <location filename="../cheatmanagerdialog.cpp" line="657"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
         <translation>PCSXR/Libretro Hile Dosyaları (*.cht *.txt);;Tüm Dosyalar (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="655"/>
-        <location filename="../cheatmanagerdialog.cpp" line="678"/>
+        <location filename="../cheatmanagerdialog.cpp" line="658"/>
+        <location filename="../cheatmanagerdialog.cpp" line="681"/>
         <source>Import Cheats</source>
         <translation>İçeri Hile Aktar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="662"/>
-        <location filename="../cheatmanagerdialog.cpp" line="685"/>
+        <location filename="../cheatmanagerdialog.cpp" line="665"/>
+        <location filename="../cheatmanagerdialog.cpp" line="688"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
         <translation>Hile kodu anlaşılamadı. İşlem Kaydı detaylı bilgi içeriyor olabilir.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="678"/>
+        <location filename="../cheatmanagerdialog.cpp" line="681"/>
         <source>Cheat File Text:</source>
         <translation>Hile Dosyası Yazısı:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="701"/>
+        <location filename="../cheatmanagerdialog.cpp" line="704"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
         <translation>PCSXR Hile Dosyaları (*.cht);;Tüm Dosyalar (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="702"/>
+        <location filename="../cheatmanagerdialog.cpp" line="705"/>
         <source>Export Cheats</source>
         <translation>Hileleri Dışarı Aktar</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="707"/>
+        <location filename="../cheatmanagerdialog.cpp" line="710"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
         <translation>Hile dosyası kayıt edilemedi. İşlem kaydı daha detaylı bilgi içerebilir.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="712"/>
+        <location filename="../cheatmanagerdialog.cpp" line="715"/>
         <source>Confirm Clear</source>
         <translation>Temizlemeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="713"/>
+        <location filename="../cheatmanagerdialog.cpp" line="716"/>
         <source>Are you sure you want to remove all cheats? This is not reversible.</source>
         <translation>Tüm hileleri kaldırmak istediğinizden emin misiniz? Bu geri alınamaz.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="726"/>
+        <location filename="../cheatmanagerdialog.cpp" line="729"/>
         <source>Confirm Reset</source>
         <translation>Resetlemeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="727"/>
+        <location filename="../cheatmanagerdialog.cpp" line="730"/>
         <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
         <translation>Hile listesine resetlemek istediğinizden emin misiniz? Duckstation veritabanında olmayan tüm hileler YOK OLACAK.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="756"/>
+        <location filename="../cheatmanagerdialog.cpp" line="759"/>
         <source>Enter manual address:</source>
         <translation>Manuel Adresi Ekle:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="765"/>
+        <location filename="../cheatmanagerdialog.cpp" line="768"/>
         <source>Select data size:</source>
         <translation>Veri boyutunu seç:</translation>
     </message>
@@ -1971,17 +2658,17 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="2767"/>
+        <location filename="../../core/cheats.cpp" line="2770"/>
         <source>Gameshark</source>
         <translation>Gameshark</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2792"/>
+        <location filename="../../core/cheats.cpp" line="2795"/>
         <source>Manual</source>
         <translation>Manel</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="2792"/>
+        <location filename="../../core/cheats.cpp" line="2795"/>
         <source>Automatic (Frame End)</source>
         <translation>Otomatik (Kare Sonu)</translation>
     </message>
@@ -2018,6 +2705,22 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
     </message>
 </context>
 <context>
+    <name>ColorPickerButton</name>
+    <message>
+        <location filename="../colorpickerbutton.cpp" line="41"/>
+        <source>Select LED Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CommonHost</name>
+    <message>
+        <location filename="../../util/cubeb_audio_stream.cpp" line="261"/>
+        <source>Default Output Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CommonHostInterface</name>
     <message>
         <source>Are you sure you want to stop emulation?</source>
@@ -2028,31 +2731,30 @@ Liderler sıralaması: {} Şu kadar kişinin içinden {}</translation>
         <translation type="vanished">Şimdiki durum kayıt edilecek.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3809"/>
         <source>Invalid version %u (%s version %u)</source>
         <translatorcomment>Weird Garip</translatorcomment>
-        <translation>Geçersiz Sürüm %u (%s Sürüm %u)</translation>
+        <translation type="vanished">Geçersiz Sürüm %u (%s Sürüm %u)</translation>
     </message>
 </context>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="691"/>
+        <location filename="../../core/settings.cpp" line="780"/>
         <source>Auto-Detect</source>
         <translation>Otomatik Algıla</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="691"/>
+        <location filename="../../core/settings.cpp" line="780"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japonya)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="692"/>
+        <location filename="../../core/settings.cpp" line="781"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (ABD Kanada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="692"/>
+        <location filename="../../core/settings.cpp" line="782"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Avrupa Türkiye Avustralya)</translation>
     </message>
@@ -2458,7 +3160,7 @@ Bu son uyarıdır.</translation>
         <translation>İşlemci Hız Aşırtma İkazı</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="179"/>
+        <location filename="../consolesettingswidget.cpp" line="180"/>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2MHz)</translation>
     </message>
@@ -2492,30 +3194,34 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="120"/>
-        <location filename="../controllerbindingwidgets.cpp" line="263"/>
+        <location filename="../controllerbindingwidgets.cpp" line="272"/>
         <source>Automatic Mapping</source>
         <translation>Otomatik Tuş Atama</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="134"/>
-        <location filename="../controllerbindingwidgets.cpp" line="213"/>
+        <location filename="../controllerbindingwidgets.cpp" line="221"/>
         <source>Clear Mapping</source>
         <translation>Tuş Atamalarını Sil</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="203"/>
+        <location filename="../controllerbindingwidgets.cpp" line="211"/>
         <source>No devices available</source>
         <translation>Cihaz Yok</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="214"/>
+        <location filename="../controllerbindingwidgets.cpp" line="222"/>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
         <translation>Tüm tuş atamalarını silmek istediğinizden emin misiniz? Bu işlem Geri Alınamaz.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="264"/>
+        <location filename="../controllerbindingwidgets.cpp" line="273"/>
+        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation>Şu cihaz için tuş atamaları yapılamadı&apos;%1&apos;</translation>
+        <translation type="vanished">Şu cihaz için tuş atamaları yapılamadı&apos;%1&apos;</translation>
     </message>
 </context>
 <context>
@@ -2833,10 +3539,8 @@ Bu son uyarıdır.</translation>
 <context>
     <name>ControllerBindingWidget_Base</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="738"/>
-        <location filename="../controllerbindingwidgets.cpp" line="754"/>
         <source>%1%</source>
-        <translation>%1%</translation>
+        <translation type="vanished">%1%</translation>
     </message>
 </context>
 <context>
@@ -2953,40 +3657,78 @@ Bu son uyarıdır.</translation>
         <translation>Form</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="59"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="134"/>
         <source>Side Buttons</source>
         <translation>Yan Tuşlar</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="65"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="140"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="95"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="135"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="289"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="329"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="223"/>
+        <source>Relative Aiming</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="229"/>
+        <source>Down</source>
+        <translation type="unfinished">Aşağı</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="269"/>
+        <source>Left</source>
+        <translation type="unfinished">Sol</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="309"/>
+        <source>Up</source>
+        <translation type="unfinished">Yukarı</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="349"/>
+        <source>Right</source>
+        <translation type="unfinished">Sağ</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="473"/>
+        <source>Pointer Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="479"/>
+        <source>&lt;p&gt;By default, GunCon will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
+
+&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_guncon.ui" line="68"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="108"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="170"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="210"/>
         <source>PushButton</source>
         <translation>Tuşunu Ata</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="105"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="180"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="253"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="32"/>
         <source>Trigger</source>
         <translation>Tetik</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="259"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="38"/>
         <source>Fire Offscreen</source>
         <translation>Ekran Dışına Ateşle</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="299"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="78"/>
         <source>Fire</source>
         <translation>Ateş</translation>
     </message>
@@ -3117,7 +3859,7 @@ Bu son uyarıdır.</translation>
         <translation>Direksiyon/Çevirme</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="843"/>
+        <location filename="../controllerbindingwidgets.cpp" line="878"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -3125,22 +3867,22 @@ Bu son uyarıdır.</translation>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="497"/>
+        <location filename="../controllerbindingwidgets.cpp" line="507"/>
         <source>%1 Settings</source>
         <translation>%1 Ayarları</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="506"/>
+        <location filename="../controllerbindingwidgets.cpp" line="516"/>
         <source>Restore Default Settings</source>
         <translation>Varsayılan Ayarlara Dön</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="585"/>
+        <location filename="../controllerbindingwidgets.cpp" line="629"/>
         <source>Browse...</source>
         <translation>Ara...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="588"/>
+        <location filename="../controllerbindingwidgets.cpp" line="632"/>
         <source>Select File</source>
         <translation>Dosya Seç</translation>
     </message>
@@ -3153,149 +3895,152 @@ Bu son uyarıdır.</translation>
         <translation>Form</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="32"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="83"/>
         <source>Controller Multitap</source>
         <translation>Kol Multitap Aksesuarı</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="38"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="89"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
         <translation>Multitap aksesuarı 8 tane kolu aynı anda konsola bağlamayı sağlar. Her Multitap 4 tane porta sahiptir. Tüm oyunlar Multitap&apos;ı desteklemez.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="48"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="99"/>
         <source>Multitap Mode:</source>
         <translation>Multitap Modu:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="56"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="107"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="61"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="112"/>
         <source>Enable on Port 1 Only</source>
         <translation>Sadece Port 1&apos;de</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="66"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="117"/>
         <source>Enable on Port 2 Only</source>
         <translation>Sadece Port 2&apos;de</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="71"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="122"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Port 1 Ve Port 2&apos;de</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="82"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="32"/>
         <source>DInput Source</source>
         <translation>DInput Kaynağı</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="88"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="38"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
         <translation>DInput kaynağı, XInput desteği olmayan külüstür kolları bağlamaya yarar. Bu kollara SDL ile arayüzlemek daha iyi olur.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="98"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="48"/>
         <source>Enable DInput Input Source</source>
         <translation>DInput Kaynak Girdisini Aç</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="108"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="133"/>
         <source>SDL Input Source</source>
         <translation>SDL Girdi Kaynağı</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="114"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="139"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation>SDL girdi kaynağı çoğu kolu destekler ve DualShock 4/DualSense için gelişmiş özellikleri BlueTooth ile bağlamada modunda destekler. (Titreşim/LED Kontrolü).</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="124"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="149"/>
         <source>Enable SDL Input Source</source>
         <translation>SDL Girdi Kaynağı Aç</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="131"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="158"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation>DualShock 4 / DualSense Geliştirilmiş Modu</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="141"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="58"/>
         <source>Detected Devices</source>
         <translation>Görülen Cihazlar</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="166"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
         <source>Mouse/Pointer Source</source>
         <translation>Fare/İmleç Kaynağı</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="184"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="260"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="296"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="351"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="216"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="267"/>
         <source>Invert</source>
-        <translation>Ters Çevir</translation>
+        <translation type="vanished">Ters Çevir</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="274"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="240"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>Saf girdiyi açmak çubukları fare imlecine bağlayınca keskinliği arttırır ve birden çok fareyi kullanmayı sağlar.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="284"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
         <source>Vertical Sensitivity:</source>
         <translation>Dikey Hassasiyet:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="291"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="250"/>
         <source>Horizontal Sensitivity:</source>
         <translation>Yatay Hassasiyet:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="298"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="362"/>
         <source>Enable Mouse Mapping</source>
         <translation>Fare Atamayı Aç</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="369"/>
         <source>Use Raw Input</source>
         <translation>Saf Girdiyi Kullan</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="315"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
         <source>XInput Source</source>
         <translation>XInput Girdisi</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="321"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="165"/>
+        <source>Controller LED Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerglobalsettingswidget.ui" line="188"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>XInput girdisini açmak X360/One/Series kollarını ve XInput destekleyen yan sanayi kolları kullanmayı sağlar.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="331"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
         <source>Enable XInput Input Source</source>
         <translation>XInput Girdi Kaynağını Aç</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="341"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
         <source>Profile Settings</source>
         <translation>Profil Ayarları</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="347"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="214"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>Bu açıkken kısayol tuşları tuş atama profilinde kullanılabilir ve evrensel kısayollar yerine kullanılırlar. Varsayılana göre kısayol tuşları her zaman profiller arası paylaşılır.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="357"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Profile Özel Kısayol Tuşlarını Kullan</translation>
     </message>
@@ -3321,6 +4066,34 @@ Bu son uyarıdır.</translation>
     <message>
         <source>Evdev</source>
         <translation type="vanished">Evdev</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerLEDSettingsDialog</name>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="14"/>
+        <source>Controller LED Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="20"/>
+        <source>SDL-0 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="32"/>
+        <source>SDL-1 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="44"/>
+        <source>SDL-2 LED</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../controllerledsettingsdialog.ui" line="56"/>
+        <source>SDL-3 LED</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3371,27 +4144,27 @@ Bu son uyarıdır.</translation>
         <translation>Ayarla...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="399"/>
+        <location filename="../controllerbindingwidgets.cpp" line="409"/>
         <source>Not Configured</source>
         <translation>Ayarlanmamış</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="405"/>
+        <location filename="../controllerbindingwidgets.cpp" line="415"/>
         <source>Set Frequency</source>
         <translation>Frekans Ayarla</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="405"/>
+        <location filename="../controllerbindingwidgets.cpp" line="415"/>
         <source>Frequency: </source>
         <translation>Frekans: </translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="434"/>
+        <location filename="../controllerbindingwidgets.cpp" line="444"/>
         <source>Macro will not repeat.</source>
         <translation>Tuş makrosu tekrarlanmayacak.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="436"/>
+        <location filename="../controllerbindingwidgets.cpp" line="446"/>
         <source>Macro will toggle buttons every %1 frames.</source>
         <translation>Tuş makrosu tuşları her %1 karede aç kapa yapacak.</translation>
     </message>
@@ -3399,12 +4172,12 @@ Bu son uyarıdır.</translation>
 <context>
     <name>ControllerMacroWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="298"/>
+        <location filename="../controllerbindingwidgets.cpp" line="308"/>
         <source>Controller Port %1 Macros</source>
         <translation>Kol Portu %1 Tuş Makroları</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="307"/>
+        <location filename="../controllerbindingwidgets.cpp" line="317"/>
         <source>Macro %1
 %2</source>
         <translation>Tuş Makro %1
@@ -3440,51 +4213,51 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <location filename="../controllersettingsdialog.ui" line="113"/>
-        <location filename="../controllersettingsdialog.cpp" line="186"/>
+        <location filename="../controllersettingsdialog.cpp" line="192"/>
         <source>Restore Defaults</source>
         <translation>Varsayılan Ayarlara Geri Döndür</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="90"/>
-        <location filename="../controllersettingsdialog.cpp" line="101"/>
+        <location filename="../controllersettingsdialog.cpp" line="96"/>
+        <location filename="../controllersettingsdialog.cpp" line="107"/>
         <source>Create Input Profile</source>
         <translation>Tuş Atama Profili Oluştur</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="90"/>
+        <location filename="../controllersettingsdialog.cpp" line="96"/>
         <source>Enter the name for the new input profile:</source>
         <translation>Yeni tuş atama profili için isim girin:</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="97"/>
-        <location filename="../controllersettingsdialog.cpp" line="130"/>
-        <location filename="../controllersettingsdialog.cpp" line="174"/>
-        <location filename="../controllersettingsdialog.cpp" line="467"/>
+        <location filename="../controllersettingsdialog.cpp" line="103"/>
+        <location filename="../controllersettingsdialog.cpp" line="136"/>
+        <location filename="../controllersettingsdialog.cpp" line="180"/>
+        <location filename="../controllersettingsdialog.cpp" line="477"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="97"/>
+        <location filename="../controllersettingsdialog.cpp" line="103"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
         <translation>Şu isimde bir profil zaten var &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="102"/>
+        <location filename="../controllersettingsdialog.cpp" line="108"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
         <translation>Şimdi seçili olan profildeki tuş atamalarını yeni profile geçirmek ister misiniz? Hayırı seçerseniz yeni profil boş olacak.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="131"/>
+        <location filename="../controllersettingsdialog.cpp" line="137"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
         <translation>Yeni profil şuraya kaydedilemedi &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="141"/>
+        <location filename="../controllersettingsdialog.cpp" line="147"/>
         <source>Load Input Profile</source>
         <translation>Tuş Atama Profili Yükle</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="142"/>
+        <location filename="../controllersettingsdialog.cpp" line="148"/>
         <source>Are you sure you want to load the input profile named &apos;%1&apos;?
 
 All current global bindings will be removed, and the profile bindings loaded.
@@ -3497,12 +4270,12 @@ You cannot undo this action.</source>
 Bunu geri alamazsınız.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="163"/>
+        <location filename="../controllersettingsdialog.cpp" line="169"/>
         <source>Delete Input Profile</source>
         <translation>Tuş Atama Profilini Sil</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="164"/>
+        <location filename="../controllersettingsdialog.cpp" line="170"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
@@ -3511,12 +4284,12 @@ You cannot undo this action.</source>
 Bunu geri alamazsınız.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="174"/>
+        <location filename="../controllersettingsdialog.cpp" line="180"/>
         <source>Failed to delete &apos;%1&apos;.</source>
         <translation>Şu silinemedi &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="187"/>
+        <location filename="../controllersettingsdialog.cpp" line="193"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All shared bindings and configuration will be lost, but your input profiles will remain.
@@ -3529,38 +4302,38 @@ Tüm paylaşılan atamalar be ayarlar silinecek ama tuş atama profilleri kalaca
 Bunu geri alamazsınız.</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="350"/>
+        <location filename="../controllersettingsdialog.cpp" line="360"/>
         <source>Global Settings</source>
         <translation>Evrensel Ayarlar</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="392"/>
-        <location filename="../controllersettingsdialog.cpp" line="432"/>
+        <location filename="../controllersettingsdialog.cpp" line="402"/>
+        <location filename="../controllersettingsdialog.cpp" line="442"/>
         <source>Controller Port %1%2
 %3</source>
         <translation>Kol Portu %1%2
 %3</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="393"/>
-        <location filename="../controllersettingsdialog.cpp" line="433"/>
+        <location filename="../controllersettingsdialog.cpp" line="403"/>
+        <location filename="../controllersettingsdialog.cpp" line="443"/>
         <source>Controller Port %1
 %2</source>
         <translation>Kol Portu %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="403"/>
+        <location filename="../controllersettingsdialog.cpp" line="413"/>
         <source>Hotkeys</source>
         <translation>Kısayol Tuşları</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="445"/>
+        <location filename="../controllersettingsdialog.cpp" line="455"/>
         <source>Shared</source>
         <translation>Paylaşılan</translation>
     </message>
     <message>
-        <location filename="../controllersettingsdialog.cpp" line="467"/>
+        <location filename="../controllersettingsdialog.cpp" line="477"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation>Şu isimdeki tuş atama profili &apos;%1&apos; bulunamadı.</translation>
     </message>
@@ -3667,24 +4440,24 @@ Bunu geri alamazsınız.</translation>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1074"/>
+        <location filename="../../core/settings.cpp" line="1282"/>
         <source>None</source>
         <translation>Yok</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="174"/>
-        <location filename="../../core/settings.cpp" line="1074"/>
+        <location filename="../../core/digital_controller.cpp" line="179"/>
+        <location filename="../../core/settings.cpp" line="1282"/>
         <source>Digital Controller</source>
         <translation>Dijital Kol</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1075"/>
+        <location filename="../../core/settings.cpp" line="1283"/>
         <source>Analog Controller (DualShock)</source>
         <translation>Analog Kol (DualShock)</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="341"/>
-        <location filename="../../core/settings.cpp" line="1075"/>
+        <location filename="../../core/analog_joystick.cpp" line="408"/>
+        <location filename="../../core/settings.cpp" line="1284"/>
         <source>Analog Joystick</source>
         <translation>Analog Joystick</translation>
     </message>
@@ -3693,55 +4466,114 @@ Bunu geri alamazsınız.</translation>
         <translation type="vanished">Namco GunCon</translation>
     </message>
     <message>
-        <location filename="../../core/playstation_mouse.cpp" line="195"/>
-        <location filename="../../core/settings.cpp" line="1076"/>
+        <location filename="../../core/playstation_mouse.cpp" line="220"/>
+        <location filename="../../core/settings.cpp" line="1285"/>
         <source>PlayStation Mouse</source>
         <translation>PlayStation Fare</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="258"/>
-        <location filename="../../core/settings.cpp" line="1077"/>
+        <location filename="../../core/negcon.cpp" line="270"/>
+        <location filename="../../core/settings.cpp" line="1285"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="809"/>
+        <location filename="../../core/analog_controller.cpp" line="876"/>
         <source>Analog Controller</source>
         <translation>Analog Kol</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="230"/>
-        <location filename="../../core/settings.cpp" line="1076"/>
+        <location filename="../../core/guncon.cpp" line="304"/>
+        <location filename="../../core/settings.cpp" line="1284"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
+    </message>
+    <message>
+        <location filename="../../core/controller.cpp" line="17"/>
+        <source>Not Connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CoverDownloadDialog</name>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="14"/>
+        <source>Download Covers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="38"/>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="50"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="63"/>
+        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="73"/>
+        <source>Use Serial File Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="80"/>
+        <source>Waiting to start...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="95"/>
+        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.ui" line="105"/>
+        <source>Close</source>
+        <translation type="unfinished">Kapat</translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.cpp" line="63"/>
+        <source>Download complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DebuggerCodeModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="78"/>
-        <location filename="../debuggermodels.cpp" line="88"/>
-        <location filename="../debuggermodels.cpp" line="103"/>
+        <location filename="../debuggermodels.cpp" line="87"/>
+        <location filename="../debuggermodels.cpp" line="97"/>
+        <location filename="../debuggermodels.cpp" line="112"/>
         <source>&lt;invalid&gt;</source>
         <translation>&lt;invalid&gt;</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="171"/>
+        <location filename="../debuggermodels.cpp" line="180"/>
         <source>Address</source>
         <translation>Adres</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="173"/>
+        <location filename="../debuggermodels.cpp" line="182"/>
         <source>Bytes</source>
         <translation>Bytelar</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="175"/>
+        <location filename="../debuggermodels.cpp" line="184"/>
         <source>Instruction</source>
         <translation>Komut</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="177"/>
+        <location filename="../debuggermodels.cpp" line="186"/>
         <source>Comment</source>
         <translation>Yorum</translation>
     </message>
@@ -3749,42 +4581,42 @@ Bunu geri alamazsınız.</translation>
 <context>
     <name>DebuggerMessage</name>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1694"/>
+        <location filename="../../core/cpu_core.cpp" line="1899"/>
         <source>Added breakpoint at 0x%08X.</source>
         <translation>Added breakpoint at 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1721"/>
+        <location filename="../../core/cpu_core.cpp" line="1926"/>
         <source>Removed breakpoint at 0x%08X.</source>
         <translation>Removed breakpoint at 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1753"/>
+        <location filename="../../core/cpu_core.cpp" line="1958"/>
         <source>0x%08X is not a call instruction.</source>
         <translation>0x%08X is not a call instruction.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1764"/>
+        <location filename="../../core/cpu_core.cpp" line="1969"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
         <translation>Can&apos;t step over double branch at 0x%08X</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1771"/>
+        <location filename="../../core/cpu_core.cpp" line="1976"/>
         <source>Stepping over to 0x%08X.</source>
         <translation>Stepping over to 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1788"/>
+        <location filename="../../core/cpu_core.cpp" line="1993"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
         <translation>Instruction read failed at %08X while searching for function end.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1795"/>
+        <location filename="../../core/cpu_core.cpp" line="2000"/>
         <source>Stepping out to 0x%08X.</source>
         <translation>Stepping out to 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1802"/>
+        <location filename="../../core/cpu_core.cpp" line="2007"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation>No return instruction found after %u instructions for step-out at %08X.</translation>
     </message>
@@ -3792,12 +4624,12 @@ Bunu geri alamazsınız.</translation>
 <context>
     <name>DebuggerRegistersModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="352"/>
+        <location filename="../debuggermodels.cpp" line="365"/>
         <source>Register</source>
         <translation>Register</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="354"/>
+        <location filename="../debuggermodels.cpp" line="367"/>
         <source>Value</source>
         <translation>Value</translation>
     </message>
@@ -3805,17 +4637,17 @@ Bunu geri alamazsınız.</translation>
 <context>
     <name>DebuggerStackModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="403"/>
+        <location filename="../debuggermodels.cpp" line="420"/>
         <source>&lt;invalid&gt;</source>
         <translation>&lt;invalid&gt;</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="419"/>
+        <location filename="../debuggermodels.cpp" line="436"/>
         <source>Address</source>
         <translation>Address</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="421"/>
+        <location filename="../debuggermodels.cpp" line="438"/>
         <source>Value</source>
         <translation>Value</translation>
     </message>
@@ -3955,6 +4787,7 @@ Bunu geri alamazsınız.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="356"/>
+        <location filename="../debuggerwindow.cpp" line="254"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation>Toggle &amp;Breakpoint</translation>
     </message>
@@ -3990,6 +4823,7 @@ Bunu geri alamazsınız.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="391"/>
+        <location filename="../debuggerwindow.cpp" line="257"/>
         <source>&amp;Run To Cursor</source>
         <translation>&amp;Run To Cursor</translation>
     </message>
@@ -4084,72 +4918,82 @@ Bunu geri alamazsınız.</translation>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="95"/>
+        <location filename="../debuggerwindow.cpp" line="98"/>
         <source>No address selected.</source>
         <translation>No address selected.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="111"/>
-        <location filename="../debuggerwindow.cpp" line="152"/>
+        <location filename="../debuggerwindow.cpp" line="114"/>
+        <location filename="../debuggerwindow.cpp" line="155"/>
         <source>Enter code address:</source>
         <translation>Enter code address:</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="121"/>
-        <location filename="../qtutils.cpp" line="738"/>
+        <location filename="../debuggerwindow.cpp" line="124"/>
+        <location filename="../qtutils.cpp" line="753"/>
         <source>Enter memory address:</source>
         <translation>Enter memory address:</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="134"/>
+        <location filename="../debuggerwindow.cpp" line="137"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="140"/>
+        <location filename="../debuggerwindow.cpp" line="143"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
         <translation>Trace logging to cpu_log.txt stopped.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="158"/>
+        <location filename="../debuggerwindow.cpp" line="161"/>
         <source>A breakpoint already exists at this address.</source>
         <translation>A breakpoint already exists at this address.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="206"/>
+        <location filename="../debuggerwindow.cpp" line="209"/>
         <source>Debugger</source>
         <translation>Debugger</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="206"/>
+        <location filename="../debuggerwindow.cpp" line="209"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Failed to add step-out breakpoint, are you in a valid function?</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="285"/>
-        <location filename="../debuggerwindow.cpp" line="312"/>
+        <location filename="../debuggerwindow.cpp" line="266"/>
+        <source>View in &amp;Dump</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="269"/>
+        <source>Follow Load/Store</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="321"/>
+        <location filename="../debuggerwindow.cpp" line="348"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Invalid search pattern. It should contain hex digits or question marks.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="324"/>
+        <location filename="../debuggerwindow.cpp" line="360"/>
         <source>Pattern not found.</source>
         <translation>Pattern not found.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="340"/>
+        <location filename="../debuggerwindow.cpp" line="376"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translation>Pattern found at 0x%1 (passed the end of memory).</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="346"/>
+        <location filename="../debuggerwindow.cpp" line="382"/>
         <source>Pattern found at 0x%1.</source>
         <translation>Pattern found at 0x%1.</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="755"/>
+        <location filename="../qtutils.cpp" line="770"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Invalid address. It should be in hex (0x12345678 or 12345678)</translation>
     </message>
@@ -4173,52 +5017,82 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation type="vanished">Sağ</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="160"/>
         <source>Select</source>
-        <translation type="vanished">Select</translation>
+        <translation>Select</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="161"/>
         <source>Start</source>
-        <translation type="vanished">Start</translation>
+        <translation>Start</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="156"/>
         <source>Triangle</source>
-        <translation type="vanished">Üçgen</translation>
+        <translation>Üçgen</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="158"/>
         <source>Cross</source>
-        <translation type="vanished">Çarpı</translation>
+        <translation>Çarpı</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="157"/>
         <source>Circle</source>
-        <translation type="vanished">Halka</translation>
+        <translation>Halka</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="152"/>
+        <source>D-Pad Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="153"/>
+        <source>D-Pad Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="154"/>
+        <source>D-Pad Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="155"/>
+        <source>D-Pad Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="159"/>
         <source>Square</source>
-        <translation type="vanished">Kare</translation>
+        <translation>Kare</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="162"/>
         <source>L1</source>
-        <translation type="vanished">Sol Üst L1</translation>
+        <translation>Sol Üst L1</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="164"/>
         <source>L2</source>
-        <translation type="vanished">Sol Üst L2</translation>
+        <translation>Sol Üst L2</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="163"/>
         <source>R1</source>
-        <translation type="vanished">Sağ Üst R1</translation>
+        <translation>Sağ Üst R1</translation>
     </message>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>R2</source>
-        <translation type="vanished">Sağ Üst R2</translation>
+        <translation>Sağ Üst R2</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="169"/>
+        <location filename="../../core/digital_controller.cpp" line="173"/>
         <source>Force Pop&apos;n Controller Mode</source>
         <translation>Pop&apos;n Kontrolcüsü Modunda Çalıştır</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="170"/>
+        <location filename="../../core/digital_controller.cpp" line="174"/>
         <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
         <translation>Dijital Kolu Pop&apos;n Kontrolcüsü Omaya Zorlar.</translation>
     </message>
@@ -4226,40 +5100,67 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="720"/>
+        <location filename="../../core/settings.cpp" line="810"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japonya)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="720"/>
+        <location filename="../../core/settings.cpp" line="810"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-/C (ABD, Kanada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="721"/>
+        <location filename="../../core/settings.cpp" line="811"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Avrupa , Türkiye Avustralya)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="721"/>
+        <location filename="../../core/settings.cpp" line="811"/>
         <source>Other</source>
         <translation>Diğer</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="812"/>
+        <source>Non-PS1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DisplayAlignment</name>
+    <message>
+        <location filename="../../core/settings.cpp" line="1165"/>
+        <source>Left / Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1165"/>
+        <source>Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1166"/>
+        <source>Right / Bottom</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="970"/>
+        <location filename="../../core/settings.cpp" line="1108"/>
         <source>Auto (Game Native)</source>
         <translation>Otomatik (Oyuna Göre)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="970"/>
-        <source>Auto (Match Window)</source>
-        <translation>Otomatik (Pencereye Eşitle)</translation>
+        <location filename="../../core/settings.cpp" line="1108"/>
+        <source>Stretch To Fill</source>
+        <translation type="unfinished">Gererek Pencere Doldurma</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="971"/>
+        <source>Auto (Match Window)</source>
+        <translation type="vanished">Otomatik (Pencereye Eşitle)</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1109"/>
         <source>Custom</source>
         <translation>Özel</translation>
     </message>
@@ -4267,19 +5168,42 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="942"/>
+        <location filename="../../core/settings.cpp" line="1080"/>
         <source>None</source>
         <translation>Yok</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="942"/>
+        <location filename="../../core/settings.cpp" line="1080"/>
         <source>Only Overscan Area</source>
         <translation>Sadece Aşırı Tarama Bölgesi</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="943"/>
+        <location filename="../../core/settings.cpp" line="1081"/>
         <source>All Borders</source>
         <translation>Tüm Kenarlar</translation>
+    </message>
+</context>
+<context>
+    <name>DisplayScalingMode</name>
+    <message>
+        <location filename="../../core/settings.cpp" line="1199"/>
+        <source>Nearest-Neighbor</source>
+        <translation type="unfinished">Nearest-Neighbour</translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1200"/>
+        <source>Bilinear (Smooth)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1201"/>
+        <source>Nearest-Neighbor (Integer)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1202"/>
+        <source>Bilinear (Sharp)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4310,102 +5234,106 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation>Tam Ekran Modu:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="70"/>
-        <location filename="../displaysettingswidget.cpp" line="129"/>
+        <location filename="../displaysettingswidget.ui" line="77"/>
+        <location filename="../displaysettingswidget.cpp" line="114"/>
         <source>Threaded Rendering</source>
         <translation>Çok İş Parçacıklı Çizim</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="84"/>
-        <location filename="../displaysettingswidget.cpp" line="119"/>
+        <location filename="../displaysettingswidget.ui" line="242"/>
+        <source>Show GPU Usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="249"/>
+        <source>Show Settings Overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="70"/>
+        <location filename="../displaysettingswidget.cpp" line="108"/>
         <source>VSync</source>
         <translation>Dikey Senkronizasyon</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="77"/>
-        <location filename="../displaysettingswidget.cpp" line="126"/>
+        <location filename="../displaysettingswidget.ui" line="84"/>
+        <location filename="../displaysettingswidget.cpp" line="111"/>
         <source>Threaded Presentation</source>
         <translation>Parçacık İşli Gösterme</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="91"/>
-        <location filename="../displaysettingswidget.cpp" line="133"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation>Bilgisayar Sisteminin Ekran Tazeleme Hızına Eşitle</translation>
+        <translation type="vanished">Bilgisayar Sisteminin Ekran Tazeleme Hızına Eşitle</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="98"/>
-        <location filename="../displaysettingswidget.cpp" line="122"/>
         <source>Optimal Frame Pacing</source>
-        <translation>Kare Zamanlama Optimasyonu</translation>
+        <translation type="vanished">Kare Zamanlama Optimasyonu</translation>
     </message>
     <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation type="vanished">Tekrarlı Çizim İçin Yazılımsal Çizici Kullan</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="110"/>
+        <location filename="../displaysettingswidget.ui" line="103"/>
         <source>Screen Display</source>
         <translation>Ekran</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="116"/>
+        <location filename="../displaysettingswidget.ui" line="109"/>
         <source>Aspect Ratio:</source>
         <translation>En Boy Oranı:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="138"/>
+        <location filename="../displaysettingswidget.ui" line="131"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="157"/>
+        <location filename="../displaysettingswidget.ui" line="150"/>
         <source>Crop:</source>
         <translation>Kırpma:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="167"/>
         <source>Downsampling:</source>
-        <translation>Downsampling:</translation>
+        <translation type="vanished">Downsampling:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="179"/>
-        <location filename="../displaysettingswidget.cpp" line="109"/>
         <source>Integer Upscaling</source>
-        <translation>Katlı Büyütme</translation>
+        <translation type="vanished">Katlı Büyütme</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="186"/>
-        <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Stretch To Fill</source>
-        <translation>Gererek Pencere Doldurma</translation>
+        <translation type="vanished">Gererek Pencere Doldurma</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="193"/>
-        <location filename="../displaysettingswidget.cpp" line="102"/>
         <source>Linear Upscaling</source>
-        <translation>Filteri Büyütme</translation>
+        <translation type="vanished">Filteri Büyütme</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="200"/>
-        <location filename="../displaysettingswidget.cpp" line="114"/>
+        <location filename="../displaysettingswidget.ui" line="172"/>
+        <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Internal Resolution Screenshots</source>
         <translation>Orijinal Çözünürlük Ekran Görüntüsü</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="212"/>
+        <location filename="../displaysettingswidget.ui" line="181"/>
+        <source>Scaling:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="194"/>
         <source>On-Screen Display</source>
         <translation>Ekrana Bilgi Dökümü</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="218"/>
-        <location filename="../displaysettingswidget.cpp" line="139"/>
+        <location filename="../displaysettingswidget.ui" line="214"/>
+        <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Show OSD Messages</source>
         <translation>Ekrandaki Göstergeleri Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="232"/>
-        <location filename="../displaysettingswidget.cpp" line="142"/>
+        <location filename="../displaysettingswidget.ui" line="221"/>
+        <location filename="../displaysettingswidget.cpp" line="120"/>
         <source>Show FPS</source>
         <translation>FPS Göster</translation>
     </message>
@@ -4414,8 +5342,8 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation type="vanished">Oyun Kare Saniye Değerini Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="225"/>
-        <location filename="../displaysettingswidget.cpp" line="145"/>
+        <location filename="../displaysettingswidget.ui" line="200"/>
+        <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Show Emulation Speed</source>
         <translation>Emülasyon Hızını Göster</translation>
     </message>
@@ -4424,178 +5352,197 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation type="vanished">Ekran Kare Saniye Değerini Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="239"/>
-        <location filename="../displaysettingswidget.cpp" line="147"/>
+        <location filename="../displaysettingswidget.ui" line="235"/>
+        <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Show Resolution</source>
         <translation>Çözünürlüğü Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="246"/>
+        <location filename="../displaysettingswidget.ui" line="207"/>
+        <location filename="../displaysettingswidget.cpp" line="128"/>
         <source>Show CPU Usage</source>
         <translation>İşlemci Kullanımını Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="253"/>
-        <location filename="../displaysettingswidget.cpp" line="150"/>
+        <location filename="../displaysettingswidget.ui" line="160"/>
+        <source>Position:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.ui" line="228"/>
+        <location filename="../displaysettingswidget.cpp" line="133"/>
         <source>Show Controller Input</source>
         <translation>Kol Girişlerini Göster</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="74"/>
+        <location filename="../displaysettingswidget.cpp" line="73"/>
         <source>Renderer</source>
         <translation>Çizici</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="76"/>
+        <location filename="../displaysettingswidget.cpp" line="74"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation>Emülasyon için kullanılacak çizim arayüzünü seçer. &lt;br&gt;Sisteminiz ve donanımınıza göre donanımsal Direct3D 11 ve OpenGL arayüzleri kullanılabilir . &lt;br&gt;Yazılımsal çizici en uyumlu olandır ama en yavaş olanıdır ve iyileştirmeleri desteklemez.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="80"/>
+        <location filename="../displaysettingswidget.cpp" line="78"/>
         <source>Adapter</source>
         <translation>Adaptör</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="80"/>
-        <location filename="../displaysettingswidget.cpp" line="232"/>
+        <location filename="../displaysettingswidget.cpp" line="78"/>
+        <location filename="../displaysettingswidget.cpp" line="223"/>
         <source>(Default)</source>
         <translation>(Varsayılan)</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="81"/>
+        <location filename="../displaysettingswidget.cpp" line="79"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
         <translation>Sisteminizde birden fazla grafik kartınız varsa hangisini donanımsal çizici için kullanacağınızı seçebilirsiniz. &lt;br&gt;Bu ayar sadece Direct3D ve Vulkan tarafından desteklenir. OpenGL her zaman varsayılan cihazı kullanır.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="84"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
         <source>Fullscreen Mode</source>
         <translation>Tam Ekran Modu</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="84"/>
-        <location filename="../displaysettingswidget.cpp" line="252"/>
+        <location filename="../displaysettingswidget.cpp" line="82"/>
+        <location filename="../displaysettingswidget.cpp" line="243"/>
         <source>Borderless Fullscreen</source>
         <translation>Kenarsız Tam Ekran</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="85"/>
+        <location filename="../displaysettingswidget.cpp" line="83"/>
         <source>Chooses the fullscreen resolution and frequency.</source>
         <translation>Tam ekranın çözünürlüğünü ve frekansını seçin.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="87"/>
+        <location filename="../displaysettingswidget.cpp" line="85"/>
         <source>Aspect Ratio</source>
         <translation>En Boy Oranı</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="89"/>
+        <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>Konsolun hangi en boy oranını kullanacağını seçer. Varsayılan Otomatik (Oyun Bazlı)&apos;dır ve oyunun zamanının televizyonlarında nasıl gözükeceğine göre seçilir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="92"/>
+        <location filename="../displaysettingswidget.cpp" line="90"/>
         <source>Crop Mode</source>
         <translation>Kırpma Modu</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="94"/>
+        <location filename="../displaysettingswidget.cpp" line="92"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>Zamanın televizyonlarının gösteremeyeceği aşırı tarama ekran bölgesinin ne kadarının kırpılacağını seçer. &lt;br&gt;Bazı oyunlar o bölgede birşeyler çizer yada efekt gösterir. &lt;br&gt;&quot;Tüm Kenarları Kırp&quot; ayarıyla çakışma oluşturabilir. &quot;Sadece Aşırı Tarama Alanını Kırp&quot; seçeneği sağlamlık ve siyah kenarları kırpmak arasında bir denge sağlar.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="99"/>
-        <source>Downsampling</source>
-        <translation>Downsampling</translation>
+        <location filename="../displaysettingswidget.cpp" line="97"/>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="99"/>
-        <source>Disabled</source>
-        <translation>Kapalı</translation>
+        <source>Determines the position on the screen when black borders must be added.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="100"/>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation>Çizilen kareleri göstermeden önce downsampling yapar. 2 boyut ve 3 boyut çizimleri birlikte kullanan oyunlarda işe yarar, ama sadece 3 boyutlu çizim kullanan oyunlarda kapatılmalıdır. Sadece donanımsal çizicilerde kullanılabilir.</translation>
+        <location filename="../displaysettingswidget.cpp" line="101"/>
+        <source>Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="101"/>
+        <source>Bilinear (Smooth)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="102"/>
-        <location filename="../displaysettingswidget.cpp" line="119"/>
-        <location filename="../displaysettingswidget.cpp" line="126"/>
-        <location filename="../displaysettingswidget.cpp" line="129"/>
-        <location filename="../displaysettingswidget.cpp" line="139"/>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downsampling</source>
+        <translation type="vanished">Downsampling</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation type="vanished">Kapalı</translation>
+    </message>
+    <message>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
+        <translation type="vanished">Çizilen kareleri göstermeden önce downsampling yapar. 2 boyut ve 3 boyut çizimleri birlikte kullanan oyunlarda işe yarar, ama sadece 3 boyutlu çizim kullanan oyunlarda kapatılmalıdır. Sadece donanımsal çizicilerde kullanılabilir.</translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="108"/>
+        <location filename="../displaysettingswidget.cpp" line="111"/>
+        <location filename="../displaysettingswidget.cpp" line="114"/>
+        <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Checked</source>
         <translation>Seçili</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation>Konsolun framebuffer (Hafızada tutulan çizilmiş kare) bölgesine bilinear doku süzme yapar. &lt;br&gt;Kapamak daha keskin ama daha kare kare bir görüntü verir. Açmak ise görüntüyü yumuşatır. &lt;br&gt;Çizim çözünürlüğü ne kadar yüksek ise o kadar az belli olur.</translation>
+        <translation type="vanished">Konsolun framebuffer (Hafızada tutulan çizilmiş kare) bölgesine bilinear doku süzme yapar. &lt;br&gt;Kapamak daha keskin ama daha kare kare bir görüntü verir. Açmak ise görüntüyü yumuşatır. &lt;br&gt;Çizim çözünürlüğü ne kadar yüksek ise o kadar az belli olur.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="109"/>
-        <location filename="../displaysettingswidget.cpp" line="112"/>
-        <location filename="../displaysettingswidget.cpp" line="114"/>
-        <location filename="../displaysettingswidget.cpp" line="122"/>
+        <location filename="../displaysettingswidget.cpp" line="103"/>
+        <location filename="../displaysettingswidget.cpp" line="120"/>
+        <location filename="../displaysettingswidget.cpp" line="123"/>
+        <location filename="../displaysettingswidget.cpp" line="125"/>
+        <location filename="../displaysettingswidget.cpp" line="128"/>
         <location filename="../displaysettingswidget.cpp" line="133"/>
-        <location filename="../displaysettingswidget.cpp" line="142"/>
-        <location filename="../displaysettingswidget.cpp" line="145"/>
-        <location filename="../displaysettingswidget.cpp" line="147"/>
-        <location filename="../displaysettingswidget.cpp" line="150"/>
-        <location filename="../displaysettingswidget.cpp" line="158"/>
+        <location filename="../displaysettingswidget.cpp" line="138"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="110"/>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation>Ekrana çerçeve ekleyerek konsoldan çıkan pikseller ile kullandığınz ekranın piksellerini tam orantılı tutar. &lt;br&gt;Bazı 2 boyutlu oyunlarda daha keskin görüntü verebilir.</translation>
+        <translation type="vanished">Ekrana çerçeve ekleyerek konsoldan çıkan pikseller ile kullandığınz ekranın piksellerini tam orantılı tutar. &lt;br&gt;Bazı 2 boyutlu oyunlarda daha keskin görüntü verebilir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="113"/>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation>Pencereyi görüntü ile doldurur. En boy oranı ne olursa olsun.</translation>
+        <translation type="vanished">Pencereyi görüntü ile doldurur. En boy oranı ne olursa olsun.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="115"/>
+        <location filename="../displaysettingswidget.cpp" line="104"/>
         <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
         <translation>Ekran görüntülerini konsolun kendi iç çözünürlüğünde ve rötuş/filtre uygulanmadan kayıt eder. Kapatılırsa ekran görüntüleri pencere çözünürlüğünde kayıt edilir. Konsol çözünürlüğü yüksek ise ekran görüntülerinin dosya boyutu çok gelebilir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="120"/>
+        <location filename="../displaysettingswidget.cpp" line="109"/>
         <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
         <translation>Bu ayar açılınca DuckStation&apos;un tazeleme hızını ekranınızınkine eşitler. Mümkün değil ise dikey senkronizasyon kapatılır. (mesela. tam-100% hız elde edilemezse).</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Bu ayarı açmak kare zamanlama optimizasyonu için konsolun ekrana atmak istediği tüm kareleri hiç birini boşa gitmeden iletmesini sağlar. Konsolun tam hızda çalışmaması yada ses bozuklukları var ise bu ayarı kapamayı deneyin.</translation>
+        <translation type="vanished">Bu ayarı açmak kare zamanlama optimizasyonu için konsolun ekrana atmak istediği tüm kareleri hiç birini boşa gitmeden iletmesini sağlar. Konsolun tam hızda çalışmaması yada ses bozuklukları var ise bu ayarı kapamayı deneyin.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="127"/>
+        <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>İleri sarma yada dikey senkron kapalı iken çizilen kareleri arkaplan iş parçacığında gösterir. Bu ayar Vulkan çizicisinde performansı yükseltir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="130"/>
+        <location filename="../displaysettingswidget.cpp" line="115"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>Grafikleri çizmek için ikinci bir iş parçacığı kullanır. Şimdilik sadece yazılımsal çizici tarafından desteklenir ama performansı yükseltir ve bunu kullanmaktan zarar gelmez.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="134"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Emülasyonun hızını otomatik ayarlar ki konsolun hızı hem dikey senkron, hemde ses yeniden örneklemesi açıldığında sistemininizinkine eşitlensin. Bu çok küçük bir performans düşüşü karşılığında ( 1% ) en akıcı animasyonları verir.Eğer sisteminizin ekran tazeleme hızı ile konsolunki çok farklı ise kapatılır. Otomatik ayarlanan tazeleme hızlı ekranın kullanıyorsanız kapayınız.</translation>
+        <translation type="vanished">Emülasyonun hızını otomatik ayarlar ki konsolun hızı hem dikey senkron, hemde ses yeniden örneklemesi açıldığında sistemininizinkine eşitlensin. Bu çok küçük bir performans düşüşü karşılığında ( 1% ) en akıcı animasyonları verir.Eğer sisteminizin ekran tazeleme hızı ile konsolunki çok farklı ise kapatılır. Otomatik ayarlanan tazeleme hızlı ekranın kullanıyorsanız kapayınız.</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation type="vanished">VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="140"/>
+        <location filename="../displaysettingswidget.cpp" line="118"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>Durum kayıtları, ekran görüntüleri gibi olaylarda ekran göstergelerini gösterir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="143"/>
+        <location filename="../displaysettingswidget.cpp" line="121"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Oyunun kendi kare hızını sağ üstte gösterir.</translation>
     </message>
@@ -4604,28 +5551,33 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
         <translation type="vanished">Sitemde saniyede olan kare sayısını (ya da dikey senkronları) sağ üstte gösterir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="146"/>
+        <location filename="../displaysettingswidget.cpp" line="124"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Emülasyonun hızını sağ üstte yüzde olarak gösterir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="148"/>
+        <location filename="../displaysettingswidget.cpp" line="126"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
         <translation>Oyunun çözünürlüğünü sağ üstte gösterir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="151"/>
+        <location filename="../displaysettingswidget.cpp" line="129"/>
+        <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../displaysettingswidget.cpp" line="134"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>Anlık kol durumunu (Basılan tuşlar) sol alt köşede gösterir.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="155"/>
-        <location filename="../displaysettingswidget.cpp" line="158"/>
+        <location filename="../displaysettingswidget.ui" line="91"/>
+        <location filename="../displaysettingswidget.cpp" line="138"/>
         <source>Use Blit Swap Chain</source>
         <translation>Blit Swaip Chain Sistemini Kullan</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.cpp" line="159"/>
+        <location filename="../displaysettingswidget.cpp" line="139"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>Direct3D 11 çizicisinde flipping modeli yerine blit gösterim yöntemini kullanır. Performansı düşürebilir ama bazı yayın (Streaming) programları için gerekli ve bazı sistemlerdeki kare hızlarının kilidinin sınırını için gereklidir.</translation>
     </message>
@@ -4661,57 +5613,61 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="530"/>
+        <location filename="../qthost.cpp" line="562"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="530"/>
+        <location filename="../qthost.cpp" line="562"/>
         <source>No resume save state found.</source>
         <translation>Devam Durum Kayıdı Bulunamadı.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1288"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-        <translation>Oyun Kodu: %1
+        <translation type="vanished">Oyun Kodu: %1
 Oyun İsmi %2
 Başarımlar: %5 (%6)
 
 </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qthost.cpp" line="1294"/>
         <source>%n points</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n Puan</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1300"/>
+        <location filename="../qthost.cpp" line="1229"/>
+        <source>Game: %1 (%2)
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="1237"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Durum Raporlama (Rich Presence) kapalı ya da desteklenmiyor.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1304"/>
+        <location filename="../qthost.cpp" line="1241"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Oyun açık değil ya da RetroAchievements müsait değil.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1674"/>
+        <location filename="../qthost.cpp" line="1511"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1683"/>
+        <location filename="../qthost.cpp" line="1520"/>
         <source>Game: %1 FPS</source>
         <translation>Oyun: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1693"/>
+        <location filename="../qthost.cpp" line="1530"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Video: %1 FPS (%2%)</translation>
     </message>
@@ -4744,204 +5700,220 @@ Başarımlar: %5 (%6)
         <translation>Turbo Hız:</translation>
     </message>
     <message>
+        <location filename="../emulationsettingswidget.ui" line="70"/>
+        <location filename="../emulationsettingswidget.cpp" line="92"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">Bilgisayar Siteminin Ekran Tazeleme Hızına Eşitle</translation>
+        <translation>Bilgisayar Siteminin Ekran Tazeleme Hızına Eşitle</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="71"/>
+        <location filename="../emulationsettingswidget.ui" line="77"/>
+        <location filename="../emulationsettingswidget.cpp" line="98"/>
+        <source>Optimal Frame Pacing</source>
+        <translation type="unfinished">Kare Zamanlama Optimasyonu</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.ui" line="89"/>
         <source>Rewind/Runahead</source>
         <translation>Geri Sarma/İleriyi Hesaplama</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="77"/>
+        <location filename="../emulationsettingswidget.ui" line="95"/>
         <source>Enable Rewinding</source>
         <translation>Geri Sarmayı Aç</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="84"/>
+        <location filename="../emulationsettingswidget.ui" line="102"/>
         <source>Rewind Save Frequency:</source>
         <translation>Geri Sarma Kayıt Aralığı:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="91"/>
+        <location filename="../emulationsettingswidget.ui" line="109"/>
         <source> Seconds</source>
         <translation> Saniyeler</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="104"/>
+        <location filename="../emulationsettingswidget.ui" line="122"/>
         <source>Rewind Buffer Size:</source>
         <translation>Geri Sarma Tampon Hafıza Boyutu:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="111"/>
+        <location filename="../emulationsettingswidget.ui" line="129"/>
         <source> Frames</source>
         <translation> Kareler</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="124"/>
+        <location filename="../emulationsettingswidget.ui" line="142"/>
         <source>Runahead:</source>
         <translation>İleriyi Hesaplama:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="132"/>
-        <location filename="../emulationsettingswidget.cpp" line="94"/>
+        <location filename="../emulationsettingswidget.ui" line="150"/>
+        <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="137"/>
+        <location filename="../emulationsettingswidget.ui" line="155"/>
         <source>1 Frame</source>
         <translation>1 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="142"/>
+        <location filename="../emulationsettingswidget.ui" line="160"/>
         <source>2 Frames</source>
         <translation>2 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="147"/>
+        <location filename="../emulationsettingswidget.ui" line="165"/>
         <source>3 Frames</source>
         <translation>3 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="152"/>
+        <location filename="../emulationsettingswidget.ui" line="170"/>
         <source>4 Frames</source>
         <translation>4 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="157"/>
+        <location filename="../emulationsettingswidget.ui" line="175"/>
         <source>5 Frames</source>
         <translation>5 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="162"/>
+        <location filename="../emulationsettingswidget.ui" line="180"/>
         <source>6 Frames</source>
         <translation>6 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="167"/>
+        <location filename="../emulationsettingswidget.ui" line="185"/>
         <source>7 Frames</source>
         <translation>7 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="172"/>
+        <location filename="../emulationsettingswidget.ui" line="190"/>
         <source>8 Frames</source>
         <translation>8 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="177"/>
+        <location filename="../emulationsettingswidget.ui" line="195"/>
         <source>9 Frames</source>
         <translation>9 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="182"/>
+        <location filename="../emulationsettingswidget.ui" line="200"/>
         <source>10 Frames</source>
         <translation>10 Kare</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="190"/>
+        <location filename="../emulationsettingswidget.ui" line="208"/>
         <source>TextLabel</source>
         <translation>Yazı Etiketi</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="76"/>
+        <location filename="../emulationsettingswidget.cpp" line="81"/>
         <source>Emulation Speed</source>
         <translation>Emülasyon Hızı</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="77"/>
+        <location filename="../emulationsettingswidget.cpp" line="82"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>Hedef emülasyon hızını ayarlar. Bu hıza ulaşılabilmesi garanti değildir ve olursa emülatör elinden geldiği kadar hızlı çalışacaktır.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="80"/>
+        <location filename="../emulationsettingswidget.cpp" line="85"/>
         <source>Fast Forward Speed</source>
         <translation>İleri Sarma Hızı</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="80"/>
-        <location filename="../emulationsettingswidget.cpp" line="83"/>
+        <location filename="../emulationsettingswidget.cpp" line="85"/>
+        <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>User Preference</source>
         <translation>Kullanıcı Tercihi</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="81"/>
+        <location filename="../emulationsettingswidget.cpp" line="86"/>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
         <translation>İleri sarma hızını ayarlar. Bu hız ileri sarma kısayol tuşu basıldığında yada geçiş yapıldığında kullanılır.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="83"/>
+        <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>Turbo Speed</source>
         <translation>Turbo Hız</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="84"/>
+        <location filename="../emulationsettingswidget.cpp" line="89"/>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
         <translation>Turbo hızını ayarlar. Bu hız turbo hız kısayol tuşu basıldığında yada geçiş yapıldığında kullanılır. Turboya geçiş yapmak ileri sarmaya göre önceliklidir.ve iki mod aynı anda açılırsa öncelik alır.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="87"/>
+        <location filename="../emulationsettingswidget.cpp" line="92"/>
+        <location filename="../emulationsettingswidget.cpp" line="98"/>
+        <location filename="../emulationsettingswidget.cpp" line="103"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
+        <location filename="../emulationsettingswidget.cpp" line="93"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">Emülasyonun hızını otomatik ayarlar ki konsolun hızı hem dikey senkron, hemde ses yeniden örneklemesi açıldığında sistemininizinkine eşitlensin. Bu çok küçük bir performans düşüşü karşılığında en akıcı animasyonları verir.Eğer sisteminizin ekran tazeleme hızı ile konsolunki çok farklı ise kapatılır. Otomatik ayarlanan tazeleme hızlı ekranın kullanıyorsanız kapayınız.</translation>
+        <translation>Emülasyonun hızını otomatik ayarlar ki konsolun hızı hem dikey senkron, hemde ses yeniden örneklemesi açıldığında sistemininizinkine eşitlensin. Bu çok küçük bir performans düşüşü karşılığında en akıcı animasyonları verir.Eğer sisteminizin ekran tazeleme hızı ile konsolunki çok farklı ise kapatılır. Otomatik ayarlanan tazeleme hızlı ekranın kullanıyorsanız kapayınız.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="87"/>
+        <location filename="../emulationsettingswidget.cpp" line="99"/>
+        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
+        <translation type="unfinished">Bu ayarı açmak kare zamanlama optimizasyonu için konsolun ekrana atmak istediği tüm kareleri hiç birini boşa gitmeden iletmesini sağlar. Konsolun tam hızda çalışmaması yada ses bozuklukları var ise bu ayarı kapamayı deneyin.</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.cpp" line="103"/>
         <source>Rewinding</source>
         <translation>Geri Sarma</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="88"/>
+        <location filename="../emulationsettingswidget.cpp" line="104"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>&lt;b&gt;Geri Sarmayı Aç:&lt;/b&gt; Belli aralıklarla durum kayıdı yapar ki hata yaparsanız oyunu geri sarabilirsiniz.&lt;br&gt; &lt;b&gt;Geri Sarma Kayıt Aralığı:&lt;/b&gt; Hangi aralıkla geri sarma durum kayıtları oluşturulacağını ayarlar.Ne kadar üyksek ise o kadar performans düşüşü olur&lt;br&gt; &lt;b&gt;Geri sarma tampon bellek boyutu:&lt;/b&gt; Hafızada kaç tane geri sarma durum kayıdı tutulacağını ayarlar. Ne kadar fazla ise o kadar hafıza gerekir.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="94"/>
+        <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Runahead</source>
         <translation>İleriyi Hesaplamak</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="95"/>
+        <location filename="../emulationsettingswidget.cpp" line="111"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Konsolun gelecekte ne yapacağını hesaplayarak girdi gecikmesini düşürür. Çok güçlü bir sistem gerektirir.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="108"/>
+        <location filename="../emulationsettingswidget.cpp" line="124"/>
         <source>Use Global Setting [Unlimited]</source>
         <translation>Use Global Setting [Sınırsız]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="110"/>
+        <location filename="../emulationsettingswidget.cpp" line="126"/>
         <source>Use Global Setting [%1%]</source>
         <translation>Evrensel Ayarı Kullan [%1%]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="113"/>
+        <location filename="../emulationsettingswidget.cpp" line="129"/>
         <source>Unlimited</source>
         <translation>Sınrısız</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="119"/>
+        <location filename="../emulationsettingswidget.cpp" line="135"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
     <message numerus="yes">
-        <location filename="../emulationsettingswidget.cpp" line="180"/>
+        <location filename="../emulationsettingswidget.cpp" line="196"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
         <translation>
             <numerusform>%n kare geri sar, %1 saniyesi %2MB hafıza ve %3MB video hafızası gerektirir.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="191"/>
+        <location filename="../emulationsettingswidget.cpp" line="207"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>Geri sarma, ileriyi hesaplama açıldığı için kapatıldı. İleri sarma sistem gereksinimlerini bayağı yükseltir.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="197"/>
+        <location filename="../emulationsettingswidget.cpp" line="213"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Geri sarma açık değil. Aklınızda olsun ki geri sarma, sistem gereksinimlerini yükseltebilir.</translation>
     </message>
@@ -4970,13 +5942,13 @@ Başarımlar: %5 (%6)
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="58"/>
-        <location filename="../enhancementsettingswidget.cpp" line="63"/>
+        <location filename="../enhancementsettingswidget.cpp" line="77"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>Kaliteli Renk Çizimi (24-Bit,Titremeyi Kapatır)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="65"/>
-        <location filename="../enhancementsettingswidget.cpp" line="70"/>
+        <location filename="../enhancementsettingswidget.cpp" line="84"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Orantılı Titreme (Renk titreme desenini çözünürlüğe büyütür)</translation>
     </message>
@@ -4991,104 +5963,125 @@ Başarımlar: %5 (%6)
         <translation>Yazılımsal çizici readback (VRAM&apos;dan CPU&apos;ya transferler için paralel çalış)</translation>
     </message>
     <message>
+        <location filename="../enhancementsettingswidget.ui" line="201"/>
+        <location filename="../enhancementsettingswidget.cpp" line="126"/>
+        <source>Perspective Correct Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Multisample Antialiasing:</source>
         <translation type="vanished">Kenar Yumuşatma:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="89"/>
+        <location filename="../enhancementsettingswidget.ui" line="116"/>
         <source>Display Enhancements</source>
         <translation>Ekran İyileştirmeleri</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="95"/>
-        <location filename="../enhancementsettingswidget.cpp" line="52"/>
+        <location filename="../enhancementsettingswidget.ui" line="122"/>
+        <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>İnterlacingi Kapat (Progressive Çizim Zorla)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="102"/>
-        <location filename="../enhancementsettingswidget.cpp" line="73"/>
+        <location filename="../enhancementsettingswidget.ui" line="129"/>
+        <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>NTSC zamanlamalarını zorla (PAL&apos;da 60 Hertz)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="109"/>
+        <location filename="../enhancementsettingswidget.ui" line="136"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>24 Bit Görüntüde 4:3 en boy oranını zorla (Video ara sahnelerde geniş ekranı kapat)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="116"/>
+        <location filename="../enhancementsettingswidget.ui" line="143"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
         <translation>24 Bit Gösterim İçin Renk Yumuşatma (Video ara sahnelerdeki kare kareliği düzeltir)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="126"/>
+        <location filename="../enhancementsettingswidget.ui" line="153"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (Çarpık Yamuk Şekil Düzeltme Sistemi)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="132"/>
-        <location filename="../enhancementsettingswidget.cpp" line="101"/>
+        <location filename="../enhancementsettingswidget.ui" line="166"/>
+        <location filename="../enhancementsettingswidget.cpp" line="122"/>
+        <source>Perspective Correct Textures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="173"/>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Geometry Correction</source>
         <translation>Geometri Düzeltme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="139"/>
-        <location filename="../enhancementsettingswidget.cpp" line="104"/>
+        <location filename="../enhancementsettingswidget.ui" line="159"/>
+        <location filename="../enhancementsettingswidget.cpp" line="119"/>
         <source>Culling Correction</source>
         <translation>Model Es Geçmeyi Kapat</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="146"/>
-        <location filename="../enhancementsettingswidget.cpp" line="107"/>
         <source>Texture Correction</source>
-        <translation>Kaplama Düzeltme</translation>
+        <translation type="vanished">Kaplama Düzeltme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="153"/>
-        <location filename="../enhancementsettingswidget.cpp" line="115"/>
+        <location filename="../enhancementsettingswidget.ui" line="194"/>
+        <location filename="../enhancementsettingswidget.cpp" line="134"/>
         <source>Preserve Projection Precision</source>
         <translation>Model Döşeme Kalitesini Koru</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="160"/>
-        <location filename="../enhancementsettingswidget.cpp" line="111"/>
+        <location filename="../enhancementsettingswidget.ui" line="187"/>
+        <location filename="../enhancementsettingswidget.cpp" line="130"/>
         <source>Depth Buffer (Low Compatibility)</source>
         <translation>Derinlik Verisi (Düşük Uyumluluk)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="167"/>
-        <location filename="../enhancementsettingswidget.cpp" line="117"/>
+        <location filename="../enhancementsettingswidget.ui" line="86"/>
+        <source>Downsampling:</source>
+        <translation type="unfinished">Downsampling:</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="98"/>
+        <source>x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.ui" line="180"/>
+        <location filename="../enhancementsettingswidget.cpp" line="136"/>
         <source>CPU Mode (Very Slow)</source>
         <translation>CPU Modu (Çok Yavaş)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="52"/>
-        <location filename="../enhancementsettingswidget.cpp" line="63"/>
-        <location filename="../enhancementsettingswidget.cpp" line="73"/>
-        <location filename="../enhancementsettingswidget.cpp" line="80"/>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
-        <location filename="../enhancementsettingswidget.cpp" line="91"/>
-        <location filename="../enhancementsettingswidget.cpp" line="97"/>
-        <location filename="../enhancementsettingswidget.cpp" line="101"/>
-        <location filename="../enhancementsettingswidget.cpp" line="111"/>
-        <location filename="../enhancementsettingswidget.cpp" line="115"/>
-        <location filename="../enhancementsettingswidget.cpp" line="117"/>
+        <location filename="../enhancementsettingswidget.cpp" line="66"/>
+        <location filename="../enhancementsettingswidget.cpp" line="77"/>
+        <location filename="../enhancementsettingswidget.cpp" line="87"/>
+        <location filename="../enhancementsettingswidget.cpp" line="94"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
+        <location filename="../enhancementsettingswidget.cpp" line="106"/>
+        <location filename="../enhancementsettingswidget.cpp" line="112"/>
+        <location filename="../enhancementsettingswidget.cpp" line="116"/>
+        <location filename="../enhancementsettingswidget.cpp" line="126"/>
+        <location filename="../enhancementsettingswidget.cpp" line="130"/>
+        <location filename="../enhancementsettingswidget.cpp" line="134"/>
+        <location filename="../enhancementsettingswidget.cpp" line="136"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="53"/>
+        <location filename="../enhancementsettingswidget.cpp" line="67"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Çizimi ve gösterimi progressive çizmeye zolra. &lt;br&gt;480interlaced oyunlardaki çizgi çizgi görüntüyü düzeltir. Genellike zarar gelmez.&lt;br&gt; &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="58"/>
+        <location filename="../enhancementsettingswidget.cpp" line="72"/>
         <source>Resolution Scale</source>
         <translation>Çözünürlük Kalitesi</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <location filename="../enhancementsettingswidget.cpp" line="73"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>Bunu yükseltmek 3D modellerin çizimini iyileştirir. Sadece donanım çizicilerinde çalışır. &lt;br&gt;Genellike zarar gelmez ve oyunlar çok daha güzel gözükür. Çözünürlük yükseltmek güçlü bir grafik kartı gerektirir.</translation>
     </message>
@@ -5097,114 +6090,161 @@ Başarımlar: %5 (%6)
         <translation type="vanished">Kenar Yumuşatma</translation>
     </message>
     <message>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
         <source>Disabled</source>
-        <translation type="vanished">Kapalı</translation>
+        <translation>Kapalı</translation>
     </message>
     <message>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
         <translation type="vanished">3 Boyutlu nesneleri çizmek için kenar yumuşatma kullan. Pürüzlü çıkan model kenarları çözünürlük yükseltmeye göre daha az bir performans kaybıyla iyileştirir ama bazı oyunlarda çizim hataları oluşturabilir. Sadece donanımsal çiziciler deskteler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="64"/>
+        <location filename="../enhancementsettingswidget.cpp" line="59"/>
+        <source>Downsampling</source>
+        <translation type="unfinished">Downsampling</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="60"/>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
+        <translation type="unfinished">Çizilen kareleri göstermeden önce downsampling yapar. 2 boyut ve 3 boyut çizimleri birlikte kullanan oyunlarda işe yarar, ama sadece 3 boyutlu çizim kullanan oyunlarda kapatılmalıdır. Sadece donanımsal çizicilerde kullanılabilir.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="62"/>
+        <source>Downsampling Display Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="62"/>
+        <source>1x</source>
+        <translation type="unfinished">1 Katı</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="63"/>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="78"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
         <translation>Konsolun renk titreme sistemini kapatıp onun yerine tam çözünürlükte renk hesaplaması yapar. Renk geçişlerini iyileştirsede bazı modellerin doku keskinliğini düşürür. Çoğu oyun ile uyumlu olsa da bazı oyunlarda efektler kırık çıkabilir. Sadece donanımsal çiziciler deskteler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="70"/>
-        <location filename="../enhancementsettingswidget.cpp" line="104"/>
-        <location filename="../enhancementsettingswidget.cpp" line="107"/>
+        <location filename="../enhancementsettingswidget.cpp" line="84"/>
+        <location filename="../enhancementsettingswidget.cpp" line="119"/>
+        <location filename="../enhancementsettingswidget.cpp" line="122"/>
         <source>Checked</source>
         <translation>Seçili</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="71"/>
+        <location filename="../enhancementsettingswidget.cpp" line="85"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
         <translation>Renk titreme desenini ekran çözünürlüğüne gerer. Renk titreme desenini yüksel çözünürlüklerde daha göze batıcı yapar. &lt;br&gt;Genellike zarar gelmez ama sadece donanımsal çiziciler destekler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="74"/>
+        <location filename="../enhancementsettingswidget.cpp" line="88"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>Konsol PAL modunda çalışırken NTSC 60 Hertz kare zamanlamalarını kullanır. &lt;br&gt;Hızını kare saniye değerine göre ayarlayan oyunlar 17% daha hızlı çalışır. &lt;br&gt;Değişken kare saniye hızı olan oyunlarda oyunun hızını etkileyemeyebilir.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="80"/>
+        <location filename="../enhancementsettingswidget.cpp" line="94"/>
         <source>Force 4:3 For 24-bit Display</source>
         <translation>24 Bit Ekranda 4:3 En Boy Oranını Zorla</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="81"/>
+        <location filename="../enhancementsettingswidget.cpp" line="95"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>24 Bit içerik gösterilince 4:3 en boy oranına geçer. Genellike video ara sahneler gibi.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="82"/>
+        <location filename="../enhancementsettingswidget.cpp" line="96"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
         <translation>24 Bit Gösterim İçin Renk Yumuşatma</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="83"/>
+        <location filename="../enhancementsettingswidget.cpp" line="97"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
         <translation>Renkler değişince oluşan kare kare görüntüyü yumuşatır genellikle video ara sahnelerde mesela. Sadece donanımsal çiziciler destekler.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="86"/>
+        <location filename="../enhancementsettingswidget.cpp" line="100"/>
         <source>Texture Filtering</source>
         <translation>Doku Süzme</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="88"/>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation>Modellerdeki kare kare olan dokuları doku süzme kullanarak yumuşatır. &lt;br&gt;Yüksek çizim çözünürlüklerinde daha etkilidir. Sadece donanımsal çizicilerde çalışır.</translation>
+        <location filename="../enhancementsettingswidget.cpp" line="102"/>
+        <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="91"/>
+        <location filename="../enhancementsettingswidget.cpp" line="123"/>
+        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="127"/>
+        <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
+        <translation type="vanished">Modellerdeki kare kare olan dokuları doku süzme kullanarak yumuşatır. &lt;br&gt;Yüksek çizim çözünürlüklerinde daha etkilidir. Sadece donanımsal çizicilerde çalışır.</translation>
+    </message>
+    <message>
+        <location filename="../enhancementsettingswidget.cpp" line="106"/>
         <source>Widescreen Hack</source>
         <translation>Geniş Ekran Hilesi</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="92"/>
+        <location filename="../enhancementsettingswidget.cpp" line="107"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Model koordinatlarını geniş ekrana uyarlar ve basitinden daha geniş bir görüş alanı verir. &lt;br&gt;2 Boyutlu oyunlar yada önceden hazırlanmış arka plan kullanan oyunlar için bozulma yapabilir. &lt;br&gt;&lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="97"/>
+        <location filename="../enhancementsettingswidget.cpp" line="112"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Readback Tekrarlı Çizim İçin Yazılımsal Çizici Kullan</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="98"/>
+        <location filename="../enhancementsettingswidget.cpp" line="113"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Readback VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="102"/>
+        <location filename="../enhancementsettingswidget.cpp" line="117"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Titreyen modeller ve yamuk çıkan dokuları düzeltir. &lt;br&gt;Sadece donanımsal çizicilerle çalışır &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="105"/>
+        <location filename="../enhancementsettingswidget.cpp" line="120"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>Model es geçme çözünürlüğünü yükselterek modellerdeki yarık sorunlarını çözer. Geometri düzeltme açık olmalıdır.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="108"/>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Perspektif odaklı olarak doku koordinatları ve renkleri hesaplanarak eğik ve büzük dokular düzeltilir. Geometri düzeltmesi açık olmalıdır.</translation>
+        <translation type="vanished">Perspektif odaklı olarak doku koordinatları ve renkleri hesaplanarak eğik ve büzük dokular düzeltilir. Geometri düzeltmesi açık olmalıdır.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="112"/>
+        <location filename="../enhancementsettingswidget.cpp" line="131"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
         <translation>Modellerin üst üste binip yanıp sönme yapmasını PGXP sisteminin koordinat verilerini kullanarak durdurmaya çalışır. Çoğu oyunla tam uyumlu değildir ama bazı oyunlar iyi yararlanır ve bazı oyunlar ise ince ayar ister.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="116"/>
+        <location filename="../enhancementsettingswidget.cpp" line="135"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>PGXP sisteminin hassasiyetini yükseltir. Bazı oyunlar için işe yarar.</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.cpp" line="118"/>
+        <location filename="../enhancementsettingswidget.cpp" line="137"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
         <translation>Tüm komutlar için PGXP sistemini kullanır. Bazı oyunlar için gereklidir ve performansı düşürür.</translation>
+    </message>
+</context>
+<context>
+    <name>Error</name>
+    <message>
+        <location filename="../../util/opengl_device.cpp" line="445"/>
+        <source>Both texture buffers and SSBOs are not supported, or are of inadequate size.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5280,19 +6320,3041 @@ Başarımlar: %5 (%6)
     </message>
 </context>
 <context>
+    <name>FullscreenUI</name>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6762"/>
+        <source>${title}: Title of the game.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6763"/>
+        <source>1 Frame</source>
+        <translation type="unfinished">1 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6764"/>
+        <source>10 Frames</source>
+        <translation type="unfinished">10 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6765"/>
+        <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6766"/>
+        <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6767"/>
+        <source>10x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6768"/>
+        <source>10x (20x Speed)</source>
+        <translation type="unfinished">10x (20x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6769"/>
+        <source>11x</source>
+        <translation type="unfinished">11 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6770"/>
+        <source>125% [75 FPS (NTSC) / 62 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6771"/>
+        <source>12x</source>
+        <translation type="unfinished">12 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6772"/>
+        <source>13x</source>
+        <translation type="unfinished">13 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6773"/>
+        <source>14x</source>
+        <translation type="unfinished">14 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6774"/>
+        <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6775"/>
+        <source>15x</source>
+        <translation type="unfinished">15 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6776"/>
+        <source>16x</source>
+        <translation type="unfinished">16 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6777"/>
+        <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6778"/>
+        <source>1x</source>
+        <translation type="unfinished">1 Katı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6779"/>
+        <source>2 Frames</source>
+        <translation type="unfinished">2 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6780"/>
+        <source>20% [12 FPS (NTSC) / 10 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6781"/>
+        <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6782"/>
+        <source>250% [150 FPS (NTSC) / 125 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6783"/>
+        <source>2x</source>
+        <translation type="unfinished">10x {2x?}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6784"/>
+        <source>2x (Quad Speed)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6785"/>
+        <source>3 Frames</source>
+        <translation type="unfinished">3 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6786"/>
+        <source>30% [18 FPS (NTSC) / 15 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6787"/>
+        <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6788"/>
+        <source>350% [210 FPS (NTSC) / 175 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6789"/>
+        <source>3x</source>
+        <translation type="unfinished">3x</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6790"/>
+        <source>3x (6x Speed)</source>
+        <translation type="unfinished">3x (6x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6791"/>
+        <source>3x (for 720p)</source>
+        <translation type="unfinished">3 Katı (720p)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6792"/>
+        <source>4 Frames</source>
+        <translation type="unfinished">4 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6793"/>
+        <source>40% [24 FPS (NTSC) / 20 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6794"/>
+        <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6795"/>
+        <source>450% [270 FPS (NTSC) / 225 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6796"/>
+        <source>4x</source>
+        <translation type="unfinished">10x {4x?}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6797"/>
+        <source>4x (8x Speed)</source>
+        <translation type="unfinished">4x (8x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6798"/>
+        <source>5 Frames</source>
+        <translation type="unfinished">5 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6799"/>
+        <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6800"/>
+        <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6801"/>
+        <source>5x</source>
+        <translation type="unfinished">5x</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6802"/>
+        <source>5x (10x Speed)</source>
+        <translation type="unfinished">5x (10x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6803"/>
+        <source>5x (for 1080p)</source>
+        <translation type="unfinished">5 Katı (1080p)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6804"/>
+        <source>6 Frames</source>
+        <translation type="unfinished">6 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6805"/>
+        <source>60% [36 FPS (NTSC) / 30 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6806"/>
+        <source>600% [360 FPS (NTSC) / 300 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6807"/>
+        <source>6x</source>
+        <translation type="unfinished">6x</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6808"/>
+        <source>6x (12x Speed)</source>
+        <translation type="unfinished">6x (12x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6809"/>
+        <source>6x (for 1440p)</source>
+        <translation type="unfinished">6 Katı (1440p)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6810"/>
+        <source>7 Frames</source>
+        <translation type="unfinished">7 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6811"/>
+        <source>70% [42 FPS (NTSC) / 35 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6812"/>
+        <source>700% [420 FPS (NTSC) / 350 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6813"/>
+        <source>7x</source>
+        <translation type="unfinished">10x {7x?}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6814"/>
+        <source>7x (14x Speed)</source>
+        <translation type="unfinished">7x (14x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6815"/>
+        <source>8 Frames</source>
+        <translation type="unfinished">8 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6816"/>
+        <source>80% [48 FPS (NTSC) / 40 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6817"/>
+        <source>800% [480 FPS (NTSC) / 400 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6818"/>
+        <source>8x</source>
+        <translation type="unfinished">10x {8x?}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6819"/>
+        <source>8x (16x Speed)</source>
+        <translation type="unfinished">8x (16x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6820"/>
+        <source>9 Frames</source>
+        <translation type="unfinished">9 Kare</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6821"/>
+        <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6822"/>
+        <source>900% [540 FPS (NTSC) / 450 FPS (PAL)]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6823"/>
+        <source>9x</source>
+        <translation type="unfinished">9x</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6824"/>
+        <source>9x (18x Speed)</source>
+        <translation type="unfinished">9x (18x)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6825"/>
+        <source>9x (for 4K)</source>
+        <translation type="unfinished">9 Katı (4K)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6826"/>
+        <source>A memory card with the name &apos;{}&apos; already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6827"/>
+        <source>A resume save state created at %s was found.
+
+Do you want to load this save and continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6828"/>
+        <source>About DuckStation</source>
+        <translation type="unfinished">Duckstation Hakkında</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6829"/>
+        <source>Account</source>
+        <translation type="unfinished">Hesap</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6830"/>
+        <source>Achievement Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6831"/>
+        <source>Achievements</source>
+        <translation type="unfinished">Başarımlar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6832"/>
+        <source>Achievements Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6833"/>
+        <source>Achievements are not enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6834"/>
+        <source>Add Search Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6835"/>
+        <source>Add Shader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6836"/>
+        <source>Adds a new directory to the game search list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6837"/>
+        <source>Adds a new shader to the chain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6838"/>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <translation type="unfinished">PGXP sisteminin hassasiyetini yükseltir. Bazı oyunlar için işe yarar.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6839"/>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync and Audio Resampling are enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6840"/>
+        <source>Advanced Settings</source>
+        <translation type="unfinished">Gelişmiş Ayarlar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6841"/>
+        <source>All Time: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6842"/>
+        <source>Allow Booting Without SBI File</source>
+        <translation type="unfinished">Allow Booting Without SBI File</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6843"/>
+        <source>Allows loading protected games without subchannel information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6844"/>
+        <source>Apply Image Patches</source>
+        <translation type="unfinished">CD Yamalarını Uygula</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6845"/>
+        <source>Apply Per-Game Settings</source>
+        <translation type="unfinished">Oyuna Özel Ayarlar Uygula</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6846"/>
+        <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6847"/>
+        <source>Aspect Ratio</source>
+        <translation type="unfinished">En Boy Oranı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6848"/>
+        <source>Attempts to map the selected port to a chosen controller.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6849"/>
+        <source>Audio Backend</source>
+        <translation type="unfinished">Ses Arayüzü</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6850"/>
+        <source>Audio Settings</source>
+        <translation type="unfinished">Ses Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6851"/>
+        <source>Auto-Detect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6852"/>
+        <source>Automatic Mapping</source>
+        <translation type="unfinished">Otomatik Tuş Atama</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6853"/>
+        <source>Automatic based on window size</source>
+        <translation type="unfinished">Pencere boyutuna göre otomatik</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6854"/>
+        <source>Automatic mapping completed for {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6855"/>
+        <source>Automatic mapping failed for {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6856"/>
+        <source>Automatic mapping failed, no devices are available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6857"/>
+        <source>Automatically Load Cheats</source>
+        <translation type="unfinished">Hileleri Otomatik Yükle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6858"/>
+        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6859"/>
+        <source>Automatically loads and applies cheats on game start.</source>
+        <translation type="unfinished">Oyun başlangıcında otomatik olarak hileler yüklenir ve uygulanır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6860"/>
+        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
+        <translation type="unfinished">Oyun kapatılınca durum kayıdı alınıp alınmayacağını ayarlar. Böylece kalınan yerden devam edilebilir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6861"/>
+        <source>Automatically switches to fullscreen mode when the program is started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6862"/>
+        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6863"/>
+        <source>BIOS Directory</source>
+        <translation type="unfinished">BIOS  Dizini</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6864"/>
+        <source>BIOS Selection</source>
+        <translation type="unfinished">Bios Seçimi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6865"/>
+        <source>BIOS Settings</source>
+        <translation type="unfinished">BIOS Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6866"/>
+        <source>BIOS for {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6867"/>
+        <source>BIOS to use when emulating {} consoles.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6868"/>
+        <source>Back To Pause Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6869"/>
+        <source>Backend Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6870"/>
+        <source>Behavior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6871"/>
+        <source>Borderless Fullscreen</source>
+        <translation type="unfinished">Kenarsız Tam Ekran</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6872"/>
+        <source>Buffer Size</source>
+        <translation type="unfinished">Tampon Hafıza Boyutu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6873"/>
+        <source>CD-ROM Emulation</source>
+        <translation type="unfinished">CD-ROM Emülasyonu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6874"/>
+        <source>CPU Emulation</source>
+        <translation type="unfinished">CPU Emülasyonu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6875"/>
+        <source>CPU Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6876"/>
+        <source>Cancel</source>
+        <translation type="unfinished">İptal</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6877"/>
+        <source>Change Disc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6878"/>
+        <source>Change settings for the emulator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6879"/>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6880"/>
+        <source>Cheat List</source>
+        <translation type="unfinished">Hile Listesi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6881"/>
+        <source>Chooses the backend to use for rendering the console/game visuals.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6882"/>
+        <source>Chroma Smoothing For 24-Bit Display</source>
+        <translation type="unfinished">24 Bit Gösterim İçin Renk Yumuşatma</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6883"/>
+        <source>Clean Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6884"/>
+        <source>Clear Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6885"/>
+        <source>Clear Shaders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6886"/>
+        <source>Clears a shader from the chain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6887"/>
+        <source>Clears all settings set for this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6888"/>
+        <source>Clears the mask/transparency bit in VRAM write dumps.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6889"/>
+        <source>Close</source>
+        <translation type="unfinished">Kapat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6890"/>
+        <source>Close Game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6891"/>
+        <source>Close Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6892"/>
+        <source>Compatibility Rating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6893"/>
+        <source>Compatibility: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6894"/>
+        <source>Confirm Power Off</source>
+        <translation type="unfinished">Kapatmayı Onaylayın</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6895"/>
+        <source>Console Settings</source>
+        <translation type="unfinished">Konsol Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6896"/>
+        <source>Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6897"/>
+        <source>Controller Port {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6898"/>
+        <source>Controller Port {} Macros</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6899"/>
+        <source>Controller Port {} Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6900"/>
+        <source>Controller Port {}{}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6901"/>
+        <source>Controller Port {}{} Macros</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6902"/>
+        <source>Controller Port {}{} Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6903"/>
+        <source>Controller Settings</source>
+        <translation type="unfinished">Kol Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6904"/>
+        <source>Controller Type</source>
+        <translation type="unfinished">Kol Tipi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6905"/>
+        <source>Controller settings reset to default.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6906"/>
+        <source>Controls</source>
+        <translation type="unfinished">Kontroller</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6907"/>
+        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+        <translation type="unfinished">İleri sarma işlemi sırasında çalınacak sesin şiddetini ayarlar.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6908"/>
+        <source>Controls the volume of the audio played on the host.</source>
+        <translation type="unfinished">Sistemde çalınacak sesin şiddetini ayarlar.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6909"/>
+        <source>Copies the current global settings to this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6910"/>
+        <source>Copies the global controller configuration to this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6911"/>
+        <source>Copy Global Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6912"/>
+        <source>Copy Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6913"/>
+        <source>Cover Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6914"/>
+        <source>Covers Directory</source>
+        <translation type="unfinished">Kapaklar Dizini</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6915"/>
+        <source>Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6916"/>
+        <source>Create Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6917"/>
+        <source>Create Save State Backups</source>
+        <translation type="unfinished">Durum Kaydı Yedekleri Oluştur</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6918"/>
+        <source>Creates a new memory card file or folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6919"/>
+        <source>Crop Mode</source>
+        <translation type="unfinished">Kırpma Modu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6920"/>
+        <source>Culling Correction</source>
+        <translation type="unfinished">Model Es Geçmeyi Kapat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6921"/>
+        <source>Current Game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6922"/>
+        <source>Debugging Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6923"/>
+        <source>Default</source>
+        <translation type="unfinished">Varsayılan</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6924"/>
+        <source>Default Boot</source>
+        <translation type="unfinished">Varsayılan Başlatma</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6925"/>
+        <source>Default View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6926"/>
+        <source>Default: Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6927"/>
+        <source>Default: Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6928"/>
+        <source>Delete Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6929"/>
+        <source>Delete State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6930"/>
+        <source>Depth Buffer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6931"/>
+        <source>Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6932"/>
+        <source>Details unavailable for game not scanned in game list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6933"/>
+        <source>Determines how large the on-screen messages and monitor are.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6934"/>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6935"/>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6936"/>
+        <source>Determines how the emulated CPU executes instructions.</source>
+        <translation type="unfinished">İşlemcinin türünü belirler.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6937"/>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6938"/>
+        <source>Determines quality of audio when not running at 100% speed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6939"/>
+        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6940"/>
+        <source>Determines the emulated hardware type.</source>
+        <translation type="unfinished">Konsolun Bölgesini Seçer.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6941"/>
+        <source>Determines the position on the screen when black borders must be added.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6942"/>
+        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
+        <translation type="unfinished">Kısayol tuşuna basılınca oyunu kapatmak için onay penceresinin açılıp açılmayacağını ayarlar.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6943"/>
+        <source>Device Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6944"/>
+        <source>Disable All Enhancements</source>
+        <translation type="unfinished">Tüm İyileştirmeleri Kapat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6945"/>
+        <source>Disable Interlacing</source>
+        <translation type="unfinished">Interlacing Kapat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6946"/>
+        <source>Disable Subdirectory Scanning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6947"/>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6948"/>
+        <source>Disables dithering and uses the full 8 bits per channel of color information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6949"/>
+        <source>Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6950"/>
+        <source>Discord Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6951"/>
+        <source>Display FPS Limit</source>
+        <translation type="unfinished">FPS Sınırını Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6952"/>
+        <source>Display Settings</source>
+        <translation type="unfinished">Ekran Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6953"/>
+        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6954"/>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6955"/>
+        <source>Double-Click Toggles Fullscreen</source>
+        <translation type="unfinished">Çift Tıkla Tam Ekranı Aç/Kapa</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6956"/>
+        <source>Download Covers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6957"/>
+        <source>Downloads covers from a user-specified URL template.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6958"/>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6959"/>
+        <source>Downsampling</source>
+        <translation type="unfinished">Downsampling</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6960"/>
+        <source>Downsampling Display Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6961"/>
+        <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6962"/>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6963"/>
+        <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6964"/>
+        <source>Dump Replaceable VRAM Writes</source>
+        <translation type="unfinished">Dump Replaceable VRAM Writes</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6965"/>
+        <source>Emulation Settings</source>
+        <translation type="unfinished">Emülasyon Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6966"/>
+        <source>Emulation Speed</source>
+        <translation type="unfinished">Emülasyon Hızı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6967"/>
+        <source>Enable 8MB RAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6968"/>
+        <source>Enable Achievements</source>
+        <translation type="unfinished">Başarımları Etkinleştir</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6969"/>
+        <source>Enable Discord Presence</source>
+        <translation type="unfinished">Oyun bilgisini Discord&apos;a gönder</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6970"/>
+        <source>Enable Fast Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6971"/>
+        <source>Enable In-Game Overlays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6972"/>
+        <source>Enable Overclocking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6973"/>
+        <source>Enable PGXP Vertex Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6974"/>
+        <source>Enable Post Processing</source>
+        <translation type="unfinished">Görsel Efektleri Aç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6975"/>
+        <source>Enable Recompiler Block Linking</source>
+        <translation type="unfinished">Enable Recompiler Block Linking</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6976"/>
+        <source>Enable Recompiler ICache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6977"/>
+        <source>Enable Recompiler Memory Exceptions</source>
+        <translation type="unfinished">Enable Recompiler Memory Exceptions</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6978"/>
+        <source>Enable Region Check</source>
+        <translation type="unfinished">Bölge Kontrolünü Aç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6979"/>
+        <source>Enable Rewinding</source>
+        <translation type="unfinished">Geri Sarmayı Aç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6980"/>
+        <source>Enable SDL Input Source</source>
+        <translation type="unfinished">SDL Girdi Kaynağı Aç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6981"/>
+        <source>Enable Subdirectory Scanning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6982"/>
+        <source>Enable TTY Logging</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6983"/>
+        <source>Enable VRAM Write Texture Replacement</source>
+        <translation type="unfinished">Enable VRAM Write Texture Replacement</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6984"/>
+        <source>Enable VSync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6985"/>
+        <source>Enable XInput Input Source</source>
+        <translation type="unfinished">XInput Girdi Kaynağını Aç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6986"/>
+        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6987"/>
+        <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6988"/>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6989"/>
+        <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6990"/>
+        <source>Enables more precise frame pacing at the cost of battery life.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6991"/>
+        <source>Enables the replacement of background textures in supported games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6992"/>
+        <source>Encore Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6993"/>
+        <source>Enhancements</source>
+        <translation type="unfinished">İyileştirmeler</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6994"/>
+        <source>Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6995"/>
+        <source>Enter the name of the input profile you wish to create.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6996"/>
+        <source>Enter the name of the memory card you wish to create.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6997"/>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6998"/>
+        <source>Execution Mode</source>
+        <translation type="unfinished">CPU Tipi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6999"/>
+        <source>Exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7000"/>
+        <source>Exit And Save State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7001"/>
+        <source>Exit Without Saving</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7002"/>
+        <source>Exits the program.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7003"/>
+        <source>Failed to copy text to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7004"/>
+        <source>Failed to create memory card &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7005"/>
+        <source>Failed to delete save state.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7006"/>
+        <source>Failed to delete {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7007"/>
+        <source>Failed to load &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7008"/>
+        <source>Failed to load shader {}. It may be invalid.
+Error was:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7009"/>
+        <source>Failed to save input profile &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7010"/>
+        <source>Fast Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7011"/>
+        <source>Fast Forward Speed</source>
+        <translation type="unfinished">İleri Sarma Hızı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7012"/>
+        <source>Fast Forward Volume</source>
+        <translation type="unfinished">Sesi İleri Sarma</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7013"/>
+        <source>File Title</source>
+        <translation type="unfinished">Dosya İsmi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7014"/>
+        <source>Force 4:3 For 24-Bit Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7015"/>
+        <source>Force NTSC Timings</source>
+        <translation type="unfinished">NTSC Zamanlamalarını Zorla</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7016"/>
+        <source>Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their &quot;normal&quot; speeds, while others will break.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7017"/>
+        <source>Forces a full rescan of all games previously identified.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7018"/>
+        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
+        <translation type="unfinished">Hem müzik CD&apos;si formatındaki sesleri hem Playstation formatindeki sesleri zorla kapatır. Bazı oyunlardaki müzikleri kapatmak için işe yarayabilir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7019"/>
+        <source>From File...</source>
+        <translation type="unfinished">Dosyadan...</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7020"/>
+        <source>Fullscreen Resolution</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7021"/>
+        <source>GPU Adapter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7022"/>
+        <source>GPU Renderer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7023"/>
+        <source>GPU adapter will be applied after restarting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7024"/>
+        <source>Game Grid</source>
+        <translation type="unfinished">Oyun Izgarası</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7025"/>
+        <source>Game List</source>
+        <translation type="unfinished">Oyun Listesi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7026"/>
+        <source>Game List Settings</source>
+        <translation type="unfinished">Oyun Listesi Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7027"/>
+        <source>Game Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7028"/>
+        <source>Game Quick Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7029"/>
+        <source>Game Slot {0}##game_slot_{0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7030"/>
+        <source>Game compatibility rating copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7031"/>
+        <source>Game not loaded or no RetroAchievements available.</source>
+        <translation type="unfinished">Oyun açık değil ya da RetroAchievements müsait değil.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7032"/>
+        <source>Game path copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7033"/>
+        <source>Game region copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7034"/>
+        <source>Game serial copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7035"/>
+        <source>Game settings have been cleared for &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7036"/>
+        <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7037"/>
+        <source>Game title copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7038"/>
+        <source>Game type copied to clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7039"/>
+        <source>Game: {} ({})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7040"/>
+        <source>Genre: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7041"/>
+        <source>GitHub Repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7042"/>
+        <source>Global Slot {0} - {1}##global_slot_{0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7043"/>
+        <source>Global Slot {0}##global_slot_{0}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7044"/>
+        <source>Hardcore Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7045"/>
+        <source>Hardcore mode will be enabled on next game restart.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7046"/>
+        <source>Hide Cursor In Fullscreen</source>
+        <translation type="unfinished">Tam Ekran iken İmleci Gizle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7047"/>
+        <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
+        <translation type="unfinished">Emülatör tam ekran olunca imleci gizler.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7048"/>
+        <source>Hotkey Settings</source>
+        <translation type="unfinished">Kısayol Tuşu Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7049"/>
+        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7050"/>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7051"/>
+        <source>Identifies any new files added to the game directories.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7052"/>
+        <source>If not enabled, the current post processing chain will be ignored.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7053"/>
+        <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7054"/>
+        <source>Increase Timer Resolution</source>
+        <translation type="unfinished">Increase Timer Resolution</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7055"/>
+        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7056"/>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7057"/>
+        <source>Infinite/Instantaneous</source>
+        <translation type="unfinished">Hemen/Anında</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7058"/>
+        <source>Inhibit Screensaver</source>
+        <translation type="unfinished">İşletim sisteminin ekran korucusunu engelle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7059"/>
+        <source>Input Sources</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7060"/>
+        <source>Input profile &apos;{}&apos; loaded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7061"/>
+        <source>Input profile &apos;{}&apos; saved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7062"/>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7063"/>
+        <source>Interface Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7064"/>
+        <source>Internal Resolution Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7065"/>
+        <source>Internal Resolution Screenshots</source>
+        <translation type="unfinished">Orijinal Çözünürlük Ekran Görüntüsü</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7066"/>
+        <source>Issue Tracker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7067"/>
+        <source>Last Played</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7068"/>
+        <source>Last Played: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7069"/>
+        <source>Launch a game by selecting a file/disc image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7070"/>
+        <source>Launch a game from images scanned from your game directories.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7071"/>
+        <source>Leaderboard Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7072"/>
+        <source>Leaderboards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7073"/>
+        <source>Leaderboards are not enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7074"/>
+        <source>Limits how many frames are displayed to the screen. These frames are still rendered.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7075"/>
+        <source>Load Devices From Save States</source>
+        <translation type="unfinished">Cihazları Durum Kayıtlarından Yükle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7076"/>
+        <source>Load Profile</source>
+        <translation type="unfinished">Profil Yükle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7077"/>
+        <source>Load Resume State</source>
+        <translation type="unfinished">Devam Kaydını Yükle</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7078"/>
+        <source>Load State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7079"/>
+        <source>Loads a global save state.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7080"/>
+        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7081"/>
+        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7082"/>
+        <source>Log Level</source>
+        <translation type="unfinished">Log Level</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7083"/>
+        <source>Log To Debug Console</source>
+        <translation type="unfinished">Log To Debug Console</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7084"/>
+        <source>Log To File</source>
+        <translation type="unfinished">Log To File</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7085"/>
+        <source>Log To System Console</source>
+        <translation type="unfinished">Log To System Console</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7086"/>
+        <source>Logging</source>
+        <translation type="unfinished">Logging</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7087"/>
+        <source>Logging Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7088"/>
+        <source>Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7089"/>
+        <source>Login token generated on {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7090"/>
+        <source>Logout</source>
+        <translation type="unfinished">Sistem Çıkışı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7091"/>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7092"/>
+        <source>Logs in to RetroAchievements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7093"/>
+        <source>Logs messages to duckstation.log in the user directory.</source>
+        <translation type="unfinished">Logs messages to duckstation.log in the user directory.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7094"/>
+        <source>Logs messages to the console window.</source>
+        <translation type="unfinished">Logs messages to the console window.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7095"/>
+        <source>Logs messages to the debug console where supported.</source>
+        <translation type="unfinished">Logs messages to the debug console where supported.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7096"/>
+        <source>Logs out of RetroAchievements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7097"/>
+        <source>Macro will toggle every {} frames.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7098"/>
+        <source>Macro {} Buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7099"/>
+        <source>Macro {} Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7100"/>
+        <source>Macro {} Trigger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7101"/>
+        <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7102"/>
+        <source>Memory Card Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7103"/>
+        <source>Memory Card Port {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7104"/>
+        <source>Memory Card Settings</source>
+        <translation type="unfinished">Hafıza Kartı Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7105"/>
+        <source>Memory Card {} Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7106"/>
+        <source>Memory card &apos;{}&apos; created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7107"/>
+        <source>Minimal Output Latency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7108"/>
+        <source>Move Down</source>
+        <translation type="unfinished">Aşağı Çıkar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7109"/>
+        <source>Move Up</source>
+        <translation type="unfinished">Yukarı Çıkar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7110"/>
+        <source>Moves this shader higher in the chain, applying it earlier.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7111"/>
+        <source>Moves this shader lower in the chain, applying it later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7112"/>
+        <source>Multitap Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7113"/>
+        <source>Mute All Sound</source>
+        <translation type="unfinished">Tüm Sesleri Sustur</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7114"/>
+        <source>Mute CD Audio</source>
+        <translation type="unfinished">CD Müziğini Kapat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7115"/>
+        <source>No</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7116"/>
+        <source>No Binding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7117"/>
+        <source>No Buttons Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7118"/>
+        <source>No Game Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7119"/>
+        <source>No cheats found for {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7120"/>
+        <source>No input profiles available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7121"/>
+        <source>No resume save state found.</source>
+        <translation type="unfinished">Devam Durum Kayıdı Bulunamadı.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7122"/>
+        <source>No save present in this slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7123"/>
+        <source>No save states found.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7124"/>
+        <source>None (Double Speed)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7125"/>
+        <source>None (Normal Speed)</source>
+        <translation type="unfinished">Hiç (Normal Hız)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7126"/>
+        <source>Not Logged In</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7127"/>
+        <source>Not Scanning Subdirectories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7128"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7129"/>
+        <source>OSD Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7130"/>
+        <source>On-Screen Display</source>
+        <translation type="unfinished">Ekrana Bilgi Dökümü</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7131"/>
+        <source>Open in File Browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7132"/>
+        <source>Operations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7133"/>
+        <source>Optimal Frame Pacing</source>
+        <translation type="unfinished">Kare Zamanlama Optimasyonu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7134"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7135"/>
+        <source>Output Latency</source>
+        <translation type="unfinished">Çıkış Gecikmesi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7136"/>
+        <source>Output Volume</source>
+        <translation type="unfinished">Ses Çıkış Şiddeti</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7137"/>
+        <source>Overclocking Percentage</source>
+        <translation type="unfinished">Hız Aşırtma Yüzdesi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7138"/>
+        <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7139"/>
+        <source>PGXP (Precision Geometry Transform Pipeline)</source>
+        <translation type="unfinished">PGXP (Çarpık Yamuk Şekil Düzeltme Sistemi)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7140"/>
+        <source>PGXP Depth Clear Threshold</source>
+        <translation type="unfinished">PGXP Derinlik Temizleme Sınırı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7141"/>
+        <source>PGXP Geometry Correction</source>
+        <translation type="unfinished">PGXP Geometri Düzeltmesi</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7142"/>
+        <source>PGXP Geometry Tolerance</source>
+        <translation type="unfinished">PGXP Geometri Toleransı</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7143"/>
+        <source>PGXP Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7144"/>
+        <source>Patches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7145"/>
+        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7146"/>
+        <source>Path</source>
+        <translation type="unfinished">Yol</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7147"/>
+        <source>Pause On Focus Loss</source>
+        <translation type="unfinished">Başka Pencere Seçiliyken Durdur</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7148"/>
+        <source>Pause On Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7149"/>
+        <source>Pause On Start</source>
+        <translation type="unfinished">Başlangıçta Durdur</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7150"/>
+        <source>Pauses the emulator when a game is started.</source>
+        <translation type="unfinished">Oyun başlatılınca emülatörü duraklatır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7151"/>
+        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
+        <translation type="unfinished">Pencere küçültülünce yada başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7152"/>
+        <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7153"/>
+        <source>Per-Game Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7154"/>
+        <source>Per-game controller configuration initialized with global settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7155"/>
+        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7156"/>
+        <source>Perspective Correct Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7157"/>
+        <source>Perspective Correct Textures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7158"/>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7159"/>
+        <source>Port {} Controller Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7160"/>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7161"/>
+        <source>Post-Processing Settings</source>
+        <translation type="unfinished">Görsel Efekt Ayarları</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7162"/>
+        <source>Post-processing chain cleared.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7163"/>
+        <source>Post-processing shaders reloaded.</source>
+        <translation type="unfinished">Görsel efekt shaderları tekrar yüklendi.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7164"/>
+        <source>Preload Images to RAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7165"/>
+        <source>Preload Replacement Textures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7166"/>
+        <source>Presents frames on a background thread when fast forwarding or vsync is disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7167"/>
+        <source>Preserve Projection Precision</source>
+        <translation type="unfinished">Model Döşeme Kalitesini Koru</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7168"/>
+        <source>Prevents the emulator from producing any audible sound.</source>
+        <translation type="unfinished">Emülatörün duyulabilecek şiddette ses çıkarmasını engeller.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7169"/>
+        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
+        <translation type="unfinished">Emülasyon sırasında ekran koruyucusunun ve bilgisayarın uyku moduna geçmesini engeller.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7170"/>
+        <source>Provides vibration and LED control support over Bluetooth.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7171"/>
+        <source>Push a controller button or axis now.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7172"/>
+        <source>Quick Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7173"/>
+        <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7174"/>
+        <source>Read Speedup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7175"/>
+        <source>Readahead Sectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7176"/>
+        <source>Recompiler Fast Memory Access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7177"/>
+        <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7178"/>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation type="unfinished">CD&apos;yi ayrı bir iş parçacığı olarak ele alır ve anlık donmaları azaltır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7179"/>
+        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7180"/>
+        <source>Region</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7181"/>
+        <source>Region: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7182"/>
+        <source>Release Date: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7183"/>
+        <source>Reload Shaders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7184"/>
+        <source>Reloads the shaders from disk, applying any changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7185"/>
+        <source>Remove From Chain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7186"/>
+        <source>Remove From List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7187"/>
+        <source>Removed stage {} ({}).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7188"/>
+        <source>Removes this shader from the chain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7189"/>
+        <source>Renames existing save states when saving to a backup file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7190"/>
+        <source>Rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7191"/>
+        <source>Replaces these settings with a previously saved input profile.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7192"/>
+        <source>Rescan All Games</source>
+        <translation type="unfinished">Tüm Oyunları Tekrar Tara</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7193"/>
+        <source>Reset Memory Card Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7194"/>
+        <source>Reset Play Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7195"/>
+        <source>Reset Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7196"/>
+        <source>Reset System</source>
+        <translation type="unfinished">Sisteme Reset At</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7197"/>
+        <source>Resets all configuration to defaults (including bindings).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7198"/>
+        <source>Resets memory card directory to default (user directory).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7199"/>
+        <source>Resolution change will be applied after restarting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7200"/>
+        <source>Restores the state of the system prior to the last state loaded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7201"/>
+        <source>Resume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7202"/>
+        <source>Resume Game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7203"/>
+        <source>Rewind Save Frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7204"/>
+        <source>Rewind Save Slots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7205"/>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7206"/>
+        <source>Rich presence inactive or unsupported.</source>
+        <translation type="unfinished">Durum Raporlama (Rich Presence) kapalı ya da desteklenmiyor.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7207"/>
+        <source>Runahead</source>
+        <translation type="unfinished">İleriyi Hesaplamak</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7208"/>
+        <source>Runahead/Rewind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7209"/>
+        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7210"/>
+        <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7211"/>
+        <source>Save Profile</source>
+        <translation type="unfinished">Profil Kaydet</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7212"/>
+        <source>Save Screenshot</source>
+        <translation type="unfinished">Ekran Görüntüsü Kaydet</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7213"/>
+        <source>Save State</source>
+        <translation type="unfinished">Durum Kaydı Kaydet</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7214"/>
+        <source>Save State On Exit</source>
+        <translation type="unfinished">Çıkışta Durum Kayıdı Kaydet</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7215"/>
+        <source>Saved {:%c}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7216"/>
+        <source>Saves screenshots at internal render resolution and without postprocessing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7217"/>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7218"/>
+        <source>Scaled Dithering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7219"/>
+        <source>Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7220"/>
+        <source>Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7221"/>
+        <source>Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7222"/>
+        <source>Scan For New Games</source>
+        <translation type="unfinished">Yeni Oyunlar İçin Tara</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7223"/>
+        <source>Scanning Subdirectories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7224"/>
+        <source>Screen Display</source>
+        <translation type="unfinished">Ekran</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7225"/>
+        <source>Search Directories</source>
+        <translation type="unfinished">Aranacak Dizinler</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7226"/>
+        <source>Seek Speedup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7227"/>
+        <source>Select Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7228"/>
+        <source>Select Disc Image</source>
+        <translation type="unfinished">Dosya Seç</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7229"/>
+        <source>Select Macro {} Binds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7230"/>
+        <source>Selects the GPU to use for rendering.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7231"/>
+        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
+        <translation type="unfinished">Konsolun işlemci hızını belirler.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7232"/>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7233"/>
+        <source>Selects the resolution to use in fullscreen modes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7234"/>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7235"/>
+        <source>Session: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7236"/>
+        <source>Set Input Binding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7237"/>
+        <source>Set VRAM Write Dump Alpha Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7238"/>
+        <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7239"/>
+        <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7240"/>
+        <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7241"/>
+        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7242"/>
+        <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7243"/>
+        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
+        <translation type="unfinished">Sets the verbosity of messages logged. Higher levels will log more messages.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7244"/>
+        <source>Sets which sort of memory card image will be used for slot {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7245"/>
+        <source>Setting {} binding {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7246"/>
+        <source>Settings</source>
+        <translation type="unfinished">Ayarlar</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7247"/>
+        <source>Settings and Operations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7248"/>
+        <source>Shader {} added as stage {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7249"/>
+        <source>Shared Card Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7250"/>
+        <source>Show CPU Usage</source>
+        <translation type="unfinished">İşlemci Kullanımını Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7251"/>
+        <source>Show Controller Input</source>
+        <translation type="unfinished">Kol Girişlerini Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7252"/>
+        <source>Show Enhancement Settings</source>
+        <translation type="unfinished">Show Enhancement Settings</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7253"/>
+        <source>Show FPS</source>
+        <translation type="unfinished">FPS Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7254"/>
+        <source>Show Frame Times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7255"/>
+        <source>Show GPU Usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7256"/>
+        <source>Show OSD Messages</source>
+        <translation type="unfinished">Ekrandaki Göstergeleri Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7257"/>
+        <source>Show Resolution</source>
+        <translation type="unfinished">Çözünürlüğü Göster</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7258"/>
+        <source>Show Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7259"/>
+        <source>Show Status Indicators</source>
+        <translation type="unfinished">Show Status Indicators</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7260"/>
+        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7261"/>
+        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7262"/>
+        <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7263"/>
+        <source>Shows on-screen-display messages when events occur.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7264"/>
+        <source>Shows persistent icons when turbo is active or when paused.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7265"/>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <translation type="unfinished">Anlık kol durumunu (Basılan tuşlar) sol alt köşede gösterir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7266"/>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <translation type="unfinished">Emülasyonun hızını sağ üstte yüzde olarak gösterir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7267"/>
+        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7268"/>
+        <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7269"/>
+        <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7270"/>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <translation type="unfinished">Sitemde saniyede olan kare sayısını (ya da dikey senkronları) sağ üstte gösterir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7271"/>
+        <source>Simulates the CPU&apos;s instruction cache in the recompiler. Can help with games running too fast.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7272"/>
+        <source>Simulates the region check present in original, unmodified consoles.</source>
+        <translation type="unfinished">Orijinal olan konsollardaki bölge kontrolünü simüle eder.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7273"/>
+        <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
+        <translation type="unfinished">Konsolun gelecekte ne yapacağını hesaplayarak girdi gecikmesini düşürür. Çok güçlü bir sistem gerektirir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7274"/>
+        <source>Size</source>
+        <translation type="unfinished">Dosya Boyutu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7275"/>
+        <source>Size: %.2f MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7276"/>
+        <source>Slow Boot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7277"/>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
+        <translation type="unfinished">Renkler değişince oluşan kare kare görüntüyü yumuşatır genellikle video ara sahnelerde mesela. Sadece donanımsal çiziciler destekler.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7278"/>
+        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7279"/>
+        <source>Sort By</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7280"/>
+        <source>Sort Reversed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7281"/>
+        <source>Sound Effects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7282"/>
+        <source>Spectator Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7283"/>
+        <source>Speed Control</source>
+        <translation type="unfinished">Hız Kontrolü</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7284"/>
+        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7285"/>
+        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7286"/>
+        <source>Stage {}: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7287"/>
+        <source>Start BIOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7288"/>
+        <source>Start Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7289"/>
+        <source>Start File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7290"/>
+        <source>Start Fullscreen</source>
+        <translation type="unfinished">Tam Ekran Başlat</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7291"/>
+        <source>Start the console without any disc inserted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7292"/>
+        <source>Starts the console from where it was before it was last closed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7293"/>
+        <source>Stores the current settings to an input profile.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7294"/>
+        <source>Stretch Display Vertically</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7295"/>
+        <source>Stretch Mode</source>
+        <translation type="unfinished">Germe Modu</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7296"/>
+        <source>Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7297"/>
+        <source>Summary</source>
+        <translation type="unfinished">Özet</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7298"/>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <translation type="unfinished">24 Bit içerik gösterilince 4:3 en boy oranına geçer. Genellike video ara sahneler gibi.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7299"/>
+        <source>Switches between full screen and windowed when the window is double-clicked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7300"/>
+        <source>Sync To Host Refresh Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7301"/>
+        <source>Synchronizes presentation of the console&apos;s frames to the host. Enable for smoother animations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7302"/>
+        <source>Temporarily disables all enhancements, useful when testing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7303"/>
+        <source>Test Unofficial Achievements</source>
+        <translation type="unfinished">Resmi Olmayan Başarımları Dene</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7304"/>
+        <source>Texture Dumping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7305"/>
+        <source>Texture Filtering</source>
+        <translation type="unfinished">Doku Süzme</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7306"/>
+        <source>Texture Replacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7307"/>
+        <source>The SDL input source supports most controllers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7308"/>
+        <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7309"/>
+        <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7310"/>
+        <source>The selected memory card image will be used in shared mode for this slot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7311"/>
+        <source>This game has no achievements.</source>
+        <translation type="unfinished">Bu oyunun başarımları yok.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7312"/>
+        <source>This game has no leaderboards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7313"/>
+        <source>Threaded Presentation</source>
+        <translation type="unfinished">Parçacık İşli Gösterme</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7314"/>
+        <source>Threaded Rendering</source>
+        <translation type="unfinished">Çok İş Parçacıklı Çizim</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7315"/>
+        <source>Time Played</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7316"/>
+        <source>Time Played: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7317"/>
+        <source>Timing out in {:.0f} seconds...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7318"/>
+        <source>Title</source>
+        <translation type="unfinished">İsim</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7319"/>
+        <source>Toggle Analog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7320"/>
+        <source>Toggle Fast Forward</source>
+        <translation type="unfinished">İleri Sarmayı Aç/Kapa</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7321"/>
+        <source>Toggle every %d frames</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7322"/>
+        <source>True Color Rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7323"/>
+        <source>Turbo Speed</source>
+        <translation type="unfinished">Turbo Hız</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7324"/>
+        <source>Type</source>
+        <translation type="unfinished">Tip</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7325"/>
+        <source>Undo Load State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7326"/>
+        <source>Unknown</source>
+        <translation type="unfinished">Bilinmiyor</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7327"/>
+        <source>Unlimited</source>
+        <translation type="unfinished">Sınrısız</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7328"/>
+        <source>Use Blit Swap Chain</source>
+        <translation type="unfinished">Blit Swaip Chain Sistemini Kullan</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7329"/>
+        <source>Use Debug GPU Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7330"/>
+        <source>Use Global Setting</source>
+        <translation type="unfinished">Evrensel Ayarı Kullan</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7331"/>
+        <source>Use Light Theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7332"/>
+        <source>Use Serial File Names</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7333"/>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7334"/>
+        <source>Use Software Renderer For Readbacks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7335"/>
+        <source>Username: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7336"/>
+        <source>Uses PGXP for all instructions, not just memory operations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7337"/>
+        <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7338"/>
+        <source>Uses a light coloured theme instead of the default dark theme.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7339"/>
+        <source>Uses a second thread for drawing graphics. Speed boost, and safe to use.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7340"/>
+        <source>Uses game-specific settings for controllers for this game.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7341"/>
+        <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7342"/>
+        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7343"/>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7344"/>
+        <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7345"/>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <translation type="unfinished">Etkinleştirilip Giriş Yapıldığında, Duckstation Başarımları her açılışta tarayacaktır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7346"/>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <translation type="unfinished">Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7347"/>
+        <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7348"/>
+        <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7349"/>
+        <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7350"/>
+        <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7351"/>
+        <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7352"/>
+        <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7353"/>
+        <source>When this option is chosen, the clock speed set below will be used.</source>
+        <translation type="unfinished">Bu ayar açılınca, Seçili hız değeri kullanılır.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7354"/>
+        <source>Wireframe Rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7355"/>
+        <source>Writes textures which can be replaced to the dump directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7356"/>
+        <source>Yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7357"/>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7358"/>
+        <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7359"/>
+        <source>{} deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7360"/>
+        <source>{} does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7361"/>
+        <source>{} is not a valid disc image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GPUDevice</name>
+    <message>
+        <location filename="../../util/opengl_device.cpp" line="299"/>
+        <location filename="../../util/opengl_device.cpp" line="444"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../util/opengl_device.cpp" line="300"/>
+        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
+        <translation type="unfinished">OpenGL çizici yok, sürücünüz yada donanımınız aşırı eski. OpenGL 3.1 or OpenGL ES 3.0 is gerekiyor. {3.1 ?} {3.1 ?}</translation>
+    </message>
+</context>
+<context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="913"/>
+        <location filename="../../core/settings.cpp" line="1021"/>
         <source>Disabled</source>
         <translation>Disabled</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="913"/>
+        <location filename="../../core/settings.cpp" line="1022"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation>Box (Downsample 3D/Herşeyi Yumuşat)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="914"/>
+        <location filename="../../core/settings.cpp" line="1023"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>Adaptive (3D Olduğu Gibi Bırak/2D Yumuşat)</translation>
     </message>
@@ -5300,27 +9362,38 @@ Başarımlar: %5 (%6)
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="821"/>
+        <location filename="../../core/settings.cpp" line="917"/>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="919"/>
         <source>Hardware (D3D11)</source>
         <translation>Donanımsal D3D11</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="821"/>
+        <location filename="../../core/settings.cpp" line="920"/>
         <source>Hardware (D3D12)</source>
         <translation>Donanımsal D3D12</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="824"/>
+        <location filename="../../core/settings.cpp" line="923"/>
+        <source>Hardware (Metal)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="926"/>
         <source>Hardware (Vulkan)</source>
         <translation>Donanımsal Vulkan</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="827"/>
+        <location filename="../../core/settings.cpp" line="929"/>
         <source>Hardware (OpenGL)</source>
         <translation>Donanımsal OpenGL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="829"/>
+        <location filename="../qthost.cpp" line="1502"/>
+        <location filename="../../core/settings.cpp" line="931"/>
         <source>Software</source>
         <translation>Yazılımsal</translation>
     </message>
@@ -5328,102 +9401,102 @@ Başarımlar: %5 (%6)
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../qtutils.cpp" line="684"/>
+        <location filename="../qtutils.cpp" line="699"/>
         <source>Automatic based on window size</source>
         <translation>Pencere boyutuna göre otomatik</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="685"/>
+        <location filename="../qtutils.cpp" line="700"/>
         <source>1x</source>
         <translation>1 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="686"/>
+        <location filename="../qtutils.cpp" line="701"/>
         <source>2x</source>
         <translation>2 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="687"/>
+        <location filename="../qtutils.cpp" line="702"/>
         <source>3x (for 720p)</source>
         <translation>3 Katı (720p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="688"/>
+        <location filename="../qtutils.cpp" line="703"/>
         <source>4x</source>
         <translation>4 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="689"/>
+        <location filename="../qtutils.cpp" line="704"/>
         <source>5x (for 1080p)</source>
         <translation>5 Katı (1080p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="690"/>
+        <location filename="../qtutils.cpp" line="705"/>
         <source>6x (for 1440p)</source>
         <translation>6 Katı (1440p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="691"/>
+        <location filename="../qtutils.cpp" line="706"/>
         <source>7x</source>
         <translation>7 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="692"/>
+        <location filename="../qtutils.cpp" line="707"/>
         <source>8x</source>
         <translation>8 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="693"/>
+        <location filename="../qtutils.cpp" line="708"/>
         <source>9x (for 4K)</source>
         <translation>9 Katı (4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="694"/>
+        <location filename="../qtutils.cpp" line="709"/>
         <source>10x</source>
         <translation>10 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="695"/>
+        <location filename="../qtutils.cpp" line="710"/>
         <source>11x</source>
         <translation>11 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="696"/>
+        <location filename="../qtutils.cpp" line="711"/>
         <source>12x</source>
         <translation>12 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="697"/>
+        <location filename="../qtutils.cpp" line="712"/>
         <source>13x</source>
         <translation>13 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="698"/>
+        <location filename="../qtutils.cpp" line="713"/>
         <source>14x</source>
         <translation>14 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="699"/>
+        <location filename="../qtutils.cpp" line="714"/>
         <source>15x</source>
         <translation>15 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="700"/>
+        <location filename="../qtutils.cpp" line="715"/>
         <source>16x</source>
         <translation>16 Katı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="726"/>
+        <location filename="../qtutils.cpp" line="741"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="729"/>
+        <location filename="../qtutils.cpp" line="744"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="732"/>
+        <location filename="../qtutils.cpp" line="747"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
@@ -5431,93 +9504,177 @@ Başarımlar: %5 (%6)
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="989"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbour</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="989"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="883"/>
+        <location filename="../../core/settings.cpp" line="990"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Bilinear (Kenar Yumuşatmasız)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="883"/>
+        <location filename="../../core/settings.cpp" line="990"/>
+        <source>JINC2 (Slow)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="991"/>
+        <source>JINC2 (Slow, No Edge Blending)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="992"/>
+        <source>xBR (Very Slow)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="993"/>
+        <source>xBR (Very Slow, No Edge Blending)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>JINC2</source>
-        <translation>JINC2</translation>
+        <translation type="vanished">JINC2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="884"/>
         <source>JINC2 (No Edge Blending)</source>
-        <translation>JINC2 (Kenar Yumuşatmasız)</translation>
+        <translation type="vanished">JINC2 (Kenar Yumuşatmasız)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="884"/>
         <source>xBR</source>
-        <translation>xBR</translation>
+        <translation type="vanished">xBR</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="885"/>
         <source>xBR (No Edge Blending)</source>
-        <translation>xBR (Kenar Yumuşatmasız)</translation>
+        <translation type="vanished">xBR (Kenar Yumuşatmasız)</translation>
+    </message>
+</context>
+<context>
+    <name>GPUWireframeMode</name>
+    <message>
+        <location filename="../../core/settings.cpp" line="1051"/>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1051"/>
+        <source>Overlay Wireframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1052"/>
+        <source>Only Wireframe</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>GameList</name>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="71"/>
+        <location filename="../../core/game_list.cpp" line="107"/>
         <source>Disc</source>
         <translation>Disk</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="71"/>
+        <location filename="../../core/game_list.cpp" line="107"/>
         <source>PS-EXE</source>
         <translation>PS-EXE</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="71"/>
+        <location filename="../../core/game_list.cpp" line="107"/>
         <source>Playlist</source>
         <translation>Oynatma Listesi</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/game_list.cpp" line="72"/>
+        <location filename="../../core/game_list.cpp" line="108"/>
         <source>PSF</source>
         <translation>PSF</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="969"/>
+        <source>Never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="986"/>
+        <source>Today</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="991"/>
+        <source>Yesterday</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1014"/>
+        <source>{}h {}m</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1016"/>
+        <source>{}h {}m {}s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1018"/>
+        <source>{}m {}s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1020"/>
+        <source>{}s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1022"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1027"/>
+        <source>{} hours</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_list.cpp" line="1029"/>
+        <source>{} minutes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>GameListCompatibilityRating</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="203"/>
+        <location filename="../../core/game_database.cpp" line="196"/>
         <source>Unknown</source>
         <translation>Bilinmiyor</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="204"/>
+        <location filename="../../core/game_database.cpp" line="197"/>
         <source>Doesn&apos;t Boot</source>
         <translation>Başlamıyor Bile</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="205"/>
+        <location filename="../../core/game_database.cpp" line="198"/>
         <source>Crashes In Intro</source>
         <translation>Jenerikte Çöküyor</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="206"/>
+        <location filename="../../core/game_database.cpp" line="199"/>
         <source>Crashes In-Game</source>
         <translation>Oynarken Çöküyor</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="207"/>
+        <location filename="../../core/game_database.cpp" line="200"/>
         <source>Graphical/Audio Issues</source>
         <translation>Grafik/Ses Sorunları</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="208"/>
+        <location filename="../../core/game_database.cpp" line="201"/>
         <source>No Issues</source>
         <translation>Sorunsuz Çalışıyor</translation>
     </message>
@@ -5525,62 +9682,76 @@ Başarımlar: %5 (%6)
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistmodel.cpp" line="568"/>
+        <location filename="../gamelistmodel.cpp" line="614"/>
         <source>Type</source>
         <translation>Tip</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="569"/>
         <source>Code</source>
-        <translation>Kod</translation>
+        <translation type="vanished">Kod</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="570"/>
+        <location filename="../gamelistmodel.cpp" line="615"/>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gamelistmodel.cpp" line="616"/>
         <source>Title</source>
         <translation>İsim</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="571"/>
+        <location filename="../gamelistmodel.cpp" line="617"/>
         <source>File Title</source>
         <translation>Dosya İsmi</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="572"/>
+        <location filename="../gamelistmodel.cpp" line="618"/>
         <source>Developer</source>
         <translation>Yapımcı</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="573"/>
+        <location filename="../gamelistmodel.cpp" line="619"/>
         <source>Publisher</source>
         <translation>Yayımcı</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="574"/>
+        <location filename="../gamelistmodel.cpp" line="620"/>
         <source>Genre</source>
         <translation>Tür</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="575"/>
+        <location filename="../gamelistmodel.cpp" line="621"/>
         <source>Year</source>
         <translation>Yıl</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="576"/>
+        <location filename="../gamelistmodel.cpp" line="622"/>
         <source>Players</source>
         <translation>Oyuncu Sayısı</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="577"/>
+        <location filename="../gamelistmodel.cpp" line="623"/>
+        <source>Time Played</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gamelistmodel.cpp" line="624"/>
+        <source>Last Played</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gamelistmodel.cpp" line="625"/>
         <source>Size</source>
         <translation>Dosya Boyutu</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="578"/>
+        <location filename="../gamelistmodel.cpp" line="626"/>
         <source>Region</source>
         <translation>Bölge Kodu</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="579"/>
+        <location filename="../gamelistmodel.cpp" line="627"/>
         <source>Compatibility</source>
         <translation>Uyumluluk</translation>
     </message>
@@ -5588,12 +9759,12 @@ Başarımlar: %5 (%6)
 <context>
     <name>GameListSearchDirectoriesModel</name>
     <message>
-        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="30"/>
+        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="33"/>
         <source>Path</source>
         <translation>Yol</translation>
     </message>
     <message>
-        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="32"/>
+        <location filename="../gamelistsearchdirectoriesmodel.cpp" line="35"/>
         <source>Recursive</source>
         <translation>Alt Klasörlerle</translation>
     </message>
@@ -5623,7 +9794,7 @@ Başarımlar: %5 (%6)
     <message>
         <location filename="../gamelistsettingswidget.ui" line="76"/>
         <location filename="../gamelistsettingswidget.ui" line="135"/>
-        <location filename="../gamelistsettingswidget.cpp" line="101"/>
+        <location filename="../gamelistsettingswidget.cpp" line="107"/>
         <source>Remove</source>
         <translation>Kaldır</translation>
     </message>
@@ -5651,22 +9822,22 @@ Başarımlar: %5 (%6)
         <translation type="vanished">Hepsini Yeniden Tara</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="103"/>
+        <location filename="../gamelistsettingswidget.cpp" line="109"/>
         <source>Open Directory...</source>
         <translation>Dizin Aç...</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="111"/>
+        <location filename="../gamelistsettingswidget.cpp" line="117"/>
         <source>Select Search Directory</source>
         <translation>Arama Dizinini Seç</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="117"/>
+        <location filename="../gamelistsettingswidget.cpp" line="123"/>
         <source>Scan Recursively?</source>
         <translation>Alt Klasörleride Ara?</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="118"/>
+        <location filename="../gamelistsettingswidget.cpp" line="124"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
@@ -5675,7 +9846,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tarar.</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.cpp" line="147"/>
+        <location filename="../gamelistsettingswidget.cpp" line="153"/>
         <source>Select Path</source>
         <translation>Dizin Seç</translation>
     </message>
@@ -6200,94 +10371,76 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>GameSettingsTrait</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="48"/>
         <source>Force Interpreter</source>
-        <translation>Interpreter Zorla</translation>
+        <translation type="vanished">Interpreter Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="49"/>
         <source>Force Software Renderer</source>
-        <translation>Yazılımsal Çizici Zorla</translation>
+        <translation type="vanished">Yazılımsal Çizici Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="50"/>
         <source>Force Software Renderer For Readbacks</source>
-        <translation>Readback İçin Yazılımsal Çizici Zorla</translation>
+        <translation type="vanished">Readback İçin Yazılımsal Çizici Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="51"/>
         <source>Force Interlacing</source>
-        <translation>Interlacing Zorla</translation>
+        <translation type="vanished">Interlacing Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="52"/>
         <source>Disable True Color</source>
-        <translation>Kaliteli Rengi Kapat</translation>
+        <translation type="vanished">Kaliteli Rengi Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="53"/>
         <source>Disable Upscaling</source>
-        <translation>Çözünürlük Yükseltmeyi Kapat</translation>
+        <translation type="vanished">Çözünürlük Yükseltmeyi Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="54"/>
         <source>Disable Scaled Dithering</source>
-        <translation>Orantılı Dithering Kapat</translation>
+        <translation type="vanished">Orantılı Dithering Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="55"/>
         <source>Disallow Forcing NTSC Timings</source>
-        <translation>NTSC Zamanlama Zorlamasını Kapat</translation>
+        <translation type="vanished">NTSC Zamanlama Zorlamasını Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="56"/>
         <source>Disable Widescreen</source>
-        <translation>Geniş Ekran Kapat</translation>
+        <translation type="vanished">Geniş Ekran Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="57"/>
         <source>Disable PGXP</source>
-        <translation>PGXP Kapat</translation>
+        <translation type="vanished">PGXP Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="58"/>
         <source>Disable PGXP Culling</source>
-        <translation>PGXP Model Esgeçmeyi Kapat</translation>
+        <translation type="vanished">PGXP Model Esgeçmeyi Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="59"/>
         <source>Disable PGXP Texture Correction</source>
-        <translation>PGXP Doku Düzeltmeyi Kapat</translation>
+        <translation type="vanished">PGXP Doku Düzeltmeyi Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="60"/>
         <source>Disable PGXP Depth Buffer</source>
-        <translation>PGXP Derinlik Verisini Kapat</translation>
+        <translation type="vanished">PGXP Derinlik Verisini Kapat</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="61"/>
         <source>Force PGXP Vertex Cache</source>
-        <translation>PGXP Koordinat Önbelleği Zorla</translation>
+        <translation type="vanished">PGXP Koordinat Önbelleği Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="62"/>
         <source>Force PGXP CPU Mode</source>
-        <translation>PGXP CPU Modunu Zorla</translation>
+        <translation type="vanished">PGXP CPU Modunu Zorla</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="63"/>
         <source>Force Recompiler Memory Exceptions</source>
-        <translation>Force Recompiler Memory Exceptions</translation>
+        <translation type="vanished">Force Recompiler Memory Exceptions</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="64"/>
         <source>Force Recompiler ICache</source>
-        <translation>Force Recompiler ICache</translation>
+        <translation type="vanished">Force Recompiler ICache</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="65"/>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation>Force Recompiler LUT Fastmem</translation>
+        <translation type="vanished">Force Recompiler LUT Fastmem</translation>
     </message>
 </context>
 <context>
@@ -6398,90 +10551,90 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Düzenle...</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="61"/>
-        <location filename="../gamesummarywidget.cpp" line="71"/>
-        <location filename="../gamesummarywidget.cpp" line="98"/>
-        <location filename="../gamesummarywidget.cpp" line="115"/>
-        <location filename="../gamesummarywidget.cpp" line="120"/>
+        <location filename="../gamesummarywidget.cpp" line="68"/>
+        <location filename="../gamesummarywidget.cpp" line="78"/>
+        <location filename="../gamesummarywidget.cpp" line="105"/>
         <location filename="../gamesummarywidget.cpp" line="121"/>
-        <location filename="../gamesummarywidget.cpp" line="122"/>
-        <location filename="../gamesummarywidget.cpp" line="123"/>
-        <location filename="../gamesummarywidget.cpp" line="124"/>
+        <location filename="../gamesummarywidget.cpp" line="126"/>
+        <location filename="../gamesummarywidget.cpp" line="127"/>
+        <location filename="../gamesummarywidget.cpp" line="128"/>
+        <location filename="../gamesummarywidget.cpp" line="129"/>
+        <location filename="../gamesummarywidget.cpp" line="130"/>
         <source>Unknown</source>
         <translation>Bilinmiyor</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="63"/>
+        <location filename="../gamesummarywidget.cpp" line="70"/>
         <source>%1 (Published by %2)</source>
         <translation>%1 (Şunun tarafından yayımlandı %2)</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="69"/>
+        <location filename="../gamesummarywidget.cpp" line="76"/>
         <source>Published by %1</source>
         <translation>Şu yayımladı %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="76"/>
+        <location filename="../gamesummarywidget.cpp" line="83"/>
         <source>Released %1</source>
         <translation>Yayımlandı %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="82"/>
+        <location filename="../gamesummarywidget.cpp" line="89"/>
         <source>%1-%2 players</source>
         <translation>%1-%2 oyunculu</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="84"/>
+        <location filename="../gamesummarywidget.cpp" line="91"/>
         <source>%1 players</source>
         <translation>%1 Oyuncular</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="91"/>
+        <location filename="../gamesummarywidget.cpp" line="98"/>
         <source>%1-%2 memory card blocks</source>
         <translation>%1-%2 Hafıza kartı blokları</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="93"/>
+        <location filename="../gamesummarywidget.cpp" line="100"/>
         <source>%1 memory card blocks</source>
         <translation>%1 Hafıza kartı blokları</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="134"/>
+        <location filename="../gamesummarywidget.cpp" line="140"/>
         <source>Use Global Settings</source>
         <translation>Evrensel Ayarları Kullan</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="176"/>
+        <location filename="../gamesummarywidget.cpp" line="182"/>
         <source>Track %1</source>
         <translation>Sektör %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="184"/>
+        <location filename="../gamesummarywidget.cpp" line="190"/>
         <source>&lt;not computed&gt;</source>
         <translation>Hesaplanmamış</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="212"/>
+        <location filename="../gamesummarywidget.cpp" line="218"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="212"/>
+        <location filename="../gamesummarywidget.cpp" line="218"/>
         <source>Failed to open CD image for hashing.</source>
         <translation>Hashlanmak için CD dosyası açılamadı.</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="320"/>
+        <location filename="../gamesummarywidget.cpp" line="326"/>
         <source>Revision: %1</source>
         <translation>Revizyon: %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="320"/>
+        <location filename="../gamesummarywidget.cpp" line="326"/>
         <source>N/A</source>
         <translation>Yok</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="345"/>
+        <location filename="../gamesummarywidget.cpp" line="351"/>
         <source>Search on Redump.org</source>
         <translation>Dosya sağlamasını Redump.org&apos;da karşılaştır</translation>
     </message>
@@ -6505,13 +10658,13 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="45"/>
-        <location filename="../generalsettingswidget.cpp" line="50"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
         <source>Confirm Power Off</source>
         <translation>Kapatmayı Onaylayın</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="80"/>
-        <location filename="../generalsettingswidget.cpp" line="61"/>
+        <location filename="../generalsettingswidget.cpp" line="79"/>
         <source>Inhibit Screensaver</source>
         <translation>İşletim sisteminin ekran korucusunu engelle</translation>
     </message>
@@ -6521,42 +10674,42 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="94"/>
-        <location filename="../generalsettingswidget.cpp" line="67"/>
+        <location filename="../generalsettingswidget.cpp" line="85"/>
         <source>Pause On Start</source>
         <translation>Başlangıçta Durdur</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
+        <location filename="../generalsettingswidget.cpp" line="87"/>
         <source>Pause On Focus Loss</source>
         <translation>Başka Pencere Seçiliyken Durdur</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="124"/>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
+        <location filename="../generalsettingswidget.cpp" line="74"/>
         <source>Start Fullscreen</source>
         <translation>Tam Ekran Başlat</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="53"/>
+        <location filename="../generalsettingswidget.cpp" line="71"/>
         <source>Save State On Exit</source>
         <translation>Çıkışta Durum Kayıdı Kaydet</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="66"/>
-        <location filename="../generalsettingswidget.cpp" line="78"/>
+        <location filename="../generalsettingswidget.cpp" line="96"/>
         <source>Apply Per-Game Settings</source>
         <translation>Oyuna Özel Ayarlar Uygula</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="38"/>
-        <location filename="../generalsettingswidget.cpp" line="81"/>
+        <location filename="../generalsettingswidget.cpp" line="99"/>
         <source>Automatically Load Cheats</source>
         <translation>Hileleri Otomatik Yükle</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="87"/>
-        <location filename="../generalsettingswidget.cpp" line="73"/>
+        <location filename="../generalsettingswidget.cpp" line="91"/>
         <source>Load Devices From Save States</source>
         <translation>Cihazları Durum Kayıtlarından Yükle</translation>
     </message>
@@ -6582,7 +10735,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="138"/>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
+        <location filename="../generalsettingswidget.cpp" line="82"/>
         <source>Render To Separate Window</source>
         <translation>Görüntüyü Ayrı Ekrana Çiz</translation>
     </message>
@@ -6598,7 +10751,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="159"/>
-        <location filename="../generalsettingswidget.cpp" line="58"/>
+        <location filename="../generalsettingswidget.cpp" line="76"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>Tam Ekran iken İmleci Gizle</translation>
     </message>
@@ -6631,7 +10784,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="199"/>
-        <location filename="../generalsettingswidget.cpp" line="99"/>
+        <location filename="../generalsettingswidget.cpp" line="117"/>
         <source>Enable Automatic Update Check</source>
         <translation>Otomak Güncelleme Kontrolünü Aç</translation>
     </message>
@@ -6641,53 +10794,53 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Güncellemeleri Kontrol Et...</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="50"/>
-        <location filename="../generalsettingswidget.cpp" line="53"/>
-        <location filename="../generalsettingswidget.cpp" line="58"/>
-        <location filename="../generalsettingswidget.cpp" line="61"/>
-        <location filename="../generalsettingswidget.cpp" line="64"/>
-        <location filename="../generalsettingswidget.cpp" line="78"/>
-        <location filename="../generalsettingswidget.cpp" line="99"/>
+        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="71"/>
+        <location filename="../generalsettingswidget.cpp" line="76"/>
+        <location filename="../generalsettingswidget.cpp" line="79"/>
+        <location filename="../generalsettingswidget.cpp" line="82"/>
+        <location filename="../generalsettingswidget.cpp" line="96"/>
+        <location filename="../generalsettingswidget.cpp" line="117"/>
         <source>Checked</source>
         <translation>Seçili</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="51"/>
+        <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>Kısayol tuşuna basılınca oyunu kapatmak için onay penceresinin açılıp açılmayacağını ayarlar.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="54"/>
+        <location filename="../generalsettingswidget.cpp" line="72"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>Oyun kapatılınca durum kayıdı alınıp alınmayacağını ayarlar. Böylece kalınan yerden devam edilebilir.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="56"/>
-        <location filename="../generalsettingswidget.cpp" line="67"/>
-        <location filename="../generalsettingswidget.cpp" line="69"/>
-        <location filename="../generalsettingswidget.cpp" line="73"/>
-        <location filename="../generalsettingswidget.cpp" line="81"/>
-        <location filename="../generalsettingswidget.cpp" line="88"/>
+        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <location filename="../generalsettingswidget.cpp" line="85"/>
+        <location filename="../generalsettingswidget.cpp" line="87"/>
+        <location filename="../generalsettingswidget.cpp" line="91"/>
+        <location filename="../generalsettingswidget.cpp" line="99"/>
+        <location filename="../generalsettingswidget.cpp" line="106"/>
         <source>Unchecked</source>
         <translation>Seçilmemiş</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="57"/>
+        <location filename="../generalsettingswidget.cpp" line="75"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>Oyun başlayınca tam ekrana geçilir.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="59"/>
+        <location filename="../generalsettingswidget.cpp" line="77"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Emülatör tam ekran olunca imleci gizler.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="62"/>
+        <location filename="../generalsettingswidget.cpp" line="80"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Emülasyon sırasında ekran koruyucusunun ve bilgisayarın uyku moduna geçmesini engeller.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="65"/>
+        <location filename="../generalsettingswidget.cpp" line="83"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
         <translation>Emülasyondaki konsolun görüntüsünü ana ekrandaki kapak resimlerinin üstüne çizer. Seçiliyse görüntü ayrı pencereye çizilir.</translation>
     </message>
@@ -6696,27 +10849,27 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Oyunu/konsolu ana pencereye çizer. Seçilmezse ayrı bir pencereye çizer.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="68"/>
+        <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Oyun başlatılınca emülatörü duraklatır.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="70"/>
+        <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>Pencere küçültülünce yada başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="74"/>
+        <location filename="../generalsettingswidget.cpp" line="92"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
         <translation>Etkinleştirilince, hafıza kartları ve kollar durum kayıdı yüklenince üzerlerine yazılır. Durum kayıtlarında ayarların senkronize olmasını istiyorsanız açın istemiyorsanız kapayın.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="79"/>
+        <location filename="../generalsettingswidget.cpp" line="97"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>Etkinleştirilince oyuna özel ayarlar seçilir ve oyunla uyumsuz olan iyileştirmeler kapatılır. Bu ayarı uyumsuz iyileştirmeleri denemek istemiyorsanız açık bırakmalısınız.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="82"/>
+        <location filename="../generalsettingswidget.cpp" line="100"/>
         <source>Automatically loads and applies cheats on game start.</source>
         <translation>Oyun başlangıcında otomatik olarak hileler yüklenir ve uygulanır.</translation>
     </message>
@@ -6734,22 +10887,22 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
-        <location filename="../generalsettingswidget.cpp" line="88"/>
+        <location filename="../generalsettingswidget.cpp" line="106"/>
         <source>Enable Discord Presence</source>
         <translation>Oyun bilgisini Discord&apos;a gönder</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="89"/>
+        <location filename="../generalsettingswidget.cpp" line="107"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Oynadığınız oyun ile ilgili bilgileri Discord hesabınızda gösterir.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="100"/>
+        <location filename="../generalsettingswidget.cpp" line="118"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>Program başlangıcında güncelleştirmeleri denetler. İsterseniz uygulamaları indirip kurabilir yada es geçebilirsiniz.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.cpp" line="107"/>
+        <location filename="../generalsettingswidget.cpp" line="125"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
@@ -6765,32 +10918,82 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>GunCon</name>
     <message>
-        <location filename="../../core/guncon.cpp" line="220"/>
+        <location filename="../../core/guncon.cpp" line="274"/>
+        <source>Trigger</source>
+        <translation type="unfinished">Tetik</translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="275"/>
+        <source>Shoot Offscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="276"/>
+        <source>A</source>
+        <translation type="unfinished">A</translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="277"/>
+        <source>B</source>
+        <translation type="unfinished">B</translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="279"/>
+        <source>Relative Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="280"/>
+        <source>Relative Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="281"/>
+        <source>Relative Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="282"/>
+        <source>Relative Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="289"/>
         <source>Crosshair Image Path</source>
         <translation>Nişangah Dosyası Dizini</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="221"/>
+        <location filename="../../core/guncon.cpp" line="290"/>
         <source>Path to an image to use as a crosshair/cursor.</source>
         <translation>Nişangah Olarak Kullanılacak Çizimin Dizini.</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="222"/>
+        <location filename="../../core/guncon.cpp" line="292"/>
         <source>Crosshair Image Scale</source>
         <translation>Nişangah Boyutu</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="223"/>
+        <location filename="../../core/guncon.cpp" line="293"/>
         <source>Scale of crosshair image on screen.</source>
         <translation>Nişangahın ekrandaki boyutu.</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="224"/>
+        <location filename="../../core/guncon.cpp" line="295"/>
+        <source>Cursor Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="296"/>
+        <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/guncon.cpp" line="299"/>
         <source>X Scale</source>
         <translation>X Eksen Kaydırması</translation>
     </message>
     <message>
-        <location filename="../../core/guncon.cpp" line="225"/>
+        <location filename="../../core/guncon.cpp" line="300"/>
         <source>Scales X coordinates relative to the center of the screen.</source>
         <translation>X koordinatlarını ekranın ortasına göre oranlar.</translation>
     </message>
@@ -6798,12 +11001,12 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>HostInterface</name>
     <message>
-        <location filename="../../core/bios.cpp" line="310"/>
+        <location filename="../../core/bios.cpp" line="298"/>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
         <translation>Şu dizindeki ayarlanmış BIOS dosyası yüklenemedi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/bios.cpp" line="371"/>
+        <location filename="../../core/bios.cpp" line="353"/>
         <source>No BIOS image found for %s region</source>
         <translation>Şu bölge için BIOS dosyası bulunamadı: %s</translation>
     </message>
@@ -6811,17 +11014,17 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="639"/>
-        <location filename="../../frontend-common/common_host.cpp" line="646"/>
-        <location filename="../../frontend-common/common_host.cpp" line="653"/>
-        <location filename="../../frontend-common/common_host.cpp" line="659"/>
-        <location filename="../../frontend-common/common_host.cpp" line="665"/>
-        <location filename="../../frontend-common/common_host.cpp" line="672"/>
-        <location filename="../../frontend-common/common_host.cpp" line="678"/>
-        <location filename="../../frontend-common/common_host.cpp" line="684"/>
-        <location filename="../../frontend-common/common_host.cpp" line="691"/>
-        <location filename="../../frontend-common/common_host.cpp" line="698"/>
-        <location filename="../../frontend-common/common_host.cpp" line="711"/>
+        <location filename="../../core/hotkeys.cpp" line="105"/>
+        <location filename="../../core/hotkeys.cpp" line="112"/>
+        <location filename="../../core/hotkeys.cpp" line="119"/>
+        <location filename="../../core/hotkeys.cpp" line="125"/>
+        <location filename="../../core/hotkeys.cpp" line="131"/>
+        <location filename="../../core/hotkeys.cpp" line="138"/>
+        <location filename="../../core/hotkeys.cpp" line="144"/>
+        <location filename="../../core/hotkeys.cpp" line="150"/>
+        <location filename="../../core/hotkeys.cpp" line="157"/>
+        <location filename="../../core/hotkeys.cpp" line="164"/>
+        <location filename="../../core/hotkeys.cpp" line="170"/>
         <source>General</source>
         <translation>Genel</translation>
     </message>
@@ -6830,455 +11033,455 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Ekspres Menü Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="646"/>
+        <location filename="../../core/hotkeys.cpp" line="112"/>
         <source>Fast Forward</source>
         <translation>İleri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="653"/>
+        <location filename="../../core/hotkeys.cpp" line="120"/>
         <source>Toggle Fast Forward</source>
         <translation>İleri Sarmayı Aç/Kapa</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="659"/>
+        <location filename="../../core/hotkeys.cpp" line="125"/>
         <source>Turbo</source>
         <translation>Turbo</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="665"/>
+        <location filename="../../core/hotkeys.cpp" line="131"/>
         <source>Toggle Turbo</source>
         <translation>Turboyu Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="672"/>
+        <location filename="../../core/hotkeys.cpp" line="138"/>
         <source>Toggle Fullscreen</source>
         <translation>Tam Ekranı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="678"/>
+        <location filename="../../core/hotkeys.cpp" line="144"/>
         <source>Toggle Pause</source>
         <translation>Duraklatmayı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="684"/>
+        <location filename="../../core/hotkeys.cpp" line="150"/>
         <source>Power Off System</source>
         <translation>Sistemi Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="725"/>
+        <location filename="../../core/hotkeys.cpp" line="177"/>
         <source>Reset System</source>
         <translation>Sisteme Reset At</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="691"/>
+        <location filename="../../core/hotkeys.cpp" line="157"/>
         <source>Save Screenshot</source>
         <translation>Ekran Görüntüsü Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="639"/>
+        <location filename="../../core/hotkeys.cpp" line="105"/>
         <source>Open Pause Menu</source>
         <translation>Duraklama Menüsünü Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="698"/>
+        <location filename="../../core/hotkeys.cpp" line="165"/>
         <source>Open Achievement List</source>
         <translation>Başarımlar Listesini Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="711"/>
+        <location filename="../../core/hotkeys.cpp" line="171"/>
         <source>Open Leaderboard List</source>
         <translation>Liderler Sıralaması Listesini Aç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="725"/>
-        <location filename="../../frontend-common/common_host.cpp" line="730"/>
-        <location filename="../../frontend-common/common_host.cpp" line="740"/>
-        <location filename="../../frontend-common/common_host.cpp" line="747"/>
-        <location filename="../../frontend-common/common_host.cpp" line="753"/>
-        <location filename="../../frontend-common/common_host.cpp" line="760"/>
-        <location filename="../../frontend-common/common_host.cpp" line="766"/>
-        <location filename="../../frontend-common/common_host.cpp" line="773"/>
-        <location filename="../../frontend-common/common_host.cpp" line="801"/>
-        <location filename="../../frontend-common/common_host.cpp" line="813"/>
-        <location filename="../../frontend-common/common_host.cpp" line="825"/>
+        <location filename="../../core/hotkeys.cpp" line="177"/>
+        <location filename="../../core/hotkeys.cpp" line="182"/>
+        <location filename="../../core/hotkeys.cpp" line="193"/>
+        <location filename="../../core/hotkeys.cpp" line="200"/>
+        <location filename="../../core/hotkeys.cpp" line="207"/>
+        <location filename="../../core/hotkeys.cpp" line="214"/>
+        <location filename="../../core/hotkeys.cpp" line="220"/>
+        <location filename="../../core/hotkeys.cpp" line="227"/>
+        <location filename="../../core/hotkeys.cpp" line="255"/>
+        <location filename="../../core/hotkeys.cpp" line="267"/>
+        <location filename="../../core/hotkeys.cpp" line="279"/>
         <source>System</source>
         <translation>Sistem</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="730"/>
+        <location filename="../../core/hotkeys.cpp" line="182"/>
         <source>Change Disc</source>
         <translation>CD&apos;yi Değiştir</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="740"/>
+        <location filename="../../core/hotkeys.cpp" line="194"/>
         <source>Swap Memory Card Slots</source>
         <translation>Hafıza Kartı Slotlarını Birbirleriyle Değiştir</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="747"/>
+        <location filename="../../core/hotkeys.cpp" line="200"/>
         <source>Frame Step</source>
         <translation>Kare İleri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="753"/>
+        <location filename="../../core/hotkeys.cpp" line="207"/>
         <source>Rewind</source>
         <translation>Geri Sar</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="760"/>
+        <location filename="../../core/hotkeys.cpp" line="214"/>
         <source>Toggle Cheats</source>
         <translation>Hileleri Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="766"/>
+        <location filename="../../core/hotkeys.cpp" line="220"/>
         <source>Toggle Patch Codes</source>
         <translation>Yama Kodlarını Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="774"/>
+        <location filename="../../core/hotkeys.cpp" line="228"/>
         <source>Toggle Clock Speed Control (Overclocking)</source>
         <translation>İşlemci Hız Aşırtmayı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="802"/>
+        <location filename="../../core/hotkeys.cpp" line="256"/>
         <source>Increase Emulation Speed</source>
         <translation>Emülasyon Hızını Arttır</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="814"/>
+        <location filename="../../core/hotkeys.cpp" line="268"/>
         <source>Decrease Emulation Speed</source>
         <translation>Emülasyon Hızını Azalt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="826"/>
+        <location filename="../../core/hotkeys.cpp" line="280"/>
         <source>Reset Emulation Speed</source>
         <translation>Emülasyon Hızını Resetle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="837"/>
-        <location filename="../../frontend-common/common_host.cpp" line="843"/>
-        <location filename="../../frontend-common/common_host.cpp" line="869"/>
-        <location filename="../../frontend-common/common_host.cpp" line="875"/>
-        <location filename="../../frontend-common/common_host.cpp" line="881"/>
-        <location filename="../../frontend-common/common_host.cpp" line="887"/>
-        <location filename="../../frontend-common/common_host.cpp" line="893"/>
-        <location filename="../../frontend-common/common_host.cpp" line="904"/>
-        <location filename="../../frontend-common/common_host.cpp" line="910"/>
-        <location filename="../../frontend-common/common_host.cpp" line="931"/>
+        <location filename="../../core/hotkeys.cpp" line="291"/>
+        <location filename="../../core/hotkeys.cpp" line="297"/>
+        <location filename="../../core/hotkeys.cpp" line="326"/>
+        <location filename="../../core/hotkeys.cpp" line="332"/>
+        <location filename="../../core/hotkeys.cpp" line="338"/>
+        <location filename="../../core/hotkeys.cpp" line="344"/>
+        <location filename="../../core/hotkeys.cpp" line="350"/>
+        <location filename="../../core/hotkeys.cpp" line="360"/>
+        <location filename="../../core/hotkeys.cpp" line="366"/>
+        <location filename="../../core/hotkeys.cpp" line="387"/>
         <source>Graphics</source>
         <translation>Grafikler</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="838"/>
+        <location filename="../../core/hotkeys.cpp" line="292"/>
         <source>Toggle Software Rendering</source>
         <translation>Yazılımsal Çizmeyi Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="843"/>
+        <location filename="../../core/hotkeys.cpp" line="297"/>
         <source>Toggle PGXP</source>
         <translation>PGXP&apos;yi Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="870"/>
+        <location filename="../../core/hotkeys.cpp" line="327"/>
         <source>Increase Resolution Scale</source>
         <translation>Çözünürlüğü Yükselt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="876"/>
+        <location filename="../../core/hotkeys.cpp" line="333"/>
         <source>Decrease Resolution Scale</source>
         <translation>Çözünürlüğü Azalt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="882"/>
+        <location filename="../../core/hotkeys.cpp" line="339"/>
         <source>Toggle Post-Processing</source>
         <translation>Görsel Efektleri Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="888"/>
+        <location filename="../../core/hotkeys.cpp" line="345"/>
         <source>Reload Post Processing Shaders</source>
         <translation>Görsel Efekt Shaderlarını Tekrar Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="894"/>
+        <location filename="../../core/hotkeys.cpp" line="351"/>
         <source>Reload Texture Replacements</source>
         <translation>Doku Paketlerini Tekrar Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="904"/>
+        <location filename="../../core/hotkeys.cpp" line="360"/>
         <source>Toggle Widescreen</source>
         <translation>Geniş Ekranı Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="911"/>
+        <location filename="../../core/hotkeys.cpp" line="367"/>
         <source>Toggle PGXP Depth Buffer</source>
         <translation>PGXP Derinlik Verisini Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="931"/>
+        <location filename="../../core/hotkeys.cpp" line="387"/>
         <source>Toggle PGXP CPU Mode</source>
         <translation>PGXP CPU Modunu Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1020"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1025"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1030"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1035"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1041"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1048"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1054"/>
+        <location filename="../../core/hotkeys.cpp" line="476"/>
+        <location filename="../../core/hotkeys.cpp" line="481"/>
+        <location filename="../../core/hotkeys.cpp" line="486"/>
+        <location filename="../../core/hotkeys.cpp" line="491"/>
+        <location filename="../../core/hotkeys.cpp" line="497"/>
+        <location filename="../../core/hotkeys.cpp" line="504"/>
+        <location filename="../../core/hotkeys.cpp" line="510"/>
         <source>Save States</source>
         <translation>Durum Kayıtları</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1021"/>
+        <location filename="../../core/hotkeys.cpp" line="477"/>
         <source>Load From Selected Slot</source>
         <translation>Seçili Slotu Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1026"/>
+        <location filename="../../core/hotkeys.cpp" line="482"/>
         <source>Save To Selected Slot</source>
         <translation>Seçili Slota Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1031"/>
+        <location filename="../../core/hotkeys.cpp" line="487"/>
         <source>Select Previous Save Slot</source>
         <translation>Önceki Durum Kaydı Slotunu Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1036"/>
+        <location filename="../../core/hotkeys.cpp" line="492"/>
         <source>Select Next Save Slot</source>
         <translation>Sonraki Durum Kayıtı Slotunu Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1041"/>
+        <location filename="../../core/hotkeys.cpp" line="497"/>
         <source>Undo Load State</source>
         <translation>Durum Kaydı Geri Al</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1060"/>
+        <location filename="../../core/hotkeys.cpp" line="516"/>
         <source>Load Game State 1</source>
         <translation>Durum Kaydı 1 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1062"/>
+        <location filename="../../core/hotkeys.cpp" line="518"/>
         <source>Load Game State 2</source>
         <translation>Durum Kaydı 2 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1064"/>
+        <location filename="../../core/hotkeys.cpp" line="520"/>
         <source>Load Game State 3</source>
         <translation>Durum Kaydı 3 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1066"/>
+        <location filename="../../core/hotkeys.cpp" line="522"/>
         <source>Load Game State 4</source>
         <translation>Durum Kaydı 4 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1068"/>
+        <location filename="../../core/hotkeys.cpp" line="524"/>
         <source>Load Game State 5</source>
         <translation>Durum Kaydı 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1070"/>
+        <location filename="../../core/hotkeys.cpp" line="526"/>
         <source>Load Game State 6</source>
         <translation>Durum Kaydı 6 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1072"/>
+        <location filename="../../core/hotkeys.cpp" line="528"/>
         <source>Load Game State 7</source>
         <translation>Durum Kaydı 7 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1074"/>
+        <location filename="../../core/hotkeys.cpp" line="530"/>
         <source>Load Game State 8</source>
         <translation>Durum Kaydı 8 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1076"/>
+        <location filename="../../core/hotkeys.cpp" line="532"/>
         <source>Load Game State 9</source>
         <translation>Durum Kaydı 9 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1078"/>
+        <location filename="../../core/hotkeys.cpp" line="534"/>
         <source>Load Game State 10</source>
         <translation>Durum Kaydı 10 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1061"/>
+        <location filename="../../core/hotkeys.cpp" line="517"/>
         <source>Save Game State 1</source>
         <translation>Durum Kaydı 1 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1063"/>
+        <location filename="../../core/hotkeys.cpp" line="519"/>
         <source>Save Game State 2</source>
         <translation>Durum Kaydı 2 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1065"/>
+        <location filename="../../core/hotkeys.cpp" line="521"/>
         <source>Save Game State 3</source>
         <translation>Durum Kaydı 3 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1067"/>
+        <location filename="../../core/hotkeys.cpp" line="523"/>
         <source>Save Game State 4</source>
         <translation>Durum Kaydı 4 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1069"/>
+        <location filename="../../core/hotkeys.cpp" line="525"/>
         <source>Save Game State 5</source>
         <translation>Durum Kaydı 5 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1071"/>
+        <location filename="../../core/hotkeys.cpp" line="527"/>
         <source>Save Game State 6</source>
         <translation>Durum Kaydı 6 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1073"/>
+        <location filename="../../core/hotkeys.cpp" line="529"/>
         <source>Save Game State 7</source>
         <translation>Durum Kaydı 7 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1075"/>
+        <location filename="../../core/hotkeys.cpp" line="531"/>
         <source>Save Game State 8</source>
         <translation>Durum Kaydı 8 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1077"/>
+        <location filename="../../core/hotkeys.cpp" line="533"/>
         <source>Save Game State 9</source>
         <translation>Durum Kaydı 9 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1079"/>
+        <location filename="../../core/hotkeys.cpp" line="535"/>
         <source>Save Game State 10</source>
         <translation>Durum Kaydı 10 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1081"/>
+        <location filename="../../core/hotkeys.cpp" line="537"/>
         <source>Load Global State 1</source>
         <translation>Evrensel Kayıt 1 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1083"/>
+        <location filename="../../core/hotkeys.cpp" line="539"/>
         <source>Load Global State 2</source>
         <translation>Evrensel Kayıt 2 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1085"/>
+        <location filename="../../core/hotkeys.cpp" line="541"/>
         <source>Load Global State 3</source>
         <translation>Evrensel Kayıt 3 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1087"/>
+        <location filename="../../core/hotkeys.cpp" line="543"/>
         <source>Load Global State 4</source>
         <translation>Evrensel Kayıt 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1089"/>
+        <location filename="../../core/hotkeys.cpp" line="545"/>
         <source>Load Global State 5</source>
         <translation>Evrensel Kayıt 5 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1091"/>
+        <location filename="../../core/hotkeys.cpp" line="547"/>
         <source>Load Global State 6</source>
         <translation>Evrensel Kayıt 6 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1093"/>
+        <location filename="../../core/hotkeys.cpp" line="549"/>
         <source>Load Global State 7</source>
         <translation>Evrensel Kayıt 7 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1095"/>
+        <location filename="../../core/hotkeys.cpp" line="551"/>
         <source>Load Global State 8</source>
         <translation>Evrensel Kayıt 8 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1097"/>
+        <location filename="../../core/hotkeys.cpp" line="553"/>
         <source>Load Global State 9</source>
         <translation>Evrensel Kayıt 9 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1099"/>
+        <location filename="../../core/hotkeys.cpp" line="555"/>
         <source>Load Global State 10</source>
         <translation>Evrensel Kayıt 10 Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1082"/>
+        <location filename="../../core/hotkeys.cpp" line="538"/>
         <source>Save Global State 1</source>
         <translation>Evrensel Kayıt 1 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1084"/>
+        <location filename="../../core/hotkeys.cpp" line="540"/>
         <source>Save Global State 2</source>
         <translation>Evrensel Kayıt 2 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1086"/>
+        <location filename="../../core/hotkeys.cpp" line="542"/>
         <source>Save Global State 3</source>
         <translation>Evrensel Kayıt 3 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1088"/>
+        <location filename="../../core/hotkeys.cpp" line="544"/>
         <source>Save Global State 4</source>
         <translation>Evrensel Kayıt 4 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1090"/>
+        <location filename="../../core/hotkeys.cpp" line="546"/>
         <source>Save Global State 5</source>
         <translation>Evrensel Kayıt 5 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1092"/>
+        <location filename="../../core/hotkeys.cpp" line="548"/>
         <source>Save Global State 6</source>
         <translation>Evrensel Kayıt 6 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1094"/>
+        <location filename="../../core/hotkeys.cpp" line="550"/>
         <source>Save Global State 7</source>
         <translation>Evrensel Kayıt 7 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1096"/>
+        <location filename="../../core/hotkeys.cpp" line="552"/>
         <source>Save Global State 8</source>
         <translation>Evrensel Kayıt 8 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1098"/>
+        <location filename="../../core/hotkeys.cpp" line="554"/>
         <source>Save Global State 9</source>
         <translation>Evrensel Kayıt 9 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1100"/>
+        <location filename="../../core/hotkeys.cpp" line="556"/>
         <source>Save Global State 10</source>
         <translation>Evrensel Kayıt 10 Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="958"/>
-        <location filename="../../frontend-common/common_host.cpp" line="977"/>
-        <location filename="../../frontend-common/common_host.cpp" line="989"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1003"/>
+        <location filename="../../core/hotkeys.cpp" line="415"/>
+        <location filename="../../core/hotkeys.cpp" line="434"/>
+        <location filename="../../core/hotkeys.cpp" line="446"/>
+        <location filename="../../core/hotkeys.cpp" line="460"/>
         <source>Audio</source>
         <translation>Ses</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="958"/>
+        <location filename="../../core/hotkeys.cpp" line="415"/>
         <source>Toggle Mute</source>
         <translation>Sesi Sustur Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="977"/>
+        <location filename="../../core/hotkeys.cpp" line="434"/>
         <source>Toggle CD Audio Mute</source>
         <translation>CD-Müzik Sustur Aç/Kapat</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="989"/>
+        <location filename="../../core/hotkeys.cpp" line="446"/>
         <source>Volume Up</source>
         <translation>Ses Yükselt</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="1003"/>
+        <location filename="../../core/hotkeys.cpp" line="460"/>
         <source>Volume Down</source>
         <translation>Ses Azalt</translation>
     </message>
@@ -7311,18 +11514,18 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Tuş Atamalarını Kaldır</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="18"/>
+        <location filename="../inputbindingdialog.cpp" line="22"/>
         <source>Bindings for %1 %2</source>
         <translation>Şunlar için tuş atamaları %1 %2</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="19"/>
+        <location filename="../inputbindingdialog.cpp" line="23"/>
         <source>Close</source>
         <translation>Kapat</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="127"/>
-        <location filename="../inputbindingdialog.cpp" line="142"/>
+        <location filename="../inputbindingdialog.cpp" line="131"/>
+        <location filename="../inputbindingdialog.cpp" line="147"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Bas Tuşa/Eksene... [%1]</translation>
     </message>
@@ -7330,15 +11533,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>InputBindingWidget</name>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="60"/>
+        <location filename="../inputbindingwidgets.cpp" line="69"/>
         <source>%n bindings</source>
         <translation>
             <numerusform>%n tuş atama</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="273"/>
-        <location filename="../inputbindingwidgets.cpp" line="288"/>
+        <location filename="../inputbindingwidgets.cpp" line="284"/>
+        <location filename="../inputbindingwidgets.cpp" line="300"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Tuşa Bas/Yöne Kaydır... [%1]</translation>
     </message>
@@ -7346,17 +11549,17 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>InputVibrationBindingWidget</name>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="412"/>
+        <location filename="../inputbindingwidgets.cpp" line="452"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="413"/>
+        <location filename="../inputbindingwidgets.cpp" line="453"/>
         <source>No devices with vibration motors were detected.</source>
         <translation>Titreşim özellikli bir cihaz bulunamadı.</translation>
     </message>
     <message>
-        <location filename="../inputbindingwidgets.cpp" line="419"/>
+        <location filename="../inputbindingwidgets.cpp" line="459"/>
         <source>Select vibration motor for %1.</source>
         <translation>Şunun için titreşim motorunu seçin%1.</translation>
     </message>
@@ -7364,54 +11567,186 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="749"/>
         <source>None</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="749"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="660"/>
+        <location filename="../../core/settings.cpp" line="749"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="661"/>
+        <location filename="../../core/settings.cpp" line="750"/>
         <source>Performance</source>
         <translation>Performance</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="661"/>
+        <location filename="../../core/settings.cpp" line="750"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="662"/>
+        <location filename="../../core/settings.cpp" line="751"/>
         <source>Verbose</source>
         <translation>Verbose</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="662"/>
+        <location filename="../../core/settings.cpp" line="751"/>
         <source>Developer</source>
         <translation>Developer</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="662"/>
+        <location filename="../../core/settings.cpp" line="752"/>
         <source>Profile</source>
         <translation>Profile</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="663"/>
+        <location filename="../../core/settings.cpp" line="752"/>
         <source>Debug</source>
         <translation>Debug</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="663"/>
+        <location filename="../../core/settings.cpp" line="752"/>
         <source>Trace</source>
         <translation>Trace</translation>
+    </message>
+</context>
+<context>
+    <name>LogWindow</name>
+    <message>
+        <location filename="../logwindow.cpp" line="91"/>
+        <source>Log Window - %1 [%2]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="95"/>
+        <source>Log Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="114"/>
+        <source>&amp;Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="116"/>
+        <source>&amp;Save...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="121"/>
+        <source>Cl&amp;ose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="124"/>
+        <source>&amp;Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="126"/>
+        <source>Log To &amp;System Console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="130"/>
+        <source>Log To &amp;Debug Console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="134"/>
+        <source>Log To &amp;File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="140"/>
+        <source>Attach To &amp;Main Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="144"/>
+        <source>Show &amp;Timestamps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="150"/>
+        <source>&amp;Log Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="159"/>
+        <source>&amp;Filters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="250"/>
+        <source>Select Log File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="250"/>
+        <source>Log Files (*.txt)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="257"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="257"/>
+        <source>Failed to open file for writing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="264"/>
+        <source>Log was written to %1.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../qttranslations.cpp" line="33"/>
+        <source>Services</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="34"/>
+        <source>Hide %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="35"/>
+        <source>Hide Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="36"/>
+        <source>Show All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="37"/>
+        <source>Preferences...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="38"/>
+        <source>Quit %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="39"/>
+        <source>About %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7432,8 +11767,8 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../mainwindow.ui" line="39"/>
-        <location filename="../mainwindow.cpp" line="1072"/>
-        <location filename="../mainwindow.cpp" line="1308"/>
+        <location filename="../mainwindow.cpp" line="1164"/>
+        <location filename="../mainwindow.cpp" line="1417"/>
         <source>Change Disc</source>
         <translation>CD Değiştir</translation>
     </message>
@@ -7444,8 +11779,8 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <location filename="../mainwindow.ui" line="63"/>
-        <location filename="../mainwindow.cpp" line="663"/>
-        <location filename="../mainwindow.cpp" line="940"/>
+        <location filename="../mainwindow.cpp" line="739"/>
+        <location filename="../mainwindow.cpp" line="1032"/>
         <source>Load State</source>
         <translation>Durum Kaydı Yükle</translation>
     </message>
@@ -7465,194 +11800,212 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Tema</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="113"/>
+        <location filename="../mainwindow.ui" line="114"/>
         <source>Language</source>
         <translation>Dil</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="146"/>
+        <location filename="../mainwindow.ui" line="149"/>
         <source>&amp;Help</source>
         <translation>&amp;Bilgi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="159"/>
+        <location filename="../mainwindow.ui" line="162"/>
         <source>&amp;Debug</source>
         <translation>&amp;Debug</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="163"/>
+        <location filename="../mainwindow.ui" line="166"/>
         <source>Switch GPU Renderer</source>
         <translation>Çiziciyi Değiştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="168"/>
+        <location filename="../mainwindow.ui" line="171"/>
         <source>Switch CPU Emulation Mode</source>
         <translation>İşlemci Modunu Değiştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="173"/>
+        <location filename="../mainwindow.ui" line="176"/>
         <source>Switch Crop Mode</source>
         <translation>Kırpma Modunu Seç</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="203"/>
+        <location filename="../mainwindow.ui" line="207"/>
         <source>&amp;View</source>
         <translation>&amp;Göster</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="207"/>
+        <location filename="../mainwindow.ui" line="211"/>
         <source>&amp;Window Size</source>
         <translation>&amp;Pencere Boyutu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="229"/>
+        <location filename="../mainwindow.ui" line="232"/>
         <source>&amp;Tools</source>
         <translation>&amp;Aletler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="245"/>
+        <location filename="../mainwindow.ui" line="249"/>
         <source>toolBar</source>
         <translation>toolBar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="287"/>
+        <location filename="../mainwindow.ui" line="291"/>
         <source>Start &amp;File...</source>
         <translation>Start &amp;Dosya...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="296"/>
+        <location filename="../mainwindow.ui" line="300"/>
         <source>Start &amp;Disc...</source>
         <translation>Başlat &amp;CD...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="305"/>
+        <location filename="../mainwindow.ui" line="309"/>
         <source>Start &amp;BIOS</source>
         <translation>Başlat &amp;BIOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="314"/>
+        <location filename="../mainwindow.ui" line="318"/>
         <source>&amp;Scan For New Games</source>
         <translation>&amp;Yeni Oyunlar İçin Arat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="323"/>
+        <location filename="../mainwindow.ui" line="327"/>
         <source>&amp;Rescan All Games</source>
         <translation>&amp;Tüm Oyunları Tekrar Ara</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="332"/>
+        <location filename="../mainwindow.ui" line="336"/>
         <source>Power &amp;Off</source>
         <translation>Gücü &amp;Kes</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="341"/>
+        <location filename="../mainwindow.ui" line="345"/>
         <source>&amp;Reset</source>
         <translation>&amp;Reset</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="353"/>
+        <location filename="../mainwindow.ui" line="357"/>
         <source>&amp;Pause</source>
         <translation>&amp;Duraklat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="362"/>
+        <location filename="../mainwindow.ui" line="366"/>
         <source>&amp;Load State</source>
         <translation>&amp;Durumu Kaydını Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="371"/>
+        <location filename="../mainwindow.ui" line="375"/>
         <source>&amp;Save State</source>
         <translation>&amp;Durum Kaydını Kaydet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="380"/>
+        <location filename="../mainwindow.ui" line="384"/>
         <source>E&amp;xit</source>
         <translation>Ç&amp;ık</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="389"/>
+        <location filename="../mainwindow.ui" line="393"/>
         <source>B&amp;IOS</source>
         <translation>B&amp;IOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="398"/>
+        <location filename="../mainwindow.ui" line="402"/>
         <source>C&amp;onsole</source>
         <translation>C&amp;onsole</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="407"/>
+        <location filename="../mainwindow.ui" line="411"/>
         <source>E&amp;mulation</source>
         <translation>C&amp;onsole</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="416"/>
+        <location filename="../mainwindow.ui" line="420"/>
         <source>&amp;Controllers</source>
         <translation>&amp;Controllers</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="425"/>
+        <location filename="../mainwindow.ui" line="429"/>
         <source>&amp;Hotkeys</source>
         <translation>&amp;HKısayollar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="434"/>
+        <location filename="../mainwindow.ui" line="438"/>
         <source>&amp;Display</source>
         <translation>&amp;DGöster</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="443"/>
+        <location filename="../mainwindow.ui" line="447"/>
         <source>&amp;Enhancements</source>
         <translation>&amp;Eİyileştirmeler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="452"/>
+        <location filename="../mainwindow.ui" line="456"/>
         <source>&amp;Post-Processing</source>
         <translation>&amp;PGörsel Efektler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="547"/>
+        <location filename="../mainwindow.ui" line="551"/>
         <source>Audio</source>
         <translation>Ses</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="556"/>
+        <location filename="../mainwindow.ui" line="560"/>
         <source>Achievements</source>
         <translation>Başarımlar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="565"/>
+        <location filename="../mainwindow.ui" line="569"/>
         <source>Folders</source>
         <translation>Dizinler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="574"/>
+        <location filename="../mainwindow.ui" line="578"/>
         <source>Game List</source>
         <translation>Oyun Listesi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="583"/>
+        <location filename="../mainwindow.ui" line="587"/>
         <source>General</source>
         <translation>Genel</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="592"/>
+        <location filename="../mainwindow.ui" line="596"/>
         <source>Advanced</source>
         <translation>Gelişmiş</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="777"/>
+        <location filename="../mainwindow.ui" line="614"/>
+        <location filename="../mainwindow.ui" line="626"/>
+        <source>&amp;Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="796"/>
         <source>&amp;Memory Cards</source>
         <translation>&amp;MHafıza Kartları</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="931"/>
+        <location filename="../mainwindow.ui" line="893"/>
+        <source>Enable GDB Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="962"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>Start Big Picture Mode</source>
         <translation>Tam Ekran Modunu Başlat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="940"/>
+        <location filename="../mainwindow.ui" line="971"/>
+        <location filename="../mainwindow.cpp" line="1216"/>
         <source>Big Picture</source>
         <translation>Tam Ekran Modu</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="976"/>
+        <source>Cover Downloader</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>B&amp;IOS Settings...</source>
@@ -7687,52 +12040,52 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">&amp;Görsel Efekt Ayarları...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="461"/>
+        <location filename="../mainwindow.ui" line="465"/>
         <source>Fullscreen</source>
         <translation>Tam Ekran</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="466"/>
+        <location filename="../mainwindow.ui" line="470"/>
         <source>Resolution Scale</source>
         <translation>Çözünürlük Ayarı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="475"/>
+        <location filename="../mainwindow.ui" line="479"/>
         <source>&amp;GitHub Repository...</source>
         <translation>&amp;GitHub Repository...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="484"/>
+        <location filename="../mainwindow.ui" line="488"/>
         <source>&amp;Issue Tracker...</source>
         <translation>&amp;Issue Tracker...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="493"/>
+        <location filename="../mainwindow.ui" line="497"/>
         <source>&amp;Discord Server...</source>
         <translation>&amp;Discord Server...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="502"/>
+        <location filename="../mainwindow.ui" line="506"/>
         <source>Check for &amp;Updates...</source>
         <translation>&amp;Güncelleştirmeleri Kontrol Et...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="511"/>
+        <location filename="../mainwindow.ui" line="515"/>
         <source>About &amp;Qt...</source>
         <translation>Hakkında &amp;Qt...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="520"/>
+        <location filename="../mainwindow.ui" line="524"/>
         <source>&amp;About DuckStation...</source>
         <translation>&amp;Hakkında DuckStation...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="529"/>
+        <location filename="../mainwindow.ui" line="533"/>
         <source>Change Disc...</source>
         <translation>CD&apos;yi Değiştir...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="538"/>
+        <location filename="../mainwindow.ui" line="542"/>
         <source>Cheats...</source>
         <translation>Hileler...</translation>
     </message>
@@ -7757,102 +12110,101 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Gelişmiş Ayarlar...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="601"/>
+        <location filename="../mainwindow.ui" line="605"/>
         <source>Add Game Directory...</source>
         <translation>Oyun Dizini Ekle...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="610"/>
         <source>&amp;Settings...</source>
-        <translation>&amp;Ayarlar...</translation>
+        <translation type="vanished">&amp;Ayarlar...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="615"/>
+        <location filename="../mainwindow.ui" line="634"/>
         <source>From File...</source>
         <translation>Dosyadan...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="620"/>
+        <location filename="../mainwindow.ui" line="639"/>
         <source>From Device...</source>
         <translation>Cihazdan...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="625"/>
+        <location filename="../mainwindow.ui" line="644"/>
         <source>From Game List...</source>
         <translation>Oyun Listesinden...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="630"/>
+        <location filename="../mainwindow.ui" line="649"/>
         <source>Remove Disc</source>
         <translation>CD&apos;yi Çıkar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="635"/>
+        <location filename="../mainwindow.ui" line="654"/>
         <source>Resume State</source>
         <translation>Durum Kaydından Devam</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="640"/>
+        <location filename="../mainwindow.ui" line="659"/>
         <source>Global State</source>
         <translation>Evrensel Durum Kaydı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="648"/>
+        <location filename="../mainwindow.ui" line="667"/>
         <source>Show VRAM</source>
         <translation>Show VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="656"/>
+        <location filename="../mainwindow.ui" line="675"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>Dump CPU to VRAM Copies</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="664"/>
+        <location filename="../mainwindow.ui" line="683"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Dump VRAM to CPU Copies</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="672"/>
+        <location filename="../mainwindow.ui" line="691"/>
         <source>Disable All Enhancements</source>
         <translation>Tüm İyileştirmeleri Kapat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="680"/>
+        <location filename="../mainwindow.ui" line="699"/>
         <source>Disable Interlacing</source>
         <translation>Interlacing Kapat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="688"/>
+        <location filename="../mainwindow.ui" line="707"/>
         <source>Force NTSC Timings</source>
         <translation>NTSC Zamanlamalarını Zorla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="696"/>
+        <location filename="../mainwindow.ui" line="715"/>
         <source>Dump Audio</source>
         <translation>Sesi Kaydet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="701"/>
+        <location filename="../mainwindow.ui" line="720"/>
         <source>Dump RAM...</source>
         <translation>Dump RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="706"/>
+        <location filename="../mainwindow.ui" line="725"/>
         <source>Dump VRAM...</source>
         <translation>Dump VRAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="711"/>
+        <location filename="../mainwindow.ui" line="730"/>
         <source>Dump SPU RAM...</source>
         <translation>Dump SPU RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="719"/>
+        <location filename="../mainwindow.ui" line="738"/>
         <source>Show GPU State</source>
         <translation>Show GPU State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="727"/>
+        <location filename="../mainwindow.ui" line="746"/>
         <source>Show CD-ROM State</source>
         <translation>Show CD-ROM State</translation>
     </message>
@@ -7861,27 +12213,27 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Show CDROM State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="735"/>
+        <location filename="../mainwindow.ui" line="754"/>
         <source>Show SPU State</source>
         <translation>Show SPU State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="743"/>
+        <location filename="../mainwindow.ui" line="762"/>
         <source>Show Timers State</source>
         <translation>Show Timers State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="751"/>
+        <location filename="../mainwindow.ui" line="770"/>
         <source>Show MDEC State</source>
         <translation>Show MDEC State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="759"/>
+        <location filename="../mainwindow.ui" line="778"/>
         <source>Show DMA State</source>
         <translation>Show DMA State</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="768"/>
+        <location filename="../mainwindow.ui" line="787"/>
         <source>&amp;Screenshot</source>
         <translation>&amp;Ekran Görüntüsü</translation>
     </message>
@@ -7890,108 +12242,108 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">&amp;Hafıza Kartı Ayarları...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="786"/>
-        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.ui" line="805"/>
+        <location filename="../mainwindow.cpp" line="736"/>
         <source>Resume</source>
         <translation>Devam Et</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="789"/>
+        <location filename="../mainwindow.ui" line="808"/>
         <source>Resumes the last save state created.</source>
         <translation>En son kaydedilen durum kaydından devam eder.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="800"/>
+        <location filename="../mainwindow.ui" line="819"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Toolbar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="811"/>
+        <location filename="../mainwindow.ui" line="830"/>
         <source>Lock Toolbar</source>
         <translation>Toolbar&apos;ı Kilitle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="822"/>
+        <location filename="../mainwindow.ui" line="841"/>
         <source>&amp;Status Bar</source>
         <translation>&amp;Status Bar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="831"/>
+        <location filename="../mainwindow.ui" line="850"/>
         <source>Game &amp;List</source>
         <translation>Oyun &amp;Listesi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="839"/>
+        <location filename="../mainwindow.ui" line="858"/>
         <source>System &amp;Display</source>
         <translation>Konsolu &amp;Göster</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="847"/>
+        <location filename="../mainwindow.ui" line="870"/>
         <source>Game &amp;Properties</source>
         <translation>Oyun &amp;Ayarları</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="852"/>
+        <location filename="../mainwindow.ui" line="875"/>
         <source>Memory &amp;Card Editor</source>
         <translation>Hafıza &amp;Kartı Düzenleyicisi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="857"/>
+        <location filename="../mainwindow.ui" line="880"/>
         <source>C&amp;heat Manager</source>
         <translation>H&amp;ile Yöneticisi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="862"/>
+        <location filename="../mainwindow.ui" line="885"/>
         <source>CPU D&amp;ebugger</source>
         <translation>CPU D&amp;ebugger</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="871"/>
+        <location filename="../mainwindow.ui" line="902"/>
         <source>Game &amp;Grid</source>
         <translation>Oyun Listesi &amp;Grid</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="882"/>
+        <location filename="../mainwindow.ui" line="913"/>
         <source>Show Titles (Grid View)</source>
         <translation>İsimleri Göster (Grid Görünümü)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="887"/>
+        <location filename="../mainwindow.ui" line="918"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation>Zum &amp;Gir (Grid Görünümü)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="890"/>
+        <location filename="../mainwindow.ui" line="921"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="895"/>
+        <location filename="../mainwindow.ui" line="926"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation>Zum &amp;Çık (Grid Görünümü)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="898"/>
+        <location filename="../mainwindow.ui" line="929"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="903"/>
+        <location filename="../mainwindow.ui" line="934"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>Tazele &amp;Kapakları (Grid Görünümü)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="908"/>
+        <location filename="../mainwindow.ui" line="939"/>
         <source>Open Memory Card Directory...</source>
         <translation>Hafıza Kartı Dizinini Aç...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="913"/>
+        <location filename="../mainwindow.ui" line="944"/>
         <source>Open Data Directory...</source>
         <translation>Veri Dizinini Aç...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="922"/>
+        <location filename="../mainwindow.ui" line="953"/>
         <source>Power Off &amp;Without Saving</source>
         <translation>Sistemi Kapat &amp;Kaydetmeden</translation>
     </message>
@@ -8004,23 +12356,22 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Host ekran oluşturulamadı.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="167"/>
         <source>Failed to create host display device context.</source>
-        <translation>Host ekran cihazında ekran oluşturulamadı.</translation>
+        <translation type="vanished">Host ekran cihazında ekran oluşturulamadı.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="595"/>
-        <location filename="../mainwindow.cpp" line="1057"/>
+        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.cpp" line="1149"/>
         <source>Select Disc Image</source>
         <translation>Dosya Seç</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1042"/>
+        <location filename="../mainwindow.cpp" line="1134"/>
         <source>Start Disc</source>
         <translation>Disk Başlat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="610"/>
+        <location filename="../mainwindow.cpp" line="675"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Hiç bir CD-ROM cihazı bulunamadı. CD-ROM cihazı takılı olduğundan ve erişim yetkileriniz olduğundan emin olun.</translation>
     </message>
@@ -8029,73 +12380,70 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation type="vanished">Tüm Dosya Türleri/Uzantıları (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Dosyaları (*.chd);;Error Code Modeler Dosyaları (*.ecm);;Media Descriptor Sidecar Dosyaları (*.mds);;PlayStation EBOOT&apos;ları (*.pbp);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Dosyaları (*.psf *.minipsf);;Oynatma Listeleri (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="47"/>
+        <location filename="../mainwindow.cpp" line="62"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="157"/>
-        <location filename="../mainwindow.cpp" line="167"/>
-        <location filename="../mainwindow.cpp" line="255"/>
-        <location filename="../mainwindow.cpp" line="960"/>
-        <location filename="../mainwindow.cpp" line="1222"/>
+        <location filename="../mainwindow.cpp" line="304"/>
+        <location filename="../mainwindow.cpp" line="1052"/>
+        <location filename="../mainwindow.cpp" line="1331"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="157"/>
+        <location filename="../mainwindow.cpp" line="304"/>
         <source>Failed to get window info from widget</source>
         <translation>Widget/Ekran Aracından pencere bilgisi alınamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="255"/>
         <source>Failed to get new window info from widget</source>
-        <translation>Widget/Ekran Aracından yeni pencere bilgisi alınamadı</translation>
+        <translation type="vanished">Widget/Ekran Aracından yeni pencere bilgisi alınamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="508"/>
+        <location filename="../mainwindow.cpp" line="552"/>
         <source>Paused</source>
         <translation>Duraklatıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="624"/>
+        <location filename="../mainwindow.cpp" line="689"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="628"/>
+        <location filename="../mainwindow.cpp" line="693"/>
         <source>Select disc drive:</source>
         <translation>CD-ROM cihazı seçin:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="683"/>
+        <location filename="../mainwindow.cpp" line="759"/>
         <source>Resume (%1)</source>
         <translation>Devam Et (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="690"/>
-        <location filename="../mainwindow.cpp" line="807"/>
-        <location filename="../mainwindow.cpp" line="846"/>
+        <location filename="../mainwindow.cpp" line="766"/>
+        <location filename="../mainwindow.cpp" line="883"/>
+        <location filename="../mainwindow.cpp" line="922"/>
         <source>Game Save %1 (%2)</source>
         <translation>Oyun Kayıt Dosyası %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="699"/>
+        <location filename="../mainwindow.cpp" line="775"/>
         <source>Edit Memory Cards...</source>
         <translation>Hafıza Kartlarını Düzenle...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="747"/>
+        <location filename="../mainwindow.cpp" line="823"/>
         <source>Delete Save States...</source>
         <translation>Durum Kayıtlarını Sil...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="753"/>
+        <location filename="../mainwindow.cpp" line="829"/>
         <source>Confirm Save State Deletion</source>
         <translation>Durum Kayıdı Silinişini Onayla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="754"/>
+        <location filename="../mainwindow.cpp" line="830"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -8104,67 +12452,67 @@ The saves will not be recoverable.</source>
 Durum kayıtları kurtarılamayacak.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="791"/>
+        <location filename="../mainwindow.cpp" line="867"/>
         <source>Load From File...</source>
         <translation>Dosyadan Yükle...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="793"/>
-        <location filename="../mainwindow.cpp" line="835"/>
+        <location filename="../mainwindow.cpp" line="869"/>
+        <location filename="../mainwindow.cpp" line="911"/>
         <source>Select Save State File</source>
         <translation>Durum Kaydı Dosyasını Seç</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="793"/>
-        <location filename="../mainwindow.cpp" line="835"/>
+        <location filename="../mainwindow.cpp" line="869"/>
+        <location filename="../mainwindow.cpp" line="911"/>
         <source>Save States (*.sav)</source>
         <translation>Durum Kayıtları (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="799"/>
+        <location filename="../mainwindow.cpp" line="875"/>
         <source>Undo Load State</source>
         <translation>Durum Kaydı Yüklemeden Önceye Geri Sar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="807"/>
-        <location filename="../mainwindow.cpp" line="846"/>
+        <location filename="../mainwindow.cpp" line="883"/>
+        <location filename="../mainwindow.cpp" line="922"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Oyun Kayıdı %1 (Boş)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="813"/>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="889"/>
+        <location filename="../mainwindow.cpp" line="928"/>
         <source>Global Save %1 (%2)</source>
         <translation>Evrensel Kayıt %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="813"/>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="889"/>
+        <location filename="../mainwindow.cpp" line="928"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Evrensel Kayıt %1 (Boş)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="830"/>
+        <location filename="../mainwindow.cpp" line="906"/>
         <source>Save To File...</source>
         <translation>Dosyaya Kaydet...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="879"/>
+        <location filename="../mainwindow.cpp" line="971"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;EAçık Hileler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="881"/>
+        <location filename="../mainwindow.cpp" line="973"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;AHileleri Uygula</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="935"/>
+        <location filename="../mainwindow.cpp" line="1027"/>
         <source>Load Resume State</source>
         <translation>Devam Kaydını Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="936"/>
+        <location filename="../mainwindow.cpp" line="1028"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -8177,138 +12525,181 @@ Do you want to load this state, or start from a fresh boot?</source>
 Bu durumu yüklemeyi mi isterseniz ya da sıfırdan bootlamayı mı?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="941"/>
+        <location filename="../mainwindow.cpp" line="1033"/>
         <source>Fresh Boot</source>
         <translation>Tazeden Bootla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="942"/>
+        <location filename="../mainwindow.cpp" line="1034"/>
         <source>Delete And Boot</source>
         <translation>Sil Ve Bootla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="961"/>
+        <location filename="../mainwindow.cpp" line="1053"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Şu durum kaydı silinemedi%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1018"/>
+        <location filename="../mainwindow.cpp" line="1110"/>
         <source>Confirm Disc Change</source>
         <translation>Disk Değiştirmeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1019"/>
+        <location filename="../mainwindow.cpp" line="1111"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>Diskleri değiştirmek mi istersiniz yoksa yeni diskten bootlamayı mı (Reset Atarak)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1021"/>
+        <location filename="../mainwindow.cpp" line="1113"/>
         <source>Swap Disc</source>
         <translation>Disk Değiştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1022"/>
+        <location filename="../mainwindow.cpp" line="1114"/>
         <source>Reset</source>
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1023"/>
+        <location filename="../mainwindow.cpp" line="1115"/>
         <source>Cancel</source>
         <translation>İptal</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1107"/>
-        <location filename="../mainwindow.cpp" line="2532"/>
+        <location filename="../mainwindow.cpp" line="1199"/>
+        <location filename="../mainwindow.cpp" line="2743"/>
         <source>Cheat Manager</source>
         <translation>Hile Yöneticisi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1222"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
+        <source>Stop Big Picture Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1216"/>
+        <source>Exit Big Picture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1331"/>
         <source>You must select a disc to change discs.</source>
         <translation>Disk değiştirmek için disk seçmelisiniz.</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1480"/>
+        <source>Failed to remove &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1489"/>
+        <source>Confirm Reset</source>
+        <translation type="unfinished">Resetlemeyi Onayla</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1490"/>
+        <source>Are you sure you want to reset the play time for &apos;%1&apos;?
+
+This action cannot be undone.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
         <translation type="vanished">Şimdi oynatılan dosya, oyun listesinde bulunamadı. Bu dosyanın dizinini oyun listesinde taranacak şekilde ayarlayınız.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1261"/>
+        <location filename="../mainwindow.cpp" line="1370"/>
         <source>Properties...</source>
         <translation>Bilgiler...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1265"/>
+        <location filename="../mainwindow.cpp" line="1374"/>
         <source>Open Containing Directory...</source>
         <translation>İçeren Dizini Aç...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1270"/>
+        <location filename="../mainwindow.cpp" line="1379"/>
         <source>Set Cover Image...</source>
         <translation>Kapak Seç...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1280"/>
+        <location filename="../mainwindow.cpp" line="1389"/>
         <source>Default Boot</source>
         <translation>Varsayılan Başlatma</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1283"/>
+        <location filename="../mainwindow.cpp" line="1392"/>
         <source>Fast Boot</source>
         <translation>Hızlı Başlatma</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1289"/>
+        <location filename="../mainwindow.cpp" line="1398"/>
         <source>Full Boot</source>
         <translation>Tam Başlatma</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1297"/>
+        <location filename="../mainwindow.cpp" line="1406"/>
         <source>Boot and Debug</source>
         <translation>Boot and Debug</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1318"/>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>Exclude From List</source>
         <translation>Listeden Dışla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1321"/>
+        <location filename="../mainwindow.cpp" line="1429"/>
+        <source>Reset Play Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1433"/>
         <source>Add Search Directory...</source>
         <translation>Arama Dizini Ekle...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1329"/>
+        <location filename="../mainwindow.cpp" line="1442"/>
         <source>Select Cover Image</source>
         <translation>Kapak Dosyası Seç</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1330"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
-        <translation>Tüm Kapak Dosyası Türleri (*.jpg *.jpeg *.png)</translation>
+        <translation type="vanished">Tüm Kapak Dosyası Türleri (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.cpp" line="1460"/>
         <source>Cover Already Exists</source>
         <translation>Kapak Zaten Var</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1337"/>
+        <location filename="../mainwindow.cpp" line="1461"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Bu oyunun zaten kapağı var. Üstüne yazılsın mı?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1351"/>
-        <location filename="../mainwindow.cpp" line="1357"/>
+        <location filename="../mainwindow.cpp" line="1456"/>
+        <location filename="../mainwindow.cpp" line="1470"/>
+        <location filename="../mainwindow.cpp" line="1475"/>
+        <location filename="../mainwindow.cpp" line="1480"/>
         <source>Copy Error</source>
         <translation>Kopyalama Hatası</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1351"/>
+        <location filename="../mainwindow.cpp" line="1442"/>
+        <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1456"/>
+        <source>You must select a different file to the current cover image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1470"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Varolan kapak kaldırılamadı &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1357"/>
+        <location filename="../mainwindow.cpp" line="1475"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Şu&apos;%1&apos; şuna kopyalanamadı &apos;%2&apos;</translation>
     </message>
@@ -8317,94 +12708,108 @@ Bu durumu yüklemeyi mi isterseniz ya da sıfırdan bootlamayı mı?</translatio
         <translation type="vanished">Dil değiştirildi. Değişimesi için programı tekrar başlatın.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1493"/>
+        <location filename="../mainwindow.cpp" line="1636"/>
         <source>%1x Scale</source>
         <translation>%1x Katı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1900"/>
-        <location filename="../mainwindow.cpp" line="1907"/>
-        <location filename="../mainwindow.cpp" line="1916"/>
+        <location filename="../mainwindow.cpp" line="2049"/>
+        <location filename="../mainwindow.cpp" line="2056"/>
+        <location filename="../mainwindow.cpp" line="2065"/>
         <source>Destination File</source>
         <translation>Hedef Dosya</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1900"/>
-        <location filename="../mainwindow.cpp" line="1916"/>
+        <location filename="../mainwindow.cpp" line="2049"/>
+        <location filename="../mainwindow.cpp" line="2065"/>
         <source>Binary Files (*.bin)</source>
         <translation>Binary Dosyalar (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1908"/>
+        <location filename="../mainwindow.cpp" line="2057"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Binary Dosyalar (*.bin);;PNG Görüntüler (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1932"/>
         <source>Default</source>
-        <translation>Varsayılan</translation>
+        <translation type="vanished">Varsayılan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1933"/>
+        <location filename="../generalsettingswidget.cpp" line="14"/>
+        <source>Native</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../generalsettingswidget.cpp" line="15"/>
         <source>Fusion</source>
         <translation>Fusion</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1934"/>
+        <location filename="../generalsettingswidget.cpp" line="16"/>
         <source>Dark Fusion (Gray)</source>
         <translation>Koyu Fusion (Gri)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1935"/>
+        <location filename="../generalsettingswidget.cpp" line="17"/>
         <source>Dark Fusion (Blue)</source>
         <translation>Koyu Fusion (Mavi)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1936"/>
+        <location filename="../generalsettingswidget.cpp" line="18"/>
         <source>QDarkStyle</source>
         <translation>QDarkStyle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2370"/>
+        <location filename="../mainwindow.cpp" line="2562"/>
         <source>Confirm Shutdown</source>
         <translation>Sistemi Kapatmayı Onayla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2373"/>
+        <location filename="../mainwindow.cpp" line="2563"/>
+        <source>Are you sure you want to shut down the virtual machine?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2565"/>
         <source>Save State For Resume</source>
         <translation>Devam Etmek İçin Durum Kaydı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2454"/>
-        <location filename="../mainwindow.cpp" line="2459"/>
-        <location filename="../mainwindow.cpp" line="2479"/>
-        <location filename="../mainwindow.cpp" line="2488"/>
+        <location filename="../mainwindow.cpp" line="2642"/>
+        <location filename="../mainwindow.cpp" line="2647"/>
+        <location filename="../mainwindow.cpp" line="2667"/>
+        <location filename="../mainwindow.cpp" line="2676"/>
         <source>Memory Card Not Found</source>
         <translation>Hafıza Kartı Bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2455"/>
+        <location filename="../mainwindow.cpp" line="2643"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Hafıza kartı &apos;%1&apos; diye bir kart yok Boş bir hafıza kartı oluşturmak istermisiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2460"/>
+        <location filename="../mainwindow.cpp" line="2648"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Şu hafıza kartı oluşturulamadı &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2480"/>
-        <location filename="../mainwindow.cpp" line="2489"/>
+        <location filename="../mainwindow.cpp" line="2668"/>
+        <location filename="../mainwindow.cpp" line="2677"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Hafıza kartı &apos;%1&apos; bulunamadı. Oyunu açıp oyunu kaydetmeyi deneyin.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2530"/>
+        <location filename="../mainwindow.cpp" line="2693"/>
+        <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="2741"/>
         <source>Do not show again</source>
         <translation>Tekrar Gösterme</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2534"/>
+        <location filename="../mainwindow.cpp" line="2745"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -8417,17 +12822,17 @@ Hileler durum kayıtlarına bulaşır ve kapansa bile kalır. Hileleri kapadıkt
 Devam etmeye emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2596"/>
+        <location filename="../mainwindow.cpp" line="2820"/>
         <source>Updater Error</source>
         <translation>Güncelleştirme Hatası</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2602"/>
+        <location filename="../mainwindow.cpp" line="2826"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Üzgünüz. Bizim resmi DuckStation sürümü yerine elle hazırlanmış bir Duckstation sürümünü güncelleştirmeyi deniyorsunuz. Sorun ve uyumsuzluk olmasın diye otomatik güncelleştirici sadece resmi DuckStation sürümlerini güncellemektedir.&lt;/p&gt;&lt;p&gt;Resmi bir Duckstation sürümü için şuraya gidin:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/releases&quot;&gt;https://github.com/stenzek/duckstation/releases&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2608"/>
+        <location filename="../mainwindow.cpp" line="2832"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Otomatik güncelleme sistemi işletim sisteminizde desteklenmemektedir.</translation>
     </message>
@@ -8476,57 +12881,61 @@ Devam etmeye emin misiniz?</translation>
         <translation>Aç...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="113"/>
+        <location filename="../memorycardeditordialog.cpp" line="116"/>
         <source>Format Card</source>
         <translation>Kartı Formatla</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="114"/>
+        <location filename="../memorycardeditordialog.cpp" line="117"/>
         <source>Import File...</source>
         <translation>İçeri Dosya Aktar...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="115"/>
+        <location filename="../memorycardeditordialog.cpp" line="118"/>
         <source>Import Card...</source>
         <translation>İçeri Kart Aktar...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="116"/>
+        <location filename="../memorycardeditordialog.cpp" line="119"/>
         <source>Save</source>
         <translation>Kaydet</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="24"/>
+        <location filename="../memorycardeditordialog.cpp" line="27"/>
         <source>Delete File</source>
         <translation>Dosya Sil</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="25"/>
+        <location filename="../memorycardeditordialog.cpp" line="15"/>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditordialog.cpp" line="28"/>
         <source>Undelete File</source>
         <translation>Silinmiş Dosyayı Kurtar</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="26"/>
+        <location filename="../memorycardeditordialog.cpp" line="29"/>
         <source>Export File</source>
         <translation>Dosyayı Dışarı Aktar</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="27"/>
+        <location filename="../memorycardeditordialog.cpp" line="30"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="28"/>
+        <location filename="../memorycardeditordialog.cpp" line="31"/>
         <source>&gt;&gt;</source>
         <translation>&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="13"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>Tüm Hafıza Kartı Çeşitleri (*.mcd *.mcr *.mc)</translation>
+        <translation type="vanished">Tüm Hafıza Kartı Çeşitleri (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="15"/>
+        <location filename="../memorycardeditordialog.cpp" line="18"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
         <translation>İçeri aktarılabilinecek Hafıza Kartı Çeşitleri (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
@@ -8535,142 +12944,142 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Tekli Hafıza Kartı Kayıtları (*.mcs)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="17"/>
+        <location filename="../memorycardeditordialog.cpp" line="20"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
         <translation>Tekli kayıt dosyası (*.mcs);;Tüm dosyalar (*.*)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="45"/>
+        <location filename="../memorycardeditordialog.cpp" line="48"/>
         <source>New Card...</source>
         <translation>Yeni Kart...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="46"/>
+        <location filename="../memorycardeditordialog.cpp" line="49"/>
         <source>Open Card...</source>
         <translation>Kart Aç...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="229"/>
-        <location filename="../memorycardeditordialog.cpp" line="339"/>
-        <location filename="../memorycardeditordialog.cpp" line="364"/>
-        <location filename="../memorycardeditordialog.cpp" line="403"/>
-        <location filename="../memorycardeditordialog.cpp" line="413"/>
-        <location filename="../memorycardeditordialog.cpp" line="423"/>
-        <location filename="../memorycardeditordialog.cpp" line="429"/>
-        <location filename="../memorycardeditordialog.cpp" line="448"/>
-        <location filename="../memorycardeditordialog.cpp" line="468"/>
-        <location filename="../memorycardeditordialog.cpp" line="496"/>
-        <location filename="../memorycardeditordialog.cpp" line="514"/>
-        <location filename="../memorycardeditordialog.cpp" line="560"/>
+        <location filename="../memorycardeditordialog.cpp" line="232"/>
+        <location filename="../memorycardeditordialog.cpp" line="342"/>
+        <location filename="../memorycardeditordialog.cpp" line="367"/>
+        <location filename="../memorycardeditordialog.cpp" line="406"/>
+        <location filename="../memorycardeditordialog.cpp" line="416"/>
+        <location filename="../memorycardeditordialog.cpp" line="426"/>
+        <location filename="../memorycardeditordialog.cpp" line="432"/>
+        <location filename="../memorycardeditordialog.cpp" line="451"/>
+        <location filename="../memorycardeditordialog.cpp" line="471"/>
+        <location filename="../memorycardeditordialog.cpp" line="499"/>
+        <location filename="../memorycardeditordialog.cpp" line="517"/>
+        <location filename="../memorycardeditordialog.cpp" line="563"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="229"/>
-        <location filename="../memorycardeditordialog.cpp" line="339"/>
+        <location filename="../memorycardeditordialog.cpp" line="232"/>
+        <location filename="../memorycardeditordialog.cpp" line="342"/>
         <source>Failed to load memory card image.</source>
         <translation>Hafıza Kartı Dosyası Yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="273"/>
+        <location filename="../memorycardeditordialog.cpp" line="276"/>
         <source> (Deleted)</source>
         <translation> (Deleted)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../memorycardeditordialog.cpp" line="293"/>
+        <location filename="../memorycardeditordialog.cpp" line="296"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n blok boş%1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="307"/>
-        <location filename="../memorycardeditordialog.cpp" line="333"/>
+        <location filename="../memorycardeditordialog.cpp" line="310"/>
+        <location filename="../memorycardeditordialog.cpp" line="336"/>
         <source>Select Memory Card</source>
         <translation>Hafıza Kartı Seç</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="365"/>
+        <location filename="../memorycardeditordialog.cpp" line="368"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>Şu karta veri yazılamadı &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="379"/>
+        <location filename="../memorycardeditordialog.cpp" line="382"/>
         <source>Save memory card?</source>
         <translation>Hafıza Kartını Kaydet?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="380"/>
+        <location filename="../memorycardeditordialog.cpp" line="383"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>Hafıza Kartı &apos;%1&apos; kaydedilmedi, çıkmadan önce kayıt etmek istermiydiniz?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="404"/>
+        <location filename="../memorycardeditordialog.cpp" line="407"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>Hedef hafıza kartı aynı adda bir kayıt dosyası içeriyor (%1) Kopyalama işleminden önce o dosyayı siliniz.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="414"/>
+        <location filename="../memorycardeditordialog.cpp" line="417"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>Yetersiz Blok,Bu dosya %1 blok istiyor ama sadece boşta %2 blok var.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="423"/>
+        <location filename="../memorycardeditordialog.cpp" line="426"/>
         <source>Failed to read file %1</source>
         <translation>Dosya okunamadı %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="429"/>
+        <location filename="../memorycardeditordialog.cpp" line="432"/>
         <source>Failed to write file %1</source>
         <translation>Dosya yazılamadı %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="448"/>
+        <location filename="../memorycardeditordialog.cpp" line="451"/>
         <source>Failed to delete file %1</source>
         <translation>Dosya silinemedi %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="469"/>
+        <location filename="../memorycardeditordialog.cpp" line="472"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Şu dosya kurtarılamadı %1. Başka bir kayıt dosyası tarafından üstüne yazılmış olunulabilir.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="484"/>
+        <location filename="../memorycardeditordialog.cpp" line="487"/>
         <source>Select Single Savefile</source>
         <translation>Tekli Kayıt Dosyası Seç</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="497"/>
+        <location filename="../memorycardeditordialog.cpp" line="500"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
         <translation>Şu dosya kayıdı dışarı aktarılamadı %1. Detaylar için günlüğe/log&apos;a bakınız.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="507"/>
+        <location filename="../memorycardeditordialog.cpp" line="510"/>
         <source>Select Import File</source>
         <translation>İçeri Aktarılacak Dosyayı Seç</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="514"/>
+        <location filename="../memorycardeditordialog.cpp" line="517"/>
         <source>Failed to import memory card. The log may contain more information.</source>
         <translation>Hafıza kartı içeri aktarılamadı. Günlük/Log bilgi içeriyor olabilir.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="531"/>
+        <location filename="../memorycardeditordialog.cpp" line="534"/>
         <source>Format memory card?</source>
         <translation>Hafıza kartına format at?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="532"/>
+        <location filename="../memorycardeditordialog.cpp" line="535"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>Hafıza kartına format atmak tüm kayıtları kurtarılamayacak şekilde silecek. Format atılacak hafıza kartı şurada olacak &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="553"/>
+        <location filename="../memorycardeditordialog.cpp" line="556"/>
         <source>Select Import Save File</source>
         <translation>İçeri Alınacak Kayıt Dosyasını Seçin</translation>
     </message>
     <message>
-        <location filename="../memorycardeditordialog.cpp" line="561"/>
+        <location filename="../memorycardeditordialog.cpp" line="564"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
         <translation>Kayıt dosyası içeri aktarılamadı. Hafıza kartında boş yer olup olmadığına ya da aynı isimli bir kayıt dosyasının kartta olup olmadığına bakın.</translation>
     </message>
@@ -8678,85 +13087,93 @@ Devam etmeye emin misiniz?</translation>
 <context>
     <name>MemoryCardSettingsWidget</name>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="16"/>
+        <location filename="../memorycardsettingswidget.cpp" line="23"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
         <translation>Tüm Hafıza Kartı Tipleri (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="38"/>
+        <location filename="../memorycardsettingswidget.cpp" line="45"/>
         <source>Shared Settings</source>
         <translation>Paylaşılan Ayarlar</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="45"/>
+        <location filename="../memorycardsettingswidget.cpp" line="52"/>
         <source>Memory Card Directory:</source>
         <translation>Hafıza Kartı Dizini:</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="40"/>
-        <location filename="../memorycardsettingswidget.cpp" line="140"/>
+        <location filename="../memorycardsettingswidget.cpp" line="47"/>
+        <location filename="../memorycardsettingswidget.cpp" line="147"/>
         <source>Browse...</source>
         <translation>Ara...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="41"/>
-        <location filename="../memorycardsettingswidget.cpp" line="145"/>
+        <location filename="../memorycardsettingswidget.cpp" line="48"/>
+        <location filename="../memorycardsettingswidget.cpp" line="152"/>
         <source>Reset</source>
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="58"/>
-        <location filename="../memorycardsettingswidget.cpp" line="63"/>
         <source>Use Single Card For Sub-Images</source>
-        <translation>Devam CD&apos;leri İçin Tek Kart Kullan</translation>
+        <translation type="vanished">Devam CD&apos;leri İçin Tek Kart Kullan</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="63"/>
+        <location filename="../memorycardsettingswidget.cpp" line="70"/>
         <source>Checked</source>
         <translation>Seçili</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="64"/>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Çoklu CD formatındaki (m3u/pbp) ve oyuna çzel (isim) Hafıza kartları kullanırken tek bir hafıza kartı kullanılacak. Seçili değilse her CD&apos;nin kendine özel bir hafıza kartı olacak.</translation>
+        <translation type="vanished">Çoklu CD formatındaki (m3u/pbp) ve oyuna çzel (isim) Hafıza kartları kullanırken tek bir hafıza kartı kullanılacak. Seçili değilse her CD&apos;nin kendine özel bir hafıza kartı olacak.</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="73"/>
+        <location filename="../memorycardsettingswidget.cpp" line="80"/>
         <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
         <translation>Her oyuna özel hafıza kartı modu etkin ise bu kartlar hafıza kartları dizinine kayıt edilir.</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="42"/>
+        <location filename="../memorycardsettingswidget.cpp" line="49"/>
         <source>Open Directory...</source>
         <translation>Dizini Aç...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="86"/>
+        <location filename="../memorycardsettingswidget.cpp" line="65"/>
+        <location filename="../memorycardsettingswidget.cpp" line="70"/>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="71"/>
+        <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="93"/>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
         <translation>Hafıza kartı düzenleyicisi kayıtları kartlar arası taşıma ve kartları içeri aktarmaya yarar.</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="91"/>
+        <location filename="../memorycardsettingswidget.cpp" line="98"/>
         <source>Memory Card Editor...</source>
         <translation>Hafıza Kartı Düzenleyicisi...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="111"/>
+        <location filename="../memorycardsettingswidget.cpp" line="118"/>
         <source>Memory Card %1</source>
         <translation>Hafıza Kartı %1</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="126"/>
+        <location filename="../memorycardsettingswidget.cpp" line="133"/>
         <source>Memory Card Type:</source>
         <translation>Hafıza Kartı Türü:</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="150"/>
+        <location filename="../memorycardsettingswidget.cpp" line="157"/>
         <source>Shared Memory Card Path:</source>
         <translation>Paylaşılan Hafıza Kartı Dizini:</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="158"/>
+        <location filename="../memorycardsettingswidget.cpp" line="165"/>
         <source>Select path to memory card image</source>
         <translation>Hafıza kartı dosyası için dizin seçin</translation>
     </message>
@@ -8768,32 +13185,40 @@ Devam etmeye emin misiniz?</translation>
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1106"/>
+        <location filename="../../core/settings.cpp" line="1314"/>
         <source>No Memory Card</source>
         <translation>Hafıza Kartı Yok</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1106"/>
+        <location filename="../../core/settings.cpp" line="1314"/>
         <source>Shared Between All Games</source>
         <translation>Tüm Oyunlarla Ortak</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1107"/>
+        <location filename="../../core/settings.cpp" line="1315"/>
+        <source>Separate Card Per Game (Serial)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="1316"/>
+        <source>Separate Card Per Game (Title)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Separate Card Per Game (Game Code)</source>
-        <translation>Her Oyuna Ayrı (Oyunun Koduna Göre)</translation>
+        <translation type="vanished">Her Oyuna Ayrı (Oyunun Koduna Göre)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1108"/>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation>Her Oyuna Ayrı (Oyunun İsmine Göre)</translation>
+        <translation type="vanished">Her Oyuna Ayrı (Oyunun İsmine Göre)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1109"/>
+        <location filename="../../core/settings.cpp" line="1317"/>
         <source>Separate Card Per Game (File Title)</source>
         <translation>Her Oyuna Ayrı (Dosya İsmine Göre)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1110"/>
+        <location filename="../../core/settings.cpp" line="1318"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>Kullan At Kart (Kartı Kayıt Etme)</translation>
     </message>
@@ -8801,22 +13226,22 @@ Devam etmeye emin misiniz?</translation>
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1162"/>
+        <location filename="../../core/settings.cpp" line="1370"/>
         <source>Disabled</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1162"/>
+        <location filename="../../core/settings.cpp" line="1370"/>
         <source>Enable on Port 1 Only</source>
         <translation>Sadece Port 1&apos;de</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1163"/>
+        <location filename="../../core/settings.cpp" line="1371"/>
         <source>Enable on Port 2 Only</source>
         <translation>Sadece Port 2&apos;de</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1163"/>
+        <location filename="../../core/settings.cpp" line="1371"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Port 1 Ve Port 2&apos;de</translation>
     </message>
@@ -8911,89 +13336,169 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">R</translation>
     </message>
     <message>
-        <source>Start</source>
-        <translation type="vanished">Start</translation>
+        <location filename="../../core/negcon.cpp" line="240"/>
+        <source>D-Pad Up</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="253"/>
+        <location filename="../../core/negcon.cpp" line="241"/>
+        <source>D-Pad Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="242"/>
+        <source>D-Pad Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="243"/>
+        <source>D-Pad Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="244"/>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="245"/>
+        <source>A Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="246"/>
+        <source>B Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="247"/>
+        <source>I Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="248"/>
+        <source>II Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="249"/>
+        <source>Left Trigger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="250"/>
+        <source>Right Trigger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="251"/>
+        <source>Steering (Twist) Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="252"/>
+        <source>Steering (Twist) Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="260"/>
         <source>Steering Axis Deadzone</source>
         <translation>Direksiyon Ekseni Deadzone</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="254"/>
+        <location filename="../../core/negcon.cpp" line="261"/>
         <source>Sets deadzone size for steering axis.</source>
         <translation>Direksiyon ekseni için deadzone ayarlayın.</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="263"/>
+        <source>Steering Axis Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="264"/>
+        <source>Sets the steering axis scaling factor.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../mainwindow.cpp" line="356"/>
         <source>Acquired exclusive fullscreen.</source>
-        <translation>Exclusive Tam Ekran Ele Geçirildi.</translation>
+        <translation type="vanished">Exclusive Tam Ekran Ele Geçirildi.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="360"/>
         <source>Failed to acquire exclusive fullscreen.</source>
-        <translation>Exclusive Tam Ekran Ele Geçirilemedi.</translation>
+        <translation type="vanished">Exclusive Tam Ekran Ele Geçirilemedi.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="619"/>
         <source>Lost exclusive fullscreen.</source>
-        <translation>Exlusive Tam Ekran Kaybedildi.</translation>
+        <translation type="vanished">Exlusive Tam Ekran Kaybedildi.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="52"/>
+        <location filename="../../core/analog_controller.cpp" line="67"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
         <translation>Analog mod zorlaması, oyun bazlı ayarlar tarafından kapatılıyor. Kol dijital olarak başlayacak.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="71"/>
         <source>%ux MSAA is not supported, using %ux instead.</source>
-        <translation>%ux MSAA dekteklenmiyor, %ux kullanılacak.</translation>
+        <translation type="vanished">%ux MSAA dekteklenmiyor, %ux kullanılacak.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="76"/>
+        <location filename="../../core/gpu_hw.cpp" line="450"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>SSAA desteklenmiyor, MSAA kullanılacak.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="81"/>
+        <location filename="../../core/gpu_hw.cpp" line="456"/>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
         <translation>Doku filtreleyicisi &apos;%s&apos; şimdi kullanılan çizici tarafından desteklenmiyor.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="89"/>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
-        <translation>Adaptive downsampling şimdiki çizici tarafından desteklenmiyor. Box filter kullanılacak.</translation>
+        <translation type="vanished">Adaptive downsampling şimdiki çizici tarafından desteklenmiyor. Box filter kullanılacak.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="157"/>
+        <location filename="../../core/gpu_hw.cpp" line="358"/>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
         <translation>Çözünürlük: %ux (Ekran %ux%u, VRAM %ux%u)</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="167"/>
+        <location filename="../../core/gpu_hw.cpp" line="369"/>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
         <translation>Multisample anti-aliasing %ux (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="173"/>
+        <location filename="../../core/gpu_hw.cpp" line="374"/>
         <source>Multisample anti-aliasing set to %ux.</source>
         <translation>Multisample anti-aliasing  %ux.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="236"/>
+        <location filename="../../core/gpu_hw.cpp" line="439"/>
+        <source>{}x MSAA is not supported, using {}x instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="467"/>
+        <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="482"/>
+        <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="531"/>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
         <translation>Şu çizim çözünürlüğü %ux adaptive smoothing desteklemiyor, şu kullanılacak %ux.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw_opengl.cpp" line="58"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation>OpenGL çizici yok, sürücünüz yada donanımınız aşırı eski. OpenGL 3.1 or OpenGL ES 3.0 is gerekiyor.</translation>
+        <translation type="vanished">OpenGL çizici yok, sürücünüz yada donanımınız aşırı eski. OpenGL 3.1 or OpenGL ES 3.0 is gerekiyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="890"/>
+        <location filename="../../core/system.cpp" line="1074"/>
         <source>System reset.</source>
         <translation>Sistem Resetlendi.</translation>
     </message>
@@ -9002,12 +13507,12 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Durum kaydı şuradan yükleniyor &apos;%s&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="953"/>
+        <location filename="../../core/system.cpp" line="1148"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Şuradan durum kaydı yüklenemedi &apos;%s&apos; . Reset atılıyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="994"/>
+        <location filename="../../core/system.cpp" line="1189"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Durum kaydı şuraya &apos;%s&apos; kaydedilemedi.</translation>
     </message>
@@ -9016,32 +13521,41 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Durum Kaydı şuraya kaydedildi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="605"/>
+        <location filename="../../core/settings.cpp" line="629"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP Yazılımsal çiziciyle uyumsuz. PGXP kapatılıyor.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="623"/>
+        <location filename="../../core/settings.cpp" line="647"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
         <translation>Geri sarma işlemi 32 Bit ARM Android cihazlarda desteklenmez.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3036"/>
+        <location filename="../../core/settings.cpp" line="653"/>
+        <source>Runahead is not supported on 32-bit ARM for Android.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/settings.cpp" line="662"/>
+        <source>Rewind is disabled because runahead is enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3463"/>
         <source>Switching to %s%s GPU renderer.</source>
         <translation>Şu çiziciye geçiliyor.  %s%s .</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3058"/>
+        <location filename="../../core/system.cpp" line="3487"/>
         <source>Switching to %s audio backend.</source>
         <translation>Şu ses arayüzüne geçiliyor. %s .</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3080"/>
         <source>Switching to %s CPU execution mode.</source>
-        <translation>Şu işlemci moduna geçiliyor %s .</translation>
+        <translation type="vanished">Şu işlemci moduna geçiliyor %s .</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3093"/>
+        <location filename="../../core/system.cpp" line="3523"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>Recompiler options changed, flushing all blocks.</translation>
     </message>
@@ -9062,32 +13576,57 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">CPU ICache disabled, flushing all blocks.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3152"/>
+        <location filename="../../core/system.cpp" line="3590"/>
         <source>PGXP enabled, recompiling all blocks.</source>
         <translation>PGXP açıldı, recompiling all blocks.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3153"/>
+        <location filename="../../core/system.cpp" line="3591"/>
         <source>PGXP disabled, recompiling all blocks.</source>
         <translation>PGXP kapatıldı, recompiling all blocks.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4146"/>
+        <location filename="../../core/system.cpp" line="4353"/>
+        <source>{} cheats are enabled. This may result in instability.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4416"/>
+        <source>Saved {} cheats to &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4431"/>
+        <source>Deleted cheat list &apos;{}&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4528"/>
+        <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4536"/>
+        <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4550"/>
         <source>Switching to %s renderer...</source>
         <translation>Şu çiziciye geçiliyor %s  ...</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="279"/>
+        <location filename="../../core/memory_card.cpp" line="287"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
         <translation>Şuradaki hafıza kartı &apos;%s&apos; okunamadı. Format atılıyor.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="324"/>
+        <location filename="../../core/memory_card.cpp" line="332"/>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
         <translation>Hafıza kartı şuraya kaydedilemedi &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="336"/>
+        <location filename="../../core/memory_card.cpp" line="343"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
         <translation>Hafıza kartı şuraya kaydedildi&apos;{}&apos;.</translation>
     </message>
@@ -9100,47 +13639,47 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Hafıza kartı şuraya kaydedildi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="71"/>
+        <location filename="../../core/pad.cpp" line="200"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>Durum kayıdı şu kolu %s şu portta kullanıyor %u, ama %s kullanımda. Değiştiriliyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="79"/>
+        <location filename="../../core/pad.cpp" line="206"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
         <translation>Değişik kol tipi %s şuradaki portta %u görmezden geliniyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="134"/>
+        <location filename="../../core/pad.cpp" line="261"/>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
         <translation>Hafıza kartı %u durum kaydında var ama sistemde yok. Geçici kart oluşturuluyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="175"/>
+        <location filename="../../core/pad.cpp" line="299"/>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
         <translation>Durum kaydındaki hafıza kartı %u şimdiki kart verisine eşlenik. Tekrar takılıyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="193"/>
+        <location filename="../../core/pad.cpp" line="316"/>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
         <translation>Hafıza kartı %u durum kaydında var ama sistemde yok. Kart görmezden geliniyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="206"/>
+        <location filename="../../core/pad.cpp" line="328"/>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
         <translation>Hafıza kartı %u sistemde var ama durum kaydında yok. Kart sökülüyor.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="214"/>
+        <location filename="../../core/pad.cpp" line="335"/>
         <source>Memory card %u present in system but not in save state. Replugging card.</source>
         <translation>Hafıza kartı %u sistemde var ama durum kaydında yok. Tekrar takılıyor.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="414"/>
+        <location filename="../../core/cdrom.cpp" line="788"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
         <translation>Şu çoklu CD dosyası için CD RAM&apos;e kopyalanamıyor &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="422"/>
+        <location filename="../../core/cdrom.cpp" line="796"/>
         <source>Precaching CD image failed, it may be unreliable.</source>
         <translation>Disk Dosyası önyüklenemedi. sorun çıkartabilir.</translation>
     </message>
@@ -9149,72 +13688,103 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Şu dosyadaki ppf yaması kullanılamadı &apos;%s&apos;, Yamasız dosya kullanılacak.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="943"/>
+        <location filename="../../core/system.cpp" line="1140"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Şuradaki durum kaydı yükleniyor &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="993"/>
+        <location filename="../../core/system.cpp" line="1188"/>
         <source>Save State</source>
         <translation>Durum Kaydı Kaydet</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1001"/>
+        <location filename="../../core/system.cpp" line="1197"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Durum kaydı şuraya kaydedildi &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1320"/>
+        <location filename="../../core/system.cpp" line="1559"/>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
         <translation>İşlemci saat hızı şimdi %u%% (%u / %u). Dengesizliğe sebep olabilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1327"/>
+        <location filename="../../core/system.cpp" line="1566"/>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
         <translation>CD-ROM hızlandırması şimdi %ux (Efektif Hız %ux). Dengesizliğe sebep olabilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1336"/>
+        <location filename="../../core/system.cpp" line="1574"/>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
         <translation>CD-ROM arama hızı anında bulunacak şekilde ayarlandı. Dengesizlikler oluşabilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1343"/>
+        <location filename="../../core/system.cpp" line="1580"/>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
         <translation>CD-ROM dosya arama hızı şimdi %ux. Bu dengesizliğe sebep olabilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1512"/>
+        <location filename="../../core/system.cpp" line="1988"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Çizici %s oluşturulamadı Yazılımsal çiziciye geçiliyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1599"/>
+        <location filename="../../core/system.cpp" line="2026"/>
+        <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2098"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>UYARI:İşlemci saati (%u%%) durum kaydınkinden farklı (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1753"/>
-        <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation>Durum kaydındaki CD dosyası açılamadı &apos;%s&apos;: %s. Varolan dosya kullanılıyor &apos;%s&apos;, Bu dengesizliğe sebep olabilir.</translation>
+        <location filename="../../core/system.cpp" line="2264"/>
+        <source>Failed to open CD image from save state &apos;{}&apos;: {}.
+Using existing image &apos;{}&apos;, this may result in instability.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2803"/>
+        <location filename="../../core/system.cpp" line="2274"/>
+        <location filename="../../core/system.cpp" line="2293"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2724"/>
+        <source>{} cheats are now active.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2725"/>
+        <source>{} cheats are now inactive.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3509"/>
+        <source>Switching to {} CPU execution mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
+        <translation type="vanished">Durum kaydındaki CD dosyası açılamadı &apos;%s&apos;: %s. Varolan dosya kullanılıyor &apos;%s&apos;, Bu dengesizliğe sebep olabilir.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3219"/>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
         <translation>CD dosyası açılamadı &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2815"/>
+        <location filename="../../core/system.cpp" line="3232"/>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
         <translation>CD takıldı &apos;%s&apos; (%s).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2989"/>
+        <location filename="../../core/system.cpp" line="3413"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Devam CD&apos;sine geçilemedi %u şuradaki &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2995"/>
+        <location filename="../../core/system.cpp" line="3421"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Devam CD&apos;sine geçildi %s (%u) şuradaki &apos;%s&apos;.</translation>
     </message>
@@ -9223,33 +13793,28 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">CD&apos;deki yürütülebilir dosya okunamadı. Başarımlar kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3600"/>
+        <location filename="../../core/system.cpp" line="4052"/>
         <source>Failed to save undo load state.</source>
         <translation>Durum kaydı geri alma kaydı kaydedilemedi.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="50"/>
-        <location filename="../../core/system.cpp" line="3213"/>
-        <location filename="../../core/system.cpp" line="4074"/>
         <source>Failed to load post processing shader chain.</source>
-        <translation>Görsel efekt sırası yüklenemedi.</translation>
+        <translation type="vanished">Görsel efekt sırası yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2346"/>
+        <location filename="../../core/system.cpp" line="2716"/>
         <source>No cheats are loaded.</source>
         <translation>Hiç bir hile yüklenmedi.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2354"/>
         <source>%n cheats are now active.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n hileler aktif.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="2355"/>
         <source>%n cheats are now inactive.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n hileler şimdi aktif değil.</numerusform>
         </translation>
     </message>
@@ -9286,7 +13851,7 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Geri Sarılıyor...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2304"/>
+        <location filename="../../core/system.cpp" line="2681"/>
         <source>Rewinding is not enabled.</source>
         <translation>Geri sarma etkinleştirilmemiş.</translation>
     </message>
@@ -9295,91 +13860,89 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Geri sarma durduruldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="603"/>
+        <location filename="../../core/hotkeys.cpp" line="69"/>
         <source>Cannot load state for game without serial.</source>
         <translation>Seri numarası olmayan oyun için durum kaydı yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="613"/>
+        <location filename="../../core/hotkeys.cpp" line="79"/>
         <source>No save state found in slot {}.</source>
         <translation>Şu numarada durum kaydı bulunamadı {}.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="627"/>
+        <location filename="../../core/hotkeys.cpp" line="93"/>
         <source>Cannot save state for game without serial.</source>
         <translation>Seri numarası olmayan oyun için durum kaydı kaydedilemez.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="705"/>
         <source>Achievements are disabled or unavailable for  game.</source>
-        <translation>Başarımlar bu oyun için kapalı ya da hiç yok.</translation>
+        <translation type="vanished">Başarımlar bu oyun için kapalı ya da hiç yok.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="718"/>
         <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation>Liderler sıralaması bu oyun için kapalı ya da hiç yok.</translation>
+        <translation type="vanished">Liderler sıralaması bu oyun için kapalı ya da hiç yok.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="788"/>
+        <location filename="../../core/hotkeys.cpp" line="242"/>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
         <translation>İşlemci saat hızı kontrolü açıldı (%u%% / %.3f MHz).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="795"/>
+        <location filename="../../core/hotkeys.cpp" line="249"/>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
         <translation>İşlemci saat hızı kontrolu kapatıldı (%.3f MHz).</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="808"/>
-        <location filename="../../frontend-common/common_host.cpp" line="820"/>
-        <location filename="../../frontend-common/common_host.cpp" line="832"/>
+        <location filename="../../core/hotkeys.cpp" line="262"/>
+        <location filename="../../core/hotkeys.cpp" line="274"/>
+        <location filename="../../core/hotkeys.cpp" line="286"/>
         <source>Emulation speed set to %u%%.</source>
         <translation>Emülasyon hızı şuna ayarlandı %u%%.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="854"/>
+        <location filename="../../core/hotkeys.cpp" line="308"/>
         <source>PGXP is now enabled.</source>
         <translation>PGXP Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="855"/>
+        <location filename="../../core/hotkeys.cpp" line="309"/>
         <source>PGXP is now disabled.</source>
         <translation>PGXP Kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="898"/>
+        <location filename="../../core/hotkeys.cpp" line="355"/>
         <source>Texture replacements reloaded.</source>
         <translation>Doku paketleri tekrar yüklendi.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="925"/>
+        <location filename="../../core/hotkeys.cpp" line="381"/>
         <source>PGXP Depth Buffer is now enabled.</source>
         <translation>PGXP Derinlik Bilgisi Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="926"/>
+        <location filename="../../core/hotkeys.cpp" line="382"/>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>PGXP Derinlik Bilgisi Kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="945"/>
+        <location filename="../../core/hotkeys.cpp" line="402"/>
         <source>PGXP CPU mode is now enabled.</source>
         <translation>PGXP CPU Modu Açıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="946"/>
+        <location filename="../../core/hotkeys.cpp" line="403"/>
         <source>PGXP CPU mode is now disabled.</source>
         <translation>PGXP CPU Modu kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="967"/>
+        <location filename="../../core/hotkeys.cpp" line="425"/>
         <source>Volume: Muted</source>
         <translation>Ses: Susturuldu</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="972"/>
-        <location filename="../../frontend-common/common_host.cpp" line="999"/>
-        <location filename="../../frontend-common/common_host.cpp" line="1015"/>
+        <location filename="../../core/hotkeys.cpp" line="430"/>
+        <location filename="../../core/hotkeys.cpp" line="457"/>
+        <location filename="../../core/hotkeys.cpp" line="471"/>
         <source>Volume: {}%</source>
         <translation>Ses: {}%</translation>
     </message>
@@ -9388,12 +13951,12 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Ses: %d%%</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="984"/>
+        <location filename="../../core/hotkeys.cpp" line="441"/>
         <source>CD Audio Muted.</source>
         <translation>CD Müziği Susturuldu.</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/common_host.cpp" line="985"/>
+        <location filename="../../core/hotkeys.cpp" line="442"/>
         <source>CD Audio Unmuted.</source>
         <translation>CD Müziğü Açıldı.</translation>
     </message>
@@ -9402,41 +13965,40 @@ Devam etmeye emin misiniz?</translation>
         <translation type="vanished">Şuradan kol profili yüklendi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3661"/>
+        <location filename="../../core/system.cpp" line="4113"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Şuraya ses kaydı başlatıldı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3666"/>
+        <location filename="../../core/system.cpp" line="4118"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Şuraya ses kaydı başlatılamadı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3677"/>
+        <location filename="../../core/system.cpp" line="4128"/>
         <source>Stopped dumping audio.</source>
         <translation>Ses kaydı durduruldu.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3707"/>
+        <location filename="../../core/system.cpp" line="4158"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Ekran görüntüsü dosyası &apos;%s&apos; zaten var.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3719"/>
+        <location filename="../../core/system.cpp" line="4167"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Şuraya ekran görüntüsü kaydedilemedi &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3724"/>
+        <location filename="../../core/system.cpp" line="4171"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Ekran görüntüsü şuraya kaydedildi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="466"/>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
-        <translation>Şu porttaki kol %u (%s) şu için desteklenmiyor %s.
+        <translation type="vanished">Şu porttaki kol %u (%s) şu için desteklenmiyor %s.
 Desteklenen kollar: %s
 Yukarıdaki listeden bir kol ayarlayın.</translation>
     </message>
@@ -9449,14 +14011,13 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation type="vanished">Şu kol profili kullanılıyor &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3900"/>
+        <location filename="../../core/system.cpp" line="4346"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Şuradan hileler yüklenemedi &apos;%s&apos;.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3907"/>
         <source>%n cheats are enabled. This may result in instability.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n tane hile etkin. Bu dengesizliğe sebep olabilir.</numerusform>
         </translation>
     </message>
@@ -9479,114 +14040,125 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3954"/>
+        <location filename="../../core/system.cpp" line="4400"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Şuraya hile listesi kaydedilemedi &apos;%s&apos;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3971"/>
         <source>Saved %n cheats to &apos;%s&apos;.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n hileler şuraya kaydedildi &apos;%s&apos;.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3987"/>
         <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation>Hile listesi silindi &apos;%s&apos;.</translation>
+        <translation type="vanished">Hile listesi silindi &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4030"/>
+        <location filename="../../core/system.cpp" line="4473"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Hile &apos;%s&apos; etkinleştirildi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4035"/>
+        <location filename="../../core/system.cpp" line="4477"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Hile &apos;%s&apos; kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4052"/>
+        <location filename="../../core/system.cpp" line="4493"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Şu hile uygulandı &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4057"/>
+        <location filename="../../core/system.cpp" line="4497"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Hile &apos;%s&apos; zaten uygulandı.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4071"/>
+        <location filename="../../util/postprocessing.cpp" line="413"/>
+        <source>Failed to load post-processing chain: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="548"/>
+        <location filename="../../util/postprocessing.cpp" line="568"/>
+        <source>No post-processing shaders are selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="555"/>
         <source>Post-processing is now enabled.</source>
         <translation>Görsel efektler şimdi açıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4080"/>
+        <location filename="../../util/postprocessing.cpp" line="556"/>
         <source>Post-processing is now disabled.</source>
         <translation>Görsel efektler şimdi kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4091"/>
         <source>Failed to load post-processing shader chain.</source>
-        <translation>Görsel efektler sırası yüklenemedi.</translation>
+        <translation type="vanished">Görsel efektler sırası yüklenemedi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4093"/>
+        <location filename="../../util/postprocessing.cpp" line="578"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Görsel efekt shaderları tekrar yüklendi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4122"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
-        <translation>Geniş ekran hilesi şimdi açıldı ve en boy oranı şuna ayarlandı %s.</translation>
+        <translation type="vanished">Geniş ekran hilesi şimdi açıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4130"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
-        <translation>Geniş ekran hilesi şimdi kapatıldı ve en boy oranı şuna ayarlandı %s.</translation>
+        <translation type="vanished">Geniş ekran hilesi şimdi kapatıldı ve en boy oranı şuna ayarlandı %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2701"/>
+        <location filename="../../core/system.cpp" line="3117"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Her iki porttada hafıza kartı var.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2706"/>
+        <location filename="../../core/system.cpp" line="3123"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 2 dolu ve Port 1 Boş.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2712"/>
+        <location filename="../../core/system.cpp" line="3128"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Hafıza kartı portları birbiriyle değiştirildi. Port 1 dolu ve Port 2 Boş.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2718"/>
+        <location filename="../../core/system.cpp" line="3132"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="244"/>
+        <location filename="../../core/game_database.cpp" line="237"/>
         <source>CPU interpreter forced by game settings.</source>
         <translation>Interpreter işlemci oyun ayarları tarafından zorlandı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="256"/>
+        <location filename="../../core/game_database.cpp" line="248"/>
         <source>Software renderer forced by game settings.</source>
         <translation>Yazılımsal işlemci oyun ayarları tarafından zorlandı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="268"/>
+        <location filename="../../core/game_database.cpp" line="260"/>
+        <source>Using software renderer for readbacks based on game settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="271"/>
         <source>Interlacing forced by game settings.</source>
         <translation>Interlacing oyun ayarları tarafından zorlandı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="280"/>
+        <location filename="../../core/game_database.cpp" line="282"/>
         <source>True color disabled by game settings.</source>
         <translation>Kaliteli renk oyun ayarları tarafından kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="292"/>
+        <location filename="../../core/game_database.cpp" line="293"/>
         <source>Upscaling disabled by game settings.</source>
         <translation>Ekran büyütme oyun ayarları tarafından kapatıldı.</translation>
     </message>
@@ -9601,37 +14173,53 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation>Geniş ekran oyun ayarları tarafından kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="331"/>
+        <location filename="../../core/game_database.cpp" line="329"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
         <translation>NTSC Zamanlamaları zorlaması oyun ayarları tarafından engellendi.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="343"/>
+        <location filename="../../core/game_database.cpp" line="341"/>
         <source>PGXP geometry correction disabled by game settings.</source>
         <translation>PGXP Geometri düzeltme oyun ayarları tarafından kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="354"/>
+        <location filename="../../core/game_database.cpp" line="353"/>
         <source>PGXP culling disabled by game settings.</source>
         <translation>PGXP Model Esgeçme oyun ayarları tarafından kapatıldı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="367"/>
-        <source>PGXP texture correction disabled by game settings.</source>
-        <translation>PGXP Doku düzeltmesi oyun ayarları tarafından kapatıldı.</translation>
+        <location filename="../../core/game_database.cpp" line="365"/>
+        <source>PGXP perspective corrected textures disabled by game settings.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="378"/>
+        <source>PGXP perspective corrected colors disabled by game settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="475"/>
+        <source>Controller in port {0} ({1}) is not supported for {2}.
+Supported controllers: {3}
+Please configure a supported controller from the list above.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PGXP texture correction disabled by game settings.</source>
+        <translation type="vanished">PGXP Doku düzeltmesi oyun ayarları tarafından kapatıldı.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="389"/>
         <source>PGXP vertex cache forced by game settings.</source>
         <translation>PGXP koordinat önbelleği oyun ayarları tarafından zorlandı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="390"/>
+        <location filename="../../core/game_database.cpp" line="400"/>
         <source>PGXP CPU mode forced by game settings.</source>
         <translation>PGXP CPU modu oyun ayarları tarafından zorlandı.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="402"/>
+        <location filename="../../core/game_database.cpp" line="411"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
         <translation>PGXP derinlik verisi önbelleği oyun tarafından kapatıldı.</translation>
     </message>
@@ -9647,77 +14235,115 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation type="vanished">Sağ</translation>
     </message>
     <message>
-        <location filename="../../core/playstation_mouse.cpp" line="189"/>
         <source>Relative Mouse Mode</source>
-        <translation>Fareye Göreceli Mod</translation>
+        <translation type="vanished">Fareye Göreceli Mod</translation>
     </message>
     <message>
-        <location filename="../../core/playstation_mouse.cpp" line="190"/>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation>Fareyi pencereye kitler. FPS oyunları için kullanınız.</translation>
+        <translation type="vanished">Fareyi pencereye kitler. FPS oyunları için kullanınız.</translation>
+    </message>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="203"/>
+        <source>Left Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="204"/>
+        <source>Right Button</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="210"/>
+        <source>Horizontal Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="211"/>
+        <location filename="../../core/playstation_mouse.cpp" line="214"/>
+        <source>Adjusts the correspondance between physical and virtual mouse movement.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="213"/>
+        <source>Vertical Sensitivity</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PlaystationMouse</name>
+    <message>
+        <location filename="../../core/playstation_mouse.cpp" line="202"/>
+        <source>Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PostProcessing</name>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="174"/>
+        <source>{} [GLSL]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="200"/>
+        <source>{} [ReShade]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="414"/>
+        <source>Unknown Error</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>PostProcessingChainConfigWidget</name>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="20"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation type="vanished">Form</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="50"/>
         <source>Add</source>
-        <translation>Ekle</translation>
+        <translation type="vanished">Ekle</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="69"/>
         <source>Remove</source>
-        <translation>Kaldır</translation>
+        <translation type="vanished">Kaldır</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="88"/>
         <source>Clear</source>
-        <translation>Temizle</translation>
+        <translation type="vanished">Temizle</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="107"/>
         <source>Move Up</source>
-        <translation>Yukarı Çıkar</translation>
+        <translation type="vanished">Yukarı Çıkar</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="126"/>
         <source>Move Down</source>
-        <translation>Aşağı Çıkar</translation>
+        <translation type="vanished">Aşağı Çıkar</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="145"/>
         <source>Options...</source>
-        <translation>Ayarlar...</translation>
+        <translation type="vanished">Ayarlar...</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.cpp" line="115"/>
         <source>No Shaders Available</source>
-        <translation>Shader Yok</translation>
+        <translation type="vanished">Shader Yok</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.cpp" line="127"/>
         <source>Error</source>
-        <translation>Hata</translation>
+        <translation type="vanished">Hata</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.cpp" line="127"/>
         <source>Failed to add shader. The log may contain more information.</source>
-        <translation>Shader eklenemedi. Günlük/Log bilgi içerebilir.</translation>
+        <translation type="vanished">Shader eklenemedi. Günlük/Log bilgi içerebilir.</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.cpp" line="159"/>
         <source>Question</source>
-        <translation>Soru</translation>
+        <translation type="vanished">Soru</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.cpp" line="159"/>
         <source>Are you sure you want to clear all shader stages?</source>
-        <translation>Tüm shader sıralamalarını kaldırmak istiyormusunuz?</translation>
+        <translation type="vanished">Tüm shader sıralamalarını kaldırmak istiyormusunuz?</translation>
     </message>
 </context>
 <context>
@@ -9738,6 +14364,31 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation>&amp;Tekrar Yükle Shaderları</translation>
     </message>
     <message>
+        <location filename="../postprocessingsettingswidget.ui" line="97"/>
+        <source>Add</source>
+        <translation type="unfinished">Ekle</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.ui" line="117"/>
+        <source>Remove</source>
+        <translation type="unfinished">Kaldır</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.ui" line="137"/>
+        <source>Clear</source>
+        <translation type="unfinished">Temizle</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.ui" line="157"/>
+        <source>Move Up</source>
+        <translation type="unfinished">Yukarı Çıkar</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.ui" line="177"/>
+        <source>Move Down</source>
+        <translation type="unfinished">Aşağı Çıkar</translation>
+    </message>
+    <message>
         <source>Load Preset</source>
         <translation type="vanished">Hazır Ayarı Yükle</translation>
     </message>
@@ -9751,14 +14402,33 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation>Görsel Efekt Sırası</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="24"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="150"/>
+        <source>No Shaders Available</source>
+        <translation type="unfinished">Shader Yok</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.cpp" line="165"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="24"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="166"/>
+        <source>Failed to add shader: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.cpp" line="202"/>
+        <source>Question</source>
+        <translation type="unfinished">Soru</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.cpp" line="202"/>
+        <source>Are you sure you want to clear all shader stages?</source>
+        <translation type="unfinished">Tüm shader sıralamalarını kaldırmak istiyormusunuz?</translation>
+    </message>
+    <message>
         <source>The current post-processing chain is invalid, it has been reset.</source>
-        <translation>Görsel işleme zinciri geçersiz. Resetlendi.</translation>
+        <translation type="vanished">Görsel işleme zinciri geçersiz. Resetlendi.</translation>
     </message>
     <message>
         <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
@@ -9768,9 +14438,8 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
 <context>
     <name>PostProcessingShaderConfigDialog</name>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="149"/>
         <source>%1 Shader Options</source>
-        <translation>%1 Shader Ayarları</translation>
+        <translation type="vanished">%1 Shader Ayarları</translation>
     </message>
     <message>
         <source>Close</source>
@@ -9780,27 +14449,27 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
 <context>
     <name>PostProcessingShaderConfigWidget</name>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="54"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="335"/>
         <source>Red</source>
         <translation>Kırmızı</translation>
     </message>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="54"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="335"/>
         <source>Green</source>
         <translation>Yeşil</translation>
     </message>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="54"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="335"/>
         <source>Blue</source>
         <translation>Mavi</translation>
     </message>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="54"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="335"/>
         <source>Alpha</source>
         <translation>Saydamlık (Alpha)</translation>
     </message>
     <message>
-        <location filename="../postprocessingshaderconfigwidget.cpp" line="55"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="336"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
@@ -9820,12 +14489,12 @@ Yukarıdaki listeden bir kol ayarlayın.</translation>
         <translation type="vanished">Host&apos;un arayüzüne bağlanılamadı. Devam edilemiyor.</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="672"/>
+        <location filename="../qtutils.cpp" line="687"/>
         <source>Failed to open URL</source>
         <translation>URL açılamadı</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="673"/>
+        <location filename="../qtutils.cpp" line="688"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -9835,31 +14504,49 @@ Açılamayan URL: %1</translation>
     </message>
 </context>
 <context>
+    <name>QtAsyncProgressThread</name>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="184"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="189"/>
+        <source>Question</source>
+        <translation type="unfinished">Soru</translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="195"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="2092"/>
-        <location filename="../qthost.cpp" line="2118"/>
-        <location filename="../qthost.cpp" line="2134"/>
+        <location filename="../qthost.cpp" line="1949"/>
+        <location filename="../qthost.cpp" line="1975"/>
+        <location filename="../qthost.cpp" line="1991"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2093"/>
+        <location filename="../qthost.cpp" line="1950"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>Dosya &apos;%1&apos; yok.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2119"/>
+        <location filename="../qthost.cpp" line="1976"/>
         <source>The specified save state does not exist.</source>
         <translation>Gösterilen durum kaydı yok.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2135"/>
+        <location filename="../qthost.cpp" line="1992"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>(No-Gui) Arayüzsüz mod kullanılamıyor çünkü bir dosya seçilmedi.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2136"/>
+        <location filename="../qthost.cpp" line="1993"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>(Batch) Toplu mod kullanılamıyor çünki bir dosya seçilmedi.</translation>
     </message>
@@ -9982,72 +14669,95 @@ Başarımlar: %5 (%6)
     </message>
 </context>
 <context>
+    <name>QtModalProgressCallback</name>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="14"/>
+        <source>DuckStation</source>
+        <translation type="unfinished">DuckStation</translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="35"/>
+        <source>Cancel</source>
+        <translation type="unfinished">İptal</translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="94"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="99"/>
+        <source>Question</source>
+        <translation type="unfinished">Soru</translation>
+    </message>
+    <message>
+        <location filename="../qtprogresscallback.cpp" line="105"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QtProgressCallback</name>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="10"/>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation type="vanished">DuckStation</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="31"/>
         <source>Cancel</source>
-        <translation>İptal</translation>
+        <translation type="vanished">İptal</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="90"/>
         <source>Error</source>
-        <translation>Hata</translation>
+        <translation type="vanished">Hata</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="95"/>
         <source>Question</source>
-        <translation>Soru</translation>
+        <translation type="vanished">Soru</translation>
     </message>
     <message>
-        <location filename="../qtprogresscallback.cpp" line="101"/>
         <source>Information</source>
-        <translation>Bilgi</translation>
+        <translation type="vanished">Bilgi</translation>
     </message>
 </context>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="477"/>
+        <location filename="../../core/imgui_overlays.cpp" line="780"/>
         <source>Load</source>
         <translation>Yükle</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="479"/>
+        <location filename="../../core/imgui_overlays.cpp" line="782"/>
         <source>Save</source>
         <translation>Kaydet</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="481"/>
+        <location filename="../../core/imgui_overlays.cpp" line="784"/>
         <source>Select Previous</source>
         <translation>Öncekini Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="483"/>
+        <location filename="../../core/imgui_overlays.cpp" line="786"/>
         <source>Select Next</source>
         <translation>Sonrakini Seç</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="540"/>
+        <location filename="../../core/imgui_overlays.cpp" line="844"/>
         <source>No Save State</source>
         <translation>Durum Kayıdı Yok</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="613"/>
+        <location filename="../../core/imgui_overlays.cpp" line="918"/>
         <source>Global Slot %d</source>
         <translation>Evrensel Slot %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="617"/>
+        <location filename="../../core/imgui_overlays.cpp" line="922"/>
         <source>Game Slot %d</source>
         <translation>Oyunun Slotu %d</translation>
     </message>
     <message>
-        <location filename="../../frontend-common/imgui_overlays.cpp" line="621"/>
+        <location filename="../../core/imgui_overlays.cpp" line="926"/>
         <source>%s Slot %d</source>
         <translation>%s Slot %d</translation>
     </message>
@@ -10055,19 +14765,43 @@ Başarımlar: %5 (%6)
 <context>
     <name>SettingWidgetBinder</name>
     <message>
-        <location filename="../settingwidgetbinder.h" line="319"/>
-        <location filename="../settingwidgetbinder.h" line="449"/>
+        <location filename="../settingwidgetbinder.h" line="324"/>
+        <location filename="../settingwidgetbinder.h" line="454"/>
         <source>Default: </source>
         <translation>Varsayılan: </translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="418"/>
-        <location filename="../settingwidgetbinder.h" line="548"/>
+        <location filename="../settingwidgetbinder.h" line="423"/>
+        <location filename="../settingwidgetbinder.h" line="553"/>
         <source>Reset</source>
         <translation>Reset</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1065"/>
+        <location filename="../settingwidgetbinder.h" line="1066"/>
+        <source>Confirm Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingwidgetbinder.h" line="1068"/>
+        <source>The chosen directory does not currently exist:
+
+%1
+
+Do you want to create this directory?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingwidgetbinder.h" line="1091"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingwidgetbinder.h" line="1092"/>
+        <source>Folder path cannot be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingwidgetbinder.h" line="1113"/>
         <source>Select folder for %1</source>
         <translation>Şunun için dizin seçiniz %1</translation>
     </message>
@@ -10144,72 +14878,71 @@ Başarımlar: %5 (%6)
         <translation type="vanished">Kapat</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="142"/>
         <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation>Bu DuckStation kurulumu RetroAchievents desteği olmadan yapıldı.</translation>
+        <translation type="vanished">Bu DuckStation kurulumu RetroAchievents desteği olmadan yapıldı.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="66"/>
+        <location filename="../settingsdialog.cpp" line="70"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Genel Ayarlar&lt;/strong&gt;&lt;hr&gt;Emülatörün görünüş ve davranış ayarları.&lt;br&gt;&lt;br&gt;Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="47"/>
+        <location filename="../settingsdialog.cpp" line="51"/>
         <source>Summary</source>
         <translation>Özet</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="49"/>
+        <location filename="../settingsdialog.cpp" line="53"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
         <translation>&lt;strong&gt;Özet&lt;/strong&gt;&lt;hr&gt;Bu sayfa, seçilen oyun hakkında bilgi verir ve elinizdeki diskin doğru bir şekilde kopyalandığını onaylamanızı sağlar.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="64"/>
+        <location filename="../settingsdialog.cpp" line="68"/>
         <source>General</source>
         <translation>Genel</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="72"/>
+        <location filename="../settingsdialog.cpp" line="76"/>
         <source>Game List</source>
         <translation>Oyun Listesi</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="79"/>
+        <location filename="../settingsdialog.cpp" line="83"/>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="81"/>
+        <location filename="../settingsdialog.cpp" line="85"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;BIOS Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar hangi BIOS&apos;un kullanılacağını ve nasıl yamalanacağını belirler.&lt;br&gt;&lt;br&gt;Bilgi için imleci ayarların üstüne sürün.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="83"/>
+        <location filename="../settingsdialog.cpp" line="87"/>
         <source>Console</source>
         <translation>Konsol</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="85"/>
+        <location filename="../settingsdialog.cpp" line="89"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Konsol Ayarları&lt;/strong&gt;&lt;hr&gt;Konsolun ayarları.&lt;br&gt;&lt;br&gt;Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="87"/>
+        <location filename="../settingsdialog.cpp" line="91"/>
         <source>Emulation</source>
         <translation>Emülasyon</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="89"/>
+        <location filename="../settingsdialog.cpp" line="93"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Emülasyon Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar emülasyonun hızını ve sistem emülasyonundaki ileriyi hesaplamayı belirler.&lt;br&gt;&lt;br&gt;Detaylı bilgi için imleci ayarların üstüne sürün.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="92"/>
+        <location filename="../settingsdialog.cpp" line="96"/>
         <source>Memory Cards</source>
         <translation>Hafıza Kartları</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="74"/>
+        <location filename="../settingsdialog.cpp" line="78"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
         <translation>&lt;strong&gt;Oyun Listesi Ayarları&lt;/strong&gt;&lt;hr&gt;Oyunların listesini ayarlar. Oyunların aranacağı dizinler seçilir.</translation>
     </message>
@@ -10222,115 +14955,384 @@ Başarımlar: %5 (%6)
         <translation type="vanished">&lt;strong&gt;Kol Ayarları&lt;/strong&gt;&lt;hr&gt;Kolların seçimi ve tuşların atanması yapılır. Komut seçilip basıldıktan sonra sayım bitmeden bir tuş seçin. Atama silmek için sağ tık yapın ve çoklu a Komut seçilip basıldıktan sonra sayım bitmeden bir tuş seçin. Atama silmek için sağ tık yapın ve çoklu atama için shift&apos;e basılı tutun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="94"/>
+        <location filename="../settingsdialog.cpp" line="98"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
         <translation>&lt;strong&gt;Hafıza Kartı Ayarları&lt;/strong&gt;&lt;hr&gt;Hafıza kartı tipi ve dizinleri seçilir.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="97"/>
+        <location filename="../settingsdialog.cpp" line="101"/>
         <source>Display</source>
         <translation>Görüntü</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="99"/>
+        <location filename="../settingsdialog.cpp" line="103"/>
         <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
         <translation>&lt;strong&gt;Görüntü Ayarları&lt;/strong&gt;&lt;hr&gt;Çizilen karelerin nasıl ekrana aktarılacağı seçilir.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="102"/>
+        <location filename="../settingsdialog.cpp" line="106"/>
         <source>Enhancements</source>
         <translation>İyileştirmeler</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="104"/>
+        <location filename="../settingsdialog.cpp" line="108"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
         <translation>&lt;strong&gt;İyileştirme Ayarları&lt;/strong&gt;&lt;hr&gt;Oyunlarda kullanılacak iyileştirmeler seçilir. Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="110"/>
+        <location filename="../settingsdialog.cpp" line="114"/>
         <source>Post-Processing</source>
         <translation>Görsel Efektler</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="111"/>
+        <location filename="../settingsdialog.cpp" line="115"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
         <translation>&lt;strong&gt;Görsel Efekt ayarları&lt;/strong&gt;&lt;hr&gt;Filtreler seçilerek görüntüye efekt yapılır. Filtreler sırayla yapılır.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="115"/>
+        <location filename="../settingsdialog.cpp" line="119"/>
         <source>Audio</source>
         <translation>Ses</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="117"/>
+        <location filename="../settingsdialog.cpp" line="121"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Ses Ayarları&lt;/strong&gt;&lt;hr&gt;Ses ayarları seçilir.Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="120"/>
+        <location filename="../settingsdialog.cpp" line="124"/>
         <source>Achievements</source>
         <translation>Başarımlar</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="122"/>
+        <location filename="../settingsdialog.cpp" line="126"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Başarım Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar RetroAchievements&apos;ı kontrol eder. Detaylı bilgi için imleci ayarların üstüne sürün.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="152"/>
+        <location filename="../settingsdialog.cpp" line="148"/>
         <source>Folders</source>
         <translation>Dizinler</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="154"/>
+        <location filename="../settingsdialog.cpp" line="150"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
         <translation>&lt;strong&gt;Dizin Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar DuckStation&apos;un çalışırken verileri nereye işleyeceğini belirler.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="157"/>
+        <location filename="../settingsdialog.cpp" line="153"/>
         <source>Advanced</source>
         <translation>Gelişmiş</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="159"/>
+        <location filename="../settingsdialog.cpp" line="155"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;Gelişmiş Ayarlar&lt;/strong&gt;&lt;hr&gt;Emülatörün ince ayarları ve raporlama işlemleri yapılır.Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="216"/>
+        <location filename="../settingsdialog.cpp" line="212"/>
         <source>Confirm Restore Defaults</source>
         <translation>Varsayılan Ayarlara Geri Dönmeyi Onayla</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="217"/>
+        <location filename="../settingsdialog.cpp" line="213"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
         <translation>Varsayılan ayarlara geri dönmeye emin misiniz? Özel ayarlarınız kaybolacak.</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="233"/>
+        <location filename="../settingsdialog.cpp" line="229"/>
         <source>Recommended Value</source>
         <translation>Tavsiye Edilen Değer</translation>
     </message>
     <message>
-        <location filename="../settingsdialog.cpp" line="497"/>
+        <location filename="../settingsdialog.cpp" line="498"/>
         <source>%1 [%2]</source>
         <translation>%1 [%2]</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="121"/>
+        <location filename="../settingwidgetbinder.h" line="126"/>
         <source>Use Global Setting [Enabled]</source>
         <translation>Evrensel Ayarı Kullan [Açık]</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="122"/>
+        <location filename="../settingwidgetbinder.h" line="127"/>
         <source>Use Global Setting [Disabled]</source>
         <translation>Evrensel Ayarı Kullan [Kapalı]</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="130"/>
-        <location filename="../settingwidgetbinder.h" line="146"/>
+        <location filename="../settingwidgetbinder.h" line="135"/>
+        <location filename="../settingwidgetbinder.h" line="151"/>
         <source>Use Global Setting [%1]</source>
         <translation>Evrensel Ayarı Kullan [%1]</translation>
+    </message>
+</context>
+<context>
+    <name>SetupWizardDialog</name>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="14"/>
+        <source>DuckStation Setup Wizard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="50"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github.com&lt;/span&gt;&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github.com&lt;/span&gt;&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="65"/>
+        <source>Language:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="82"/>
+        <source>Theme:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="105"/>
+        <source>Enable Automatic Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="130"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="145"/>
+        <source>BIOS Directory:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="155"/>
+        <source>Browse...</source>
+        <translation type="unfinished">Ara...</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="162"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="173"/>
+        <source>NTSC-J (Japan):</source>
+        <translation type="unfinished">NTSC-J (Japonya):</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="190"/>
+        <source>NTSC-U/C (US/Canada):</source>
+        <translation type="unfinished">NTSC-U/C (ABD/Kanada):</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="207"/>
+        <source>PAL (Europe, Australia):</source>
+        <translation type="unfinished">PAL (Avrupa Türkiye Avustrulya):</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="241"/>
+        <source>Open in Explorer...</source>
+        <translation type="unfinished">Dosya gezgininde aç...</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="248"/>
+        <source>Refresh List</source>
+        <translation type="unfinished">Listeyi Tazele</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="286"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Single Track Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portable, Only Decrypted).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="301"/>
+        <source>Search Directories (will be scanned for games)</source>
+        <translation type="unfinished">Arama Dizinleri (Oyunlar için taranacak)</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="327"/>
+        <source>Add...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="347"/>
+        <location filename="../setupwizarddialog.cpp" line="267"/>
+        <source>Remove</source>
+        <translation type="unfinished">Kaldır</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="364"/>
+        <source>Search Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="369"/>
+        <source>Scan Recursively</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="396"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="406"/>
+        <source>Controller Port 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="415"/>
+        <location filename="../setupwizarddialog.ui" line="485"/>
+        <source>Controller Mapped To:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="422"/>
+        <location filename="../setupwizarddialog.ui" line="475"/>
+        <source>Controller Type:</source>
+        <translation type="unfinished">Kol Tipi:</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="431"/>
+        <location filename="../setupwizarddialog.ui" line="494"/>
+        <location filename="../setupwizarddialog.cpp" line="411"/>
+        <source>Default (Keyboard)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="451"/>
+        <location filename="../setupwizarddialog.ui" line="514"/>
+        <source>Automatic Mapping</source>
+        <translation type="unfinished">Otomatik Tuş Atama</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="469"/>
+        <source>Controller Port 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="561"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="634"/>
+        <source>Language</source>
+        <translation type="unfinished">Dil</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="641"/>
+        <source>BIOS Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="648"/>
+        <source>Game Directories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="655"/>
+        <source>Controller Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="662"/>
+        <source>Complete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="704"/>
+        <source>&amp;Back</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="711"/>
+        <location filename="../setupwizarddialog.cpp" line="141"/>
+        <source>&amp;Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.ui" line="721"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished">&amp;İptal</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="46"/>
+        <location filename="../setupwizarddialog.cpp" line="62"/>
+        <source>Warning</source>
+        <translation type="unfinished">Warning</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="47"/>
+        <source>No BIOS images were found. DuckStation &lt;strong&gt;will not&lt;/strong&gt; be able to run games without a BIOS image.&lt;br&gt;&lt;br&gt;Are you sure you wish to continue without selecting a BIOS image?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="63"/>
+        <source>No game directories have been selected. You will have to manually open any game dumps you want to play, DuckStation&apos;s list will be empty.
+
+Are you sure you want to continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="141"/>
+        <source>&amp;Finish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="147"/>
+        <source>Cancel Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="148"/>
+        <source>Are you sure you want to cancel DuckStation setup?
+
+Any changes have been saved, and the wizard will run again next time you start DuckStation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="269"/>
+        <source>Open Directory...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="277"/>
+        <source>Select Search Directory</source>
+        <translation type="unfinished">Arama Dizinini Seç</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="283"/>
+        <source>Scan Recursively?</source>
+        <translation type="unfinished">Alt Klasörleride Ara?</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="284"/>
+        <source>Would you like to scan the directory &quot;%1&quot; recursively?
+
+Scanning recursively takes more time, but will identify files in subdirectories.</source>
+        <translation type="unfinished">Şu dizinin &quot;%1&quot; alt klasörleriyle birlikte arar mıydınız?
+
+Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tarar.</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="411"/>
+        <source>Default (None)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="454"/>
+        <source>No devices available</source>
+        <translation type="unfinished">Cihaz Yok</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="468"/>
+        <source>Automatic Binding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="469"/>
+        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10344,63 +15346,121 @@ Başarımlar: %5 (%6)
         <translation type="vanished">Sistem başlatılamadı. Günlük/Log bilgi içerebilir.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1139"/>
+        <location filename="../../core/system.cpp" line="2132"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Şu BIOS yüklenemedi. %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1210"/>
-        <location filename="../../core/system.cpp" line="2922"/>
+        <location filename="../../core/system.cpp" line="1423"/>
+        <location filename="../../core/system.cpp" line="3349"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1211"/>
+        <location filename="../../core/system.cpp" line="1424"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>Şu durum kaydı dosyası yüklenemedi &apos;{}&apos; bootlamak için.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1712"/>
+        <location filename="../../core/system.cpp" line="2139"/>
+        <source>Incorrect BIOS image size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2223"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Durum kayıdı uyumsuz: minimum sürüm %u ama durum kayıdı %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1721"/>
+        <location filename="../../core/system.cpp" line="2231"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Durum kayıdı uyumuz. maksimum sürüm %u ama durum kayıdı %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1762"/>
+        <location filename="../../core/system.cpp" line="2275"/>
+        <source>Failed to open CD image &apos;{}&apos; used by save state: {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2295"/>
+        <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2959"/>
+        <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2978"/>
+        <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3015"/>
+        <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3037"/>
+        <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3341"/>
+        <source>You are attempting to run a libcrypt protected game without an SBI file:
+
+{0}: {1}
+
+The game will likely not run properly.
+
+Please check the README for instructions on how to add an SBI file.
+
+Do you wish to continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3351"/>
+        <source>You are attempting to run a libcrypt protected game without an SBI file:
+
+{0}: {1}
+
+Your dump is incomplete, you must add the SBI file to run this game. 
+
+The name of the SBI file must match the name of the disc image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4255"/>
+        <source>Invalid version {} ({} version {})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>Şu CD dosyası açılamadı &apos;%s&apos; şu durum kayıdı tarafından kullanılan:: %s.</translation>
+        <translation type="vanished">Şu CD dosyası açılamadı &apos;%s&apos; şu durum kayıdı tarafından kullanılan:: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1781"/>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation>Devam CD&apos;sine ulaşılamadı %u Şu CD&apos;nin &apos;%s&apos; Şu durum kayıdı tarafından kullanılan: %s.</translation>
+        <translation type="vanished">Devam CD&apos;sine ulaşılamadı %u Şu CD&apos;nin &apos;%s&apos; Şu durum kayıdı tarafından kullanılan: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2591"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation>Oyunun kendi hafıza kartı şu slot için kullanılamıyor %u çünkü çalışan oyunun kodu yok. Tüm oyunlar için kullanılan kart kullanıyor şimdi o yüzden.</translation>
+        <translation type="vanished">Oyunun kendi hafıza kartı şu slot için kullanılamıyor %u çünkü çalışan oyunun kodu yok. Tüm oyunlar için kullanılan kart kullanıyor şimdi o yüzden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2608"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation>Oyun bazlı hafıza kartınız şu slot için kullanılamıyor %u çünkü oyunun ismi yok. Tüm oyunlar için kullanılan kart kullanılıyor o yüzden.</translation>
+        <translation type="vanished">Oyun bazlı hafıza kartınız şu slot için kullanılamıyor %u çünkü oyunun ismi yok. Tüm oyunlar için kullanılan kart kullanılıyor o yüzden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2628"/>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation>Şu slottaki oyun başlı hafıza kartı kullanılamıyor %u Çünkü çalışmakta olan oyunun bir dizini yok. Oyunlar arası paylaşılan kart kullanılıyor şimdi.</translation>
+        <translation type="vanished">Şu slottaki oyun başlı hafıza kartı kullanılamıyor %u Çünkü çalışmakta olan oyunun bir dizini yok. Oyunlar arası paylaşılan kart kullanılıyor şimdi.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2820"/>
+        <location filename="../../core/system.cpp" line="3237"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Oyun değişti, tüm hafıza kartları tekrardan yükleniyor.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2911"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -10410,7 +15470,7 @@ The game will likely not run properly.
 Please check the README for instructions on how to add an SBI file.
 
 Do you wish to continue?</source>
-        <translation>Libcrypt korsan koruması kullanan oyunu SBI dosyası olmadan açmaya çalışıyorsunuz:
+        <translation type="vanished">Libcrypt korsan koruması kullanan oyunu SBI dosyası olmadan açmaya çalışıyorsunuz:
 
 %s: %s
 
@@ -10421,7 +15481,6 @@ SBI dosyası eklemek için yönergeleri README dosyasından okuyunuz.
 Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2924"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 %s: %s
@@ -10429,7 +15488,7 @@ Devam etmek istiyor musunuz?</translation>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation>Libcrypt korsan koruması kullanan oyunu SBI dosyası olmadan açmaya çalışıyorsunuz:
+        <translation type="vanished">Libcrypt korsan koruması kullanan oyunu SBI dosyası olmadan açmaya çalışıyorsunuz:
 
 %s: %s
 
