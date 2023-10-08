@@ -585,12 +585,12 @@ bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
     {
       // Currently since we don't map the mirrors, don't use fastmem for them.
       // This is because the swapping of page code bits for SMC is too expensive.
-      return (paddr < RAM_MIRROR_END);
+      return (paddr < g_ram_size);
     }
 #endif
 
     case CPUFastmemMode::LUT:
-      return (paddr < g_ram_size);
+      return (paddr < RAM_MIRROR_END);
 
     case CPUFastmemMode::Disabled:
     default:
