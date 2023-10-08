@@ -5166,6 +5166,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, 0.9f));
   ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
 
+  bool closed = false;
   bool close_handled = false;
   if (s_save_state_selector_open &&
       ImGui::BeginChild("state_list", ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y), false,
@@ -5193,15 +5194,123 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
     u32 grid_x = 0;
     ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
-    for (u32 i = 0; i < s_save_state_selector_slots.size(); i++)
+    for (u32 i = 0; i < s_save_state_selector_slots.size();)
     {
       if (i == 0)
         ResetFocusHere();
 
       const SaveStateListEntry& entry = s_save_state_selector_slots[i];
+      if (static_cast<s32>(i) == s_save_state_selector_submenu_index)
+      {
+        // can't use a choice dialog here, because we're already in a modal...
+        ImGuiFullscreen::PushResetLayout();
+        ImGui::PushFont(g_large_font);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                            LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+        ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+        ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
+
+        const float width = LayoutScale(600.0f);
+        const float title_height =
+          g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
+        const float height =
+          title_height +
+          LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) * 3.0f;
+        ImGui::SetNextWindowSize(ImVec2(width, height));
+        ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::OpenPopup(entry.title.c_str());
+
+        bool removed = false;
+        if (ImGui::BeginPopupModal(entry.title.c_str(), &is_open,
+                                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+        {
+          ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+
+          BeginMenuButtons();
+
+          if (ActiveButton(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
+                                        FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
+                           false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          {
+            if (is_loading)
+              DoLoadState(std::move(entry.path));
+            else
+              DoSaveState(entry.slot, entry.global);
+
+            closed = true;
+          }
+
+          if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
+                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          {
+            if (!FileSystem::FileExists(entry.path.c_str()))
+            {
+              ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
+              is_open = true;
+            }
+            else if (FileSystem::DeleteFile(entry.path.c_str()))
+            {
+              ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
+              s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
+              removed = true;
+
+              if (s_save_state_selector_slots.empty())
+                closed = true;
+              else
+                is_open = false;
+            }
+            else
+            {
+              ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
+              is_open = false;
+            }
+          }
+
+          if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
+                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          {
+            is_open = false;
+          }
+
+          EndMenuButtons();
+
+          ImGui::PopStyleColor();
+          ImGui::EndPopup();
+        }
+
+        // don't let the back button flow through to the main window
+        if (WantsToCloseMenu())
+        {
+          close_handled = true;
+          is_open = false;
+        }
+
+        if (!is_open || closed)
+        {
+          s_save_state_selector_submenu_index = -1;
+          if (!closed)
+            QueueResetFocus();
+        }
+
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar(3);
+        ImGui::PopFont();
+        ImGuiFullscreen::PopResetLayout();
+
+        if (removed)
+          continue;
+      }
+
       ImGuiWindow* window = ImGui::GetCurrentWindow();
       if (window->SkipItems)
+      {
+        i++;
         continue;
+      }
 
       const ImGuiID id = window->GetID(static_cast<int>(i));
       const ImVec2 pos(window->DC.CursorPos);
@@ -5256,133 +5365,17 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         if (pressed)
         {
           if (is_loading)
-          {
             DoLoadState(entry.path);
-            CloseSaveStateSelector();
-            ReturnToPreviousWindow();
-            break;
-          }
           else
-          {
             DoSaveState(entry.slot, entry.global);
-            CloseSaveStateSelector();
-            ReturnToPreviousWindow();
-            break;
-          }
+
+          closed = true;
         }
 
         if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
                         ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
         {
           s_save_state_selector_submenu_index = static_cast<s32>(i);
-        }
-
-        if (static_cast<s32>(i) == s_save_state_selector_submenu_index)
-        {
-          // can't use a choice dialog here, because we're already in a modal...
-          ImGuiFullscreen::PushResetLayout();
-          ImGui::PushFont(g_large_font);
-          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                              LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-          ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
-          ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
-          ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-          ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
-
-          const float width = LayoutScale(600.0f);
-          const float title_height =
-            g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
-          const float height =
-            title_height +
-            LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) * 3.0f;
-          ImGui::SetNextWindowSize(ImVec2(width, height));
-          ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-          ImGui::OpenPopup(entry.title.c_str());
-
-          // don't let the back button flow through to the main window
-          bool submenu_open = !WantsToCloseMenu();
-          close_handled ^= submenu_open;
-
-          bool closed = false;
-          if (ImGui::BeginPopupModal(entry.title.c_str(), &is_open,
-                                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
-          {
-            ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
-
-            BeginMenuButtons();
-
-            if (ActiveButton(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
-                                          FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
-                             false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-            {
-              if (is_loading)
-                DoLoadState(std::move(entry.path));
-              else
-                DoSaveState(entry.slot, entry.global);
-
-              CloseSaveStateSelector();
-              ReturnToPreviousWindow();
-              closed = true;
-            }
-
-            if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
-                             LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-            {
-              if (!FileSystem::FileExists(entry.path.c_str()))
-              {
-                ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
-                is_open = true;
-              }
-              else if (FileSystem::DeleteFile(entry.path.c_str()))
-              {
-                ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
-                s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
-
-                if (s_save_state_selector_slots.empty())
-                {
-                  CloseSaveStateSelector();
-                  ReturnToPreviousWindow();
-                  closed = true;
-                }
-                else
-                {
-                  is_open = false;
-                }
-              }
-              else
-              {
-                ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
-                is_open = false;
-              }
-            }
-
-            if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
-                             LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-            {
-              is_open = false;
-            }
-
-            EndMenuButtons();
-
-            ImGui::PopStyleColor();
-            ImGui::EndPopup();
-          }
-          if (!is_open)
-          {
-            s_save_state_selector_submenu_index = -1;
-            if (!closed)
-              QueueResetFocus();
-          }
-
-          ImGui::PopStyleColor(4);
-          ImGui::PopStyleVar(3);
-          ImGui::PopFont();
-          ImGuiFullscreen::PopResetLayout();
-
-          if (closed)
-            break;
         }
       }
 
@@ -5397,6 +5390,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       {
         ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
       }
+
+      i++;
     }
 
     EndMenuButtons();
@@ -5408,7 +5403,12 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   ImGui::EndPopup();
   ImGui::PopStyleVar(5);
 
-  if (!close_handled && WantsToCloseMenu())
+  if (closed)
+  {
+    CloseSaveStateSelector();
+    ReturnToMainWindow();
+  }
+  else if (!close_handled && WantsToCloseMenu())
   {
     CloseSaveStateSelector();
     ReturnToPreviousWindow();
