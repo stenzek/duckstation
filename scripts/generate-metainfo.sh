@@ -13,15 +13,12 @@ OUTFILE="${OUTDIR}/${APPID}.metainfo.xml"
 
 pushd "${SCRIPTDIR}" >/dev/null
 GIT_DATE=$(git log -1 --pretty=%cd --date=short)
-GIT_VERSION=$(git tag --points-at HEAD)
 GIT_HASH=$(git rev-parse HEAD)
-
+GIT_VERSION=$(git describe --dirty | tr -d '\r\n')
 if [[ "${GIT_VERSION}" == "" ]]; then
-	GIT_VERSION=$(git describe --dirty | tr -d '\r\n')
-	if [[ "${GIT_VERSION}" == "" ]]; then
-		GIT_VERSION=$(git rev-parse HEAD)
-	fi
+	GIT_VERSION=$(git rev-parse HEAD)
 fi
+
 popd >/dev/null
 
 echo "GIT_DATE: ${GIT_DATE}"
