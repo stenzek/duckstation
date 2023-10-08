@@ -723,7 +723,6 @@ void MainWindow::recreate()
   g_main_window = nullptr;
 
   MainWindow* new_main_window = new MainWindow();
-  new_main_window->initialize();
   new_main_window->show();
   deleteLater();
 
