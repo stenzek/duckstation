@@ -14,27 +14,27 @@
         <translation>DuckStation</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="18"/>
+        <location filename="../aboutdialog.cpp" line="19"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="34"/>
+        <location filename="../aboutdialog.cpp" line="35"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>DuckStation是索尼PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;主机的免费开源仿真器/模拟器，注重可玩性，速度，以及长期可维护性。</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="37"/>
+        <location filename="../aboutdialog.cpp" line="38"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="38"/>
+        <location filename="../aboutdialog.cpp" line="39"/>
         <source>Icon by</source>
         <translation>图标制作</translation>
     </message>
     <message>
-        <location filename="../aboutdialog.cpp" line="39"/>
+        <location filename="../aboutdialog.cpp" line="40"/>
         <source>License</source>
         <translation>License</translation>
     </message>
@@ -43,11 +43,11 @@
     <name>AchievementLoginDialog</name>
     <message>
         <source>RetroAchievements Login</source>
-        <translation type="vanished">RetroAchievements登录</translation>
+        <translation>RetroAchievements登录</translation>
     </message>
     <message>
         <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</source>
-        <translation type="vanished">请在下面输入retroachievements.org的用户名和密码。您的密码将不会被保存在DuckStation中，取而代之的是一个访问令牌将被生成并使用。</translation>
+        <translation>请在下面输入retroachievements.org的用户名和密码。您的密码将不会被保存在DuckStation中，取而代之的是一个访问令牌将被生成并使用。</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="29"/>
@@ -63,7 +63,7 @@
     </message>
     <message>
         <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="vanished">请在下面输入retroachievements.org的用户名和密码。您的密码将不会被保存在DuckStation中，取而代之的是一个访问令牌将被生成并使用。</translation>
+        <translation>请在下面输入retroachievements.org的用户名和密码。您的密码将不会被保存在DuckStation中，取而代之的是一个访问令牌将被生成并使用。</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
@@ -108,7 +108,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation type="vanished">取消(&amp;C)</translation>
+        <translation>取消(&amp;C)</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="71"/>
@@ -117,7 +117,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>A user name and password must be provided.</source>
-        <translation type="vanished">必须提供用户名和密码。</translation>
+        <translation>必须提供用户名和密码。</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="40"/>
@@ -126,7 +126,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Login failed. Please check your username and password, and try again.</source>
-        <translation type="vanished">登录失败。请检查您的用户名和密码，然后重试。</translation>
+        <translation>登录失败。请检查您的用户名和密码，然后重试。</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="73"/>
@@ -143,7 +143,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Global Settings</source>
-        <translation type="vanished">全局设置</translation>
+        <translation>全局设置</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="45"/>
@@ -153,11 +153,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Enable Rich Presence</source>
-        <translation type="vanished">启用Rich-Presence</translation>
+        <translation>启用Rich-Presence</translation>
     </message>
     <message>
         <source>Enable Test Mode</source>
-        <translation type="vanished">启用测试模式</translation>
+        <translation>启用测试模式</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="181"/>
@@ -190,15 +190,15 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Enable Leaderboards</source>
-        <translation type="vanished">启用排行榜</translation>
+        <translation>启用排行榜</translation>
     </message>
     <message>
         <source>Show Challenge Indicators</source>
-        <translation type="vanished">显示挑战标志</translation>
+        <translation>显示挑战标志</translation>
     </message>
     <message>
         <source>Show Notifications</source>
-        <translation type="vanished">显示通知</translation>
+        <translation>显示通知</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="198"/>
@@ -265,11 +265,11 @@ Login token generated at:</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开快捷菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开快捷菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Account Settings</source>
-        <translation type="vanished">账户设置</translation>
+        <translation>账户设置</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
@@ -279,11 +279,11 @@ Login token generated at:</source>
     </message>
     <message>
         <source>Enable Hardcode Mode</source>
-        <translation type="vanished">启用硬核模式</translation>
+        <translation>启用硬核模式</translation>
     </message>
     <message>
         <source>Enabling hardcore mode will disable cheats, save sates, and debugging features.</source>
-        <translation type="vanished">启用硬核模式将禁用金手指，存档，和调试功能。</translation>
+        <translation>启用硬核模式将禁用金手指，存档，和调试功能。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="242"/>
@@ -292,7 +292,7 @@ Login token generated at:</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
@@ -336,7 +336,7 @@ Login token generated at:</source>
     </message>
     <message>
         <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translation type="vanished">当启用时，将收集Rich-Presence信息并发送到所支持的服务器。</translation>
+        <translation>当启用时，将收集Rich-Presence信息并发送到所支持的服务器。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="73"/>
@@ -345,7 +345,7 @@ Login token generated at:</source>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation type="vanished">成就的“挑战”模式。禁用存档，金手指，和减速功能，但您可以获得双倍的成就点数。</translation>
+        <translation>成就的“挑战”模式。禁用存档，金手指，和减速功能，但您可以获得双倍的成就点数。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="49"/>
@@ -362,7 +362,7 @@ Login token generated at:</source>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="vanished">当发生诸如成绩解锁和排行榜提交事件时，显示弹出消息。</translation>
+        <translation>当发生诸如成绩解锁和排行榜提交事件时，显示弹出消息。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="58"/>
@@ -371,7 +371,7 @@ Login token generated at:</source>
     </message>
     <message>
         <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-        <translation type="vanished">启用追踪和提交那些支持排行榜的游戏。如果排行榜被禁用，您仍然可以查看排行榜和分数，但分数不会被上传。</translation>
+        <translation>启用追踪和提交那些支持排行榜的游戏。如果排行榜被禁用，您仍然可以查看排行榜和分数，但分数不会被上传。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="61"/>
@@ -417,7 +417,7 @@ Login token generated on %2.</source>
         <source>Enabling hardcore mode will shut down your current game.
 
 </source>
-        <translation type="vanished">启用硬核模式会关闭当前的游戏。
+        <translation>启用硬核模式会关闭当前的游戏。
 
 </translation>
     </message>
@@ -425,94 +425,94 @@ Login token generated on %2.</source>
         <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
 
 </source>
-        <translation type="vanished">当前状态将被保存，但您将无法读取它直到您禁用硬核模式。
+        <translation>当前状态将被保存，但您将无法读取它直到您禁用硬核模式。
 
 </translation>
     </message>
     <message>
         <source>Do you want to continue?</source>
-        <translation type="vanished">您想继续吗？</translation>
+        <translation>您想继续吗？</translation>
     </message>
 </context>
 <context>
     <name>Achievements</name>
     <message>
         <source>Loading state</source>
-        <translation type="vanished">读档</translation>
+        <translation>读档</translation>
     </message>
     <message>
         <source>Resuming state</source>
-        <translation type="vanished">继续档</translation>
+        <translation>继续档</translation>
     </message>
     <message>
         <source>Hardcore mode disabled by state switch.</source>
-        <translation type="vanished">档开关禁用硬核模式。</translation>
+        <translation>档开关禁用硬核模式。</translation>
     </message>
     <message>
         <source>Hardcore mode will be enabled on system reset.</source>
-        <translation type="vanished">硬核模式将在系统重启时启用。</translation>
+        <translation>硬核模式将在系统重启时启用。</translation>
     </message>
     <message>
         <source>Confirm Hardcore Mode</source>
-        <translation type="vanished">确认硬核模式</translation>
+        <translation>确认硬核模式</translation>
     </message>
     <message>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation type="vanished">当硬核模式激活时，无法执行{0}。您想禁用硬核模式吗？如何您选择No，{0}将会被取消。</translation>
+        <translation>当硬核模式激活时，无法执行{0}。您想禁用硬核模式吗？如何您选择No，{0}将会被取消。</translation>
     </message>
     <message>
         <source>Hardcore mode is now enabled.</source>
-        <translation type="vanished">硬核模式已启用。</translation>
+        <translation>硬核模式已启用。</translation>
     </message>
     <message>
         <source>Hardcore mode is now disabled.</source>
-        <translation type="vanished">硬核模式已禁用。</translation>
+        <translation>硬核模式已禁用。</translation>
     </message>
     <message>
         <source>{} (Hardcore Mode)</source>
-        <translation type="vanished">{} (硬核模式)</translation>
+        <translation>{} (硬核模式)</translation>
     </message>
     <message>
         <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation type="vanished">您获得了{}之{}成绩，以及{}之{}点。</translation>
+        <translation>您获得了{}之{}成绩，以及{}之{}点。</translation>
     </message>
     <message>
         <source>This game has no achievements.</source>
-        <translation type="vanished">这个游戏没有成绩。</translation>
+        <translation>这个游戏没有成绩。</translation>
     </message>
     <message>
         <source>Leaderboards are enabled.</source>
-        <translation type="vanished">排行榜启用。</translation>
+        <translation>排行榜启用。</translation>
     </message>
     <message>
         <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation type="vanished">排行榜禁用，因为硬核模式已关闭。</translation>
+        <translation>排行榜禁用，因为硬核模式已关闭。</translation>
     </message>
     <message>
         <source>Your Score: {} (Best: {})
 Leaderboard Position: {} of {}</source>
-        <translation type="vanished">您的分数: {} (最佳成绩: {})
+        <translation>您的分数: {} (最佳成绩: {})
 排行榜位置: {}之{}</translation>
     </message>
     <message>
         <source>This game has {} leaderboards.</source>
-        <translation type="vanished">此游戏有{}排行榜。</translation>
+        <translation>此游戏有{}排行榜。</translation>
     </message>
     <message>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation type="vanished">由于硬核模式关闭，提交分数被禁用。排行榜只能读取。</translation>
+        <translation>由于硬核模式关闭，提交分数被禁用。排行榜只能读取。</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="vanished">时间</translation>
+        <translation>时间</translation>
     </message>
     <message>
         <source>Score</source>
-        <translation type="vanished">分数</translation>
+        <translation>分数</translation>
     </message>
     <message>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation type="vanished">下载排行榜数据中，请稍候…</translation>
+        <translation>下载排行榜数据中，请稍候…</translation>
     </message>
 </context>
 <context>
@@ -578,23 +578,23 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>These options are tweakable to improve performance/game compatibility. Use at your own risk, modified values will not be supported.</source>
-        <translation type="vanished">这些选项可以调整以提高性能/游戏兼容性。使用风险自负, 将不支持修改后的值。</translation>
+        <translation>这些选项可以调整以提高性能/游戏兼容性。使用风险自负, 将不支持修改后的值。</translation>
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA最大片段计时:</translation>
+        <translation>DMA最大片段计时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA停顿计时:</translation>
+        <translation>DMA停顿计时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU的FIFO大小:</translation>
+        <translation>GPU的FIFO大小:</translation>
     </message>
     <message>
         <source>GPU Max Run-Ahead:</source>
-        <translation type="vanished">GPU最大优先级:</translation>
+        <translation>GPU最大优先级:</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="299"/>
@@ -603,11 +603,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>PGXP CPU Mode</source>
-        <translation type="vanished">PGXP在CPU模式</translation>
+        <translation>PGXP在CPU模式</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
-        <translation type="vanished">PGXP保持投影精度</translation>
+        <translation>PGXP保持投影精度</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="273"/>
@@ -616,11 +616,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Show Enhancement Settings</source>
-        <translation type="vanished">显示增强设置</translation>
+        <translation>显示增强设置</translation>
     </message>
     <message>
         <source>Controller Enhanced Mode (PS4/PS5)</source>
-        <translation type="vanished">控制器增强模式 (PS4/PS5)</translation>
+        <translation>控制器增强模式 (PS4/PS5)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="276"/>
@@ -679,7 +679,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation type="vanished">启用ICache重编译器</translation>
+        <translation>启用ICache重编译器</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="314"/>
@@ -841,7 +841,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Show Fullscreen Status Indicators</source>
-        <translation type="vanished">显示全屏状态指示器</translation>
+        <translation>显示全屏状态指示器</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="347"/>
@@ -850,7 +850,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Use Blit Swap Chain</source>
-        <translation type="vanished">使用位块传输交换链</translation>
+        <translation>使用位块传输交换链</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="154"/>
@@ -885,404 +885,404 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">允许使用调试设备和着色器渲染支持它们的API。只应在调试模拟器时使用。</translation>
+        <translation>允许使用调试设备和着色器渲染支持它们的API。只应在调试模拟器时使用。</translation>
     </message>
     <message>
         <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
-        <translation type="vanished">确定是否在重新编译程序中模拟CPU的指令缓存。以较小的性能代价提高准确性。如果游戏运行太快, 请尝试启用此选项。</translation>
+        <translation>确定是否在重新编译程序中模拟CPU的指令缓存。以较小的性能代价提高准确性。如果游戏运行太快, 请尝试启用此选项。</translation>
     </message>
 </context>
 <context>
     <name>AnalogController</name>
     <message>
         <source>Controller %u switched to analog mode.</source>
-        <translation type="vanished">控制器%u切换为模拟模式。</translation>
+        <translation>控制器%u切换为模拟模式。</translation>
     </message>
     <message>
         <source>Controller %u switched to digital mode.</source>
-        <translation type="vanished">控制器%u切换为数字模式。</translation>
+        <translation>控制器%u切换为数字模式。</translation>
     </message>
     <message>
         <source>Controller {} switched to analog mode.</source>
-        <translation type="vanished">控制器{}切换到模拟模式。</translation>
+        <translation>控制器{}切换到模拟模式。</translation>
     </message>
     <message>
         <source>Controller {} switched to digital mode.</source>
-        <translation type="vanished">控制器{}切换到数字模式。</translation>
+        <translation>控制器{}切换到数字模式。</translation>
     </message>
     <message>
         <source>Controller %u is locked to analog mode by the game.</source>
-        <translation type="vanished">控制器%u被游戏锁定为模拟模式。</translation>
+        <translation>控制器%u被游戏锁定为模拟模式。</translation>
     </message>
     <message>
         <source>Controller %u is locked to digital mode by the game.</source>
-        <translation type="vanished">控制器%u被游戏锁定为数字模式。</translation>
+        <translation>控制器%u被游戏锁定为数字模式。</translation>
     </message>
     <message>
         <source>Controller {} is locked to analog mode by the game.</source>
-        <translation type="vanished">控制器{}被游戏锁定在模拟模式。</translation>
+        <translation>控制器{}被游戏锁定在模拟模式。</translation>
     </message>
     <message>
         <source>Controller {} is locked to digital mode by the game.</source>
-        <translation type="vanished">控制器{}被游戏锁定在数字模式。</translation>
+        <translation>控制器{}被游戏锁定在数字模式。</translation>
     </message>
     <message>
         <source>Not Inverted</source>
-        <translation type="vanished">不翻转</translation>
+        <translation>不翻转</translation>
     </message>
     <message>
         <source>Invert Left/Right</source>
-        <translation type="vanished">翻转左/右</translation>
+        <translation>翻转左/右</translation>
     </message>
     <message>
         <source>Invert Up/Down</source>
-        <translation type="vanished">翻转上/下</translation>
+        <translation>翻转上/下</translation>
     </message>
     <message>
         <source>Invert Left/Right + Up/Down</source>
-        <translation type="vanished">翻转左/右+上/下</translation>
+        <translation>翻转左/右+上/下</translation>
     </message>
     <message>
         <source>Forces the controller to analog mode when the console is reset/powered on.</source>
-        <translation type="vanished">当游戏主机重启/开机时，强制控制器进入模拟模式。</translation>
+        <translation>当游戏主机重启/开机时，强制控制器进入模拟模式。</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
-        <translation type="vanished">模拟死区</translation>
+        <translation>模拟死区</translation>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation type="vanished">设置模拟摇杆死区，也就是摇杆移动中会被忽略的小部分。</translation>
+        <translation>设置模拟摇杆死区，也就是摇杆移动中会被忽略的小部分。</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
-        <translation type="vanished">模拟灵敏度</translation>
+        <translation>模拟灵敏度</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用130%到140%之间的值。</translation>
+        <translation>设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用130%到140%之间的值。</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
-        <translation type="vanished">按键/触发器死区</translation>
+        <translation>按键/触发器死区</translation>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation type="vanished">设置激活按键/触发器死区，也就是触发器中会被忽略的小部分。</translation>
+        <translation>设置激活按键/触发器死区，也就是触发器中会被忽略的小部分。</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
-        <translation type="vanished">翻转左摇杆</translation>
+        <translation>翻转左摇杆</translation>
     </message>
     <message>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="vanished">翻转左模拟遥杆的方向。</translation>
+        <translation>翻转左模拟遥杆的方向。</translation>
     </message>
     <message>
         <source>Invert Right Stick</source>
-        <translation type="vanished">翻转右摇杆</translation>
+        <translation>翻转右摇杆</translation>
     </message>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="vanished">翻转右模拟遥杆的方向。</translation>
+        <translation>翻转右模拟遥杆的方向。</translation>
     </message>
     <message>
         <source>LeftX</source>
-        <translation type="vanished">左摇杆X轴</translation>
+        <translation>左摇杆X轴</translation>
     </message>
     <message>
         <source>LeftY</source>
-        <translation type="vanished">左摇杆Y轴</translation>
+        <translation>左摇杆Y轴</translation>
     </message>
     <message>
         <source>RightX</source>
-        <translation type="vanished">右摇杆X轴</translation>
+        <translation>右摇杆X轴</translation>
     </message>
     <message>
         <source>RightY</source>
-        <translation type="vanished">右摇杆Y轴</translation>
+        <translation>右摇杆Y轴</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="vanished">上</translation>
+        <translation>上</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="vanished">下</translation>
+        <translation>下</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation type="vanished">选择</translation>
+        <translation>选择</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="vanished">开始</translation>
+        <translation>开始</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="vanished">三角</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation type="vanished">叉叉</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <source>Circle</source>
-        <translation type="vanished">圆圈</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <source>Square</source>
-        <translation type="vanished">方块</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <source>L1</source>
-        <translation type="vanished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <source>L2</source>
-        <translation type="vanished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <source>R1</source>
-        <translation type="vanished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <source>R2</source>
-        <translation type="vanished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <source>L3</source>
-        <translation type="vanished">L3</translation>
+        <translation>L3</translation>
     </message>
     <message>
         <source>R3</source>
-        <translation type="vanished">R3</translation>
+        <translation>R3</translation>
     </message>
     <message>
         <source>Analog</source>
-        <translation type="vanished">模拟量</translation>
+        <translation>模拟量</translation>
     </message>
     <message>
         <source>Force Analog Mode on Reset</source>
-        <translation type="vanished">重启时强制进入模拟模式</translation>
+        <translation>重启时强制进入模拟模式</translation>
     </message>
     <message>
         <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
-        <translation type="vanished">当游戏主机重启/开机时，强制控制器进入模拟模式。可能会导致游戏问题，所以建议关闭此选项。</translation>
+        <translation>当游戏主机重启/开机时，强制控制器进入模拟模式。可能会导致游戏问题，所以建议关闭此选项。</translation>
     </message>
     <message>
         <source>Enable Analog Mode on Reset</source>
-        <translation type="vanished">重启时启用模拟模式</translation>
+        <translation>重启时启用模拟模式</translation>
     </message>
     <message>
         <source>Automatically enables analog mode when the console is reset/powered on.</source>
-        <translation type="vanished">当主机复位/开机时，自动启用模拟模式。</translation>
+        <translation>当主机复位/开机时，自动启用模拟模式。</translation>
     </message>
     <message>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
-        <translation type="vanished">D-Pad在数字模式下使用模拟摇杆</translation>
+        <translation>D-Pad在数字模式下使用模拟摇杆</translation>
     </message>
     <message>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
-        <translation type="vanished">允许您在数字模式下使用模拟摇杆去控制d-pad，同样还有按键。</translation>
+        <translation>允许您在数字模式下使用模拟摇杆去控制d-pad，同样还有按键。</translation>
     </message>
     <message>
         <source>Analog Axis Scale</source>
-        <translation type="vanished">模拟轴缩放</translation>
+        <translation>模拟轴缩放</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用1.30到1.40之间的值。</translation>
+        <translation>设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用1.30到1.40之间的值。</translation>
     </message>
     <message>
         <source>Vibration Bias</source>
-        <translation type="vanished">震动力</translation>
+        <translation>震动力</translation>
     </message>
     <message>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
-        <translation type="vanished">设置震动力的值。如果震动在某些游戏中太弱或不起作用，尝试增大这个值。</translation>
+        <translation>设置震动力的值。如果震动在某些游戏中太弱或不起作用，尝试增大这个值。</translation>
     </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
     <message>
         <source>Controller %u switched to analog mode.</source>
-        <translation type="vanished">控制器%u切换为模拟模式。</translation>
+        <translation>控制器%u切换为模拟模式。</translation>
     </message>
     <message>
         <source>Controller %u switched to digital mode.</source>
-        <translation type="vanished">控制器%u切换为数字模式。</translation>
+        <translation>控制器%u切换为数字模式。</translation>
     </message>
     <message>
         <source>Not Inverted</source>
-        <translation type="vanished">不翻转</translation>
+        <translation>不翻转</translation>
     </message>
     <message>
         <source>Invert Left/Right</source>
-        <translation type="vanished">翻转左/右</translation>
+        <translation>翻转左/右</translation>
     </message>
     <message>
         <source>Invert Up/Down</source>
-        <translation type="vanished">翻转上/下</translation>
+        <translation>翻转上/下</translation>
     </message>
     <message>
         <source>Invert Left/Right + Up/Down</source>
-        <translation type="vanished">翻转左/右+上/下</translation>
+        <translation>翻转左/右+上/下</translation>
     </message>
     <message>
         <source>Analog Deadzone</source>
-        <translation type="vanished">模拟死区</translation>
+        <translation>模拟死区</translation>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation type="vanished">设置模拟摇杆死区，也就是摇杆移动中会被忽略的小部分。</translation>
+        <translation>设置模拟摇杆死区，也就是摇杆移动中会被忽略的小部分。</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
-        <translation type="vanished">模拟灵敏度</translation>
+        <translation>模拟灵敏度</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用130%到140%之间的值。</translation>
+        <translation>设置模拟摇杆轴缩放系数。使用较新的控制器 (如DualShock-4、Xbox-One控制器) 时，建议使用130%到140%之间的值。</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
-        <translation type="vanished">翻转左摇杆</translation>
+        <translation>翻转左摇杆</translation>
     </message>
     <message>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation type="vanished">翻转左模拟遥杆的方向。</translation>
+        <translation>翻转左模拟遥杆的方向。</translation>
     </message>
     <message>
         <source>Invert Right Stick</source>
-        <translation type="vanished">翻转右摇杆</translation>
+        <translation>翻转右摇杆</translation>
     </message>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation type="vanished">翻转右模拟遥杆的方向。</translation>
+        <translation>翻转右模拟遥杆的方向。</translation>
     </message>
     <message>
         <source>LeftX</source>
-        <translation type="vanished">左操纵杆X轴</translation>
+        <translation>左操纵杆X轴</translation>
     </message>
     <message>
         <source>LeftY</source>
-        <translation type="vanished">左操纵杆Y轴</translation>
+        <translation>左操纵杆Y轴</translation>
     </message>
     <message>
         <source>RightX</source>
-        <translation type="vanished">右操纵杆X轴</translation>
+        <translation>右操纵杆X轴</translation>
     </message>
     <message>
         <source>RightY</source>
-        <translation type="vanished">右操纵杆Y轴</translation>
+        <translation>右操纵杆Y轴</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="vanished">上</translation>
+        <translation>上</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="vanished">下</translation>
+        <translation>下</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation type="vanished">选择</translation>
+        <translation>选择</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="vanished">开始</translation>
+        <translation>开始</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="vanished">三角</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation type="vanished">叉叉</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <source>Circle</source>
-        <translation type="vanished">圆圈</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <source>Square</source>
-        <translation type="vanished">方块</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <source>L1</source>
-        <translation type="vanished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <source>L2</source>
-        <translation type="vanished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <source>R1</source>
-        <translation type="vanished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <source>R2</source>
-        <translation type="vanished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <source>L3</source>
-        <translation type="vanished">L3</translation>
+        <translation>L3</translation>
     </message>
     <message>
         <source>R3</source>
-        <translation type="vanished">R3</translation>
+        <translation>R3</translation>
     </message>
     <message>
         <source>Analog</source>
-        <translation type="vanished">模拟量</translation>
+        <translation>模拟量</translation>
     </message>
     <message>
         <source>Analog Axis Scale</source>
-        <translation type="vanished">模拟轴缩放</translation>
+        <translation>模拟轴缩放</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">设置模拟杆轴灵敏度。使用较新的控制器 (如DualShock 4、Xbox One控制器) 时，建议使用1.30到1.40之间的值。</translation>
+        <translation>设置模拟杆轴灵敏度。使用较新的控制器 (如DualShock 4、Xbox One控制器) 时，建议使用1.30到1.40之间的值。</translation>
     </message>
 </context>
 <context>
     <name>AudioBackend</name>
     <message>
         <source>Null (No Output)</source>
-        <translation type="vanished">无 (无输出)</translation>
+        <translation>无 (无输出)</translation>
     </message>
     <message>
         <source>Cubeb</source>
-        <translation type="vanished">Cubeb</translation>
+        <translation>Cubeb</translation>
     </message>
     <message>
         <source>XAudio2</source>
-        <translation type="vanished">XAudio2</translation>
+        <translation>XAudio2</translation>
     </message>
     <message>
         <source>SDL</source>
-        <translation type="vanished">SDL</translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <source>OpenSL ES</source>
-        <translation type="vanished">OpenSL-ES</translation>
+        <translation>OpenSL-ES</translation>
     </message>
 </context>
 <context>
@@ -1314,11 +1314,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Sync To Output</source>
-        <translation type="vanished">同步到输出</translation>
+        <translation>同步到输出</translation>
     </message>
     <message>
         <source>Resampling</source>
-        <translation type="vanished">重新取样</translation>
+        <translation>重新取样</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="136"/>
@@ -1383,7 +1383,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Volume:</source>
-        <translation type="vanished">音量:</translation>
+        <translation>音量:</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="281"/>
@@ -1399,7 +1399,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Mute</source>
-        <translation type="vanished">静音</translation>
+        <translation>静音</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="223"/>
@@ -1419,7 +1419,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Buffer Size</source>
-        <translation type="vanished">缓冲大小</translation>
+        <translation>缓冲大小</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="69"/>
@@ -1438,11 +1438,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Checked</source>
-        <translation type="vanished">勾选</translation>
+        <translation>勾选</translation>
     </message>
     <message>
         <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="vanished">限制模拟的速度是为了同步音频后端拉取的音频帧。这将有助于在运行高速模拟时消除噪音或爆音。如果没有以100%的速度运行，同步将自动禁用。</translation>
+        <translation>限制模拟的速度是为了同步音频后端拉取的音频帧。这将有助于在运行高速模拟时消除噪音或爆音。如果没有以100%的速度运行，同步将自动禁用。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="75"/>
@@ -1504,21 +1504,21 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message numerus="yes">
         <source>Maximum Latency: %n frames (%1ms)</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>最大延迟: %n帧 (%1毫秒)</numerusform>
         </translation>
     </message>
     <message>
         <source>Maximum Latency: %1 frames (%2ms)</source>
-        <translation type="vanished">最大延迟: %1帧 (%2ms)</translation>
+        <translation>最大延迟: %1帧 (%2ms)</translation>
     </message>
     <message>
         <source>Volume</source>
-        <translation type="vanished">音量</translation>
+        <translation>音量</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host. Values are in percentage.</source>
-        <translation type="vanished">控制主机播放的音频的音量。值以百分比表示。</translation>
+        <translation>控制主机播放的音频的音量。值以百分比表示。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="79"/>
@@ -1527,7 +1527,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding. Values are in percentage.</source>
-        <translation type="vanished">控制快进时主机播放的音频的音量。值以百分比表示。</translation>
+        <translation>控制快进时主机播放的音频的音量。值以百分比表示。</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="82"/>
@@ -1541,11 +1541,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation type="vanished">当运行速度超过100%时，重新取样目标速度的音频来取代丢弃帧。以较小的性能成本产生更好的快进/慢进音频。</translation>
+        <translation>当运行速度超过100%时，重新取样目标速度的音频来取代丢弃帧。以较小的性能成本产生更好的快进/慢进音频。</translation>
     </message>
     <message>
         <source>Maximum latency: %1 frames (%2ms)</source>
-        <translation type="vanished">最大延迟: %1帧 (%2ms)</translation>
+        <translation>最大延迟: %1帧 (%2ms)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="172"/>
@@ -1580,7 +1580,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Update Notes:</source>
-        <translation type="vanished">更新内容:</translation>
+        <translation>更新内容:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="95"/>
@@ -1724,7 +1724,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Enable TTY Output</source>
-        <translation type="vanished">启用TTY输出</translation>
+        <translation>启用TTY输出</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="29"/>
@@ -1754,7 +1754,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation type="vanished">对BIOS应用补丁以记录对printf()的调用。仅在调试时使用，可能破坏游戏。</translation>
+        <translation>对BIOS应用补丁以记录对printf()的调用。仅在调试时使用，可能破坏游戏。</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="105"/>
@@ -1763,41 +1763,41 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Select Directory</source>
-        <translation type="vanished">选择目录</translation>
+        <translation>选择目录</translation>
     </message>
 </context>
 <context>
     <name>CPUExecutionMode</name>
     <message>
         <source>Intepreter (Slowest)</source>
-        <translation type="vanished">解释器 (最慢)</translation>
+        <translation>解释器 (最慢)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
-        <translation type="vanished">解释器 (最慢)</translation>
+        <translation>解释器 (最慢)</translation>
     </message>
     <message>
         <source>Cached Interpreter (Faster)</source>
-        <translation type="vanished">缓存解释器 (较快)</translation>
+        <translation>缓存解释器 (较快)</translation>
     </message>
     <message>
         <source>Recompiler (Fastest)</source>
-        <translation type="vanished">重编译器 (最快)</translation>
+        <translation>重编译器 (最快)</translation>
     </message>
 </context>
 <context>
     <name>CPUFastmemMode</name>
     <message>
         <source>Disabled (Slowest)</source>
-        <translation type="vanished">禁用 (最慢)</translation>
+        <translation>禁用 (最慢)</translation>
     </message>
     <message>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <translation type="vanished">内存映射 (硬件，最快，仅64位)</translation>
+        <translation>内存映射 (硬件，最快，仅64位)</translation>
     </message>
     <message>
         <source>LUT (Faster)</source>
-        <translation type="vanished">LUT (较快)</translation>
+        <translation>LUT (较快)</translation>
     </message>
 </context>
 <context>
@@ -1829,11 +1829,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Save</source>
-        <translation type="vanished">保存</translation>
+        <translation>保存</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../cheatcodeeditordialog.cpp" line="23"/>
@@ -1866,7 +1866,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>&amp;New Category...</source>
-        <translation type="vanished">新建分类(N)...</translation>
+        <translation>新建分类(&amp;N)...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="32"/>
@@ -2076,11 +2076,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Equal to Previous</source>
-        <translation type="vanished">等于前一个</translation>
+        <translation>等于前一个</translation>
     </message>
     <message>
         <source>Not Equal to Previous</source>
-        <translation type="vanished">不等于前一个</translation>
+        <translation>不等于前一个</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="351"/>
@@ -2179,11 +2179,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Description</source>
-        <translation type="vanished">描述</translation>
+        <translation>描述</translation>
     </message>
     <message>
         <source>Add To Watch</source>
-        <translation type="vanished">添加到监视</translation>
+        <translation>添加到监视</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="618"/>
@@ -2192,7 +2192,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Remove Watch</source>
-        <translation type="vanished">移除监视</translation>
+        <translation>移除监视</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="641"/>
@@ -2316,7 +2316,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Enter memory address:</source>
-        <translation type="vanished">输入内存地址:</translation>
+        <translation>输入内存地址:</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="768"/>
@@ -2325,85 +2325,85 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Memory Scan</source>
-        <translation type="vanished">内存扫描</translation>
+        <translation>内存扫描</translation>
     </message>
     <message>
         <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
-        <translation type="vanished">内存扫描找到%1地址，但仅显示第一个%2。</translation>
+        <translation>内存扫描找到%1地址，但仅显示第一个%2。</translation>
     </message>
     <message>
         <source>Byte</source>
-        <translation type="vanished">字节</translation>
+        <translation>字节</translation>
     </message>
     <message>
         <source>Halfword</source>
-        <translation type="vanished">半字</translation>
+        <translation>半字</translation>
     </message>
     <message>
         <source>Word</source>
-        <translation type="vanished">单字</translation>
+        <translation>单字</translation>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation type="vanished">有正负之分的字节</translation>
+        <translation>有正负之分的字节</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation type="vanished">有正负之分的半字</translation>
+        <translation>有正负之分的半字</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation type="vanished">有正负之分的单字</translation>
+        <translation>有正负之分的单字</translation>
     </message>
 </context>
 <context>
     <name>Cheats</name>
     <message>
         <source>Gameshark</source>
-        <translation type="vanished">金手指</translation>
+        <translation>金手指</translation>
     </message>
     <message>
         <source>Manual</source>
-        <translation type="vanished">手动操作</translation>
+        <translation>手动操作</translation>
     </message>
     <message>
         <source>Automatic (Frame End)</source>
-        <translation type="vanished">自动操作 (帧尾)</translation>
+        <translation>自动操作 (帧尾)</translation>
     </message>
 </context>
 <context>
     <name>Cheevos</name>
     <message>
         <source>Logged into RetroAchievements using username &apos;%s&apos;.</source>
-        <translation type="vanished">使用用户名&apos;%s&apos;登录到RetroAchievements。</translation>
+        <translation>使用用户名&apos;%s&apos;登录到RetroAchievements。</translation>
     </message>
     <message>
         <source>Logging in to RetroAchivements...</source>
-        <translation type="vanished">登录到RetroAchivements...</translation>
+        <translation>登录到RetroAchivements...</translation>
     </message>
     <message>
         <source>Downloading achievement resources...</source>
-        <translation type="vanished">下载成就资源...</translation>
+        <translation>下载成就资源...</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
-        <translation type="vanished"> (硬核模式)</translation>
+        <translation> (硬核模式)</translation>
     </message>
     <message>
         <source>You have earned %u of %u achievements, and %u of %u points.</source>
-        <translation type="vanished">您已经获得了%u中的%u成就，%u中的%u点数。</translation>
+        <translation>您已经获得了%u中的%u成就，%u中的%u点数。</translation>
     </message>
     <message>
         <source>This game has no achievements.</source>
-        <translation type="vanished">这个游戏没有成就。</translation>
+        <translation>这个游戏没有成就。</translation>
     </message>
     <message>
         <source>Leaderboards are enabled.</source>
-        <translation type="vanished">排名榜启用。</translation>
+        <translation>排名榜启用。</translation>
     </message>
     <message>
         <source>Leaderboards are DISABLED because Hardcore Mode is off.</source>
-        <translation type="vanished">排行榜无效，因为硬核模式关闭。</translation>
+        <translation>排行榜无效，因为硬核模式关闭。</translation>
     </message>
 </context>
 <context>
@@ -2418,41 +2418,41 @@ Leaderboard Position: {} of {}</source>
     <name>CommonHost</name>
     <message>
         <source>Default Output Device</source>
-        <translation type="vanished">默认输出设备</translation>
+        <translation>默认输出设备</translation>
     </message>
 </context>
 <context>
     <name>CommonHostInterface</name>
     <message>
         <source>Are you sure you want to stop emulation?</source>
-        <translation type="vanished">您确定要停止模拟吗？</translation>
+        <translation>您确定要停止模拟吗？</translation>
     </message>
     <message>
         <source>The current state will be saved.</source>
-        <translation type="vanished">当前进度将会保存。</translation>
+        <translation>当前进度将会保存。</translation>
     </message>
     <message>
         <source>Invalid version %u (%s version %u)</source>
-        <translation type="vanished">无效版本%u (%s版本%u)</translation>
+        <translation>无效版本%u (%s版本%u)</translation>
     </message>
 </context>
 <context>
     <name>ConsoleRegion</name>
     <message>
         <source>Auto-Detect</source>
-        <translation type="vanished">自动检测</translation>
+        <translation>自动检测</translation>
     </message>
     <message>
         <source>NTSC-J (Japan)</source>
-        <translation type="vanished">NTSC-J (日本)</translation>
+        <translation>NTSC-J (日本)</translation>
     </message>
     <message>
         <source>NTSC-U/C (US, Canada)</source>
-        <translation type="vanished">NTSC-U/C (美国/加拿大)</translation>
+        <translation>NTSC-U/C (美国/加拿大)</translation>
     </message>
     <message>
         <source>PAL (Europe, Australia)</source>
-        <translation type="vanished">PAL (欧洲，澳大利亚)</translation>
+        <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
 </context>
 <context>
@@ -2474,23 +2474,23 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Speed Control</source>
-        <translation type="vanished">速度控制</translation>
+        <translation>速度控制</translation>
     </message>
     <message>
         <source>Emulation Speed:</source>
-        <translation type="vanished">模拟速度:</translation>
+        <translation>模拟速度:</translation>
     </message>
     <message>
         <source>Fast Forward Speed:</source>
-        <translation type="vanished">快进速度:</translation>
+        <translation>快进速度:</translation>
     </message>
     <message>
         <source>Turbo Speed:</source>
-        <translation type="vanished">涡轮速度:</translation>
+        <translation>涡轮速度:</translation>
     </message>
     <message>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">同步到主机刷新速率</translation>
+        <translation>同步到主机刷新速率</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="58"/>
@@ -2504,7 +2504,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>CPU Clock Speed Control</source>
-        <translation type="vanished">CPU速率控制</translation>
+        <translation>CPU速率控制</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="48"/>
@@ -2664,19 +2664,19 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Controller Ports</source>
-        <translation type="vanished">控制器接口</translation>
+        <translation>控制器接口</translation>
     </message>
     <message>
         <source>Multitap:</source>
-        <translation type="vanished">多插口:</translation>
+        <translation>多插口:</translation>
     </message>
     <message>
         <source>CDROM Emulation</source>
-        <translation type="vanished">光盘模拟</translation>
+        <translation>光盘模拟</translation>
     </message>
     <message>
         <source>Use Read Thread (Asynchronous)</source>
-        <translation type="vanished">使用读取线程 (异步)</translation>
+        <translation>使用读取线程 (异步)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="285"/>
@@ -2723,11 +2723,11 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>CDROM Read Speedup</source>
-        <translation type="vanished">光盘读取加速</translation>
+        <translation>光盘读取加速</translation>
     </message>
     <message>
         <source>None (Double Speed</source>
-        <translation type="vanished">无 (2倍速)</translation>
+        <translation>无 (2倍速)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="81"/>
@@ -2736,31 +2736,31 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Emulation Speed</source>
-        <translation type="vanished">模拟速度</translation>
+        <translation>模拟速度</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation type="vanished">设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
+        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
-        <translation type="vanished">快进速度</translation>
+        <translation>快进速度</translation>
     </message>
     <message>
         <source>User Preference</source>
-        <translation type="vanished">用户偏好</translation>
+        <translation>用户偏好</translation>
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="vanished">设置快进速度。这个速度将在快进热键被开启/切换时使用。</translation>
+        <translation>设置快进速度。这个速度将在快进热键被开启/切换时使用。</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
-        <translation type="vanished">涡轮速度</translation>
+        <translation>涡轮速度</translation>
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation type="vanished">设置涡轮速度。这个速度将在涡轮热键被开启/切换时使用。如果两个热键都开启/切换，涡轮将优先于快进。</translation>
+        <translation>设置涡轮速度。这个速度将在涡轮热键被开启/切换时使用。如果两个热键都开启/切换，涡轮将优先于快进。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
@@ -2769,15 +2769,15 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">当垂直同步和音频重新取样设置同时启用时，调整模拟速度可以使操纵台的刷新速率与主机的刷新速率匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。如果操纵台的刷新率与主机的刷新率相差太远，那么同步到主机的刷新率就不会生效。若需要带有可变刷新速率的显示，用户应该禁用此选项。</translation>
+        <translation>当垂直同步和音频重新取样设置同时启用时，调整模拟速度可以使操纵台的刷新速率与主机的刷新速率匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。如果操纵台的刷新率与主机的刷新率相差太远，那么同步到主机的刷新率就不会生效。若需要带有可变刷新速率的显示，用户应该禁用此选项。</translation>
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled.</source>
-        <translation type="vanished">设置涡轮速度。这个速度将在涡轮热键被开启/切换时使用。</translation>
+        <translation>设置涡轮速度。这个速度将在涡轮热键被开启/切换时使用。</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate, when VSync and Audio Resampling is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%.</source>
-        <translation type="vanished">当启用垂直同步和音频重新取样时，调整仿真速度，使操纵台的刷新率与主机的刷新率相互匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。</translation>
+        <translation>当启用垂直同步和音频重新取样时，调整仿真速度，使操纵台的刷新率与主机的刷新率相互匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="30"/>
@@ -2841,7 +2841,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used with compatible mods.</source>
-        <translation type="vanished">启用一个额外的6MB内存，通常用于开发操纵台上。欲使额外内存可用，游戏必须使用更大的堆大小，但可能破坏那些依赖内存镜像的游戏，所以它应当仅使用于可兼容mods。</translation>
+        <translation>启用一个额外的6MB内存，通常用于开发操纵台上。欲使额外内存可用，游戏必须使用更大的堆大小，但可能破坏那些依赖内存镜像的游戏，所以它应当仅使用于可兼容mods。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="80"/>
@@ -2875,7 +2875,7 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation type="vanished">通过在工作线程上使用异步读取/解压缩光盘数据的方式，减少模拟时的卡滞。</translation>
+        <translation>通过在工作线程上使用异步读取/解压缩光盘数据的方式，减少模拟时的卡滞。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="92"/>
@@ -2889,15 +2889,15 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <source>Multitap</source>
-        <translation type="vanished">多插口</translation>
+        <translation>多插口</translation>
     </message>
     <message>
         <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation type="vanished">启用多插口支持在指定的控制器接口上。不支持多插口输入的游戏请保持禁用。</translation>
+        <translation>启用多插口支持在指定的控制器接口上。不支持多插口输入的游戏请保持禁用。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="131"/>
@@ -2987,7 +2987,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="vanished">设备&apos;%1&apos;没有生成属类绑定</translation>
+        <translation>设备&apos;%1&apos;没有生成属类绑定</translation>
     </message>
 </context>
 <context>
@@ -3306,7 +3306,7 @@ This warning will only be shown once.</source>
     <name>ControllerBindingWidget_Base</name>
     <message>
         <source>%1%</source>
-        <translation type="vanished">%1%</translation>
+        <translation>%1%</translation>
     </message>
 </context>
 <context>
@@ -3637,15 +3637,15 @@ This warning will only be shown once.</source>
     <name>ControllerCustomSettingsDialog</name>
     <message>
         <source>%1 Settings</source>
-        <translation type="vanished">%1设置</translation>
+        <translation>%1设置</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="vanished">浏览...</translation>
+        <translation>浏览...</translation>
     </message>
     <message>
         <source>Select File</source>
-        <translation type="vanished">选择文件</translation>
+        <translation>选择文件</translation>
     </message>
 </context>
 <context>
@@ -3766,7 +3766,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Invert</source>
-        <translation type="vanished">反转</translation>
+        <translation>反转</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="240"/>
@@ -3833,23 +3833,23 @@ This warning will only be shown once.</source>
     <name>ControllerInterface</name>
     <message>
         <source>None</source>
-        <translation type="vanished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <source>SDL</source>
-        <translation type="vanished">SDL</translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <source>XInput</source>
-        <translation type="vanished">XInput</translation>
+        <translation>XInput</translation>
     </message>
     <message>
         <source>DInput</source>
-        <translation type="vanished">DInput</translation>
+        <translation>DInput</translation>
     </message>
     <message>
         <source>Evdev</source>
-        <translation type="vanished">Evdev</translation>
+        <translation>Evdev</translation>
     </message>
 </context>
 <context>
@@ -3884,12 +3884,12 @@ This warning will only be shown once.</source>
     <name>ControllerMacroDialog</name>
     <message>
         <source>Controller Port %1 Macros</source>
-        <translation type="vanished">控制器接口%1宏</translation>
+        <translation>控制器接口%1宏</translation>
     </message>
     <message>
         <source>Macro %1
 %2</source>
-        <translation type="vanished">宏%1
+        <translation>宏%1
 %2</translation>
     </message>
 </context>
@@ -4139,146 +4139,146 @@ You cannot undo this action.</source>
     <name>ControllerSettingsWidget</name>
     <message>
         <source>Controller Type:</source>
-        <translation type="vanished">控制器类型:</translation>
+        <translation>控制器类型:</translation>
     </message>
     <message>
         <source>Load Profile</source>
-        <translation type="vanished">载入配置</translation>
+        <translation>载入配置</translation>
     </message>
     <message>
         <source>Save Profile</source>
-        <translation type="vanished">保存配置</translation>
+        <translation>保存配置</translation>
     </message>
     <message>
         <source>Clear All</source>
-        <translation type="vanished">清除全部</translation>
+        <translation>清除全部</translation>
     </message>
     <message>
         <source>Clear Bindings</source>
-        <translation type="vanished">清除绑定</translation>
+        <translation>清除绑定</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation type="vanished">您确定要清除所有绑定控件吗？这是不能撤回的。</translation>
+        <translation>您确定要清除所有绑定控件吗？这是不能撤回的。</translation>
     </message>
     <message>
         <source>Rebind All</source>
-        <translation type="vanished">全部重新绑定</translation>
+        <translation>全部重新绑定</translation>
     </message>
     <message>
         <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation type="vanished">您确定要重新绑定所有控件？所有当前绑定的控件都将被不可逆转地清除。确认后将开始重新绑定。</translation>
+        <translation>您确定要重新绑定所有控件？所有当前绑定的控件都将被不可逆转地清除。确认后将开始重新绑定。</translation>
     </message>
     <message>
         <source>Port %1</source>
-        <translation type="vanished">接口%1</translation>
+        <translation>接口%1</translation>
     </message>
     <message>
         <source>Port %1%2</source>
-        <translation type="vanished">接口%1%2</translation>
+        <translation>接口%1%2</translation>
     </message>
     <message>
         <source>Button Bindings:</source>
-        <translation type="vanished">按钮绑定:</translation>
+        <translation>按钮绑定:</translation>
     </message>
     <message>
         <source>Axis Bindings:</source>
-        <translation type="vanished">轴绑定:</translation>
+        <translation>轴绑定:</translation>
     </message>
     <message>
         <source>Rumble</source>
-        <translation type="vanished">震动</translation>
+        <translation>震动</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="vanished">浏览...</translation>
+        <translation>浏览...</translation>
     </message>
     <message>
         <source>Select File</source>
-        <translation type="vanished">选择文件</translation>
+        <translation>选择文件</translation>
     </message>
     <message>
         <source>Auto Fire Buttons</source>
-        <translation type="vanished">自动连发按键</translation>
+        <translation>自动连发按键</translation>
     </message>
     <message>
         <source>Auto Fire %1</source>
-        <translation type="vanished">自动连发%1</translation>
+        <translation>自动连发%1</translation>
     </message>
     <message>
         <source> Frames</source>
-        <translation type="vanished">帧</translation>
+        <translation>帧</translation>
     </message>
     <message>
         <source>Select path to input profile ini</source>
-        <translation type="vanished">选择输入配置文件ini的路径</translation>
+        <translation>选择输入配置文件ini的路径</translation>
     </message>
     <message>
         <source>New...</source>
-        <translation type="vanished">新建...</translation>
+        <translation>新建...</translation>
     </message>
     <message>
         <source>Enter Input Profile Name</source>
-        <translation type="vanished">输入输入配置文件名</translation>
+        <translation>输入输入配置文件名</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation type="vanished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <source>No name entered, input profile was not saved.</source>
-        <translation type="vanished">未输入名称，未保存输入配置文件。</translation>
+        <translation>未输入名称，未保存输入配置文件。</translation>
     </message>
     <message>
         <source>No path selected, input profile was not saved.</source>
-        <translation type="vanished">未选择路径，未保存输入配置文件。</translation>
+        <translation>未选择路径，未保存输入配置文件。</translation>
     </message>
     <message>
         <source>Input Profiles (*.ini)</source>
-        <translation type="vanished">输入配置文件 (*.ini)</translation>
+        <translation>输入配置文件 (*.ini)</translation>
     </message>
 </context>
 <context>
     <name>ControllerType</name>
     <message>
         <source>None</source>
-        <translation type="vanished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <source>Digital Controller</source>
-        <translation type="vanished">数字控制器</translation>
+        <translation>数字控制器</translation>
     </message>
     <message>
         <source>Analog Controller (DualShock)</source>
-        <translation type="vanished">模拟控制器 (DualShock)</translation>
+        <translation>模拟控制器 (DualShock)</translation>
     </message>
     <message>
         <source>Analog Joystick</source>
-        <translation type="vanished">模拟操纵杆</translation>
+        <translation>模拟操纵杆</translation>
     </message>
     <message>
         <source>Namco GunCon</source>
-        <translation type="vanished">南梦宫光枪</translation>
+        <translation>南梦宫光枪</translation>
     </message>
     <message>
         <source>PlayStation Mouse</source>
-        <translation type="vanished">PlayStation鼠标</translation>
+        <translation>PlayStation鼠标</translation>
     </message>
     <message>
         <source>NeGcon</source>
-        <translation type="vanished">NeGcon</translation>
+        <translation>NeGcon</translation>
     </message>
     <message>
         <source>Analog Controller</source>
-        <translation type="vanished">模拟控制器</translation>
+        <translation>模拟控制器</translation>
     </message>
     <message>
         <source>GunCon</source>
-        <translation type="vanished">光枪</translation>
+        <translation>光枪</translation>
     </message>
     <message>
         <source>Not Connected</source>
-        <translation type="vanished">未连接</translation>
+        <translation>未连接</translation>
     </message>
 </context>
 <context>
@@ -4290,7 +4290,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.&lt;/p&gt;&lt;p&gt;In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation可以自动对当前还没有封面集的游戏下载封面。我们不提供任何封面图片，用户必须自己提供图片来源。&lt;/p&gt;&lt;p&gt;在下面的表单中，指定要下载封面的URL，每行一个模板URL。有效变量如下:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏名称。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 游戏文件名的名称组件。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏系列。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;范例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation可以自动对当前还没有封面集的游戏下载封面。我们不提供任何封面图片，用户必须自己提供图片来源。&lt;/p&gt;&lt;p&gt;在下面的表单中，指定要下载封面的URL，每行一个模板URL。有效变量如下:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; 游戏名称。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; 游戏文件名的名称组件。&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 游戏系列。&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;范例:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="38"/>
@@ -4331,7 +4331,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../coverdownloaddialog.cpp" line="63"/>
         <source>Download complete.</source>
-        <translation>下载完成</translation>
+        <translation>下载完成。</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.cpp" line="85"/>
@@ -4373,35 +4373,35 @@ You cannot undo this action.</source>
     <name>DebuggerMessage</name>
     <message>
         <source>Added breakpoint at 0x%08X.</source>
-        <translation type="vanished">添加断点在0x%08X。</translation>
+        <translation>添加断点在0x%08X。</translation>
     </message>
     <message>
         <source>Removed breakpoint at 0x%08X.</source>
-        <translation type="vanished">移除断点在0x%08X。</translation>
+        <translation>移除断点在0x%08X。</translation>
     </message>
     <message>
         <source>0x%08X is not a call instruction.</source>
-        <translation type="vanished">0x%08X不是调用指令。</translation>
+        <translation>0x%08X不是调用指令。</translation>
     </message>
     <message>
         <source>Can&apos;t step over double branch at 0x%08X</source>
-        <translation type="vanished">无法在0x%08X跨越双分支。</translation>
+        <translation>无法在0x%08X跨越双分支。</translation>
     </message>
     <message>
         <source>Stepping over to 0x%08X.</source>
-        <translation type="vanished">跨越到0x%08X。</translation>
+        <translation>跨越到0x%08X。</translation>
     </message>
     <message>
         <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation type="vanished">搜索函数终端时无法在%08X下读取指令。</translation>
+        <translation>搜索函数终端时无法在%08X下读取指令。</translation>
     </message>
     <message>
         <source>Stepping out to 0x%08X.</source>
-        <translation type="vanished">跨出到0x%08X。</translation>
+        <translation>跨出到0x%08X。</translation>
     </message>
     <message>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation type="vanished">在%u指令用于跨出%08X后没有找到返回指令。</translation>
+        <translation>在%u指令用于跨出%08X后没有找到返回指令。</translation>
     </message>
 </context>
 <context>
@@ -4713,7 +4713,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="124"/>
-        <location filename="../qtutils.cpp" line="753"/>
+        <location filename="../qtutils.cpp" line="752"/>
         <source>Enter memory address:</source>
         <translation>输入内存地址:</translation>
     </message>
@@ -4776,7 +4776,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>模式找到于0x%1。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="770"/>
+        <location filename="../qtutils.cpp" line="769"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>无效的地址。它应当是十六进制 (0x12345678或12345678)</translation>
     </message>
@@ -4785,139 +4785,139 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <name>DigitalController</name>
     <message>
         <source>Up</source>
-        <translation type="vanished">上</translation>
+        <translation>上</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="vanished">下</translation>
+        <translation>下</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation type="vanished">选择</translation>
+        <translation>选择</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="vanished">开始</translation>
+        <translation>开始</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="vanished">三角</translation>
+        <translation>三角</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation type="vanished">叉叉</translation>
+        <translation>叉叉</translation>
     </message>
     <message>
         <source>Circle</source>
-        <translation type="vanished">圆圈</translation>
+        <translation>圆圈</translation>
     </message>
     <message>
         <source>Square</source>
-        <translation type="vanished">方块</translation>
+        <translation>方块</translation>
     </message>
     <message>
         <source>L1</source>
-        <translation type="vanished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <source>L2</source>
-        <translation type="vanished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <source>R1</source>
-        <translation type="vanished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <source>R2</source>
-        <translation type="vanished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <source>Force Pop&apos;n Controller Mode</source>
-        <translation type="vanished">强制Pop&apos;n控制器模式</translation>
+        <translation>强制Pop&apos;n控制器模式</translation>
     </message>
     <message>
         <source>Forces the Digital Controller to act as a Pop&apos;n Controller.</source>
-        <translation type="vanished">强制数字控制器作为Pop&apos;n控制器。</translation>
+        <translation>强制数字控制器作为Pop&apos;n控制器。</translation>
     </message>
 </context>
 <context>
     <name>DiscRegion</name>
     <message>
         <source>NTSC-J (Japan)</source>
-        <translation type="vanished">NTSC-J (日本)</translation>
+        <translation>NTSC-J (日本)</translation>
     </message>
     <message>
         <source>NTSC-U (US)</source>
-        <translation type="vanished">NTSC-U (美国)</translation>
+        <translation>NTSC-U (美国)</translation>
     </message>
     <message>
         <source>NTSC-U/C (US, Canada)</source>
-        <translation type="vanished">NTSC-U/C (美国，加拿大)</translation>
+        <translation>NTSC-U/C (美国，加拿大)</translation>
     </message>
     <message>
         <source>PAL (Europe, Australia)</source>
-        <translation type="vanished">PAL (欧洲，澳大利亚)</translation>
+        <translation>PAL (欧洲，澳大利亚)</translation>
     </message>
     <message>
         <source>Other</source>
-        <translation type="vanished">其他</translation>
+        <translation>其他</translation>
     </message>
     <message>
         <source>Non-PS1</source>
-        <translation type="vanished">非PS1</translation>
+        <translation>非PS1</translation>
     </message>
 </context>
 <context>
     <name>DisplayAlignment</name>
     <message>
         <source>Left / Top</source>
-        <translation type="vanished">左/顶</translation>
+        <translation>左/顶</translation>
     </message>
     <message>
         <source>Center</source>
-        <translation type="vanished">中</translation>
+        <translation>中</translation>
     </message>
     <message>
         <source>Right / Bottom</source>
-        <translation type="vanished">右/底</translation>
+        <translation>右/底</translation>
     </message>
 </context>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
         <source>Auto (Game Native)</source>
-        <translation type="vanished">自动 (游戏原设)</translation>
+        <translation>自动 (游戏原设)</translation>
     </message>
     <message>
         <source>Auto (Match Window)</source>
-        <translation type="vanished">自动 (匹配窗口)</translation>
+        <translation>自动 (匹配窗口)</translation>
     </message>
     <message>
         <source>Custom</source>
-        <translation type="vanished">自定义</translation>
+        <translation>自定义</translation>
     </message>
 </context>
 <context>
     <name>DisplayCropMode</name>
     <message>
         <source>None</source>
-        <translation type="vanished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <source>Only Overscan Area</source>
-        <translation type="vanished">仅过扫描区域</translation>
+        <translation>仅过扫描区域</translation>
     </message>
     <message>
         <source>All Borders</source>
-        <translation type="vanished">全部边界</translation>
+        <translation>全部边界</translation>
     </message>
 </context>
 <context>
@@ -4976,11 +4976,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">同步到本机刷新速率</translation>
+        <translation>同步到本机刷新速率</translation>
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation type="vanished">优化帧距</translation>
+        <translation>优化帧距</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="207"/>
@@ -4990,7 +4990,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Use Software Renderer For Readbacks</source>
-        <translation type="vanished">使用软件渲染器回读</translation>
+        <translation>使用软件渲染器回读</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="103"/>
@@ -5014,23 +5014,23 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Downsampling:</source>
-        <translation type="vanished">缩减采样:</translation>
+        <translation>缩减采样:</translation>
     </message>
     <message>
         <source>Stretch To Fill</source>
-        <translation type="vanished">拉伸以填充</translation>
+        <translation>拉伸以填充</translation>
     </message>
     <message>
         <source>Linear Upscaling</source>
-        <translation type="vanished">线性提升缩放</translation>
+        <translation>线性提升缩放</translation>
     </message>
     <message>
         <source>Show Game Frame Rate</source>
-        <translation type="vanished">显示游戏帧速率</translation>
+        <translation>显示游戏帧速率</translation>
     </message>
     <message>
         <source>Show Display FPS</source>
-        <translation type="vanished">显示显示帧率</translation>
+        <translation>显示显示帧率</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="228"/>
@@ -5040,7 +5040,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Integer Upscaling</source>
-        <translation type="vanished">整数提升缩放</translation>
+        <translation>整数提升缩放</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
@@ -5066,7 +5066,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Show Messages</source>
-        <translation type="vanished">显示消息</translation>
+        <translation>显示消息</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="221"/>
@@ -5082,7 +5082,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Show VPS</source>
-        <translation type="vanished">显示VPS</translation>
+        <translation>显示VPS</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="235"/>
@@ -5158,7 +5158,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation type="vanished">更改用于在屏幕上显示主机输出的纵横比。默认值是4:3，与那个时代的典型电视相匹配。</translation>
+        <translation>更改用于在屏幕上显示主机输出的纵横比。默认值是4:3，与那个时代的典型电视相匹配。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="87"/>
@@ -5172,7 +5172,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Only Overscan Area</source>
-        <translation type="vanished">仅限过扫描区域</translation>
+        <translation>仅限过扫描区域</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="92"/>
@@ -5181,15 +5181,15 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Downsampling</source>
-        <translation type="vanished">缩减采样</translation>
+        <translation>缩减采样</translation>
     </message>
     <message>
         <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="vanished">在显示之前先对渲染的图像进行缩减采样。可以提高2D/3D混合游戏的整体图像质量，但对于纯3D游戏应该禁用。仅适用于硬件渲染器。</translation>
+        <translation>在显示之前先对渲染的图像进行缩减采样。可以提高2D/3D混合游戏的整体图像质量，但对于纯3D游戏应该禁用。仅适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="108"/>
@@ -5201,7 +5201,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation type="vanished">在将游戏主机的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率比率越高，此选项就越不明显。</translation>
+        <translation>在将游戏主机的帧缓冲显示到屏幕时使用双线性纹理过滤。&lt;br&gt;禁用过滤将生成更锐利、更块状/像素化的图像。启用将使图像平滑。&lt;br&gt;分辨率比率越高，此选项就越不明显。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="103"/>
@@ -5216,11 +5216,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation type="vanished">向显示区域添加填充，以确保本机上的像素与游戏主机中的像素之间的比例是一个整数。&lt;br&gt;在一些2D游戏中可能导致图像过于锐化。</translation>
+        <translation>向显示区域添加填充，以确保本机上的像素与游戏主机中的像素之间的比例是一个整数。&lt;br&gt;在一些2D游戏中可能导致图像过于锐化。</translation>
     </message>
     <message>
         <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation type="vanished">以活动显示区域来填充窗口，而不管高宽比如何。</translation>
+        <translation>以活动显示区域来填充窗口，而不管高宽比如何。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
@@ -5234,7 +5234,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="vanished">启用此选项将确保游戏主机渲染的每一帧都显示在屏幕上，以使帧之间获得最理想的间距。如果您难以保持全速运行，或者出现音频故障，尝试禁用此选项。</translation>
+        <translation>启用此选项将确保游戏主机渲染的每一帧都显示在屏幕上，以使帧之间获得最理想的间距。如果您难以保持全速运行，或者出现音频故障，尝试禁用此选项。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="112"/>
@@ -5248,11 +5248,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">当垂直同步和音频重新取样设置同时启用时，调整模拟速度可以使游戏主机的刷新速率与本机的刷新速率相互匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。如果游戏主机的刷新速率与本机的刷新速率相差太远，那么同步到本机的刷新速率就不会生效。若用户需要带有可变刷新速率的显示，应该禁用此选项。</translation>
+        <translation>当垂直同步和音频重新取样设置同时启用时，调整模拟速度可以使游戏主机的刷新速率与本机的刷新速率相互匹配。这可能会产生最流畅的动画，但代价是模拟速度增加可能不到1%。如果游戏主机的刷新速率与本机的刷新速率相差太远，那么同步到本机的刷新速率就不会生效。若用户需要带有可变刷新速率的显示，应该禁用此选项。</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="vanished">并行运行软件渲染器进行显存回读。在某些系统上，当使用硬件渲染器对图像增强时，这可能会带来更好的性能。</translation>
+        <translation>并行运行软件渲染器进行显存回读。在某些系统上，当使用硬件渲染器对图像增强时，这可能会带来更好的性能。</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="214"/>
@@ -5272,11 +5272,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation type="vanished">在显示右上角显示系统的每秒显示帧数 (或垂直同步)。</translation>
+        <translation>在显示右上角显示系统的每秒显示帧数 (或垂直同步)。</translation>
     </message>
     <message>
         <source>Show Speed</source>
-        <translation type="vanished">显示速度</translation>
+        <translation>显示速度</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="124"/>
@@ -5347,12 +5347,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="561"/>
+        <location filename="../qthost.cpp" line="562"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="561"/>
+        <location filename="../qthost.cpp" line="562"/>
         <source>No resume save state found.</source>
         <translation>没有找到可继续存档。</translation>
     </message>
@@ -5362,7 +5362,7 @@ Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-        <translation type="vanished">游戏ID: %1
+        <translation>游戏ID: %1
 游戏标题: %2
 成绩: %5 (%6)
 
@@ -5370,39 +5370,39 @@ Achievements: %5 (%6)
     </message>
     <message numerus="yes">
         <source>%n points</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n点</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1228"/>
+        <location filename="../qthost.cpp" line="1229"/>
         <source>Game: %1 (%2)
 </source>
         <translation>游戏: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1236"/>
+        <location filename="../qthost.cpp" line="1237"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1240"/>
+        <location filename="../qthost.cpp" line="1241"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1510"/>
+        <location filename="../qthost.cpp" line="1511"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1519"/>
+        <location filename="../qthost.cpp" line="1520"/>
         <source>Game: %1 FPS</source>
         <translation>游戏: %1帧/秒</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1529"/>
+        <location filename="../qthost.cpp" line="1530"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>视频: %1帧/秒 (%2%)</translation>
     </message>
@@ -5436,13 +5436,13 @@ Achievements: %5 (%6)
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="70"/>
-        <location filename="../emulationsettingswidget.cpp" line="92"/>
+        <location filename="../emulationsettingswidget.cpp" line="91"/>
         <source>Sync To Host Refresh Rate</source>
         <translation>同步到本机刷新率</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="77"/>
-        <location filename="../emulationsettingswidget.cpp" line="98"/>
+        <location filename="../emulationsettingswidget.cpp" line="97"/>
         <source>Optimal Frame Pacing</source>
         <translation>最佳帧进间隔</translation>
     </message>
@@ -5453,7 +5453,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Rewind</source>
-        <translation type="vanished">回退</translation>
+        <translation>回退</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="95"/>
@@ -5487,7 +5487,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="150"/>
-        <location filename="../emulationsettingswidget.cpp" line="110"/>
+        <location filename="../emulationsettingswidget.cpp" line="109"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
@@ -5547,108 +5547,108 @@ Achievements: %5 (%6)
         <translation>文本标签</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="110"/>
+        <location filename="../emulationsettingswidget.cpp" line="109"/>
         <source>Runahead</source>
         <translation>预运行</translation>
     </message>
     <message>
         <source>Enable Runahead</source>
-        <translation type="vanished">启用预运行</translation>
+        <translation>启用预运行</translation>
     </message>
     <message>
         <source>Runahead Frames:</source>
-        <translation type="vanished">预运行帧:</translation>
+        <translation>预运行帧:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="81"/>
+        <location filename="../emulationsettingswidget.cpp" line="80"/>
         <source>Emulation Speed</source>
         <translation>模拟速度</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="82"/>
+        <location filename="../emulationsettingswidget.cpp" line="81"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="85"/>
+        <location filename="../emulationsettingswidget.cpp" line="84"/>
         <source>Fast Forward Speed</source>
         <translation>快进速度</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="85"/>
-        <location filename="../emulationsettingswidget.cpp" line="88"/>
+        <location filename="../emulationsettingswidget.cpp" line="84"/>
+        <location filename="../emulationsettingswidget.cpp" line="87"/>
         <source>User Preference</source>
         <translation>用户偏好</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="86"/>
+        <location filename="../emulationsettingswidget.cpp" line="85"/>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
         <translation>设置快进速度。这个速度将在快进热键被按下/切换时使用。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="88"/>
+        <location filename="../emulationsettingswidget.cpp" line="87"/>
         <source>Turbo Speed</source>
         <translation>涡轮速度</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="89"/>
+        <location filename="../emulationsettingswidget.cpp" line="88"/>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
         <translation>设置涡轮速度。这个速度将在涡轮热键被按下/切换时使用。如果两个热键都按下/切换，涡轮将优先于快进。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="92"/>
-        <location filename="../emulationsettingswidget.cpp" line="98"/>
-        <location filename="../emulationsettingswidget.cpp" line="103"/>
+        <location filename="../emulationsettingswidget.cpp" line="91"/>
+        <location filename="../emulationsettingswidget.cpp" line="97"/>
+        <location filename="../emulationsettingswidget.cpp" line="102"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="93"/>
+        <location filename="../emulationsettingswidget.cpp" line="92"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
         <translation>当垂直同步和音频重新取样设置同时启用时，调整模拟速度可以使游戏主机的刷新率与本机的刷新率相互匹配。这可能会产生最流畅的动画，但潜在的代价是模拟速度增加不到1%。如果游戏主机的刷新率与本机的刷新率相差太远，那么同步到本机的刷新率就不会生效。用户若需要带有可变刷新率的显示，应当禁用此选项。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="99"/>
+        <location filename="../emulationsettingswidget.cpp" line="98"/>
         <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
         <translation>启用此选项将确保游戏主机渲染的每一帧都显示在屏幕上，以获得最佳的帧进间隔。如果您在保持全速时遇到困难，或者遇到音频故障，尝试禁用此选项。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="103"/>
+        <location filename="../emulationsettingswidget.cpp" line="102"/>
         <source>Rewinding</source>
         <translation>倒带</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="104"/>
+        <location filename="../emulationsettingswidget.cpp" line="103"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>&lt;b&gt;启用倒带：&lt;/b&gt;周期地自动存档以使您可以在游戏时回退任何错误。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带档的创建频率。频率越高对系统的需求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;倒带档的保留数量。数值越高对内存的需求就越大。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="111"/>
+        <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>提前模拟系统并回滚/回放以减少输入延迟。非常高的系统需求。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="124"/>
+        <location filename="../emulationsettingswidget.cpp" line="123"/>
         <source>Use Global Setting [Unlimited]</source>
         <translation>使用全局设置 [无限制]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="126"/>
+        <location filename="../emulationsettingswidget.cpp" line="125"/>
         <source>Use Global Setting [%1%]</source>
         <translation>使用全局设置 [%1%]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="129"/>
+        <location filename="../emulationsettingswidget.cpp" line="128"/>
         <source>Unlimited</source>
         <translation>无限制</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="135"/>
+        <location filename="../emulationsettingswidget.cpp" line="134"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation>%1% [%2帧/秒 (NTSC) / %3帧/秒 (PAL)]</translation>
     </message>
     <message numerus="yes">
-        <location filename="../emulationsettingswidget.cpp" line="196"/>
+        <location filename="../emulationsettingswidget.cpp" line="195"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
         <translation>
             <numerusform>倒带%n帧，持续%1秒将需要相当于%2MB内存和%3MB显存。</numerusform>
@@ -5656,19 +5656,19 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
-        <translation type="vanished">回退%1帧，持续%2秒将需要相当于%3MB内存和%4MB显存。</translation>
+        <translation>回退%1帧，持续%2秒将需要相当于%3MB内存和%4MB显存。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="207"/>
+        <location filename="../emulationsettingswidget.cpp" line="206"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>倒带被禁用，因为启用了预运行。预运行会显著增加系统需求。</translation>
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation type="vanished">回退被禁用，因为启用了预运行。</translation>
+        <translation>回退被禁用，因为启用了预运行。</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="213"/>
+        <location filename="../emulationsettingswidget.cpp" line="212"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>倒带未启用。请注意启用倒带可能会显著增加系统需求。</translation>
     </message>
@@ -5745,7 +5745,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Multisample Antialiasing:</source>
-        <translation type="vanished">多重采样反锯齿:</translation>
+        <translation>多重采样反锯齿:</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="116"/>
@@ -5790,7 +5790,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Depth Buffer</source>
-        <translation type="vanished">深度缓存</translation>
+        <translation>深度缓存</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="94"/>
@@ -5804,11 +5804,11 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">双线性纹理过滤</translation>
+        <translation>双线性纹理过滤</translation>
     </message>
     <message>
         <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation type="vanished">宽屏调整 (在16比9中渲染3D)</translation>
+        <translation>宽屏调整 (在16比9中渲染3D)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="143"/>
@@ -5834,15 +5834,15 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Texture Correction</source>
-        <translation type="vanished">纹理校正</translation>
+        <translation>纹理校正</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation type="vanished">顶点缓存</translation>
+        <translation>顶点缓存</translation>
     </message>
     <message>
         <source>CPU Mode</source>
-        <translation type="vanished">CPU模式</translation>
+        <translation>CPU模式</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="73"/>
@@ -5856,7 +5856,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">利用双线性过滤器消除三维物体上放大纹理的块状。&lt;br&gt;会对更高分辨率的尺度产生更大的影响。目前，在许多游戏中，这个选项会在对象周围产生瑕疵，需要进一步的工作。仅适用于硬件渲染器。</translation>
+        <translation>利用双线性过滤器消除三维物体上放大纹理的块状。&lt;br&gt;会对更高分辨率的尺度产生更大的影响。目前，在许多游戏中，这个选项会在对象周围产生瑕疵，需要进一步的工作。仅适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="67"/>
@@ -5865,7 +5865,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Multisample Antialiasing</source>
-        <translation type="vanished">多重采样反锯齿</translation>
+        <translation>多重采样反锯齿</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
@@ -5874,7 +5874,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation type="vanished">与增加分辨率比率相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。仅适用于硬件后端。</translation>
+        <translation>与增加分辨率比率相比，渲染3D对象使用多重采样反锯齿，能够以更低的性能代价来平滑多边形上的锯齿状边缘。但在一些游戏中可能更容易导致渲染错误。仅适用于硬件后端。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="88"/>
@@ -5898,7 +5898,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在高分辨率比率下将有更好的效果。仅适用于硬件渲染器。</translation>
+        <translation>使用滤镜来平滑因放大3D对象的纹理所导致的块状。&lt;br&gt;在高分辨率比率下将有更好的效果。仅适用于硬件渲染器。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
@@ -5967,11 +5967,11 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，将3D游戏中的视野从4:3彻底增加到16:9。&lt;br&gt;对于2D游戏，或者那些使用预渲染背景的游戏，此增强将无法按预期般工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>将屏幕空间中的顶点位置缩放到适应宽屏显示的纵横比，将3D游戏中的视野从4:3彻底增加到16:9。&lt;br&gt;对于2D游戏，或者那些使用预渲染背景的游戏，此增强将无法按预期般工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容所有游戏。&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
+        <translation>允许放大渲染到控制台帧缓冲区的三维对象。仅适用于硬件后端。这个选项通常是安全的, 大多数游戏在更高的分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="78"/>
@@ -6000,27 +6000,27 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">对纹理坐标和颜色使用透视校正插值，矫直扭曲的纹理。需要启用几何校正。</translation>
+        <translation>对纹理坐标和颜色使用透视校正插值，矫直扭曲的纹理。需要启用几何校正。</translation>
     </message>
     <message>
         <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">当通过内存跟踪顶点失败时, 使用屏幕坐标作为备用。可提高PGXP兼容性。</translation>
+        <translation>当通过内存跟踪顶点失败时, 使用屏幕坐标作为备用。可提高PGXP兼容性。</translation>
     </message>
     <message>
         <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">尝试通过CPU跟踪顶点操作。有些游戏需要此选项才能使PGXP生效。非常慢, 与重新编译程序不兼容。</translation>
+        <translation>尝试通过CPU跟踪顶点操作。有些游戏需要此选项才能使PGXP生效。非常慢, 与重新编译程序不兼容。</translation>
     </message>
     <message>
         <source>%1x%2</source>
-        <translation type="vanished">%1x%2</translation>
+        <translation>%1x%2</translation>
     </message>
     <message>
         <source>%1x (%2x%3 VRAM)</source>
-        <translation type="vanished">%1x (%2x%3 VRAM)</translation>
+        <translation>%1x (%2x%3 VRAM)</translation>
     </message>
     <message>
         <source>(Default)</source>
-        <translation type="vanished">(默认)</translation>
+        <translation>(默认)</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="84"/>
@@ -6122,37 +6122,37 @@ Achievements: %5 (%6)
     <name>GPUDownsampleMode</name>
     <message>
         <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation type="vanished">盒式 (缩减采样3D/平滑全部)</translation>
+        <translation>盒式 (缩减采样3D/平滑全部)</translation>
     </message>
     <message>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation type="vanished">自适应 (保护3D/平滑2D)</translation>
+        <translation>自适应 (保护3D/平滑2D)</translation>
     </message>
 </context>
 <context>
     <name>GPURenderer</name>
     <message>
         <source>Hardware (D3D11)</source>
-        <translation type="vanished">硬件 (D3D11)</translation>
+        <translation>硬件 (D3D11)</translation>
     </message>
     <message>
         <source>Hardware (D3D12)</source>
-        <translation type="vanished">硬件 (D3D12)</translation>
+        <translation>硬件 (D3D12)</translation>
     </message>
     <message>
         <source>Hardware (Vulkan)</source>
-        <translation type="vanished">硬件 (Vulkan)</translation>
+        <translation>硬件 (Vulkan)</translation>
     </message>
     <message>
         <source>Hardware (OpenGL)</source>
-        <translation type="vanished">硬件 (OpenGL)</translation>
+        <translation>硬件 (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1501"/>
+        <location filename="../qthost.cpp" line="1502"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
@@ -6160,110 +6160,110 @@ Achievements: %5 (%6)
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <location filename="../qtutils.cpp" line="700"/>
+        <location filename="../qtutils.cpp" line="699"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="701"/>
+        <location filename="../qtutils.cpp" line="700"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="702"/>
+        <location filename="../qtutils.cpp" line="701"/>
         <source>3x (for 720p)</source>
         <translation>3x (适合720p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="703"/>
+        <location filename="../qtutils.cpp" line="702"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="704"/>
+        <location filename="../qtutils.cpp" line="703"/>
         <source>5x (for 1080p)</source>
         <translation>5x (适合1080p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="705"/>
+        <location filename="../qtutils.cpp" line="704"/>
         <source>6x (for 1440p)</source>
         <translation>6x (适合1440p)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="706"/>
+        <location filename="../qtutils.cpp" line="705"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="707"/>
+        <location filename="../qtutils.cpp" line="706"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="708"/>
+        <location filename="../qtutils.cpp" line="707"/>
         <source>9x (for 4K)</source>
         <translation>9x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="741"/>
+        <location filename="../qtutils.cpp" line="740"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="744"/>
+        <location filename="../qtutils.cpp" line="743"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="747"/>
+        <location filename="../qtutils.cpp" line="746"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
     <message>
         <source>9x</source>
-        <translation type="vanished">9x</translation>
+        <translation>9x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="709"/>
+        <location filename="../qtutils.cpp" line="708"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="710"/>
+        <location filename="../qtutils.cpp" line="709"/>
         <source>11x</source>
         <translation>11x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="711"/>
+        <location filename="../qtutils.cpp" line="710"/>
         <source>12x</source>
         <translation>12x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="712"/>
+        <location filename="../qtutils.cpp" line="711"/>
         <source>13x</source>
         <translation>13x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="713"/>
+        <location filename="../qtutils.cpp" line="712"/>
         <source>14x</source>
         <translation>14x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="714"/>
+        <location filename="../qtutils.cpp" line="713"/>
         <source>15x</source>
         <translation>15x</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="715"/>
+        <location filename="../qtutils.cpp" line="714"/>
         <source>16x</source>
         <translation>16x</translation>
     </message>
     <message>
         <source>8x (for 4K)</source>
-        <translation type="vanished">8x (适合4K)</translation>
+        <translation>8x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="699"/>
+        <location filename="../qtutils.cpp" line="698"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口尺寸</translation>
     </message>
@@ -6272,133 +6272,133 @@ Achievements: %5 (%6)
     <name>GPUTextureFilter</name>
     <message>
         <source>Nearest-Neighbor</source>
-        <translation type="vanished">最近邻</translation>
+        <translation>最近邻</translation>
     </message>
     <message>
         <source>Bilinear</source>
-        <translation type="vanished">双线性</translation>
+        <translation>双线性</translation>
     </message>
     <message>
         <source>JINC2 (Slow)</source>
-        <translation type="vanished">JINC2 (慢)</translation>
+        <translation>JINC2 (慢)</translation>
     </message>
     <message>
         <source>JINC2 (Slow, No Edge Blending)</source>
-        <translation type="vanished">JINC2 (慢，无边缘混合)</translation>
+        <translation>JINC2 (慢，无边缘混合)</translation>
     </message>
     <message>
         <source>xBR (Very Slow)</source>
-        <translation type="vanished">xBR (非常慢)</translation>
+        <translation>xBR (非常慢)</translation>
     </message>
     <message>
         <source>xBR (Very Slow, No Edge Blending)</source>
-        <translation type="vanished">xBR (非常慢，无边缘混合)</translation>
+        <translation>xBR (非常慢，无边缘混合)</translation>
     </message>
     <message>
         <source>JINC2</source>
-        <translation type="vanished">JINC2</translation>
+        <translation>JINC2</translation>
     </message>
     <message>
         <source>Bilinear (No Edge Blending)</source>
-        <translation type="vanished">双线性 (无边缘混合)</translation>
+        <translation>双线性 (无边缘混合)</translation>
     </message>
     <message>
         <source>xBR</source>
-        <translation type="vanished">xBR</translation>
+        <translation>xBR</translation>
     </message>
     <message>
         <source>JINC2 (No Edge Blending)</source>
-        <translation type="vanished">JINC2 (无边缘混合)</translation>
+        <translation>JINC2 (无边缘混合)</translation>
     </message>
     <message>
         <source>xBR (No Edge Blending)</source>
-        <translation type="vanished">xBR (无边缘混合)</translation>
+        <translation>xBR (无边缘混合)</translation>
     </message>
 </context>
 <context>
     <name>GameList</name>
     <message>
         <source>Disc</source>
-        <translation type="vanished">光盘</translation>
+        <translation>光盘</translation>
     </message>
     <message>
         <source>PS-EXE</source>
-        <translation type="vanished">PS-EXE</translation>
+        <translation>PS-EXE</translation>
     </message>
     <message>
         <source>Playlist</source>
-        <translation type="vanished">播放列表</translation>
+        <translation>播放列表</translation>
     </message>
     <message>
         <source>PSF</source>
-        <translation type="vanished">PSF</translation>
+        <translation>PSF</translation>
     </message>
     <message>
         <source>Never</source>
-        <translation type="vanished">从未</translation>
+        <translation>从未</translation>
     </message>
     <message>
         <source>Today</source>
-        <translation type="vanished">今天</translation>
+        <translation>今天</translation>
     </message>
     <message>
         <source>Yesterday</source>
-        <translation type="vanished">昨天</translation>
+        <translation>昨天</translation>
     </message>
     <message>
         <source>{}h {}m</source>
-        <translation type="vanished">{}时{}分</translation>
+        <translation>{}时{}分</translation>
     </message>
     <message>
         <source>{}h {}m {}s</source>
-        <translation type="vanished">{}时{}分{}秒</translation>
+        <translation>{}时{}分{}秒</translation>
     </message>
     <message>
         <source>{}m {}s</source>
-        <translation type="vanished">{}分{}秒</translation>
+        <translation>{}分{}秒</translation>
     </message>
     <message>
         <source>{}s</source>
-        <translation type="vanished">{}秒</translation>
+        <translation>{}秒</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="vanished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <source>{} hours</source>
-        <translation type="vanished">{}小时</translation>
+        <translation>{}小时</translation>
     </message>
     <message>
         <source>{} minutes</source>
-        <translation type="vanished">{}分钟</translation>
+        <translation>{}分钟</translation>
     </message>
 </context>
 <context>
     <name>GameListCompatibilityRating</name>
     <message>
         <source>Unknown</source>
-        <translation type="vanished">未知</translation>
+        <translation>未知</translation>
     </message>
     <message>
         <source>Doesn&apos;t Boot</source>
-        <translation type="vanished">无法启动</translation>
+        <translation>无法启动</translation>
     </message>
     <message>
         <source>Crashes In Intro</source>
-        <translation type="vanished">崩溃于开场</translation>
+        <translation>崩溃于开场</translation>
     </message>
     <message>
         <source>Crashes In-Game</source>
-        <translation type="vanished">崩溃于游戏中</translation>
+        <translation>崩溃于游戏中</translation>
     </message>
     <message>
         <source>Graphical/Audio Issues</source>
-        <translation type="vanished">图像/声音错误</translation>
+        <translation>图像/声音错误</translation>
     </message>
     <message>
         <source>No Issues</source>
-        <translation type="vanished">无错误</translation>
+        <translation>无错误</translation>
     </message>
 </context>
 <context>
@@ -6410,7 +6410,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Code</source>
-        <translation type="vanished">序号</translation>
+        <translation>序号</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="615"/>
@@ -6500,7 +6500,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Search Directories</source>
-        <translation type="vanished">搜索目录</translation>
+        <translation>搜索目录</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
@@ -6527,7 +6527,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Excluded Paths</source>
-        <translation type="vanished">排除路径</translation>
+        <translation>排除路径</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.ui" line="171"/>
@@ -6541,15 +6541,15 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Scan New</source>
-        <translation type="vanished">搜索新的</translation>
+        <translation>搜索新的</translation>
     </message>
     <message>
         <source>Rescan All</source>
-        <translation type="vanished">全部重新搜索</translation>
+        <translation>全部重新搜索</translation>
     </message>
     <message>
         <source>Update Redump Database</source>
-        <translation type="vanished">更新Redump数据库</translation>
+        <translation>更新Redump数据库</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="109"/>
@@ -6582,37 +6582,37 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Download database from redump.org?</source>
-        <translation type="vanished">从redump.org下载数据库?</translation>
+        <translation>从redump.org下载数据库?</translation>
     </message>
     <message>
         <source>Do you wish to download the disc database from redump.org?
 
 This will download approximately 4 megabytes over your current internet connection.</source>
-        <translation type="vanished">您想从redump.org下载光盘数据库吗?这将通过您当前的网络连接下载大约4MB。</translation>
+        <translation>您想从redump.org下载光盘数据库吗?这将通过您当前的网络连接下载大约4MB。</translation>
     </message>
     <message>
         <source>Downloading %1...</source>
-        <translation type="vanished">下载中%1...</translation>
+        <translation>下载中%1...</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <source>Download failed</source>
-        <translation type="vanished">下载失败</translation>
+        <translation>下载失败</translation>
     </message>
     <message>
         <source>Extracting...</source>
-        <translation type="vanished">解压中...</translation>
+        <translation>解压中...</translation>
     </message>
     <message>
         <source>Extract failed</source>
-        <translation type="vanished">解压失败</translation>
+        <translation>解压失败</translation>
     </message>
     <message>
         <source>Extracting game database failed.</source>
-        <translation type="vanished">解压游戏数据库失败。</translation>
+        <translation>解压游戏数据库失败。</translation>
     </message>
 </context>
 <context>
@@ -6657,582 +6657,582 @@ This will download approximately 4 megabytes over your current internet connecti
     <name>GamePropertiesDialog</name>
     <message>
         <source>Dialog</source>
-        <translation type="vanished">Dialog</translation>
+        <translation>Dialog</translation>
     </message>
     <message>
         <source>Properties</source>
-        <translation type="vanished">属性</translation>
+        <translation>属性</translation>
     </message>
     <message>
         <source>Image Path:</source>
-        <translation type="vanished">文件路径:</translation>
+        <translation>文件路径:</translation>
     </message>
     <message>
         <source>Game Code:</source>
-        <translation type="vanished">游戏编号:</translation>
+        <translation>游戏编号:</translation>
     </message>
     <message>
         <source>Title:</source>
-        <translation type="vanished">标题:</translation>
+        <translation>标题:</translation>
     </message>
     <message>
         <source>Region:</source>
-        <translation type="vanished">区域:</translation>
+        <translation>区域:</translation>
     </message>
     <message>
         <source>Compatibility:</source>
-        <translation type="vanished">兼容性:</translation>
+        <translation>兼容性:</translation>
     </message>
     <message>
         <source>Upscaling Issues:</source>
-        <translation type="vanished">提升缩放错误:</translation>
+        <translation>提升缩放错误:</translation>
     </message>
     <message>
         <source>Comments:</source>
-        <translation type="vanished">备注:</translation>
+        <translation>备注:</translation>
     </message>
     <message>
         <source>Version Tested:</source>
-        <translation type="vanished">已测试版本:</translation>
+        <translation>已测试版本:</translation>
     </message>
     <message>
         <source>Set to Current</source>
-        <translation type="vanished">设置为当前</translation>
+        <translation>设置为当前</translation>
     </message>
     <message>
         <source>Tracks:</source>
-        <translation type="vanished">轨道:</translation>
+        <translation>轨道:</translation>
     </message>
     <message>
         <source>#</source>
-        <translation type="vanished">#</translation>
+        <translation>#</translation>
     </message>
     <message>
         <source>Mode</source>
-        <translation type="vanished">模式</translation>
+        <translation>模式</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="vanished">开始</translation>
+        <translation>开始</translation>
     </message>
     <message>
         <source>Length</source>
-        <translation type="vanished">长度</translation>
+        <translation>长度</translation>
     </message>
     <message>
         <source>Hash</source>
-        <translation type="vanished">哈希</translation>
+        <translation>哈希</translation>
     </message>
     <message>
         <source>Status</source>
-        <translation type="vanished">状态</translation>
+        <translation>状态</translation>
     </message>
     <message>
         <source>Revision:</source>
-        <translation type="vanished">修订:</translation>
+        <translation>修订:</translation>
     </message>
     <message>
         <source>User Settings (Console)</source>
-        <translation type="vanished">用户设置 (操纵台)</translation>
+        <translation>用户设置 (操纵台)</translation>
     </message>
     <message>
         <source>100% (effective 33.3mhz)</source>
-        <translation type="vanished">100% (有效性33.3mhz)</translation>
+        <translation>100% (有效性33.3mhz)</translation>
     </message>
     <message>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation type="vanished">启用8MB内存 (开发操纵台)</translation>
+        <translation>启用8MB内存 (开发操纵台)</translation>
     </message>
     <message>
         <source>CD-ROM Seek Speedup:</source>
-        <translation type="vanished">CD-ROM寻道加速:</translation>
+        <translation>CD-ROM寻道加速:</translation>
     </message>
     <message>
         <source>Infinite/Instantaneous</source>
-        <translation type="vanished">无限的/瞬时的</translation>
+        <translation>无限的/瞬时的</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
-        <translation type="vanished">无 (正常速度)</translation>
+        <translation>无 (正常速度)</translation>
     </message>
     <message>
         <source>2x</source>
-        <translation type="vanished">2x</translation>
+        <translation>2x</translation>
     </message>
     <message>
         <source>3x</source>
-        <translation type="vanished">3x</translation>
+        <translation>3x</translation>
     </message>
     <message>
         <source>4x</source>
-        <translation type="vanished">4x</translation>
+        <translation>4x</translation>
     </message>
     <message>
         <source>5x</source>
-        <translation type="vanished">5x</translation>
+        <translation>5x</translation>
     </message>
     <message>
         <source>6x</source>
-        <translation type="vanished">6x</translation>
+        <translation>6x</translation>
     </message>
     <message>
         <source>7x</source>
-        <translation type="vanished">7x</translation>
+        <translation>7x</translation>
     </message>
     <message>
         <source>8x</source>
-        <translation type="vanished">8x</translation>
+        <translation>8x</translation>
     </message>
     <message>
         <source>9x</source>
-        <translation type="vanished">9x</translation>
+        <translation>9x</translation>
     </message>
     <message>
         <source>10x</source>
-        <translation type="vanished">10x</translation>
+        <translation>10x</translation>
     </message>
     <message>
         <source>User Settings (Graphics)</source>
-        <translation type="vanished">用户设置 (图形)</translation>
+        <translation>用户设置 (图形)</translation>
     </message>
     <message>
         <source>:</source>
-        <translation type="vanished">:</translation>
+        <translation>:</translation>
     </message>
     <message>
         <source>Downsampling:</source>
-        <translation type="vanished">缩减采样:</translation>
+        <translation>缩减采样:</translation>
     </message>
     <message>
         <source>Renderer:</source>
-        <translation type="vanished">渲染器:</translation>
+        <translation>渲染器:</translation>
     </message>
     <message>
         <source>Multisample Antialiasing:</source>
-        <translation type="vanished">多重采样反锯齿:</translation>
+        <translation>多重采样反锯齿:</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
-        <translation type="vanished">PGXP保持投影精度</translation>
+        <translation>PGXP保持投影精度</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
-        <translation type="vanished">PGXP深度缓冲</translation>
+        <translation>PGXP深度缓冲</translation>
     </message>
     <message>
         <source>Compute &amp;&amp; Verify Hashes</source>
-        <translation type="vanished">计算 &amp;&amp; 验证哈希</translation>
+        <translation>计算 &amp;&amp; 验证哈希</translation>
     </message>
     <message>
         <source>Other Settings</source>
-        <translation type="vanished">其他设置</translation>
+        <translation>其他设置</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup:</source>
-        <translation type="vanished">CD-ROM读取加速:</translation>
+        <translation>CD-ROM读取加速:</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
-        <translation type="vanished">无 (2倍速)</translation>
+        <translation>无 (2倍速)</translation>
     </message>
     <message>
         <source>2x (Quad Speed)</source>
-        <translation type="vanished">2x (4倍速)</translation>
+        <translation>2x (4倍速)</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
-        <translation type="vanished">3x (6倍速)</translation>
+        <translation>3x (6倍速)</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
-        <translation type="vanished">4x (8倍速)</translation>
+        <translation>4x (8倍速)</translation>
     </message>
     <message>
         <source>5x (10x Speed)</source>
-        <translation type="vanished">5x (10倍速)</translation>
+        <translation>5x (10倍速)</translation>
     </message>
     <message>
         <source>6x (12x Speed)</source>
-        <translation type="vanished">6x (12倍速)</translation>
+        <translation>6x (12倍速)</translation>
     </message>
     <message>
         <source>7x (14x Speed)</source>
-        <translation type="vanished">7x (14倍速)</translation>
+        <translation>7x (14倍速)</translation>
     </message>
     <message>
         <source>8x (16x Speed)</source>
-        <translation type="vanished">8x (16倍速)</translation>
+        <translation>8x (16倍速)</translation>
     </message>
     <message>
         <source>9x (18x Speed)</source>
-        <translation type="vanished">9x (18倍速)</translation>
+        <translation>9x (18倍速)</translation>
     </message>
     <message>
         <source>10x (20x Speed)</source>
-        <translation type="vanished">10x (20倍速)</translation>
+        <translation>10x (20倍速)</translation>
     </message>
     <message>
         <source>Runahead Frames:</source>
-        <translation type="vanished">预运行帧:</translation>
+        <translation>预运行帧:</translation>
     </message>
     <message>
         <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>1 Frame</source>
-        <translation type="vanished">1帧</translation>
+        <translation>1帧</translation>
     </message>
     <message>
         <source>2 Frames</source>
-        <translation type="vanished">2帧</translation>
+        <translation>2帧</translation>
     </message>
     <message>
         <source>3 Frames</source>
-        <translation type="vanished">3帧</translation>
+        <translation>3帧</translation>
     </message>
     <message>
         <source>4 Frames</source>
-        <translation type="vanished">4帧</translation>
+        <translation>4帧</translation>
     </message>
     <message>
         <source>5 Frames</source>
-        <translation type="vanished">5帧</translation>
+        <translation>5帧</translation>
     </message>
     <message>
         <source>6 Frames</source>
-        <translation type="vanished">6帧</translation>
+        <translation>6帧</translation>
     </message>
     <message>
         <source>7 Frames</source>
-        <translation type="vanished">7帧</translation>
+        <translation>7帧</translation>
     </message>
     <message>
         <source>8 Frames</source>
-        <translation type="vanished">8帧</translation>
+        <translation>8帧</translation>
     </message>
     <message>
         <source>9 Frames</source>
-        <translation type="vanished">9帧</translation>
+        <translation>9帧</translation>
     </message>
     <message>
         <source>10 Frames</source>
-        <translation type="vanished">10帧</translation>
+        <translation>10帧</translation>
     </message>
     <message>
         <source>User Settings (Input)</source>
-        <translation type="vanished">用户设置 (输入)</translation>
+        <translation>用户设置 (输入)</translation>
     </message>
     <message>
         <source>CPU Clock Speed Control</source>
-        <translation type="vanished">CPU速率控制</translation>
+        <translation>CPU速率控制</translation>
     </message>
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation type="vanished">启用速率控制 (超频/降频)</translation>
+        <translation>启用速率控制 (超频/降频)</translation>
     </message>
     <message>
         <source>GPU Screen Display</source>
-        <translation type="vanished">GPU屏幕显示</translation>
+        <translation>GPU屏幕显示</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
-        <translation type="vanished">高宽比:</translation>
+        <translation>高宽比:</translation>
     </message>
     <message>
         <source>Crop Mode:</source>
-        <translation type="vanished">裁剪模式:</translation>
+        <translation>裁剪模式:</translation>
     </message>
     <message>
         <source>Linear Upscaling</source>
-        <translation type="vanished">线性提升缩放</translation>
+        <translation>线性提升缩放</translation>
     </message>
     <message>
         <source>Integer Upscaling</source>
-        <translation type="vanished">整数提升缩放</translation>
+        <translation>整数提升缩放</translation>
     </message>
     <message>
         <source>GPU Enhancements</source>
-        <translation type="vanished">GPU增强</translation>
+        <translation>GPU增强</translation>
     </message>
     <message>
         <source>Resolution Scale:</source>
-        <translation type="vanished">分辨率比率:</translation>
+        <translation>分辨率比率:</translation>
     </message>
     <message>
         <source>Texture Filtering:</source>
-        <translation type="vanished">纹理过滤器:</translation>
+        <translation>纹理过滤器:</translation>
     </message>
     <message>
         <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">真彩色渲染 (24位色，禁用色彩抖动)</translation>
+        <translation>真彩色渲染 (24位色，禁用色彩抖动)</translation>
     </message>
     <message>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">缩放色彩抖动 (缩放色彩抖动图案到分辨率)</translation>
+        <translation>缩放色彩抖动 (缩放色彩抖动图案到分辨率)</translation>
     </message>
     <message>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">强制NTSC计时 (60hz-PAL)</translation>
+        <translation>强制NTSC计时 (60hz-PAL)</translation>
     </message>
     <message>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation type="vanished">强制24位色显示4:3 (动画播放禁用宽屏)</translation>
+        <translation>强制24位色显示4:3 (动画播放禁用宽屏)</translation>
     </message>
     <message>
         <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">双线性纹理过滤</translation>
+        <translation>双线性纹理过滤</translation>
     </message>
     <message>
         <source>Widescreen Hack</source>
-        <translation type="vanished">宽屏调整</translation>
+        <translation>宽屏调整</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
-        <translation type="vanished">PGXP几何校正</translation>
+        <translation>PGXP几何校正</translation>
     </message>
     <message>
         <source>Controller Settings</source>
-        <translation type="vanished">控制器设置</translation>
+        <translation>控制器设置</translation>
     </message>
     <message>
         <source>Controller 1 Type:</source>
-        <translation type="vanished">控制器1类型:</translation>
+        <translation>控制器1类型:</translation>
     </message>
     <message>
         <source>Controller 2 Type:</source>
-        <translation type="vanished">控制器2类型:</translation>
+        <translation>控制器2类型:</translation>
     </message>
     <message>
         <source>Input Profile For Bindings:</source>
-        <translation type="vanished">绑定输入配置文件:</translation>
+        <translation>绑定输入配置文件:</translation>
     </message>
     <message>
         <source>Memory Card Settings</source>
-        <translation type="vanished">记忆卡设置</translation>
+        <translation>记忆卡设置</translation>
     </message>
     <message>
         <source>Memory Card 1 Type:</source>
-        <translation type="vanished">记忆卡1类型:</translation>
+        <translation>记忆卡1类型:</translation>
     </message>
     <message>
         <source>Memory Card 1 Shared Path:</source>
-        <translation type="vanished">共用记忆卡1路径:</translation>
+        <translation>共用记忆卡1路径:</translation>
     </message>
     <message>
         <source>Memory Card 2 Type:</source>
-        <translation type="vanished">记忆卡2类型:</translation>
+        <translation>记忆卡2类型:</translation>
     </message>
     <message>
         <source>Memory Card 2 Shared Path:</source>
-        <translation type="vanished">共用记忆卡2路径:</translation>
+        <translation>共用记忆卡2路径:</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="vanished">浏览...</translation>
+        <translation>浏览...</translation>
     </message>
     <message>
         <source>Multitap Mode:</source>
-        <translation type="vanished">多插口模式:</translation>
+        <translation>多插口模式:</translation>
     </message>
     <message>
         <source>Compatibility Settings</source>
-        <translation type="vanished">兼容性设置</translation>
+        <translation>兼容性设置</translation>
     </message>
     <message>
         <source>Traits</source>
-        <translation type="vanished">特征</translation>
+        <translation>特征</translation>
     </message>
     <message>
         <source>Overrides</source>
-        <translation type="vanished">覆盖</translation>
+        <translation>覆盖</translation>
     </message>
     <message>
         <source>Display Active Offset:</source>
-        <translation type="vanished">显示活动偏移:</translation>
+        <translation>显示活动偏移:</translation>
     </message>
     <message>
         <source>Display Line Offset:</source>
-        <translation type="vanished">显示线偏移:</translation>
+        <translation>显示线偏移:</translation>
     </message>
     <message>
         <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA最大片段计时:</translation>
+        <translation>DMA最大片段计时:</translation>
     </message>
     <message>
         <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA停顿计时:</translation>
+        <translation>DMA停顿计时:</translation>
     </message>
     <message>
         <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU的FIFO大小:</translation>
+        <translation>GPU的FIFO大小:</translation>
     </message>
     <message>
         <source>GPU Max Run Ahead:</source>
-        <translation type="vanished">GPU最大预运行:</translation>
+        <translation>GPU最大预运行:</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance:</source>
-        <translation type="vanished">PGXP几何公差:</translation>
+        <translation>PGXP几何公差:</translation>
     </message>
     <message>
         <source>PGXP Depth Threshold:</source>
-        <translation type="vanished">PGXP深度阈值:</translation>
+        <translation>PGXP深度阈值:</translation>
     </message>
     <message>
         <source>Compute Hashes</source>
-        <translation type="vanished">计算哈希</translation>
+        <translation>计算哈希</translation>
     </message>
     <message>
         <source>Verify Dump</source>
-        <translation type="vanished">验证转储</translation>
+        <translation>验证转储</translation>
     </message>
     <message>
         <source>Export Compatibility Info</source>
-        <translation type="vanished">导出兼容性信息</translation>
+        <translation>导出兼容性信息</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="vanished">关闭</translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <source>Game Properties - %1</source>
-        <translation type="vanished">游戏属性 - %1</translation>
+        <translation>游戏属性 - %1</translation>
     </message>
     <message>
         <source>%1</source>
-        <translation type="vanished">%1</translation>
+        <translation>%1</translation>
     </message>
     <message>
         <source>(unchanged)</source>
-        <translation type="vanished">(未变更)</translation>
+        <translation>(未变更)</translation>
     </message>
     <message>
         <source>&lt;not verified&gt;</source>
-        <translation type="vanished">&lt;未验证&gt;</translation>
+        <translation>&lt;未验证&gt;</translation>
     </message>
     <message>
         <source>&lt;not computed&gt;</source>
-        <translation type="vanished">&lt;未计算&gt;</translation>
+        <translation>&lt;未计算&gt;</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
-        <translation type="vanished">选择记忆卡文件的路径</translation>
+        <translation>选择记忆卡文件的路径</translation>
     </message>
     <message>
         <source>%1% (%2MHz)</source>
-        <translation type="vanished">%1% (%2MHz)</translation>
+        <translation>%1% (%2MHz)</translation>
     </message>
     <message>
         <source>Search on Redump.org</source>
-        <translation type="vanished">在Redump.org上搜索</translation>
+        <translation>在Redump.org上搜索</translation>
     </message>
     <message>
         <source>Not yet implemented</source>
-        <translation type="vanished">尚未实施</translation>
+        <translation>尚未实施</translation>
     </message>
     <message>
         <source>Compatibility Info Export</source>
-        <translation type="vanished">兼容性信息导出</translation>
+        <translation>兼容性信息导出</translation>
     </message>
     <message>
         <source>Press OK to copy to clipboard.</source>
-        <translation type="vanished">按“确定”复制到剪贴板。</translation>
+        <translation>按“确定”复制到剪贴板。</translation>
     </message>
 </context>
 <context>
     <name>GameSettingsTrait</name>
     <message>
         <source>Force Interpreter</source>
-        <translation type="vanished">强制解释器</translation>
+        <translation>强制解释器</translation>
     </message>
     <message>
         <source>Force Software Renderer</source>
-        <translation type="vanished">强制软件渲染器</translation>
+        <translation>强制软件渲染器</translation>
     </message>
     <message>
         <source>Force Software Renderer For Readbacks</source>
-        <translation type="vanished">强制软件渲染器进行回读</translation>
+        <translation>强制软件渲染器进行回读</translation>
     </message>
     <message>
         <source>Force Interlacing</source>
-        <translation type="vanished">强制交错</translation>
+        <translation>强制交错</translation>
     </message>
     <message>
         <source>Enable Interlacing</source>
-        <translation type="vanished">启用交错</translation>
+        <translation>启用交错</translation>
     </message>
     <message>
         <source>Disable True Color</source>
-        <translation type="vanished">禁用真彩色</translation>
+        <translation>禁用真彩色</translation>
     </message>
     <message>
         <source>Disable Upscaling</source>
-        <translation type="vanished">禁用提升缩放</translation>
+        <translation>禁用提升缩放</translation>
     </message>
     <message>
         <source>Disable Scaled Dithering</source>
-        <translation type="vanished">禁用缩放色彩抖动</translation>
+        <translation>禁用缩放色彩抖动</translation>
     </message>
     <message>
         <source>Disallow Forcing NTSC Timings</source>
-        <translation type="vanished">不允许强制NTSC计时</translation>
+        <translation>不允许强制NTSC计时</translation>
     </message>
     <message>
         <source>Disable Widescreen</source>
-        <translation type="vanished">禁用宽屏</translation>
+        <translation>禁用宽屏</translation>
     </message>
     <message>
         <source>Disable PGXP</source>
-        <translation type="vanished">禁用PGXP</translation>
+        <translation>禁用PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Culling</source>
-        <translation type="vanished">禁用PGXP剔除</translation>
+        <translation>禁用PGXP剔除</translation>
     </message>
     <message>
         <source>Disable PGXP Perspective Correct Textures</source>
-        <translation type="vanished">禁用PGXP透视校正纹理</translation>
+        <translation>禁用PGXP透视校正纹理</translation>
     </message>
     <message>
         <source>Disable PGXP Perspective Correct Colors</source>
-        <translation type="vanished">禁用PGXP透视校正颜色</translation>
+        <translation>禁用PGXP透视校正颜色</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
-        <translation type="vanished">禁用PGXP纹理校正</translation>
+        <translation>禁用PGXP纹理校正</translation>
     </message>
     <message>
         <source>Disable PGXP Depth Buffer</source>
-        <translation type="vanished">禁用PGXP深度缓冲</translation>
+        <translation>禁用PGXP深度缓冲</translation>
     </message>
     <message>
         <source>Force PGXP Vertex Cache</source>
-        <translation type="vanished">强制PGXP顶点缓存</translation>
+        <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
-        <translation type="vanished">强制PGXP下CPU模式</translation>
+        <translation>强制PGXP下CPU模式</translation>
     </message>
     <message>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation type="vanished">强制重新编译LUT快速内存</translation>
+        <translation>强制重新编译LUT快速内存</translation>
     </message>
     <message>
         <source>Disable Forcing Controller Analog Mode on Reset</source>
-        <translation type="vanished">重启时不强制控制器进入模拟模式</translation>
+        <translation>重启时不强制控制器进入模拟模式</translation>
     </message>
     <message>
         <source>Force Digital Controller</source>
-        <translation type="vanished">强制数字控制器</translation>
+        <translation>强制数字控制器</translation>
     </message>
     <message>
         <source>Force Recompiler Memory Exceptions</source>
-        <translation type="vanished">强制内存异常重编译器</translation>
+        <translation>强制内存异常重编译器</translation>
     </message>
     <message>
         <source>Force Recompiler ICache</source>
-        <translation type="vanished">强制ICache重编译器</translation>
+        <translation>强制ICache重编译器</translation>
     </message>
 </context>
 <context>
@@ -7485,7 +7485,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Render To Main Window</source>
-        <translation type="vanished">渲染到主窗口</translation>
+        <translation>渲染到主窗口</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
@@ -7549,19 +7549,19 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Enable Fullscreen UI</source>
-        <translation type="vanished">启用全屏UI</translation>
+        <translation>启用全屏UI</translation>
     </message>
     <message>
         <source>Speed Control</source>
-        <translation type="vanished">速度控制</translation>
+        <translation>速度控制</translation>
     </message>
     <message>
         <source>Emulation Speed:</source>
-        <translation type="vanished">模拟速度:</translation>
+        <translation>模拟速度:</translation>
     </message>
     <message>
         <source>Fast Forward Speed:</source>
-        <translation type="vanished">快进速度:</translation>
+        <translation>快进速度:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="169"/>
@@ -7585,27 +7585,27 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Emulation Speed</source>
-        <translation type="vanished">模拟速度</translation>
+        <translation>模拟速度</translation>
     </message>
     <message>
         <source>100%</source>
-        <translation type="vanished">100%</translation>
+        <translation>100%</translation>
     </message>
     <message>
         <source>Enable Speed Limiter</source>
-        <translation type="vanished">启用限速</translation>
+        <translation>启用限速</translation>
     </message>
     <message>
         <source>Increase Timer Resolution</source>
-        <translation type="vanished">提高计时器分辨率</translation>
+        <translation>提高计时器分辨率</translation>
     </message>
     <message>
         <source>Miscellaneous</source>
-        <translation type="vanished">其他</translation>
+        <translation>其他</translation>
     </message>
     <message>
         <source>Controller Backend:</source>
-        <translation type="vanished">控制器后端:</translation>
+        <translation>控制器后端:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="68"/>
@@ -7660,7 +7660,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation type="vanished">渲染模拟操纵台的画面到应用程序的主窗口，显示于游戏列表上。如果未选中，则在单独的窗口中显示渲染画面。</translation>
+        <translation>渲染模拟操纵台的画面到应用程序的主窗口，显示于游戏列表上。如果未选中，则在单独的窗口中显示渲染画面。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="86"/>
@@ -7689,7 +7689,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
-        <translation type="vanished">启用全屏UI模式，适用于在NoGUI前端的控制器操作。</translation>
+        <translation>启用全屏UI模式，适用于在NoGUI前端的控制器操作。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="125"/>
@@ -7698,31 +7698,31 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
-        <translation type="vanished">将模拟速度调节到上述选定速度。如果未选中，模拟器将以最快的速度运行，这可能导致无法游戏。</translation>
+        <translation>将模拟速度调节到上述选定速度。如果未选中，模拟器将以最快的速度运行，这可能导致无法游戏。</translation>
     </message>
     <message>
         <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
-        <translation type="vanished">在开始模拟时增加系统计时器分辨率，以提供更精确的帧间距。可能会增加笔记本电脑的电池使用量。</translation>
+        <translation>在开始模拟时增加系统计时器分辨率，以提供更精确的帧间距。可能会增加笔记本电脑的电池使用量。</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation type="vanished">设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
+        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
-        <translation type="vanished">快进速度</translation>
+        <translation>快进速度</translation>
     </message>
     <message>
         <source>Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="vanished">设置快进(涡轮增压)速度。这个速度将用于在快进热键被按下/切换时。</translation>
+        <translation>设置快进(涡轮增压)速度。这个速度将用于在快进热键被按下/切换时。</translation>
     </message>
     <message>
         <source>Controller Backend</source>
-        <translation type="vanished">控制器后端</translation>
+        <translation>控制器后端</translation>
     </message>
     <message>
         <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation type="vanished">确定用于控制器输入的后端。为了兼容性，Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
+        <translation>确定用于控制器输入的后端。为了兼容性，Windows用户可能更喜欢使用XInput而不是SDL2。</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
@@ -7748,420 +7748,420 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>%1%</source>
-        <translation type="vanished">%1%</translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <source>Unlimited</source>
-        <translation type="vanished">无限制</translation>
+        <translation>无限制</translation>
     </message>
     <message>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
-        <translation type="vanished">%1% [%2帧/秒 (NTSC) / %3帧/秒 (PAL)]</translation>
+        <translation>%1% [%2帧/秒 (NTSC) / %3帧/秒 (PAL)]</translation>
     </message>
 </context>
 <context>
     <name>GunCon</name>
     <message>
         <source>Crosshair Image Path</source>
-        <translation type="vanished">十字准星图像路径</translation>
+        <translation>十字准星图像路径</translation>
     </message>
     <message>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="vanished">十字准星/光标图像路径。</translation>
+        <translation>十字准星/光标图像路径。</translation>
     </message>
     <message>
         <source>Crosshair Image Scale</source>
-        <translation type="vanished">十字准星图像缩放</translation>
+        <translation>十字准星图像缩放</translation>
     </message>
     <message>
         <source>Scale of crosshair image on screen.</source>
-        <translation type="vanished">屏幕内十字准星图像缩放。</translation>
+        <translation>屏幕内十字准星图像缩放。</translation>
     </message>
     <message>
         <source>X Scale</source>
-        <translation type="vanished">X缩放</translation>
+        <translation>X缩放</translation>
     </message>
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="vanished">缩放X坐标相对于屏幕中心。</translation>
+        <translation>缩放X坐标相对于屏幕中心。</translation>
     </message>
 </context>
 <context>
     <name>HostInterface</name>
     <message>
         <source>Failed to load configured BIOS file &apos;%s&apos;</source>
-        <translation type="vanished">无法加载配置的BIOS文件&apos;%s&apos;</translation>
+        <translation>无法加载配置的BIOS文件&apos;%s&apos;</translation>
     </message>
     <message>
         <source>No BIOS image found for %s region</source>
-        <translation type="vanished">没有找到适用%s区域的BIOS文件</translation>
+        <translation>没有找到适用%s区域的BIOS文件</translation>
     </message>
 </context>
 <context>
     <name>Hotkeys</name>
     <message>
         <source>General</source>
-        <translation type="vanished">常规</translation>
+        <translation>常规</translation>
     </message>
     <message>
         <source>Open Quick Menu</source>
-        <translation type="vanished">打开快捷菜单</translation>
+        <translation>打开快捷菜单</translation>
     </message>
     <message>
         <source>Fast Forward</source>
-        <translation type="vanished">快进</translation>
+        <translation>快进</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
-        <translation type="vanished">快进开关</translation>
+        <translation>快进开关</translation>
     </message>
     <message>
         <source>Turbo</source>
-        <translation type="vanished">涡轮</translation>
+        <translation>涡轮</translation>
     </message>
     <message>
         <source>Toggle Turbo</source>
-        <translation type="vanished">涡轮开关</translation>
+        <translation>涡轮开关</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>
-        <translation type="vanished">全屏开关</translation>
+        <translation>全屏开关</translation>
     </message>
     <message>
         <source>Toggle Pause</source>
-        <translation type="vanished">暂停开关</translation>
+        <translation>暂停开关</translation>
     </message>
     <message>
         <source>Toggle Cheats</source>
-        <translation type="vanished">金手指开关</translation>
+        <translation>金手指开关</translation>
     </message>
     <message>
         <source>Power Off System</source>
-        <translation type="vanished">关机</translation>
+        <translation>关机</translation>
     </message>
     <message>
         <source>Toggle Patch Codes</source>
-        <translation type="vanished">补丁代码开关</translation>
+        <translation>补丁代码开关</translation>
     </message>
     <message>
         <source>Reset System</source>
-        <translation type="vanished">重启系统</translation>
+        <translation>重启系统</translation>
     </message>
     <message>
         <source>Save Screenshot</source>
-        <translation type="vanished">保存截图</translation>
+        <translation>保存截图</translation>
     </message>
     <message>
         <source>Change Disc</source>
-        <translation type="vanished">更换光盘</translation>
+        <translation>更换光盘</translation>
     </message>
     <message>
         <source>Frame Step</source>
-        <translation type="vanished">帧进</translation>
+        <translation>帧进</translation>
     </message>
     <message>
         <source>Rewind</source>
-        <translation type="vanished">倒带</translation>
+        <translation>倒带</translation>
     </message>
     <message>
         <source>Toggle Clock Speed Control (Overclocking)</source>
-        <translation type="vanished">主频控制开关 (超频)</translation>
+        <translation>主频控制开关 (超频)</translation>
     </message>
     <message>
         <source>Graphics</source>
-        <translation type="vanished">图像</translation>
+        <translation>图像</translation>
     </message>
     <message>
         <source>Toggle Software Rendering</source>
-        <translation type="vanished">软件渲染开关</translation>
+        <translation>软件渲染开关</translation>
     </message>
     <message>
         <source>Toggle PGXP</source>
-        <translation type="vanished">PGXP开关</translation>
+        <translation>PGXP开关</translation>
     </message>
     <message>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation type="vanished">PGXP深度缓冲开关</translation>
+        <translation>PGXP深度缓冲开关</translation>
     </message>
     <message>
         <source>Increase Resolution Scale</source>
-        <translation type="vanished">提高分辨率比率</translation>
+        <translation>提高分辨率比率</translation>
     </message>
     <message>
         <source>Open Pause Menu</source>
-        <translation type="vanished">打开暂停菜单</translation>
+        <translation>打开暂停菜单</translation>
     </message>
     <message>
         <source>Open Achievement List</source>
-        <translation type="vanished">打开成绩列表</translation>
+        <translation>打开成绩列表</translation>
     </message>
     <message>
         <source>Open Leaderboard List</source>
-        <translation type="vanished">打开排行榜列表</translation>
+        <translation>打开排行榜列表</translation>
     </message>
     <message>
         <source>System</source>
-        <translation type="vanished">系统</translation>
+        <translation>系统</translation>
     </message>
     <message>
         <source>Swap Memory Card Slots</source>
-        <translation type="vanished">交换记忆卡档位</translation>
+        <translation>交换记忆卡档位</translation>
     </message>
     <message>
         <source>Increase Emulation Speed</source>
-        <translation type="vanished">提高模拟速度</translation>
+        <translation>提高模拟速度</translation>
     </message>
     <message>
         <source>Decrease Emulation Speed</source>
-        <translation type="vanished">降低模拟速度</translation>
+        <translation>降低模拟速度</translation>
     </message>
     <message>
         <source>Reset Emulation Speed</source>
-        <translation type="vanished">重置模拟速度</translation>
+        <translation>重置模拟速度</translation>
     </message>
     <message>
         <source>Decrease Resolution Scale</source>
-        <translation type="vanished">降低分辨率比率</translation>
+        <translation>降低分辨率比率</translation>
     </message>
     <message>
         <source>Toggle Post-Processing</source>
-        <translation type="vanished">后处理开关</translation>
+        <translation>后处理开关</translation>
     </message>
     <message>
         <source>Reload Post Processing Shaders</source>
-        <translation type="vanished">重新加载后处理着色器</translation>
+        <translation>重新加载后处理着色器</translation>
     </message>
     <message>
         <source>Reload Texture Replacements</source>
-        <translation type="vanished">重新加载纹理替换</translation>
+        <translation>重新加载纹理替换</translation>
     </message>
     <message>
         <source>Toggle Widescreen</source>
-        <translation type="vanished">宽屏开关</translation>
+        <translation>宽屏开关</translation>
     </message>
     <message>
         <source>Toggle PGXP CPU Mode</source>
-        <translation type="vanished">PGXP下CPU模式开关</translation>
+        <translation>PGXP下CPU模式开关</translation>
     </message>
     <message>
         <source>Save States</source>
-        <translation type="vanished">读档/存档</translation>
+        <translation>读档/存档</translation>
     </message>
     <message>
         <source>Load From Selected Slot</source>
-        <translation type="vanished">从所选档位读取</translation>
+        <translation>从所选档位读取</translation>
     </message>
     <message>
         <source>Save To Selected Slot</source>
-        <translation type="vanished">保存到所选档位</translation>
+        <translation>保存到所选档位</translation>
     </message>
     <message>
         <source>Select Previous Save Slot</source>
-        <translation type="vanished">选择前一个档位</translation>
+        <translation>选择前一个档位</translation>
     </message>
     <message>
         <source>Select Next Save Slot</source>
-        <translation type="vanished">选择后一个档位</translation>
+        <translation>选择后一个档位</translation>
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation type="vanished">撤消读档</translation>
+        <translation>撤消读档</translation>
     </message>
     <message>
         <source>Load Game State 1</source>
-        <translation type="vanished">读取游戏档1</translation>
+        <translation>读取游戏档1</translation>
     </message>
     <message>
         <source>Load Game State 2</source>
-        <translation type="vanished">读取游戏档2</translation>
+        <translation>读取游戏档2</translation>
     </message>
     <message>
         <source>Load Game State 3</source>
-        <translation type="vanished">读取游戏档3</translation>
+        <translation>读取游戏档3</translation>
     </message>
     <message>
         <source>Load Game State 4</source>
-        <translation type="vanished">读取游戏档4</translation>
+        <translation>读取游戏档4</translation>
     </message>
     <message>
         <source>Load Game State 5</source>
-        <translation type="vanished">读取游戏档5</translation>
+        <translation>读取游戏档5</translation>
     </message>
     <message>
         <source>Load Game State 6</source>
-        <translation type="vanished">读取游戏档6</translation>
+        <translation>读取游戏档6</translation>
     </message>
     <message>
         <source>Load Game State 7</source>
-        <translation type="vanished">读取游戏档7</translation>
+        <translation>读取游戏档7</translation>
     </message>
     <message>
         <source>Load Game State 8</source>
-        <translation type="vanished">读取游戏档8</translation>
+        <translation>读取游戏档8</translation>
     </message>
     <message>
         <source>Load Game State 9</source>
-        <translation type="vanished">读取游戏档9</translation>
+        <translation>读取游戏档9</translation>
     </message>
     <message>
         <source>Load Game State 10</source>
-        <translation type="vanished">读取游戏档10</translation>
+        <translation>读取游戏档10</translation>
     </message>
     <message>
         <source>Save Game State 1</source>
-        <translation type="vanished">保存游戏档1</translation>
+        <translation>保存游戏档1</translation>
     </message>
     <message>
         <source>Save Game State 2</source>
-        <translation type="vanished">保存游戏档2</translation>
+        <translation>保存游戏档2</translation>
     </message>
     <message>
         <source>Save Game State 3</source>
-        <translation type="vanished">保存游戏档3</translation>
+        <translation>保存游戏档3</translation>
     </message>
     <message>
         <source>Save Game State 4</source>
-        <translation type="vanished">保存游戏档4</translation>
+        <translation>保存游戏档4</translation>
     </message>
     <message>
         <source>Save Game State 5</source>
-        <translation type="vanished">保存游戏档5</translation>
+        <translation>保存游戏档5</translation>
     </message>
     <message>
         <source>Save Game State 6</source>
-        <translation type="vanished">保存游戏档6</translation>
+        <translation>保存游戏档6</translation>
     </message>
     <message>
         <source>Save Game State 7</source>
-        <translation type="vanished">保存游戏档7</translation>
+        <translation>保存游戏档7</translation>
     </message>
     <message>
         <source>Save Game State 8</source>
-        <translation type="vanished">保存游戏档8</translation>
+        <translation>保存游戏档8</translation>
     </message>
     <message>
         <source>Save Game State 9</source>
-        <translation type="vanished">保存游戏档9</translation>
+        <translation>保存游戏档9</translation>
     </message>
     <message>
         <source>Save Game State 10</source>
-        <translation type="vanished">保存游戏档10</translation>
+        <translation>保存游戏档10</translation>
     </message>
     <message>
         <source>Load Global State 1</source>
-        <translation type="vanished">读取全局档1</translation>
+        <translation>读取全局档1</translation>
     </message>
     <message>
         <source>Load Global State 2</source>
-        <translation type="vanished">读取全局档2</translation>
+        <translation>读取全局档2</translation>
     </message>
     <message>
         <source>Load Global State 3</source>
-        <translation type="vanished">读取全局档3</translation>
+        <translation>读取全局档3</translation>
     </message>
     <message>
         <source>Load Global State 4</source>
-        <translation type="vanished">读取全局档4</translation>
+        <translation>读取全局档4</translation>
     </message>
     <message>
         <source>Load Global State 5</source>
-        <translation type="vanished">读取全局档5</translation>
+        <translation>读取全局档5</translation>
     </message>
     <message>
         <source>Load Global State 6</source>
-        <translation type="vanished">读取全局档6</translation>
+        <translation>读取全局档6</translation>
     </message>
     <message>
         <source>Load Global State 7</source>
-        <translation type="vanished">读取全局档7</translation>
+        <translation>读取全局档7</translation>
     </message>
     <message>
         <source>Load Global State 8</source>
-        <translation type="vanished">读取全局档8</translation>
+        <translation>读取全局档8</translation>
     </message>
     <message>
         <source>Load Global State 9</source>
-        <translation type="vanished">读取全局档9</translation>
+        <translation>读取全局档9</translation>
     </message>
     <message>
         <source>Load Global State 10</source>
-        <translation type="vanished">读取全局档10</translation>
+        <translation>读取全局档10</translation>
     </message>
     <message>
         <source>Save Global State 1</source>
-        <translation type="vanished">保存全局档1</translation>
+        <translation>保存全局档1</translation>
     </message>
     <message>
         <source>Save Global State 2</source>
-        <translation type="vanished">保存全局档2</translation>
+        <translation>保存全局档2</translation>
     </message>
     <message>
         <source>Save Global State 3</source>
-        <translation type="vanished">保存全局档3</translation>
+        <translation>保存全局档3</translation>
     </message>
     <message>
         <source>Save Global State 4</source>
-        <translation type="vanished">保存全局档4</translation>
+        <translation>保存全局档4</translation>
     </message>
     <message>
         <source>Save Global State 5</source>
-        <translation type="vanished">保存全局档5</translation>
+        <translation>保存全局档5</translation>
     </message>
     <message>
         <source>Save Global State 6</source>
-        <translation type="vanished">保存全局档6</translation>
+        <translation>保存全局档6</translation>
     </message>
     <message>
         <source>Save Global State 7</source>
-        <translation type="vanished">保存全局档7</translation>
+        <translation>保存全局档7</translation>
     </message>
     <message>
         <source>Save Global State 8</source>
-        <translation type="vanished">保存全局档8</translation>
+        <translation>保存全局档8</translation>
     </message>
     <message>
         <source>Save Global State 9</source>
-        <translation type="vanished">保存全局档9</translation>
+        <translation>保存全局档9</translation>
     </message>
     <message>
         <source>Save Global State 10</source>
-        <translation type="vanished">保存全局档10</translation>
+        <translation>保存全局档10</translation>
     </message>
     <message>
         <source>Audio</source>
-        <translation type="vanished">声音</translation>
+        <translation>声音</translation>
     </message>
     <message>
         <source>Load Game State %u</source>
-        <translation type="vanished">读取游戏状态 %u</translation>
+        <translation>读取游戏状态 %u</translation>
     </message>
     <message>
         <source>Save Game State %u</source>
-        <translation type="vanished">保存游戏状态 %u</translation>
+        <translation>保存游戏状态 %u</translation>
     </message>
     <message>
         <source>Load Global State %u</source>
-        <translation type="vanished">读取全局状态 %u</translation>
+        <translation>读取全局状态 %u</translation>
     </message>
     <message>
         <source>Save Global State %u</source>
-        <translation type="vanished">保存全局状态 %u</translation>
+        <translation>保存全局状态 %u</translation>
     </message>
     <message>
         <source>Toggle Mute</source>
-        <translation type="vanished">静音开关</translation>
+        <translation>静音开关</translation>
     </message>
     <message>
         <source>Toggle CD Audio Mute</source>
-        <translation type="vanished">CD音轨静音开关</translation>
+        <translation>CD音轨静音开关</translation>
     </message>
     <message>
         <source>Volume Up</source>
-        <translation type="vanished">音量增大</translation>
+        <translation>音量增大</translation>
     </message>
     <message>
         <source>Volume Down</source>
-        <translation type="vanished">音量减小</translation>
+        <translation>音量减小</translation>
     </message>
 </context>
 <context>
@@ -8212,7 +8212,7 @@ This will download approximately 4 megabytes over your current internet connecti
     <name>InputBindingWidget</name>
     <message>
         <source>%1 bindings</source>
-        <translation type="vanished">%1绑定</translation>
+        <translation>%1绑定</translation>
     </message>
     <message numerus="yes">
         <location filename="../inputbindingwidgets.cpp" line="69"/>
@@ -8250,47 +8250,142 @@ This will download approximately 4 megabytes over your current internet connecti
     <name>LogLevel</name>
     <message>
         <source>None</source>
-        <translation type="vanished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation type="vanished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <source>Warning</source>
-        <translation type="vanished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <source>Performance</source>
-        <translation type="vanished">性能</translation>
+        <translation>性能</translation>
     </message>
     <message>
         <source>Success</source>
-        <translation type="vanished">成功</translation>
+        <translation>成功</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation type="vanished">信息</translation>
+        <translation>信息</translation>
     </message>
     <message>
         <source>Developer</source>
-        <translation type="vanished">开发商</translation>
+        <translation>开发商</translation>
     </message>
     <message>
         <source>Profile</source>
-        <translation type="vanished">简介</translation>
+        <translation>简介</translation>
     </message>
     <message>
         <source>Verbose</source>
-        <translation type="vanished">详尽</translation>
+        <translation>详尽</translation>
     </message>
     <message>
         <source>Debug</source>
-        <translation type="vanished">调试</translation>
+        <translation>调试</translation>
     </message>
     <message>
         <source>Trace</source>
-        <translation type="vanished">追踪</translation>
+        <translation>追踪</translation>
+    </message>
+</context>
+<context>
+    <name>LogWindow</name>
+    <message>
+        <location filename="../logwindow.cpp" line="91"/>
+        <source>Log Window - %1 [%2]</source>
+        <translation>日志窗口 - %1 [%2]</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="95"/>
+        <source>Log Window</source>
+        <translation>日志窗口</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="114"/>
+        <source>&amp;Clear</source>
+        <translation>清除(&amp;C)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="116"/>
+        <source>&amp;Save...</source>
+        <translation>保存(&amp;S)...</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="121"/>
+        <source>Cl&amp;ose</source>
+        <translation>关闭(&amp;O)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="124"/>
+        <source>&amp;Settings</source>
+        <translation>设置(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="126"/>
+        <source>Log To &amp;System Console</source>
+        <translation>记录到系统游戏主机(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="130"/>
+        <source>Log To &amp;Debug Console</source>
+        <translation>记录到调试游戏主机(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="134"/>
+        <source>Log To &amp;File</source>
+        <translation>记录到文件(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="140"/>
+        <source>Attach To &amp;Main Window</source>
+        <translation>附加到主窗口(&amp;M)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="144"/>
+        <source>Show &amp;Timestamps</source>
+        <translation>显示时间戳(&amp;T)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="150"/>
+        <source>&amp;Log Level</source>
+        <translation>日志级别(&amp;L)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="159"/>
+        <source>&amp;Filters</source>
+        <translation>筛选器(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="250"/>
+        <source>Select Log File</source>
+        <translation>选择日志文件</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="250"/>
+        <source>Log Files (*.txt)</source>
+        <translation>日志文件 (*.txt)</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="257"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="257"/>
+        <source>Failed to open file for writing.</source>
+        <translation>无法打开写入文件。</translation>
+    </message>
+    <message>
+        <location filename="../logwindow.cpp" line="264"/>
+        <source>Log was written to %1.
+</source>
+        <translation>日志被写入到%1。
+</translation>
     </message>
 </context>
 <context>
@@ -8340,18 +8435,18 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>System</source>
-        <translation type="vanished">系统</translation>
+        <translation>系统</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="39"/>
-        <location filename="../mainwindow.cpp" line="1144"/>
-        <location filename="../mainwindow.cpp" line="1397"/>
+        <location filename="../mainwindow.cpp" line="1163"/>
+        <location filename="../mainwindow.cpp" line="1416"/>
         <source>Change Disc</source>
         <translation>更换光盘</translation>
     </message>
     <message>
         <source>From Playlist...</source>
-        <translation type="vanished">从播放列表...</translation>
+        <translation>从播放列表...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="54"/>
@@ -8360,8 +8455,8 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="63"/>
-        <location filename="../mainwindow.cpp" line="719"/>
-        <location filename="../mainwindow.cpp" line="1012"/>
+        <location filename="../mainwindow.cpp" line="738"/>
+        <location filename="../mainwindow.cpp" line="1031"/>
         <source>Load State</source>
         <translation>读档</translation>
     </message>
@@ -8513,7 +8608,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Enable GDB server</source>
-        <translation type="vanished">启用GDB服务器</translation>
+        <translation>启用GDB服务器</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="929"/>
@@ -8532,13 +8627,13 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <location filename="../mainwindow.ui" line="962"/>
-        <location filename="../mainwindow.cpp" line="1195"/>
+        <location filename="../mainwindow.cpp" line="1214"/>
         <source>Start Big Picture Mode</source>
         <translation>启动大视画模式</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="971"/>
-        <location filename="../mainwindow.cpp" line="1196"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>Big Picture</source>
         <translation>大视画</translation>
     </message>
@@ -8599,31 +8694,31 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>C&amp;onsole Settings...</source>
-        <translation type="vanished">操纵台设置(&amp;O)...</translation>
+        <translation>操纵台设置(&amp;O)...</translation>
     </message>
     <message>
         <source>&amp;Controller Settings...</source>
-        <translation type="vanished">控制器设置(&amp;C)...</translation>
+        <translation>控制器设置(&amp;C)...</translation>
     </message>
     <message>
         <source>&amp;Hotkey Settings...</source>
-        <translation type="vanished">热键设置(&amp;H)...</translation>
+        <translation>热键设置(&amp;H)...</translation>
     </message>
     <message>
         <source>&amp;GPU Settings...</source>
-        <translation type="vanished">GPU设置</translation>
+        <translation>GPU设置(&amp;G)...</translation>
     </message>
     <message>
         <source>&amp;Display Settings...</source>
-        <translation type="vanished">显示设置(&amp;D)...</translation>
+        <translation>显示设置(&amp;D)...</translation>
     </message>
     <message>
         <source>&amp;Enhancement Settings...</source>
-        <translation type="vanished">增强设置(&amp;E)…</translation>
+        <translation>增强设置(&amp;E)…</translation>
     </message>
     <message>
         <source>&amp;Post-Processing Settings...</source>
-        <translation type="vanished">后处理设置(&amp;P)…</translation>
+        <translation>后处理设置(&amp;P)…</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="465"/>
@@ -8657,7 +8752,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&amp;About...</source>
-        <translation type="vanished">关于(&amp;A)...</translation>
+        <translation>关于(&amp;A)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="533"/>
@@ -8671,19 +8766,19 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Audio Settings...</source>
-        <translation type="vanished">音频设置...</translation>
+        <translation>音频设置...</translation>
     </message>
     <message>
         <source>Game List Settings...</source>
-        <translation type="vanished">游戏列表设置...</translation>
+        <translation>游戏列表设置...</translation>
     </message>
     <message>
         <source>General Settings...</source>
-        <translation type="vanished">常规设置...</translation>
+        <translation>常规设置...</translation>
     </message>
     <message>
         <source>B&amp;IOS Settings...</source>
-        <translation type="vanished">BIOS设置(&amp;I)...</translation>
+        <translation>BIOS设置(&amp;I)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="35"/>
@@ -8707,7 +8802,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>E&amp;mulation Settings...</source>
-        <translation type="vanished">模拟设置(&amp;M)...</translation>
+        <translation>模拟设置(&amp;M)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="515"/>
@@ -8721,11 +8816,11 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Achievement Settings...</source>
-        <translation type="vanished">成就设置...</translation>
+        <translation>成就设置...</translation>
     </message>
     <message>
         <source>Advanced Settings...</source>
-        <translation type="vanished">高级设置...</translation>
+        <translation>高级设置...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="605"/>
@@ -8734,7 +8829,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&amp;Settings...</source>
-        <translation type="vanished">设置(&amp;S)...</translation>
+        <translation>设置(&amp;S)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="634"/>
@@ -8823,7 +8918,7 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>Show CDROM State</source>
-        <translation type="vanished">显示CD-ROM状态</translation>
+        <translation>显示CD-ROM状态</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="754"/>
@@ -8852,11 +8947,11 @@ This will download approximately 4 megabytes over your current internet connecti
     </message>
     <message>
         <source>&amp;Memory Card Settings...</source>
-        <translation type="vanished">记忆卡设置(&amp;M)...</translation>
+        <translation>记忆卡设置(&amp;M)...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="805"/>
-        <location filename="../mainwindow.cpp" line="716"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Resume</source>
         <translation>继续</translation>
     </message>
@@ -8946,122 +9041,122 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>系统显示(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="283"/>
+        <location filename="../mainwindow.cpp" line="304"/>
         <source>Failed to get window info from widget</source>
-        <translation>从小部件获取窗口信息失败</translation>
+        <translation>无法从小部件获取窗口信息</translation>
     </message>
     <message>
         <source>Failed to create host display device context.</source>
-        <translation type="vanished">无法创建本机显示设备环境。</translation>
+        <translation>无法创建本机显示设备环境。</translation>
     </message>
     <message>
         <source>Failed to get new window info from widget</source>
-        <translation type="vanished">从小部件获取新窗口信息失败</translation>
+        <translation>无法从小部件获取新窗口信息</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;单轨原始镜像 (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行程序 (*.exe *.psexe);;便携音频格式文件 (*.psf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.cue *.chd *.exe *.psexe *.psf);;单轨原始镜像 (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行程序 (*.exe *.psexe);;便携音频格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表文件 (*.cue);;MAME CHD镜像 (*.chd);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;单轨源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp);;PlayStation可执行文件 (*.exe *.psexe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
         <source>Failed to create host display.</source>
-        <translation type="vanished">无法创建主机显示。</translation>
+        <translation>无法创建主机显示。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="640"/>
-        <location filename="../mainwindow.cpp" line="1129"/>
+        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.cpp" line="1148"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1114"/>
+        <location filename="../mainwindow.cpp" line="1133"/>
         <source>Start Disc</source>
         <translation>启动光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="655"/>
+        <location filename="../mainwindow.cpp" line="675"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>找不到任何CD-ROM设备。请确保您连接了一个CD-ROM驱动，并有足够的权限访问它。</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;单轨道原生镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp);;PlayStation可执行文件 (*.exe *.psexe *.ps-exe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
+        <translation>所有文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;单轨道原生镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述块挎斗镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp);;PlayStation可执行文件 (*.exe *.psexe *.ps-exe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="61"/>
+        <location filename="../mainwindow.cpp" line="62"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation>全部文件类型 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;单轨生源镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述符边车镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp *.PBP);;PlayStation可执行文件 (*.exe *.psexe *.ps-exe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="283"/>
-        <location filename="../mainwindow.cpp" line="1032"/>
-        <location filename="../mainwindow.cpp" line="1311"/>
+        <location filename="../mainwindow.cpp" line="304"/>
+        <location filename="../mainwindow.cpp" line="1051"/>
+        <location filename="../mainwindow.cpp" line="1330"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="531"/>
+        <location filename="../mainwindow.cpp" line="552"/>
         <source>Paused</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="669"/>
+        <location filename="../mainwindow.cpp" line="689"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="673"/>
+        <location filename="../mainwindow.cpp" line="693"/>
         <source>Select disc drive:</source>
         <translation>选择光盘驱动:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="739"/>
+        <location filename="../mainwindow.cpp" line="758"/>
         <source>Resume (%1)</source>
         <translation>继续 (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="746"/>
-        <location filename="../mainwindow.cpp" line="863"/>
-        <location filename="../mainwindow.cpp" line="902"/>
+        <location filename="../mainwindow.cpp" line="765"/>
+        <location filename="../mainwindow.cpp" line="882"/>
+        <location filename="../mainwindow.cpp" line="921"/>
         <source>Game Save %1 (%2)</source>
         <translation>游戏档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="755"/>
+        <location filename="../mainwindow.cpp" line="774"/>
         <source>Edit Memory Cards...</source>
         <translation>管理记忆卡...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="803"/>
+        <location filename="../mainwindow.cpp" line="822"/>
         <source>Delete Save States...</source>
         <translation>删除存档...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="809"/>
+        <location filename="../mainwindow.cpp" line="828"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认存档删除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="810"/>
+        <location filename="../mainwindow.cpp" line="829"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -9070,67 +9165,67 @@ The saves will not be recoverable.</source>
 保存将会是不可恢复的。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="847"/>
+        <location filename="../mainwindow.cpp" line="866"/>
         <source>Load From File...</source>
         <translation>从文件读档...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="849"/>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="910"/>
         <source>Select Save State File</source>
         <translation>选择存档文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="849"/>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="910"/>
         <source>Save States (*.sav)</source>
         <translation>存档 (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="855"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Undo Load State</source>
         <translation>撤消读档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="863"/>
-        <location filename="../mainwindow.cpp" line="902"/>
+        <location filename="../mainwindow.cpp" line="882"/>
+        <location filename="../mainwindow.cpp" line="921"/>
         <source>Game Save %1 (Empty)</source>
         <translation>游戏档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="869"/>
-        <location filename="../mainwindow.cpp" line="908"/>
+        <location filename="../mainwindow.cpp" line="888"/>
+        <location filename="../mainwindow.cpp" line="927"/>
         <source>Global Save %1 (%2)</source>
         <translation>全局档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="869"/>
-        <location filename="../mainwindow.cpp" line="908"/>
+        <location filename="../mainwindow.cpp" line="888"/>
+        <location filename="../mainwindow.cpp" line="927"/>
         <source>Global Save %1 (Empty)</source>
         <translation>全局档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="886"/>
+        <location filename="../mainwindow.cpp" line="905"/>
         <source>Save To File...</source>
         <translation>存档到文件...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="951"/>
+        <location filename="../mainwindow.cpp" line="970"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="953"/>
+        <location filename="../mainwindow.cpp" line="972"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1007"/>
+        <location filename="../mainwindow.cpp" line="1026"/>
         <source>Load Resume State</source>
         <translation>载入继续档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1008"/>
+        <location filename="../mainwindow.cpp" line="1027"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -9143,88 +9238,88 @@ Do you want to load this state, or start from a fresh boot?</source>
 您想要读取此档，还是从头全新开始？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1013"/>
+        <location filename="../mainwindow.cpp" line="1032"/>
         <source>Fresh Boot</source>
         <translation>全新启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1014"/>
+        <location filename="../mainwindow.cpp" line="1033"/>
         <source>Delete And Boot</source>
         <translation>删除并启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1033"/>
+        <location filename="../mainwindow.cpp" line="1052"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>无法删除存档文件&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1090"/>
+        <location filename="../mainwindow.cpp" line="1109"/>
         <source>Confirm Disc Change</source>
         <translation>确认更换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1091"/>
+        <location filename="../mainwindow.cpp" line="1110"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>您想要交换光盘还是启动新镜像 (通过系统重启)？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1093"/>
+        <location filename="../mainwindow.cpp" line="1112"/>
         <source>Swap Disc</source>
         <translation>交换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1094"/>
+        <location filename="../mainwindow.cpp" line="1113"/>
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1095"/>
+        <location filename="../mainwindow.cpp" line="1114"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1179"/>
-        <location filename="../mainwindow.cpp" line="2703"/>
+        <location filename="../mainwindow.cpp" line="1198"/>
+        <location filename="../mainwindow.cpp" line="2742"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1195"/>
+        <location filename="../mainwindow.cpp" line="1214"/>
         <source>Stop Big Picture Mode</source>
         <translation>停止大视画模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1196"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>Exit Big Picture</source>
         <translation>退出大视画</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1311"/>
+        <location filename="../mainwindow.cpp" line="1330"/>
         <source>You must select a disc to change discs.</source>
         <translation>您必须选择一张光盘用以更换光盘。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1422"/>
+        <location filename="../mainwindow.cpp" line="1441"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>全部封面图片类型 (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1436"/>
+        <location filename="../mainwindow.cpp" line="1455"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>您必须选择与当前封面图像不同的文件。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1460"/>
+        <location filename="../mainwindow.cpp" line="1479"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>无法移除&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1469"/>
+        <location filename="../mainwindow.cpp" line="1488"/>
         <source>Confirm Reset</source>
         <translation>确认重置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1470"/>
+        <location filename="../mainwindow.cpp" line="1489"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -9234,125 +9329,125 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
-        <translation type="vanished">找不到当前运行文件的游戏列表条目。请确保这个文件处在一个被游戏列表所扫描的位置。</translation>
+        <translation>找不到当前运行文件的游戏列表条目。请确保这个文件处在一个被游戏列表所扫描的位置。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1350"/>
+        <location filename="../mainwindow.cpp" line="1369"/>
         <source>Properties...</source>
         <translation>属性...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1354"/>
+        <location filename="../mainwindow.cpp" line="1373"/>
         <source>Open Containing Directory...</source>
         <translation>打开所在目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1359"/>
+        <location filename="../mainwindow.cpp" line="1378"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1369"/>
+        <location filename="../mainwindow.cpp" line="1388"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1372"/>
+        <location filename="../mainwindow.cpp" line="1391"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1378"/>
+        <location filename="../mainwindow.cpp" line="1397"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1386"/>
+        <location filename="../mainwindow.cpp" line="1405"/>
         <source>Boot and Debug</source>
         <translation>启动和调试</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1406"/>
+        <location filename="../mainwindow.cpp" line="1425"/>
         <source>Exclude From List</source>
         <translation>从列表中排除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1409"/>
+        <location filename="../mainwindow.cpp" line="1428"/>
         <source>Reset Play Time</source>
         <translation>重置游戏时长</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1413"/>
+        <location filename="../mainwindow.cpp" line="1432"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1422"/>
+        <location filename="../mainwindow.cpp" line="1441"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
-        <translation type="vanished">全部封面图片类型 (*.jpg *.jpeg *.png)</translation>
+        <translation>全部封面图片类型 (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1440"/>
+        <location filename="../mainwindow.cpp" line="1459"/>
         <source>Cover Already Exists</source>
         <translation>封面已经存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1441"/>
+        <location filename="../mainwindow.cpp" line="1460"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1436"/>
-        <location filename="../mainwindow.cpp" line="1450"/>
         <location filename="../mainwindow.cpp" line="1455"/>
-        <location filename="../mainwindow.cpp" line="1460"/>
+        <location filename="../mainwindow.cpp" line="1469"/>
+        <location filename="../mainwindow.cpp" line="1474"/>
+        <location filename="../mainwindow.cpp" line="1479"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1450"/>
+        <location filename="../mainwindow.cpp" line="1469"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1455"/>
+        <location filename="../mainwindow.cpp" line="1474"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>无法复制&apos;%1&apos;到&apos;%2&apos;</translation>
     </message>
     <message>
         <source>Language changed. Please restart the application to apply.</source>
-        <translation type="vanished">语言已更改，请重新启动应用程序以应用。</translation>
+        <translation>语言已更改，请重新启动应用程序以应用。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1616"/>
+        <location filename="../mainwindow.cpp" line="1635"/>
         <source>%1x Scale</source>
         <translation>%1x缩放</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2026"/>
-        <location filename="../mainwindow.cpp" line="2033"/>
-        <location filename="../mainwindow.cpp" line="2042"/>
+        <location filename="../mainwindow.cpp" line="2048"/>
+        <location filename="../mainwindow.cpp" line="2055"/>
+        <location filename="../mainwindow.cpp" line="2064"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2026"/>
-        <location filename="../mainwindow.cpp" line="2042"/>
+        <location filename="../mainwindow.cpp" line="2048"/>
+        <location filename="../mainwindow.cpp" line="2064"/>
         <source>Binary Files (*.bin)</source>
         <translation>二进制文件 (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2034"/>
+        <location filename="../mainwindow.cpp" line="2056"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>二进制文件 (*.bin);;PNG图片 (*.png)</translation>
     </message>
     <message>
         <source>Default</source>
-        <translation type="vanished">默认</translation>
+        <translation>默认</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="14"/>
@@ -9376,7 +9471,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>DarkFusion</source>
-        <translation type="vanished">黑色</translation>
+        <translation>黑色</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="18"/>
@@ -9384,56 +9479,56 @@ This action cannot be undone.</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2523"/>
+        <location filename="../mainwindow.cpp" line="2561"/>
         <source>Confirm Shutdown</source>
         <translation>确认关机</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2524"/>
+        <location filename="../mainwindow.cpp" line="2562"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>您确定要关闭虚拟机吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2526"/>
+        <location filename="../mainwindow.cpp" line="2564"/>
         <source>Save State For Resume</source>
         <translation>存档以便下次继续</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2602"/>
-        <location filename="../mainwindow.cpp" line="2607"/>
-        <location filename="../mainwindow.cpp" line="2627"/>
-        <location filename="../mainwindow.cpp" line="2636"/>
+        <location filename="../mainwindow.cpp" line="2641"/>
+        <location filename="../mainwindow.cpp" line="2646"/>
+        <location filename="../mainwindow.cpp" line="2666"/>
+        <location filename="../mainwindow.cpp" line="2675"/>
         <source>Memory Card Not Found</source>
         <translation>没有找到记忆卡</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2603"/>
+        <location filename="../mainwindow.cpp" line="2642"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>记忆卡&apos;%1&apos;不存在。您想要创建一个空的记忆卡吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2608"/>
+        <location filename="../mainwindow.cpp" line="2647"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>无法创建记忆卡&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2628"/>
-        <location filename="../mainwindow.cpp" line="2637"/>
+        <location filename="../mainwindow.cpp" line="2667"/>
+        <location filename="../mainwindow.cpp" line="2676"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>没有找到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2653"/>
+        <location filename="../mainwindow.cpp" line="2692"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: 以%1 (%2, %3软核) 登录。%4未读消息。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2701"/>
+        <location filename="../mainwindow.cpp" line="2740"/>
         <source>Do not show again</source>
         <translation>不再显示</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2705"/>
+        <location filename="../mainwindow.cpp" line="2744"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -9446,17 +9541,17 @@ Are you sure you want to continue?</source>
 您确定要继续吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2780"/>
+        <location filename="../mainwindow.cpp" line="2819"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2786"/>
+        <location filename="../mainwindow.cpp" line="2825"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新的DuckStation版本不是由官方GitHub所发行。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的&quot;下载并运行&quot;下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2792"/>
+        <location filename="../mainwindow.cpp" line="2831"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -9494,11 +9589,11 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="vanished">浏览...</translation>
+        <translation>浏览...</translation>
     </message>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation type="vanished">所有记忆卡类型 (*.mcd *.mcr *.mc)</translation>
+        <translation>所有记忆卡类型 (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.ui" line="78"/>
@@ -9514,11 +9609,11 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>0 blocks used</source>
-        <translation type="vanished">已使用0格</translation>
+        <translation>已使用0格</translation>
     </message>
     <message>
         <source>%1 blocks free%2</source>
-        <translation type="vanished">剩余%1格%2</translation>
+        <translation>剩余%1格%2</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="116"/>
@@ -9584,7 +9679,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation type="vanished">单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
+        <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="383"/>
@@ -9603,7 +9698,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Single Save Files (*.mcs)</source>
-        <translation type="vanished">单个保存文件 (*.mcs)</translation>
+        <translation>单个保存文件 (*.mcs)</translation>
     </message>
     <message>
         <location filename="../memorycardeditordialog.cpp" line="48"/>
@@ -9733,7 +9828,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Use Single Card For Playlist</source>
-        <translation type="vanished">为列表使用单个记忆卡</translation>
+        <translation>为列表使用单个记忆卡</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="70"/>
@@ -9742,15 +9837,15 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation type="vanished">将当使用列表 (m3u) 并且每个游戏使用独立记忆卡 (游戏标题) 存档时，所有光盘将只共用一个记忆卡。如果未勾选，则每个光盘将使用各自的记忆卡。</translation>
+        <translation>将当使用列表 (m3u) 并且每个游戏使用独立记忆卡 (游戏标题) 存档时，所有光盘将只共用一个记忆卡。如果未勾选，则每个光盘将使用各自的记忆卡。</translation>
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation type="vanished">如果选择了&quot;每个游戏独立记忆卡&quot;的记忆卡类型，这些记忆卡将保存到memcards目录中。</translation>
+        <translation>如果选择了&quot;每个游戏独立记忆卡&quot;的记忆卡类型，这些记忆卡将保存到memcards目录中。</translation>
     </message>
     <message>
         <source>Open...</source>
-        <translation type="vanished">打开...</translation>
+        <translation>打开...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="118"/>
@@ -9781,15 +9876,15 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Use Single Card For Sub-Images</source>
-        <translation type="vanished">为子镜像使用单记忆卡</translation>
+        <translation>为子镜像使用单记忆卡</translation>
     </message>
     <message>
         <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation type="vanished">当使用多光盘格式 (m3u/pbp) 并且每个游戏独立记忆卡 (游戏标题) 时，全部光盘将共用一个单记忆卡。如果不勾选，每一张光盘将使用各自独立的记忆卡。</translation>
+        <translation>当使用多光盘格式 (m3u/pbp) 并且每个游戏独立记忆卡 (游戏标题) 时，全部光盘将共用一个单记忆卡。如果不勾选，每一张光盘将使用各自独立的记忆卡。</translation>
     </message>
     <message>
         <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="vanished">如果选择了“每个游戏独立记忆卡”记忆卡模式下的其中之一，这些记忆卡将被保存到记忆卡目录。</translation>
+        <translation>如果选择了“每个游戏独立记忆卡”记忆卡模式下的其中之一，这些记忆卡将被保存到记忆卡目录。</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="80"/>
@@ -9834,933 +9929,933 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Select path to memory card directory</source>
-        <translation type="vanished">选择记忆卡目录的路径</translation>
+        <translation>选择记忆卡目录的路径</translation>
     </message>
 </context>
 <context>
     <name>MemoryCardType</name>
     <message>
         <source>No Memory Card</source>
-        <translation type="vanished">没有记忆卡</translation>
+        <translation>没有记忆卡</translation>
     </message>
     <message>
         <source>Shared Between All Games</source>
-        <translation type="vanished">全部游戏共用记忆卡</translation>
+        <translation>全部游戏共用记忆卡</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Serial)</source>
-        <translation type="vanished">每个游戏独立记忆卡 (序号)</translation>
+        <translation>每个游戏独立记忆卡 (序号)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Title)</source>
-        <translation type="vanished">每个游戏独立记忆卡 (标题)</translation>
+        <translation>每个游戏独立记忆卡 (标题)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Game Code)</source>
-        <translation type="vanished">每个游戏独立记忆卡 (游戏编码)</translation>
+        <translation>每个游戏独立记忆卡 (游戏编码)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (Game Title)</source>
-        <translation type="vanished">每个游戏独立记忆卡 (游戏标题)</translation>
+        <translation>每个游戏独立记忆卡 (游戏标题)</translation>
     </message>
     <message>
         <source>Separate Card Per Game (File Title)</source>
-        <translation type="vanished">每个游戏独立记忆卡 (文件标题)</translation>
+        <translation>每个游戏独立记忆卡 (文件标题)</translation>
     </message>
     <message>
         <source>Non-Persistent Card (Do Not Save)</source>
-        <translation type="vanished">非持续记忆卡 (不保存)</translation>
+        <translation>非持续记忆卡 (不保存)</translation>
     </message>
 </context>
 <context>
     <name>MultitapMode</name>
     <message>
         <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>Enable on Port 1 Only</source>
-        <translation type="vanished">仅启用接口1</translation>
+        <translation>仅启用接口1</translation>
     </message>
     <message>
         <source>Enable on Port 2 Only</source>
-        <translation type="vanished">仅启用接口2</translation>
+        <translation>仅启用接口2</translation>
     </message>
     <message>
         <source>Enable on Port 1 only</source>
-        <translation type="vanished">仅启用端口1</translation>
+        <translation>仅启用端口1</translation>
     </message>
     <message>
         <source>Enable on Ports 1 and 2</source>
-        <translation type="vanished">启用接口1和接口2</translation>
+        <translation>启用接口1和接口2</translation>
     </message>
 </context>
 <context>
     <name>NamcoGunCon</name>
     <message>
         <source>Trigger</source>
-        <translation type="vanished">扳机</translation>
+        <translation>扳机</translation>
     </message>
     <message>
         <source>ShootOffscreen</source>
-        <translation type="vanished">击中屏幕</translation>
+        <translation>击中屏幕</translation>
     </message>
     <message>
         <source>A</source>
-        <translation type="vanished">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <source>B</source>
-        <translation type="vanished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <source>Crosshair Image Path</source>
-        <translation type="vanished">十字准星图像路径</translation>
+        <translation>十字准星图像路径</translation>
     </message>
     <message>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="vanished">十字准星/光标图像路径。</translation>
+        <translation>十字准星/光标图像路径。</translation>
     </message>
     <message>
         <source>Crosshair Image Scale</source>
-        <translation type="vanished">十字准星图像缩放</translation>
+        <translation>十字准星图像缩放</translation>
     </message>
     <message>
         <source>Scale of crosshair image on screen.</source>
-        <translation type="vanished">缩放屏幕十字准星图像</translation>
+        <translation>缩放屏幕十字准星图像。</translation>
     </message>
     <message>
         <source>X Scale</source>
-        <translation type="vanished">缩放X坐标</translation>
+        <translation>缩放X坐标</translation>
     </message>
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="vanished">缩放相对于屏幕中心的X坐标。</translation>
+        <translation>缩放相对于屏幕中心的X坐标。</translation>
     </message>
 </context>
 <context>
     <name>NeGcon</name>
     <message>
         <source>Steering</source>
-        <translation type="vanished">转向盘</translation>
+        <translation>转向盘</translation>
     </message>
     <message>
         <source>I</source>
-        <translation type="vanished">I</translation>
+        <translation>I</translation>
     </message>
     <message>
         <source>II</source>
-        <translation type="vanished">II</translation>
+        <translation>II</translation>
     </message>
     <message>
         <source>L</source>
-        <translation type="vanished">L</translation>
+        <translation>L</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="vanished">上</translation>
+        <translation>上</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="vanished">下</translation>
+        <translation>下</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>A</source>
-        <translation type="vanished">A</translation>
+        <translation>A</translation>
     </message>
     <message>
         <source>B</source>
-        <translation type="vanished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <source>R</source>
-        <translation type="vanished">R</translation>
+        <translation>R</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="vanished">开始</translation>
+        <translation>开始</translation>
     </message>
     <message>
         <source>Steering Axis Deadzone</source>
-        <translation type="vanished">转向轴死区</translation>
+        <translation>转向轴死区</translation>
     </message>
     <message>
         <source>Sets deadzone size for steering axis.</source>
-        <translation type="vanished">设置转向轴死区大小。</translation>
+        <translation>设置转向轴死区大小。</translation>
     </message>
     <message>
         <source>Steering Axis Sensitivity</source>
-        <translation type="vanished">转向轴灵敏度</translation>
+        <translation>转向轴灵敏度</translation>
     </message>
     <message>
         <source>Sets the steering axis scaling factor.</source>
-        <translation type="vanished">设置转向轴缩放系数。</translation>
+        <translation>设置转向轴缩放系数。</translation>
     </message>
 </context>
 <context>
     <name>OSDMessage</name>
     <message>
         <source>System reset.</source>
-        <translation type="vanished">系统重启。</translation>
+        <translation>系统重启。</translation>
     </message>
     <message>
         <source>Loading state from &apos;%s&apos;...</source>
-        <translation type="vanished">从&apos;%s&apos;读档...</translation>
+        <translation>从&apos;%s&apos;读档...</translation>
     </message>
     <message>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
-        <translation type="vanished">从&apos;%s&apos;读档失败，重启中。</translation>
+        <translation>从&apos;%s&apos;读档失败，重启中。</translation>
     </message>
     <message>
         <source>Saving state to &apos;%s&apos; failed.</source>
-        <translation type="vanished">存档到&apos;%s&apos;失败。</translation>
+        <translation>存档到&apos;%s&apos;失败。</translation>
     </message>
     <message>
         <source>State saved to &apos;%s&apos;.</source>
-        <translation type="vanished">存档到&apos;%s&apos;。</translation>
+        <translation>存档到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation type="vanished">PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
+        <translation>PGXP与软件呈现程序不兼容，禁用PGXP。</translation>
     </message>
     <message>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
-        <translation type="vanished">倒带不支持安卓系统下32位ARM处理器。</translation>
+        <translation>倒带不支持安卓系统下32位ARM处理器。</translation>
     </message>
     <message>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
-        <translation type="vanished">预运行不支持安卓系统下32位ARM处理器。</translation>
+        <translation>预运行不支持安卓系统下32位ARM处理器。</translation>
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation type="vanished">倒带被禁用，因为启用了预运行。</translation>
+        <translation>倒带被禁用，因为启用了预运行。</translation>
     </message>
     <message>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation type="vanished">重编译器选项已更改，刷新全部区块。</translation>
+        <translation>重编译器选项已更改，刷新全部区块。</translation>
     </message>
     <message>
         <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation type="vanished">PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
+        <translation>PGXP在CPU模式与重编译器不兼容，改为使用缓存解释器。</translation>
     </message>
     <message>
         <source>mmap fastmem is not available on this platform, using LUT instead.</source>
-        <translation type="vanished">快速内存映射在此平台上不可用，使用LUT代替。</translation>
+        <translation>快速内存映射在此平台上不可用，使用LUT代替。</translation>
     </message>
     <message>
         <source>Switching to %s%s GPU renderer.</source>
-        <translation type="vanished">切换到%s%sGPU渲染器。</translation>
+        <translation>切换到%s%sGPU渲染器。</translation>
     </message>
     <message>
         <source>Switching to %s audio backend.</source>
-        <translation type="vanished">切换到%s音频后端。</translation>
+        <translation>切换到%s音频后端。</translation>
     </message>
     <message>
         <source>Switching to %s CPU execution mode.</source>
-        <translation type="vanished">切换到%sCPU执行模式。</translation>
+        <translation>切换到%sCPU执行模式。</translation>
     </message>
     <message>
         <source>CPU memory exceptions enabled, flushing all blocks.</source>
-        <translation type="vanished">CPU内存异常启用，刷新所有区块。</translation>
+        <translation>CPU内存异常启用，刷新所有区块。</translation>
     </message>
     <message>
         <source>CPU memory exceptions disabled, flushing all blocks.</source>
-        <translation type="vanished">CPU内存异常禁用，刷新所有区块。</translation>
+        <translation>CPU内存异常禁用，刷新所有区块。</translation>
     </message>
     <message>
         <source>CPU ICache enabled, flushing all blocks.</source>
-        <translation type="vanished">CPU的ICache启用，刷新所有区块。</translation>
+        <translation>CPU的ICache启用，刷新所有区块。</translation>
     </message>
     <message>
         <source>CPU ICache disabled, flushing all blocks.</source>
-        <translation type="vanished">CPU的ICache禁用，刷新所有区块。</translation>
+        <translation>CPU的ICache禁用，刷新所有区块。</translation>
     </message>
     <message>
         <source>PGXP enabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP启用，重编译全部区块。</translation>
+        <translation>PGXP启用，重编译全部区块。</translation>
     </message>
     <message>
         <source>PGXP disabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP禁用，重编译全部区块。</translation>
+        <translation>PGXP禁用，重编译全部区块。</translation>
     </message>
     <message>
         <source>Switching to %s renderer...</source>
-        <translation type="vanished">切换到%s渲染器...</translation>
+        <translation>切换到%s渲染器...</translation>
     </message>
     <message>
         <source>Failed to load post processing shader chain.</source>
-        <translation type="vanished">无法加载后处理着色器链。</translation>
+        <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
         <source>Speed limiter enabled.</source>
-        <translation type="vanished">限速器启用。</translation>
+        <translation>限速器启用。</translation>
     </message>
     <message>
         <source>Speed limiter disabled.</source>
-        <translation type="vanished">限速器禁用。</translation>
+        <translation>限速器禁用。</translation>
     </message>
     <message numerus="yes">
         <source>%n cheats are now active.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n金手指已激活。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n cheats are now inactive.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n金手指未激活。</numerusform>
         </translation>
     </message>
     <message>
         <source>CPU clock speed control enabled (%u%% / %.3f MHz).</source>
-        <translation type="vanished">CPU主频控制启用 (%u%% / %.3f MHz)。</translation>
+        <translation>CPU主频控制启用 (%u%% / %.3f MHz)。</translation>
     </message>
     <message>
         <source>CPU clock speed control disabled (%.3f MHz).</source>
-        <translation type="vanished">CPU主频控制禁用 (%.3f MHz)。</translation>
+        <translation>CPU主频控制禁用 (%.3f MHz)。</translation>
     </message>
     <message>
         <source>PGXP is now enabled.</source>
-        <translation type="vanished">PGXP已启用。</translation>
+        <translation>PGXP已启用。</translation>
     </message>
     <message>
         <source>PGXP is now disabled.</source>
-        <translation type="vanished">PGXP已禁用。</translation>
+        <translation>PGXP已禁用。</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation type="vanished">PGXP深度缓冲已启用。</translation>
+        <translation>PGXP深度缓冲已启用。</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation type="vanished">PGXP深度缓冲已禁用。</translation>
+        <translation>PGXP深度缓冲已禁用。</translation>
     </message>
     <message>
         <source>Texture replacements reloaded.</source>
-        <translation type="vanished">纹理替换重新加载。</translation>
+        <translation>纹理替换重新加载。</translation>
     </message>
     <message>
         <source>Failed to save undo load state.</source>
-        <translation type="vanished">无法保存撤消的读档。</translation>
+        <translation>无法保存撤消的读档。</translation>
     </message>
     <message>
         <source>Rewinding is not enabled.</source>
-        <translation type="vanished">倒带未启用。</translation>
+        <translation>倒带未启用。</translation>
     </message>
     <message>
         <source>Achievements are disabled or unavailable for this game.</source>
-        <translation type="vanished">该游戏成就禁用或不可用。</translation>
+        <translation>该游戏成就禁用或不可用。</translation>
     </message>
     <message>
         <source>Leaderboards are disabled or unavailable for this game.</source>
-        <translation type="vanished">该游戏排行榜禁用或不可用。</translation>
+        <translation>该游戏排行榜禁用或不可用。</translation>
     </message>
     <message>
         <source>Cannot load state for game without serial.</source>
-        <translation type="vanished">无法读档没有序号的游戏。</translation>
+        <translation>无法读档没有序号的游戏。</translation>
     </message>
     <message>
         <source>No save state found in slot {}.</source>
-        <translation type="vanished">没有找到存档在档位{}。</translation>
+        <translation>没有找到存档在档位{}。</translation>
     </message>
     <message>
         <source>Cannot save state for game without serial.</source>
-        <translation type="vanished">无法存档没有序号的游戏。</translation>
+        <translation>无法存档没有序号的游戏。</translation>
     </message>
     <message>
         <source>Achievements are disabled or unavailable for  game.</source>
-        <translation type="vanished">成绩禁用或在  游戏中不可用。</translation>
+        <translation>成绩禁用或在  游戏中不可用。</translation>
     </message>
     <message>
         <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation type="vanished">排行榜禁用或在  游戏中不可用。</translation>
+        <translation>排行榜禁用或在  游戏中不可用。</translation>
     </message>
     <message>
         <source>Emulation speed set to %u%%.</source>
-        <translation type="vanished">模拟速度设置为%u%%。</translation>
+        <translation>模拟速度设置为%u%%。</translation>
     </message>
     <message>
         <source>PGXP CPU mode is now enabled.</source>
-        <translation type="vanished">PGXP下CPU模式已启用。</translation>
+        <translation>PGXP下CPU模式已启用。</translation>
     </message>
     <message>
         <source>PGXP CPU mode is now disabled.</source>
-        <translation type="vanished">PGXP下CPU模式已禁用。</translation>
+        <translation>PGXP下CPU模式已禁用。</translation>
     </message>
     <message>
         <source>Volume: Muted</source>
-        <translation type="vanished">音量: 静音</translation>
+        <translation>音量: 静音</translation>
     </message>
     <message>
         <source>Volume: {}%</source>
-        <translation type="vanished">音量: {}%</translation>
+        <translation>音量: {}%</translation>
     </message>
     <message>
         <source>Volume: %d%%</source>
-        <translation type="vanished">音量: %d%%</translation>
+        <translation>音量: %d%%</translation>
     </message>
     <message>
         <source>CD Audio Muted.</source>
-        <translation type="vanished">CD音轨静音。</translation>
+        <translation>CD音轨静音。</translation>
     </message>
     <message>
         <source>CD Audio Unmuted.</source>
-        <translation type="vanished">CD音轨解除静音。</translation>
+        <translation>CD音轨解除静音。</translation>
     </message>
     <message>
         <source>Loaded input profile from &apos;%s&apos;</source>
-        <translation type="vanished">从&apos;%s&apos;读取输入配置</translation>
+        <translation>从&apos;%s&apos;读取输入配置</translation>
     </message>
     <message>
         <source>Started dumping audio to &apos;%s&apos;.</source>
-        <translation type="vanished">开始转储音频到&apos;%s&apos;。</translation>
+        <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
-        <translation type="vanished">无法开始转储音频到&apos;%s&apos;。</translation>
+        <translation>无法开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Stopped dumping audio.</source>
-        <translation type="vanished">停止转储音频。</translation>
+        <translation>停止转储音频。</translation>
     </message>
     <message>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation type="vanished">截图文件&apos;%s&apos;已经存在。</translation>
+        <translation>截图文件&apos;%s&apos;已经存在。</translation>
     </message>
     <message>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
-        <translation type="vanished">无法保存截图到&apos;%s&apos;。</translation>
+        <translation>无法保存截图到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Screenshot saved to &apos;%s&apos;.</source>
-        <translation type="vanished">截图已保存到&apos;%s&apos;。</translation>
+        <translation>截图已保存到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Controller in port %u (%s) is not supported for %s.
 Supported controllers: %s
 Please configure a supported controller from the list above.</source>
-        <translation type="vanished">接入接口%u (%s) 中的控制器不支持%s。
+        <translation>接入接口%u (%s) 中的控制器不支持%s。
 支持控制器: %s
 请从上面的列表中配置一个支持的控制器。</translation>
     </message>
     <message>
         <source>Input profile &apos;%s&apos; cannot be found.</source>
-        <translation type="vanished">无法找到输入配置文件&apos;%s&apos;。</translation>
+        <translation>无法找到输入配置文件&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Using input profile &apos;%s&apos;.</source>
-        <translation type="vanished">使用输入配置&apos;%s&apos;。</translation>
+        <translation>使用输入配置&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
-        <translation type="vanished">无法从&apos;%s&apos;加载金手指。</translation>
+        <translation>无法从&apos;%s&apos;加载金手指。</translation>
     </message>
     <message numerus="yes">
         <source>%n cheats are enabled. This may result in instability.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n金手指启用。这可能会导致不稳定。</numerusform>
         </translation>
     </message>
     <message>
         <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
-        <translation type="vanished">宽屏调整已启用，高宽比设置为%s。</translation>
+        <translation>宽屏调整已启用，高宽比设置为%s。</translation>
     </message>
     <message>
         <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
-        <translation type="vanished">宽屏调整已禁用，高宽比设置为%s。</translation>
+        <translation>宽屏调整已禁用，高宽比设置为%s。</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
-        <translation type="vanished">交换记忆卡接口。两个接口都有记忆卡。</translation>
+        <translation>交换记忆卡接口。两个接口都有记忆卡。</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
-        <translation type="vanished">交换记忆卡接口。接口2有一个记忆卡，接口1是空的。</translation>
+        <translation>交换记忆卡接口。接口2有一个记忆卡，接口1是空的。</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
-        <translation type="vanished">交换记忆卡接口。接口1有一个记忆卡，接口2是空的。</translation>
+        <translation>交换记忆卡接口。接口1有一个记忆卡，接口2是空的。</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
-        <translation type="vanished">交换记忆卡接口。两个接口都没有记忆卡。</translation>
+        <translation>交换记忆卡接口。两个接口都没有记忆卡。</translation>
     </message>
     <message>
         <source>Loaded %u cheats from list. %u cheats are enabled.</source>
-        <translation type="vanished">从列表中加载%u金手指。%u金手指已启用。</translation>
+        <translation>从列表中加载%u金手指。%u金手指已启用。</translation>
     </message>
     <message>
         <source>Loaded %u cheats from database.</source>
-        <translation type="vanished">从数据库中加载%u金手指。</translation>
+        <translation>从数据库中加载%u金手指。</translation>
     </message>
     <message>
         <source>Saved %u cheats to &apos;%s&apos;.</source>
-        <translation type="vanished">保存%u金手指到&apos;%s&apos;。</translation>
+        <translation>保存%u金手指到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation type="vanished">已删除的金手指列表&apos;%s&apos;。</translation>
+        <translation>已删除的金手指列表&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; enabled.</source>
-        <translation type="vanished">金手指&apos;%s&apos;启用。</translation>
+        <translation>金手指&apos;%s&apos;启用。</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; disabled.</source>
-        <translation type="vanished">金手指&apos;%s&apos;禁用。</translation>
+        <translation>金手指&apos;%s&apos;禁用。</translation>
     </message>
     <message>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
-        <translation type="vanished">无法保存金手指列表到&apos;%s&apos;。</translation>
+        <translation>无法保存金手指列表到&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>No cheats are loaded.</source>
-        <translation type="vanished">没有加载金手指。</translation>
+        <translation>没有加载金手指。</translation>
     </message>
     <message>
         <source>%u cheats are now active.</source>
-        <translation type="vanished">%u金手指当前已激活。</translation>
+        <translation>%u金手指当前已激活。</translation>
     </message>
     <message>
         <source>%u cheats are now inactive.</source>
-        <translation type="vanished">%u金手指当前未激活。</translation>
+        <translation>%u金手指当前未激活。</translation>
     </message>
     <message>
         <source>Fast forwarding...</source>
-        <translation type="vanished">快进...</translation>
+        <translation>快进...</translation>
     </message>
     <message>
         <source>Stopped fast forwarding.</source>
-        <translation type="vanished">停止快进。</translation>
+        <translation>停止快进。</translation>
     </message>
     <message>
         <source>Turboing...</source>
-        <translation type="vanished">涡轮...</translation>
+        <translation>涡轮...</translation>
     </message>
     <message>
         <source>Stopped turboing.</source>
-        <translation type="vanished">停止涡轮...</translation>
+        <translation>停止涡轮。</translation>
     </message>
     <message>
         <source>Hotkey unavailable because achievements hardcore mode is active.</source>
-        <translation type="vanished">无法使用热键因为成就硬核模式是激活的。</translation>
+        <translation>无法使用热键因为成就硬核模式是激活的。</translation>
     </message>
     <message>
         <source>Rewinding...</source>
-        <translation type="vanished">回退...</translation>
+        <translation>回退...</translation>
     </message>
     <message>
         <source>Stopped rewinding.</source>
-        <translation type="vanished">停止回退。</translation>
+        <translation>停止回退。</translation>
     </message>
     <message numerus="yes">
         <source>Loaded %n cheats from list.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>从列表载入%n金手指。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source> %n cheats are enabled.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n金手指启用。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>Loaded %n cheats from database.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>从数据库载入%n金手指。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>Saved %n cheats to &apos;%s&apos;.</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>保存%n金手指到&apos;%s&apos;。</numerusform>
         </translation>
     </message>
     <message>
         <source>Applied cheat &apos;%s&apos;.</source>
-        <translation type="vanished">应用金手指&apos;%s&apos;。</translation>
+        <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
-        <translation type="vanished">金手指&apos;%s&apos;已经启用。</translation>
+        <translation>金手指&apos;%s&apos;已经启用。</translation>
     </message>
     <message>
         <source>Post-processing is now enabled.</source>
-        <translation type="vanished">后处理已启用。</translation>
+        <translation>后处理已启用。</translation>
     </message>
     <message>
         <source>Post-processing is now disabled.</source>
-        <translation type="vanished">后处理已禁用。</translation>
+        <translation>后处理已禁用。</translation>
     </message>
     <message>
         <source>Failed to load post-processing shader chain.</source>
-        <translation type="vanished">无法加载后处理着色器链。</translation>
+        <translation>无法加载后处理着色器链。</translation>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
-        <translation type="vanished">后处理着色器重新加载。</translation>
+        <translation>后处理着色器重新加载。</translation>
     </message>
     <message>
         <source>CPU interpreter forced by game settings.</source>
-        <translation type="vanished">通过游戏设置强制CPU解释器。</translation>
+        <translation>通过游戏设置强制CPU解释器。</translation>
     </message>
     <message>
         <source>Software renderer forced by game settings.</source>
-        <translation type="vanished">通过游戏设置强制软件渲染器。</translation>
+        <translation>通过游戏设置强制软件渲染器。</translation>
     </message>
     <message>
         <source>Using software renderer for readbacks based on game settings.</source>
-        <translation type="vanished">根据游戏设置使用软件渲染器进行回读。</translation>
+        <translation>根据游戏设置使用软件渲染器进行回读。</translation>
     </message>
     <message>
         <source>Interlacing forced by game settings.</source>
-        <translation type="vanished">通过游戏设置强制隔行扫描。</translation>
+        <translation>通过游戏设置强制隔行扫描。</translation>
     </message>
     <message>
         <source>True color disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用真彩色。</translation>
+        <translation>通过游戏设置禁用真彩色。</translation>
     </message>
     <message>
         <source>Upscaling disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用提升缩放。</translation>
+        <translation>通过游戏设置禁用提升缩放。</translation>
     </message>
     <message>
         <source>Scaled dithering disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用缩放色彩抖动。</translation>
+        <translation>通过游戏设置禁用缩放色彩抖动。</translation>
     </message>
     <message>
         <source>Widescreen disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用宽屏。</translation>
+        <translation>通过游戏设置禁用宽屏。</translation>
     </message>
     <message>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
-        <translation type="vanished">通过游戏设置不允许强制NTSC计时。</translation>
+        <translation>通过游戏设置不允许强制NTSC计时。</translation>
     </message>
     <message>
         <source>PGXP geometry correction disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用PGXP几何校正。</translation>
+        <translation>通过游戏设置禁用PGXP几何校正。</translation>
     </message>
     <message>
         <source>PGXP culling disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用PGXP剔除。</translation>
+        <translation>通过游戏设置禁用PGXP剔除。</translation>
     </message>
     <message>
         <source>PGXP perspective corrected textures disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用PGXP透视校正纹理。</translation>
+        <translation>通过游戏设置禁用PGXP透视校正纹理。</translation>
     </message>
     <message>
         <source>PGXP perspective corrected colors disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用PGXP透视校正颜色。</translation>
+        <translation>通过游戏设置禁用PGXP透视校正颜色。</translation>
     </message>
     <message>
         <source>PGXP texture correction disabled by game settings.</source>
-        <translation type="vanished">根据游戏设置禁用PGXP纹理校正。</translation>
+        <translation>根据游戏设置禁用PGXP纹理校正。</translation>
     </message>
     <message>
         <source>PGXP vertex cache forced by game settings.</source>
-        <translation type="vanished">通过游戏设置强制PGXP顶点缓存。</translation>
+        <translation>通过游戏设置强制PGXP顶点缓存。</translation>
     </message>
     <message>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation type="vanished">通过游戏设置强制PGXP下CPU模式。</translation>
+        <translation>通过游戏设置强制PGXP下CPU模式。</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation type="vanished">通过游戏设置禁用PGXP深度缓冲。</translation>
+        <translation>通过游戏设置禁用PGXP深度缓冲。</translation>
     </message>
     <message>
         <source>Controller %u changed to digital by game settings.</source>
-        <translation type="vanished">根据游戏设置控制%u改为数字模式。</translation>
+        <translation>根据游戏设置控制%u改为数字模式。</translation>
     </message>
     <message>
         <source>Recompiler memory exceptions forced by game settings.</source>
-        <translation type="vanished">根据游戏设置强制内存异常重编译器。</translation>
+        <translation>根据游戏设置强制内存异常重编译器。</translation>
     </message>
     <message>
         <source>Recompiler ICache forced by game settings.</source>
-        <translation type="vanished">根据游戏设置强制ICache重编译器。</translation>
+        <translation>根据游戏设置强制ICache重编译器。</translation>
     </message>
     <message>
         <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
-        <translation type="vanished">记忆卡%u从存档匹配了当前卡数据。模拟重插。</translation>
+        <translation>记忆卡%u从存档匹配了当前卡数据。模拟重插。</translation>
     </message>
     <message>
         <source>Memory card %u present in save state but not in system. Ignoring card.</source>
-        <translation type="vanished">记忆卡%u当前接入存档中，没有接入系统。忽略记忆卡。</translation>
+        <translation>记忆卡%u当前接入存档中，没有接入系统。忽略记忆卡。</translation>
     </message>
     <message>
         <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation type="vanished">记忆卡%u当前接入系统中，没有接入存档。重插记忆卡。</translation>
+        <translation>记忆卡%u当前接入系统中，没有接入存档。重插记忆卡。</translation>
     </message>
     <message>
         <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
-        <translation type="vanished">记忆卡%u当前接入存档中，没有接入系统。创建临时记忆卡。</translation>
+        <translation>记忆卡%u当前接入存档中，没有接入系统。创建临时记忆卡。</translation>
     </message>
     <message>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
-        <translation type="vanished">存档包含控制器类型%s接入接口%u，但%s已被占用。切换。</translation>
+        <translation>存档包含控制器类型%s接入接口%u，但%s已被占用。切换。</translation>
     </message>
     <message>
         <source>Ignoring mismatched controller type %s in port %u.</source>
-        <translation type="vanished">忽略不匹配的控制器类型%s接入接口%u。</translation>
+        <translation>忽略不匹配的控制器类型%s接入接口%u。</translation>
     </message>
     <message>
         <source>Memory card %u present in system but not in save state. Removing card.</source>
-        <translation type="vanished">记忆卡%u当前接入系统中，没有接入存档。移除记忆卡。</translation>
+        <translation>记忆卡%u当前接入系统中，没有接入存档。移除记忆卡。</translation>
     </message>
     <message>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
-        <translation type="vanished">光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;。</translation>
+        <translation>光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Precaching CD image failed, it may be unreliable.</source>
-        <translation type="vanished">预缓存光盘镜像失败，这可能导致不稳定。</translation>
+        <translation>预缓存光盘镜像失败，这可能导致不稳定。</translation>
     </message>
     <message>
         <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation type="vanished">无法从&apos;%s&apos;应用ppf补丁，使用无补丁镜像。</translation>
+        <translation>无法从&apos;%s&apos;应用ppf补丁，使用无补丁镜像。</translation>
     </message>
     <message>
         <source>Loading state from &apos;{}&apos;...</source>
-        <translation type="vanished">从&apos;{}&apos;读档。</translation>
+        <translation>从&apos;{}&apos;读档。</translation>
     </message>
     <message>
         <source>Save State</source>
-        <translation type="vanished">存档</translation>
+        <translation>存档</translation>
     </message>
     <message>
         <source>State saved to &apos;{}&apos;.</source>
-        <translation type="vanished">存档到&apos;{}&apos;。</translation>
+        <translation>存档到&apos;{}&apos;。</translation>
     </message>
     <message>
         <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
-        <translation type="vanished">CPU主频设置为%u%% (%u / %u)。这可能会导致不稳定。</translation>
+        <translation>CPU主频设置为%u%% (%u / %u)。这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
-        <translation type="vanished">CD-ROM读取加速设置为%ux (有效速度%ux)。这可能会导致不稳定。</translation>
+        <translation>CD-ROM读取加速设置为%ux (有效速度%ux)。这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
-        <translation type="vanished">CD-ROM寻道加速设置为瞬时。这可能会导致不稳定。</translation>
+        <translation>CD-ROM寻道加速设置为瞬时。这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation type="vanished">CD-ROM寻道加速设置为%ux。这可能会导致不稳定。</translation>
+        <translation>CD-ROM寻道加速设置为%ux。这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
-        <translation type="vanished">无法初始化%s渲染器，退回到软件渲染器。</translation>
+        <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
-        <translation type="vanished">此存档是由不同的BIOS版本或补丁选项所创建的。这可能会导致稳定性问题。</translation>
+        <translation>此存档是由不同的BIOS版本或补丁选项所创建的。这可能会导致稳定性问题。</translation>
     </message>
     <message>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
-        <translation type="vanished">警告: CPU超频 (%u%%) 不同于存档 (%u%%)。</translation>
+        <translation>警告: CPU超频 (%u%%) 不同于存档 (%u%%)。</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="vanished">无法从存档&apos;%s&apos;: %s打开光盘镜像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
+        <translation>无法从存档&apos;%s&apos;: %s打开光盘镜像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>Failed to open disc image &apos;%s&apos;: %s.</source>
-        <translation type="vanished">无法打开光盘镜像&apos;%s&apos;: %s。</translation>
+        <translation>无法打开光盘镜像&apos;%s&apos;: %s。</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
-        <translation type="vanished">无法切换到子镜像%u在&apos;%s&apos;: %s。</translation>
+        <translation>无法切换到子镜像%u在&apos;%s&apos;: %s。</translation>
     </message>
     <message>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
-        <translation type="vanished">切换到子镜像%s (%u) 在&apos;%s&apos;。</translation>
+        <translation>切换到子镜像%s (%u) 在&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="vanished">无法从存档&apos;%s&apos;打开CD映像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
+        <translation>无法从存档&apos;%s&apos;打开CD映像。使用现有镜像&apos;%s&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
         <source>Failed to open disc image &apos;%s&apos;.</source>
-        <translation type="vanished">无法打开光盘镜像&apos;%s&apos;。</translation>
+        <translation>无法打开光盘镜像&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Inserted disc &apos;%s&apos; (%s).</source>
-        <translation type="vanished">已插入光盘&apos;%s&apos; (%s)。</translation>
+        <translation>已插入光盘&apos;%s&apos; (%s)。</translation>
     </message>
     <message>
         <source>%ux MSAA is not supported, using %ux instead.</source>
-        <translation type="vanished">不支持%ux MSAA，使用%ux代替。</translation>
+        <translation>不支持%ux MSAA，使用%ux代替。</translation>
     </message>
     <message>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="vanished">不支持SSAA，使用MSAA代替。</translation>
+        <translation>不支持SSAA，使用MSAA代替。</translation>
     </message>
     <message>
         <source>Texture filter &apos;%s&apos; is not supported on your device.</source>
-        <translation type="vanished">您的设备不支持纹理过滤器&apos;%s&apos;。</translation>
+        <translation>您的设备不支持纹理过滤器&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
-        <translation type="vanished">当前渲染器不支持纹理过滤器&apos;%s&apos;。</translation>
+        <translation>当前渲染器不支持纹理过滤器&apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
-        <translation type="vanished">当前渲染器不支持自适应缩减采样，改用盒式滤波器。</translation>
+        <translation>当前渲染器不支持自适应缩减采样，改用盒式滤波器。</translation>
     </message>
     <message>
         <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
-        <translation type="vanished">分辨率比率设置为%ux (显示%ux%u，显存%ux%u)。</translation>
+        <translation>分辨率比率设置为%ux (显示%ux%u，显存%ux%u)。</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing set to %ux (SSAA).</source>
-        <translation type="vanished">多重采样反锯齿设置为%ux (SSAA)。</translation>
+        <translation>多重采样反锯齿设置为%ux (SSAA)。</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing set to %ux.</source>
-        <translation type="vanished">多重采样反锯齿设置为%ux。</translation>
+        <translation>多重采样反锯齿设置为%ux。</translation>
     </message>
     <message>
         <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
-        <translation type="vanished">分辨率比率%ux不支持自适应平滑，使用%ux。</translation>
+        <translation>分辨率比率%ux不支持自适应平滑，使用%ux。</translation>
     </message>
     <message>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation type="vanished">无法读取位于&apos;%s&apos;的记忆卡，正在格式化。</translation>
+        <translation>无法读取位于&apos;%s&apos;的记忆卡，正在格式化。</translation>
     </message>
     <message>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
-        <translation type="vanished">无法保存记忆卡到&apos;{}&apos;。</translation>
+        <translation>无法保存记忆卡到&apos;{}&apos;。</translation>
     </message>
     <message>
         <source>Saved memory card to &apos;{}&apos;.</source>
-        <translation type="vanished">保存记忆卡到&apos;{}&apos;。</translation>
+        <translation>保存记忆卡到&apos;{}&apos;。</translation>
     </message>
     <message>
         <source>Failed to save memory card to &apos;%s&apos;</source>
-        <translation type="vanished">无法保存记忆卡到&apos;%s&apos;</translation>
+        <translation>无法保存记忆卡到&apos;%s&apos;</translation>
     </message>
     <message>
         <source>Saved memory card to &apos;%s&apos;</source>
-        <translation type="vanished">保存记忆卡到&apos;%s&apos;</translation>
+        <translation>保存记忆卡到&apos;%s&apos;</translation>
     </message>
     <message>
         <source>Acquired exclusive fullscreen.</source>
-        <translation type="vanished">获得独占全屏。</translation>
+        <translation>获得独占全屏。</translation>
     </message>
     <message>
         <source>Failed to acquire exclusive fullscreen.</source>
-        <translation type="vanished">无法获取独占式全屏。</translation>
+        <translation>无法获取独占式全屏。</translation>
     </message>
     <message>
         <source>Lost exclusive fullscreen.</source>
-        <translation type="vanished">丢失独占式全屏。</translation>
+        <translation>丢失独占式全屏。</translation>
     </message>
     <message>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="vanished">OpenGL渲染器不可用，您的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.0。</translation>
+        <translation>OpenGL渲染器不可用，您的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.0。</translation>
     </message>
     <message>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
-        <translation type="vanished">通过游戏设置禁用强制模拟模式。控制器将以数字模式启动。</translation>
+        <translation>通过游戏设置禁用强制模拟模式。控制器将以数字模式启动。</translation>
     </message>
     <message>
         <source>Failed to read executable from disc. Achievements disabled.</source>
-        <translation type="vanished">无法从光盘读取可执行文件。成就禁用。</translation>
+        <translation>无法从光盘读取可执行文件。成就禁用。</translation>
     </message>
     <message>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="vanished">OpenGL渲染器不可用，您的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.1。</translation>
+        <translation>OpenGL渲染器不可用，您的驱动程序或硬件不够新。需要OpenGL 3.1或OpenGL ES 3.1。</translation>
     </message>
 </context>
 <context>
     <name>PlayStationMouse</name>
     <message>
         <source>Left</source>
-        <translation type="vanished">左</translation>
+        <translation>左</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="vanished">右</translation>
+        <translation>右</translation>
     </message>
     <message>
         <source>Relative Mouse Mode</source>
-        <translation type="vanished">相对鼠标模式</translation>
+        <translation>相对鼠标模式</translation>
     </message>
     <message>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">锁定鼠标光标到窗口，用于FPS游戏。</translation>
+        <translation>锁定鼠标光标到窗口，用于FPS游戏。</translation>
     </message>
 </context>
 <context>
     <name>PlaystationMouse</name>
     <message>
         <source>Relative Mouse Mode</source>
-        <translation type="vanished">相对鼠标模式</translation>
+        <translation>相对鼠标模式</translation>
     </message>
     <message>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">锁定鼠标光标到窗口，用于FPS游戏。</translation>
+        <translation>锁定鼠标光标到窗口，用于FPS游戏。</translation>
     </message>
 </context>
 <context>
     <name>PostProcessingChainConfigWidget</name>
     <message>
         <source>Form</source>
-        <translation type="vanished">Form</translation>
+        <translation>Form</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="vanished">添加</translation>
+        <translation>添加</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="vanished">移除</translation>
+        <translation>移除</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">清除</translation>
+        <translation>清除</translation>
     </message>
     <message>
         <source>Move Up</source>
-        <translation type="vanished">上移</translation>
+        <translation>上移</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <translation type="vanished">下移</translation>
+        <translation>下移</translation>
     </message>
     <message>
         <source>Options...</source>
-        <translation type="vanished">选项...</translation>
+        <translation>选项...</translation>
     </message>
     <message>
         <source>No Shaders Available</source>
-        <translation type="vanished">无可用着色器</translation>
+        <translation>无可用着色器</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation type="vanished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <source>Failed to add shader. The log may contain more information.</source>
-        <translation type="vanished">无法添加着色器。日志可能包含更多信息。</translation>
+        <translation>无法添加着色器。日志可能包含更多信息。</translation>
     </message>
     <message>
         <source>Question</source>
-        <translation type="vanished">提问</translation>
+        <translation>提问</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all shader stages?</source>
-        <translation type="vanished">您确定要清除全部着色器层？</translation>
+        <translation>您确定要清除全部着色器层？</translation>
     </message>
 </context>
 <context>
@@ -10807,11 +10902,11 @@ Please configure a supported controller from the list above.</source>
     </message>
     <message>
         <source>Load Preset</source>
-        <translation type="vanished">载入预置</translation>
+        <translation>载入预置</translation>
     </message>
     <message>
         <source>Save Preset</source>
-        <translation type="vanished">保存预置</translation>
+        <translation>保存预置</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="67"/>
@@ -10845,22 +10940,22 @@ Please configure a supported controller from the list above.</source>
     </message>
     <message>
         <source>The current post-processing chain is invalid, it has been reset.</source>
-        <translation type="vanished">当前后处理链无效，已被重置。</translation>
+        <translation>当前后处理链无效，已被重置。</translation>
     </message>
     <message>
         <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
-        <translation type="vanished">当前后处理链无效，已重置。任何修改将会覆写已存在的配置。</translation>
+        <translation>当前后处理链无效，已重置。任何修改将会覆写已存在的配置。</translation>
     </message>
 </context>
 <context>
     <name>PostProcessingShaderConfigDialog</name>
     <message>
         <source>%1 Shader Options</source>
-        <translation type="vanished">%1着色器选项</translation>
+        <translation>%1着色器选项</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="vanished">关闭</translation>
+        <translation>关闭</translation>
     </message>
 </context>
 <context>
@@ -10892,26 +10987,26 @@ Please configure a supported controller from the list above.</source>
     </message>
     <message>
         <source>Reset to Defaults</source>
-        <translation type="vanished">重置为默认</translation>
+        <translation>重置为默认</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <source>DuckStation Error</source>
-        <translation type="vanished">DuckStation错误</translation>
+        <translation>DuckStation错误</translation>
     </message>
     <message>
         <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation type="vanished">无法初始化主机界面，无法继续。</translation>
+        <translation>无法初始化主机界面，无法继续。</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="687"/>
+        <location filename="../qtutils.cpp" line="686"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="688"/>
+        <location filename="../qtutils.cpp" line="687"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -10941,29 +11036,29 @@ URL: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="1948"/>
-        <location filename="../qthost.cpp" line="1974"/>
-        <location filename="../qthost.cpp" line="1990"/>
+        <location filename="../qthost.cpp" line="1949"/>
+        <location filename="../qthost.cpp" line="1975"/>
+        <location filename="../qthost.cpp" line="1991"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1949"/>
+        <location filename="../qthost.cpp" line="1950"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>文件&apos;%1&apos;不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1975"/>
+        <location filename="../qthost.cpp" line="1976"/>
         <source>The specified save state does not exist.</source>
         <translation>指定的存档不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1991"/>
+        <location filename="../qthost.cpp" line="1992"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>无法使用no-gui模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1992"/>
+        <location filename="../qthost.cpp" line="1993"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>无法使用批处理模式，因为没有指定的启动文件名。</translation>
     </message>
@@ -10972,43 +11067,43 @@ URL: %1</translation>
     <name>QtHostInterface</name>
     <message>
         <source>Load From File...</source>
-        <translation type="vanished">从文件读档...</translation>
+        <translation>从文件读档...</translation>
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation type="vanished">撤消读档</translation>
+        <translation>撤消读档</translation>
     </message>
     <message>
         <source>Save To File...</source>
-        <translation type="vanished">存档到文件...</translation>
+        <translation>存档到文件...</translation>
     </message>
     <message>
         <source>Game Save %1 (%2)</source>
-        <translation type="vanished">游戏档%1 (%2)</translation>
+        <translation>游戏档%1 (%2)</translation>
     </message>
     <message>
         <source>Game Save %1 (Empty)</source>
-        <translation type="vanished">游戏档%1 (空)</translation>
+        <translation>游戏档%1 (空)</translation>
     </message>
     <message>
         <source>Global Save %1 (%2)</source>
-        <translation type="vanished">全局档%1 (%2)</translation>
+        <translation>全局档%1 (%2)</translation>
     </message>
     <message>
         <source>Global Save %1 (Empty)</source>
-        <translation type="vanished">全局档%1 (空)</translation>
+        <translation>全局档%1 (空)</translation>
     </message>
     <message>
         <source>Resume</source>
-        <translation type="vanished">再开</translation>
+        <translation>再开</translation>
     </message>
     <message>
         <source>Load State</source>
-        <translation type="vanished">读档</translation>
+        <translation>读档</translation>
     </message>
     <message>
         <source>Resume (%1)</source>
-        <translation type="vanished">再开 (%1)</translation>
+        <translation>再开 (%1)</translation>
     </message>
     <message>
         <source>Game ID: %1
@@ -11018,7 +11113,7 @@ Game Publisher: %4
 Achievements: %5 (%6)
 
 </source>
-        <translation type="vanished">游戏ID: %1
+        <translation>游戏ID: %1
 游戏标题: %2
 游戏开发者: %3
 游戏发行商: %4
@@ -11028,7 +11123,7 @@ Achievements: %5 (%6)
     </message>
     <message numerus="yes">
         <source>%n points</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n点</numerusform>
         </translation>
     </message>
@@ -11040,7 +11135,7 @@ Game Publisher: %4
 Achievements: %5 (%6 points)
 
 </source>
-        <translation type="vanished">游戏ID:%1
+        <translation>游戏ID:%1
 游戏标题:%2
 游戏开发者:%3
 游戏发行商:%4
@@ -11050,87 +11145,87 @@ Achievements: %5 (%6 points)
     </message>
     <message>
         <source>Rich presence inactive or unsupported.</source>
-        <translation type="vanished">Rich Presence不活跃或不支持。</translation>
+        <translation>Rich Presence不活跃或不支持。</translation>
     </message>
     <message>
         <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="vanished">游戏未加载或RetroAchievements不可用。</translation>
+        <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht *.txt);;所有文件 (*.*)</translation>
+        <translation>PCSXR/Libretro金手指文件 (*.cht *.txt);;所有文件 (*.*)</translation>
     </message>
     <message>
         <source>%1 Save %2 (%3)</source>
-        <translation type="vanished">%1保存%2 (%3)</translation>
+        <translation>%1保存%2 (%3)</translation>
     </message>
     <message>
         <source>Game</source>
-        <translation type="vanished">游戏</translation>
+        <translation>游戏</translation>
     </message>
     <message>
         <source>No resume save state found.</source>
-        <translation type="vanished">没有发现可恢复的存档。</translation>
+        <translation>没有发现可恢复的存档。</translation>
     </message>
     <message>
         <source>From File...</source>
-        <translation type="vanished">档文件...</translation>
+        <translation>档文件...</translation>
     </message>
     <message>
         <source>Select Save State File</source>
-        <translation type="vanished">选择存档文件</translation>
+        <translation>选择存档文件</translation>
     </message>
     <message>
         <source>Save States (*.sav)</source>
-        <translation type="vanished">存档 (*.sav)</translation>
+        <translation>存档 (*.sav)</translation>
     </message>
     <message>
         <source>Edit Memory Cards...</source>
-        <translation type="vanished">管理记忆卡...</translation>
+        <translation>管理记忆卡...</translation>
     </message>
     <message>
         <source>Delete Save States...</source>
-        <translation type="vanished">删除存档...</translation>
+        <translation>删除存档...</translation>
     </message>
     <message>
         <source>Confirm Save State Deletion</source>
-        <translation type="vanished">确认存档删除</translation>
+        <translation>确认存档删除</translation>
     </message>
     <message>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
-        <translation type="vanished">您确定要删除%1的所有存档吗？
+        <translation>您确定要删除%1的所有存档吗？
 
 保存将无法恢复。</translation>
     </message>
     <message>
         <source>&amp;Load Cheats...</source>
-        <translation type="vanished">载入金手指(&amp;C)...</translation>
+        <translation>载入金手指(&amp;C)...</translation>
     </message>
     <message>
         <source>Select Cheat File</source>
-        <translation type="vanished">选择金手指文件</translation>
+        <translation>选择金手指文件</translation>
     </message>
     <message>
         <source>PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht);;所有文件 (*.*)</translation>
+        <translation>PCSXR/Libretro金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
         <source>&amp;Save Cheats...</source>
-        <translation type="vanished">保存金手指(&amp;S)...</translation>
+        <translation>保存金手指(&amp;S)...</translation>
     </message>
     <message>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
+        <translation>PCSXR金手指文件 (*.cht);;所有文件 (*.*)</translation>
     </message>
     <message>
         <source>&amp;Enabled Cheats</source>
-        <translation type="vanished">启用金手指(&amp;H)</translation>
+        <translation>启用金手指(&amp;H)</translation>
     </message>
     <message>
         <source>&amp;Apply Cheats</source>
-        <translation type="vanished">应用金手指(&amp;A)</translation>
+        <translation>应用金手指(&amp;A)</translation>
     </message>
 </context>
 <context>
@@ -11165,69 +11260,69 @@ The saves will not be recoverable.</source>
     <name>QtProgressCallback</name>
     <message>
         <source>DuckStation</source>
-        <translation type="vanished">DuckStation</translation>
+        <translation>DuckStation</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="vanished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation type="vanished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <source>Question</source>
-        <translation type="vanished">问题</translation>
+        <translation>问题</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation type="vanished">信息</translation>
+        <translation>信息</translation>
     </message>
 </context>
 <context>
     <name>RelativeMouseMode</name>
     <message>
         <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">锁定鼠标光标到窗口，用于FPS游戏。</translation>
+        <translation>锁定鼠标光标到窗口，用于FPS游戏。</translation>
     </message>
 </context>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
         <source>Load</source>
-        <translation type="vanished">载入</translation>
+        <translation>载入</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="vanished">保存</translation>
+        <translation>保存</translation>
     </message>
     <message>
         <source>Select Previous</source>
-        <translation type="vanished">选择前一个</translation>
+        <translation>选择前一个</translation>
     </message>
     <message>
         <source>Select Next</source>
-        <translation type="vanished">选择后一个</translation>
+        <translation>选择后一个</translation>
     </message>
     <message>
         <source>No Save State</source>
-        <translation type="vanished">无存档</translation>
+        <translation>无存档</translation>
     </message>
     <message>
         <source>Global Slot %d</source>
-        <translation type="vanished">全局档位%d</translation>
+        <translation>全局档位%d</translation>
     </message>
     <message>
         <source>Game Slot %d</source>
-        <translation type="vanished">游戏档位%d</translation>
+        <translation>游戏档位%d</translation>
     </message>
     <message>
         <source>Gane Slot %d</source>
-        <translation type="vanished">游戏档%d</translation>
+        <translation>游戏档%d</translation>
     </message>
     <message>
         <source>%s Slot %d</source>
-        <translation type="vanished">%s档位%d</translation>
+        <translation>%s档位%d</translation>
     </message>
 </context>
 <context>
@@ -11287,75 +11382,75 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>General Settings</source>
-        <translation type="vanished">常规设置</translation>
+        <translation>常规设置</translation>
     </message>
     <message>
         <source>BIOS Settings</source>
-        <translation type="vanished">BIOS设置</translation>
+        <translation>BIOS设置</translation>
     </message>
     <message>
         <source>Console Settings</source>
-        <translation type="vanished">操纵台设置</translation>
+        <translation>操纵台设置</translation>
     </message>
     <message>
         <source>Emulation Settings</source>
-        <translation type="vanished">模拟设置</translation>
+        <translation>模拟设置</translation>
     </message>
     <message>
         <source>Game List Settings</source>
-        <translation type="vanished">游戏列表设置</translation>
+        <translation>游戏列表设置</translation>
     </message>
     <message>
         <source>Hotkey Settings</source>
-        <translation type="vanished">热键设置</translation>
+        <translation>热键设置</translation>
     </message>
     <message>
         <source>Controller Settings</source>
-        <translation type="vanished">控制器设置</translation>
+        <translation>控制器设置</translation>
     </message>
     <message>
         <source>Memory Card Settings</source>
-        <translation type="vanished">记忆卡设置</translation>
+        <translation>记忆卡设置</translation>
     </message>
     <message>
         <source>Display Settings</source>
-        <translation type="vanished">显示设置</translation>
+        <translation>显示设置</translation>
     </message>
     <message>
         <source>Enhancement Settings</source>
-        <translation type="vanished">增强设置</translation>
+        <translation>增强设置</translation>
     </message>
     <message>
         <source>Post-Processing Settings</source>
-        <translation type="vanished">后处理设置</translation>
+        <translation>后处理设置</translation>
     </message>
     <message>
         <source>Achievement Settings</source>
-        <translation type="vanished">成就设置</translation>
+        <translation>成就设置</translation>
     </message>
     <message>
         <source>Restore Defaults</source>
-        <translation type="vanished">恢复默认</translation>
+        <translation>恢复默认</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="vanished">关闭</translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <source>GPU Settings</source>
-        <translation type="vanished">GPU设置</translation>
+        <translation>GPU设置</translation>
     </message>
     <message>
         <source>Audio Settings</source>
-        <translation type="vanished">音频设置</translation>
+        <translation>音频设置</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
-        <translation type="vanished">高级设置</translation>
+        <translation>高级设置</translation>
     </message>
     <message>
         <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation type="vanished">这个DuckStation版本编译未使用RetroAchievements支持。</translation>
+        <translation>这个DuckStation版本编译未使用RetroAchievements支持。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="70"/>
@@ -11429,7 +11524,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
-        <translation type="vanished">&lt;strong&gt;游戏列表设置&lt;/strong&gt;&lt;hr&gt;上面的列表显示了由DuckStation搜索以添加游戏列表的目录，可以添加、删除搜索目录，并将其切换到深度搜索/非深度搜索目录。此外redump.org网站可以下载或更新数据库以提供光盘的标题，因为光盘本身不提供标题信息。</translation>
+        <translation>&lt;strong&gt;游戏列表设置&lt;/strong&gt;&lt;hr&gt;上面的列表显示了由DuckStation搜索以添加游戏列表的目录，可以添加、删除搜索目录，并将其切换到深度搜索/非深度搜索目录。此外redump.org网站可以下载或更新数据库以提供光盘的标题，因为光盘本身不提供标题信息。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="78"/>
@@ -11438,11 +11533,11 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;热键设置&lt;/strong&gt;&lt;hr&gt;绑定热键可以触发事件，例如按下键/控制器按钮时重置或截屏。热键标题已一目了然其功能，浅显易懂，将不再分项说明。单击绑定将开始倒计时，在这种情况下，您应该按要绑定的键或控制器按钮/轴。如果没有按下任何按键并且计时器超时，绑定将保持不变。要清除绑定，请右键单击该按钮。若要绑定多个按钮，请按住Shift键并单击该按钮。</translation>
+        <translation>&lt;strong&gt;热键设置&lt;/strong&gt;&lt;hr&gt;绑定热键可以触发事件，例如按下键/控制器按钮时重置或截屏。热键标题已一目了然其功能，浅显易懂，将不再分项说明。单击绑定将开始倒计时，在这种情况下，您应该按要绑定的键或控制器按钮/轴。如果没有按下任何按键并且计时器超时，绑定将保持不变。要清除绑定，请右键单击该按钮。若要绑定多个按钮，请按住Shift键并单击该按钮。</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;控制器设置&lt;/strong&gt;&lt;hr&gt;此页面允许您选择希望在操纵台模拟的控制器类型，并重新绑定按键或主机游戏控制器按钮到您的选择。单击绑定将会开始倒计时，在这种情况下，您应该按压预想设定中的按键或控制器按钮/轴进行输入绑定。(关于震动开关，请按控制器上的任意按键/摇杆来进行绑定。) 如果没有按下任何按键并且计时器超时，输入绑定将不会变更。要清除绑定，请右键单击该按键。若要绑定多个按键，请按住Shift键并单击该按键。</translation>
+        <translation>&lt;strong&gt;控制器设置&lt;/strong&gt;&lt;hr&gt;此页面允许您选择希望在操纵台模拟的控制器类型，并重新绑定按键或主机游戏控制器按钮到您的选择。单击绑定将会开始倒计时，在这种情况下，您应该按压预想设定中的按键或控制器按钮/轴进行输入绑定。(关于震动开关，请按控制器上的任意按键/摇杆来进行绑定。) 如果没有按下任何按键并且计时器超时，输入绑定将不会变更。要清除绑定，请右键单击该按键。若要绑定多个按键，请按住Shift键并单击该按键。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="98"/>
@@ -11481,7 +11576,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;GPU设置&lt;/strong&gt;&lt;hr&gt;这些选项控制控制台中GPU的模拟。提供了各种增强功能, 将鼠标悬停在每个功能上可获得更多信息。</translation>
+        <translation>&lt;strong&gt;GPU设置&lt;/strong&gt;&lt;hr&gt;这些选项控制控制台中GPU的模拟。提供了各种增强功能, 将鼠标悬停在每个功能上可获得更多信息。</translation>
     </message>
     <message>
         <location filename="../settingsdialog.cpp" line="121"/>
@@ -11827,59 +11922,59 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>System</name>
     <message>
         <source>Save state is incompatible: expecting version %u but state is version %u.</source>
-        <translation type="vanished">保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
+        <translation>保存状态不兼容: 要求版本%u，但状态为版本%u。</translation>
     </message>
     <message>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
-        <translation type="vanished">存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
+        <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
         <source>Save state is incompatible: %s version is %u but state is version %u.</source>
-        <translation type="vanished">即时存档不兼容: %s版本为%u但存档版本为%u。</translation>
+        <translation>即时存档不兼容: %s版本为%u但存档版本为%u。</translation>
     </message>
     <message>
         <source>Failed to load %s BIOS.</source>
-        <translation type="vanished">无法加载%sBIOS。</translation>
+        <translation>无法加载%sBIOS。</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation type="vanished">错误</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
-        <translation type="vanished">无法通过加载存档文件&apos;{}&apos;来启动。</translation>
+        <translation>无法通过加载存档文件&apos;{}&apos;来启动。</translation>
     </message>
     <message>
         <source>Incorrect BIOS image size</source>
-        <translation type="vanished">BIOS文件大小不正确</translation>
+        <translation>BIOS文件大小不正确</translation>
     </message>
     <message>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
-        <translation type="vanished">存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
+        <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
         <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
-        <translation type="vanished">无法从存档打开CD镜像: &apos;%s&apos;。</translation>
+        <translation>无法从存档打开CD镜像: &apos;%s&apos;。</translation>
     </message>
     <message>
         <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">无法打开光盘镜像&apos;%s&apos;，存档: %s对其占用中。</translation>
+        <translation>无法打开光盘镜像&apos;%s&apos;，存档: %s对其占用中。</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">无法切换到子镜像%u在光盘镜像&apos;%s&apos;，存档: %s对其占用中。</translation>
+        <translation>无法切换到子镜像%u在光盘镜像&apos;%s&apos;，存档: %s对其占用中。</translation>
     </message>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation type="vanished">游戏没有编码，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
+        <translation>游戏没有编码，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation type="vanished">游戏没有标题，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
+        <translation>游戏没有标题，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
         <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation type="vanished">游戏没有路径，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
+        <translation>游戏没有路径，档位%u无法使用独立记忆卡的，改用共用记忆卡。</translation>
     </message>
     <message>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
@@ -11889,7 +11984,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation type="vanished">您正在运行一个没有SBI文件的libcrypt保护的游戏:
+        <translation>您正在运行一个没有SBI文件的libcrypt保护的游戏:
 
 %s: %s
 
@@ -11903,7 +11998,7 @@ SBI文件的名称必须与光盘镜像的名称互相匹配。</translation>
 %s: %s
 
 Your dump is incomplete, you must add the SBI file to run this game.</source>
-        <translation type="vanished">您正在运行一个没有SBI文件的libcrypt保护的游戏:
+        <translation>您正在运行一个没有SBI文件的libcrypt保护的游戏:
 
 %s: %s
 
@@ -11911,11 +12006,11 @@ Your dump is incomplete, you must add the SBI file to run this game.</source>
     </message>
     <message>
         <source>Memory card path for slot %u is missing, using default.</source>
-        <translation type="vanished">插槽%u的记忆卡路径丢失，使用默认值。</translation>
+        <translation>插槽%u的记忆卡路径丢失，使用默认值。</translation>
     </message>
     <message>
         <source>Game changed, reloading memory cards.</source>
-        <translation type="vanished">游戏已改变，重新加载记忆卡。</translation>
+        <translation>游戏已改变，重新加载记忆卡。</translation>
     </message>
     <message>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
@@ -11927,7 +12022,7 @@ The game will likely not run properly.
 Please check the README for instructions on how to add an SBI file.
 
 Do you wish to continue?</source>
-        <translation type="vanished">您正在运行一个没有SBI文件且受加密保护的游戏:
+        <translation>您正在运行一个没有SBI文件且受加密保护的游戏:
 
 %s: %s
 
@@ -11945,26 +12040,26 @@ Do you wish to continue?</source>
 The game will likely not run properly.
 
 Please check the README for instructions on how to add a SBI file.</source>
-        <translation type="vanished">您正在尝试在没有SBI文件的情况下运行libcrypt保护的游戏:
+        <translation>您正在尝试在没有SBI文件的情况下运行libcrypt保护的游戏:
 %s: %s
 游戏可能无法正常运行。
 请查看自述文件以了解如何添加SBI文件。</translation>
     </message>
     <message>
         <source>Removing current media from playlist, removing media from CD-ROM.</source>
-        <translation type="vanished">在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
+        <translation>在播放列表中删除当前媒体，并从CD-ROM中卸载媒体。</translation>
     </message>
     <message>
         <source>Changing current media from playlist, replacing current media.</source>
-        <translation type="vanished">变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
+        <translation>变更原播放列表中的“当前媒体”，替换为当前新的指定媒体。</translation>
     </message>
     <message>
         <source>Failed to acquire host display.</source>
-        <translation type="vanished">无法获取主机显示。</translation>
+        <translation>无法获取主机显示。</translation>
     </message>
     <message>
         <source>System failed to boot. The log may contain more information.</source>
-        <translation type="vanished">系统启动失败。日志可能包含更多信息。</translation>
+        <translation>系统无法启动。日志可能包含更多信息。</translation>
     </message>
 </context>
 </TS>
