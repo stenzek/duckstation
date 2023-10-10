@@ -2897,7 +2897,7 @@ bool CPU::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   if ((addr & 3) == 0)
     return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
 
-  return SafeWriteMemoryHalfWord(addr, Truncate16(value >> 16)) &&
+  return SafeWriteMemoryHalfWord(addr, Truncate16(value)) &&
          SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
 }
 
