@@ -199,7 +199,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 {
   return {{QStringLiteral("English"), QStringLiteral("en")},
           {QStringLiteral("Deutsch"), QStringLiteral("de")},
-          {QStringLiteral("Español de Hispanoamérica"), QStringLiteral("es")},
+          {QStringLiteral("Español de Latinoamérica"), QStringLiteral("es")},
           {QStringLiteral("Español de España"), QStringLiteral("es-ES")},
           {QStringLiteral("Français"), QStringLiteral("fr")},
           {QStringLiteral("עברית"), QStringLiteral("he")},
