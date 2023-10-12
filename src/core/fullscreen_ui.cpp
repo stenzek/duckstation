@@ -1344,6 +1344,9 @@ std::string FullscreenUI::GetEffectiveStringSetting(SettingsInterface* bsi, cons
 void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                           const char* name, const char* display_name, bool show_type)
 {
+  if (type == InputBindingInfo::Type::Pointer)
+    return;
+
   TinyString title;
   title.fmt("{}/{}", section, name);
 
@@ -3342,7 +3345,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                        });
     }
 
-    if (!ci || ci->bindings.empty() == 0)
+    if (!ci || ci->bindings.empty())
       continue;
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_MAGIC, "Automatic Mapping"),
@@ -3352,7 +3355,10 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, bi.display_name, true);
+    {
+      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name,
+                             Host::TranslateToCString(ci->name, bi.display_name), true);
+    }
 
     if (mtap_enabled[mtap_port])
     {
@@ -3386,7 +3392,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           {
             continue;
           }
-          options.emplace_back(bi.display_name,
+          options.emplace_back(Host::TranslateToString(ci->name, bi.display_name),
                                std::any_of(buttons_split.begin(), buttons_split.end(),
                                            [bi](const std::string_view& it) { return (it == bi.name); }));
         }
@@ -3398,7 +3404,7 @@ void FullscreenUI::DrawControllerSettingsPage()
             std::string_view to_modify;
             for (const Controller::ControllerBindingInfo& bi : ci->bindings)
             {
-              if (bi.display_name == title)
+              if (title == Host::TranslateToStringView(ci->name, bi.display_name))
               {
                 to_modify = bi.name;
                 break;
@@ -3498,24 +3504,24 @@ void FullscreenUI::DrawControllerSettingsPage()
       for (const SettingInfo& si : ci->settings)
       {
         TinyString title;
-        title.fmt(ICON_FA_COG "{}", si.display_name);
+        title.fmt(ICON_FA_COG "{}", Host::TranslateToStringView(ci->name, si.display_name));
+        const char* description = Host::TranslateToCString(ci->name, si.description);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
-            DrawToggleSetting(bsi, title, si.description, section.c_str(), si.name, si.BooleanDefaultValue(), true,
-                              false);
+            DrawToggleSetting(bsi, title, description, section.c_str(), si.name, si.BooleanDefaultValue(), true, false);
             break;
           case SettingInfo::Type::Integer:
-            DrawIntRangeSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
+            DrawIntRangeSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
                                 si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
             break;
           case SettingInfo::Type::IntegerList:
-            DrawIntListSetting(bsi, title, si.description, section.c_str(), si.name, si.IntegerDefaultValue(),
-                               si.options, 0, false, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT,
-                               g_large_font, g_medium_font, ci->name);
+            DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(), si.options,
+                               0, false, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT, g_large_font,
+                               g_medium_font, ci->name);
             break;
           case SettingInfo::Type::Float:
-            DrawFloatSpinBoxSetting(bsi, title, si.description, section.c_str(), si.name, si.FloatDefaultValue(),
+            DrawFloatSpinBoxSetting(bsi, title, description, section.c_str(), si.name, si.FloatDefaultValue(),
                                     si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier,
                                     si.format, true);
             break;
@@ -3535,8 +3541,6 @@ void FullscreenUI::DrawHotkeySettingsPage()
 
   BeginMenuButtons();
 
-  InputManager::GetHotkeyList();
-
   const HotkeyInfo* last_category = nullptr;
   for (const HotkeyInfo* hotkey : s_hotkey_list_cache)
   {
@@ -3546,7 +3550,8 @@ void FullscreenUI::DrawHotkeySettingsPage()
       last_category = hotkey;
     }
 
-    DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name, hotkey->display_name, false);
+    DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
+                           Host::TranslateToCString("Hotkeys", hotkey->display_name), false);
   }
 
   EndMenuButtons();
@@ -6100,7 +6105,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   for (const auto& it : s_game_list_directories_cache)
   {
-    if (MenuButton(SmallString::from_fmt(ICON_FA_FOLDER "{}", it.first),
+    if (MenuButton(SmallString::from_fmt(ICON_FA_FOLDER " {}", it.first),
                    it.second ? FSUI_CSTR("Scanning Subdirectories") : FSUI_CSTR("Not Scanning Subdirectories")))
     {
       ImGuiFullscreen::ChoiceDialogOptions options = {
