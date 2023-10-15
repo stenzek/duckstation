@@ -5266,7 +5266,7 @@ Achievements: %5 (%6)
     </message>
     <message>
         <source>Only Wireframe</source>
-        <translation>只是线框</translation>
+        <translation>仅有线框</translation>
     </message>
 </context>
 <context>
