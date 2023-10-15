@@ -52,7 +52,8 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
 
 void UpdateCPUDowncount()
 {
-  CPU::g_state.downcount = CPU::HasPendingInterrupt() ? 0 : s_active_events_head->GetDowncount();
+  const u32 event_downcount = s_active_events_head->GetDowncount();
+  CPU::g_state.downcount = CPU::HasPendingInterrupt() ? 0 : event_downcount;
 }
 
 TimingEvent** GetHeadEventPtr()
@@ -113,9 +114,14 @@ static void SortEvent(TimingEvent* event)
 
     // unlink
     if (event->prev)
+    {
       event->prev->next = event->next;
+    }
     else
+    {
       s_active_events_head = event->next;
+      UpdateCPUDowncount();
+    }
     if (event->next)
       event->next->prev = event->prev;
     else
@@ -128,9 +134,14 @@ static void SortEvent(TimingEvent* event)
       event->prev = current->prev;
 
       if (current->prev)
+      {
         current->prev->next = event;
+      }
       else
+      {
         s_active_events_head = event;
+        UpdateCPUDowncount();
+      }
 
       current->prev = event;
     }
