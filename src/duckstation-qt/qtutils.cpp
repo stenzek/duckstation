@@ -861,7 +861,7 @@ QIcon GetIconForEntryType(GameList::EntryType type)
   switch (type)
   {
     case GameList::EntryType::Disc:
-      return QIcon::fromTheme(QStringLiteral("dvd-line"));
+      return QIcon::fromTheme(QStringLiteral("disc-line"));
     case GameList::EntryType::Playlist:
       return QIcon::fromTheme(QStringLiteral("play-list-2-line"));
     case GameList::EntryType::PSF:

@@ -451,7 +451,7 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="gamepad-line" />
+               <iconset theme="controller-line" />
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -514,7 +514,7 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="gamepad-line" />
+               <iconset theme="controller-line" />
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonTextBesideIcon</enum>
