@@ -66,7 +66,7 @@ std::vector<PostProcessing::ShaderOption> PostProcessing::Shader::TakeOptions()
   return std::move(m_options);
 }
 
-void PostProcessing::Shader::LoadOptions(SettingsInterface& si, const char* section)
+void PostProcessing::Shader::LoadOptions(const SettingsInterface& si, const char* section)
 {
   for (ShaderOption& option : m_options)
   {

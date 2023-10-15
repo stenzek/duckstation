@@ -38,7 +38,7 @@ public:
   virtual bool IsValid() const = 0;
 
   std::vector<ShaderOption> TakeOptions();
-  void LoadOptions(SettingsInterface& si, const char* section);
+  void LoadOptions(const SettingsInterface& si, const char* section);
 
   const ShaderOption* GetOptionByName(const std::string_view& name) const;
   ShaderOption* GetOptionByName(const std::string_view& name);

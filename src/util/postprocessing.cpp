@@ -263,6 +263,7 @@ std::vector<PostProcessing::ShaderOption> PostProcessing::Config::GetStageOption
   if (!shader)
     return ret;
 
+  shader->LoadOptions(si, section);
   ret = shader->TakeOptions();
   return ret;
 }
