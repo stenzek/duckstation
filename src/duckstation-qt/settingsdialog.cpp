@@ -81,11 +81,11 @@ void SettingsDialog::addPages()
   }
 
   addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
-            QStringLiteral("hard-drive-2-line"),
+            QStringLiteral("chip-line"),
             tr("<strong>BIOS Settings</strong><hr>These options control which BIOS is used and how it will be "
                "patched.<br><br>Mouse over an option for additional information."));
   addWidget(m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
-            QStringLiteral("artboard-2-line"),
+            QStringLiteral("chip-2-line"),
             tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
                "console.<br><br>Mouse over an option for additional information."));
   addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
@@ -94,7 +94,7 @@ void SettingsDialog::addPages()
                "system.<br><br>Mouse over an option for additional information."));
   addWidget(
     m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-    QStringLiteral("sd-card-line"),
+    QStringLiteral("memcard-line"),
     tr("<strong>Memory Card Settings</strong><hr>This page lets you control what mode the memory card emulation will "
        "function in, and where the images for these cards will be stored on disk."));
   addWidget(

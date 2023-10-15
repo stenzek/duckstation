@@ -27,7 +27,6 @@
     <file>icons/black/16/AddGameDirectory.png</file>
     <file>icons/black/16/AdvancedSettings.png</file>
     <file>icons/black/16/AudioSettings.png</file>
-    <file>icons/black/16/BIOSSettings.png</file>
     <file>icons/black/16/ChangeDisc.png</file>
     <file>icons/black/16/Cheats.png</file>
     <file>icons/black/16/Clear.png</file>
@@ -68,7 +67,6 @@
     <file>icons/black/32/AddGameDirectory.png</file>
     <file>icons/black/32/AdvancedSettings.png</file>
     <file>icons/black/32/AudioSettings.png</file>
-    <file>icons/black/32/BIOSSettings.png</file>
     <file>icons/black/32/ChangeDisc.png</file>
     <file>icons/black/32/Cheats.png</file>
     <file>icons/black/32/Clear.png</file>
@@ -109,7 +107,6 @@
     <file>icons/black/64/AddGameDirectory.png</file>
     <file>icons/black/64/AdvancedSettings.png</file>
     <file>icons/black/64/AudioSettings.png</file>
-    <file>icons/black/64/BIOSSettings.png</file>
     <file>icons/black/64/ChangeDisc.png</file>
     <file>icons/black/64/Cheats.png</file>
     <file>icons/black/64/Clear.png</file>
@@ -148,16 +145,19 @@
     <file>icons/black/64/StartfileSettings.png</file>
     <file>icons/black/index.theme</file>
     <file>icons/black/svg/arrow-left-right-line.svg</file>
-    <file>icons/black/svg/artboard-2-line.svg</file>
     <file>icons/black/svg/book-open-line.svg</file>
     <file>icons/black/svg/brush-line.svg</file>
+    <file>icons/black/svg/cheats-line.svg</file>
     <file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
+    <file>icons/black/svg/chip-line.svg</file>
+    <file>icons/black/svg/chip-2-line.svg</file>
     <file>icons/black/svg/close-line.svg</file>
+    <file>icons/black/svg/controller-line.svg</file>
+    <file>icons/black/svg/controller-strike-line.svg</file>
     <file>icons/black/svg/dashboard-line.svg</file>
     <file>icons/black/svg/disc-line.svg</file>
     <file>icons/black/svg/door-open-line.svg</file>
     <file>icons/black/svg/download-2-line.svg</file>
-    <file>icons/black/svg/dvd-line.svg</file>
     <file>icons/black/svg/eject-line.svg</file>
     <file>icons/black/svg/file-add-line.svg</file>
     <file>icons/black/svg/file-line.svg</file>
@@ -168,23 +168,21 @@
     <file>icons/black/svg/file-settings-line.svg</file>
     <file>icons/black/svg/file-unknow-line.svg</file>
     <file>icons/black/svg/filter-line.svg</file>
-    <file>icons/black/svg/fire-line.svg</file>
     <file>icons/black/svg/flashlight-line.svg</file>
-    <file>icons/black/svg/flask-line.svg</file>
     <file>icons/black/svg/folder-add-line.svg</file>
     <file>icons/black/svg/folder-open-line.svg</file>
     <file>icons/black/svg/folder-reduce-line.svg</file>
     <file>icons/black/svg/folder-settings-line.svg</file>
     <file>icons/black/svg/fullscreen-line.svg</file>
     <file>icons/black/svg/function-line.svg</file>
-    <file>icons/black/svg/gamepad-line.svg</file>
     <file>icons/black/svg/global-line.svg</file>
-    <file>icons/black/svg/hard-drive-2-line.svg</file>
+    <file>icons/black/svg/guncon-line.svg</file>
     <file>icons/black/svg/image-fill.svg</file>
     <file>icons/black/svg/keyboard-line.svg</file>
     <file>icons/black/svg/layout-grid-line.svg</file>
     <file>icons/black/svg/lightbulb-line.svg</file>
     <file>icons/black/svg/list-check.svg</file>
+    <file>icons/black/svg/memcard-line.svg</file>
     <file>icons/black/svg/mouse-line.svg</file>
     <file>icons/black/svg/paint-brush-line.svg</file>
     <file>icons/black/svg/paint-fill.svg</file>
@@ -198,7 +196,6 @@
     <file>icons/black/svg/restart-line.svg</file>
     <file>icons/black/svg/save-3-line.svg</file>
     <file>icons/black/svg/screenshot-2-line.svg</file>
-    <file>icons/black/svg/sd-card-line.svg</file>
     <file>icons/black/svg/settings-3-line.svg</file>
     <file>icons/black/svg/settings-5-line.svg</file>
     <file>icons/black/svg/shut-down-line.svg</file>
@@ -359,7 +356,6 @@
     <file>icons/white/16/AddGameDirectory.png</file>
     <file>icons/white/16/AdvancedSettings.png</file>
     <file>icons/white/16/AudioSettings.png</file>
-    <file>icons/white/16/BIOSSettings.png</file>
     <file>icons/white/16/ChangeDisc.png</file>
     <file>icons/white/16/Cheats.png</file>
     <file>icons/white/16/Clear.png</file>
@@ -400,7 +396,6 @@
     <file>icons/white/32/AddGameDirectory.png</file>
     <file>icons/white/32/AdvancedSettings.png</file>
     <file>icons/white/32/AudioSettings.png</file>
-    <file>icons/white/32/BIOSSettings.png</file>
     <file>icons/white/32/ChangeDisc.png</file>
     <file>icons/white/32/Cheats.png</file>
     <file>icons/white/32/Clear.png</file>
@@ -441,7 +436,6 @@
     <file>icons/white/64/AddGameDirectory.png</file>
     <file>icons/white/64/AdvancedSettings.png</file>
     <file>icons/white/64/AudioSettings.png</file>
-    <file>icons/white/64/BIOSSettings.png</file>
     <file>icons/white/64/ChangeDisc.png</file>
     <file>icons/white/64/Cheats.png</file>
     <file>icons/white/64/Clear.png</file>
@@ -480,16 +474,19 @@
     <file>icons/white/64/StartfileSettings.png</file>
     <file>icons/white/index.theme</file>
     <file>icons/white/svg/arrow-left-right-line.svg</file>
-    <file>icons/white/svg/artboard-2-line.svg</file>
     <file>icons/white/svg/book-open-line.svg</file>
     <file>icons/white/svg/brush-line.svg</file>
+    <file>icons/white/svg/cheats-line.svg</file>
+    <file>icons/white/svg/chip-line.svg</file>
+    <file>icons/white/svg/chip-2-line.svg</file>
     <file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
     <file>icons/white/svg/close-line.svg</file>
+    <file>icons/white/svg/controller-line.svg</file>
+    <file>icons/white/svg/controller-strike-line.svg</file>
     <file>icons/white/svg/dashboard-line.svg</file>
     <file>icons/white/svg/disc-line.svg</file>
     <file>icons/white/svg/door-open-line.svg</file>
     <file>icons/white/svg/download-2-line.svg</file>
-    <file>icons/white/svg/dvd-line.svg</file>
     <file>icons/white/svg/eject-line.svg</file>
     <file>icons/white/svg/file-add-line.svg</file>
     <file>icons/white/svg/file-line.svg</file>
@@ -500,23 +497,21 @@
     <file>icons/white/svg/file-settings-line.svg</file>
     <file>icons/white/svg/file-unknow-line.svg</file>
     <file>icons/white/svg/filter-line.svg</file>
-    <file>icons/white/svg/fire-line.svg</file>
     <file>icons/white/svg/flashlight-line.svg</file>
-    <file>icons/white/svg/flask-line.svg</file>
     <file>icons/white/svg/folder-add-line.svg</file>
     <file>icons/white/svg/folder-open-line.svg</file>
     <file>icons/white/svg/folder-reduce-line.svg</file>
     <file>icons/white/svg/folder-settings-line.svg</file>
     <file>icons/white/svg/fullscreen-line.svg</file>
     <file>icons/white/svg/function-line.svg</file>
-    <file>icons/white/svg/gamepad-line.svg</file>
     <file>icons/white/svg/global-line.svg</file>
-    <file>icons/white/svg/hard-drive-2-line.svg</file>
+    <file>icons/white/svg/guncon-line.svg</file>
     <file>icons/white/svg/image-fill.svg</file>
     <file>icons/white/svg/keyboard-line.svg</file>
     <file>icons/white/svg/layout-grid-line.svg</file>
     <file>icons/white/svg/lightbulb-line.svg</file>
     <file>icons/white/svg/list-check.svg</file>
+    <file>icons/white/svg/memcard-line.svg</file>
     <file>icons/white/svg/mouse-line.svg</file>
     <file>icons/white/svg/paint-brush-line.svg</file>
     <file>icons/white/svg/paint-fill.svg</file>
@@ -530,7 +525,6 @@
     <file>icons/white/svg/restart-line.svg</file>
     <file>icons/white/svg/save-3-line.svg</file>
     <file>icons/white/svg/screenshot-2-line.svg</file>
-    <file>icons/white/svg/sd-card-line.svg</file>
     <file>icons/white/svg/settings-3-line.svg</file>
     <file>icons/white/svg/settings-5-line.svg</file>
     <file>icons/white/svg/shut-down-line.svg</file>

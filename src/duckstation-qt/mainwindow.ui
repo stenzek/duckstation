@@ -39,7 +39,7 @@
       <string>Change Disc</string>
      </property>
      <property name="icon">
-      <iconset theme="dvd-line">
+      <iconset theme="disc-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
      <actiongroup name="actionGroupChangeDiscSubImages"/>
@@ -54,7 +54,7 @@
       <string>Cheats</string>
      </property>
      <property name="icon">
-      <iconset theme="flask-line">
+      <iconset theme="cheats-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
@@ -302,7 +302,7 @@
   </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -386,7 +386,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -395,7 +395,7 @@
   </action>
   <action name="actionConsoleSettings">
    <property name="icon">
-    <iconset theme="artboard-2-line">
+    <iconset theme="chip-2-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -413,7 +413,7 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="gamepad-line">
+    <iconset theme="controller-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -526,7 +526,7 @@
   </action>
   <action name="actionChangeDisc">
    <property name="icon">
-    <iconset theme="dvd-line">
+    <iconset theme="disc-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -535,7 +535,7 @@
   </action>
   <action name="actionCheats">
    <property name="icon">
-    <iconset theme="flask-line">
+    <iconset theme="cheats-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -789,7 +789,7 @@
   </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset theme="sd-card-line">
+    <iconset theme="memcard-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">

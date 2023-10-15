@@ -733,7 +733,7 @@ ControllerBindingWidget_Base::~ControllerBindingWidget_Base()
 
 QIcon ControllerBindingWidget_Base::getIcon() const
 {
-  return QIcon::fromTheme("BIOSSettings");
+  return QIcon::fromTheme("controller-strike-line");
 }
 
 void ControllerBindingWidget_Base::initBindingWidgets()
@@ -804,7 +804,7 @@ ControllerBindingWidget_DigitalController::~ControllerBindingWidget_DigitalContr
 
 QIcon ControllerBindingWidget_DigitalController::getIcon() const
 {
-  return QIcon::fromTheme(QStringLiteral("gamepad-line"));
+  return QIcon::fromTheme(QStringLiteral("controller-line"));
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_DigitalController::createInstance(ControllerBindingWidget* parent)
@@ -913,7 +913,7 @@ ControllerBindingWidget_GunCon::~ControllerBindingWidget_GunCon()
 
 QIcon ControllerBindingWidget_GunCon::getIcon() const
 {
-  return QIcon::fromTheme(QStringLiteral("fire-line"));
+  return QIcon::fromTheme(QStringLiteral("guncon-line"));
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_GunCon::createInstance(ControllerBindingWidget* parent)

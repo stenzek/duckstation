@@ -137,7 +137,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }
 
-  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("gamepad-line")), tr("Use Global Settings"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-line")), tr("Use Global Settings"));
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
@@ -181,7 +181,7 @@ void GameSummaryWidget::populateTracksInfo()
 
     QTableWidgetItem* num = new QTableWidgetItem(tr("Track %1").arg(track));
     num->setIcon(QIcon::fromTheme((mode == CDImage::TrackMode::Audio) ? QStringLiteral("file-music-line") :
-                                                                        QStringLiteral("dvd-line")));
+                                                                        QStringLiteral("disc-line")));
     m_ui.tracks->insertRow(row);
     m_ui.tracks->setItem(row, 0, num);
     m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
