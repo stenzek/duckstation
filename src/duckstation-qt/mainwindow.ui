@@ -404,7 +404,7 @@
   </action>
   <action name="actionEmulationSettings">
    <property name="icon">
-    <iconset theme="dashboard-line">
+    <iconset theme="emulation-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -413,7 +413,7 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="controller-line">
+    <iconset theme="controller-digital-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -431,7 +431,7 @@
   </action>
   <action name="actionDisplaySettings">
    <property name="icon">
-    <iconset theme="brush-line">
+    <iconset theme="image-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -440,7 +440,7 @@
   </action>
   <action name="actionEnhancementSettings">
    <property name="icon">
-    <iconset theme="paint-fill">
+    <iconset theme="sparkle-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -449,7 +449,7 @@
   </action>
   <action name="actionPostProcessingSettings">
    <property name="icon">
-    <iconset theme="pantone-line">
+    <iconset theme="sun-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -571,7 +571,7 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset theme="folder-settings-line">
+    <iconset theme="folder-open-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
