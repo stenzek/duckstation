@@ -54,8 +54,8 @@
         <string>&amp;Reload Shaders</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
-         <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+          <iconset theme="refresh-line">
+          <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -97,7 +97,7 @@
            <string>Add</string>
           </property>
           <property name="icon">
-           <iconset theme="PostProcessingAdd">
+           <iconset theme="add-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">
@@ -117,7 +117,7 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset theme="PostProcessingRemove">
+           <iconset theme="minus-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">
@@ -137,7 +137,7 @@
            <string>Clear</string>
           </property>
           <property name="icon">
-           <iconset theme="Clear">
+           <iconset theme="trash-fill">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">
@@ -157,7 +157,7 @@
            <string>Move Up</string>
           </property>
           <property name="icon">
-           <iconset theme="MoveUp">
+           <iconset theme="arrow-up-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">
@@ -177,7 +177,7 @@
            <string>Move Down</string>
           </property>
           <property name="icon">
-           <iconset theme="MoveDown">
+           <iconset theme="arrow-down-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">

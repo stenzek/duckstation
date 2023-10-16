@@ -868,7 +868,7 @@ QIcon GetIconForEntryType(GameList::EntryType type)
       return QIcon::fromTheme(QStringLiteral("file-music-line"));
     case GameList::EntryType::PSExe:
     default:
-      return QIcon::fromTheme(QStringLiteral("settings-5-line"));
+      return QIcon::fromTheme(QStringLiteral("settings-3-line"));
   }
 }
 

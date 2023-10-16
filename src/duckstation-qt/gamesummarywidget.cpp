@@ -137,7 +137,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }
 
-  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-line")), tr("Use Global Settings"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")), tr("Use Global Settings"));
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 

@@ -60,7 +60,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="PostProcessingAdd"/>
+        <iconset theme="add-line"/>
        </property>
       </widget>
      </item>
@@ -76,7 +76,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="PostProcessingRemove"/>
+        <iconset theme="minus-line"/>
        </property>
       </widget>
      </item>
@@ -119,7 +119,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="PostProcessingAdd"/>
+        <iconset theme="add-line"/>
        </property>
       </widget>
      </item>
@@ -135,7 +135,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="PostProcessingRemove"/>
+        <iconset theme="minus-line"/>
        </property>
       </widget>
      </item>
@@ -171,7 +171,7 @@
         <string>Scan For New Games</string>
        </property>
        <property name="icon">
-        <iconset theme="ScanForGames"/>
+        <iconset theme="mag-line"/>
        </property>
       </widget>
      </item>
@@ -187,7 +187,7 @@
         <string>Rescan All Games</string>
        </property>
        <property name="icon">
-        <iconset theme="RescanAllGames"/>
+        <iconset theme="refresh-line"/>
        </property>
       </widget>
      </item>
