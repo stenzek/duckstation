@@ -18,4 +18,9 @@
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\vixl\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);ws2_32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
 </Project>

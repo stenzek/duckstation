@@ -96,6 +96,8 @@
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
     <ClCompile Include="logwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
+    <ClCompile Include="netplaydialogs.cpp" />
+    <ClCompile Include="$(IntDir)moc_netplaydialogs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -158,6 +160,7 @@
     <QtMoc Include="colorpickerbutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="logwindow.h" />
+    <QtMoc Include="netplaydialogs.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -199,6 +202,8 @@
     <QtUi Include="coverdownloaddialog.ui" />
     <QtUi Include="controllerledsettingsdialog.ui" />
     <QtUi Include="setupwizarddialog.ui" />
+    <QtUi Include="netplaycreatesessiondialog.ui" />
+    <QtUi Include="netplayjoinsessiondialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

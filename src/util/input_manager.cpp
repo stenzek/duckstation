@@ -11,6 +11,7 @@
 #include "core/controller.h"
 #include "core/host.h"
 #include "core/system.h"
+#include "core/netplay.h"
 #include "imgui_manager.h"
 #include "input_source.h"
 
@@ -713,6 +714,12 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
           AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
                         if (!System::IsValid())
                           return;
+
+                        if (Netplay::IsActive())
+                        {
+                          Netplay::CollectInput(pad_index, bind_index, value);
+                          return;
+                        }
 
                         Controller* c = System::GetController(pad_index);
                         if (c)

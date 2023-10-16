@@ -33,6 +33,11 @@ disable_compiler_warnings_for_target(reshadefx)
 add_subdirectory(rcheevos EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(rcheevos)
 
+if(NOT ANDROID)
+  add_subdirectory(enet)
+  add_subdirectory(ggpo-x)
+endif()
+
 if(ENABLE_CUBEB)
   add_subdirectory(cubeb EXCLUDE_FROM_ALL)
   disable_compiler_warnings_for_target(cubeb)

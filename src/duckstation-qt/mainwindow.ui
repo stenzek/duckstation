@@ -237,8 +237,17 @@
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
    </widget>
+   <widget class="QMenu" name="menuNetplay">
+    <property name="title">
+     <string>Netplay</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionCreateNetplaySession"/>
+    <addaction name="actionJoinNetplaySession"/>
+   </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuNetplay"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Tools"/>
    <addaction name="menuDebug"/>
@@ -974,6 +983,16 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader</string>
+   </property>
+  </action>
+  <action name="actionCreateNetplaySession">
+   <property name="text">
+    <string>Create Session...</string>
+   </property>
+  </action>
+  <action name="actionJoinNetplaySession">
+   <property name="text">
+    <string>Join Session...</string>
    </property>
   </action>
  </widget>
