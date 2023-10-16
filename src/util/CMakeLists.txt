@@ -187,6 +187,7 @@ if(ENABLE_VULKAN)
     vulkan_texture.h
   )
   target_compile_definitions(util PUBLIC "ENABLE_VULKAN=1")
+  target_link_libraries(util PUBLIC vulkan-headers)
 endif()
 
 if(ENABLE_SDL2)
