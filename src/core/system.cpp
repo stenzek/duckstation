@@ -3078,7 +3078,12 @@ void System::UpdateMemoryCardTypes()
     const MemoryCardType type = g_settings.memory_card_types[i];
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
+    {
+      if (const std::string& filename = card->GetFilename(); !filename.empty())
+        Log_InfoFmt("Memory Card Slot {}: {}", i + 1, filename);
+
       Pad::SetMemoryCard(i, std::move(card));
+    }
   }
 }
 
@@ -3094,7 +3099,12 @@ void System::UpdatePerGameMemoryCards()
 
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
+    {
+      if (const std::string& filename = card->GetFilename(); !filename.empty())
+        Log_InfoFmt("Memory Card Slot {}: {}", i + 1, filename);
+
       Pad::SetMemoryCard(i, std::move(card));
+    }
   }
 }
 
