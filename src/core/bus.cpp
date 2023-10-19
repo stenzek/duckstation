@@ -543,7 +543,9 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
     Log_InfoPrintf("Fastmem base (software): %p", s_fastmem_lut);
   }
 
-  std::memset(s_fastmem_lut, 0, sizeof(u8*) * FASTMEM_LUT_SLOTS);
+  // This assumes the top 4KB of address space is not mapped. It shouldn't be on any sane OSes.
+  for (u32 i = 0; i < FASTMEM_LUT_SLOTS; i++)
+    s_fastmem_lut[i] = GetLUTFastmemPointer(i << FASTMEM_LUT_PAGE_SHIFT, nullptr);
 
   auto MapRAM = [](u32 base_address) {
     u8* ram_ptr = g_ram + (base_address & g_ram_mask);
