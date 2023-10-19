@@ -665,20 +665,23 @@ void CodeGenerator::EmitCmp(HostReg to_reg, const Value& value)
 void CodeGenerator::EmitMul(HostReg to_reg_hi, HostReg to_reg_lo, const Value& lhs, const Value& rhs,
                             bool signed_multiply)
 {
-  Value lhs_in_reg = GetValueInHostRegister(lhs);
-  Value rhs_in_reg = GetValueInHostRegister(rhs);
+  // We could use GetValueInHostRegister() here, but we run out of registers...
+  // Value lhs_in_reg = GetValueInHostRegister(lhs);
+  // Value rhs_in_reg = GetValueInHostRegister(rhs);
+  const HostReg lhs_in_reg = lhs.IsInHostRegister() ? lhs.GetHostRegister() : (EmitCopyValue(RARG1, lhs), RARG1);
+  const HostReg rhs_in_reg = rhs.IsInHostRegister() ? rhs.GetHostRegister() : (EmitCopyValue(RARG2, rhs), RARG2);
 
   if (lhs.size < RegSize_64)
   {
     if (signed_multiply)
     {
-      m_emit->smull(GetHostReg32(to_reg_lo), GetHostReg32(to_reg_hi), GetHostReg32(lhs_in_reg.host_reg),
-                    GetHostReg32(rhs_in_reg.host_reg));
+      m_emit->smull(GetHostReg32(to_reg_lo), GetHostReg32(to_reg_hi), GetHostReg32(lhs_in_reg),
+                    GetHostReg32(rhs_in_reg));
     }
     else
     {
-      m_emit->umull(GetHostReg32(to_reg_lo), GetHostReg32(to_reg_hi), GetHostReg32(lhs_in_reg.host_reg),
-                    GetHostReg32(rhs_in_reg.host_reg));
+      m_emit->umull(GetHostReg32(to_reg_lo), GetHostReg32(to_reg_hi), GetHostReg32(lhs_in_reg),
+                    GetHostReg32(rhs_in_reg));
     }
   }
   else
