@@ -224,13 +224,12 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 #undef RARG3
 #undef RARG4
 #undef RSCRATCH
-#undef RMEMBASE
 #undef RSTATE
 
 namespace CPU::Recompiler {
 
 constexpr HostReg RCPUPTR = 4;
-constexpr HostReg RMEMBASEPTR = 5;
+constexpr HostReg RMEMBASEPTR = 3;
 constexpr HostReg RRETURN = 0;
 constexpr HostReg RARG1 = 0;
 constexpr HostReg RARG2 = 1;
@@ -385,14 +384,6 @@ void CodeGenerator::EmitBeginBlock(bool allocate_registers /* = true */)
     // m_emit->Mov(GetCPUPtrReg(), reinterpret_cast<uintptr_t>(&g_state));
     DebugAssert(cpu_reg_allocated);
     UNREFERENCED_VARIABLE(cpu_reg_allocated);
-
-    // If there's loadstore instructions, preload the fastmem base.
-    if (m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions))
-    {
-      const bool fastmem_reg_allocated = m_register_cache.AllocateHostReg(RMEMBASEPTR);
-      Assert(fastmem_reg_allocated);
-      m_emit->Ldr(GetFastmemBasePtrReg(), a32::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
-    }
   }
 }
 
@@ -400,9 +391,6 @@ void CodeGenerator::EmitEndBlock(bool free_registers /* = true */, const void* j
 {
   if (free_registers)
   {
-    if (m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions))
-      m_register_cache.FreeHostReg(RMEMBASEPTR);
-
     m_register_cache.FreeHostReg(RCPUPTR);
     m_register_cache.FreeHostReg(14);
     m_register_cache.PopCalleeSavedRegisters(true);
@@ -1058,6 +1046,7 @@ void CodeGenerator::EmitSetConditionResult(HostReg to_reg, RegSize to_size, Cond
 u32 CodeGenerator::PrepareStackForCall()
 {
   m_register_cache.PushCallerSavedRegisters();
+  m_membase_loaded = false;
   return 0;
 }
 
@@ -1351,13 +1340,24 @@ void CodeGenerator::EmitAddCPUStructField(u32 offset, const Value& value)
   }
 }
 
+void CodeGenerator::EnsureMembaseLoaded()
+{
+  if (m_membase_loaded)
+    return;
+
+  m_emit->Ldr(GetFastmemBasePtrReg(), a32::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+  m_membase_loaded = true;
+}
+
 void CodeGenerator::EmitUpdateFastmemBase()
 {
-  m_emit->Ldr(GetFastmemBasePtrReg(), a32::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+  m_membase_loaded = false;
 }
 
 void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, Value& result)
 {
+  EnsureMembaseLoaded();
+
   HostReg address_reg;
   if (address.IsConstant())
   {
@@ -1396,6 +1396,8 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
 void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                                const Value& address, RegSize size, Value& result)
 {
+  EnsureMembaseLoaded();
+
   HostReg address_reg;
   if (address.IsConstant())
   {
@@ -1538,6 +1540,8 @@ void CodeGenerator::EmitLoadGuestMemorySlowmem(Instruction instruction, const Co
 void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                                 const Value& address, RegSize size, const Value& value)
 {
+  EnsureMembaseLoaded();
+
   Value actual_value = GetValueInHostRegister(value);
 
   HostReg address_reg;

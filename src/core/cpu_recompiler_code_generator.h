@@ -122,6 +122,7 @@ public:
                                    const Value& address, RegSize size, const Value& value);
   void EmitStoreGuestMemorySlowmem(Instruction instruction, const CodeCache::InstructionInfo& info,
                                    const Value& address, RegSize size, const Value& value, bool in_far_code);
+  void EnsureMembaseLoaded();
   void EmitUpdateFastmemBase();
 
   // Unconditional branch to pointer. May allocate a scratch register.
@@ -291,6 +292,7 @@ private:
   bool m_load_delay_dirty = false;
   bool m_next_load_delay_dirty = false;
   bool m_gte_busy_cycles_dirty = false;
+  bool m_membase_loaded = false;
 
   //////////////////////////////////////////////////////////////////////////
   // Speculative Constants

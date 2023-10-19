@@ -84,7 +84,6 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 #define RARG4 vixl::aarch32::r3
 #define RSCRATCH vixl::aarch32::r12
 #define RSTATE vixl::aarch32::r4
-#define RMEMBASE vixl::aarch32::r5
 
 s32 armGetPCDisplacement(const void* current, const void* target);
 bool armIsPCDisplacementInImmediateRange(s32 displacement);

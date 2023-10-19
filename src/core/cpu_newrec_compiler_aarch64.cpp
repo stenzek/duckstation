@@ -382,7 +382,6 @@ void CPU::NewRec::AArch64Compiler::EndAndLinkBlock(const std::optional<u32>& new
   DebugAssert(!m_dirty_pc);
 
   // TODO: try extracting this to a function
-  // TODO: move the cycle flush in here..
 
   // save cycles for event test
   const TickCount cycles = std::exchange(m_cycles, 0);
@@ -621,7 +620,12 @@ void CPU::NewRec::AArch64Compiler::Flush(u32 flags)
   if (flags & FLUSH_INSTRUCTION_BITS)
   {
     // This sucks, but it's only used for fallbacks.
-    Panic("Not implemented");
+    EmitMov(RWARG1, inst->bits);
+    EmitMov(RWARG2, m_current_instruction_pc);
+    EmitMov(RWARG3, m_current_instruction_branch_delay_slot);
+    armAsm->str(RWARG1, PTR(&g_state.current_instruction.bits));
+    armAsm->str(RWARG2, PTR(&g_state.current_instruction_pc));
+    armAsm->strb(RWARG3, PTR(&g_state.current_instruction_in_branch_delay_slot));
   }
 
   if (flags & FLUSH_LOAD_DELAY_FROM_STATE && m_load_delay_dirty)
@@ -699,26 +703,23 @@ void CPU::NewRec::AArch64Compiler::Compile_Fallback()
 {
   Flush(FLUSH_FOR_INTERPRETER);
 
-#if 0
-  cg->call(&CPU::Recompiler::Thunks::InterpretInstruction);
+  EmitCall(armAsm, &CPU::Recompiler::Thunks::InterpretInstruction);
 
   // TODO: make me less garbage
   // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
   // but nothing should be going through here..
   Label no_load_delay;
-  cg->movzx(RWARG1, cg->byte[PTR(&g_state.next_load_delay_reg)]);
-  cg->cmp(RWARG1, static_cast<u8>(Reg::count));
-  cg->je(no_load_delay, CodeGenerator::T_SHORT);
-  cg->mov(RWARG2, cg->dword[PTR(&g_state.next_load_delay_value)]);
-  cg->mov(cg->byte[PTR(&g_state.load_delay_reg)], RWARG1);
-  cg->mov(cg->dword[PTR(&g_state.load_delay_value)], RWARG2);
-  cg->mov(cg->byte[PTR(&g_state.next_load_delay_reg)], static_cast<u32>(Reg::count));
-  cg->L(no_load_delay);
+  armAsm->ldrb(RWARG1, PTR(&g_state.next_load_delay_reg));
+  armAsm->cmp(RWARG1, static_cast<u8>(Reg::count));
+  armAsm->b(&no_load_delay, eq);
+  armAsm->ldr(RWARG2, PTR(&g_state.next_load_delay_value));
+  armAsm->strb(RWARG1, PTR(&g_state.load_delay_reg));
+  armAsm->str(RWARG2, PTR(&g_state.load_delay_value));
+  EmitMov(RWARG1, static_cast<u32>(Reg::count));
+  armAsm->strb(RWARG1, PTR(&g_state.next_load_delay_reg));
+  armAsm->bind(&no_load_delay);
 
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
-#else
-  Panic("Fixme");
-#endif
 }
 
 void CPU::NewRec::AArch64Compiler::CheckBranchTarget(const vixl::aarch64::WRegister& pcreg)
