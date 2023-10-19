@@ -60,7 +60,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="add-line"/>
+        <iconset theme="folder-add-line"/>
        </property>
       </widget>
      </item>
@@ -76,7 +76,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="minus-line"/>
+        <iconset theme="folder-reduce-line"/>
        </property>
       </widget>
      </item>
@@ -119,7 +119,7 @@
         <string>Add</string>
        </property>
        <property name="icon">
-        <iconset theme="add-line"/>
+        <iconset theme="folder-add-line"/>
        </property>
       </widget>
      </item>
@@ -135,7 +135,7 @@
         <string>Remove</string>
        </property>
        <property name="icon">
-        <iconset theme="minus-line"/>
+        <iconset theme="folder-reduce-line"/>
        </property>
       </widget>
      </item>

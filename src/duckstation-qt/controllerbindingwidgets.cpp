@@ -850,7 +850,7 @@ ControllerBindingWidget_AnalogJoystick::~ControllerBindingWidget_AnalogJoystick(
 
 QIcon ControllerBindingWidget_AnalogJoystick::getIcon() const
 {
-  return QIcon::fromTheme(QStringLiteral("controller-line"));
+  return QIcon::fromTheme(QStringLiteral("joystick-line"));
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_AnalogJoystick::createInstance(ControllerBindingWidget* parent)
