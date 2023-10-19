@@ -31,6 +31,4 @@ void UncheckedWriteMemoryByte(u32 address, u32 value);
 void UncheckedWriteMemoryHalfWord(u32 address, u32 value);
 void UncheckedWriteMemoryWord(u32 address, u32 value);
 
-void LogPC(u32 pc);
-
 } // namespace CPU::Recompiler::Thunks
