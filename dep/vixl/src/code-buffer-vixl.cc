@@ -156,6 +156,11 @@ void CodeBuffer::Reset() {
   SetClean();
 }
 
+void CodeBuffer::Reset(byte* buffer, size_t capacity) {
+  buffer_ = buffer;
+  cursor_ = buffer;
+  capacity_ = capacity;
+}
 
 void CodeBuffer::Grow(size_t new_capacity) {
   VIXL_ASSERT(managed_);
