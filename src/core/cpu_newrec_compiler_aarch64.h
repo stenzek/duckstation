@@ -151,8 +151,8 @@ private:
   void MoveTToReg(const vixl::aarch64::WRegister& dst, CompileFlags cf);
   void MoveMIPSRegToReg(const vixl::aarch64::WRegister& dst, Reg reg);
 
-  std::unique_ptr<vixl::aarch64::Assembler> m_emitter;
-  std::unique_ptr<vixl::aarch64::Assembler> m_far_emitter;
+  vixl::aarch64::Assembler m_emitter;
+  vixl::aarch64::Assembler m_far_emitter;
   vixl::aarch64::Assembler* armAsm;
 
 #ifdef VIXL_DEBUG

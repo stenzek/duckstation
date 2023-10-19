@@ -8,6 +8,7 @@
 #include "common/string_util.h"
 #include "cpu_core_private.h"
 #include "cpu_recompiler_thunks.h"
+#include "cpu_recompiler_types.h"
 #include "gte.h"
 #include "pgxp.h"
 #include "settings.h"
@@ -15,30 +16,11 @@
 #include <limits>
 Log_SetChannel(CPU::NewRec);
 
-#define DUMP_BLOCKS
-
-#ifdef DUMP_BLOCKS
-#include "vixl/aarch64/disasm-aarch64.h"
-#endif
-
-using namespace vixl::aarch64;
-
-#define RWRET vixl::aarch64::w0
-#define RXRET vixl::aarch64::x0
-#define RWARG1 vixl::aarch64::w0
-#define RXARG1 vixl::aarch64::x0
-#define RWARG2 vixl::aarch64::w1
-#define RXARG2 vixl::aarch64::x1
-#define RWARG3 vixl::aarch64::w2
-#define RXARG3 vixl::aarch64::x2
-#define RWSCRATCH vixl::aarch64::w16
-#define RXSCRATCH vixl::aarch64::x16
-#define RSTATE vixl::aarch64::x19
-#define RMEMBASE vixl::aarch64::x20
-
 #define PTR(x) vixl::aarch64::MemOperand(RSTATE, (u32)(((u8*)(x)) - ((u8*)&g_state)))
 
 namespace CPU::NewRec {
+
+using namespace vixl::aarch64;
 
 using CPU::Recompiler::armEmitCall;
 using CPU::Recompiler::armEmitCondBranch;
@@ -54,7 +36,11 @@ Compiler* g_compiler = &s_instance;
 
 } // namespace CPU::NewRec
 
-CPU::NewRec::AArch64Compiler::AArch64Compiler() = default;
+CPU::NewRec::AArch64Compiler::AArch64Compiler()
+  : m_emitter(PositionDependentCode)
+  , m_far_emitter(PositionIndependentCode)
+{
+}
 
 CPU::NewRec::AArch64Compiler::~AArch64Compiler() = default;
 
@@ -69,10 +55,10 @@ void CPU::NewRec::AArch64Compiler::Reset(CodeCache::Block* block, u8* code_buffe
   Compiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
 
   // TODO: don't recreate this every time..
-  DebugAssert(!m_emitter && !m_far_emitter && !armAsm);
-  m_emitter = std::make_unique<Assembler>(code_buffer, code_buffer_space, PositionDependentCode);
-  m_far_emitter = std::make_unique<Assembler>(far_code_buffer, far_code_space, PositionDependentCode);
-  armAsm = m_emitter.get();
+  DebugAssert(!armAsm);
+  m_emitter.GetBuffer()->Reset(code_buffer, code_buffer_space);
+  m_far_emitter.GetBuffer()->Reset(far_code_buffer, far_code_space);
+  armAsm = &m_emitter;
 
 #ifdef VIXL_DEBUG
   m_emitter_check = std::make_unique<vixl::CodeBufferCheckScope>(m_emitter.get(), code_buffer_space,
@@ -101,10 +87,10 @@ void CPU::NewRec::AArch64Compiler::Reset(CodeCache::Block* block, u8* code_buffe
 
 void CPU::NewRec::AArch64Compiler::SwitchToFarCode(bool emit_jump, vixl::aarch64::Condition cond)
 {
-  DebugAssert(armAsm == m_emitter.get());
+  DebugAssert(armAsm == &m_emitter);
   if (emit_jump)
   {
-    const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>());
+    const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>());
     if (cond != Condition::al)
     {
       if (vixl::IsInt19(disp))
@@ -115,7 +101,7 @@ void CPU::NewRec::AArch64Compiler::SwitchToFarCode(bool emit_jump, vixl::aarch64
       {
         Label skip;
         armAsm->b(&skip, vixl::aarch64::InvertCondition(cond));
-        armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>()));
+        armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>()));
         armAsm->bind(&skip);
       }
     }
@@ -124,12 +110,12 @@ void CPU::NewRec::AArch64Compiler::SwitchToFarCode(bool emit_jump, vixl::aarch64
       armAsm->b(disp);
     }
   }
-  armAsm = m_far_emitter.get();
+  armAsm = &m_far_emitter;
 }
 
 void CPU::NewRec::AArch64Compiler::SwitchToFarCodeIfBitSet(const vixl::aarch64::Register& reg, u32 bit)
 {
-  const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>());
+  const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>());
   if (vixl::IsInt14(disp))
   {
     armAsm->tbnz(reg, bit, disp);
@@ -138,16 +124,16 @@ void CPU::NewRec::AArch64Compiler::SwitchToFarCodeIfBitSet(const vixl::aarch64::
   {
     Label skip;
     armAsm->tbz(reg, bit, &skip);
-    armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>()));
+    armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>()));
     armAsm->bind(&skip);
   }
 
-  armAsm = m_far_emitter.get();
+  armAsm = &m_far_emitter;
 }
 
 void CPU::NewRec::AArch64Compiler::SwitchToFarCodeIfRegZeroOrNonZero(const vixl::aarch64::Register& reg, bool nonzero)
 {
-  const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>());
+  const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>());
   if (vixl::IsInt19(disp))
   {
     nonzero ? armAsm->cbnz(reg, disp) : armAsm->cbz(reg, disp);
@@ -156,22 +142,22 @@ void CPU::NewRec::AArch64Compiler::SwitchToFarCodeIfRegZeroOrNonZero(const vixl:
   {
     Label skip;
     nonzero ? armAsm->cbz(reg, &skip) : armAsm->cbnz(reg, &skip);
-    armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter->GetCursorAddress<const void*>()));
+    armAsm->b(armGetPCDisplacement(GetCurrentCodePointer(), m_far_emitter.GetCursorAddress<const void*>()));
     armAsm->bind(&skip);
   }
 
-  armAsm = m_far_emitter.get();
+  armAsm = &m_far_emitter;
 }
 
 void CPU::NewRec::AArch64Compiler::SwitchToNearCode(bool emit_jump, vixl::aarch64::Condition cond)
 {
-  DebugAssert(armAsm == m_far_emitter.get());
+  DebugAssert(armAsm == &m_far_emitter);
   if (emit_jump)
   {
-    const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_emitter->GetCursorAddress<const void*>());
+    const s64 disp = armGetPCDisplacement(GetCurrentCodePointer(), m_emitter.GetCursorAddress<const void*>());
     (cond != Condition::al) ? armAsm->b(disp, cond) : armAsm->b(disp);
   }
-  armAsm = m_emitter.get();
+  armAsm = &m_emitter;
 }
 
 void CPU::NewRec::AArch64Compiler::EmitMov(const vixl::aarch64::WRegister& dst, u32 val)
@@ -436,15 +422,13 @@ const void* CPU::NewRec::AArch64Compiler::EndCompile(u32* code_size, u32* far_co
   m_far_emitter_check.reset();
 #endif
 
-  m_emitter->FinalizeCode();
-  m_far_emitter->FinalizeCode();
+  m_emitter.FinalizeCode();
+  m_far_emitter.FinalizeCode();
 
-  u8* const code = m_emitter->GetBuffer()->GetStartAddress<u8*>();
-  *code_size = static_cast<u32>(m_emitter->GetCursorOffset());
-  *far_code_size = static_cast<u32>(m_far_emitter->GetCursorOffset());
+  u8* const code = m_emitter.GetBuffer()->GetStartAddress<u8*>();
+  *code_size = static_cast<u32>(m_emitter.GetCursorOffset());
+  *far_code_size = static_cast<u32>(m_far_emitter.GetCursorOffset());
   armAsm = nullptr;
-  m_far_emitter.reset();
-  m_emitter.reset();
   return code;
 }
 
@@ -1349,7 +1333,7 @@ vixl::aarch64::WRegister CPU::NewRec::AArch64Compiler::GenerateLoad(const vixl::
 
     const MemOperand mem =
       MemOperand((g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? RXARG3 : RMEMBASE, addr_reg.X());
-    u8* start = m_emitter->GetCursorAddress<u8*>();
+    u8* start = armAsm->GetCursorAddress<u8*>();
     switch (size)
     {
       case MemoryAccessSize::Byte:
@@ -1459,7 +1443,7 @@ void CPU::NewRec::AArch64Compiler::GenerateStore(const vixl::aarch64::WRegister&
 
     const MemOperand mem =
       MemOperand((g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT) ? RXARG3 : RMEMBASE, addr_reg.X());
-    u8* start = m_emitter->GetCursorAddress<u8*>();
+    u8* start = armAsm->GetCursorAddress<u8*>();
     switch (size)
     {
       case MemoryAccessSize::Byte:
