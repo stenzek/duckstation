@@ -1342,7 +1342,7 @@ vixl::aarch64::WRegister CPU::NewRec::AArch64Compiler::GenerateLoad(const vixl::
     if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
     {
       DebugAssert(addr_reg.GetCode() != RWARG3.GetCode());
-      armAsm->lsr(RWARG3, addr_reg, Bus::FASTMEM_LUT_PAGE_SHIFT);
+      armAsm->lsr(RXARG3, addr_reg, Bus::FASTMEM_LUT_PAGE_SHIFT);
       armAsm->ldr(RXARG3, MemOperand(RMEMBASE, RXARG3, LSL, 8));
     }
 
@@ -1452,7 +1452,7 @@ void CPU::NewRec::AArch64Compiler::GenerateStore(const vixl::aarch64::WRegister&
     if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
     {
       DebugAssert(addr_reg.GetCode() != RWARG3.GetCode());
-      armAsm->lsr(RWARG3, addr_reg, Bus::FASTMEM_LUT_PAGE_SHIFT);
+      armAsm->lsr(RXARG3, addr_reg, Bus::FASTMEM_LUT_PAGE_SHIFT);
       armAsm->ldr(RXARG3, MemOperand(RMEMBASE, RXARG3, LSL, 8));
     }
 

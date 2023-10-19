@@ -1252,7 +1252,7 @@ Xbyak::Reg32 CPU::NewRec::X64Compiler::GenerateLoad(const Xbyak::Reg32& addr_reg
     {
       DebugAssert(addr_reg != RWARG3);
       cg->mov(RWARG3, addr_reg.cvt32());
-      cg->shr(RWARG3, Bus::FASTMEM_LUT_PAGE_SHIFT);
+      cg->shr(RXARG3, Bus::FASTMEM_LUT_PAGE_SHIFT);
       cg->mov(RXARG3, cg->qword[RMEMBASE + RXARG3 * 8]);
     }
 
@@ -1379,7 +1379,7 @@ void CPU::NewRec::X64Compiler::GenerateStore(const Xbyak::Reg32& addr_reg, const
     {
       DebugAssert(addr_reg != RWARG3 && value_reg != RWARG3);
       cg->mov(RWARG3, addr_reg.cvt32());
-      cg->shr(RWARG3, Bus::FASTMEM_LUT_PAGE_SHIFT);
+      cg->shr(RXARG3, Bus::FASTMEM_LUT_PAGE_SHIFT);
       cg->mov(RXARG3, cg->qword[RMEMBASE + RXARG3 * 8]);
     }
 

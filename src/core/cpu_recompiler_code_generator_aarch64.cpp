@@ -1736,7 +1736,7 @@ void CodeGenerator::EmitLoadGuestRAMFastmem(const Value& address, RegSize size, 
 
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
-    m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->lsr(GetHostReg64(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
     m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
   }
 
@@ -1779,7 +1779,7 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const Co
 
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
-    m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->lsr(GetHostReg64(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
     m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
   }
 
@@ -1927,7 +1927,7 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const C
 
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
   {
-    m_emit->lsr(GetHostReg32(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
+    m_emit->lsr(GetHostReg64(RARG1), GetHostReg32(address_reg), Bus::FASTMEM_LUT_PAGE_SHIFT);
     m_emit->ldr(GetHostReg64(RARG1), a64::MemOperand(GetFastmemBasePtrReg(), GetHostReg64(RARG1), a64::LSL, 3));
   }
 
