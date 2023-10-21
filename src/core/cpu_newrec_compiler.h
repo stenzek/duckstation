@@ -21,6 +21,9 @@ static constexpr bool SWAP_BRANCH_DELAY_SLOTS = true;
 #if defined(CPU_ARCH_X64)
 static constexpr u32 NUM_HOST_REGS = 16;
 static constexpr bool HAS_MEMORY_OPERANDS = true;
+#elif defined(CPU_ARCH_ARM32)
+static constexpr u32 NUM_HOST_REGS = 16;
+static constexpr bool HAS_MEMORY_OPERANDS = false;
 #elif defined(CPU_ARCH_ARM64)
 static constexpr u32 NUM_HOST_REGS = 32;
 static constexpr bool HAS_MEMORY_OPERANDS = false;
@@ -153,6 +156,7 @@ protected:
     HR_TYPE_PC_WRITEBACK,
     HR_TYPE_LOAD_DELAY_VALUE,
     HR_TYPE_NEXT_LOAD_DELAY_VALUE,
+    HR_TYPE_MEMBASE,
   };
 
   struct HostRegAlloc

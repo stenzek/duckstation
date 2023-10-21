@@ -78,6 +78,7 @@ constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
 constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
 #define RRET vixl::aarch32::r0
+#define RRETHI vixl::aarch32::r1
 #define RARG1 vixl::aarch32::r0
 #define RARG2 vixl::aarch32::r1
 #define RARG3 vixl::aarch32::r2
@@ -85,12 +86,15 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 #define RSCRATCH vixl::aarch32::r12
 #define RSTATE vixl::aarch32::r4
 
+bool armIsCallerSavedRegister(u32 id);
 s32 armGetPCDisplacement(const void* current, const void* target);
 bool armIsPCDisplacementInImmediateRange(s32 displacement);
 void armMoveAddressToReg(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr);
 void armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& rd, u32 imm);
 void armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
+void armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond, const void* ptr);
+u8* armGetJumpTrampoline(const void* target);
 
 } // namespace CPU::Recompiler
 

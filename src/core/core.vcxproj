@@ -14,8 +14,14 @@
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
     <ClCompile Include="cpu_newrec_compiler.cpp" />
+    <ClCompile Include="cpu_newrec_compiler_aarch32.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="cpu_newrec_compiler_aarch64.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="cpu_newrec_compiler_riscv64.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="cpu_newrec_compiler_x64.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
@@ -98,8 +104,14 @@
     <ClInclude Include="cpu_disasm.h" />
     <ClInclude Include="cpu_code_cache.h" />
     <ClInclude Include="cpu_newrec_compiler.h" />
+    <ClInclude Include="cpu_newrec_compiler_aarch32.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="cpu_newrec_compiler_aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="cpu_newrec_compiler_riscv64.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="cpu_newrec_compiler_x64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>

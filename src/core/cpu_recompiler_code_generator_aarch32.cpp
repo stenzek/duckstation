@@ -25,7 +25,18 @@ namespace CPU::Recompiler {
 constexpr u32 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
 constexpr u32 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
 constexpr u32 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE;
+
+static constexpr u32 TRAMPOLINE_AREA_SIZE = 4 * 1024;
+static std::unordered_map<const void*, u32> s_trampoline_targets;
+static u8* s_trampoline_start_ptr = nullptr;
+static u32 s_trampoline_used = 0;
 } // namespace CPU::Recompiler
+
+bool CPU::Recompiler::armIsCallerSavedRegister(u32 id)
+{
+  return ((id >= 0 && id <= 3) ||  // r0-r3
+          (id == 12 || id == 14)); // sp, pc
+}
 
 s32 CPU::Recompiler::armGetPCDisplacement(const void* current, const void* target)
 {
@@ -59,10 +70,19 @@ void CPU::Recompiler::armMoveAddressToReg(vixl::aarch32::Assembler* armAsm, cons
 
 void CPU::Recompiler::armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline)
 {
-  // TODO: pooling
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s32 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_bx = !armIsPCDisplacementInImmediateRange(displacement);
+  if (use_bx && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_bx = !armIsPCDisplacementInImmediateRange(displacement);
+    }
+  }
 
-  const s32 displacement = armGetPCDisplacement(armAsm->GetCursorAddress<const void*>(), ptr);
-  if (!armIsPCDisplacementInImmediateRange(displacement))
+  if (use_bx)
   {
     armMoveAddressToReg(armAsm, RSCRATCH, ptr);
     armAsm->bx(RSCRATCH);
@@ -76,10 +96,19 @@ void CPU::Recompiler::armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* p
 
 void CPU::Recompiler::armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline)
 {
-  // TODO: pooling
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s32 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_blx = !armIsPCDisplacementInImmediateRange(displacement);
+  if (use_blx && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_blx = !armIsPCDisplacementInImmediateRange(displacement);
+    }
+  }
 
-  const s32 displacement = armGetPCDisplacement(armAsm->GetCursorAddress<const void*>(), ptr);
-  if (!armIsPCDisplacementInImmediateRange(displacement))
+  if (use_blx)
   {
     armMoveAddressToReg(armAsm, RSCRATCH, ptr);
     armAsm->blx(RSCRATCH);
@@ -88,6 +117,21 @@ void CPU::Recompiler::armEmitCall(vixl::aarch32::Assembler* armAsm, const void* 
   {
     a32::Label label(displacement + armAsm->GetCursorOffset());
     armAsm->bl(&label);
+  }
+}
+
+void CPU::Recompiler::armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond, const void* ptr)
+{
+  const s32 displacement = armGetPCDisplacement(armAsm->GetCursorAddress<const void*>(), ptr);
+  if (!armIsPCDisplacementInImmediateRange(displacement))
+  {
+    armMoveAddressToReg(armAsm, RSCRATCH, ptr);
+    armAsm->blx(cond, RSCRATCH);
+  }
+  else
+  {
+    a32::Label label(displacement + armAsm->GetCursorOffset());
+    armAsm->b(cond, &label);
   }
 }
 
@@ -126,6 +170,36 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
     JitCodeBuffer::FlushInstructionCache(code, kA32InstructionSizeInBytes);
 
   return kA32InstructionSizeInBytes;
+}
+
+u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
+{
+  auto it = s_trampoline_targets.find(target);
+  if (it != s_trampoline_targets.end())
+    return s_trampoline_start_ptr + it->second;
+
+  // align to 16 bytes?
+  const u32 offset = s_trampoline_used; // Common::AlignUpPow2(s_trampoline_used, 16);
+
+  // 4 movs plus a jump
+  if (TRAMPOLINE_AREA_SIZE - offset < 20)
+  {
+    Panic("Ran out of space in constant pool");
+    return nullptr;
+  }
+
+  u8* start = s_trampoline_start_ptr + offset;
+  a32::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+  armMoveAddressToReg(&armAsm, RSCRATCH, target);
+  armAsm.bx(RSCRATCH);
+
+  const u32 size = static_cast<u32>(armAsm.GetSizeOfCodeGenerated());
+  DebugAssert(size < 20);
+  s_trampoline_targets.emplace(target, offset);
+  s_trampoline_used = offset + static_cast<u32>(size);
+
+  JitCodeBuffer::FlushInstructionCache(start, size);
+  return start;
 }
 
 u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)

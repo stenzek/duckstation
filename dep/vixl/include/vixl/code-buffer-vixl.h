@@ -43,7 +43,7 @@ class CodeBuffer {
   ~CodeBuffer();
 
   void Reset();
-  void Reset(byte* buffer, size_t capacity);
+  void Reset(byte* buffer, size_t capacity, bool managed = false);
 
 #ifdef VIXL_CODE_BUFFER_MMAP
   void SetExecutable();
