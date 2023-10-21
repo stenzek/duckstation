@@ -81,7 +81,7 @@
           <string>New Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="file-add-line">
+          <iconset theme="add-line">
            <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
@@ -102,7 +102,7 @@
           <string>Delete Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="file-reduce-line">
+          <iconset theme="minus-line">
            <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>

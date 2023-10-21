@@ -213,6 +213,8 @@
 		<file>controllers/negcon.svg</file>
 		<file>controllers/analog_controller.svg</file>
 		<file>controllers/digital_controller.svg</file>
+		<file>controllers/analog_joystick.svg</file>
+		<file>controllers/mouse.svg</file>
 		<file>icons/list-add@2x.png</file>
 		<file>icons/flag-eu.svg</file>
 		<file>icons/flag-jp.svg</file>
@@ -350,6 +352,7 @@
 		<file>icons/black/svg/arrow-down-line.svg</file>
 		<file>icons/black/svg/screenshot-2-line.svg</file>
 		<file>icons/black/svg/minus-line.svg</file>
+		<file>icons/black/svg/joystick-line.svg</file>
 		<file>icons/audio-card@2x.png</file>
 		<file>icons/applications-system-24@2x.png</file>
 		<file>icons/video-display@2x.png</file>
@@ -504,6 +507,7 @@
 		<file>icons/white/svg/arrow-down-line.svg</file>
 		<file>icons/white/svg/screenshot-2-line.svg</file>
 		<file>icons/white/svg/minus-line.svg</file>
+		<file>icons/white/svg/joystick-line.svg</file>
 		<file>icons/flag-jp@2x.png</file>
 		<file>icons/view-fullscreen.png</file>
 		<file>icons/edit-clear-16.png</file>
