@@ -866,9 +866,7 @@ bool GPU_HW::CompilePipelines()
                   plconfig.blend.src_blend = GPUPipeline::BlendFunc::One;
                   plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
                   if (static_cast<GPUTransparencyMode>(transparency_mode) ==
-                        GPUTransparencyMode::HalfBackgroundPlusHalfForeground ||
-                      static_cast<GPUTransparencyMode>(transparency_mode) ==
-                        GPUTransparencyMode::BackgroundPlusQuarterForeground)
+                        GPUTransparencyMode::HalfBackgroundPlusHalfForeground)
                   {
                     plconfig.blend.dst_blend = GPUPipeline::BlendFunc::ConstantColor;
                     plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::ConstantColor;
