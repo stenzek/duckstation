@@ -81,7 +81,7 @@ public:
 
   this_type& operator=(this_type&& move)
   {
-    delete[] m_data;
+    deallocate();
     m_data = move.m_data;
     move.m_data = nullptr;
     return *this;
