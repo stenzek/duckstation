@@ -130,7 +130,7 @@ struct alignas(16) Block
 
   // links to previous/next block within page
   Block* next_block_in_page;
-  
+
   BlockLinkMap::iterator exit_links[MAX_BLOCK_EXIT_LINKS];
   u8 num_exit_links;
 
@@ -196,12 +196,17 @@ struct LoadstoreBackpatchInfo
   };
 
   u32 guest_pc;
+  u32 guest_block;
   u8 code_size;
 
   MemoryAccessSize AccessSize() const { return static_cast<MemoryAccessSize>(size); }
   u32 AccessSizeInBytes() const { return 1u << size; }
 };
-static_assert(sizeof(LoadstoreBackpatchInfo) == 16);
+#ifdef CPU_ARCH_ARM32
+static_assert(sizeof(LoadstoreBackpatchInfo) == 20);
+#else
+static_assert(sizeof(LoadstoreBackpatchInfo) == 24);
+#endif
 
 static inline bool AddressInRAM(VirtualMemoryAddress pc)
 {
@@ -248,8 +253,10 @@ void DiscardAndRecompileBlock(u32 start_pc);
 const void* CreateBlockLink(Block* from_block, void* code, u32 newpc);
 
 void AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, const void* thunk_address);
-void AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, TickCount cycles, u32 gpr_bitmask,
-                      u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed, bool is_load);
+void AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, u32 guest_block, TickCount cycles,
+                      u32 gpr_bitmask, u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
+                      bool is_load);
+bool HasPreviouslyFaultedOnPC(u32 guest_pc);
 
 u32 EmitASMFunctions(void* code, u32 code_size);
 u32 EmitJump(void* code, const void* dst, bool flush_icache);

@@ -1595,10 +1595,9 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::ComputeLoadStoreAddressArg(
 
 template<typename RegAllocFn>
 void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign,
-                                                const RegAllocFn& dst_reg_alloc)
+                                                bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (!checked && CodeCache::IsUsingFastmem())
+  if (use_fastmem)
   {
     m_cycles += Bus::RAM_READ_TICKS;
 
@@ -1648,6 +1647,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, Me
   if (addr_reg.Index() != RARG1.Index())
     rvAsm->MV(RARG1, addr_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1723,10 +1723,9 @@ void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, Me
 }
 
 void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
-                                                 MemoryAccessSize size)
+                                                 MemoryAccessSize size, bool use_fastmem)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (!checked && CodeCache::IsUsingFastmem())
+  if (use_fastmem)
   {
     DebugAssert(value_reg != RSCRATCH);
     rvAsm->SLLI64(RSCRATCH, addr_reg, 32);
@@ -1774,6 +1773,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, c
   if (value_reg.Index() != RARG2.Index())
     rvAsm->MV(RARG2, value_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1822,12 +1822,12 @@ void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, c
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-  GenerateLoad(addr, size, sign, [this, cf]() {
+  GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() {
     if (cf.MipsT() == Reg::zero)
       return RRET;
 
@@ -1836,11 +1836,11 @@ void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize
   });
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
 
@@ -1852,7 +1852,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   const GPR addr = GPR(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   rvAsm->ANDI(RARG1, addr, ~0x3u);
-  GenerateLoad(RARG1, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   if (inst->r.rt == Reg::zero)
   {
@@ -1920,12 +1920,12 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   FreeHostReg(addr.Index());
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-  GenerateLoad(addr, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -1987,32 +1987,32 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
   const GPR addr = ComputeLoadStoreAddressArg(cf, address);
 
   if (!cf.valid_host_t)
     MoveTToReg(RARG2, cf);
 
-  GenerateStore(addr, cf.valid_host_t ? CFGetRegT(cf) : RARG2, size);
+  GenerateStore(addr, cf.valid_host_t ? CFGetRegT(cf) : RARG2, size, use_fastmem);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
   const GPR addr = GPR(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   rvAsm->ANDI(RARG1, addr, ~0x3u);
-  GenerateLoad(RARG1, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   // TODO: this can take over rt's value if it's no longer needed
   // NOTE: can't trust T in cf because of the flush
@@ -2058,13 +2058,13 @@ void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   FreeHostReg(addr.Index());
 
   rvAsm->ANDI(RARG1, addr, ~0x3u);
-  GenerateStore(RARG1, value, MemoryAccessSize::Word);
+  GenerateStore(RARG1, value, MemoryAccessSize::Word, use_fastmem);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -2094,7 +2094,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
   }
 
   const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-  GenerateStore(addr, RARG2, size);
+  GenerateStore(addr, RARG2, size, use_fastmem);
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)

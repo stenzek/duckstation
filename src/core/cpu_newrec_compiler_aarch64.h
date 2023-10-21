@@ -26,7 +26,8 @@ protected:
   void StoreHostRegToCPUPointer(u32 reg, const void* ptr) override;
   void CopyHostReg(u32 dst, u32 src) override;
 
-  void Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer, u32 far_code_space) override;
+  void Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,
+             u32 far_code_space) override;
   void BeginBlock() override;
   void GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size) override;
   void GenerateICacheCheckAndUpdate() override;
@@ -97,20 +98,20 @@ protected:
                              const std::optional<const vixl::aarch64::WRegister>& reg = std::nullopt);
   template<typename RegAllocFn>
   vixl::aarch64::WRegister GenerateLoad(const vixl::aarch64::WRegister& addr_reg, MemoryAccessSize size, bool sign,
-                                        const RegAllocFn& dst_reg_alloc);
+                                        bool use_fastmem, const RegAllocFn& dst_reg_alloc);
   void GenerateStore(const vixl::aarch64::WRegister& addr_reg, const vixl::aarch64::WRegister& value_reg,
-                     MemoryAccessSize size);
-  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                     MemoryAccessSize size, bool use_fastmem);
+  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
   void TestInterrupts(const vixl::aarch64::WRegister& sr);

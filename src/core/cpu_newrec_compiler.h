@@ -56,17 +56,18 @@ protected:
     FLUSH_LOAD_DELAY_FROM_STATE = (1 << 9),
     FLUSH_GTE_DONE_CYCLE = (1 << 10),
     FLUSH_GTE_STALL_FROM_STATE = (1 << 11),
+    FLUSH_INVALIDATE_SPECULATIVE_CONSTANTS = (1 << 12),
 
     FLUSH_FOR_C_CALL = (FLUSH_FREE_CALLER_SAVED_REGISTERS),
     FLUSH_FOR_LOADSTORE = (FLUSH_FREE_CALLER_SAVED_REGISTERS | FLUSH_CYCLES),
     FLUSH_FOR_BRANCH = (FLUSH_FLUSH_MIPS_REGISTERS),
     FLUSH_FOR_EXCEPTION =
       (FLUSH_CYCLES | FLUSH_GTE_DONE_CYCLE), // GTE cycles needed because it stalls when a GTE instruction is next.
-    FLUSH_FOR_INTERPRETER =
-      (FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_INVALIDATE_MIPS_REGISTERS | FLUSH_FREE_CALLER_SAVED_REGISTERS | FLUSH_PC |
-       FLUSH_CYCLES | FLUSH_INSTRUCTION_BITS | FLUSH_LOAD_DELAY | FLUSH_GTE_DONE_CYCLE),
+    FLUSH_FOR_INTERPRETER = (FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_INVALIDATE_MIPS_REGISTERS |
+                             FLUSH_FREE_CALLER_SAVED_REGISTERS | FLUSH_PC | FLUSH_CYCLES | FLUSH_INSTRUCTION_BITS |
+                             FLUSH_LOAD_DELAY | FLUSH_GTE_DONE_CYCLE | FLUSH_INVALIDATE_SPECULATIVE_CONSTANTS),
     FLUSH_END_BLOCK = 0xFFFFFFFFu & ~(FLUSH_PC | FLUSH_CYCLES | FLUSH_GTE_DONE_CYCLE | FLUSH_INSTRUCTION_BITS |
-                                      FLUSH_GTE_STALL_FROM_STATE),
+                                      FLUSH_GTE_STALL_FROM_STATE | FLUSH_INVALIDATE_SPECULATIVE_CONSTANTS),
   };
 
   union CompileFlags
@@ -267,10 +268,10 @@ protected:
 
   void CompileTemplate(void (Compiler::*const_func)(CompileFlags), void (Compiler::*func)(CompileFlags),
                        const void* pgxp_cpu_func, u32 tflags);
-  void CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool,
+  void CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
                                                        const std::optional<VirtualMemoryAddress>&),
                                 MemoryAccessSize size, bool store, bool sign, u32 tflags);
-  void FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store);
+  void FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store, bool use_fastmem);
   void CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_move);
 
   virtual void GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val, Reg arg2reg = Reg::count,
@@ -357,17 +358,17 @@ protected:
   virtual void Compile_xori(CompileFlags cf) = 0;
   void Compile_lui();
 
-  virtual void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                            const std::optional<VirtualMemoryAddress>& address) = 0;
-  virtual void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                            const std::optional<VirtualMemoryAddress>& address) = 0; // lwl/lwr
-  virtual void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                             const std::optional<VirtualMemoryAddress>& address) = 0;
-  virtual void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                            const std::optional<VirtualMemoryAddress>& address) = 0;
-  virtual void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                            const std::optional<VirtualMemoryAddress>& address) = 0; // swl/swr
-  virtual void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  virtual void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                             const std::optional<VirtualMemoryAddress>& address) = 0;
 
   static u32* GetCop0RegPtr(Cop0Reg reg);
@@ -453,6 +454,71 @@ protected:
   // we need two of these, one for branch delays, and another if we have an overflow in the delay slot
   std::array<HostStateBackup, 2> m_host_state_backup = {};
   u32 m_host_state_backup_count = 0;
+
+  //////////////////////////////////////////////////////////////////////////
+  // Speculative Constants
+  //////////////////////////////////////////////////////////////////////////
+  using SpecValue = std::optional<u32>;
+  struct SpeculativeConstants
+  {
+    std::array<SpecValue, static_cast<u8>(Reg::count)> regs;
+    std::unordered_map<PhysicalMemoryAddress, SpecValue> memory;
+    SpecValue cop0_sr;
+  };
+
+  void InitSpeculativeRegs();
+  void InvalidateSpeculativeValues();
+  SpecValue SpecReadReg(Reg reg);
+  void SpecWriteReg(Reg reg, SpecValue value);
+  void SpecInvalidateReg(Reg reg);
+  void SpecCopyReg(Reg dst, Reg src);
+  SpecValue SpecReadMem(u32 address);
+  void SpecWriteMem(VirtualMemoryAddress address, SpecValue value);
+  void SpecInvalidateMem(VirtualMemoryAddress address);
+  bool SpecIsCacheIsolated();
+
+  SpeculativeConstants m_speculative_constants;
+
+  void SpecExec_b();
+  void SpecExec_jal();
+  void SpecExec_jalr();
+  void SpecExec_sll();
+  void SpecExec_srl();
+  void SpecExec_sra();
+  void SpecExec_sllv();
+  void SpecExec_srlv();
+  void SpecExec_srav();
+  void SpecExec_mult();
+  void SpecExec_multu();
+  void SpecExec_div();
+  void SpecExec_divu();
+  void SpecExec_add();
+  void SpecExec_addu();
+  void SpecExec_sub();
+  void SpecExec_subu();
+  void SpecExec_and();
+  void SpecExec_or();
+  void SpecExec_xor();
+  void SpecExec_nor();
+  void SpecExec_slt();
+  void SpecExec_sltu();
+  void SpecExec_addi();
+  void SpecExec_addiu();
+  void SpecExec_slti();
+  void SpecExec_sltiu();
+  void SpecExec_andi();
+  void SpecExec_ori();
+  void SpecExec_xori();
+  void SpecExec_lui();
+  SpecValue SpecExec_LoadStoreAddr();
+  void SpecExec_lxx(MemoryAccessSize size, bool sign);
+  void SpecExec_lwx(bool lwr); // lwl/lwr
+  void SpecExec_sxx(MemoryAccessSize size);
+  void SpecExec_swx(bool swr); // swl/swr
+  void SpecExec_swc2();
+  void SpecExec_mfc0();
+  void SpecExec_mtc0();
+  void SpecExec_rfe();
 
   // PGXP memory callbacks
   static const std::array<std::array<const void*, 2>, 3> s_pgxp_mem_load_functions;

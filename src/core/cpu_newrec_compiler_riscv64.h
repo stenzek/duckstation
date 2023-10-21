@@ -88,19 +88,21 @@ protected:
   biscuit::GPR ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
                                           const std::optional<const biscuit::GPR>& reg = std::nullopt);
   template<typename RegAllocFn>
-  void GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign, const RegAllocFn& dst_reg_alloc);
-  void GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg, MemoryAccessSize size);
-  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign, bool use_fastmem,
+                    const RegAllocFn& dst_reg_alloc);
+  void GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg, MemoryAccessSize size,
+                     bool use_fastmem);
+  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
   void TestInterrupts(const biscuit::GPR& sr);

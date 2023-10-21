@@ -66,6 +66,7 @@ static void FillBlockRegInfo(Block* block);
 static void CopyRegInfo(InstructionInfo* dst, const InstructionInfo* src);
 static void SetRegAccess(InstructionInfo* inst, Reg reg, bool write);
 static void AddBlockToPageList(Block* block);
+static void RemoveBlockFromPageList(Block* block);
 
 static Common::PageFaultHandler::HandlerResult ExceptionHandler(void* exception_pc, void* fault_address, bool is_write);
 
@@ -526,7 +527,7 @@ bool CPU::CodeCache::IsBlockCodeCurrent(const Block* block)
 bool CPU::CodeCache::RevalidateBlock(Block* block)
 {
   DebugAssert(block->state != BlockState::Valid);
-  DebugAssert(AddressInRAM(block->pc));
+  DebugAssert(AddressInRAM(block->pc) || block->state == BlockState::NeedsRecompile);
 
   if (block->state >= BlockState::NeedsRecompile)
     return false;
@@ -566,6 +567,39 @@ void CPU::CodeCache::AddBlockToPageList(Block* block)
   {
     entry.first_block_in_page = block;
     entry.last_block_in_page = block;
+  }
+}
+
+void CPU::CodeCache::RemoveBlockFromPageList(Block* block)
+{
+  DebugAssert(block->size > 0);
+  if (!AddressInRAM(block->pc) || block->protection != PageProtectionMode::WriteProtected)
+    return;
+
+  const u32 page_idx = block->StartPageIndex();
+  PageProtectionInfo& entry = s_page_protection[page_idx];
+
+  // unlink from list
+  Block* prev_block = nullptr;
+  Block* cur_block = entry.first_block_in_page;
+  while (cur_block)
+  {
+    if (cur_block != block)
+    {
+      prev_block = cur_block;
+      cur_block = cur_block->next_block_in_page;
+      continue;
+    }
+
+    if (prev_block)
+      prev_block->next_block_in_page = cur_block->next_block_in_page;
+    else
+      entry.first_block_in_page = cur_block->next_block_in_page;
+    if (!cur_block->next_block_in_page)
+      entry.last_block_in_page = prev_block;
+
+    cur_block->next_block_in_page = nullptr;
+    break;
   }
 }
 
@@ -1480,13 +1514,14 @@ void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 gue
   LoadstoreBackpatchInfo info;
   info.thunk_address = thunk_address;
   info.guest_pc = guest_pc;
+  info.guest_block = 0;
   info.code_size = static_cast<u8>(code_size);
   s_fastmem_backpatch_info.emplace(code_address, info);
 }
 
-void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, TickCount cycles,
-                                      u32 gpr_bitmask, u8 address_register, u8 data_register, MemoryAccessSize size,
-                                      bool is_signed, bool is_load)
+void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, u32 guest_block,
+                                      TickCount cycles, u32 gpr_bitmask, u8 address_register, u8 data_register,
+                                      MemoryAccessSize size, bool is_signed, bool is_load)
 {
   DebugAssert(code_size < std::numeric_limits<u8>::max());
   DebugAssert(cycles >= 0 && cycles < std::numeric_limits<u16>::max());
@@ -1498,6 +1533,7 @@ void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 gue
   LoadstoreBackpatchInfo info;
   info.thunk_address = nullptr;
   info.guest_pc = guest_pc;
+  info.guest_block = guest_block;
   info.gpr_bitmask = gpr_bitmask;
   info.cycles = static_cast<u16>(cycles);
   info.address_register = address_register;
@@ -1562,12 +1598,32 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
 
   BackpatchLoadStore(exception_pc, info);
 
-  // TODO: queue block for recompilation later
+  // queue block for recompilation later
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
+  {
+    Block* block = LookupBlock(info.guest_block);
+    if (block)
+    {
+      // This is a bit annoying, we have to remove it from the page list if it's a RAM block.
+      Log_DevFmt("Queuing block {:08X} for recompilation due to backpatch", block->pc);
+      RemoveBlockFromPageList(block);
+      InvalidateBlock(block, BlockState::NeedsRecompile);
+
+      // Need to reset the recompile count, otherwise it'll get trolled into an interpreter fallback.
+      block->compile_frame = System::GetFrameNumber();
+      block->compile_count = 1;
+    }
+  }
 
   // and store the pc in the faulting list, so that we don't emit another fastmem loadstore
   s_fastmem_faulting_pcs.insert(info.guest_pc);
   s_fastmem_backpatch_info.erase(iter);
   return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+}
+
+bool CPU::CodeCache::HasPreviouslyFaultedOnPC(u32 guest_pc)
+{
+  return (s_fastmem_faulting_pcs.find(guest_pc) != s_fastmem_faulting_pcs.end());
 }
 
 void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchInfo& info)

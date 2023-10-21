@@ -1239,10 +1239,9 @@ CPU::NewRec::X64Compiler::ComputeLoadStoreAddressArg(CompileFlags cf,
 
 template<typename RegAllocFn>
 Xbyak::Reg32 CPU::NewRec::X64Compiler::GenerateLoad(const Xbyak::Reg32& addr_reg, MemoryAccessSize size, bool sign,
-                                                    const RegAllocFn& dst_reg_alloc)
+                                                    bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (CodeCache::IsUsingFastmem() && !checked)
+  if (use_fastmem)
   {
     m_cycles += Bus::RAM_READ_TICKS;
 
@@ -1296,6 +1295,7 @@ Xbyak::Reg32 CPU::NewRec::X64Compiler::GenerateLoad(const Xbyak::Reg32& addr_reg
   if (addr_reg != RWARG1)
     cg->mov(RWARG1, addr_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1370,10 +1370,9 @@ Xbyak::Reg32 CPU::NewRec::X64Compiler::GenerateLoad(const Xbyak::Reg32& addr_reg
 }
 
 void CPU::NewRec::X64Compiler::GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak::Reg32& value_reg,
-                                             MemoryAccessSize size)
+                                             MemoryAccessSize size, bool use_fastmem)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (CodeCache::IsUsingFastmem() && !checked)
+  if (use_fastmem)
   {
     if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
     {
@@ -1417,6 +1416,7 @@ void CPU::NewRec::X64Compiler::GenerateStore(const Xbyak::Reg32& addr_reg, const
   if (value_reg != RWARG2)
     cg->mov(RWARG2, value_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1466,16 +1466,16 @@ void CPU::NewRec::X64Compiler::GenerateStore(const Xbyak::Reg32& addr_reg, const
   }
 }
 
-void CPU::NewRec::X64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                           std::optional<Reg32>();
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const Reg32 addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
 
-  const Reg32 data = GenerateLoad(addr, size, sign, [this, cf]() {
+  const Reg32 data = GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() {
     if (cf.MipsT() == Reg::zero)
       return RWRET;
 
@@ -1495,11 +1495,11 @@ void CPU::NewRec::X64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize siz
   }
 }
 
-void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
 
@@ -1512,7 +1512,7 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
   ComputeLoadStoreAddressArg(cf, address, addr);
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
-  GenerateLoad(RWARG1, MemoryAccessSize::Word, false, []() { return RWRET; });
+  GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
   if (inst->r.rt == Reg::zero)
   {
@@ -1586,15 +1586,15 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
   FreeHostReg(addr.getIdx());
 }
 
-void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                             const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                           std::optional<Reg32>();
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const Reg32 addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  GenerateLoad(addr, MemoryAccessSize::Word, false, []() { return RWRET; });
+  GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -1666,19 +1666,19 @@ void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize si
   }
 }
 
-void CPU::NewRec::X64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                           std::optional<Reg32>();
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
   const Reg32 addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
   const Reg32 data = cf.valid_host_t ? CFGetRegT(cf) : RWARG2;
   if (!cf.valid_host_t)
     MoveTToReg(RWARG2, cf);
 
-  GenerateStore(addr, data, size);
+  GenerateStore(addr, data, size, use_fastmem);
 
   if (g_settings.gpu_pgxp_enable)
   {
@@ -1691,11 +1691,11 @@ void CPU::NewRec::X64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize siz
   }
 }
 
-void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
@@ -1703,7 +1703,7 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
   ComputeLoadStoreAddressArg(cf, address, addr);
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
-  GenerateLoad(RWARG1, MemoryAccessSize::Word, false, []() { return RWRET; });
+  GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
   // TODO: this can take over rt's value if it's no longer needed
   // NOTE: can't trust T in cf because of the flush
@@ -1755,10 +1755,10 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
 
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
-  GenerateStore(RWARG1, value, MemoryAccessSize::Word);
+  GenerateStore(RWARG1, value, MemoryAccessSize::Word, use_fastmem);
 }
 
-void CPU::NewRec::X64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::X64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                             const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
@@ -1791,19 +1791,19 @@ void CPU::NewRec::X64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize si
   // PGXP makes this a giant pain.
   if (!g_settings.gpu_pgxp_enable)
   {
-    FlushForLoadStore(address, true);
+    FlushForLoadStore(address, true, use_fastmem);
     const Reg32 addr = ComputeLoadStoreAddressArg(cf, address);
-    GenerateStore(addr, RWARG2, size);
+    GenerateStore(addr, RWARG2, size, use_fastmem);
     return;
   }
 
   // TODO: This can be simplified because we don't need to validate in PGXP..
   const Reg32 addr_reg = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
   const Reg32 data_backup = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
   ComputeLoadStoreAddressArg(cf, address, addr_reg);
   cg->mov(data_backup, RWARG2);
-  GenerateStore(addr_reg, RWARG2, size);
+  GenerateStore(addr_reg, RWARG2, size, use_fastmem);
 
   Flush(FLUSH_FOR_C_CALL);
   cg->mov(RWARG3, data_backup);
@@ -2066,9 +2066,9 @@ void CPU::NewRec::X64Compiler::Compile_cop2(CompileFlags cf)
 }
 
 u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
-                                        TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
-                                        u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
-                                        bool is_load)
+                                       TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
+                                       u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
+                                       bool is_load)
 {
   CodeGenerator acg(thunk_space, thunk_code);
   CodeGenerator* cg = &acg;

@@ -59,6 +59,8 @@ void CPU::NewRec::Compiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
   m_load_delay_register = Reg::count;
   m_load_delay_value_register = NUM_HOST_REGS;
+
+  InitSpeculativeRegs();
 }
 
 void CPU::NewRec::Compiler::BeginBlock()
@@ -133,6 +135,7 @@ const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* ho
     DebugAssert(!IsHostRegAllocated(i));
   for (u32 i = 1; i < static_cast<u32>(Reg::count); i++)
     DebugAssert(!m_constant_regs_dirty.test(i) && !m_constant_regs_valid.test(i));
+  m_speculative_constants.memory.clear();
 
   u32 code_size, far_code_size;
   const void* code = EndCompile(&code_size, &far_code_size);
@@ -494,7 +497,7 @@ bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
 
 is_safe:
 #ifdef _DEBUG
-  Log_DevFmt("Swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
+  Log_DebugFmt("Swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
 #endif
 
   CompileBranchDelaySlot();
@@ -506,7 +509,7 @@ is_safe:
 
 is_unsafe:
 #ifdef _DEBUG
-  Log_DevFmt("NOT swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
+  Log_DebugFmt("NOT swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
 #endif
 
   return false;
@@ -1079,6 +1082,9 @@ void CPU::NewRec::Compiler::Flush(u32 flags)
       FlushConstantRegs(false);
     }
   }
+
+  if (flags & FLUSH_INVALIDATE_SPECULATIVE_CONSTANTS)
+    InvalidateSpeculativeValues();
 }
 
 void CPU::NewRec::Compiler::FlushConstantReg(Reg r)
@@ -1161,9 +1167,9 @@ void CPU::NewRec::Compiler::AddLoadStoreInfo(void* code_address, u32 code_size, 
       gpr_bitmask |= (1u << i);
   }
 
-  CPU::CodeCache::AddLoadStoreInfo(code_address, code_size, m_current_instruction_pc, m_cycles, gpr_bitmask,
-                                   static_cast<u8>(address_register), static_cast<u8>(data_register), size, is_signed,
-                                   is_load);
+  CPU::CodeCache::AddLoadStoreInfo(code_address, code_size, m_current_instruction_pc, m_block->pc, m_cycles,
+                                   gpr_bitmask, static_cast<u8>(address_register), static_cast<u8>(data_register), size,
+                                   is_signed, is_load);
 }
 
 void CPU::NewRec::Compiler::CompileInstruction()
@@ -1194,34 +1200,34 @@ void CPU::NewRec::Compiler::CompileInstruction()
     {
       switch (inst->r.funct)
       {
-        case InstructionFunct::sll: CompileTemplate(&Compiler::Compile_sll_const, &Compiler::Compile_sll, PGXPFN(CPU_SLL), TF_WRITES_D | TF_READS_T); break;
-        case InstructionFunct::srl: CompileTemplate(&Compiler::Compile_srl_const, &Compiler::Compile_srl, PGXPFN(CPU_SRL), TF_WRITES_D | TF_READS_T); break;
-        case InstructionFunct::sra: CompileTemplate(&Compiler::Compile_sra_const, &Compiler::Compile_sra, PGXPFN(CPU_SRA), TF_WRITES_D | TF_READS_T); break;
-        case InstructionFunct::sllv: CompileTemplate(&Compiler::Compile_sllv_const, &Compiler::Compile_sllv, PGXPFN(CPU_SLLV), TF_WRITES_D | TF_READS_S | TF_READS_T); break;
-        case InstructionFunct::srlv: CompileTemplate(&Compiler::Compile_srlv_const, &Compiler::Compile_srlv, PGXPFN(CPU_SRLV), TF_WRITES_D | TF_READS_S | TF_READS_T); break;
-        case InstructionFunct::srav: CompileTemplate(&Compiler::Compile_srav_const, &Compiler::Compile_srav, PGXPFN(CPU_SRAV), TF_WRITES_D | TF_READS_S | TF_READS_T); break;
+        case InstructionFunct::sll: CompileTemplate(&Compiler::Compile_sll_const, &Compiler::Compile_sll, PGXPFN(CPU_SLL), TF_WRITES_D | TF_READS_T); SpecExec_sll(); break;
+        case InstructionFunct::srl: CompileTemplate(&Compiler::Compile_srl_const, &Compiler::Compile_srl, PGXPFN(CPU_SRL), TF_WRITES_D | TF_READS_T); SpecExec_srl(); break;
+        case InstructionFunct::sra: CompileTemplate(&Compiler::Compile_sra_const, &Compiler::Compile_sra, PGXPFN(CPU_SRA), TF_WRITES_D | TF_READS_T); SpecExec_sra(); break;
+        case InstructionFunct::sllv: CompileTemplate(&Compiler::Compile_sllv_const, &Compiler::Compile_sllv, PGXPFN(CPU_SLLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_sllv(); break;
+        case InstructionFunct::srlv: CompileTemplate(&Compiler::Compile_srlv_const, &Compiler::Compile_srlv, PGXPFN(CPU_SRLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srlv(); break;
+        case InstructionFunct::srav: CompileTemplate(&Compiler::Compile_srav_const, &Compiler::Compile_srav, PGXPFN(CPU_SRAV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srav(); break;
         case InstructionFunct::jr: CompileTemplate(&Compiler::Compile_jr_const, &Compiler::Compile_jr, nullptr, TF_READS_S); break;
-        case InstructionFunct::jalr: CompileTemplate(&Compiler::Compile_jalr_const, &Compiler::Compile_jalr, nullptr, /*TF_WRITES_D |*/ TF_READS_S | TF_NO_NOP); break;
+        case InstructionFunct::jalr: CompileTemplate(&Compiler::Compile_jalr_const, &Compiler::Compile_jalr, nullptr, /*TF_WRITES_D |*/ TF_READS_S | TF_NO_NOP); SpecExec_jalr(); break;
         case InstructionFunct::syscall: Compile_syscall(); break;
         case InstructionFunct::break_: Compile_break(); break;
-        case InstructionFunct::mfhi: CompileMoveRegTemplate(inst->r.rd, Reg::hi, g_settings.gpu_pgxp_cpu); break;
-        case InstructionFunct::mthi: CompileMoveRegTemplate(Reg::hi, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
-        case InstructionFunct::mflo: CompileMoveRegTemplate(inst->r.rd, Reg::lo, g_settings.gpu_pgxp_cpu); break;
-        case InstructionFunct::mtlo: CompileMoveRegTemplate(Reg::lo, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
-        case InstructionFunct::mult: CompileTemplate(&Compiler::Compile_mult_const, &Compiler::Compile_mult, PGXPFN(CPU_MULT), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); break;
-        case InstructionFunct::multu: CompileTemplate(&Compiler::Compile_multu_const, &Compiler::Compile_multu, PGXPFN(CPU_MULTU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); break;
-        case InstructionFunct::div: CompileTemplate(&Compiler::Compile_div_const, &Compiler::Compile_div, PGXPFN(CPU_DIV), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); break;
-        case InstructionFunct::divu: CompileTemplate(&Compiler::Compile_divu_const, &Compiler::Compile_divu, PGXPFN(CPU_DIVU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); break;
-        case InstructionFunct::add: CompileTemplate(&Compiler::Compile_add_const, &Compiler::Compile_add, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::addu: CompileTemplate(&Compiler::Compile_addu_const, &Compiler::Compile_addu, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::sub: CompileTemplate(&Compiler::Compile_sub_const, &Compiler::Compile_sub, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::subu: CompileTemplate(&Compiler::Compile_subu_const, &Compiler::Compile_subu, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::and_: CompileTemplate(&Compiler::Compile_and_const, &Compiler::Compile_and, PGXPFN(CPU_AND_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); break;
-        case InstructionFunct::or_: CompileTemplate(&Compiler::Compile_or_const, &Compiler::Compile_or, PGXPFN(CPU_OR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::xor_: CompileTemplate(&Compiler::Compile_xor_const, &Compiler::Compile_xor, PGXPFN(CPU_XOR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); break;
-        case InstructionFunct::nor: CompileTemplate(&Compiler::Compile_nor_const, &Compiler::Compile_nor, PGXPFN(CPU_NOR), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); break;
-        case InstructionFunct::slt: CompileTemplate(&Compiler::Compile_slt_const, &Compiler::Compile_slt, PGXPFN(CPU_SLT), TF_WRITES_D | TF_READS_T | TF_READS_S); break;
-        case InstructionFunct::sltu: CompileTemplate(&Compiler::Compile_sltu_const, &Compiler::Compile_sltu, PGXPFN(CPU_SLTU), TF_WRITES_D | TF_READS_T | TF_READS_S); break;
+        case InstructionFunct::mfhi: SpecCopyReg(inst->r.rd, Reg::hi); CompileMoveRegTemplate(inst->r.rd, Reg::hi, g_settings.gpu_pgxp_cpu); break;
+        case InstructionFunct::mthi: SpecCopyReg(Reg::hi, inst->r.rs); CompileMoveRegTemplate(Reg::hi, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
+        case InstructionFunct::mflo: SpecCopyReg(inst->r.rd, Reg::lo); CompileMoveRegTemplate(inst->r.rd, Reg::lo, g_settings.gpu_pgxp_cpu); break;
+        case InstructionFunct::mtlo: SpecCopyReg(Reg::lo, inst->r.rs); CompileMoveRegTemplate(Reg::lo, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
+        case InstructionFunct::mult: CompileTemplate(&Compiler::Compile_mult_const, &Compiler::Compile_mult, PGXPFN(CPU_MULT), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_mult(); break;
+        case InstructionFunct::multu: CompileTemplate(&Compiler::Compile_multu_const, &Compiler::Compile_multu, PGXPFN(CPU_MULTU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_multu(); break;
+        case InstructionFunct::div: CompileTemplate(&Compiler::Compile_div_const, &Compiler::Compile_div, PGXPFN(CPU_DIV), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_div(); break;
+        case InstructionFunct::divu: CompileTemplate(&Compiler::Compile_divu_const, &Compiler::Compile_divu, PGXPFN(CPU_DIVU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_divu(); break;
+        case InstructionFunct::add: CompileTemplate(&Compiler::Compile_add_const, &Compiler::Compile_add, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_add(); break;
+        case InstructionFunct::addu: CompileTemplate(&Compiler::Compile_addu_const, &Compiler::Compile_addu, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_addu(); break;
+        case InstructionFunct::sub: CompileTemplate(&Compiler::Compile_sub_const, &Compiler::Compile_sub, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_sub(); break;
+        case InstructionFunct::subu: CompileTemplate(&Compiler::Compile_subu_const, &Compiler::Compile_subu, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_RENAME_WITH_ZERO_T); SpecExec_subu(); break;
+        case InstructionFunct::and_: CompileTemplate(&Compiler::Compile_and_const, &Compiler::Compile_and, PGXPFN(CPU_AND_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_and(); break;
+        case InstructionFunct::or_: CompileTemplate(&Compiler::Compile_or_const, &Compiler::Compile_or, PGXPFN(CPU_OR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_or(); break;
+        case InstructionFunct::xor_: CompileTemplate(&Compiler::Compile_xor_const, &Compiler::Compile_xor, PGXPFN(CPU_XOR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_xor(); break;
+        case InstructionFunct::nor: CompileTemplate(&Compiler::Compile_nor_const, &Compiler::Compile_nor, PGXPFN(CPU_NOR), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_nor(); break;
+        case InstructionFunct::slt: CompileTemplate(&Compiler::Compile_slt_const, &Compiler::Compile_slt, PGXPFN(CPU_SLT), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_slt(); break;
+        case InstructionFunct::sltu: CompileTemplate(&Compiler::Compile_sltu_const, &Compiler::Compile_sltu, PGXPFN(CPU_SLTU), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_sltu(); break;
 
       default: Panic("fixme funct"); break;
       }
@@ -1229,35 +1235,35 @@ void CPU::NewRec::Compiler::CompileInstruction()
     break;
 
     case InstructionOp::j: Compile_j(); break;
-    case InstructionOp::jal: Compile_jal(); break;
+    case InstructionOp::jal: Compile_jal(); SpecExec_jal(); break;
 
-    case InstructionOp::b: CompileTemplate(&Compiler::Compile_b_const, &Compiler::Compile_b, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
+    case InstructionOp::b: CompileTemplate(&Compiler::Compile_b_const, &Compiler::Compile_b, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); SpecExec_b(); break;
     case InstructionOp::blez: CompileTemplate(&Compiler::Compile_blez_const, &Compiler::Compile_blez, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
     case InstructionOp::bgtz: CompileTemplate(&Compiler::Compile_bgtz_const, &Compiler::Compile_bgtz, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
     case InstructionOp::beq: CompileTemplate(&Compiler::Compile_beq_const, &Compiler::Compile_beq, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
     case InstructionOp::bne: CompileTemplate(&Compiler::Compile_bne_const, &Compiler::Compile_bne, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
 
-    case InstructionOp::addi: CompileTemplate(&Compiler::Compile_addi_const, &Compiler::Compile_addi, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_IMM); break;
-    case InstructionOp::addiu: CompileTemplate(&Compiler::Compile_addiu_const, &Compiler::Compile_addiu, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); break;
-    case InstructionOp::slti: CompileTemplate(&Compiler::Compile_slti_const, &Compiler::Compile_slti, PGXPFN(CPU_SLTI), TF_WRITES_T | TF_READS_S); break;
-    case InstructionOp::sltiu: CompileTemplate(&Compiler::Compile_sltiu_const, &Compiler::Compile_sltiu, PGXPFN(CPU_SLTIU), TF_WRITES_T | TF_READS_S); break;
-    case InstructionOp::andi: CompileTemplate(&Compiler::Compile_andi_const, &Compiler::Compile_andi, PGXPFN(CPU_ANDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE); break;
-    case InstructionOp::ori: CompileTemplate(&Compiler::Compile_ori_const, &Compiler::Compile_ori, PGXPFN(CPU_ORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); break;
-    case InstructionOp::xori: CompileTemplate(&Compiler::Compile_xori_const, &Compiler::Compile_xori, PGXPFN(CPU_XORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); break;
-    case InstructionOp::lui: Compile_lui(); break;
+    case InstructionOp::addi: CompileTemplate(&Compiler::Compile_addi_const, &Compiler::Compile_addi, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_IMM); SpecExec_addi(); break;
+    case InstructionOp::addiu: CompileTemplate(&Compiler::Compile_addiu_const, &Compiler::Compile_addiu, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_addiu(); break;
+    case InstructionOp::slti: CompileTemplate(&Compiler::Compile_slti_const, &Compiler::Compile_slti, PGXPFN(CPU_SLTI), TF_WRITES_T | TF_READS_S); SpecExec_slti(); break;
+    case InstructionOp::sltiu: CompileTemplate(&Compiler::Compile_sltiu_const, &Compiler::Compile_sltiu, PGXPFN(CPU_SLTIU), TF_WRITES_T | TF_READS_S); SpecExec_sltiu(); break;
+    case InstructionOp::andi: CompileTemplate(&Compiler::Compile_andi_const, &Compiler::Compile_andi, PGXPFN(CPU_ANDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE); SpecExec_andi(); break;
+    case InstructionOp::ori: CompileTemplate(&Compiler::Compile_ori_const, &Compiler::Compile_ori, PGXPFN(CPU_ORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_ori(); break;
+    case InstructionOp::xori: CompileTemplate(&Compiler::Compile_xori_const, &Compiler::Compile_xori, PGXPFN(CPU_XORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_xori(); break;
+    case InstructionOp::lui: Compile_lui(); SpecExec_lui(); break;
 
-    case InstructionOp::lb: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); break;
-    case InstructionOp::lbu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); break;
-    case InstructionOp::lh: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); break;
-    case InstructionOp::lhu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); break;
-    case InstructionOp::lw: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Word, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); break;
-    case InstructionOp::lwl: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); break;
-    case InstructionOp::lwr: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); break;
-    case InstructionOp::sb: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Byte, true, false, TF_READS_S | TF_READS_T); break;
-    case InstructionOp::sh: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::HalfWord, true, false, TF_READS_S | TF_READS_T); break;
-    case InstructionOp::sw: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Word, true, false, TF_READS_S | TF_READS_T); break;
-    case InstructionOp::swl: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); break;
-    case InstructionOp::swr: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); break;
+    case InstructionOp::lb: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, true); break;
+    case InstructionOp::lbu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, false); break;
+    case InstructionOp::lh: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, true); break;
+    case InstructionOp::lhu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, false); break;
+    case InstructionOp::lw: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Word, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Word, false); break;
+    case InstructionOp::lwl: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(false); break;
+    case InstructionOp::lwr: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(true); break;
+    case InstructionOp::sb: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Byte, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Byte); break;
+    case InstructionOp::sh: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::HalfWord, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::HalfWord); break;
+    case InstructionOp::sw: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Word, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Word); break;
+    case InstructionOp::swl: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_swx(false); break;
+    case InstructionOp::swr: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_swx(true); break;
 
     case InstructionOp::cop0:
       {
@@ -1265,8 +1271,8 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.CommonOp())
           {
-            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc0, nullptr, TF_WRITES_T | TF_LOAD_DELAY); } break;
-            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Compiler::Compile_mtc0, PGXPFN(CPU_MTC0), TF_READS_T); break;
+            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc0, nullptr, TF_WRITES_T | TF_LOAD_DELAY); } SpecExec_mfc0(); break;
+            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Compiler::Compile_mtc0, PGXPFN(CPU_MTC0), TF_READS_T); SpecExec_mtc0(); break;
             default: Compile_Fallback(); break;
           }
         }
@@ -1274,7 +1280,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.Cop0Op())
           {
-            case Cop0Instruction::rfe: CompileTemplate(nullptr, &Compiler::Compile_rfe, nullptr, 0); break;
+            case Cop0Instruction::rfe: CompileTemplate(nullptr, &Compiler::Compile_rfe, nullptr, 0); SpecExec_rfe(); break;
             default: Compile_Fallback(); break;
           }
         }
@@ -1303,7 +1309,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
       break;
 
     case InstructionOp::lwc2: CompileLoadStoreTemplate(&Compiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_GTE_STALL | TF_READS_S | TF_LOAD_DELAY); break;
-    case InstructionOp::swc2: CompileLoadStoreTemplate(&Compiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); break;
+    case InstructionOp::swc2: CompileLoadStoreTemplate(&Compiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
 
     default: Panic("Fixme"); break;
       // clang-format on
@@ -1567,7 +1573,7 @@ void CPU::NewRec::Compiler::CompileTemplate(void (Compiler::*const_func)(Compile
   }
 }
 
-void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool,
+void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
                                                                             const std::optional<VirtualMemoryAddress>&),
                                                      MemoryAccessSize size, bool store, bool sign, u32 tflags)
 {
@@ -1595,13 +1601,28 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
 
   // constant address?
   std::optional<VirtualMemoryAddress> addr;
+  bool use_fastmem = CodeCache::IsUsingFastmem() && !g_settings.cpu_recompiler_memory_exceptions &&
+                     !SpecIsCacheIsolated() && !CodeCache::HasPreviouslyFaultedOnPC(m_current_instruction_pc);
   if (HasConstantReg(rs))
   {
     addr = GetConstantRegU32(rs) + inst->i.imm_sext32();
     cf.const_s = true;
+
+    if (!Bus::CanUseFastmemForAddress(addr.value()))
+    {
+      Log_DebugFmt("Not using fastmem for {:08X}", addr.value());
+      use_fastmem = false;
+    }
   }
   else
   {
+    const std::optional<VirtualMemoryAddress> spec_addr = SpecExec_LoadStoreAddr();
+    if (use_fastmem && spec_addr.has_value() && !Bus::CanUseFastmemForAddress(spec_addr.value()))
+    {
+      Log_DebugFmt("Not using fastmem for speculative {:08X}", spec_addr.value());
+      use_fastmem = false;
+    }
+
     if constexpr (HAS_MEMORY_OPERANDS)
     {
       // don't bother caching it since we're going to flush anyway
@@ -1648,12 +1669,13 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
     }
   }
 
-  (this->*func)(cf, size, sign, addr);
+  (this->*func)(cf, size, sign, use_fastmem, addr);
 }
 
-void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store)
+void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
+                                              bool use_fastmem)
 {
-  if (CodeCache::IsUsingFastmem() && !g_settings.cpu_recompiler_memory_exceptions)
+  if (use_fastmem)
     return;
 
   // TODO: Stores don't need to flush GTE cycles...
@@ -2274,4 +2296,481 @@ void CPU::NewRec::BackpatchLoadStore(void* exception_pc, const CodeCache::Loadst
   CodeCache::EmitJump(exception_pc, thunk_address, true);
 
   buffer.CommitFarCode(thunk_size);
+}
+
+void CPU::NewRec::Compiler::InitSpeculativeRegs()
+{
+  for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
+    m_speculative_constants.regs[i] = g_state.regs.r[i];
+
+  m_speculative_constants.cop0_sr = g_state.cop0_regs.sr.bits;
+  m_speculative_constants.memory.clear();
+}
+
+void CPU::NewRec::Compiler::InvalidateSpeculativeValues()
+{
+  m_speculative_constants.regs.fill(std::nullopt);
+  m_speculative_constants.memory.clear();
+  m_speculative_constants.cop0_sr.reset();
+}
+
+CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadReg(Reg reg)
+{
+  return m_speculative_constants.regs[static_cast<u8>(reg)];
+}
+
+void CPU::NewRec::Compiler::SpecWriteReg(Reg reg, SpecValue value)
+{
+  if (reg == Reg::zero)
+    return;
+
+  m_speculative_constants.regs[static_cast<u8>(reg)] = value;
+}
+
+void CPU::NewRec::Compiler::SpecInvalidateReg(Reg reg)
+{
+  if (reg == Reg::zero)
+    return;
+
+  m_speculative_constants.regs[static_cast<u8>(reg)].reset();
+}
+
+void CPU::NewRec::Compiler::SpecCopyReg(Reg dst, Reg src)
+{
+  if (dst == Reg::zero)
+    return;
+
+  m_speculative_constants.regs[static_cast<u8>(dst)] = m_speculative_constants.regs[static_cast<u8>(src)];
+}
+
+CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadMem(VirtualMemoryAddress address)
+{
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+    return it->second;
+
+  u32 value;
+  if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  {
+    u32 scratchpad_offset = address & DCACHE_OFFSET_MASK;
+    std::memcpy(&value, &CPU::g_state.dcache[scratchpad_offset], sizeof(value));
+    return value;
+  }
+
+  const PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  if (Bus::IsRAMAddress(phys_addr))
+  {
+    u32 ram_offset = phys_addr & Bus::g_ram_mask;
+    std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
+    return value;
+  }
+
+  return std::nullopt;
+}
+
+void CPU::NewRec::Compiler::SpecWriteMem(u32 address, SpecValue value)
+{
+  auto it = m_speculative_constants.memory.find(address);
+  if (it != m_speculative_constants.memory.end())
+  {
+    it->second = value;
+    return;
+  }
+
+  const PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
+    m_speculative_constants.memory.emplace(address, value);
+}
+
+void CPU::NewRec::Compiler::SpecInvalidateMem(VirtualMemoryAddress address)
+{
+  SpecWriteMem(address, std::nullopt);
+}
+
+bool CPU::NewRec::Compiler::SpecIsCacheIsolated()
+{
+  if (!m_speculative_constants.cop0_sr.has_value())
+    return false;
+
+  const Cop0Registers::SR sr{m_speculative_constants.cop0_sr.value()};
+  return sr.Isc;
+}
+
+void CPU::NewRec::Compiler::SpecExec_b()
+{
+  const bool link = (static_cast<u8>(inst->i.rt.GetValue()) & u8(0x1E)) == u8(0x10);
+  if (link)
+    SpecWriteReg(Reg::ra, m_compiler_pc);
+}
+
+void CPU::NewRec::Compiler::SpecExec_jal()
+{
+  SpecWriteReg(Reg::ra, m_compiler_pc);
+}
+
+void CPU::NewRec::Compiler::SpecExec_jalr()
+{
+  SpecWriteReg(inst->r.rd, m_compiler_pc);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sll()
+{
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rt.has_value())
+    SpecWriteReg(inst->r.rd, rt.value() << inst->r.shamt);
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_srl()
+{
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rt.has_value())
+    SpecWriteReg(inst->r.rd, rt.value() >> inst->r.shamt);
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sra()
+{
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rt.has_value())
+    SpecWriteReg(inst->r.rd, static_cast<u32>(static_cast<s32>(rt.value()) >> inst->r.shamt));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sllv()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rt.value() << (rs.value() & 0x1F));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_srlv()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rt.value() >> (rs.value() & 0x1F));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_srav()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, static_cast<u32>(static_cast<s32>(rt.value()) >> (rs.value() & 0x1F)));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_mult()
+{
+  // TODO
+  SpecInvalidateReg(Reg::hi);
+  SpecInvalidateReg(Reg::lo);
+}
+
+void CPU::NewRec::Compiler::SpecExec_multu()
+{
+  // TODO
+  SpecInvalidateReg(Reg::hi);
+  SpecInvalidateReg(Reg::lo);
+}
+
+void CPU::NewRec::Compiler::SpecExec_div()
+{
+  // TODO
+  SpecInvalidateReg(Reg::hi);
+  SpecInvalidateReg(Reg::lo);
+}
+
+void CPU::NewRec::Compiler::SpecExec_divu()
+{
+  // TODO
+  SpecInvalidateReg(Reg::hi);
+  SpecInvalidateReg(Reg::lo);
+}
+
+void CPU::NewRec::Compiler::SpecExec_add()
+{
+  SpecExec_addu();
+}
+
+void CPU::NewRec::Compiler::SpecExec_addu()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rs.value() + rt.value());
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sub()
+{
+  SpecExec_subu();
+}
+
+void CPU::NewRec::Compiler::SpecExec_subu()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rs.value() - rt.value());
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_and()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rs.value() & rt.value());
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_or()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rs.value() | rt.value());
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_xor()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, rs.value() ^ rt.value());
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_nor()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, ~(rs.value() | rt.value()));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_slt()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, BoolToUInt32(static_cast<s32>(rs.value()) < static_cast<s32>(rt.value())));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sltu()
+{
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+    SpecWriteReg(inst->r.rd, BoolToUInt32(rs.value() < rt.value()));
+  else
+    SpecInvalidateReg(inst->r.rd);
+}
+
+void CPU::NewRec::Compiler::SpecExec_addi()
+{
+  SpecExec_addiu();
+}
+
+void CPU::NewRec::Compiler::SpecExec_addiu()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, rs.value() + inst->i.imm_sext32());
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_slti()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, BoolToUInt32(static_cast<s32>(rs.value()) < static_cast<s32>(inst->i.imm_sext32())));
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sltiu()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, BoolToUInt32(rs.value() < inst->i.imm_sext32()));
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_andi()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, rs.value() & inst->i.imm_zext32());
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_ori()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, rs.value() | inst->i.imm_zext32());
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_xori()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  if (rs.has_value())
+    SpecWriteReg(inst->i.rt, rs.value() ^ inst->i.imm_zext32());
+  else
+    SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_lui()
+{
+  SpecWriteReg(inst->i.rt, inst->i.imm_zext32() << 16);
+}
+
+CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecExec_LoadStoreAddr()
+{
+  const SpecValue rs = SpecReadReg(inst->i.rs);
+  return rs.has_value() ? (rs.value() + inst->i.imm_sext32()) : rs;
+}
+
+void CPU::NewRec::Compiler::SpecExec_lxx(MemoryAccessSize size, bool sign)
+{
+  const SpecValue addr = SpecExec_LoadStoreAddr();
+  SpecValue val;
+  if (!addr.has_value() || !(val = SpecReadMem(addr.value())).has_value())
+  {
+    SpecInvalidateReg(inst->i.rt);
+    return;
+  }
+
+  switch (size)
+  {
+    case MemoryAccessSize::Byte:
+      val = sign ? SignExtend32(static_cast<u8>(val.value())) : ZeroExtend32(static_cast<u8>(val.value()));
+      break;
+
+    case MemoryAccessSize::HalfWord:
+      val = sign ? SignExtend32(static_cast<u16>(val.value())) : ZeroExtend32(static_cast<u16>(val.value()));
+      break;
+
+    case MemoryAccessSize::Word:
+      break;
+
+    default:
+      UnreachableCode();
+  }
+
+  SpecWriteReg(inst->r.rt, val);
+}
+
+void CPU::NewRec::Compiler::SpecExec_lwx(bool lwr)
+{
+  // TODO
+  SpecInvalidateReg(inst->i.rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_sxx(MemoryAccessSize size)
+{
+  const SpecValue addr = SpecExec_LoadStoreAddr();
+  if (!addr.has_value())
+    return;
+
+  SpecValue rt = SpecReadReg(inst->i.rt);
+  if (rt.has_value())
+  {
+    switch (size)
+    {
+      case MemoryAccessSize::Byte:
+        rt = ZeroExtend32(static_cast<u8>(rt.value()));
+        break;
+
+      case MemoryAccessSize::HalfWord:
+        rt = ZeroExtend32(static_cast<u16>(rt.value()));
+        break;
+
+      case MemoryAccessSize::Word:
+        break;
+
+      default:
+        UnreachableCode();
+    }
+  }
+
+  SpecWriteMem(addr.value(), rt);
+}
+
+void CPU::NewRec::Compiler::SpecExec_swx(bool swr)
+{
+  const SpecValue addr = SpecExec_LoadStoreAddr();
+  if (addr.has_value())
+    SpecInvalidateMem(addr.value() & ~3u);
+}
+
+void CPU::NewRec::Compiler::SpecExec_swc2()
+{
+  const SpecValue addr = SpecExec_LoadStoreAddr();
+  if (addr.has_value())
+    SpecInvalidateMem(addr.value());
+}
+
+void CPU::NewRec::Compiler::SpecExec_mfc0()
+{
+  const Cop0Reg rd = static_cast<Cop0Reg>(inst->r.rd.GetValue());
+  if (rd != Cop0Reg::SR)
+  {
+    SpecInvalidateReg(inst->r.rt);
+    return;
+  }
+
+  SpecWriteReg(inst->r.rt, m_speculative_constants.cop0_sr);
+}
+
+void CPU::NewRec::Compiler::SpecExec_mtc0()
+{
+  const Cop0Reg rd = static_cast<Cop0Reg>(inst->r.rd.GetValue());
+  if (rd != Cop0Reg::SR || !m_speculative_constants.cop0_sr.has_value())
+    return;
+
+  SpecValue val = SpecReadReg(inst->r.rt);
+  if (val.has_value())
+  {
+    constexpr u32 mask = Cop0Registers::SR::WRITE_MASK;
+    val = (m_speculative_constants.cop0_sr.value() & mask) | (val.value() & mask);
+  }
+
+  m_speculative_constants.cop0_sr = val;
+}
+
+void CPU::NewRec::Compiler::SpecExec_rfe()
+{
+  if (!m_speculative_constants.cop0_sr.has_value())
+    return;
+
+  const u32 val = m_speculative_constants.cop0_sr.value();
+  m_speculative_constants.cop0_sr = (val & UINT32_C(0b110000)) | ((val & UINT32_C(0b111111)) >> 2);
 }

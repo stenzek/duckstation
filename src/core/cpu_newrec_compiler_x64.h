@@ -87,20 +87,21 @@ protected:
   Xbyak::Reg32 ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
                                           const std::optional<const Xbyak::Reg32>& reg = std::nullopt);
   template<typename RegAllocFn>
-  Xbyak::Reg32 GenerateLoad(const Xbyak::Reg32& addr_reg, MemoryAccessSize size, bool sign,
+  Xbyak::Reg32 GenerateLoad(const Xbyak::Reg32& addr_reg, MemoryAccessSize size, bool sign, bool use_fastmem,
                             const RegAllocFn& dst_reg_alloc);
-  void GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak::Reg32& value_reg, MemoryAccessSize size);
-  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak::Reg32& value_reg, MemoryAccessSize size,
+                     bool use_fastmem);
+  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
   void TestInterrupts(const Xbyak::Reg32& sr);

@@ -96,20 +96,20 @@ protected:
                              const std::optional<const vixl::aarch32::Register>& reg = std::nullopt);
   template<typename RegAllocFn>
   vixl::aarch32::Register GenerateLoad(const vixl::aarch32::Register& addr_reg, MemoryAccessSize size, bool sign,
-                                       const RegAllocFn& dst_reg_alloc);
+                                       bool use_fastmem, const RegAllocFn& dst_reg_alloc);
   void GenerateStore(const vixl::aarch32::Register& addr_reg, const vixl::aarch32::Register& value_reg,
-                     MemoryAccessSize size);
-  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                     MemoryAccessSize size, bool use_fastmem);
+  void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
-  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+  void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
   void TestInterrupts(const vixl::aarch32::Register& sr);

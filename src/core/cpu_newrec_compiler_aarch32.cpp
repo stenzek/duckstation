@@ -1340,11 +1340,10 @@ CPU::NewRec::AArch32Compiler::ComputeLoadStoreAddressArg(CompileFlags cf,
 
 template<typename RegAllocFn>
 vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GenerateLoad(const vixl::aarch32::Register& addr_reg,
-                                                                   MemoryAccessSize size, bool sign,
+                                                                   MemoryAccessSize size, bool sign, bool use_fastmem,
                                                                    const RegAllocFn& dst_reg_alloc)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (!checked && CodeCache::IsUsingFastmem())
+  if (use_fastmem)
   {
     DebugAssert(g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT);
     m_cycles += Bus::RAM_READ_TICKS;
@@ -1379,6 +1378,7 @@ vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GenerateLoad(const vixl::a
   if (addr_reg.GetCode() != RARG1.GetCode())
     armAsm->mov(RARG1, addr_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1452,10 +1452,10 @@ vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GenerateLoad(const vixl::a
 }
 
 void CPU::NewRec::AArch32Compiler::GenerateStore(const vixl::aarch32::Register& addr_reg,
-                                                 const vixl::aarch32::Register& value_reg, MemoryAccessSize size)
+                                                 const vixl::aarch32::Register& value_reg, MemoryAccessSize size,
+                                                 bool use_fastmem)
 {
-  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
-  if (!checked && CodeCache::IsUsingFastmem())
+  if (use_fastmem)
   {
     DebugAssert(g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT);
     DebugAssert(addr_reg.GetCode() != RARG3.GetCode());
@@ -1488,6 +1488,7 @@ void CPU::NewRec::AArch32Compiler::GenerateStore(const vixl::aarch32::Register& 
   if (value_reg.GetCode() != RARG2.GetCode())
     armAsm->mov(RARG2, value_reg);
 
+  const bool checked = g_settings.cpu_recompiler_memory_exceptions;
   switch (size)
   {
     case MemoryAccessSize::Byte:
@@ -1536,15 +1537,15 @@ void CPU::NewRec::AArch32Compiler::GenerateStore(const vixl::aarch32::Register& 
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Register> addr_reg = g_settings.gpu_pgxp_enable ?
                                              std::optional<Register>(Register(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                              std::optional<Register>();
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const Register addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  const Register data = GenerateLoad(addr, size, sign, [this, cf]() {
+  const Register data = GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() {
     if (cf.MipsT() == Reg::zero)
       return RRET;
 
@@ -1564,11 +1565,11 @@ void CPU::NewRec::AArch32Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
 
@@ -1580,7 +1581,7 @@ void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   const Register addr = Register(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
-  GenerateLoad(RARG1, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   if (inst->r.rt == Reg::zero)
   {
@@ -1648,15 +1649,15 @@ void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   FreeHostReg(addr.GetCode());
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Register> addr_reg = g_settings.gpu_pgxp_enable ?
                                              std::optional<Register>(Register(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                              std::optional<Register>();
-  FlushForLoadStore(address, false);
+  FlushForLoadStore(address, false, use_fastmem);
   const Register addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  GenerateLoad(addr, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -1728,7 +1729,7 @@ void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   AssertRegOrConstS(cf);
@@ -1737,13 +1738,13 @@ void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize
   const std::optional<Register> addr_reg = g_settings.gpu_pgxp_enable ?
                                              std::optional<Register>(Register(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                              std::optional<Register>();
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
   const Register addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
   const Register data = cf.valid_host_t ? CFGetRegT(cf) : RARG2;
   if (!cf.valid_host_t)
     MoveTToReg(RARG2, cf);
 
-  GenerateStore(addr, data, size);
+  GenerateStore(addr, data, size, use_fastmem);
 
   if (g_settings.gpu_pgxp_enable)
   {
@@ -1756,18 +1757,18 @@ void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
   const Register addr = Register(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
-  GenerateLoad(RARG1, MemoryAccessSize::Word, false, []() { return RRET; });
+  GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   // TODO: this can take over rt's value if it's no longer needed
   // NOTE: can't trust T in cf because of the flush
@@ -1813,13 +1814,13 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   FreeHostReg(addr.GetCode());
 
   armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
-  GenerateStore(RARG1, value, MemoryAccessSize::Word);
+  GenerateStore(RARG1, value, MemoryAccessSize::Word, use_fastmem);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+void CPU::NewRec::AArch32Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -1852,17 +1853,17 @@ void CPU::NewRec::AArch32Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
   if (!g_settings.gpu_pgxp_enable)
   {
     const Register addr = ComputeLoadStoreAddressArg(cf, address);
-    GenerateStore(addr, RARG2, size);
+    GenerateStore(addr, RARG2, size, use_fastmem);
     return;
   }
 
   // TODO: This can be simplified because we don't need to validate in PGXP..
   const Register addr_reg = Register(AllocateTempHostReg(HR_CALLEE_SAVED));
   const Register data_backup = Register(AllocateTempHostReg(HR_CALLEE_SAVED));
-  FlushForLoadStore(address, true);
+  FlushForLoadStore(address, true, use_fastmem);
   ComputeLoadStoreAddressArg(cf, address, addr_reg);
   armAsm->mov(data_backup, RARG2);
-  GenerateStore(addr_reg, RARG2, size);
+  GenerateStore(addr_reg, RARG2, size, use_fastmem);
 
   Flush(FLUSH_FOR_C_CALL);
   armAsm->mov(RARG3, data_backup);
