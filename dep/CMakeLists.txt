@@ -49,6 +49,12 @@ if(ENABLE_DISCORD_PRESENCE)
   disable_compiler_warnings_for_target(discord-rpc)
 endif()
 
+if(${CPU_ARCH} STREQUAL "x64")
+  add_subdirectory(xbyak EXCLUDE_FROM_ALL)
+  add_subdirectory(zydis EXCLUDE_FROM_ALL)
+  disable_compiler_warnings_for_target(zydis)
+endif()
+
 if(${CPU_ARCH} STREQUAL "aarch32" OR ${CPU_ARCH} STREQUAL "aarch64")
   add_subdirectory(vixl EXCLUDE_FROM_ALL)
   disable_compiler_warnings_for_target(vixl)

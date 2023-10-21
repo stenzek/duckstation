@@ -133,11 +133,11 @@ target_link_libraries(core PUBLIC Threads::Threads common util zlib)
 target_link_libraries(core PRIVATE stb xxhash imgui rapidjson rcheevos)
 
 if(${CPU_ARCH} STREQUAL "x64")
-  target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../dep/xbyak/xbyak")
   target_compile_definitions(core PUBLIC "XBYAK_NO_EXCEPTION=1" "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS}
     cpu_recompiler_code_generator_x64.cpp
   )
+  target_link_libraries(core PRIVATE xbyak zydis)
   message("Building x64 recompiler")
 
   if(ENABLE_NEWREC)
