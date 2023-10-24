@@ -14,6 +14,7 @@
 #include "common/assert.h"
 #include "common/intrin.h"
 #include "common/log.h"
+#include "common/memmap.h"
 
 Log_SetChannel(CPU::CodeCache);
 
@@ -628,6 +629,11 @@ void CPU::CodeCache::InvalidateBlocksWithPageIndex(u32 index)
     new_block_state = BlockState::NeedsRecompile;
   }
 
+  if (!ppi.first_block_in_page)
+    return;
+
+  MemMap::BeginCodeWrite();
+
   Block* block = ppi.first_block_in_page;
   while (block)
   {
@@ -637,6 +643,8 @@ void CPU::CodeCache::InvalidateBlocksWithPageIndex(u32 index)
 
   ppi.first_block_in_page = nullptr;
   ppi.last_block_in_page = nullptr;
+
+  MemMap::EndCodeWrite();
 }
 
 CPU::CodeCache::PageProtectionMode CPU::CodeCache::GetProtectionModeForPC(u32 pc)
@@ -1279,6 +1287,7 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
 {
   // TODO: this doesn't currently handle when the cache overflows...
   DebugAssert(IsUsingAnyRecompiler());
+  MemMap::BeginCodeWrite();
 
   Block* block = LookupBlock(start_pc);
   if (block)
@@ -1290,6 +1299,7 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
       DebugAssert(block->host_code);
       SetCodeLUT(start_pc, block->host_code);
       BacklinkBlocks(start_pc, block->host_code);
+      MemMap::EndCodeWrite();
       return;
     }
 
@@ -1303,6 +1313,7 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
     Log_ErrorFmt("Failed to read block at 0x{:08X}, falling back to uncached interpreter", start_pc);
     SetCodeLUT(start_pc, g_interpret_block);
     BacklinkBlocks(start_pc, g_interpret_block);
+    MemMap::EndCodeWrite();
     return;
   }
 
@@ -1322,20 +1333,26 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
     Log_ErrorFmt("Failed to compile block at 0x{:08X}, falling back to uncached interpreter", start_pc);
     SetCodeLUT(start_pc, g_interpret_block);
     BacklinkBlocks(start_pc, g_interpret_block);
+    MemMap::EndCodeWrite();
     return;
   }
 
   SetCodeLUT(start_pc, block->host_code);
   BacklinkBlocks(start_pc, block->host_code);
+  MemMap::EndCodeWrite();
 }
 
 void CPU::CodeCache::DiscardAndRecompileBlock(u32 start_pc)
 {
+  MemMap::BeginCodeWrite();
+
   Log_DevPrintf("Discard block %08X with manual protection", start_pc);
   Block* block = LookupBlock(start_pc);
   DebugAssert(block && block->state == BlockState::Valid);
   InvalidateBlock(block, BlockState::NeedsRecompile);
   CompileOrRevalidateBlock(start_pc);
+
+  MemMap::EndCodeWrite();
 }
 
 const void* CPU::CodeCache::CreateBlockLink(Block* block, void* code, u32 newpc)
@@ -1430,7 +1447,7 @@ void CPU::CodeCache::ClearASMFunctions()
 
 void CPU::CodeCache::CompileASMFunctions()
 {
-  s_code_buffer.WriteProtect(false);
+  MemMap::BeginCodeWrite();
 
   const u32 asm_size = EmitASMFunctions(s_code_buffer.GetFreeCodePointer(), s_code_buffer.GetFreeCodeSpace());
 
@@ -1439,13 +1456,11 @@ void CPU::CodeCache::CompileASMFunctions()
 #endif
 
   s_code_buffer.CommitCode(asm_size);
-  s_code_buffer.WriteProtect(true);
+  MemMap::EndCodeWrite();
 }
 
 bool CPU::CodeCache::CompileBlock(Block* block)
 {
-  s_code_buffer.WriteProtect(false);
-
   const void* host_code = nullptr;
   u32 host_code_size = 0;
   u32 host_far_code_size = 0;
@@ -1461,8 +1476,6 @@ bool CPU::CodeCache::CompileBlock(Block* block)
   if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
     host_code = NewRec::g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
 #endif
-
-  s_code_buffer.WriteProtect(true);
 
   block->host_code = host_code;
 
@@ -1628,7 +1641,7 @@ bool CPU::CodeCache::HasPreviouslyFaultedOnPC(u32 guest_pc)
 
 void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchInfo& info)
 {
-  s_code_buffer.WriteProtect(false);
+  MemMap::BeginCodeWrite();
 
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
@@ -1639,7 +1652,7 @@ void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchI
     NewRec::BackpatchLoadStore(host_pc, info);
 #endif
 
-  s_code_buffer.WriteProtect(true);
+  MemMap::EndCodeWrite();
 }
 
 #endif // ENABLE_RECOMPILER_SUPPORT

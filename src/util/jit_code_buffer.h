@@ -47,13 +47,6 @@ public:
   /// Flushes the instruction cache on the host for the specified range.
   static void FlushInstructionCache(void* address, u32 size);
 
-  /// For Apple Silicon - Toggles write protection on the JIT space.
-#if defined(__APPLE__) && defined(__aarch64__)
-  static void WriteProtect(bool enabled);
-#else
-  ALWAYS_INLINE static void WriteProtect(bool enabled) {}
-#endif
-
 private:
   u8* m_code_ptr = nullptr;
   u8* m_free_code_ptr = nullptr;

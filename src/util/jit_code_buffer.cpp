@@ -1,11 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "jit_code_buffer.h"
+
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/memmap.h"
+
 #include <algorithm>
+
 Log_SetChannel(JitCodeBuffer);
 
 #if defined(_WIN32)
@@ -13,11 +17,6 @@ Log_SetChannel(JitCodeBuffer);
 #else
 #include <errno.h>
 #include <sys/mman.h>
-#endif
-
-#if defined(__APPLE__) && defined(__aarch64__)
-// pthread_jit_write_protect_np()
-#include <pthread.h>
 #endif
 
 JitCodeBuffer::JitCodeBuffer() = default;
@@ -235,7 +234,7 @@ void JitCodeBuffer::CommitFarCode(u32 length)
 
 void JitCodeBuffer::Reset()
 {
-  WriteProtect(false);
+  MemMap::BeginCodeWrite();
 
   m_free_code_ptr = m_code_ptr + m_guard_size + m_code_reserve_size;
   m_code_used = 0;
@@ -250,7 +249,7 @@ void JitCodeBuffer::Reset()
     FlushInstructionCache(m_free_far_code_ptr, m_far_code_size);
   }
 
-  WriteProtect(true);
+  MemMap::EndCodeWrite();
 }
 
 void JitCodeBuffer::Align(u32 alignment, u8 padding_value)
@@ -275,26 +274,3 @@ void JitCodeBuffer::FlushInstructionCache(void* address, u32 size)
 #error Unknown platform.
 #endif
 }
-
-#if defined(__APPLE__) && defined(__aarch64__)
-
-void JitCodeBuffer::WriteProtect(bool enabled)
-{
-  static bool initialized = false;
-  static bool needs_write_protect = false;
-
-  if (!initialized)
-  {
-    initialized = true;
-    needs_write_protect = (pthread_jit_write_protect_supported_np() != 0);
-    if (needs_write_protect)
-      Log_InfoPrint("pthread_jit_write_protect_np() will be used before writing to JIT space.");
-  }
-
-  if (!needs_write_protect)
-    return;
-
-  pthread_jit_write_protect_np(enabled ? 1 : 0);
-}
-
-#endif

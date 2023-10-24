@@ -18,6 +18,11 @@
 #include <unistd.h>
 #endif
 
+#if defined(__APPLE__) && defined(__aarch64__)
+// pthread_jit_write_protect_np()
+#include <pthread.h>
+#endif
+
 Log_SetChannel(MemoryArena);
 
 #ifdef _WIN32
@@ -395,6 +400,34 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 
   m_num_mappings--;
   return true;
+}
+
+#endif
+
+#if defined(__APPLE__) && defined(__aarch64__)
+
+static thread_local int s_code_write_depth = 0;
+
+void MemMap::BeginCodeWrite()
+{
+  // Log_DebugFmt("BeginCodeWrite(): {}", s_code_write_depth);
+  if ((s_code_write_depth++) == 0)
+  {
+    // Log_DebugPrint("  pthread_jit_write_protect_np(0)");
+    pthread_jit_write_protect_np(0);
+  }
+}
+
+void MemMap::EndCodeWrite()
+{
+  // Log_DebugFmt("EndCodeWrite(): {}", s_code_write_depth);
+
+  DebugAssert(s_code_write_depth > 0);
+  if ((--s_code_write_depth) == 0)
+  {
+    // Log_DebugPrint("  pthread_jit_write_protect_np(1)");
+    pthread_jit_write_protect_np(1);
+  }
 }
 
 #endif

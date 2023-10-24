@@ -41,6 +41,17 @@ void DestroySharedMemory(void* ptr);
 void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode);
 void UnmapSharedMemory(void* baseaddr, size_t size);
 bool MemProtect(void* baseaddr, size_t size, PageProtect mode);
+
+/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
+#if !defined(__APPLE__) || !defined(__aarch64__)
+// clang-format off
+ALWAYS_INLINE static void BeginCodeWrite() { }
+ALWAYS_INLINE static void EndCodeWrite() { }
+// clang-format on
+#else
+void BeginCodeWrite();
+void EndCodeWrite();
+#endif
 } // namespace MemMap
 
 class SharedMemoryMappingArea
