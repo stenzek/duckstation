@@ -179,13 +179,13 @@ void CPU::CodeCache::ProcessStartup()
   }
 #endif
 
-  if (!Common::PageFaultHandler::InstallHandler(&s_block_lut, &ExceptionHandler))
+  if (!Common::PageFaultHandler::InstallHandler(ExceptionHandler))
     Panic("Failed to install page fault handler");
 }
 
 void CPU::CodeCache::ProcessShutdown()
 {
-  Common::PageFaultHandler::RemoveHandler(&s_block_lut);
+  Common::PageFaultHandler::RemoveHandler(ExceptionHandler);
 
 #ifdef ENABLE_RECOMPILER_SUPPORT
   s_code_buffer.Destroy();
@@ -1609,6 +1609,8 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
              info.gpr_bitmask, static_cast<unsigned>(info.address_register), static_cast<unsigned>(info.data_register),
              info.AccessSizeInBytes(), static_cast<unsigned>(info.is_signed));
 
+  MemMap::BeginCodeWrite();
+
   BackpatchLoadStore(exception_pc, info);
 
   // queue block for recompilation later
@@ -1628,6 +1630,8 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
     }
   }
 
+  MemMap::EndCodeWrite();
+
   // and store the pc in the faulting list, so that we don't emit another fastmem loadstore
   s_fastmem_faulting_pcs.insert(info.guest_pc);
   s_fastmem_backpatch_info.erase(iter);
@@ -1641,8 +1645,6 @@ bool CPU::CodeCache::HasPreviouslyFaultedOnPC(u32 guest_pc)
 
 void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchInfo& info)
 {
-  MemMap::BeginCodeWrite();
-
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
     Recompiler::CodeGenerator::BackpatchLoadStore(host_pc, info);
@@ -1651,8 +1653,6 @@ void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchI
   if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
     NewRec::BackpatchLoadStore(host_pc, info);
 #endif
-
-  MemMap::EndCodeWrite();
 }
 
 #endif // ENABLE_RECOMPILER_SUPPORT
