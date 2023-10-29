@@ -144,6 +144,7 @@ bool IsExecutionInterrupted();
 bool IsPaused();
 bool IsShutdown();
 bool IsValid();
+bool IsValidOrInitializing();
 bool IsExecuting();
 
 bool IsStartupCancelled();

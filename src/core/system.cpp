@@ -255,6 +255,9 @@ void System::Internal::ProcessStartup()
 #endif
   if (g_settings.achievements_enabled)
     Achievements::Initialize();
+
+  if (g_settings.enable_discord_presence)
+    InitializeDiscordPresence();
 }
 
 void System::Internal::ProcessShutdown()
@@ -320,6 +323,11 @@ bool System::IsShutdown()
 bool System::IsValid()
 {
   return s_state == State::Running || s_state == State::Paused;
+}
+
+bool System::IsValidOrInitializing()
+{
+  return s_state == State::Starting || s_state == State::Running || s_state == State::Paused;
 }
 
 bool System::IsExecuting()
@@ -4722,7 +4730,20 @@ void System::UpdateDiscordPresence()
   rp.largeImageKey = "duckstation_logo";
   rp.largeImageText = "DuckStation PS1/PSX Emulator";
   rp.startTimestamp = std::time(nullptr);
-  rp.details = System::IsValid() ? System::GetGameTitle().c_str() : "No Game Running";
+  rp.details = "No Game Running";
+  if (IsValidOrInitializing())
+  {
+    // Use disc set name if it's not a custom title.
+    if (s_running_game_entry && !s_running_game_entry->disc_set_name.empty() &&
+        s_running_game_title == s_running_game_entry->title)
+    {
+      rp.details = s_running_game_entry->disc_set_name.c_str();
+    }
+    else
+    {
+      rp.details = s_running_game_title.empty() ? "Unknown Game" : s_running_game_title.c_str();
+    }
+  }
 
   std::string state_string;
   if (Achievements::HasRichPresence())
