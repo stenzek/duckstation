@@ -1368,6 +1368,10 @@ bool System::BootSystem(SystemBootParameters parameters)
     return false;
   }
 
+  // Insert disc.
+  if (disc)
+    CDROM::InsertMedia(std::move(disc), disc_region);
+
   UpdateControllers();
   UpdateMemoryCardTypes();
   UpdateMultitaps();
@@ -1387,9 +1391,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     return false;
   }
 
-  // Insert CD, and apply fastboot patch if enabled.
-  if (disc)
-    CDROM::InsertMedia(std::move(disc), disc_region);
+  // Apply fastboot patch if enabled.
   if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
                                                                         g_settings.bios_patch_fast_boot))
   {
@@ -2992,8 +2994,8 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
         // Playlist - use title if different.
         if (HasMediaSubImages() && s_running_game_entry && s_running_game_title != s_running_game_entry->title)
         {
-          card_path = g_settings.GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->title), slot);
+          card_path =
+            g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(s_running_game_title), slot);
         }
         // Multi-disc game - use disc set name.
         else if (s_running_game_entry && !s_running_game_entry->disc_set_name.empty())
