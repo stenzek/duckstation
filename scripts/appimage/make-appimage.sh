@@ -88,7 +88,6 @@ if [ ! -f "$APPIMAGETOOL" ]; then
 fi
 
 OUTDIR=$(realpath "./$APPDIRNAME")
-SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 rm -fr "$OUTDIR"
 
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
@@ -159,7 +158,16 @@ cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 # Generate AppStream meta-info.
 echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
+"$SCRIPTDIR/../generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
+
+# Copy in AppRun hooks.
+echo "Copying AppRun hooks..."
+mkdir -p "$OUTDIR/apprun-hooks"
+for hookpath in "$SCRIPTDIR/apprun-hooks"/*; do
+	hookname=$(basename "$hookpath")
+	cp -v "$hookpath" "$OUTDIR/apprun-hooks/$hookname"
+	sed -i -e 's/exec /source "$this_dir"\/apprun-hooks\/"'"$hookname"'"\nexec /' "$OUTDIR/AppRun"
+done
 
 echo "Generating AppImage..."
 rm -f "$NAME.AppImage"

@@ -267,7 +267,7 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH=$HOME/deps -DCMAKE_TOOLCHAIN_FILE=../scripts/clang-toolchain.cmake ..
         cmake --build . --parallel
         cd ..
-        scripts/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
+        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v1
