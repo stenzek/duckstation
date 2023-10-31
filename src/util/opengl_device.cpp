@@ -427,7 +427,6 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   m_features.dual_source_blend =
     (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
-  m_features.dual_source_blend = false;
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
