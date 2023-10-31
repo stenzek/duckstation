@@ -212,6 +212,8 @@ bool ContextEGL::CreateSurface()
     Log_ErrorPrintf("eglQuerySurface() failed: %d", eglGetError());
   }
 
+  m_wi.surface_format = GetSurfaceTextureFormat();
+
   return true;
 }
 
@@ -232,6 +234,8 @@ bool ContextEGL::CreatePBufferSurface()
     return false;
   }
 
+  m_wi.surface_format = GetSurfaceTextureFormat();
+
   Log_DevPrintf("Created %ux%u pbuffer surface", width, height);
   return true;
 }
@@ -249,29 +253,6 @@ bool ContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format f
 
   switch (format)
   {
-    case GPUTexture::Format::Unknown:
-    {
-      if (red_size == 5 && green_size == 6 && red_size == 5)
-      {
-        m_wi.surface_format = GPUTexture::Format::RGB565;
-      }
-      else if (red_size == 5 && green_size == 5 && red_size == 5 && alpha_size == 1)
-      {
-        m_wi.surface_format = GPUTexture::Format::RGBA5551;
-      }
-      else if (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8)
-      {
-        m_wi.surface_format = GPUTexture::Format::RGBA8;
-      }
-      else
-      {
-        Log_ErrorPrintf("Unknown surface format: R=%u, G=%u, B=%u, A=%u", red_size, green_size, blue_size, alpha_size);
-        m_wi.surface_format = GPUTexture::Format::RGBA8;
-      }
-
-      return true;
-    }
-
     case GPUTexture::Format::RGBA8:
       return (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8);
 
@@ -281,8 +262,38 @@ bool ContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format f
     case GPUTexture::Format::RGBA5551:
       return (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1);
 
+    case GPUTexture::Format::Unknown:
+      return true;
+
     default:
       return false;
+  }
+}
+
+GPUTexture::Format ContextEGL::GetSurfaceTextureFormat() const
+{
+  int red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+  eglGetConfigAttrib(m_display, m_config, EGL_RED_SIZE, &red_size);
+  eglGetConfigAttrib(m_display, m_config, EGL_GREEN_SIZE, &green_size);
+  eglGetConfigAttrib(m_display, m_config, EGL_BLUE_SIZE, &blue_size);
+  eglGetConfigAttrib(m_display, m_config, EGL_ALPHA_SIZE, &alpha_size);
+
+  if (red_size == 5 && green_size == 6 && red_size == 5)
+  {
+    return GPUTexture::Format::RGB565;
+  }
+  else if (red_size == 5 && green_size == 5 && red_size == 5 && alpha_size == 1)
+  {
+    return GPUTexture::Format::RGBA5551;
+  }
+  else if (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8)
+  {
+    return GPUTexture::Format::RGBA8;
+  }
+  else
+  {
+    Log_ErrorPrintf("Unknown surface format: R=%u, G=%u, B=%u, A=%u", red_size, green_size, blue_size, alpha_size);
+    return GPUTexture::Format::RGBA8;
   }
 }
 

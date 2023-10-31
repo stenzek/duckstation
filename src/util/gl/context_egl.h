@@ -39,6 +39,7 @@ protected:
   bool CreateSurface();
   bool CreatePBufferSurface();
   bool CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format);
+  GPUTexture::Format GetSurfaceTextureFormat() const;
   void DestroyContext();
   void DestroySurface();
 
