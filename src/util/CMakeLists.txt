@@ -140,10 +140,7 @@ if(ENABLE_OPENGL)
       )
     endif()
     if(ANDROID)
-      target_sources(util PRIVATE
-        gl/context_egl_android.cpp
-        gl/context_egl_android.h
-      )
+      target_include_directories(util PRIVATE "${CMAKE_SOURCE_DIR}/android/app/src/cpp")
     endif()
   endif()
 

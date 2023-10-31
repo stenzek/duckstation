@@ -351,6 +351,9 @@ void OnInputDeviceDisconnected(const std::string_view& identifier);
 } // namespace InputManager
 
 namespace Host {
+/// Adds any fixed bindings from the host.
+void AddFixedInputBindings(SettingsInterface& si);
+
 /// Called when a new input device is connected.
 void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
 

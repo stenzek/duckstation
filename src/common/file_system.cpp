@@ -640,13 +640,6 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 #endif
 }
 
-#endif
-
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
-{
-  return ManagedCFilePtr(OpenCFile(filename, mode, error));
-}
-
 std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
@@ -685,6 +678,13 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
     Error::SetErrno(error, errno);
   return fp;
 #endif
+}
+
+#endif
+
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
+{
+  return ManagedCFilePtr(OpenCFile(filename, mode, error));
 }
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode,

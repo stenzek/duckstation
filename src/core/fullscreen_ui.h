@@ -21,6 +21,8 @@ void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
 void OnRunningGameChanged();
+
+#ifndef __ANDROID__
 void OpenPauseMenu();
 void OpenAchievementsWindow();
 bool IsAchievementsWindowOpen();
@@ -28,6 +30,7 @@ void OpenLeaderboardsWindow();
 bool IsLeaderboardsWindowOpen();
 void ReturnToMainWindow();
 void ReturnToPreviousWindow();
+#endif
 
 void Shutdown();
 void Render();

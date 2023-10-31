@@ -256,8 +256,10 @@ void System::Internal::ProcessStartup()
   if (g_settings.achievements_enabled)
     Achievements::Initialize();
 
+#ifdef ENABLE_DISCORD_PRESENCE
   if (g_settings.enable_discord_presence)
     InitializeDiscordPresence();
+#endif
 }
 
 void System::Internal::ProcessShutdown()
@@ -3700,6 +3702,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
   FullscreenUI::CheckForConfigChanges(old_settings);
 
+#ifdef ENABLE_DISCORD_PRESENCE
   if (g_settings.enable_discord_presence != old_settings.enable_discord_presence)
   {
     if (g_settings.enable_discord_presence)
@@ -3707,6 +3710,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     else
       ShutdownDiscordPresence();
   }
+#endif
 
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_timestamps != old_settings.log_timestamps ||

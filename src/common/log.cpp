@@ -293,7 +293,10 @@ void Log::DebugOutputLogCallback(void* pUserParam, const char* channelName, cons
   FormatLogMessageAndPrintW(channelName, functionName, level, message, false, false, true,
                             [](const std::wstring_view& message) { OutputDebugStringW(message.data()); });
 #elif defined(__ANDROID__)
-  static const int logPriority[LOGLEVEL_COUNT] = {
+  if (message.empty())
+    return;
+
+  static constexpr int logPriority[LOGLEVEL_COUNT] = {
     ANDROID_LOG_INFO,  // NONE
     ANDROID_LOG_ERROR, // ERROR
     ANDROID_LOG_WARN,  // WARNING
@@ -306,7 +309,7 @@ void Log::DebugOutputLogCallback(void* pUserParam, const char* channelName, cons
     ANDROID_LOG_DEBUG, // TRACE
   };
 
-  __android_log_write(logPriority[level], channelName, message);
+  __android_log_print(logPriority[level], channelName, "%.*s", static_cast<int>(message.length()), message.data());
 #else
 #endif
 }

@@ -1604,6 +1604,8 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
   s_pad_vibration_array.clear();
   s_pointer_move_callbacks.clear();
 
+  Host::AddFixedInputBindings(binding_si);
+
   // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
   const bool use_profile_hotkeys = si.GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
   AddHotkeyBindings(use_profile_hotkeys ? binding_si : si);

@@ -125,12 +125,12 @@ ALWAYS_INLINE_RELEASE void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 
 
 ALWAYS_INLINE_RELEASE double f16Sign(double in)
 {
-  u32 s = (u32)(in * (double)((u32)1 << 16));
-  return ((double)*((s32*)&s)) / (double)((s32)1 << 16);
+  const s32 s = static_cast<s32>(static_cast<u64>(in * (USHRT_MAX + 1)));
+  return static_cast<double>(s) / static_cast<double>(USHRT_MAX + 1);
 }
 ALWAYS_INLINE_RELEASE double f16Unsign(double in)
 {
-  return (in >= 0) ? in : ((double)in + (double)USHRT_MAX + 1);
+  return (in >= 0) ? in : (in + (USHRT_MAX + 1));
 }
 ALWAYS_INLINE_RELEASE double f16Overflow(double in)
 {
@@ -599,13 +599,11 @@ void CPU_MOVE(u32 rd_and_rs, u32 rsVal)
 void CPU_ADDI(u32 instr, u32 rsVal)
 {
   // Rt = Rs + Imm (signed)
-  psx_value tempImm;
-  PGXP_value ret;
-
   Validate(&CPU_reg[rs(instr)], rsVal);
-  ret = CPU_reg[rs(instr)];
-  tempImm.d = imm(instr);
-  tempImm.sd = (tempImm.sd << 16) >> 16; // sign extend
+  PGXP_value ret = CPU_reg[rs(instr)];
+
+  psx_value tempImm;
+  tempImm.d = SignExtend32(static_cast<u16>(imm(instr)));
 
   if (tempImm.d != 0)
   {
@@ -928,6 +926,11 @@ static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
   {
     ret.z = CPU_reg[rt(instr)].z;
     ret.compFlags[2] = CPU_reg[rt(instr)].compFlags[2];
+  }
+  else
+  {
+    ret.z = 0.0f;
+    ret.compFlags[2] = 0;
   }
 
   ret.value = rdVal;

@@ -7,6 +7,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "achievements.h"
+#include "achievements_private.h"
 #include "bios.h"
 #include "bus.h"
 #include "cpu_core.h"
@@ -164,22 +165,18 @@ static void DisplayHardcoreDeferredMessage();
 static void DisplayAchievementSummary();
 static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
 
-static std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state);
-static std::string GetUserBadgePath(const std::string_view& username);
-static std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
-
-static void DrawAchievement(const rc_client_achievement_t* cheevo);
-static void DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard);
-static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
-                                 float name_column_width, float time_column_width, float column_spacing);
-static void OpenLeaderboard(const rc_client_leaderboard_t* lboard);
 static void LeaderboardFetchNearbyCallback(int result, const char* error_message,
                                            rc_client_leaderboard_entry_list_t* list, rc_client_t* client,
                                            void* callback_userdata);
 static void LeaderboardFetchAllCallback(int result, const char* error_message, rc_client_leaderboard_entry_list_t* list,
                                         rc_client_t* client, void* callback_userdata);
-static void FetchNextLeaderboardEntries();
-static void CloseLeaderboard();
+
+#ifndef __ANDROID__
+static void DrawAchievement(const rc_client_achievement_t* cheevo);
+static void DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard);
+static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
+                                 float name_column_width, float time_column_width, float column_spacing);
+#endif
 
 static bool s_hardcore_mode = false;
 
@@ -226,6 +223,16 @@ static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
   return std::unique_lock(s_achievements_mutex);
+}
+
+rc_client_t* Achievements::GetClient()
+{
+  return s_client;
+}
+
+const rc_client_user_game_summary_t& Achievements::GetGameSummary()
+{
+  return s_game_summary;
 }
 
 std::string Achievements::GetUserAgent()
@@ -367,6 +374,11 @@ bool Achievements::HasRichPresence()
 const std::string& Achievements::GetGameTitle()
 {
   return s_game_title;
+}
+
+const std::string& Achievements::GetGameIconPath()
+{
+  return s_game_icon;
 }
 
 const std::string& Achievements::GetRichPresenceString()
@@ -640,6 +652,15 @@ void Achievements::IdleUpdate()
 
   s_http_downloader->PollRequests();
   rc_client_idle(s_client);
+}
+
+bool Achievements::NeedsIdleUpdate()
+{
+  if (!IsActive())
+    return false;
+
+  const auto lock = GetLock();
+  return (s_http_downloader && s_http_downloader->HasAnyRequests());
 }
 
 void Achievements::FrameUpdate()
@@ -980,9 +1001,10 @@ void Achievements::DisplayAchievementSummary()
     std::string summary;
     if (s_game_summary.num_core_achievements > 0)
     {
-      summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {} of {} achievements, and earned {} of {} points."),
-                            s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements,
-                            s_game_summary.points_unlocked, s_game_summary.points_core);
+      summary = fmt::format(
+        TRANSLATE_FS("Achievements", "You have unlocked {} of {} achievements, and earned {} of {} points."),
+        s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
+        s_game_summary.points_core);
     }
     else
     {
@@ -1507,7 +1529,8 @@ bool Achievements::DoState(StateWrapper& sw)
   }
 }
 
-std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state)
+std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
+                                                  bool download_if_missing)
 {
   static constexpr std::array<const char*, NUM_RC_CLIENT_ACHIEVEMENT_STATES> s_achievement_state_strings = {
     {"inactive", "active", "unlocked", "disabled"}};
@@ -1520,7 +1543,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
   path = Path::Combine(s_image_directory, TinyString::from_fmt("achievement_{}_{}_{}.png", s_game_id, achievement->id,
                                                                s_achievement_state_strings[state]));
 
-  if (!FileSystem::FileExists(path.c_str()))
+  if (download_if_missing && !FileSystem::FileExists(path.c_str()))
   {
     char buf[512];
     const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
@@ -1767,12 +1790,15 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 
 void Achievements::ClearUIState()
 {
+#ifndef __ANDROID__
   if (FullscreenUI::IsAchievementsWindowOpen() || FullscreenUI::IsLeaderboardsWindowOpen())
     FullscreenUI::ReturnToPreviousWindow();
 
+  CloseLeaderboard();
+#endif
+
   s_achievement_badge_paths = {};
 
-  CloseLeaderboard();
   s_leaderboard_user_icon_paths = {};
   s_leaderboard_entry_lists = {};
   if (s_leaderboard_list)
@@ -1920,6 +1946,8 @@ void Achievements::DrawGameOverlays()
     position.y -= image_size.y + padding;
   }
 }
+
+#ifndef __ANDROID__
 
 void Achievements::DrawPauseMenuOverlays()
 {
@@ -2767,6 +2795,8 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
     OpenLeaderboard(lboard);
 }
 
+#endif // __ANDROID__
+
 void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
 {
   Log_DevPrintf("Opening leaderboard '%s' (%u)", lboard->title, lboard->id);
@@ -2777,6 +2807,36 @@ void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
   s_is_showing_all_leaderboard_entries = false;
   s_leaderboard_fetch_handle = rc_client_begin_fetch_leaderboard_entries_around_user(
     s_client, lboard->id, LEADERBOARD_NEARBY_ENTRIES_TO_FETCH, LeaderboardFetchNearbyCallback, nullptr);
+}
+
+bool Achievements::OpenLeaderboardById(u32 leaderboard_id)
+{
+  const rc_client_leaderboard_t* lb = rc_client_get_leaderboard_info(s_client, leaderboard_id);
+  if (!lb)
+    return false;
+
+  OpenLeaderboard(lb);
+  return true;
+}
+
+u32 Achievements::GetOpenLeaderboardId()
+{
+  return s_open_leaderboard ? s_open_leaderboard->id : 0;
+}
+
+bool Achievements::IsShowingAllLeaderboardEntries()
+{
+  return s_is_showing_all_leaderboard_entries;
+}
+
+const std::vector<rc_client_leaderboard_entry_list_t*>& Achievements::GetLeaderboardEntryLists()
+{
+  return s_leaderboard_entry_lists;
+}
+
+const rc_client_leaderboard_entry_list_t* Achievements::GetLeaderboardNearbyEntries()
+{
+  return s_leaderboard_nearby_entries;
 }
 
 void Achievements::LeaderboardFetchNearbyCallback(int result, const char* error_message,

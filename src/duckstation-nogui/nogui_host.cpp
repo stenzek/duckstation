@@ -95,7 +95,6 @@ static void AsyncOpThreadEntryPoint(std::function<void(ProgressCallback*)> callb
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
 static bool s_is_fullscreen = false;
-static bool s_save_state_on_shutdown = false;
 static bool s_was_paused_by_focus_loss = false;
 
 static Threading::Thread s_cpu_thread;
@@ -321,6 +320,10 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
 void Host::ReportDebuggerMessage(const std::string_view& message)
 {
   Log_ErrorPrintf("ReportDebuggerMessage: %.*s", static_cast<int>(message.size()), message.data());
+}
+
+void Host::AddFixedInputBindings(SettingsInterface& si)
+{
 }
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
@@ -700,7 +703,6 @@ void Host::ReleaseRenderWindow()
 
 void Host::OnSystemStarting()
 {
-  s_save_state_on_shutdown = false;
   s_was_paused_by_focus_loss = false;
 }
 

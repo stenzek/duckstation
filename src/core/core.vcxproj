@@ -90,6 +90,7 @@
     <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="achievements_private.h" />
     <ClInclude Include="analog_controller.h" />
     <ClInclude Include="analog_joystick.h" />
     <ClInclude Include="bios.h" />

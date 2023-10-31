@@ -272,7 +272,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
   return true;
 }
 
-#else
+#elif !defined(__ANDROID__)
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
 {

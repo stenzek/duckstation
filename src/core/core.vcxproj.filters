@@ -135,5 +135,6 @@
     <ClInclude Include="cpu_newrec_compiler_aarch64.h" />
     <ClInclude Include="cpu_newrec_compiler_riscv64.h" />
     <ClInclude Include="cpu_newrec_compiler_aarch32.h" />
+    <ClInclude Include="achievements_private.h" />
   </ItemGroup>
 </Project>

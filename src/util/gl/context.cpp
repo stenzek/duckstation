@@ -18,6 +18,8 @@
 #include "context_wgl.h"
 #elif defined(__APPLE__)
 #include "context_agl.h"
+#elif defined(__ANDROID__)
+#include "context_egl_android.h"
 #else
 #ifdef ENABLE_EGL
 #ifdef ENABLE_WAYLAND
@@ -120,6 +122,8 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   context = ContextWGL::Create(wi, versions_to_try, num_versions_to_try);
 #elif defined(__APPLE__)
   context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
+#elif defined(__ANDROID__)
+  context = ContextEGLAndroid::Create(wi, versions_to_try, num_versions_to_try);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)

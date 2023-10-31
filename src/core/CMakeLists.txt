@@ -1,6 +1,7 @@
 add_library(core
   achievements.cpp
   achievements.h
+  achievements_private.h
   analog_controller.cpp
   analog_controller.h
   analog_joystick.cpp

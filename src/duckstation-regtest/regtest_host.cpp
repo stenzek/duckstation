@@ -355,6 +355,11 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
   return std::nullopt;
 }
 
+void Host::AddFixedInputBindings(SettingsInterface& si)
+{
+  // noop
+}
+
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
 {
   // noop

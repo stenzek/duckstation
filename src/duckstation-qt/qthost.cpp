@@ -1424,6 +1424,10 @@ void Host::ReportDebuggerMessage(const std::string_view& message)
   emit g_emu_thread->debuggerMessageReported(QString::fromUtf8(message));
 }
 
+void Host::AddFixedInputBindings(SettingsInterface& si)
+{
+}
+
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
 {
   emit g_emu_thread->onInputDeviceConnected(

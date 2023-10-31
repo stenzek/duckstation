@@ -220,6 +220,10 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   if (wi.type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+  if (wi.type == WindowInfo::Type::Android && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
+    return false;
+#endif
 
   // VK_EXT_debug_utils
   if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
