@@ -19,7 +19,7 @@ ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend)
     m_spirv(render_api == RenderAPI::Vulkan || render_api == RenderAPI::Metal),
     m_supports_dual_source_blend(supports_dual_source_blend), m_use_glsl_interface_blocks(false)
 {
-#if defined(ENABLE_OPENGL) || defined(ENABLE_VULKAN)
+#if defined(ENABLE_OPENGL) || defined(ENABLE_VULKAN) || defined(__APPLE__)
   if (m_glsl)
   {
 #ifdef ENABLE_OPENGL

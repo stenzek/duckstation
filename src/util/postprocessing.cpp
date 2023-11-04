@@ -699,8 +699,6 @@ bool PostProcessing::Apply(GPUFramebuffer* final_target, s32 final_left, s32 fin
   if (!CheckTargets(target_format, target_width, target_height))
     return false;
 
-  g_gpu_device->SetViewportAndScissor(final_left, final_top, final_width, final_height);
-
   GPUTexture* input = s_input_texture.get();
   GPUFramebuffer* input_fb = s_input_framebuffer.get();
   GPUTexture* output = s_output_texture.get();

@@ -176,6 +176,7 @@ bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUFramebuffer* final_
 
   g_gpu_device->SetPipeline(m_pipeline.get());
   g_gpu_device->SetTextureSampler(0, input, m_sampler.get());
+  g_gpu_device->SetViewportAndScissor(final_left, final_top, final_width, final_height);
 
   const u32 uniforms_size = GetUniformsSize();
   void* uniforms = g_gpu_device->MapUniformBuffer(uniforms_size);
@@ -377,7 +378,7 @@ static float4 o_col0;
   {
     if (m_use_glsl_interface_blocks)
     {
-      if (IsVulkan())
+      if (IsVulkan() || IsMetal())
         ss << "layout(location = 0) ";
 
       ss << "in VertexData {\n";

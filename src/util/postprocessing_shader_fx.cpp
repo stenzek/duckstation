@@ -1281,10 +1281,23 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
   for (const Pass& pass : m_passes)
   {
     GL_SCOPE_FMT("Draw pass {}", pass.name.c_str());
-
     GL_INS_FMT("Render Target: ID {} [{}]", pass.render_target, GetTextureNameForID(pass.render_target));
     GPUFramebuffer* output_fb = GetFramebufferByID(pass.render_target, input, final_target);
-    g_gpu_device->SetFramebuffer(output_fb);
+
+    if (!output_fb)
+    {
+      // Drawing to final buffer.
+      if (!g_gpu_device->BeginPresent(false))
+      {
+        GL_POP();
+        return false;
+      }
+    }
+    else
+    {
+      g_gpu_device->SetFramebuffer(output_fb);
+    }
+
     g_gpu_device->SetPipeline(pass.pipeline.get());
 
     // Set all inputs first, before the render pass starts.
@@ -1292,7 +1305,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
     for (const Sampler& sampler : pass.samplers)
     {
       GL_INS_FMT("Texture Sampler {}: ID {} [{}]", sampler.slot, sampler.texture_id,
-             GetTextureNameForID(sampler.texture_id));
+                 GetTextureNameForID(sampler.texture_id));
       g_gpu_device->SetTextureSampler(sampler.slot, GetTextureByID(sampler.texture_id, input, final_target),
                                       sampler.sampler);
       bound_textures[sampler.slot] = true;
@@ -1304,16 +1317,6 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
     {
       if (!bound_textures[i])
         g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
-    }
-
-    if (!output_fb)
-    {
-      // Drawing to final buffer.
-      if (!g_gpu_device->BeginPresent(false))
-      {
-        GL_POP();
-        return false;
-      }
     }
 
     g_gpu_device->Draw(pass.num_vertices, 0);
