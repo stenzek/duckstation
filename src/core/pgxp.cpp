@@ -160,7 +160,7 @@ ALWAYS_INLINE_RELEASE PGXP_value* ReadMem(u32 addr)
 ALWAYS_INLINE_RELEASE void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value)
 {
   PGXP_value* pMem = GetPtr(addr);
-  if (pMem != NULL)
+  if (pMem)
   {
     Validate(pMem, value);
     *dest = *pMem;
@@ -175,7 +175,7 @@ ALWAYS_INLINE_RELEASE static void ValidateAndCopyMem16(PGXP_value* dest, u32 add
   u32 validMask = 0;
   psx_value val, mask;
   PGXP_value* pMem = GetPtr(addr);
-  if (pMem != NULL)
+  if (pMem)
   {
     mask.d = val.d = 0;
     // determine if high or low word
@@ -224,7 +224,7 @@ ALWAYS_INLINE_RELEASE void WriteMem(const PGXP_value* value, u32 addr)
 ALWAYS_INLINE_RELEASE static void WriteMem16(const PGXP_value* src, u32 addr)
 {
   PGXP_value* dest = GetPtr(addr);
-  psx_value* pVal = NULL;
+  psx_value* pVal = nullptr;
 
   if (dest)
   {
