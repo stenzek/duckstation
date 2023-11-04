@@ -1013,22 +1013,21 @@ void GPU::UpdateCommandTickEvent()
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
                                                        float* display_y) const
 {
-  float scale;
-  const Common::Rectangle<float> draw_rc = CalculateDrawRect(
-    g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), nullptr, nullptr, &scale, nullptr);
+  const Common::Rectangle<s32> draw_rc =
+    CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
 
   // convert coordinates to active display region, then to full display region
-  const float scaled_display_x = (window_x - draw_rc.left) / static_cast<float>(draw_rc.GetWidth());
-  const float scaled_display_y = (window_y - draw_rc.top) / static_cast<float>(draw_rc.GetHeight());
+  const float scaled_display_x = (window_x - static_cast<float>(draw_rc.left)) / static_cast<float>(draw_rc.GetWidth());
+  const float scaled_display_y = (window_y - static_cast<float>(draw_rc.top)) / static_cast<float>(draw_rc.GetHeight());
 
   // scale back to internal resolution
   *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
   *display_y = scaled_display_y * static_cast<float>(m_crtc_state.display_height);
 
-  Log_DebugPrintf("win %.0f,%.0f -> disp %.2f,%.2f (size %u,%u frac %f,%f)", window_x, window_y, *display_x, *display_y,
-                  m_crtc_state.display_width, m_crtc_state.display_height,
-                  *display_x / static_cast<float>(m_crtc_state.display_width),
-                  *display_y / static_cast<float>(m_crtc_state.display_height));
+  Log_DevPrintf("win %.0f,%.0f -> local %.0f,%.0f, disp %.2f,%.2f (size %u,%u frac %f,%f)", window_x, window_y,
+                window_x - draw_rc.left, window_y - draw_rc.top, *display_x, *display_y, m_crtc_state.display_width,
+                m_crtc_state.display_height, *display_x / static_cast<float>(m_crtc_state.display_width),
+                *display_y / static_cast<float>(m_crtc_state.display_height));
 }
 
 bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
