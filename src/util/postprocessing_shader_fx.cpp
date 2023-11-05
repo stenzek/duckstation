@@ -6,6 +6,7 @@
 #include "shadergen.h"
 
 // TODO: Remove me
+#include "core/host.h"
 #include "core/settings.h"
 
 #include "common/assert.h"
@@ -775,13 +776,19 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      const std::string image_path =
-        Path::Combine(EmuFolders::Shaders, Path::Combine("reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
       Common::RGBA8Image image;
-      if (!image.LoadFromFile(image_path.c_str()))
+      if (const std::string image_path =
+            Path::Combine(EmuFolders::Shaders, Path::Combine("reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
+          !image.LoadFromFile(image_path.c_str()))
       {
-        Error::SetString(error, fmt::format("Failed to load image '{}' (from '{}')", source, image_path).c_str());
-        return false;
+        // Might be a base file/resource instead.
+        const std::string resource_name = Path::Combine("shaders/reshade/Textures", source);
+        if (std::optional<std::vector<u8>> resdata = Host::ReadResourceFile(resource_name.c_str());
+            !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->data(), resdata->size()))
+        {
+          Error::SetString(error, fmt::format("Failed to load image '{}' (from '{}')", source, image_path).c_str());
+          return false;
+        }
       }
 
       tex.rt_scale = 0.0f;
