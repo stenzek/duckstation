@@ -507,7 +507,8 @@ u16 CDImage::SubChannelQ::ComputeCRC(const Data& data)
   for (u32 i = 0; i < 10; i++)
     value = crc16_table[(value >> 8) ^ data[i]] ^ (value << 8);
 
-  return ~(value >> 8) | (~(value) << 8);
+  value = ~value;
+  return (value >> 8) | (value << 8);
 }
 
 bool CDImage::SubChannelQ::IsCRCValid() const
