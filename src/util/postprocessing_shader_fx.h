@@ -10,6 +10,8 @@
 // reshadefx
 #include "effect_module.hpp"
 
+#include <random>
+
 class Error;
 
 namespace PostProcessing {
@@ -46,6 +48,8 @@ private:
     FrameCountF,
     PingPong,
     MousePoint,
+    Random,
+    RandomF,
     BufferWidth,
     BufferHeight,
     BufferWidthF,
@@ -117,6 +121,9 @@ private:
 
   Common::Timer m_frame_timer;
   u32 m_frame_count = 0;
+
+  // Specifically using a fixed seed, so that it's consistent from run-to-run.
+  std::mt19937 m_random{0x1337};
 };
 
 } // namespace PostProcessing

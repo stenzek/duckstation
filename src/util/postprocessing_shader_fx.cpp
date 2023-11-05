@@ -329,6 +329,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   pp.add_macro_definition("BUFFER_HEIGHT", std::to_string(buffer_height));
   pp.add_macro_definition("BUFFER_RCP_WIDTH", std::to_string(1.0f / static_cast<float>(buffer_width)));
   pp.add_macro_definition("BUFFER_RCP_HEIGHT", std::to_string(1.0f / static_cast<float>(buffer_height)));
+  pp.add_macro_definition("BUFFER_COLOR_BIT_DEPTH", "32");
 
   switch (GetRenderAPI())
   {
@@ -681,6 +682,19 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
       }
 
       *si = SourceOptionType::MousePoint;
+      return true;
+    }
+    else if (source == "random")
+    {
+      if ((!ui.type.is_floating_point() && !ui.type.is_integral()) || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' ({} components) for random source in uniform '{}'",
+                                            ui.type.description(), ui.type.components(), ui.name));
+        return false;
+      }
+
+      // TODO: This is missing min/max handling.
+      *si = (ui.type.base == reshadefx::type::t_float) ? SourceOptionType::RandomF : SourceOptionType::Random;
       return true;
     }
     else if (source == "overlay_active" || source == "has_depth")
@@ -1238,6 +1252,19 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
           const std::pair<float, float> mpos = InputManager::GetPointerAbsolutePosition(0);
           std::memcpy(dst, &mpos.first, sizeof(float));
           std::memcpy(dst + sizeof(float), &mpos.second, sizeof(float));
+        }
+        break;
+
+        case SourceOptionType::Random:
+        {
+          const s32 rv = m_random() % 32767; // reshade uses rand(), which on some platforms has a 0x7fff maximum.
+          std::memcpy(dst, &rv, sizeof(rv));
+        }
+        break;
+        case SourceOptionType::RandomF:
+        {
+          const float rv = (m_random() - m_random.min()) / static_cast<float>(m_random.max() - m_random.min());
+          std::memcpy(dst, &rv, sizeof(rv));
         }
         break;
 
