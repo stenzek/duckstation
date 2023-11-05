@@ -3,6 +3,7 @@
 
 #include "cd_image.h"
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -536,8 +537,8 @@ u16 CDImage::SubChannelQ::ComputeCRC(const Data& data)
   for (u32 i = 0; i < 10; i++)
     value = crc16_table[(value >> 8) ^ data[i]] ^ (value << 8);
 
-  value = ~value;
-  return (value >> 8) | (value << 8);
+  // Invert and swap
+  return ByteSwap(static_cast<u16>(~value));
 }
 
 bool CDImage::SubChannelQ::IsCRCValid() const
