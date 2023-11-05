@@ -187,6 +187,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
       pregap_index.track_number = track_number;
       pregap_index.index_number = 0;
       pregap_index.mode = mode;
+      pregap_index.submode = CDImage::SubchannelMode::None;
       pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
 
@@ -204,7 +205,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
 
     // add the track itself
     m_tracks.push_back(Track{static_cast<u32>(track_number), track_start_lba, static_cast<u32>(m_indices.size()),
-                             static_cast<u32>(track_length), mode, control});
+                             static_cast<u32>(track_length), mode, SubchannelMode::None, control});
 
     // how many indices in this track?
     Index last_index;
@@ -216,6 +217,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = track_file_offset;
     last_index.mode = mode;
+    last_index.submode = CDImage::SubchannelMode::None;
     last_index.control.bits = control.bits;
     last_index.is_pregap = false;
     last_index.length = track_length;

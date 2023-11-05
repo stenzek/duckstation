@@ -32,7 +32,8 @@ public:
     SECONDS_PER_MINUTE = 60,
     FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
     SUBCHANNEL_BYTES_PER_FRAME = 12,
-    LEAD_OUT_SECTOR_COUNT = 6750
+    LEAD_OUT_SECTOR_COUNT = 6750,
+    ALL_SUBCODE_SIZE = 96,
   };
 
   enum : u8
@@ -40,14 +41,14 @@ public:
     LEAD_OUT_TRACK_NUMBER = 0xAA
   };
 
-  enum class ReadMode : u32
+  enum class ReadMode : u8
   {
     DataOnly,  // 2048 bytes per sector.
     RawSector, // 2352 bytes per sector.
     RawNoSync, // 2340 bytes per sector.
   };
 
-  enum class TrackMode : u32
+  enum class TrackMode : u8
   {
     Audio,        // 2352 bytes per sector
     Mode1,        // 2048 bytes per sector
@@ -57,6 +58,13 @@ public:
     Mode2Form2,   // 2324 bytes per sector
     Mode2FormMix, // 2332 bytes per sector
     Mode2Raw      // 2352 bytes per sector
+  };
+
+  enum class SubchannelMode : u8
+  {
+    None,           // no subcode data stored
+    RawInterleaved, // raw interleaved 96 bytes per sector
+    Raw,            // raw uninterleaved 96 bytes per sector
   };
 
   enum class PrecacheResult : u8
@@ -201,6 +209,7 @@ public:
     u32 first_index;
     u32 length;
     TrackMode mode;
+    SubchannelMode submode;
     SubChannelQ::Control control;
   };
 
@@ -215,12 +224,14 @@ public:
     LBA start_lba_in_track;
     u32 length;
     TrackMode mode;
+    SubchannelMode submode;
     SubChannelQ::Control control;
     bool is_pregap;
   };
 
   // Helper functions.
   static u32 GetBytesPerSector(TrackMode mode);
+  static void DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out);
 
   /// Returns a list of physical CD-ROM devices, .first being the device path, .second being the device name.
   static std::vector<std::pair<std::string, std::string>> GetDeviceList();

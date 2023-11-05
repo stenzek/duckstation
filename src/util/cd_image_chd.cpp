@@ -16,6 +16,7 @@
 #include "common/string_util.h"
 
 #include "fmt/format.h"
+#include "libchdr/cdrom.h"
 #include "libchdr/chd.h"
 
 #include <algorithm>
@@ -76,7 +77,7 @@ private:
   static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enough to go beyond this...
 
   chd_file* OpenCHD(std::string_view filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level);
-  bool ReadHunk(u32 hunk_index);
+  bool UpdateHunkBuffer(const Index& index, LBA lba_in_index, u32& hunk_offset);
 
   static void CopyAndSwap(void* dst_ptr, const u8* src_ptr);
 
@@ -307,6 +308,13 @@ bool CDImageCHD::Open(const char* filename, Error* error)
       }
     }
 
+    u32 csubtype, csubsize;
+    if (!cdrom_parse_subtype_string(subtype_str, &csubtype, &csubsize))
+    {
+      csubtype = CD_SUB_NONE;
+      csubsize = 0;
+    }
+
     if (track_num != (num_tracks + 1))
     {
       Log_ErrorFmt("Incorrect track number at index {}, expected {} got {}", num_tracks, (num_tracks + 1), track_num);
@@ -342,6 +350,7 @@ bool CDImageCHD::Open(const char* filename, Error* error)
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.mode = mode.value();
+      pregap_index.submode = static_cast<SubchannelMode>(csubtype);
       pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
 
@@ -367,7 +376,8 @@ bool CDImageCHD::Open(const char* filename, Error* error)
 
     // add the track itself
     m_tracks.push_back(Track{static_cast<u32>(track_num), disc_lba, static_cast<u32>(m_indices.size()),
-                             static_cast<u32>(frames + pregap_frames), mode.value(), control});
+                             static_cast<u32>(frames + pregap_frames), mode.value(),
+                             static_cast<SubchannelMode>(csubtype), control});
 
     // how many indices in this track?
     Index index = {};
@@ -379,6 +389,7 @@ bool CDImageCHD::Open(const char* filename, Error* error)
     index.file_sector_size = CHD_CD_SECTOR_DATA_SIZE;
     index.file_offset = file_lba;
     index.mode = mode.value();
+    index.submode = static_cast<SubchannelMode>(csubtype);
     index.control.bits = control.bits;
     index.is_pregap = false;
     index.length = static_cast<u32>(frames);
@@ -412,14 +423,31 @@ bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
     return true;
 
-  // TODO: Read subchannel data from CHD
+  if (index.submode == CDImage::SubchannelMode::None)
+    return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
+  u32 hunk_offset;
+  if (!UpdateHunkBuffer(index, lba_in_index, hunk_offset))
+    return false;
+
+  u8 deinterleaved_subchannel_data[96];
+  const u8* raw_subchannel_data = &m_hunk_buffer[hunk_offset + RAW_SECTOR_SIZE];
+  const u8* real_subchannel_data = raw_subchannel_data;
+  if (index.submode == CDImage::SubchannelMode::RawInterleaved)
+  {
+    DeinterleaveSubcode(raw_subchannel_data, deinterleaved_subchannel_data);
+    real_subchannel_data = deinterleaved_subchannel_data;
+  }
+
+  // P, Q, R, S, T, U, V, W
+  std::memcpy(subq->data.data(), real_subchannel_data + (1 * SUBCHANNEL_BYTES_PER_FRAME), SUBCHANNEL_BYTES_PER_FRAME);
+  return true;
 }
 
 bool CDImageCHD::HasNonStandardSubchannel() const
 {
-  return (m_sbi.GetReplacementSectorCount() > 0);
+  // Just look at the first track for in-CHD subq.
+  return (m_sbi.GetReplacementSectorCount() > 0 || m_tracks.front().submode != CDImage::SubchannelMode::None);
 }
 
 CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
@@ -458,11 +486,11 @@ ALWAYS_INLINE_RELEASE void CDImageCHD::CopyAndSwap(void* dst_ptr, const u8* src_
 
 #if defined(CPU_ARCH_SSE)
   // Requires SSSE3.
-  //const __m128i mask = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+  // const __m128i mask = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
   for (u32 i = 0; i < num_values; i++)
   {
     __m128i value = _mm_load_si128(reinterpret_cast<const __m128i*>(src_ptr));
-    //value = _mm_shuffle_epi8(value, mask);
+    // value = _mm_shuffle_epi8(value, mask);
     value = _mm_or_si128(_mm_slli_epi16(value, 8), _mm_srli_epi16(value, 8));
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr_byte), value);
     src_ptr += sizeof(value);
@@ -505,12 +533,8 @@ ALWAYS_INLINE_RELEASE void CDImageCHD::CopyAndSwap(void* dst_ptr, const u8* src_
 
 bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
 {
-  const u32 disc_frame = static_cast<LBA>(index.file_offset) + lba_in_index;
-  const u32 hunk_index = static_cast<u32>(disc_frame / m_sectors_per_hunk);
-  const u32 hunk_offset = static_cast<u32>((disc_frame % m_sectors_per_hunk) * CHD_CD_SECTOR_DATA_SIZE);
-  DebugAssert((m_hunk_size - hunk_offset) >= CHD_CD_SECTOR_DATA_SIZE);
-
-  if (m_current_hunk_index != hunk_index && !ReadHunk(hunk_index))
+  u32 hunk_offset;
+  if (!UpdateHunkBuffer(index, lba_in_index, hunk_offset))
     return false;
 
   // Audio data is in big-endian, so we have to swap it for little endian hosts...
@@ -522,8 +546,16 @@ bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-bool CDImageCHD::ReadHunk(u32 hunk_index)
+ALWAYS_INLINE_RELEASE bool CDImageCHD::UpdateHunkBuffer(const Index& index, LBA lba_in_index, u32& hunk_offset)
 {
+  const u32 disc_frame = static_cast<LBA>(index.file_offset) + lba_in_index;
+  const u32 hunk_index = static_cast<u32>(disc_frame / m_sectors_per_hunk);
+  hunk_offset = static_cast<u32>((disc_frame % m_sectors_per_hunk) * CHD_CD_SECTOR_DATA_SIZE);
+  DebugAssert((m_hunk_size - hunk_offset) >= CHD_CD_SECTOR_DATA_SIZE);
+
+  if (m_current_hunk_index == hunk_index)
+    return true;
+
   const chd_error err = chd_read(m_chd, hunk_index, m_hunk_buffer.data());
   if (err != CHDERR_NONE)
   {

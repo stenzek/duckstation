@@ -21,6 +21,35 @@ u32 CDImage::GetBytesPerSector(TrackMode mode)
   return sizes[static_cast<u32>(mode)];
 }
 
+// Adapted from
+// https://github.com/saramibreak/DiscImageCreator/blob/5a8fe21730872d67991211f1319c87f0780f2d0f/DiscImageCreator/convert.cpp
+void CDImage::DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
+{
+  std::memset(subcode_out, 0, ALL_SUBCODE_SIZE);
+
+  int row = 0;
+  for (int bitNum = 0; bitNum < 8; bitNum++)
+  {
+    for (int nColumn = 0; nColumn < ALL_SUBCODE_SIZE; row++)
+    {
+      u32 mask = 0x80;
+      for (int nShift = 0; nShift < 8; nShift++, nColumn++)
+      {
+        const int n = nShift - bitNum;
+        if (n > 0)
+        {
+          subcode_out[row] |= static_cast<u8>((subcode_in[nColumn] >> n) & mask);
+        }
+        else
+        {
+          subcode_out[row] |= static_cast<u8>((subcode_in[nColumn] << std::abs(n)) & mask);
+        }
+        mask >>= 1;
+      }
+    }
+  }
+}
+
 std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches, Error* error)
 {
   const char* extension;

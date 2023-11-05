@@ -73,6 +73,7 @@ bool CDImageBin::Open(const char* filename, Error* error)
   pregap_index.track_number = 1;
   pregap_index.index_number = 0;
   pregap_index.mode = mode;
+  pregap_index.submode = CDImage::SubchannelMode::None;
   pregap_index.control.bits = control.bits;
   pregap_index.is_pregap = true;
   m_indices.push_back(pregap_index);
@@ -88,12 +89,13 @@ bool CDImageBin::Open(const char* filename, Error* error)
   data_index.start_lba_in_track = 0;
   data_index.length = m_lba_count;
   data_index.mode = mode;
+  data_index.submode = CDImage::SubchannelMode::None;
   data_index.control.bits = control.bits;
   m_indices.push_back(data_index);
 
   // Assume a single track.
-  m_tracks.push_back(
-    Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode, control});
+  m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode,
+                           SubchannelMode::None, control});
 
   AddLeadOutIndex();
 

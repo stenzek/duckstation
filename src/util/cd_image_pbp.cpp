@@ -605,6 +605,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
     pregap_index.length = pregap_frames;
     pregap_index.mode = track_mode;
+    pregap_index.submode = CDImage::SubchannelMode::None;
     pregap_index.control.bits = track_control.bits;
     pregap_index.is_pregap = true;
 
@@ -619,6 +620,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     userdata_index.index_number = 1;
     userdata_index.start_lba_in_track = 0;
     userdata_index.mode = track_mode;
+    userdata_index.submode = CDImage::SubchannelMode::None;
     userdata_index.control.bits = track_control.bits;
     userdata_index.is_pregap = false;
 
@@ -651,7 +653,8 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     m_indices.push_back(userdata_index);
 
     m_tracks.push_back(Track{curr_track, userdata_start, 2 * curr_track - 1,
-                             pregap_index.length + userdata_index.length, track_mode, track_control});
+                             pregap_index.length + userdata_index.length, track_mode, SubchannelMode::None,
+                             track_control});
   }
 
   AddLeadOutIndex();

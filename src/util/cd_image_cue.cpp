@@ -178,6 +178,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
       pregap_index.track_number = track_num;
       pregap_index.index_number = 0;
       pregap_index.mode = mode;
+      pregap_index.submode = CDImage::SubchannelMode::None;
       pregap_index.control.bits = control.bits;
       pregap_index.is_pregap = true;
       pregap_index.file_index = track_file_index;
@@ -217,6 +218,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
         pregap_index.track_number = track_num;
         pregap_index.index_number = 0;
         pregap_index.mode = mode;
+        pregap_index.submode = CDImage::SubchannelMode::None;
         pregap_index.control.bits = control.bits;
         pregap_index.is_pregap = true;
         m_indices.push_back(pregap_index);
@@ -226,8 +228,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
     }
 
     // add the track itself
-    m_tracks.push_back(
-      Track{track_num, disc_lba, static_cast<u32>(m_indices.size()), track_length + pregap_frames, mode, control});
+    m_tracks.push_back(Track{track_num, disc_lba, static_cast<u32>(m_indices.size()), track_length + pregap_frames,
+                             mode, SubchannelMode::None, control});
 
     // how many indices in this track?
     Index last_index;
@@ -239,6 +241,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
     last_index.file_sector_size = track_sector_size;
     last_index.file_offset = static_cast<u64>(track_start) * track_sector_size;
     last_index.mode = mode;
+    last_index.submode = CDImage::SubchannelMode::None;
     last_index.control.bits = control.bits;
     last_index.is_pregap = false;
 
