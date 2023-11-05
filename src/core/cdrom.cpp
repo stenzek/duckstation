@@ -2036,8 +2036,24 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     {
       Log_DebugPrintf("Get CDROM BIOS Date/Version");
 
-      static constexpr u8 response[] = {0x95, 0x05, 0x16, 0xC1};
-      s_response_fifo.PushRange(response, countof(response));
+      static constexpr const u8 version_table[][4] = {
+        {0x94, 0x09, 0x19, 0xC0}, // PSX (PU-7)               19 Sep 1994, version vC0 (a)
+        {0x94, 0x11, 0x18, 0xC0}, // PSX (PU-7)               18 Nov 1994, version vC0 (b)
+        {0x95, 0x05, 0x16, 0xC1}, // PSX (EARLY-PU-8)         16 May 1995, version vC1 (a)
+        {0x95, 0x07, 0x24, 0xC1}, // PSX (LATE-PU-8)          24 Jul 1995, version vC1 (b)
+        {0x95, 0x07, 0x24, 0xD1}, // PSX (LATE-PU-8,debug ver)24 Jul 1995, version vD1 (debug)
+        {0x96, 0x08, 0x15, 0xC2}, // PSX (PU-16, Video CD)    15 Aug 1996, version vC2 (VCD)
+        {0x96, 0x08, 0x18, 0xC1}, // PSX (LATE-PU-8,yaroze)   18 Aug 1996, version vC1 (yaroze)
+        {0x96, 0x09, 0x12, 0xC2}, // PSX (PU-18) (japan)      12 Sep 1996, version vC2 (a.jap)
+        {0x97, 0x01, 0x10, 0xC2}, // PSX (PU-18) (us/eur)     10 Jan 1997, version vC2 (a)
+        {0x97, 0x08, 0x14, 0xC2}, // PSX (PU-20)              14 Aug 1997, version vC2 (b)
+        {0x98, 0x06, 0x10, 0xC3}, // PSX (PU-22)              10 Jul 1998, version vC3 (a)
+        {0x99, 0x02, 0x01, 0xC3}, // PSX/PSone (PU-23, PM-41) 01 Feb 1999, version vC3 (b)
+        {0xA1, 0x03, 0x06, 0xC3}, // PSone/late (PM-41(2))    06 Jun 2001, version vC3 (c)
+      };
+
+      s_response_fifo.PushRange(version_table[static_cast<u8>(g_settings.cdrom_mechacon_version)],
+                                countof(version_table[0]));
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;

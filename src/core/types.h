@@ -204,3 +204,22 @@ enum class CPUFastmemMode
   LUT,
   Count
 };
+
+enum class CDROMMechaconVersion : u8
+{
+  VC0A,
+  VC0B,
+  VC1A,
+  VC1B,
+  VD1,
+  VC2,
+  VC1,
+  VC2J,
+  VC2A,
+  VC2B,
+  VC3A,
+  VC3B,
+  VC3C,
+
+  Count,
+};

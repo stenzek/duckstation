@@ -347,6 +347,10 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
 
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Mechacon Version"), "CDROM", "MechaconVersion",
+                       Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
+                       Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
+                       Settings::DEFAULT_CDROM_MECHACON_VERSION);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
@@ -399,11 +403,13 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Shader Cache
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Stretch Display Vertically
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase Timer Resolution
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Create save state backups
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Enable PCDRV
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Enable PCDRV Writes
-    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                            // PCDrv Root Directory
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++,
+                         Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Create save state backups
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");             // PCDrv Root Directory
 
     return;
   }
@@ -443,6 +449,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("GPU", "UseDebugDevice");
   sif->DeleteValue("Display", "StretchVertically");
   sif->DeleteValue("Main", "IncreaseTimerResolution");
+  sif->DeleteValue("CDROM", "MechaconVersion");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("General", "CreateSaveStateBackups");
   sif->DeleteValue("PCDrv", "Enabled");
