@@ -2300,6 +2300,10 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
     dlg->setModal(false);
     dlg->show();
   }
+  else
+  {
+    dlg->raise();
+  }
 
   if (category)
     dlg->setCategory(category);
@@ -2321,6 +2325,10 @@ void MainWindow::doControllerSettings(
   {
     dlg->setModal(false);
     dlg->show();
+  }
+  else
+  {
+    dlg->raise();
   }
 
   if (category != ControllerSettingsDialog::Category::Count)
