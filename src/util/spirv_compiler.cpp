@@ -176,6 +176,11 @@ std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileShader(GPUSh
 std::optional<std::string> SPIRVCompiler::CompileSPIRVToMSL(std::span<const SPIRVCodeType> spv)
 {
   spirv_cross::CompilerMSL compiler(spv.data(), spv.size());
+
+  spirv_cross::CompilerMSL::Options options = compiler.get_msl_options();
+  options.pad_fragment_output_components = true;
+  compiler.set_msl_options(options);
+
   std::string msl = compiler.compile();
   return (msl.empty()) ? std::optional<std::string>() : std::optional<std::string>(std::move(msl));
 }
