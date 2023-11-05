@@ -1397,12 +1397,19 @@ void CDROM::EndCommand()
 void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 {
   const CommandInfo& ci = s_command_info[static_cast<u8>(s_command)];
-  Log_DevPrintf("CDROM executing command 0x%02X (%s), stat = 0x%02X", static_cast<u8>(s_command), ci.name,
-                s_secondary_status.bits);
-  if (s_param_fifo.GetSize() < ci.expected_parameters)
+  if (Log_DevVisible()) [[unlikely]]
   {
-    Log_WarningPrintf("Too few parameters for command 0x%02X (%s), expecting %u got %u", static_cast<u8>(s_command),
-                      ci.name, ci.expected_parameters, s_param_fifo.GetSize());
+    SmallString params;
+    for (u32 i = 0; i < s_param_fifo.GetSize(); i++)
+      params.append_fmt("{}0x{:02X}", (i == 0) ? "" : ", ", s_param_fifo.Peek(i));
+    Log_DevFmt("CDROM executing command 0x{:02X} ({}), stat = 0x{:02X}, params = [{}]", static_cast<u8>(s_command),
+               ci.name, s_secondary_status.bits, params);
+  }
+
+  if (s_param_fifo.GetSize() < ci.expected_parameters) [[unlikely]]
+  {
+    Log_WarningFmt("Too few parameters for command 0x{:02X} ({}), expecting {} got {}", static_cast<u8>(s_command),
+                   ci.name, ci.expected_parameters, s_param_fifo.GetSize());
     SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
     EndCommand();
     return;

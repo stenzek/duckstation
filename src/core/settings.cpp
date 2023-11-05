@@ -704,7 +704,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 void Settings::UpdateLogSettings()
 {
   Log::SetLogLevel(log_level);
-  Log::SetLogfilter(log_filter);
+  Log::SetLogFilter(log_filter);
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
   Log::SetDebugOutputParams(log_to_debug);
 

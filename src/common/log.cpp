@@ -445,6 +445,20 @@ void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamp
   s_file_output_timestamp = timestamps;
 }
 
+LOGLEVEL Log::GetLogLevel()
+{
+  return s_log_level;
+}
+
+bool Log::IsLogVisible(LOGLEVEL level, const char* channelName)
+{
+  if (level > s_log_level)
+    return false;
+
+  std::unique_lock lock(s_callback_mutex);
+  return FilterTest(level, channelName, lock);
+}
+
 void Log::SetLogLevel(LOGLEVEL level)
 {
   std::unique_lock lock(s_callback_mutex);
@@ -452,7 +466,7 @@ void Log::SetLogLevel(LOGLEVEL level)
   s_log_level = level;
 }
 
-void Log::SetLogfilter(std::string_view filter)
+void Log::SetLogFilter(std::string_view filter)
 {
   std::unique_lock lock(s_callback_mutex);
   if (s_log_filter != filter)

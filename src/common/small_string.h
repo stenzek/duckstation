@@ -64,6 +64,9 @@ public:
   template<typename... T>
   void append_fmt(fmt::format_string<T...> fmt, T&&... args);
 
+  // append hex string
+  void append_hex(const void* data, size_t len);
+
   // append a single character to this string
   void prepend(char c);
 

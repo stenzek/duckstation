@@ -52,11 +52,17 @@ void SetDebugOutputParams(bool enabled);
 // adds a file output
 void SetFileOutputParams(bool enabled, const char* filename, bool timestamps = true);
 
+// Returns the current global filtering level.
+LOGLEVEL GetLogLevel();
+
+// Returns true if log messages for the specified log level/filter would not be filtered (and visible).
+bool IsLogVisible(LOGLEVEL level, const char* channelName);
+
 // Sets global filtering level, messages below this level won't be sent to any of the logging sinks.
 void SetLogLevel(LOGLEVEL level);
 
 // Sets global filter, any messages from these channels won't be sent to any of the logging sinks.
-void SetLogfilter(std::string_view filter);
+void SetLogFilter(std::string_view filter);
 
 // writes a message to the log
 void Write(const char* channelName, const char* functionName, LOGLEVEL level, std::string_view message);
@@ -98,6 +104,14 @@ ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* function
 #define Log_ProfilePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
 #define Log_ProfileFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
 
+#define Log_ErrorVisible() Log::IsLogVisible(LOGLEVEL_ERROR, ___LogChannel___)
+#define Log_WarningVisible() Log::IsLogVisible(LOGLEVEL_WARNING, ___LogChannel___)
+#define Log_PerfVisible() Log::IsLogVisible(LOGLEVEL_PERF, ___LogChannel___)
+#define Log_InfoVisible() Log::IsLogVisible(LOGLEVEL_INFO, ___LogChannel___)
+#define Log_VerboseVisible() Log::IsLogVisible(LOGLEVEL_VERBOSE, ___LogChannel___)
+#define Log_DevVisible() Log::IsLogVisible(LOGLEVEL_DEV, ___LogChannel___)
+#define Log_ProfileVisible() Log::IsLogVisible(LOGLEVEL_PROFILE, ___LogChannel___)
+
 #ifdef _DEBUG
 #define Log_DebugPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEBUG, msg)
 #define Log_DebugPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
@@ -105,6 +119,9 @@ ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* function
 #define Log_TracePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_TRACE, msg)
 #define Log_TracePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
 #define Log_TraceFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
+
+#define Log_DebugVisible() Log::IsLogVisible(LOGLEVEL_DEBUG, ___LogChannel___)
+#define Log_TraceVisible() Log::IsLogVisible(LOGLEVEL_TRACE, ___LogChannel___)
 #else
 #define Log_DebugPrint(msg)                                                                                            \
   do                                                                                                                   \
@@ -130,4 +147,7 @@ ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* function
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)
+
+#define Log_DebugVisible() false
+#define Log_TraceVisible() false
 #endif

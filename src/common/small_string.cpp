@@ -172,6 +172,18 @@ void SmallStringBase::append(const char* str, u32 length)
   m_buffer[m_length] = 0;
 }
 
+void SmallStringBase::append_hex(const void* data, size_t len)
+{
+  if (len == 0)
+    return;
+
+  make_room_for(static_cast<u32>(len) * 4);
+  const u8* bytes = static_cast<const u8*>(data);
+  append_fmt("{:02X}", bytes[0]);
+  for (size_t i = 1; i < len; i++)
+    append_fmt(", {:02X}", bytes[i]);
+}
+
 void SmallStringBase::prepend(const char* str, u32 length)
 {
   if (length == 0)
