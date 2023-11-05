@@ -427,7 +427,8 @@ void VulkanTexture::CommitClear()
     return;
 
   VulkanDevice& dev = VulkanDevice::GetInstance();
-  dev.EndRenderPass();
+  if (dev.InRenderPass())
+    dev.EndRenderPass();
 
   CommitClear(dev.GetCurrentCommandBuffer());
 }
