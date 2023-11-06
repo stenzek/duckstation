@@ -75,7 +75,6 @@ struct Settings
   bool start_paused = false;
   bool start_fullscreen = false;
   bool pause_on_focus_loss = false;
-  bool pause_on_menu = true;
   bool save_state_on_exit = true;
   bool create_save_state_backups = DEFAULT_SAVE_STATE_BACKUPS;
   bool compress_save_states = DEFAULT_SAVE_STATE_COMPRESSION;

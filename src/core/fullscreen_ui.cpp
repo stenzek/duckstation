@@ -679,7 +679,7 @@ void FullscreenUI::ToggleTheme()
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
   s_was_paused_on_quick_menu_open = (System::GetState() == System::State::Paused);
-  if (g_settings.pause_on_menu && !s_was_paused_on_quick_menu_open)
+  if (!s_was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(true); });
 
   s_pause_menu_was_open |= set_pause_menu_open;
@@ -2722,9 +2722,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another "
                               "application, and unpauses when you switch back."),
                     "Main", "PauseOnFocusLoss", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Pause On Menu"),
-                    FSUI_CSTR("Pauses the emulator when you open the quick menu, and unpauses when you close it."),
-                    "Main", "PauseOnMenu", true);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
     FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
@@ -7084,11 +7081,9 @@ TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Path");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
-TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Start");
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when a game is started.");
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.");
-TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you open the quick menu, and unpauses when you close it.");
 TRANSLATE_NOOP("FullscreenUI", "Per-Game Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Per-game controller configuration initialized with global settings.");
 TRANSLATE_NOOP("FullscreenUI", "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.");

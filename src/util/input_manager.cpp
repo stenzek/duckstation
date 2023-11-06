@@ -113,6 +113,7 @@ static void GenerateRelativeMouseEvents();
 
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
+static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
 
 static void LoadMacroButtonConfig(SettingsInterface& si, const std::string& section, u32 pad,
                                   const Controller::ControllerInfo* cinfo);
@@ -844,7 +845,11 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 
   // If imgui ate the event, don't fire our handlers.
   const bool skip_button_handlers = PreprocessEvent(key, value, generic_key);
+  return ProcessEvent(key, value, skip_button_handlers);
+}
 
+bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers)
+{
   // find all the bindings associated with this key
   const InputBindingKey masked_key = key.MaskDirection();
   const auto range = s_binding_map.equal_range(masked_key);
@@ -856,6 +861,7 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
   for (auto it = range.first; it != range.second; ++it)
   {
     InputBinding* binding = it->second.get();
+
     // find the key which matches us
     for (u32 i = 0; i < binding->num_keys; i++)
     {
@@ -865,6 +871,7 @@ bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
       const u8 bit = static_cast<u8>(1) << i;
       const bool negative = binding->keys[i].modifier == InputModifier::Negate;
       const bool new_state = (negative ? (value < 0.0f) : (value > 0.0f));
+
       float value_to_pass = 0.0f;
       switch (binding->keys[i].modifier)
       {
