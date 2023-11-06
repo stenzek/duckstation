@@ -228,7 +228,8 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
       cd.axis_offsets.push_back(offset);
   }
 
-  cd.num_hats = caps.dwPOVs;
+  cd.num_buttons = std::min(static_cast<u32>(caps.dwButtons), static_cast<u32>(std::size(cd.last_state.rgbButtons)));
+  cd.num_hats = std::min(static_cast<u32>(caps.dwPOVs), static_cast<u32>(std::size(cd.last_state.rgdwPOV)));
 
   hr = cd.device->Poll();
   if (hr == DI_NOEFFECT)
