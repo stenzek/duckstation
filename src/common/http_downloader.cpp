@@ -110,7 +110,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->callback(-1, std::string(), Request::Data());
+      req->callback(HTTP_STATUS_TIMEOUT, std::string(), Request::Data());
 
       CloseRequest(req);
 

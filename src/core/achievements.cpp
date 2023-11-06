@@ -307,7 +307,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
   auto callback = [cache_filename](s32 status_code, std::string content_type,
                                    Common::HTTPDownloader::Request::Data data) {
-    if (status_code != Common::HTTPDownloader::HTTP_OK)
+    if (status_code != Common::HTTPDownloader::HTTP_STATUS_OK)
       return;
 
     if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
@@ -616,7 +616,10 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
   Common::HTTPDownloader::Request::Callback hd_callback =
     [callback, callback_data](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
       rc_api_server_response_t rr;
-      rr.http_status_code = status_code;
+      rr.http_status_code = (status_code <= 0) ? (status_code == Common::HTTPDownloader::HTTP_STATUS_CANCELLED ?
+                                                    RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+                                                    RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
+                                                 status_code;
       rr.body_length = data.size();
       rr.body = reinterpret_cast<const char*>(data.data());
 
