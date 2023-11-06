@@ -162,8 +162,8 @@ void CheatManagerDialog::connectUi()
     }
     else if (index == 1)
     {
-      m_ui.scanStartAddress->setText(formatHexValue(CPU::DCACHE_LOCATION, 8));
-      m_ui.scanEndAddress->setText(formatHexValue(CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE, 8));
+      m_ui.scanStartAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR, 8));
+      m_ui.scanEndAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, 8));
     }
     else
     {

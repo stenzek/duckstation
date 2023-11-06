@@ -3088,10 +3088,10 @@ CodeGenerator::SpeculativeValue CodeGenerator::SpeculativeReadMemory(VirtualMemo
     return it->second;
 
   u32 value;
-  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  if ((phys_addr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
   {
-    u32 scratchpad_offset = phys_addr & DCACHE_OFFSET_MASK;
-    std::memcpy(&value, &CPU::g_state.dcache[scratchpad_offset], sizeof(value));
+    u32 scratchpad_offset = phys_addr & SCRATCHPAD_OFFSET_MASK;
+    std::memcpy(&value, &CPU::g_state.scratchpad[scratchpad_offset], sizeof(value));
     return value;
   }
 
@@ -3116,7 +3116,7 @@ void CodeGenerator::SpeculativeWriteMemory(u32 address, SpeculativeValue value)
     return;
   }
 
-  if ((phys_addr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
+  if ((phys_addr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR || Bus::IsRAMAddress(phys_addr))
     m_speculative_constants.memory.emplace(address, value);
 }
 

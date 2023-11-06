@@ -241,7 +241,7 @@ bool CPU::DoState(StateWrapper& sw)
   }
 
   sw.Do(&g_state.cache_control.bits);
-  sw.DoBytes(g_state.dcache.data(), g_state.dcache.size());
+  sw.DoBytes(g_state.scratchpad.data(), g_state.scratchpad.size());
 
   if (!GTE::DoState(sw))
     return false;
@@ -2674,46 +2674,47 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     case 0x00: // KUSEG 0M-512M
     case 0x04: // KSEG0 - physical memory cached
     {
-      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
-      if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+      if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
       {
-        const u32 offset = address & DCACHE_OFFSET_MASK;
+        const u32 offset = address & SCRATCHPAD_OFFSET_MASK;
 
         if constexpr (type == MemoryAccessType::Read)
         {
           if constexpr (size == MemoryAccessSize::Byte)
           {
-            value = CPU::g_state.dcache[offset];
+            value = CPU::g_state.scratchpad[offset];
           }
           else if constexpr (size == MemoryAccessSize::HalfWord)
           {
             u16 temp;
-            std::memcpy(&temp, &CPU::g_state.dcache[offset], sizeof(u16));
+            std::memcpy(&temp, &CPU::g_state.scratchpad[offset], sizeof(u16));
             value = ZeroExtend32(temp);
           }
           else if constexpr (size == MemoryAccessSize::Word)
           {
-            std::memcpy(&value, &CPU::g_state.dcache[offset], sizeof(u32));
+            std::memcpy(&value, &CPU::g_state.scratchpad[offset], sizeof(u32));
           }
         }
         else
         {
           if constexpr (size == MemoryAccessSize::Byte)
           {
-            CPU::g_state.dcache[offset] = Truncate8(value);
+            CPU::g_state.scratchpad[offset] = Truncate8(value);
           }
           else if constexpr (size == MemoryAccessSize::HalfWord)
           {
-            std::memcpy(&CPU::g_state.dcache[offset], &value, sizeof(u16));
+            std::memcpy(&CPU::g_state.scratchpad[offset], &value, sizeof(u16));
           }
           else if constexpr (size == MemoryAccessSize::Word)
           {
-            std::memcpy(&CPU::g_state.dcache[offset], &value, sizeof(u32));
+            std::memcpy(&CPU::g_state.scratchpad[offset], &value, sizeof(u32));
           }
         }
 
         return true;
       }
+
+      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
     }
     break;
 
@@ -2927,12 +2928,12 @@ void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccess
     return &g_ram[paddr & g_ram_mask];
   }
 
-  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  if ((paddr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
   {
     if (read_ticks)
       *read_ticks = 0;
 
-    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+    return &g_state.scratchpad[paddr & SCRATCHPAD_OFFSET_MASK];
   }
 
   if (paddr >= BIOS_BASE && paddr < (BIOS_BASE + BIOS_SIZE))
@@ -2959,8 +2960,8 @@ void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAcces
   if (paddr < RAM_MIRROR_END)
     return &g_ram[paddr & g_ram_mask];
 
-  if ((paddr & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
-    return &g_state.dcache[paddr & DCACHE_OFFSET_MASK];
+  if ((paddr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
+    return &g_state.scratchpad[paddr & SCRATCHPAD_OFFSET_MASK];
 
   return nullptr;
 }

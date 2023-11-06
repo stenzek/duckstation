@@ -21,10 +21,10 @@ enum : VirtualMemoryAddress
 };
 enum : PhysicalMemoryAddress
 {
-  DCACHE_LOCATION = UINT32_C(0x1F800000),
-  DCACHE_LOCATION_MASK = UINT32_C(0xFFFFFC00),
-  DCACHE_OFFSET_MASK = UINT32_C(0x000003FF),
-  DCACHE_SIZE = UINT32_C(0x00000400),
+  SCRATCHPAD_ADDR = UINT32_C(0x1F800000),
+  SCRATCHPAD_ADDR_MASK = UINT32_C(0x7FFFFC00),
+  SCRATCHPAD_OFFSET_MASK = UINT32_C(0x000003FF),
+  SCRATCHPAD_SIZE = UINT32_C(0x00000400),
   ICACHE_SIZE = UINT32_C(0x00001000),
   ICACHE_SLOTS = ICACHE_SIZE / sizeof(u32),
   ICACHE_LINE_SIZE = 16,
@@ -88,10 +88,10 @@ struct State
   void* fastmem_base = nullptr;
   void** memory_handlers = nullptr;
 
-  // data cache (used as scratchpad)
-  std::array<u8, DCACHE_SIZE> dcache = {};
   std::array<u32, ICACHE_LINES> icache_tags = {};
   std::array<u8, ICACHE_SIZE> icache_data = {};
+
+  std::array<u8, SCRATCHPAD_SIZE> scratchpad = {};
 
   static constexpr u32 GPRRegisterOffset(u32 index) { return offsetof(State, regs.r) + (sizeof(u32) * index); }
   static constexpr u32 GTERegisterOffset(u32 index) { return offsetof(State, gte_regs.r32) + (sizeof(u32) * index); }

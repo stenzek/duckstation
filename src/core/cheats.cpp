@@ -25,8 +25,8 @@ using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
 
 static bool IsValidScanAddress(PhysicalMemoryAddress address)
 {
-  if ((address & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION &&
-      (address & CPU::DCACHE_OFFSET_MASK) < CPU::DCACHE_SIZE)
+  if ((address & CPU::SCRATCHPAD_ADDR_MASK) == CPU::SCRATCHPAD_ADDR &&
+      (address & CPU::SCRATCHPAD_OFFSET_MASK) < CPU::SCRATCHPAD_SIZE)
   {
     return true;
   }
@@ -1076,14 +1076,14 @@ void CheatCode::Apply() const
 
       case InstructionCode::ScratchpadWrite16:
       {
-        DoMemoryWrite<u16>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value16);
+        DoMemoryWrite<u16>(CPU::SCRATCHPAD_ADDR | (inst.address & CPU::SCRATCHPAD_OFFSET_MASK), inst.value16);
         index++;
       }
       break;
 
       case InstructionCode::ExtScratchpadWrite32:
       {
-        DoMemoryWrite<u32>(CPU::DCACHE_LOCATION | (inst.address & CPU::DCACHE_OFFSET_MASK), inst.value32);
+        DoMemoryWrite<u32>(CPU::SCRATCHPAD_ADDR | (inst.address & CPU::SCRATCHPAD_OFFSET_MASK), inst.value32);
         index++;
       }
       break;

@@ -2350,10 +2350,10 @@ CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadMem(VirtualMemor
     return it->second;
 
   u32 value;
-  if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION)
+  if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
   {
-    u32 scratchpad_offset = address & DCACHE_OFFSET_MASK;
-    std::memcpy(&value, &CPU::g_state.dcache[scratchpad_offset], sizeof(value));
+    u32 scratchpad_offset = address & SCRATCHPAD_OFFSET_MASK;
+    std::memcpy(&value, &CPU::g_state.scratchpad[scratchpad_offset], sizeof(value));
     return value;
   }
 
@@ -2378,7 +2378,7 @@ void CPU::NewRec::Compiler::SpecWriteMem(u32 address, SpecValue value)
   }
 
   const PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
-  if ((address & DCACHE_LOCATION_MASK) == DCACHE_LOCATION || Bus::IsRAMAddress(phys_addr))
+  if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR || Bus::IsRAMAddress(phys_addr))
     m_speculative_constants.memory.emplace(address, value);
 }
 

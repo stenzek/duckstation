@@ -20,7 +20,7 @@ enum : u32
   VERTEX_CACHE_WIDTH = 0x800 * 2,
   VERTEX_CACHE_HEIGHT = 0x800 * 2,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
-  PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::DCACHE_SIZE)) / 4,
+  PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
   PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4
 };
 
@@ -142,8 +142,8 @@ ALWAYS_INLINE_RELEASE double f16Overflow(double in)
 
 ALWAYS_INLINE_RELEASE PGXP_value* GetPtr(u32 addr)
 {
-  if ((addr & CPU::DCACHE_LOCATION_MASK) == CPU::DCACHE_LOCATION)
-    return &Mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & CPU::DCACHE_OFFSET_MASK) >> 2)];
+  if ((addr & CPU::SCRATCHPAD_ADDR_MASK) == CPU::SCRATCHPAD_ADDR)
+    return &Mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & CPU::SCRATCHPAD_OFFSET_MASK) >> 2)];
 
   const u32 paddr = (addr & CPU::PHYSICAL_MEMORY_ADDRESS_MASK);
   if (paddr < Bus::RAM_MIRROR_END)

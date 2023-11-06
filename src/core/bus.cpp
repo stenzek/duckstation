@@ -711,7 +711,7 @@ std::optional<Bus::MemoryRegion> Bus::GetMemoryRegionForAddress(PhysicalMemoryAd
     return static_cast<MemoryRegion>(static_cast<u32>(MemoryRegion::RAM) + (address / RAM_2MB_SIZE));
   else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
     return MemoryRegion::EXP1;
-  else if (address >= CPU::DCACHE_LOCATION && address < (CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE))
+  else if (address >= CPU::SCRATCHPAD_ADDR && address < (CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE))
     return MemoryRegion::Scratchpad;
   else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
     return MemoryRegion::BIOS;
@@ -727,7 +727,7 @@ static constexpr std::array<std::pair<PhysicalMemoryAddress, PhysicalMemoryAddre
     {Bus::RAM_2MB_SIZE * 2, Bus::RAM_2MB_SIZE * 3},
     {Bus::RAM_2MB_SIZE * 3, Bus::RAM_MIRROR_END},
     {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE},
-    {CPU::DCACHE_LOCATION, CPU::DCACHE_LOCATION + CPU::DCACHE_SIZE},
+    {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE},
     {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE},
   }};
 
@@ -761,7 +761,7 @@ u8* Bus::GetMemoryRegionPointer(MemoryRegion region)
       return nullptr;
 
     case MemoryRegion::Scratchpad:
-      return CPU::g_state.dcache.data();
+      return CPU::g_state.scratchpad.data();
 
     case MemoryRegion::BIOS:
       return g_bios;
@@ -982,24 +982,24 @@ u32 Bus::BIOSReadHandler(VirtualMemoryAddress address)
 template<MemoryAccessSize size>
 u32 Bus::ScratchpadReadHandler(VirtualMemoryAddress address)
 {
-  const PhysicalMemoryAddress cache_offset = address - CPU::DCACHE_LOCATION;
-  if (cache_offset >= CPU::DCACHE_SIZE) [[unlikely]]
+  const PhysicalMemoryAddress cache_offset = address & MEMORY_LUT_PAGE_MASK;
+  if (cache_offset >= CPU::SCRATCHPAD_SIZE) [[unlikely]]
     return UnknownReadHandler<size>(address);
 
   if constexpr (size == MemoryAccessSize::Byte)
   {
-    return ZeroExtend32(CPU::g_state.dcache[cache_offset]);
+    return ZeroExtend32(CPU::g_state.scratchpad[cache_offset]);
   }
   else if constexpr (size == MemoryAccessSize::HalfWord)
   {
     u16 temp;
-    std::memcpy(&temp, &CPU::g_state.dcache[cache_offset], sizeof(temp));
+    std::memcpy(&temp, &CPU::g_state.scratchpad[cache_offset], sizeof(temp));
     return ZeroExtend32(temp);
   }
   else
   {
     u32 value;
-    std::memcpy(&value, &CPU::g_state.dcache[cache_offset], sizeof(value));
+    std::memcpy(&value, &CPU::g_state.scratchpad[cache_offset], sizeof(value));
     return value;
   }
 }
@@ -1007,19 +1007,19 @@ u32 Bus::ScratchpadReadHandler(VirtualMemoryAddress address)
 template<MemoryAccessSize size>
 void Bus::ScratchpadWriteHandler(VirtualMemoryAddress address, u32 value)
 {
-  const PhysicalMemoryAddress cache_offset = address - CPU::DCACHE_LOCATION;
-  if (cache_offset >= CPU::DCACHE_SIZE) [[unlikely]]
+  const PhysicalMemoryAddress cache_offset = address & MEMORY_LUT_PAGE_MASK;
+  if (cache_offset >= CPU::SCRATCHPAD_SIZE) [[unlikely]]
   {
     UnknownWriteHandler<size>(address, value);
     return;
   }
 
   if constexpr (size == MemoryAccessSize::Byte)
-    CPU::g_state.dcache[cache_offset] = Truncate8(value);
+    CPU::g_state.scratchpad[cache_offset] = Truncate8(value);
   else if constexpr (size == MemoryAccessSize::HalfWord)
-    std::memcpy(&CPU::g_state.dcache[cache_offset], &value, sizeof(u16));
+    std::memcpy(&CPU::g_state.scratchpad[cache_offset], &value, sizeof(u16));
   else if constexpr (size == MemoryAccessSize::Word)
-    std::memcpy(&CPU::g_state.dcache[cache_offset], &value, sizeof(u32));
+    std::memcpy(&CPU::g_state.scratchpad[cache_offset], &value, sizeof(u32));
 }
 
 template<MemoryAccessSize size>
@@ -1640,7 +1640,7 @@ void Bus::SetHandlers()
 
   // KUSEG - Cached
   SET(g_memory_handlers, KUSEG | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, RAMWriteHandler);
-  SET(g_memory_handlers, KUSEG | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
+  SET(g_memory_handlers, KUSEG | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
   SET(g_memory_handlers, KUSEG | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, IgnoreWriteHandler);
   SET(g_memory_handlers, KUSEG | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, EXP1WriteHandler);
   SET(g_memory_handlers, KUSEG | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
@@ -1649,7 +1649,7 @@ void Bus::SetHandlers()
 
   // KSEG0 - Cached
   SET(g_memory_handlers, KSEG0 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, RAMWriteHandler);
-  SET(g_memory_handlers, KSEG0 | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
+  SET(g_memory_handlers, KSEG0 | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ScratchpadWriteHandler);
   SET(g_memory_handlers, KSEG0 | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, IgnoreWriteHandler);
   SET(g_memory_handlers, KSEG0 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, EXP1WriteHandler);
   SET(g_memory_handlers, KSEG0 | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
@@ -1669,14 +1669,14 @@ void Bus::SetHandlers()
 
   // When cache isolated, only allow writes to cache? Or should we still allow KSEG1?
   SET(g_memory_handlers_isc, KUSEG | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, ICacheWriteHandler);
-  SET(g_memory_handlers_isc, KUSEG | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KUSEG | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KUSEG | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KUSEG | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KUSEG | HW_BASE, HW_SIZE, HardwareReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KUSEG | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KUSEG | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KSEG0 | RAM_BASE, RAM_MIRROR_SIZE, RAMReadHandler, ICacheWriteHandler);
-  SET(g_memory_handlers_isc, KSEG0 | CPU::DCACHE_LOCATION, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
+  SET(g_memory_handlers_isc, KSEG0 | CPU::SCRATCHPAD_ADDR, 0x1000, ScratchpadReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KSEG0 | BIOS_BASE, BIOS_SIZE, BIOSReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KSEG0 | EXP1_BASE, EXP1_SIZE, EXP1ReadHandler, ICacheWriteHandler);
   SET(g_memory_handlers_isc, KSEG0 | HW_BASE, HW_SIZE, HardwareReadHandler, ICacheWriteHandler);
