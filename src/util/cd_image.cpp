@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -28,23 +28,19 @@ void CDImage::DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
 {
   std::memset(subcode_out, 0, ALL_SUBCODE_SIZE);
 
-  int row = 0;
-  for (int bitNum = 0; bitNum < 8; bitNum++)
+  u32 row = 0;
+  for (u32 bitNum = 0; bitNum < 8; bitNum++)
   {
-    for (int nColumn = 0; nColumn < ALL_SUBCODE_SIZE; row++)
+    for (u32 nColumn = 0; nColumn < ALL_SUBCODE_SIZE; row++)
     {
       u32 mask = 0x80;
       for (int nShift = 0; nShift < 8; nShift++, nColumn++)
       {
-        const int n = nShift - bitNum;
+        const s32 n = static_cast<s32>(nShift) - static_cast<s32>(bitNum);
         if (n > 0)
-        {
           subcode_out[row] |= static_cast<u8>((subcode_in[nColumn] >> n) & mask);
-        }
         else
-        {
           subcode_out[row] |= static_cast<u8>((subcode_in[nColumn] << std::abs(n)) & mask);
-        }
         mask >>= 1;
       }
     }
