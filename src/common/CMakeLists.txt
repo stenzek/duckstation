@@ -49,8 +49,6 @@ add_library(common
   small_string.h
   string_util.cpp
   string_util.h
-  thirdparty/thread_pool.cpp
-  thirdparty/thread_pool.h
   threading.cpp
   threading.h
   timer.cpp
