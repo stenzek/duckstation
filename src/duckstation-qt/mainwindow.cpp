@@ -1284,7 +1284,7 @@ void MainWindow::onIssueTrackerActionTriggered()
 
 void MainWindow::onDiscordServerActionTriggered()
 {
-  QtUtils::OpenURL(this, "https://discord.gg/Buktv3t");
+  QtUtils::OpenURL(this, "https://www.duckstation.org/discord.html");
 }
 
 void MainWindow::onAboutActionTriggered()
@@ -1972,6 +1972,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionIssueTracker, &QAction::triggered, this, &MainWindow::onIssueTrackerActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
+  connect(m_ui.actionViewThirdPartyNotices, &QAction::triggered, this, [this]() { AboutDialog::showThirdPartyNotices(this); });
   connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
