@@ -174,7 +174,11 @@ void HTTPDownloader::WaitForAllRequests()
 {
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
   while (!m_pending_http_requests.empty())
+  {
+    // Don't burn too much CPU.
+    Common::Timer::NanoSleep(1000000);
     LockedPollRequests(lock);
+  }
 }
 
 void HTTPDownloader::LockedAddRequest(Request* request)

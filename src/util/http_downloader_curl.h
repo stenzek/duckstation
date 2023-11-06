@@ -4,8 +4,6 @@
 #pragma once
 #include "http_downloader.h"
 
-#include "common/thirdparty/thread_pool.h"
-
 #include <atomic>
 #include <curl/curl.h>
 #include <memory>
@@ -29,13 +27,10 @@ private:
   struct Request : HTTPDownloader::Request
   {
     CURL* handle = nullptr;
-    std::atomic_bool closed{false};
   };
 
   static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
-  void ProcessRequest(Request* req);
 
+  CURLM* m_multi_handle = nullptr;
   std::string m_user_agent;
-  std::unique_ptr<cb::ThreadPool> m_thread_pool;
-  std::mutex m_cancel_mutex;
 };
