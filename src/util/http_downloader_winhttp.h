@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -7,8 +7,6 @@
 #include "common/windows_headers.h"
 
 #include <winhttp.h>
-
-namespace Common {
 
 class HTTPDownloaderWinHttp final : public HTTPDownloader
 {
@@ -38,5 +36,3 @@ private:
 
   HINTERNET m_hSession = NULL;
 };
-
-} // namespace FrontendCommon

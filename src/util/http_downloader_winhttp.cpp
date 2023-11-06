@@ -1,18 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "http_downloader_winhttp.h"
-#include "assert.h"
-#include "log.h"
-#include "string_util.h"
-#include "timer.h"
-#include <VersionHelpers.h>
+
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string_util.h"
+#include "common/timer.h"
+
 #include <algorithm>
+
 Log_SetChannel(HTTPDownloader);
 
-namespace Common {
-
-HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader() {}
+HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader()
+{
+}
 
 HTTPDownloaderWinHttp::~HTTPDownloaderWinHttp()
 {
@@ -34,9 +36,7 @@ std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 
 bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
 {
-  // WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY is not supported before Win8.1.
-  const DWORD dwAccessType =
-    IsWindows8Point1OrGreater() ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
+  static constexpr DWORD dwAccessType = WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY;
 
   m_hSession = WinHttpOpen(StringUtil::UTF8StringToWideString(user_agent).c_str(), dwAccessType, nullptr, nullptr,
                            WINHTTP_FLAG_ASYNC);
@@ -311,5 +311,3 @@ void HTTPDownloaderWinHttp::CloseRequest(HTTPDownloader::Request* request)
 
   delete req;
 }
-
-} // namespace Common

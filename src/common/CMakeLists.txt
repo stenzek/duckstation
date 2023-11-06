@@ -23,8 +23,6 @@ add_library(common
   hash_combine.h
   heap_array.h
   heterogeneous_containers.h
-  http_downloader.cpp
-  http_downloader.h
   layered_settings_interface.cpp
   layered_settings_interface.h
   log.cpp
@@ -67,13 +65,11 @@ target_link_libraries(common PRIVATE stb zlib minizip Zstd::Zstd "${CMAKE_DL_LIB
 
 if(WIN32)
   target_sources(common PRIVATE
-    http_downloader_winhttp.cpp
-    http_downloader_winhttp.h
     thirdparty/StackWalker.cpp
     thirdparty/StackWalker.h
     windows_headers.h
   )
-  target_link_libraries(common PRIVATE winhttp.lib OneCore.lib)
+  target_link_libraries(common PRIVATE OneCore.lib)
 endif()
 
 if(MSVC)
@@ -98,19 +94,9 @@ if(APPLE)
   target_link_libraries(common PRIVATE ${COCOA_LIBRARY})
 endif()
 
-if(NOT WIN32 AND NOT ANDROID)
-  target_sources(common PRIVATE
-    http_downloader_curl.cpp
-    http_downloader_curl.h
-  )
-  target_link_libraries(common PRIVATE
-    CURL::libcurl
-  )
-
-  if(LIBBACKTRACE_FOUND)
-    target_compile_definitions(common PRIVATE "-DENABLE_LIBBACKTRACE=1")
-    target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
-  endif()
+if(NOT WIN32 AND NOT ANDROID AND LIBBACKTRACE_FOUND)
+  target_compile_definitions(common PRIVATE "-DENABLE_LIBBACKTRACE=1")
+  target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
 endif()
 
 if(ANDROID)

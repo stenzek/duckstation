@@ -70,6 +70,9 @@
     <ClInclude Include="host.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="http_downloader_curl.h" />
+    <ClInclude Include="http_downloader_winhttp.h" />
+    <ClInclude Include="http_downloader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -146,6 +149,9 @@
     <ClCompile Include="host.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="http_downloader_curl.cpp" />
+    <ClCompile Include="http_downloader_winhttp.cpp" />
+    <ClCompile Include="http_downloader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="gl">

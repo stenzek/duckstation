@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "common/types.h"
+
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -10,8 +12,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-namespace Common {
 
 class HTTPDownloader
 {
@@ -94,5 +94,3 @@ protected:
   std::mutex m_pending_http_request_lock;
   std::vector<Request*> m_pending_http_requests;
 };
-
-} // namespace FrontendCommon

@@ -29,6 +29,8 @@ add_library(util
   gpu_texture.h
   host.cpp
   host.h
+  http_downloader.cpp
+  http_downloader.h
   imgui_fullscreen.cpp
   imgui_fullscreen.h
   imgui_manager.cpp
@@ -234,6 +236,8 @@ if(WIN32)
     d3d12_texture.h
     dinput_source.cpp
     dinput_source.h
+    http_downloader_winhttp.cpp
+    http_downloader_winhttp.h
     platform_misc_win32.cpp
     win32_raw_input_source.cpp
     win32_raw_input_source.h
@@ -243,7 +247,7 @@ if(WIN32)
     xinput_source.h
   )
   target_link_libraries(util PRIVATE d3d12ma)
-  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib)
+  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib)
 
   if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
@@ -277,6 +281,16 @@ elseif(NOT ANDROID)
   pkg_check_modules(DBUS REQUIRED dbus-1)
   target_include_directories(util PRIVATE ${DBUS_INCLUDE_DIRS})
   target_link_libraries(util PRIVATE ${DBUS_LINK_LIBRARIES})
+endif()
+
+if(NOT WIN32 AND NOT ANDROID)
+  target_sources(common PRIVATE
+    http_downloader_curl.cpp
+    http_downloader_curl.h
+  )
+  target_link_libraries(common PRIVATE
+    CURL::libcurl
+  )
 endif()
 
 function(add_util_resources target)

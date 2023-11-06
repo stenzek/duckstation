@@ -28,8 +28,6 @@
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="easing.h" />
     <ClInclude Include="error.h" />
-    <ClInclude Include="http_downloader_winhttp.h" />
-    <ClInclude Include="http_downloader.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="windows_headers.h" />
     <ClInclude Include="settings_interface.h" />
@@ -62,8 +60,6 @@
     </ClCompile>
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="http_downloader_winhttp.cpp" />
-    <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="threading.cpp" />

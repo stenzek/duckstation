@@ -10,7 +10,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);winhttp.lib;OneCore.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);OneCore.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

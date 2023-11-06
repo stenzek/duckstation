@@ -1,17 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "http_downloader.h"
-#include "assert.h"
-#include "log.h"
-#include "string_util.h"
-#include "timer.h"
+
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string_util.h"
+#include "common/timer.h"
+
 Log_SetChannel(HTTPDownloader);
 
 static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;
 static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 4;
-
-namespace Common {
 
 const char HTTPDownloader::DEFAULT_USER_AGENT[] =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0";
@@ -355,5 +355,3 @@ std::string HTTPDownloader::GetExtensionForContentType(const std::string& conten
   }
   return ret;
 }
-
-} // namespace Common

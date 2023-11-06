@@ -1,17 +1,23 @@
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+
 #include "http_downloader_curl.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+
 #include <algorithm>
 #include <functional>
 #include <pthread.h>
 #include <signal.h>
+
 Log_SetChannel(HTTPDownloader);
 
-namespace Common {
-
-HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader() {}
+HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader()
+{
+}
 
 HTTPDownloaderCurl::~HTTPDownloaderCurl() = default;
 
@@ -163,5 +169,3 @@ void HTTPDownloaderCurl::CloseRequest(HTTPDownloader::Request* request)
   else
     req->closed.store(true);
 }
-
-} // namespace Common
