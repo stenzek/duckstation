@@ -47,7 +47,7 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
   rc_api_achievement_awarded_entry_t* entry;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  unsigned timet;
+  uint32_t timet;
   int result;
 
   rc_json_field_t fields[] = {
@@ -75,7 +75,7 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK)
@@ -97,7 +97,7 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
     return RC_MISSING_VALUE;
 
   if (response->num_recently_awarded) {
-    response->recently_awarded = (rc_api_achievement_awarded_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_recently_awarded * sizeof(rc_api_achievement_awarded_entry_t));
+    response->recently_awarded = (rc_api_achievement_awarded_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_recently_awarded * sizeof(rc_api_achievement_awarded_entry_t));
     if (!response->recently_awarded)
       return RC_OUT_OF_MEMORY;
 
@@ -122,7 +122,7 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
 }
 
 void rc_api_destroy_fetch_achievement_info_response(rc_api_fetch_achievement_info_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Fetch Leaderboard Info --- */
@@ -165,7 +165,7 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
   rc_api_lboard_info_entry_t* entry;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  unsigned timet;
+  uint32_t timet;
   int result;
   size_t len;
   char format[16];
@@ -206,7 +206,7 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK)
@@ -217,7 +217,7 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
 
   if (!rc_json_get_required_unum(&response->id, &response->response, &leaderboarddata_fields[0], "LBID"))
     return RC_MISSING_VALUE;
-  if (!rc_json_get_required_num(&response->lower_is_better, &response->response, &leaderboarddata_fields[2], "LowerIsBetter"))
+  if (!rc_json_get_required_unum(&response->lower_is_better, &response->response, &leaderboarddata_fields[2], "LowerIsBetter"))
     return RC_MISSING_VALUE;
   if (!rc_json_get_required_string(&response->title, &response->response, &leaderboarddata_fields[3], "LBTitle"))
     return RC_MISSING_VALUE;
@@ -250,7 +250,7 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
     return RC_MISSING_VALUE;
 
   if (response->num_entries) {
-    response->entries = (rc_api_lboard_info_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_lboard_info_entry_t));
+    response->entries = (rc_api_lboard_info_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_lboard_info_entry_t));
     if (!response->entries)
       return RC_OUT_OF_MEMORY;
 
@@ -284,7 +284,7 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
 }
 
 void rc_api_destroy_fetch_leaderboard_info_response(rc_api_fetch_leaderboard_info_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Fetch Games List --- */
@@ -331,7 +331,7 @@ int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_resp
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK)
@@ -344,9 +344,9 @@ int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_resp
   }
 
   response->num_entries = fields[2].array_size;
-  rc_buf_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_game_list_entry_t)));
+  rc_buffer_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_game_list_entry_t)));
 
-  response->entries = (rc_api_game_list_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_game_list_entry_t));
+  response->entries = (rc_api_game_list_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_game_list_entry_t));
   if (!response->entries)
     return RC_OUT_OF_MEMORY;
 
@@ -369,5 +369,5 @@ int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_resp
 }
 
 void rc_api_destroy_fetch_games_list_response(rc_api_fetch_games_list_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }

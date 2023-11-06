@@ -761,16 +761,19 @@ static const rc_memory_region_t _rc_memory_regions_sg1000[] = {
 static const rc_memory_regions_t rc_memory_regions_sg1000 = { _rc_memory_regions_sg1000, 4 };
 
 /* ===== Super Cassette Vision ===== */
+/* https://github.com/mamedev/mame/blob/f32bb79e8541ba96d3a8144b220c48fb7536ba4b/src/mame/epoch/scv.cpp#L78-L86 */
+/* SCV only has 128 bytes of system RAM, any additional memory is provided on the individual carts and is
+ * not backed up by battery. */
+/* http://www.videogameconsolelibrary.com/pg80-super_cass_vis.htm#page=specs */
 static const rc_memory_region_t _rc_memory_regions_scv[] = {
-    { 0x000000U, 0x000FFFU, 0x000000U, RC_MEMORY_TYPE_READONLY, "System ROM" },
+    { 0x000000U, 0x000FFFU, 0x000000U, RC_MEMORY_TYPE_READONLY, "System ROM" }, /* BIOS */
     { 0x001000U, 0x001FFFU, 0x001000U, RC_MEMORY_TYPE_UNUSED, "" },
-    { 0x002000U, 0x003FFFU, 0x002000U, RC_MEMORY_TYPE_VIDEO_RAM, "Video RAM" },
+    { 0x002000U, 0x003FFFU, 0x002000U, RC_MEMORY_TYPE_VIDEO_RAM, "Video RAM" }, /* only really goes to $33FF? */
     { 0x004000U, 0x007FFFU, 0x004000U, RC_MEMORY_TYPE_UNUSED, "" },
-    { 0x008000U, 0x00DFFFU, 0x008000U, RC_MEMORY_TYPE_READONLY, "Cartridge ROM" },
-    { 0x00E000U, 0x00FF7FU, 0x00E000U, RC_MEMORY_TYPE_SAVE_RAM, "Cartridge RAM" },
+    { 0x008000U, 0x00FF7FU, 0x008000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Cartridge RAM" },
     { 0x00FF80U, 0x00FFFFU, 0x00FF80U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
 };
-static const rc_memory_regions_t rc_memory_regions_scv = { _rc_memory_regions_scv, 7 };
+static const rc_memory_regions_t rc_memory_regions_scv = { _rc_memory_regions_scv, 6 };
 
 /* ===== Super Nintendo ===== */
 /* https://en.wikibooks.org/wiki/Super_NES_Programming/SNES_memory_map#LoROM */
@@ -879,7 +882,7 @@ static const rc_memory_regions_t rc_memory_regions_wonderswan = { _rc_memory_reg
 /* ===== default ===== */
 static const rc_memory_regions_t rc_memory_regions_none = { 0, 0 };
 
-const rc_memory_regions_t* rc_console_memory_regions(int console_id)
+const rc_memory_regions_t* rc_console_memory_regions(uint32_t console_id)
 {
   switch (console_id)
   {

@@ -4,10 +4,11 @@
 #include "rc_api_runtime.h"
 #include "rc_api_user.h"
 #include "rc_consoles.h"
-#include "rc_internal.h"
 #include "rc_hash.h"
 
-#include "../rapi/rc_api_common.h"
+#include "rapi/rc_api_common.h"
+
+#include "rcheevos/rc_internal.h"
 
 #include <stdarg.h>
 
@@ -24,6 +25,12 @@
 
 struct rc_client_async_handle_t {
   uint8_t aborted;
+};
+
+enum {
+  RC_CLIENT_ASYNC_NOT_ABORTED = 0,
+  RC_CLIENT_ASYNC_ABORTED = 1,
+  RC_CLIENT_ASYNC_DESTROYED = 2
 };
 
 typedef struct rc_client_generic_callback_data_t {
@@ -71,7 +78,6 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 static void rc_client_raise_leaderboard_events(rc_client_t* client, rc_client_subset_info_t* subset);
 static void rc_client_raise_pending_events(rc_client_t* client, rc_client_game_info_t* game);
-static void rc_client_release_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard);
 static void rc_client_reschedule_callback(rc_client_t* client, rc_client_scheduled_callback_data_t* callback, rc_clock_t when);
 static void rc_client_award_achievement_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 static void rc_client_submit_leaderboard_entry_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
@@ -98,7 +104,7 @@ rc_client_t* rc_client_create(rc_client_read_memory_func_t read_memory_function,
 
   rc_mutex_init(&client->state.mutex);
 
-  rc_buf_init(&client->state.buffer);
+  rc_buffer_init(&client->state.buffer);
 
   return client;
 }
@@ -108,9 +114,24 @@ void rc_client_destroy(rc_client_t* client)
   if (!client)
     return;
 
+  rc_mutex_lock(&client->state.mutex);
+  {
+    size_t i;
+    for (i = 0; i < sizeof(client->state.async_handles) / sizeof(client->state.async_handles[0]); ++i) {
+      if (client->state.async_handles[i])
+        client->state.async_handles[i]->aborted = RC_CLIENT_ASYNC_DESTROYED;
+    }
+
+    if (client->state.load) {
+      client->state.load->async_handle.aborted = RC_CLIENT_ASYNC_DESTROYED;
+      client->state.load = NULL;
+    }
+  }
+  rc_mutex_unlock(&client->state.mutex);
+
   rc_client_unload_game(client);
 
-  rc_buf_destroy(&client->state.buffer);
+  rc_buffer_destroy(&client->state.buffer);
 
   rc_mutex_destroy(&client->state.mutex);
 
@@ -272,13 +293,39 @@ void rc_client_set_get_time_millisecs_function(rc_client_t* client, rc_get_time_
   client->callbacks.get_time_millisecs = handler ? handler : rc_client_clock_get_now_millisecs;
 }
 
-static int rc_client_async_handle_aborted(rc_client_t* client, rc_client_async_handle_t* async_handle)
+static void rc_client_begin_async(rc_client_t* client, rc_client_async_handle_t* async_handle)
 {
-  int aborted;
+  size_t i;
 
   rc_mutex_lock(&client->state.mutex);
-  aborted = async_handle->aborted;
+  for (i = 0; i < sizeof(client->state.async_handles) / sizeof(client->state.async_handles[0]); ++i) {
+    if (!client->state.async_handles[i]) {
+      client->state.async_handles[i] = async_handle;
+      break;
+    }
+  }
   rc_mutex_unlock(&client->state.mutex);
+}
+
+static int rc_client_end_async(rc_client_t* client, rc_client_async_handle_t* async_handle)
+{
+  int aborted = async_handle->aborted;
+
+  /* if client was destroyed, mutex doesn't exist and we don't need to remove the handle from the collection */
+  if (aborted != RC_CLIENT_ASYNC_DESTROYED) {
+    size_t i;
+
+    rc_mutex_lock(&client->state.mutex);
+    for (i = 0; i < sizeof(client->state.async_handles) / sizeof(client->state.async_handles[0]); ++i) {
+      if (client->state.async_handles[i] == async_handle) {
+        client->state.async_handles[i] = NULL;
+        break;
+      }
+    }
+    aborted = async_handle->aborted;
+
+    rc_mutex_unlock(&client->state.mutex);
+  }
 
   return aborted;
 }
@@ -287,7 +334,7 @@ void rc_client_abort_async(rc_client_t* client, rc_client_async_handle_t* async_
 {
   if (async_handle && client) {
     rc_mutex_lock(&client->state.mutex);
-    async_handle->aborted = 1;
+    async_handle->aborted = RC_CLIENT_ASYNC_ABORTED;
     rc_mutex_unlock(&client->state.mutex);
   }
 }
@@ -311,13 +358,16 @@ static const char* rc_client_server_error_message(int* result, int http_status_c
   return NULL;
 }
 
-static void rc_client_raise_server_error_event(rc_client_t* client, const char* api, const char* error_message)
+static void rc_client_raise_server_error_event(rc_client_t* client,
+    const char* api, uint32_t related_id, int result, const char* error_message)
 {
   rc_client_server_error_t server_error;
   rc_client_event_t client_event;
 
   server_error.api = api;
   server_error.error_message = error_message;
+  server_error.result = result;
+  server_error.related_id = related_id;
 
   memset(&client_event, 0, sizeof(client_event));
   client_event.type = RC_CLIENT_EVENT_SERVER_ERROR;
@@ -380,11 +430,15 @@ static int rc_client_should_retry(const rc_api_server_response_t* server_respons
 {
   switch (server_response->http_status_code) {
     case 502: /* 502 Bad Gateway */
-      /* nginx connection pool full. retry */
+      /* nginx connection pool full */
       return 1;
 
     case 503: /* 503 Service Temporarily Unavailable */
-      /* site is in maintenance mode. retry */
+      /* site is in maintenance mode */
+      return 1;
+
+    case 504: /* 504 Gateway Timeout */
+      /* timeout between web server and database server */
       return 1;
 
     case 429: /* 429 Too Many Requests */
@@ -407,7 +461,19 @@ static int rc_client_should_retry(const rc_api_server_response_t* server_respons
       /* connection to server from cloudfare was dropped before request was completed */
       return 1;
 
+    case RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR:
+      /* client provided non-HTTP error (explicitly retryable) */
+      return 1;
+
+    case RC_API_SERVER_RESPONSE_CLIENT_ERROR:
+      /* client provided non-HTTP error (implicitly non-retryable) */
+      return 0;
+
     default:
+      /* assume any error not handled above where no response was received should be retried */
+      if (server_response->body_length == 0 || !server_response->body || !server_response->body[0])
+        return 1;
+
       return 0;
   }
 }
@@ -443,8 +509,11 @@ static void rc_client_login_callback(const rc_api_server_response_t* server_resp
   const char* error_message;
   int result;
 
-  if (rc_client_async_handle_aborted(client, &login_callback_data->async_handle)) {
-    RC_CLIENT_LOG_VERBOSE(client, "Login aborted");
+  result = rc_client_end_async(client, &login_callback_data->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED)
+      rc_client_logout(client); /* logout will reset the user state and call the load game callback */
+
     free(login_callback_data);
     return;
   }
@@ -455,6 +524,7 @@ static void rc_client_login_callback(const rc_api_server_response_t* server_resp
       login_callback_data->callback(RC_ABORTED, "Login aborted", client, login_callback_data->callback_userdata);
 
     free(login_callback_data);
+    /* logout call will immediately abort load game before this callback gets called */
     return;
   }
 
@@ -474,14 +544,14 @@ static void rc_client_login_callback(const rc_api_server_response_t* server_resp
       rc_client_begin_fetch_game_data(load_state);
   }
   else {
-    client->user.username = rc_buf_strcpy(&client->state.buffer, login_response.username);
+    client->user.username = rc_buffer_strcpy(&client->state.buffer, login_response.username);
 
     if (strcmp(login_response.username, login_response.display_name) == 0)
       client->user.display_name = client->user.username;
     else
-      client->user.display_name = rc_buf_strcpy(&client->state.buffer, login_response.display_name);
+      client->user.display_name = rc_buffer_strcpy(&client->state.buffer, login_response.display_name);
 
-    client->user.token = rc_buf_strcpy(&client->state.buffer, login_response.api_token);
+    client->user.token = rc_buffer_strcpy(&client->state.buffer, login_response.api_token);
     client->user.score = login_response.score;
     client->user.score_softcore = login_response.score_softcore;
     client->user.num_unread_messages = login_response.num_unread_messages;
@@ -539,7 +609,9 @@ static rc_client_async_handle_t* rc_client_begin_login(rc_client_t* client,
   callback_data->callback = callback;
   callback_data->callback_userdata = callback_userdata;
 
+  rc_client_begin_async(client, &callback_data->async_handle);
   client->callbacks.server_call(&request, rc_client_login_callback, callback_data, client);
+
   rc_api_destroy_request(&request);
 
   return &callback_data->async_handle;
@@ -702,7 +774,7 @@ static void rc_client_free_game(rc_client_game_info_t* game)
 {
   rc_runtime_destroy(&game->runtime);
 
-  rc_buf_destroy(&game->buffer);
+  rc_buffer_destroy(&game->buffer);
 
   free(game);
 }
@@ -780,6 +852,8 @@ static void rc_client_load_error(rc_client_load_state_t* load_state, int result,
 
   rc_mutex_unlock(&load_state->client->state.mutex);
 
+  RC_CLIENT_LOG_ERR_FORMATTED(load_state->client, "Load failed (%d): %s", result, error_message);
+
   if (load_state->callback)
     load_state->callback(result, error_message, load_state->client, load_state->callback_userdata);
 
@@ -815,6 +889,10 @@ static void rc_client_invalidate_memref_achievements(rc_client_game_info_t* game
       if (rc_trigger_contains_memref(achievement->trigger, memref)) {
         achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_DISABLED;
         achievement->public_.bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED;
+
+        if (achievement->trigger)
+          achievement->trigger->state = RC_TRIGGER_STATE_DISABLED;
+
         RC_CLIENT_LOG_WARN_FORMATTED(client, "Disabled achievement %u. Invalid address %06X", achievement->public_.id, memref->address);
       }
     }
@@ -841,6 +919,9 @@ static void rc_client_invalidate_memref_leaderboards(rc_client_game_info_t* game
         leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_DISABLED;
       else
         continue;
+
+      if (leaderboard->lboard)
+        leaderboard->lboard->state = RC_LBOARD_STATE_DISABLED;
 
       RC_CLIENT_LOG_WARN_FORMATTED(client, "Disabled leaderboard %u. Invalid address %06X", leaderboard->public_.id, memref->address);
     }
@@ -889,33 +970,33 @@ static void rc_client_update_legacy_runtime_achievements(rc_client_game_info_t* 
     rc_client_achievement_info_t* achievement;
     rc_client_achievement_info_t* stop;
     rc_runtime_trigger_t* trigger;
+    rc_client_subset_info_t* subset;
 
-    rc_client_subset_info_t* subset = game->subsets;
-    for (; subset; subset = subset->next) {
+    if (active_count <= game->runtime.trigger_capacity) {
+      if (active_count != 0)
+        memset(game->runtime.triggers, 0, active_count * sizeof(rc_runtime_trigger_t));
+    } else {
+      if (game->runtime.triggers)
+        free(game->runtime.triggers);
+
+      game->runtime.trigger_capacity = active_count;
+      game->runtime.triggers = (rc_runtime_trigger_t*)calloc(1, active_count * sizeof(rc_runtime_trigger_t));
+    }
+
+    trigger = game->runtime.triggers;
+    if (!trigger) {
+      /* malloc failed, no way to report error, just bail */
+      game->runtime.trigger_count = 0;
+      return;
+    }
+
+    for (subset = game->subsets; subset; subset = subset->next) {
       if (!subset->active)
         continue;
 
       achievement = subset->achievements;
       stop = achievement + subset->public_.num_achievements;
 
-      if (active_count <= game->runtime.trigger_capacity) {
-        if (active_count != 0)
-          memset(game->runtime.triggers, 0, active_count * sizeof(rc_runtime_trigger_t));
-      }
-      else {
-        if (game->runtime.triggers)
-          free(game->runtime.triggers);
-
-        game->runtime.trigger_capacity = active_count;
-        game->runtime.triggers = (rc_runtime_trigger_t*)calloc(1, active_count * sizeof(rc_runtime_trigger_t));
-        if (!game->runtime.triggers) {
-          /* Unexpected, no callback available, just fail */
-          break;
-        }
-      }
-
-      trigger = game->runtime.triggers;
-      achievement = subset->achievements;
       for (; achievement < stop; ++achievement) {
         if (achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE) {
           trigger->id = achievement->public_.id;
@@ -944,7 +1025,7 @@ static uint32_t rc_client_subset_count_active_achievements(const rc_client_subse
   return active_count;
 }
 
-static void rc_client_update_active_achievements(rc_client_game_info_t* game)
+void rc_client_update_active_achievements(rc_client_game_info_t* game)
 {
   uint32_t active_count = 0;
   rc_client_subset_info_t* subset = game->subsets;
@@ -997,6 +1078,9 @@ static uint32_t rc_client_subset_toggle_hardcore_achievements(rc_client_subset_i
         client_event.achievement = &achievement->public_;
         client->callbacks.event_handler(&client_event, client);
       }
+
+      if (achievement->trigger && rc_trigger_state_active(achievement->trigger->state))
+        achievement->trigger->state = RC_TRIGGER_STATE_TRIGGERED;
     }
   }
 
@@ -1024,12 +1108,89 @@ static void rc_client_activate_achievements(rc_client_game_info_t* game, rc_clie
   rc_client_toggle_hardcore_achievements(game, client, active_bit);
 }
 
+static void rc_client_update_legacy_runtime_leaderboards(rc_client_game_info_t* game, uint32_t active_count)
+{
+  if (active_count > 0) {
+    rc_client_leaderboard_info_t* leaderboard;
+    rc_client_leaderboard_info_t* stop;
+    rc_client_subset_info_t* subset;
+    rc_runtime_lboard_t* lboard;
+
+    if (active_count <= game->runtime.lboard_capacity) {
+      if (active_count != 0)
+        memset(game->runtime.lboards, 0, active_count * sizeof(rc_runtime_lboard_t));
+    } else {
+      if (game->runtime.lboards)
+        free(game->runtime.lboards);
+
+      game->runtime.lboard_capacity = active_count;
+      game->runtime.lboards = (rc_runtime_lboard_t*)calloc(1, active_count * sizeof(rc_runtime_lboard_t));
+    }
+
+    lboard = game->runtime.lboards;
+    if (!lboard) {
+      /* malloc failed. no way to report error, just bail */
+      game->runtime.lboard_count = 0;
+      return;
+    }
+
+    for (subset = game->subsets; subset; subset = subset->next) {
+      if (!subset->active)
+        continue;
+
+      leaderboard = subset->leaderboards;
+      stop = leaderboard + subset->public_.num_leaderboards;
+      for (; leaderboard < stop; ++leaderboard) {
+        if (leaderboard->public_.state == RC_CLIENT_LEADERBOARD_STATE_ACTIVE ||
+            leaderboard->public_.state == RC_CLIENT_LEADERBOARD_STATE_TRACKING) {
+          lboard->id = leaderboard->public_.id;
+          memcpy(lboard->md5, leaderboard->md5, 16);
+          lboard->lboard = leaderboard->lboard;
+          ++lboard;
+        }
+      }
+    }
+  }
+
+  game->runtime.lboard_count = active_count;
+}
+
+void rc_client_update_active_leaderboards(rc_client_game_info_t* game)
+{
+  rc_client_leaderboard_info_t* leaderboard;
+  rc_client_leaderboard_info_t* stop;
+
+  uint32_t active_count = 0;
+  rc_client_subset_info_t* subset = game->subsets;
+  for (; subset; subset = subset->next)
+  {
+    if (!subset->active)
+      continue;
+
+    leaderboard = subset->leaderboards;
+    stop = leaderboard + subset->public_.num_leaderboards;
+
+    for (; leaderboard < stop; ++leaderboard)
+    {
+      switch (leaderboard->public_.state)
+      {
+        case RC_CLIENT_LEADERBOARD_STATE_ACTIVE:
+        case RC_CLIENT_LEADERBOARD_STATE_TRACKING:
+          ++active_count;
+          break;
+      }
+    }
+  }
+
+  rc_client_update_legacy_runtime_leaderboards(game, active_count);
+}
+
 static void rc_client_activate_leaderboards(rc_client_game_info_t* game, rc_client_t* client)
 {
   rc_client_leaderboard_info_t* leaderboard;
   rc_client_leaderboard_info_t* stop;
 
-  unsigned active_count = 0;
+  uint32_t active_count = 0;
   rc_client_subset_info_t* subset = game->subsets;
   for (; subset; subset = subset->next) {
     if (!subset->active)
@@ -1061,43 +1222,7 @@ static void rc_client_activate_leaderboards(rc_client_game_info_t* game, rc_clie
     }
   }
 
-  if (active_count > 0) {
-    rc_runtime_lboard_t* lboard;
-
-    if (active_count <= game->runtime.lboard_capacity) {
-      if (active_count != 0)
-        memset(game->runtime.lboards, 0, active_count * sizeof(rc_runtime_lboard_t));
-    }
-    else {
-      if (game->runtime.lboards)
-        free(game->runtime.lboards);
-
-      game->runtime.lboard_capacity = active_count;
-      game->runtime.lboards = (rc_runtime_lboard_t*)calloc(1, active_count * sizeof(rc_runtime_lboard_t));
-    }
-
-    lboard = game->runtime.lboards;
-
-    subset = game->subsets;
-    for (; subset; subset = subset->next) {
-      if (!subset->active)
-        continue;
-
-      leaderboard = subset->leaderboards;
-      stop = leaderboard + subset->public_.num_leaderboards;
-      for (; leaderboard < stop; ++leaderboard) {
-        if (leaderboard->public_.state == RC_CLIENT_LEADERBOARD_STATE_ACTIVE ||
-            leaderboard->public_.state == RC_CLIENT_LEADERBOARD_STATE_TRACKING) {
-          lboard->id = leaderboard->public_.id;
-          memcpy(lboard->md5, leaderboard->md5, 16);
-          lboard->lboard = leaderboard->lboard;
-          ++lboard;
-        }
-      }
-    }
-  }
-
-  game->runtime.lboard_count = active_count;
+  rc_client_update_legacy_runtime_leaderboards(game, active_count);
 }
 
 static void rc_client_deactivate_leaderboards(rc_client_game_info_t* game, rc_client_t* client)
@@ -1225,7 +1350,7 @@ static void rc_client_activate_game(rc_client_load_state_t* load_state, rc_api_s
       if (load_state->hash->hash[0] != '[') {
         if (load_state->client->state.spectator_mode != RC_CLIENT_SPECTATOR_MODE_LOCKED) {
           /* schedule the periodic ping */
-          rc_client_scheduled_callback_data_t* callback_data = rc_buf_alloc(&load_state->game->buffer, sizeof(rc_client_scheduled_callback_data_t));
+          rc_client_scheduled_callback_data_t* callback_data = rc_buffer_alloc(&load_state->game->buffer, sizeof(rc_client_scheduled_callback_data_t));
           memset(callback_data, 0, sizeof(*callback_data));
           callback_data->callback = rc_client_ping;
           callback_data->related_id = load_state->game->public_.id;
@@ -1260,10 +1385,15 @@ static void rc_client_start_session_callback(const rc_api_server_response_t* ser
   const char* error_message;
   int result;
 
-  if (rc_client_async_handle_aborted(load_state->client, &load_state->async_handle)) {
-    rc_client_t* client = load_state->client;
-    rc_client_load_aborted(load_state);
-    RC_CLIENT_LOG_VERBOSE(client, "Load aborted while starting session");
+  result = rc_client_end_async(load_state->client, &load_state->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED) {
+      rc_client_t* client = load_state->client;
+      rc_client_load_aborted(load_state);
+      RC_CLIENT_LOG_VERBOSE(client, "Load aborted while starting session");
+    } else {
+      rc_client_free_load_state(load_state);
+    }
     return;
   }
 
@@ -1315,6 +1445,7 @@ static void rc_client_begin_start_session(rc_client_load_state_t* load_state)
   else {
     rc_client_begin_load_state(load_state, RC_CLIENT_LOAD_STATE_STARTING_SESSION, 1);
     RC_CLIENT_LOG_VERBOSE_FORMATTED(client, "Starting session for game %u", start_session_params.game_id);
+    rc_client_begin_async(client, &load_state->async_handle);
     client->callbacks.server_call(&start_session_request, rc_client_start_session_callback, load_state, client);
     rc_api_destroy_request(&start_session_request);
   }
@@ -1329,7 +1460,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
   rc_client_achievement_info_t* achievements;
   rc_client_achievement_info_t* achievement;
   rc_client_achievement_info_t* scan;
-  rc_api_buffer_t* buffer;
+  rc_buffer_t* buffer;
   rc_parse_state_t parse;
   const char* memaddr;
   size_t size;
@@ -1362,12 +1493,12 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
       + sizeof(rc_trigger_t) + sizeof(rc_condset_t) * 2 /* trigger container */
       + sizeof(rc_condition_t) * 8 /* assume average trigger length of 8 conditions */
       + sizeof(rc_client_achievement_info_t);
-  rc_buf_reserve(&load_state->game->buffer, size * num_achievements);
+  rc_buffer_reserve(&load_state->game->buffer, size * num_achievements);
 
   /* allocate the achievement array */
   size = sizeof(rc_client_achievement_info_t) * num_achievements;
   buffer = &load_state->game->buffer;
-  achievement = achievements = rc_buf_alloc(buffer, size);
+  achievement = achievements = rc_buffer_alloc(buffer, size);
   memset(achievements, 0, size);
 
   /* copy the achievement data */
@@ -1375,8 +1506,8 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
     if (read->category != RC_ACHIEVEMENT_CATEGORY_CORE && !load_state->client->state.unofficial_enabled)
       continue;
 
-    achievement->public_.title = rc_buf_strcpy(buffer, read->title);
-    achievement->public_.description = rc_buf_strcpy(buffer, read->description);
+    achievement->public_.title = rc_buffer_strcpy(buffer, read->title);
+    achievement->public_.description = rc_buffer_strcpy(buffer, read->description);
     snprintf(achievement->public_.badge_name, sizeof(achievement->public_.badge_name), "%s", read->badge_name);
     achievement->public_.id = read->id;
     achievement->public_.points = read->points;
@@ -1394,7 +1525,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
     }
     else {
       /* populate the item, using the communal memrefs pool */
-      rc_init_parse_state(&parse, rc_buf_reserve(buffer, trigger_size), NULL, 0);
+      rc_init_parse_state(&parse, rc_buffer_reserve(buffer, trigger_size), NULL, 0);
       parse.first_memref = &load_state->game->runtime.memrefs;
       parse.variables = &load_state->game->runtime.variables;
       achievement->trigger = RC_ALLOC(rc_trigger_t, &parse);
@@ -1406,7 +1537,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
         achievement->public_.bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED;
       }
       else {
-        rc_buf_consume(buffer, parse.buffer, (char*)parse.buffer + parse.offset);
+        rc_buffer_consume(buffer, parse.buffer, (uint8_t*)parse.buffer + parse.offset);
         achievement->trigger->memrefs = NULL; /* memrefs managed by runtime */
       }
 
@@ -1425,7 +1556,7 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
       }
     }
     if (!achievement->author)
-      achievement->author = rc_buf_strcpy(buffer, read->author);
+      achievement->author = rc_buffer_strcpy(buffer, read->author);
 
     ++achievement;
   }
@@ -1433,9 +1564,9 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
   subset->achievements = achievements;
 }
 
-static uint8_t rc_client_map_leaderboard_format(const rc_api_leaderboard_definition_t* defn)
+uint8_t rc_client_map_leaderboard_format(int format)
 {
-  switch (defn->format) {
+  switch (format) {
     case RC_FORMAT_SECONDS:
     case RC_FORMAT_CENTISECS:
     case RC_FORMAT_MINUTES:
@@ -1466,7 +1597,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
   const rc_api_leaderboard_definition_t* stop;
   rc_client_leaderboard_info_t* leaderboards;
   rc_client_leaderboard_info_t* leaderboard;
-  rc_api_buffer_t* buffer;
+  rc_buffer_t* buffer;
   rc_parse_state_t parse;
   const char* memaddr;
   const char* ptr;
@@ -1487,22 +1618,22 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
       + (sizeof(rc_value_t) + sizeof(rc_condset_t)) /* value */
       + sizeof(rc_condition_t) * 4 * 4 /* assume average of 4 conditions in each start/submit/cancel/value */
       + sizeof(rc_client_leaderboard_info_t);
-  rc_buf_reserve(&load_state->game->buffer, size * num_leaderboards);
+  rc_buffer_reserve(&load_state->game->buffer, size * num_leaderboards);
 
   /* allocate the achievement array */
   size = sizeof(rc_client_leaderboard_info_t) * num_leaderboards;
   buffer = &load_state->game->buffer;
-  leaderboard = leaderboards = rc_buf_alloc(buffer, size);
+  leaderboard = leaderboards = rc_buffer_alloc(buffer, size);
   memset(leaderboards, 0, size);
 
   /* copy the achievement data */
   read = leaderboard_definitions;
   stop = read + num_leaderboards;
   do {
-    leaderboard->public_.title = rc_buf_strcpy(buffer, read->title);
-    leaderboard->public_.description = rc_buf_strcpy(buffer, read->description);
+    leaderboard->public_.title = rc_buffer_strcpy(buffer, read->title);
+    leaderboard->public_.description = rc_buffer_strcpy(buffer, read->description);
     leaderboard->public_.id = read->id;
-    leaderboard->public_.format = rc_client_map_leaderboard_format(read);
+    leaderboard->public_.format = rc_client_map_leaderboard_format(read->format);
     leaderboard->public_.lower_is_better = read->lower_is_better;
     leaderboard->format = (uint8_t)read->format;
     leaderboard->hidden = (uint8_t)read->hidden;
@@ -1527,7 +1658,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
     }
     else {
       /* populate the item, using the communal memrefs pool */
-      rc_init_parse_state(&parse, rc_buf_reserve(buffer, lboard_size), NULL, 0);
+      rc_init_parse_state(&parse, rc_buffer_reserve(buffer, lboard_size), NULL, 0);
       parse.first_memref = &load_state->game->runtime.memrefs;
       parse.variables = &load_state->game->runtime.variables;
       leaderboard->lboard = RC_ALLOC(rc_lboard_t, &parse);
@@ -1538,7 +1669,7 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
         leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_DISABLED;
       }
       else {
-        rc_buf_consume(buffer, parse.buffer, (char*)parse.buffer + parse.offset);
+        rc_buffer_consume(buffer, parse.buffer, (uint8_t*)parse.buffer + parse.offset);
         leaderboard->lboard->memrefs = NULL; /* memrefs managed by runtime */
       }
 
@@ -1559,7 +1690,7 @@ static const char* rc_client_subset_extract_title(rc_client_game_info_t* game, c
     const char* start = subset_prefix + 10;
     const char* stop = strstr(start, "]");
     const size_t len = stop - start;
-    char* result = (char*)rc_buf_alloc(&game->buffer, len + 1);
+    char* result = (char*)rc_buffer_alloc(&game->buffer, len + 1);
 
     memcpy(result, start, len);
     result[len] = '\0';
@@ -1577,10 +1708,15 @@ static void rc_client_fetch_game_data_callback(const rc_api_server_response_t* s
   const char* error_message;
   int result;
 
-  if (rc_client_async_handle_aborted(load_state->client, &load_state->async_handle)) {
-    rc_client_t* client = load_state->client;
-    rc_client_load_aborted(load_state);
-    RC_CLIENT_LOG_VERBOSE(client, "Load aborted while fetching game data");
+  result = rc_client_end_async(load_state->client, &load_state->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED) {
+      rc_client_t* client = load_state->client;
+      rc_client_load_aborted(load_state);
+      RC_CLIENT_LOG_VERBOSE(client, "Load aborted while fetching game data");
+    } else {
+      rc_client_free_load_state(load_state);
+    }
     return;
   }
 
@@ -1598,7 +1734,7 @@ static void rc_client_fetch_game_data_callback(const rc_api_server_response_t* s
   else {
     rc_client_subset_info_t* subset;
 
-    subset = (rc_client_subset_info_t*)rc_buf_alloc(&load_state->game->buffer, sizeof(rc_client_subset_info_t));
+    subset = (rc_client_subset_info_t*)rc_buffer_alloc(&load_state->game->buffer, sizeof(rc_client_subset_info_t));
     memset(subset, 0, sizeof(*subset));
     subset->public_.id = fetch_game_data_response.id;
     subset->active = 1;
@@ -1630,7 +1766,7 @@ static void rc_client_fetch_game_data_callback(const rc_api_server_response_t* s
     if (!load_state->game->subsets) {
       /* core set */
       rc_mutex_lock(&load_state->client->state.mutex);
-      load_state->game->public_.title = rc_buf_strcpy(&load_state->game->buffer, fetch_game_data_response.title);
+      load_state->game->public_.title = rc_buffer_strcpy(&load_state->game->buffer, fetch_game_data_response.title);
       load_state->game->subsets = subset;
       load_state->game->public_.badge_name = subset->public_.badge_name;
       load_state->game->public_.console_id = fetch_game_data_response.console_id;
@@ -1662,7 +1798,7 @@ static void rc_client_fetch_game_data_callback(const rc_api_server_response_t* s
            }
         }
 
-        subset->public_.title = rc_buf_strcpy(&load_state->game->buffer, fetch_game_data_response.title);
+        subset->public_.title = rc_buffer_strcpy(&load_state->game->buffer, fetch_game_data_response.title);
       }
 
       /* append to subset list */
@@ -1723,7 +1859,7 @@ static void rc_client_begin_fetch_game_data(rc_client_load_state_t* load_state)
         count++;
       }
 
-      ptr = (char*)rc_buf_alloc(&load_state->game->buffer, size);
+      ptr = (char*)rc_buffer_alloc(&load_state->game->buffer, size);
       ptr += size - 1;
       *ptr = '\0';
       game_hash = load_state->game->media_hash->game_hash;
@@ -1798,7 +1934,9 @@ static void rc_client_begin_fetch_game_data(rc_client_load_state_t* load_state)
   rc_client_begin_load_state(load_state, RC_CLIENT_LOAD_STATE_FETCHING_GAME_DATA, 1);
 
   RC_CLIENT_LOG_VERBOSE_FORMATTED(client, "Fetching data for game %u", fetch_game_data_request.game_id);
+  rc_client_begin_async(client, &load_state->async_handle);
   client->callbacks.server_call(&request, rc_client_fetch_game_data_callback, load_state, client);
+
   rc_api_destroy_request(&request);
 }
 
@@ -1811,9 +1949,14 @@ static void rc_client_identify_game_callback(const rc_api_server_response_t* ser
   const char* error_message;
   int result;
 
-  if (rc_client_async_handle_aborted(client, &load_state->async_handle)) {
-    rc_client_load_aborted(load_state);
-    RC_CLIENT_LOG_VERBOSE(client, "Load aborted during game identification");
+  result = rc_client_end_async(client, &load_state->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED) {
+      rc_client_load_aborted(load_state);
+      RC_CLIENT_LOG_VERBOSE(client, "Load aborted during game identification");
+    } else {
+      rc_client_free_load_state(load_state);
+    }
     return;
   }
 
@@ -1856,7 +1999,7 @@ rc_client_game_hash_t* rc_client_find_game_hash(rc_client_t* client, const char*
   }
 
   if (!game_hash) {
-    game_hash = rc_buf_alloc(&client->state.buffer, sizeof(rc_client_game_hash_t));
+    game_hash = rc_buffer_alloc(&client->state.buffer, sizeof(rc_client_game_hash_t));
     memset(game_hash, 0, sizeof(*game_hash));
     snprintf(game_hash->hash, sizeof(game_hash->hash), "%s", hash);
     game_hash->game_id = RC_CLIENT_UNKNOWN_GAME_ID;
@@ -1888,7 +2031,7 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
         return NULL;
       }
 
-      rc_buf_init(&load_state->game->buffer);
+      rc_buffer_init(&load_state->game->buffer);
       rc_runtime_init(&load_state->game->runtime);
     }
   }
@@ -1906,7 +2049,7 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 
   if (file_path) {
     rc_client_media_hash_t* media_hash =
-        (rc_client_media_hash_t*)rc_buf_alloc(&load_state->game->buffer, sizeof(*media_hash));
+        (rc_client_media_hash_t*)rc_buffer_alloc(&load_state->game->buffer, sizeof(*media_hash));
     media_hash->game_hash = load_state->hash;
     media_hash->path_djb2 = rc_djb2(file_path);
     media_hash->next = load_state->game->media_hash;
@@ -1932,6 +2075,7 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 
     rc_client_begin_load_state(load_state, RC_CLIENT_LOAD_STATE_IDENTIFYING_GAME, 1);
 
+    rc_client_begin_async(client, &load_state->async_handle);
     client->callbacks.server_call(&request, rc_client_identify_game_callback, load_state, client);
 
     rc_api_destroy_request(&request);
@@ -2101,7 +2245,12 @@ void rc_client_unload_game(rc_client_t* client)
 
   game = client->game;
   client->game = NULL;
-  client->state.load = NULL;
+
+  if (client->state.load) {
+    /* this mimics rc_client_abort_async without nesting the lock */
+    client->state.load->async_handle.aborted = RC_CLIENT_ASYNC_ABORTED;
+    client->state.load = NULL;
+  }
 
   if (client->state.spectator_mode == RC_CLIENT_SPECTATOR_MODE_LOCKED)
     client->state.spectator_mode = RC_CLIENT_SPECTATOR_MODE_ON;
@@ -2162,11 +2311,14 @@ static void rc_client_identify_changed_media_callback(const rc_api_server_respon
   int result = rc_api_process_resolve_hash_server_response(&resolve_hash_response, server_response);
   const char* error_message = rc_client_server_error_message(&result, server_response->http_status_code, &resolve_hash_response.response);
 
-  if (rc_client_async_handle_aborted(client, &load_state->async_handle)) {
-    RC_CLIENT_LOG_VERBOSE(client, "Media change aborted");
-    /* if lookup succeeded, still capture the new hash */
-    if (result == RC_OK)
-      load_state->hash->game_id = resolve_hash_response.game_id;
+  const int async_aborted = rc_client_end_async(client, &load_state->async_handle);
+  if (async_aborted) {
+    if (async_aborted != RC_CLIENT_ASYNC_DESTROYED) {
+      RC_CLIENT_LOG_VERBOSE(client, "Media change aborted");
+      /* if lookup succeeded, still capture the new hash */
+      if (result == RC_OK)
+        load_state->hash->game_id = resolve_hash_response.game_id;
+    }
   }
   else if (client->game != load_state->game) {
     /* loaded game changed. return success regardless of result */
@@ -2301,7 +2453,7 @@ rc_client_async_handle_t* rc_client_begin_change_media(rc_client_t* client, cons
 
     game_hash = rc_client_find_game_hash(client, hash);
 
-    media_hash = (rc_client_media_hash_t*)rc_buf_alloc(&game->buffer, sizeof(*media_hash));
+    media_hash = (rc_client_media_hash_t*)rc_buffer_alloc(&game->buffer, sizeof(*media_hash));
     media_hash->game_hash = game_hash;
     media_hash->path_djb2 = path_djb2;
 
@@ -2348,6 +2500,7 @@ rc_client_async_handle_t* rc_client_begin_change_media(rc_client_t* client, cons
     callback_data->hash = game_hash;
     callback_data->game = game;
 
+    rc_client_begin_async(client, &callback_data->async_handle);
     client->callbacks.server_call(&request, rc_client_identify_changed_media_callback, callback_data, client);
 
     rc_api_destroy_request(&request);
@@ -2515,7 +2668,7 @@ static const char* rc_client_get_subset_achievement_bucket_label(uint8_t bucket_
 
   label = rc_client_get_achievement_bucket_label(bucket_type);
   new_label_len = strlen(subset->public_.title) + strlen(label) + 4;
-  new_label = (char*)rc_buf_alloc(&game->buffer, new_label_len);
+  new_label = (char*)rc_buffer_alloc(&game->buffer, new_label_len);
   snprintf(new_label, new_label_len, "%s - %s", subset->public_.title, label);
 
   *ptr = new_label;
@@ -2856,7 +3009,7 @@ static void rc_client_award_achievement_callback(const rc_api_server_response_t*
     if (award_achievement_response.response.error_message && !rc_client_should_retry(server_response)) {
       /* actual error from server */
       RC_CLIENT_LOG_ERR_FORMATTED(ach_data->client, "Error awarding achievement %u: %s", ach_data->id, error_message);
-      rc_client_raise_server_error_event(ach_data->client, "award_achievement", award_achievement_response.response.error_message);
+      rc_client_raise_server_error_event(ach_data->client, "award_achievement", ach_data->id, result, award_achievement_response.response.error_message);
     }
     else if (ach_data->retry_count++ == 0) {
       /* first retry is immediate */
@@ -2874,7 +3027,7 @@ static void rc_client_award_achievement_callback(const rc_api_server_response_t*
         ach_data->scheduled_callback_data = (rc_client_scheduled_callback_data_t*)calloc(1, sizeof(*ach_data->scheduled_callback_data));
         if (!ach_data->scheduled_callback_data) {
           RC_CLIENT_LOG_ERR_FORMATTED(ach_data->client, "Failed to allocate scheduled callback data for reattempt to unlock achievement %u", ach_data->id);
-          rc_client_raise_server_error_event(ach_data->client, "award_achievement", rc_error_str(RC_OUT_OF_MEMORY));
+          rc_client_raise_server_error_event(ach_data->client, "award_achievement", ach_data->id, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
           return;
         }
         ach_data->scheduled_callback_data->callback = rc_client_award_achievement_retry;
@@ -3018,7 +3171,7 @@ static void rc_client_award_achievement(rc_client_t* client, rc_client_achieveme
   callback_data = (rc_client_award_achievement_callback_data_t*)calloc(1, sizeof(*callback_data));
   if (!callback_data) {
     RC_CLIENT_LOG_ERR_FORMATTED(client, "Failed to allocate callback data for unlocking achievement %u", achievement->public_.id);
-    rc_client_raise_server_error_event(client, "award_achievement", rc_error_str(RC_OUT_OF_MEMORY));
+    rc_client_raise_server_error_event(client, "award_achievement", achievement->public_.id, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
     return;
   }
   callback_data->client = client;
@@ -3118,7 +3271,7 @@ static const char* rc_client_get_subset_leaderboard_bucket_label(uint8_t bucket_
 
   label = rc_client_get_leaderboard_bucket_label(bucket_type);
   new_label_len = strlen(subset->public_.title) + strlen(label) + 4;
-  new_label = (char*)rc_buf_alloc(&game->buffer, new_label_len);
+  new_label = (char*)rc_buffer_alloc(&game->buffer, new_label_len);
   snprintf(new_label, new_label_len, "%s - %s", subset->public_.title, label);
 
   *ptr = new_label;
@@ -3379,7 +3532,7 @@ static void rc_client_allocate_leaderboard_tracker(rc_client_game_info_t* game, 
   if (!available_tracker) {
     rc_client_leaderboard_tracker_info_t** next = &game->leaderboard_trackers;
 
-    available_tracker = (rc_client_leaderboard_tracker_info_t*)rc_buf_alloc(&game->buffer, sizeof(*available_tracker));
+    available_tracker = (rc_client_leaderboard_tracker_info_t*)rc_buffer_alloc(&game->buffer, sizeof(*available_tracker));
     memset(available_tracker, 0, sizeof(*available_tracker));
     available_tracker->public_.id = 1;
 
@@ -3401,7 +3554,7 @@ static void rc_client_allocate_leaderboard_tracker(rc_client_game_info_t* game, 
   game->pending_events |= RC_CLIENT_GAME_PENDING_EVENT_LEADERBOARD_TRACKER;
 }
 
-static void rc_client_release_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard)
+void rc_client_release_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard)
 {
   rc_client_leaderboard_tracker_info_t* tracker = leaderboard->tracker;
   leaderboard->tracker = NULL;
@@ -3476,7 +3629,7 @@ static void rc_client_raise_scoreboard_event(rc_client_submit_leaderboard_entry_
     sboard.top_entries = (rc_client_leaderboard_scoreboard_entry_t*)calloc(
       response->num_top_entries, sizeof(rc_client_leaderboard_scoreboard_entry_t));
     if (sboard.top_entries != NULL) {
-      unsigned i;
+      uint32_t i;
       for (i = 0; i < response->num_top_entries; i++) {
         sboard.top_entries[i].username = response->top_entries[i].username;
         sboard.top_entries[i].rank = response->top_entries[i].rank;
@@ -3511,7 +3664,7 @@ static void rc_client_submit_leaderboard_entry_callback(const rc_api_server_resp
     if (submit_lboard_entry_response.response.error_message && !rc_client_should_retry(server_response)) {
       /* actual error from server */
       RC_CLIENT_LOG_ERR_FORMATTED(lboard_data->client, "Error submitting leaderboard entry %u: %s", lboard_data->id, error_message);
-      rc_client_raise_server_error_event(lboard_data->client, "submit_lboard_entry", submit_lboard_entry_response.response.error_message);
+      rc_client_raise_server_error_event(lboard_data->client, "submit_lboard_entry", lboard_data->id, result, submit_lboard_entry_response.response.error_message);
     }
     else if (lboard_data->retry_count++ == 0) {
       /* first retry is immediate */
@@ -3529,7 +3682,7 @@ static void rc_client_submit_leaderboard_entry_callback(const rc_api_server_resp
         lboard_data->scheduled_callback_data = (rc_client_scheduled_callback_data_t*)calloc(1, sizeof(*lboard_data->scheduled_callback_data));
         if (!lboard_data->scheduled_callback_data) {
           RC_CLIENT_LOG_ERR_FORMATTED(lboard_data->client, "Failed to allocate scheduled callback data for reattempt to submit entry for leaderboard %u", lboard_data->id);
-          rc_client_raise_server_error_event(lboard_data->client, "submit_lboard_entry", rc_error_str(RC_OUT_OF_MEMORY));
+          rc_client_raise_server_error_event(lboard_data->client, "submit_lboard_entry", lboard_data->id, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
           return;
         }
         lboard_data->scheduled_callback_data->callback = rc_client_submit_leaderboard_entry_retry;
@@ -3611,7 +3764,7 @@ static void rc_client_submit_leaderboard_entry(rc_client_t* client, rc_client_le
   callback_data = (rc_client_submit_leaderboard_entry_callback_data_t*)calloc(1, sizeof(*callback_data));
   if (!callback_data) {
     RC_CLIENT_LOG_ERR_FORMATTED(client, "Failed to allocate callback data for submitting entry for leaderboard %u", leaderboard->public_.id);
-    rc_client_raise_server_error_event(client, "submit_lboard_entry", rc_error_str(RC_OUT_OF_MEMORY));
+    rc_client_raise_server_error_event(client, "submit_lboard_entry", leaderboard->public_.id, RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY));
     return;
   }
   callback_data->client = client;
@@ -3674,8 +3827,11 @@ static void rc_client_fetch_leaderboard_entries_callback(const rc_api_server_res
   const char* error_message;
   int result;
 
-  if (rc_client_async_handle_aborted(client, &lbinfo_callback_data->async_handle)) {
-    RC_CLIENT_LOG_VERBOSE(client, "Fetch leaderbord entries aborted");
+  result = rc_client_end_async(client, &lbinfo_callback_data->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED) {
+      RC_CLIENT_LOG_VERBOSE(client, "Fetch leaderbord entries aborted");
+    }
     free(lbinfo_callback_data);
     return;
   }
@@ -3690,7 +3846,7 @@ static void rc_client_fetch_leaderboard_entries_callback(const rc_api_server_res
     rc_client_leaderboard_entry_list_t* list;
     const size_t list_size = sizeof(*list) + sizeof(rc_client_leaderboard_entry_t) * lbinfo_response.num_entries;
     size_t needed_size = list_size;
-    unsigned i;
+    uint32_t i;
 
     for (i = 0; i < lbinfo_response.num_entries; i++)
       needed_size += strlen(lbinfo_response.entries[i].username) + 1;
@@ -3761,6 +3917,7 @@ static rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_info(rc_clien
   callback_data->callback_userdata = callback_userdata;
   callback_data->leaderboard_id = lbinfo_request->leaderboard_id;
 
+  rc_client_begin_async(client, &callback_data->async_handle);
   client->callbacks.server_call(&request, rc_client_fetch_leaderboard_entries_callback, callback_data, client);
   rc_api_destroy_request(&request);
 
@@ -3835,8 +3992,15 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
   char buffer[256];
   int result;
 
-  rc_runtime_get_richpresence(&client->game->runtime, buffer, sizeof(buffer),
-      client->state.legacy_peek, client, NULL);
+  if (!client->callbacks.rich_presence_override ||
+      !client->callbacks.rich_presence_override(client, buffer, sizeof(buffer))) {
+    rc_mutex_lock(&client->state.mutex);
+
+    rc_runtime_get_richpresence(&client->game->runtime, buffer, sizeof(buffer),
+        client->state.legacy_peek, client, NULL);
+
+    rc_mutex_unlock(&client->state.mutex);
+  }
 
   memset(&api_params, 0, sizeof(api_params));
   api_params.username = client->user.username;
@@ -3874,8 +4038,12 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
   if (!client || !client->game || !buffer)
     return 0;
 
+  rc_mutex_lock(&client->state.mutex);
+
   result = rc_runtime_get_richpresence(&client->game->runtime, buffer, (unsigned)buffer_size,
       client->state.legacy_peek, client, NULL);
+
+  rc_mutex_unlock(&client->state.mutex);
 
   if (result == 0)
     result = snprintf(buffer, buffer_size, "Playing %s", client->game->public_.title);
@@ -3922,10 +4090,10 @@ static void rc_client_invalidate_processing_memref(rc_client_t* client)
   client->state.processing_memref = NULL;
 }
 
-static unsigned rc_client_peek_le(unsigned address, unsigned num_bytes, void* ud)
+static uint32_t rc_client_peek_le(uint32_t address, uint32_t num_bytes, void* ud)
 {
   rc_client_t* client = (rc_client_t*)ud;
-  unsigned value = 0;
+  uint32_t value = 0;
   uint32_t num_read = 0;
 
   /* if we know the address is out of range, and it's part of a pointer chain
@@ -3945,7 +4113,7 @@ static unsigned rc_client_peek_le(unsigned address, unsigned num_bytes, void* ud
   return 0;
 }
 
-static unsigned rc_client_peek(unsigned address, unsigned num_bytes, void* ud)
+static uint32_t rc_client_peek(uint32_t address, uint32_t num_bytes, void* ud)
 {
   rc_client_t* client = (rc_client_t*)ud;
   uint8_t buffer[4];
@@ -4017,7 +4185,7 @@ int rc_client_is_processing_required(rc_client_t* client)
 static void rc_client_update_memref_values(rc_client_t* client)
 {
   rc_memref_t* memref = client->game->runtime.memrefs;
-  unsigned value;
+  uint32_t value;
   int invalidated_memref = 0;
 
   for (; memref; memref = memref->next) {
@@ -4051,7 +4219,7 @@ static void rc_client_do_frame_process_achievements(rc_client_t* client, rc_clie
   for (; achievement < stop; ++achievement) {
     rc_trigger_t* trigger = achievement->trigger;
     int old_state, new_state;
-    unsigned old_measured_value;
+    uint32_t old_measured_value;
 
     if (!trigger || achievement->public_.state != RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
       continue;
@@ -4070,8 +4238,8 @@ static void rc_client_do_frame_process_achievements(rc_client_t* client, rc_clie
 
       if (trigger->measured_as_percent) {
         /* if reporting the measured value as a percentage, only show the popup if the percentage changes */
-        const unsigned old_percent = (unsigned)(((unsigned long long)old_measured_value * 100) / trigger->measured_target);
-        const unsigned new_percent = (unsigned)(((unsigned long long)trigger->measured_value * 100) / trigger->measured_target);
+        const uint32_t old_percent = (uint32_t)(((unsigned long long)old_measured_value * 100) / trigger->measured_target);
+        const uint32_t new_percent = (uint32_t)(((unsigned long long)trigger->measured_value * 100) / trigger->measured_target);
         if (old_percent == new_percent)
           progress = -1.0;
       }
@@ -4136,7 +4304,7 @@ static void rc_client_do_frame_update_progress_tracker(rc_client_t* client, rc_c
 {
   if (!game->progress_tracker.hide_callback) {
     game->progress_tracker.hide_callback = (rc_client_scheduled_callback_data_t*)
-      rc_buf_alloc(&game->buffer, sizeof(rc_client_scheduled_callback_data_t));
+      rc_buffer_alloc(&game->buffer, sizeof(rc_client_scheduled_callback_data_t));
     memset(game->progress_tracker.hide_callback, 0, sizeof(rc_client_scheduled_callback_data_t));
     game->progress_tracker.hide_callback->callback = rc_client_progress_tracker_timer_elapsed;
   }

@@ -3,6 +3,8 @@
 
 #include "rc_api_request.h"
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,14 +16,14 @@ extern "C" {
  */
 typedef struct rc_api_fetch_code_notes_request_t {
   /* The unique identifier of the game */
-  unsigned game_id;
+  uint32_t game_id;
 }
 rc_api_fetch_code_notes_request_t;
 
 /* A code note definiton */
 typedef struct rc_api_code_note_t {
   /* The address the note is associated to */
-  unsigned address;
+  uint32_t address;
   /* The name of the use who last updated the note */
   const char* author;
   /* The contents of the note */
@@ -35,7 +37,7 @@ typedef struct rc_api_fetch_code_notes_response_t {
   /* An array of code notes for the game */
   rc_api_code_note_t* notes;
   /* The number of items in the notes array */
-  unsigned num_notes;
+  uint32_t num_notes;
 
   /* Common server-provided response information */
   rc_api_response_t response;
@@ -58,9 +60,9 @@ typedef struct rc_api_update_code_note_request_t {
   /* The API token from the login request */
   const char* api_token;
   /* The unique identifier of the game */
-  unsigned game_id;
+  uint32_t game_id;
   /* The address the note is associated to */
-  unsigned address;
+  uint32_t address;
   /* The contents of the note (NULL or empty to delete a note) */
   const char* note;
 }
@@ -91,9 +93,9 @@ typedef struct rc_api_update_achievement_request_t {
   /* The API token from the login request */
   const char* api_token;
   /* The unique identifier of the achievement (0 to create a new achievement) */
-  unsigned achievement_id;
+  uint32_t achievement_id;
   /* The unique identifier of the game */
-  unsigned game_id;
+  uint32_t game_id;
   /* The name of the achievement */
   const char* title;
   /* The description of the achievement */
@@ -103,9 +105,9 @@ typedef struct rc_api_update_achievement_request_t {
   /* The serialized trigger for the achievement */
   const char* trigger;
   /* The number of points the achievement is worth */
-  unsigned points;
+  uint32_t points;
   /* The category of the achievement */
-  unsigned category;
+  uint32_t category;
 }
 rc_api_update_achievement_request_t;
 
@@ -114,7 +116,7 @@ rc_api_update_achievement_request_t;
  */
 typedef struct rc_api_update_achievement_response_t {
   /* The unique identifier of the achievement */
-  unsigned achievement_id;
+  uint32_t achievement_id;
 
   /* Common server-provided response information */
   rc_api_response_t response;
@@ -137,9 +139,9 @@ typedef struct rc_api_update_leaderboard_request_t {
   /* The API token from the login request */
   const char* api_token;
   /* The unique identifier of the leaderboard (0 to create a new leaderboard) */
-  unsigned leaderboard_id;
+  uint32_t leaderboard_id;
   /* The unique identifier of the game */
-  unsigned game_id;
+  uint32_t game_id;
   /* The name of the leaderboard */
   const char* title;
   /* The description of the leaderboard */
@@ -155,7 +157,7 @@ typedef struct rc_api_update_leaderboard_request_t {
   /* The format of leaderboard values */
   const char* format;
   /* Whether or not lower scores are better for the leaderboard */
-  int lower_is_better;
+  uint32_t lower_is_better;
 }
 rc_api_update_leaderboard_request_t;
 
@@ -164,7 +166,7 @@ rc_api_update_leaderboard_request_t;
  */
 typedef struct rc_api_update_leaderboard_response_t {
   /* The unique identifier of the leaderboard */
-  unsigned leaderboard_id;
+  uint32_t leaderboard_id;
 
   /* Common server-provided response information */
   rc_api_response_t response;
@@ -183,7 +185,7 @@ void rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_respon
  */
 typedef struct rc_api_fetch_badge_range_request_t {
   /* Unused */
-  unsigned unused;
+  uint32_t unused;
 }
 rc_api_fetch_badge_range_request_t;
 
@@ -192,9 +194,9 @@ rc_api_fetch_badge_range_request_t;
  */
 typedef struct rc_api_fetch_badge_range_response_t {
   /* The numeric identifier of the first valid badge ID */
-  unsigned first_badge_id;
+  uint32_t first_badge_id;
   /* The numeric identifier of the first unassigned badge ID */
-  unsigned next_badge_id;
+  uint32_t next_badge_id;
 
   /* Common server-provided response information */
   rc_api_response_t response;
@@ -217,9 +219,9 @@ typedef struct rc_api_add_game_hash_request_t {
   /* The API token from the login request */
   const char* api_token;
   /* The unique identifier of the game (0 to create a new game entry) */
-  unsigned game_id;
+  uint32_t game_id;
   /* The unique identifier of the console for the game */
-  unsigned console_id;
+  uint32_t console_id;
   /* The title of the game */
   const char* title;
   /* The hash being added */
@@ -234,7 +236,7 @@ rc_api_add_game_hash_request_t;
  */
 typedef struct rc_api_add_game_hash_response_t {
   /* The unique identifier of the game */
-  unsigned game_id;
+  uint32_t game_id;
 
   /* Common server-provided response information */
   rc_api_response_t response;

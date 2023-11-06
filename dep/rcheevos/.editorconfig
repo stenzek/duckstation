@@ -7,7 +7,7 @@ end_of_line          = crlf
 insert_final_newline = true
 
 # latin1 is a type of ASCII, should work with mbcs
-[*.{h,cpp}]
+[*.{h,c,cpp}]
 charset                  = latin1
 indent_style             = space
 indent_size              = 2

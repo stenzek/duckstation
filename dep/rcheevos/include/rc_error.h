@@ -42,7 +42,10 @@ enum {
   RC_NO_GAME_LOADED = -29,
   RC_HARDCORE_DISABLED = -30,
   RC_ABORTED = -31,
-  RC_NO_RESPONSE = -32
+  RC_NO_RESPONSE = -32,
+  RC_ACCESS_DENIED = -33,
+  RC_INVALID_CREDENTIALS = -34,
+  RC_EXPIRED_TOKEN = -35
 };
 
 const char* rc_error_str(int ret);

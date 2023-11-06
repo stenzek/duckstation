@@ -1,7 +1,7 @@
 #include "rc_api_editor.h"
 #include "rc_api_common.h"
 
-#include "../rcheevos/rc_compat.h"
+#include "../rc_compat.h"
 #include "../rhash/md5.h"
 
 #include <stdlib.h>
@@ -60,7 +60,7 @@ int rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_resp
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -70,7 +70,7 @@ int rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_resp
     return RC_MISSING_VALUE;
 
   if (response->num_notes) {
-    response->notes = (rc_api_code_note_t*)rc_buf_alloc(&response->response.buffer, response->num_notes * sizeof(rc_api_code_note_t));
+    response->notes = (rc_api_code_note_t*)rc_buffer_alloc(&response->response.buffer, response->num_notes * sizeof(rc_api_code_note_t));
     if (!response->notes)
       return RC_OUT_OF_MEMORY;
 
@@ -117,7 +117,7 @@ int rc_api_process_fetch_code_notes_server_response(rc_api_fetch_code_notes_resp
 }
 
 void rc_api_destroy_fetch_code_notes_response(rc_api_fetch_code_notes_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Update Code Note --- */
@@ -170,7 +170,7 @@ int rc_api_process_update_code_note_server_response(rc_api_update_code_note_resp
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -180,7 +180,7 @@ int rc_api_process_update_code_note_server_response(rc_api_update_code_note_resp
 }
 
 void rc_api_destroy_update_code_note_response(rc_api_update_code_note_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Update Achievement --- */
@@ -231,7 +231,7 @@ int rc_api_init_update_achievement_request(rc_api_request_t* request, const rc_a
   snprintf(buffer, sizeof(buffer), "%u", api_params->points * 3);
   md5_append(&md5, (md5_byte_t*)buffer, (int)strlen(buffer));
   md5_finish(&md5, hash);
-  rc_api_format_md5(buffer, hash);
+  rc_format_md5(buffer, hash);
   rc_url_builder_append_str_param(&builder, "h", buffer);
 
   request->post_data = rc_url_builder_finalize(&builder);
@@ -260,7 +260,7 @@ int rc_api_process_update_achievement_server_response(rc_api_update_achievement_
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -273,7 +273,7 @@ int rc_api_process_update_achievement_server_response(rc_api_update_achievement_
 }
 
 void rc_api_destroy_update_achievement_response(rc_api_update_achievement_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Update Leaderboard --- */
@@ -333,7 +333,7 @@ int rc_api_init_update_leaderboard_request(rc_api_request_t* request, const rc_a
     md5_append(&md5, (md5_byte_t*)"RE2", 3);
     md5_append(&md5, (md5_byte_t*)api_params->format, (int)strlen(api_params->format));
     md5_finish(&md5, hash);
-    rc_api_format_md5(buffer, hash);
+    rc_format_md5(buffer, hash);
     rc_url_builder_append_str_param(&builder, "h", buffer);
 
     request->post_data = rc_url_builder_finalize(&builder);
@@ -362,7 +362,7 @@ int rc_api_process_update_leaderboard_server_response(rc_api_update_leaderboard_
     };
 
     memset(response, 0, sizeof(*response));
-    rc_buf_init(&response->response.buffer);
+    rc_buffer_init(&response->response.buffer);
 
     result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
     if (result != RC_OK || !response->response.succeeded)
@@ -375,7 +375,7 @@ int rc_api_process_update_leaderboard_server_response(rc_api_update_leaderboard_
 }
 
 void rc_api_destroy_update_leaderboard_response(rc_api_update_leaderboard_response_t* response) {
-    rc_buf_destroy(&response->response.buffer);
+    rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Fetch Badge Range --- */
@@ -417,7 +417,7 @@ int rc_api_process_fetch_badge_range_server_response(rc_api_fetch_badge_range_re
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -432,7 +432,7 @@ int rc_api_process_fetch_badge_range_server_response(rc_api_fetch_badge_range_re
 }
 
 void rc_api_destroy_fetch_badge_range_response(rc_api_fetch_badge_range_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Add Game Hash --- */
@@ -498,7 +498,7 @@ int rc_api_process_add_game_hash_server_response(rc_api_add_game_hash_response_t
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -514,5 +514,5 @@ int rc_api_process_add_game_hash_server_response(rc_api_add_game_hash_response_t
 }
 
 void rc_api_destroy_add_game_hash_response(rc_api_add_game_hash_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }

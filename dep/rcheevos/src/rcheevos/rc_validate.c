@@ -1,13 +1,14 @@
 #include "rc_validate.h"
 
-#include "rc_compat.h"
 #include "rc_consoles.h"
 #include "rc_internal.h"
+
+#include "../rc_compat.h"
 
 #include <stddef.h>
 #include <stdlib.h>
 
-static int rc_validate_memref(const rc_memref_t* memref, char result[], const size_t result_size, int console_id, unsigned max_address)
+static int rc_validate_memref(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
 {
   if (memref->address > max_address) {
     snprintf(result, result_size, "Address %04X out of range (max %04X)", memref->address, max_address);
@@ -41,7 +42,7 @@ static int rc_validate_memref(const rc_memref_t* memref, char result[], const si
   return 1;
 }
 
-int rc_validate_memrefs(const rc_memref_t* memref, char result[], const size_t result_size, unsigned max_address)
+int rc_validate_memrefs(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t max_address)
 {
   while (memref) {
     if (!rc_validate_memref(memref, result, result_size, 0, max_address))
@@ -53,7 +54,7 @@ int rc_validate_memrefs(const rc_memref_t* memref, char result[], const size_t r
   return 1;
 }
 
-static unsigned rc_console_max_address(int console_id)
+static uint32_t rc_console_max_address(uint32_t console_id)
 {
   const rc_memory_regions_t* memory_regions;
   memory_regions = rc_console_memory_regions(console_id);
@@ -63,9 +64,9 @@ static unsigned rc_console_max_address(int console_id)
   return 0xFFFFFFFF;
 }
 
-int rc_validate_memrefs_for_console(const rc_memref_t* memref, char result[], const size_t result_size, int console_id)
+int rc_validate_memrefs_for_console(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t console_id)
 {
-  const unsigned max_address = rc_console_max_address(console_id);
+  const uint32_t max_address = rc_console_max_address(console_id);
   while (memref) {
     if (!rc_validate_memref(memref, result, result_size, console_id, max_address))
       return 0;
@@ -76,7 +77,7 @@ int rc_validate_memrefs_for_console(const rc_memref_t* memref, char result[], co
   return 1;
 }
 
-static unsigned rc_max_value(const rc_operand_t* operand)
+static uint32_t rc_max_value(const rc_operand_t* operand)
 {
   if (operand->type == RC_OPERAND_CONST)
     return operand->value.num;
@@ -118,7 +119,7 @@ static unsigned rc_max_value(const rc_operand_t* operand)
   }
 }
 
-static unsigned rc_scale_value(unsigned value, char oper, const rc_operand_t* operand)
+static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t* operand)
 {
   switch (oper) {
     case RC_OPERATOR_MULT:
@@ -127,12 +128,12 @@ static unsigned rc_scale_value(unsigned value, char oper, const rc_operand_t* op
       if (scaled > 0xFFFFFFFF)
         return 0xFFFFFFFF;
 
-      return (unsigned)scaled;
+      return (uint32_t)scaled;
     }
 
     case RC_OPERATOR_DIV:
     {
-      const unsigned min_val = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 1;
+      const uint32_t min_val = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 1;
       return value / min_val;
     }
 
@@ -162,7 +163,7 @@ static int rc_validate_get_condition_index(const rc_condset_t* condset, const rc
    return 0;
 }
 
-static int rc_validate_range(unsigned min_val, unsigned max_val, char oper, unsigned max, char result[], const size_t result_size)
+static int rc_validate_range(uint32_t min_val, uint32_t max_val, char oper, uint32_t max, char result[], const size_t result_size)
 {
   switch (oper) {
     case RC_OPERATOR_AND:
@@ -230,11 +231,11 @@ static int rc_validate_range(unsigned min_val, unsigned max_val, char oper, unsi
   return 1;
 }
 
-int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, int console_id, unsigned max_address)
+int rc_validate_condset_internal(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
 {
   const rc_condition_t* cond;
   char buffer[128];
-  unsigned max_val;
+  uint32_t max_val;
   int index = 1;
   unsigned long long add_source_max = 0;
   int in_add_hits = 0;
@@ -247,7 +248,7 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
   }
 
   for (cond = condset->conditions; cond; cond = cond->next, ++index) {
-    unsigned max = rc_max_value(&cond->operand1);
+    uint32_t max = rc_max_value(&cond->operand1);
     const int is_memref1 = rc_operand_is_memref(&cond->operand1);
     const int is_memref2 = rc_operand_is_memref(&cond->operand2);
 
@@ -300,6 +301,13 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
         is_combining = 1;
         break;
 
+      case RC_CONDITION_RESET_IF:
+        if (cond->required_hits == 1) {
+          snprintf(result, result_size, "Condition %d: Hit target of 1 is redundant on ResetIf", index);
+          return 0;
+        }
+        /* fallthrough to default */
+
       default:
         if (in_add_hits) {
           if (cond->required_hits == 0) {
@@ -334,7 +342,7 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
     if (is_memref1 || is_memref2 || add_source_max) {
       const size_t prefix_length = snprintf(result, result_size, "Condition %d: ", index);
 
-      unsigned min_val;
+      uint32_t min_val;
       switch (cond->operand2.type) {
         case RC_OPERAND_CONST:
           min_val = cond->operand2.value.num;
@@ -386,14 +394,14 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
   return 1;
 }
 
-int rc_validate_condset(const rc_condset_t* condset, char result[], const size_t result_size, unsigned max_address)
+int rc_validate_condset(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t max_address)
 {
   return rc_validate_condset_internal(condset, result, result_size, 0, max_address);
 }
 
-int rc_validate_condset_for_console(const rc_condset_t* condset, char result[], const size_t result_size, int console_id)
+int rc_validate_condset_for_console(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id)
 {
-  const unsigned max_address = rc_console_max_address(console_id);
+  const uint32_t max_address = rc_console_max_address(console_id);
   return rc_validate_condset_internal(condset, result, result_size, console_id, max_address);
 }
 
@@ -476,7 +484,7 @@ enum {
   RC_OVERLAP_DEFER
 };
 
-static int rc_validate_comparison_overlap(int comparison1, unsigned value1, int comparison2, unsigned value2)
+static int rc_validate_comparison_overlap(int comparison1, uint32_t value1, int comparison2, uint32_t value2)
 {
   /* NOTE: this only cares if comp2 conflicts with comp1.
    * If comp1 conflicts with comp2, we'll catch that later (return RC_OVERLAP_NONE for now) */
@@ -634,7 +642,7 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
     const char* prefix, const char* compare_prefix, char result[], const size_t result_size)
 {
   int comparison1, comparison2;
-  unsigned value1, value2;
+  uint32_t value1, value2;
   const rc_operand_t* operand1;
   const rc_operand_t* operand2;
   const rc_condition_t* compare_condition;
@@ -789,7 +797,7 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
   return 1;
 }
 
-static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result[], const size_t result_size, int console_id, unsigned max_address)
+static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result[], const size_t result_size, uint32_t console_id, uint32_t max_address)
 {
   const rc_condset_t* alt;
   int index;
@@ -835,13 +843,13 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
   return 1;
 }
 
-int rc_validate_trigger(const rc_trigger_t* trigger, char result[], const size_t result_size, unsigned max_address)
+int rc_validate_trigger(const rc_trigger_t* trigger, char result[], const size_t result_size, uint32_t max_address)
 {
   return rc_validate_trigger_internal(trigger, result, result_size, 0, max_address);
 }
 
-int rc_validate_trigger_for_console(const rc_trigger_t* trigger, char result[], const size_t result_size, int console_id)
+int rc_validate_trigger_for_console(const rc_trigger_t* trigger, char result[], const size_t result_size, uint32_t console_id)
 {
-  const unsigned max_address = rc_console_max_address(console_id);
+  const uint32_t max_address = rc_console_max_address(console_id);
   return rc_validate_trigger_internal(trigger, result, result_size, console_id, max_address);
 }

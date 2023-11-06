@@ -1,7 +1,7 @@
 #include "rc_api_user.h"
 #include "rc_api_common.h"
 
-#include "../rcheevos/rc_version.h"
+#include "../rc_version.h"
 
 #include <string.h>
 
@@ -16,7 +16,7 @@ int rc_api_init_login_request(rc_api_request_t* request, const rc_api_login_requ
     return RC_INVALID_STATE;
 
   rc_url_builder_init(&builder, &request->buffer, 48);
-  rc_url_builder_append_str_param(&builder, "r", "login");
+  rc_url_builder_append_str_param(&builder, "r", "login2");
   rc_url_builder_append_str_param(&builder, "u", api_params->username);
 
   if (api_params->password && api_params->password[0])
@@ -47,6 +47,7 @@ int rc_api_process_login_server_response(rc_api_login_response_t* response, cons
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
     RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Code"),
     RC_JSON_NEW_FIELD("User"),
     RC_JSON_NEW_FIELD("Token"),
     RC_JSON_NEW_FIELD("Score"),
@@ -56,28 +57,28 @@ int rc_api_process_login_server_response(rc_api_login_response_t* response, cons
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
     return result;
 
-  if (!rc_json_get_required_string(&response->username, &response->response, &fields[2], "User"))
+  if (!rc_json_get_required_string(&response->username, &response->response, &fields[3], "User"))
     return RC_MISSING_VALUE;
-  if (!rc_json_get_required_string(&response->api_token, &response->response, &fields[3], "Token"))
+  if (!rc_json_get_required_string(&response->api_token, &response->response, &fields[4], "Token"))
     return RC_MISSING_VALUE;
 
-  rc_json_get_optional_unum(&response->score, &fields[4], "Score", 0);
-  rc_json_get_optional_unum(&response->score_softcore, &fields[5], "SoftcoreScore", 0);
-  rc_json_get_optional_unum(&response->num_unread_messages, &fields[6], "Messages", 0);
+  rc_json_get_optional_unum(&response->score, &fields[5], "Score", 0);
+  rc_json_get_optional_unum(&response->score_softcore, &fields[6], "SoftcoreScore", 0);
+  rc_json_get_optional_unum(&response->num_unread_messages, &fields[7], "Messages", 0);
 
-  rc_json_get_optional_string(&response->display_name, &response->response, &fields[7], "DisplayName", response->username);
+  rc_json_get_optional_string(&response->display_name, &response->response, &fields[8], "DisplayName", response->username);
 
   return RC_OK;
 }
 
 void rc_api_destroy_login_response(rc_api_login_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Start Session --- */
@@ -115,7 +116,7 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
   rc_api_unlock_entry_t* unlock;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  unsigned timet;
+  uint32_t timet;
   int result;
 
   rc_json_field_t fields[] = {
@@ -132,14 +133,14 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
     return result;
 
   if (rc_json_get_optional_array(&response->num_unlocks, &array_field, &response->response, &fields[2], "Unlocks") && response->num_unlocks) {
-    response->unlocks = (rc_api_unlock_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_unlocks * sizeof(rc_api_unlock_entry_t));
+    response->unlocks = (rc_api_unlock_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_unlocks * sizeof(rc_api_unlock_entry_t));
     if (!response->unlocks)
       return RC_OUT_OF_MEMORY;
 
@@ -160,7 +161,7 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
   }
 
   if (rc_json_get_optional_array(&response->num_hardcore_unlocks, &array_field, &response->response, &fields[3], "HardcoreUnlocks") && response->num_hardcore_unlocks) {
-    response->hardcore_unlocks = (rc_api_unlock_entry_t*)rc_buf_alloc(&response->response.buffer, response->num_hardcore_unlocks * sizeof(rc_api_unlock_entry_t));
+    response->hardcore_unlocks = (rc_api_unlock_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_hardcore_unlocks * sizeof(rc_api_unlock_entry_t));
     if (!response->hardcore_unlocks)
       return RC_OUT_OF_MEMORY;
 
@@ -187,7 +188,7 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
 }
 
 void rc_api_destroy_start_session_response(rc_api_start_session_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
 
 /* --- Fetch User Unlocks --- */
@@ -231,7 +232,7 @@ int rc_api_process_fetch_user_unlocks_server_response(rc_api_fetch_user_unlocks_
   };
 
   memset(response, 0, sizeof(*response));
-  rc_buf_init(&response->response.buffer);
+  rc_buffer_init(&response->response.buffer);
 
   result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
   if (result != RC_OK || !response->response.succeeded)
@@ -242,5 +243,5 @@ int rc_api_process_fetch_user_unlocks_server_response(rc_api_fetch_user_unlocks_
 }
 
 void rc_api_destroy_fetch_user_unlocks_response(rc_api_fetch_user_unlocks_response_t* response) {
-  rc_buf_destroy(&response->response.buffer);
+  rc_buffer_destroy(&response->response.buffer);
 }
