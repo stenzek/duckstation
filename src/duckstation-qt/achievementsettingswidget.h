@@ -5,14 +5,14 @@
 #include <QtWidgets/QWidget>
 #include "ui_achievementsettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class AchievementSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit AchievementSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  explicit AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AchievementSettingsWidget();
 
 private Q_SLOTS:
@@ -29,5 +29,5 @@ private:
 
   Ui::AchievementSettingsWidget m_ui;
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 };

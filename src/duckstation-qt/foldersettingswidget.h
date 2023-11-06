@@ -7,14 +7,14 @@
 
 #include "ui_foldersettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class FolderSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  FolderSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~FolderSettingsWidget();
 
 private:

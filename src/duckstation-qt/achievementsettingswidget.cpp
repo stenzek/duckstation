@@ -5,7 +5,7 @@
 #include "achievementlogindialog.h"
 #include "mainwindow.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 #include "core/achievements.h"
@@ -16,7 +16,7 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
-AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

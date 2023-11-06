@@ -7,7 +7,7 @@
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 const char* GeneralSettingsWidget::THEME_NAMES[] = {
@@ -25,7 +25,7 @@ const char* GeneralSettingsWidget::THEME_VALUES[] = {
 
 const char* GeneralSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
 
-GeneralSettingsWidget::GeneralSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GeneralSettingsWidget::GeneralSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

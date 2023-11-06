@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsDialog</class>
- <widget class="QDialog" name="SettingsDialog">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
-  </property>
+ <class>SettingsWindow</class>
+ <widget class="QWidget" name="SettingsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>

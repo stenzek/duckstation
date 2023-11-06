@@ -7,14 +7,14 @@
 
 #include "ui_emulationsettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class EmulationSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit EmulationSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  explicit EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~EmulationSettingsWidget();
 
 private Q_SLOTS:
@@ -28,5 +28,5 @@ private:
 
   Ui::EmulationSettingsWidget m_ui;
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 };

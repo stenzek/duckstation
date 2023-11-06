@@ -9,7 +9,7 @@
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 #include "common/small_string.h"
@@ -22,7 +22,7 @@
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   createUi(dialog);
@@ -30,7 +30,7 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidg
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
 
-void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
+void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
 {
   QVBoxLayout* layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
@@ -113,7 +113,7 @@ void MemoryCardSettingsWidget::createUi(SettingsDialog* dialog)
   setLayout(layout);
 }
 
-void MemoryCardSettingsWidget::createPortSettingsUi(SettingsDialog* dialog, int index, PortSettingsUI* ui)
+void MemoryCardSettingsWidget::createPortSettingsUi(SettingsWindow* dialog, int index, PortSettingsUI* ui)
 {
   ui->container = new QGroupBox(tr("Memory Card %1").arg(index + 1), this);
   ui->layout = new QVBoxLayout(ui->container);

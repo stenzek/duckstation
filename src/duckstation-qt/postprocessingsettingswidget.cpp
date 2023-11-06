@@ -16,7 +16,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 
-PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

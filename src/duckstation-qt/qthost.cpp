@@ -386,7 +386,7 @@ void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* 
   applySettings(false);
 
   if (system)
-    emit settingsResetToDefault();
+    emit settingsResetToDefault(system, controller);
 }
 
 void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool controller)

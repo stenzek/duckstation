@@ -22,7 +22,7 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
-GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent)
+GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);
 

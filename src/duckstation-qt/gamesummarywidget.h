@@ -13,7 +13,7 @@ namespace GameDatabase {
 struct Entry;
 }
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameSummaryWidget : public QWidget
 {
@@ -21,7 +21,7 @@ class GameSummaryWidget : public QWidget
 
 public:
   GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
-                    const GameDatabase::Entry* entry, SettingsDialog* dialog, QWidget* parent);
+                    const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent);
   ~GameSummaryWidget();
 
 private Q_SLOTS:
@@ -34,7 +34,7 @@ private:
   void populateTracksInfo();
 
   Ui::GameSummaryWidget m_ui;
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 
   std::string m_path;
   std::string m_redump_search_keyword;

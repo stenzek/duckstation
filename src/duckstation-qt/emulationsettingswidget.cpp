@@ -4,12 +4,12 @@
 #include "emulationsettingswidget.h"
 #include "core/system.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 #include <QtWidgets/QMessageBox>
 #include <limits>
 
-EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

@@ -9,7 +9,7 @@
 
 #include <QtWidgets/QWidget>
 
-class SettingsDialog;
+class SettingsWindow;
 class PostProcessingShaderConfigWidget;
 
 class PostProcessingSettingsWidget : public QWidget
@@ -19,7 +19,7 @@ class PostProcessingSettingsWidget : public QWidget
   friend PostProcessingShaderConfigWidget;
 
 public:
-  PostProcessingSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~PostProcessingSettingsWidget();
 
 private Q_SLOTS:
@@ -42,7 +42,7 @@ private:
   void updateList(const SettingsInterface& si);
   void updateList();
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 
   Ui::PostProcessingSettingsWidget m_ui;
 

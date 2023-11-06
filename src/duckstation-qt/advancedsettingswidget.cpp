@@ -5,10 +5,10 @@
 #include "core/gpu_types.h"
 #include "mainwindow.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-static QCheckBox* addBooleanTweakOption(SettingsDialog* dialog, QTableWidget* table, QString name, std::string section,
+static QCheckBox* addBooleanTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                         std::string key, bool default_value)
 {
   const int row = table->rowCount();
@@ -39,7 +39,7 @@ static QCheckBox* setBooleanTweakOption(QTableWidget* table, int row, bool value
   return cb;
 }
 
-static QSpinBox* addIntRangeTweakOption(SettingsDialog* dialog, QTableWidget* table, QString name, std::string section,
+static QSpinBox* addIntRangeTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                         std::string key, int min_value, int max_value, int default_value)
 {
   const int row = table->rowCount();
@@ -72,7 +72,7 @@ static QSpinBox* setIntRangeTweakOption(QTableWidget* table, int row, int value)
   return cb;
 }
 
-static QDoubleSpinBox* addFloatRangeTweakOption(SettingsDialog* dialog, QTableWidget* table, QString name,
+static QDoubleSpinBox* addFloatRangeTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name,
                                                 std::string section, std::string key, float min_value, float max_value,
                                                 float step_value, float default_value)
 {
@@ -109,7 +109,7 @@ static QDoubleSpinBox* setFloatRangeTweakOption(QTableWidget* table, int row, fl
 }
 
 template<typename T>
-static QComboBox* addChoiceTweakOption(SettingsDialog* dialog, QTableWidget* table, QString name, std::string section,
+static QComboBox* addChoiceTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                        std::string key, std::optional<T> (*parse_callback)(const char*),
                                        const char* (*get_value_callback)(T), const char* (*get_display_callback)(T),
                                        u32 num_values, T default_value)
@@ -145,7 +145,7 @@ static void setChoiceTweakOption(QTableWidget* table, int row, T value)
   cb->setCurrentIndex(static_cast<int>(value));
 }
 
-static void addMSAATweakOption(SettingsDialog* dialog, QTableWidget* table, const QString& name)
+static void addMSAATweakOption(SettingsWindow* dialog, QTableWidget* table, const QString& name)
 {
   const int row = table->rowCount();
 
@@ -175,7 +175,7 @@ static void addMSAATweakOption(SettingsDialog* dialog, QTableWidget* table, cons
   table->setCellWidget(row, 1, msaa);
 }
 
-static void addDirectoryOption(SettingsDialog* dialog, QTableWidget* table, const QString& name, std::string section,
+static void addDirectoryOption(SettingsWindow* dialog, QTableWidget* table, const QString& name, std::string section,
                                std::string key)
 {
   const int row = table->rowCount();
@@ -221,7 +221,7 @@ static void setDirectoryOption(QTableWidget* table, int row, const char* value)
   valuew->setText(QString::fromUtf8(value));
 }
 
-AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

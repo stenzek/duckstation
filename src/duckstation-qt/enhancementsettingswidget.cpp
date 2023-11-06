@@ -5,10 +5,10 @@
 #include "core/gpu.h"
 #include "core/settings.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

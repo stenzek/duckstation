@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "hotkeysettingswidget.h"
-#include "controllersettingsdialog.h"
+#include "controllersettingswindow.h"
 #include "util/input_manager.h"
 #include "inputbindingwidgets.h"
 #include "qtutils.h"
@@ -12,7 +12,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollArea>
 
-HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
+HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
   : QWidget(parent), m_dialog(dialog)
 {
   createUi();

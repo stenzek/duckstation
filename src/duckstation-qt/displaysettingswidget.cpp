@@ -5,7 +5,7 @@
 #include "core/gpu.h"
 #include "core/settings.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 #include <QtWidgets/QMessageBox>
 
@@ -18,7 +18,7 @@
 #include "util/vulkan_device.h"
 #endif
 
-DisplaySettingsWidget::DisplaySettingsWidget(SettingsDialog* dialog, QWidget* parent)
+DisplaySettingsWidget::DisplaySettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

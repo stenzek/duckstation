@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllerglobalsettingswidget.h"
-#include "controllersettingsdialog.h"
+#include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
 #include "util/sdl_input_source.h"
 
-ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
   : QWidget(parent), m_dialog(dialog)
 {
   m_ui.setupUi(this);
@@ -108,7 +108,7 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
   m_ui.ledSettings->setEnabled(enabled);
 }
 
-ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
   : QDialog(parent), m_dialog(dialog)
 {
   m_ui.setupUi(this);

@@ -7,14 +7,14 @@
 
 #include "ui_consolesettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class ConsoleSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  explicit ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~ConsoleSettingsWidget();
 
 private Q_SLOTS:
@@ -28,5 +28,5 @@ private:
 
   Ui::ConsoleSettingsWidget m_ui;
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 };

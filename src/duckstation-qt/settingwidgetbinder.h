@@ -5,7 +5,7 @@
 
 #include "qthost.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 
 #include "core/host.h"
 #include "core/settings.h"

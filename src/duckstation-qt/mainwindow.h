@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "controllersettingsdialog.h"
+#include "controllersettingswindow.h"
 #include "displaywidget.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "ui_mainwindow.h"
 
 #include "core/types.h"
@@ -121,7 +121,7 @@ private Q_SLOTS:
   void focusDisplayWidget();
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
 
-  void onSettingsResetToDefault();
+  void onSettingsResetToDefault(bool system, bool controller);
   void onSystemStarting();
   void onSystemStarted();
   void onSystemDestroyed();
@@ -227,11 +227,10 @@ private:
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 
-  SettingsDialog* getSettingsDialog();
+  SettingsWindow* getSettingsDialog();
   void doSettings(const char* category = nullptr);
 
-  ControllerSettingsDialog* getControllerSettingsDialog();
-  void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
+  void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
@@ -244,6 +243,7 @@ private:
   void updateTheme();
   void reloadThemeSpecificImages();
   void recreate();
+  void destroySubWindows();
 
   void registerForDeviceNotifications();
   void unregisterForDeviceNotifications();
@@ -280,8 +280,8 @@ private:
 
   QMenu* m_settings_toolbar_menu = nullptr;
 
-  SettingsDialog* m_settings_dialog = nullptr;
-  ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
+  SettingsWindow* m_settings_window = nullptr;
+  ControllerSettingsWindow* m_controller_settings_window = nullptr;
 
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;

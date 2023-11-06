@@ -4,13 +4,13 @@
 #include "consolesettingswidget.h"
 #include "core/system.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 #include "util/cd_image.h"
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
-ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

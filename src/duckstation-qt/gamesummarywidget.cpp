@@ -4,7 +4,7 @@
 #include "gamesummarywidget.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 
 #include "core/game_database.h"
 #include "core/game_list.h"
@@ -18,7 +18,7 @@
 #include <QtWidgets/QMessageBox>
 
 GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
-                                     const GameDatabase::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+                                     const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent)
   : m_dialog(dialog)
 {
   m_ui.setupUi(this);

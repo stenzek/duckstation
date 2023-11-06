@@ -5,10 +5,10 @@
 #include <algorithm>
 
 #include "foldersettingswidget.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-FolderSettingsWidget::FolderSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent)
+FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();
 

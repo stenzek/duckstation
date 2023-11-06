@@ -22,7 +22,7 @@
 class QVBoxLayout;
 
 class InputBindingWidget;
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 class ControllerCustomSettingsWidget;
 class ControllerMacroWidget;
 class ControllerMacroEditWidget;
@@ -35,12 +35,12 @@ class ControllerBindingWidget final : public QWidget
   Q_OBJECT
 
 public:
-  ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port);
+  ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port);
   ~ControllerBindingWidget();
 
   QIcon getIcon() const;
 
-  ALWAYS_INLINE ControllerSettingsDialog* getDialog() const { return m_dialog; }
+  ALWAYS_INLINE ControllerSettingsWindow* getDialog() const { return m_dialog; }
   ALWAYS_INLINE const std::string& getConfigSection() const { return m_config_section; }
   ALWAYS_INLINE ControllerType getControllerType() const { return m_controller_type; }
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
@@ -62,7 +62,7 @@ private:
 
   Ui::ControllerBindingWidget m_ui;
 
-  ControllerSettingsDialog* m_dialog;
+  ControllerSettingsWindow* m_dialog;
 
   std::string m_config_section;
   ControllerType m_controller_type;
@@ -91,7 +91,7 @@ private:
   void createWidgets(ControllerBindingWidget* parent);
 
   Ui::ControllerMacroWidget m_ui;
-  ControllerSettingsDialog* m_dialog;
+  ControllerSettingsWindow* m_dialog;
   std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
 };
 
@@ -156,7 +156,7 @@ public:
   ControllerBindingWidget_Base(ControllerBindingWidget* parent);
   virtual ~ControllerBindingWidget_Base();
 
-  ALWAYS_INLINE ControllerSettingsDialog* getDialog() const
+  ALWAYS_INLINE ControllerSettingsWindow* getDialog() const
   {
     return static_cast<ControllerBindingWidget*>(parent())->getDialog();
   }

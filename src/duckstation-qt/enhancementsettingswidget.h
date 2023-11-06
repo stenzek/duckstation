@@ -7,14 +7,14 @@
 
 #include "ui_enhancementsettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class EnhancementSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  EnhancementSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  EnhancementSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~EnhancementSettingsWidget();
 
 private Q_SLOTS:
@@ -27,5 +27,5 @@ private:
 
   Ui::EnhancementSettingsWidget m_ui;
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 };

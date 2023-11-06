@@ -16,7 +16,7 @@
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
-    <ClCompile Include="controllersettingsdialog.cpp" />
+    <ClCompile Include="controllersettingswindow.cpp" />
     <ClCompile Include="coverdownloaddialog.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
@@ -51,7 +51,7 @@
     <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
-    <ClCompile Include="settingsdialog.cpp" />
+    <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -83,7 +83,7 @@
     <QtMoc Include="collapsiblewidget.h" />
     <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
-    <QtMoc Include="controllersettingsdialog.h" />
+    <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryviewwidget.h" />
@@ -104,7 +104,7 @@
     <QtMoc Include="qthost.h" />
     <QtMoc Include="foldersettingswidget.h" />
     <ClInclude Include="qtutils.h" />
-    <QtMoc Include="settingsdialog.h" />
+    <QtMoc Include="settingswindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="aboutdialog.ui">
@@ -134,7 +134,7 @@
     <QtUi Include="mainwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="settingsdialog.ui">
+    <QtUi Include="settingswindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="displaysettingswidget.ui">
@@ -194,7 +194,7 @@
     <QtUi Include="controllerglobalsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="controllersettingsdialog.ui">
+    <QtUi Include="controllersettingswindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="controllermacrowidget.ui">
@@ -239,7 +239,7 @@
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerglobalsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_controllersettingsdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_controllersettingswindow.cpp" />
     <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
     <ClCompile Include="$(IntDir)moc_displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
@@ -268,7 +268,7 @@
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
-    <ClCompile Include="$(IntDir)moc_settingsdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_settingswindow.cpp" />
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>

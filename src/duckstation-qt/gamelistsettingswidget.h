@@ -7,7 +7,7 @@
 
 #include "ui_gamelistsettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 class GameListSearchDirectoriesModel;
 
 class GameListSettingsWidget : public QWidget
@@ -15,7 +15,7 @@ class GameListSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GameListSettingsWidget();
 
   bool addExcludedPath(const std::string& path);

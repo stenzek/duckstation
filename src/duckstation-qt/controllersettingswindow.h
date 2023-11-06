@@ -1,10 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/types.h"
+
+#include "ui_controllersettingswindow.h"
+
 #include "util/input_manager.h"
-#include "ui_controllersettingsdialog.h"
+
+#include "common/types.h"
+
 #include <QtCore/QList>
 #include <QtCore/QPair>
 #include <QtCore/QString>
@@ -19,7 +23,7 @@ class HotkeySettingsWidget;
 
 class SettingsInterface;
 
-class ControllerSettingsDialog final : public QDialog
+class ControllerSettingsWindow final : public QWidget
 {
   Q_OBJECT
 
@@ -37,8 +41,8 @@ public:
     MAX_PORTS = 8
   };
 
-  ControllerSettingsDialog(QWidget* parent = nullptr);
-  ~ControllerSettingsDialog();
+  ControllerSettingsWindow();
+  ~ControllerSettingsWindow();
 
   ALWAYS_INLINE HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
@@ -85,7 +89,7 @@ private:
   void refreshProfileList();
   void switchProfile(const QString& name);
 
-  Ui::ControllerSettingsDialog m_ui;
+  Ui::ControllerSettingsWindow m_ui;
 
   ControllerGlobalSettingsWidget* m_global_settings = nullptr;
   std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};

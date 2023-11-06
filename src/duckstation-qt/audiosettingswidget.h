@@ -7,14 +7,14 @@
 
 #include "ui_audiosettingswidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class AudioSettingsWidget : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+  explicit AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
@@ -29,5 +29,5 @@ private Q_SLOTS:
 private:
   Ui::AudioSettingsWidget m_ui;
 
-  SettingsDialog* m_dialog;
+  SettingsWindow* m_dialog;
 };

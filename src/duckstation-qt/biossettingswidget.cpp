@@ -4,7 +4,7 @@
 #include "biossettingswidget.h"
 #include "qthost.h"
 #include "qtutils.h"
-#include "settingsdialog.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 #include "core/bios.h"
@@ -13,7 +13,7 @@
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
-BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
+BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "inputbindingwidgets.h"
-#include "controllersettingsdialog.h"
+#include "controllersettingswindow.h"
 #include "inputbindingdialog.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -401,7 +401,7 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)
   connect(this, &QPushButton::clicked, this, &InputVibrationBindingWidget::onClicked);
 }
 
-InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog,
+InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog,
                                                          std::string section_name, std::string key_name)
 {
   setMinimumWidth(225);
@@ -416,7 +416,7 @@ InputVibrationBindingWidget::~InputVibrationBindingWidget()
 {
 }
 
-void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::string section_name,
+void InputVibrationBindingWidget::setKey(ControllerSettingsWindow* dialog, std::string section_name,
                                          std::string key_name)
 {
   m_dialog = dialog;

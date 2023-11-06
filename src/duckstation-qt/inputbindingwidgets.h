@@ -9,7 +9,7 @@
 
 class QTimer;
 
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 class SettingsInterface;
 
 class InputBindingWidget : public QPushButton
@@ -77,11 +77,11 @@ class InputVibrationBindingWidget : public QPushButton
 
 public:
   InputVibrationBindingWidget(QWidget* parent);
-  InputVibrationBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name,
+  InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name,
                               std::string key_name);
   ~InputVibrationBindingWidget();
 
-  void setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name);
+  void setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 
 public Q_SLOTS:
   void clearBinding();
@@ -97,5 +97,5 @@ private:
   std::string m_key_name;
   std::string m_binding;
 
-  ControllerSettingsDialog* m_dialog;
+  ControllerSettingsWindow* m_dialog;
 };

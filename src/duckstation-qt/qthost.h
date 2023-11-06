@@ -121,7 +121,7 @@ Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   bool messageConfirmed(const QString& title, const QString& message);
   void debuggerMessageReported(const QString& message);
-  void settingsResetToDefault();
+  void settingsResetToDefault(bool system, bool controller);
   void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
   void onInputDeviceConnected(const QString& identifier, const QString& device_name);
   void onInputDeviceDisconnected(const QString& identifier);

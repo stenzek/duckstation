@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+#include "ui_settingswindow.h"
+
 #include "common/types.h"
-#include "ui_settingsdialog.h"
+
 #include <QtCore/QMap>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
@@ -31,15 +33,15 @@ class AchievementSettingsWidget;
 class FolderSettingsWidget;
 class AdvancedSettingsWidget;
 
-class SettingsDialog final : public QDialog
+class SettingsWindow final : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit SettingsDialog(QWidget* parent);
-  SettingsDialog(const std::string& path, const std::string& serial, DiscRegion region,
-                 const GameDatabase::Entry* entry, std::unique_ptr<SettingsInterface> sif, QWidget* parent);
-  ~SettingsDialog();
+  SettingsWindow();
+  SettingsWindow(const std::string& path, const std::string& serial, DiscRegion region,
+                 const GameDatabase::Entry* entry, std::unique_ptr<SettingsInterface> sif);
+  ~SettingsWindow();
 
   static void openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region);
 
@@ -101,7 +103,7 @@ private:
   void addPages();
   void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
 
-  Ui::SettingsDialog m_ui;
+  Ui::SettingsWindow m_ui;
 
   std::unique_ptr<SettingsInterface> m_sif;
 
