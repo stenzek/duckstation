@@ -104,6 +104,21 @@ static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
   SDL_GameControllerSetLED(gc, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
 }
 
+static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
+{
+  static constexpr LOGLEVEL priority_map[SDL_NUM_LOG_PRIORITIES] = {
+    LOGLEVEL_DEBUG,
+    LOGLEVEL_DEBUG,   // SDL_LOG_PRIORITY_VERBOSE
+    LOGLEVEL_DEBUG,   // SDL_LOG_PRIORITY_DEBUG
+    LOGLEVEL_INFO,    // SDL_LOG_PRIORITY_INFO
+    LOGLEVEL_WARNING, // SDL_LOG_PRIORITY_WARN
+    LOGLEVEL_ERROR,   // SDL_LOG_PRIORITY_ERROR
+    LOGLEVEL_ERROR,   // SDL_LOG_PRIORITY_CRITICAL
+  };
+
+  Log::Write("SDL", "SDL", priority_map[priority], message);
+}
+
 SDLInputSource::SDLInputSource() = default;
 
 SDLInputSource::~SDLInputSource()
@@ -225,6 +240,13 @@ bool SDLInputSource::InitializeSubsystem()
     Log_ErrorPrint("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
     return false;
   }
+
+  SDL_LogSetOutputFunction(SDLLogCallback, nullptr);
+#ifdef _DEBUG
+  SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#else
+  SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
+#endif
 
   // we should open the controllers as the connected events come in, so no need to do any more here
   m_sdl_subsystem_initialized = true;
