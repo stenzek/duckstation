@@ -77,6 +77,12 @@ static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
+// Some API calls are really slow. Set a longer timeout.
+static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
+
+// Chrome uses 10 server calls per domain, seems reasonable.
+static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
+
 namespace {
 struct LoginWithPasswordParameters
 {
@@ -437,6 +443,9 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
     Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
     return false;
   }
+
+  (*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+  (*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
 
   rc_client_t* new_client = rc_client_create(ClientReadMemory, ClientServerCall);
   if (!new_client)
