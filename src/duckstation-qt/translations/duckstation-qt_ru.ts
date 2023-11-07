@@ -64,10 +64,6 @@
         <translation>Авторизация RetroAchievements</translation>
     </message>
     <message>
-        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="vanished">Пожалуйста, введите имя пользователя и пароль для retroachievements.org ниже. Ваш пароль не будет сохранен в DuckStation, вместо него будет сгенерирован и использован токен доступа.</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
         <translation>Пожалуйста, введите имя пользователя и пароль для retroachievements.org ниже. Ваш пароль не будет сохранен в DuckStation, вместо него будет сгенерирован и использован токен доступа.</translation>
@@ -119,10 +115,6 @@ Please check your username and password, and try again.</source>
         <translation>Авторизация...</translation>
     </message>
     <message>
-        <source>Login failed. Please check your username and password, and try again.</source>
-        <translation type="vanished">Ошибка авторизации. Пожалуйста, проверьте ваше имя пользователя и пароль и попробуйте снова.</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.cpp" line="73"/>
         <source>Login failed.</source>
         <translation>Ошибка авторизации.</translation>
@@ -137,22 +129,10 @@ Please check your username and password, and try again.</source>
         <translation>Окно</translation>
     </message>
     <message>
-        <source>Global Settings</source>
-        <translation type="vanished">Глобальные настройки</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="45"/>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Achievements</source>
         <translation>Включить достижения</translation>
-    </message>
-    <message>
-        <source>Enable Rich Presence</source>
-        <translation type="vanished">Включить статус активности</translation>
-    </message>
-    <message>
-        <source>Enable Test Mode</source>
-        <translation type="vanished">Включить тестовый режим</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="181"/>
@@ -183,18 +163,6 @@ Please check your username and password, and try again.</source>
         <location filename="../achievementsettingswidget.cpp" line="68"/>
         <source>Test Unofficial Achievements</source>
         <translation>Проверка неофициальных достижений</translation>
-    </message>
-    <message>
-        <source>Enable Leaderboards</source>
-        <translation type="obsolete">Включить список лидеров</translation>
-    </message>
-    <message>
-        <source>Show Challenge Indicators</source>
-        <translation type="obsolete">Показывать индикаторы испытаний</translation>
-    </message>
-    <message>
-        <source>Show Notifications</source>
-        <translation type="vanished">Показать уведомления</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="198"/>
@@ -314,10 +282,6 @@ Login token generated at:</source>
         <translation>При включении DuckStation будет отображать достижения из неофициальных наборов. Пожалуйста, обратите внимание, что эти достижения не отслеживаются достижениями RetroAchievements, поэтому они разблокируются каждый раз.</translation>
     </message>
     <message>
-        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translation type="obsolete">При включении rich presence информация будет собираться и отправляться на поддерживаемый сервер.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="73"/>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
         <translation>При включении первый диск в списке воспроизведения будет использоваться для достижений, независимо от того, какой диск активен.</translation>
@@ -337,17 +301,9 @@ Login token generated at:</source>
         <translation>Выбрано</translation>
     </message>
     <message>
-        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="obsolete">Отображает всплывающие сообщения о таких событиях, как разблокировка достижений и отправка в список лидеров.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="58"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>Воспроизводит звуковые эффекты для таких событий, как разблокировка достижений и отправка в список лидеров.</translation>
-    </message>
-    <message>
-        <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-        <translation type="obsolete">Позволяет отслеживать и отправлять списки лидеров в поддерживаемых играх. Если списки лидеров отключены, вы по-прежнему сможете просматривать списки лидеров и результаты, но результаты не будут загружены.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="61"/>
@@ -406,10 +362,6 @@ Login token generated on %2.</source>
         <location filename="../../core/system.cpp" line="1355"/>
         <source>Resuming state</source>
         <translation type="unfinished">Возобновление состояния</translation>
-    </message>
-    <message>
-        <source>Hardcore mode disabled by state switch.</source>
-        <translation type="obsolete">Хардкорный режим отключен переключателем состояния.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1039"/>
@@ -644,19 +596,9 @@ Unread messages: {}</source>
         <translation>{} (Хардкорный режим)</translation>
     </message>
     <message>
-        <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation type="vanished">Вы заработали {} из {} достижений и {} из {} баллов.</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="1022"/>
         <source>This game has no achievements.</source>
         <translation>В этой игре нет достижений.</translation>
-    </message>
-    <message>
-        <source>Your Score: {} (Best: {})
-Leaderboard Position: {} of {}</source>
-        <translation type="obsolete">Ваш результат: {} (Лучший: {})
-Позиция в списке лидеров: {} из {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2490"/>
@@ -2550,13 +2492,6 @@ Leaderboard Position: {} of {}</source>
     </message>
 </context>
 <context>
-    <name>CommonHostInterface</name>
-    <message>
-        <source>Invalid version %u (%s version %u)</source>
-        <translation type="vanished">Недопустимая версия %u (%s версия %u)</translation>
-    </message>
-</context>
-<context>
     <name>ConsoleRegion</name>
     <message>
         <location filename="../../core/settings.cpp" line="783"/>
@@ -3943,129 +3878,6 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerSettingsDialog</name>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">Настройки контроллера</translation>
-    </message>
-    <message>
-        <source>Profile:</source>
-        <translation type="vanished">Профиль:</translation>
-    </message>
-    <message>
-        <source>New Profile</source>
-        <translation type="vanished">Новый профиль</translation>
-    </message>
-    <message>
-        <source>Load Profile</source>
-        <translation type="vanished">Загрузить профиль</translation>
-    </message>
-    <message>
-        <source>Delete Profile</source>
-        <translation type="vanished">Удалить профиль</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation type="vanished">Сброс настроек</translation>
-    </message>
-    <message>
-        <source>Create Input Profile</source>
-        <translation type="vanished">Создать профиль ввода</translation>
-    </message>
-    <message>
-        <source>Enter the name for the new input profile:</source>
-        <translation type="vanished">Введите имя для нового профиля ввода:</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Ошибка</translation>
-    </message>
-    <message>
-        <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="vanished">Профиль с именем &apos;%1&apos; уже существует.</translation>
-    </message>
-    <message>
-        <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="vanished">Вы хотите скопировать все привязки из текущего выбранного профиля в новый профиль? При выборе «Нет» будет создан полностью пустой профиль.</translation>
-    </message>
-    <message>
-        <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="vanished">Не удалось сохранить новый профиль в &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Load Input Profile</source>
-        <translation type="vanished">Загрузить профиль ввода</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to load the input profile named &apos;%1&apos;?
-
-All current global bindings will be removed, and the profile bindings loaded.
-
-You cannot undo this action.</source>
-        <translation type="vanished">Вы уверены, что хотите загрузить профиль ввода с именем &apos;%1&apos;?
-
-Все текущие глобальные привязки будут удалены, а привязки профиля загружены.
-
-Вы не можете отменить это действие.</translation>
-    </message>
-    <message>
-        <source>Delete Input Profile</source>
-        <translation type="vanished">Удалить профиль ввода</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
-
-You cannot undo this action.</source>
-        <translation type="vanished">Вы уверены, что хотите удалить профиль ввода с именем &apos;%1&apos;?
-
-Вы не можете отменить это действие.</translation>
-    </message>
-    <message>
-        <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="vanished">Не удалось удалить &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore the default controller configuration?
-
-All shared bindings and configuration will be lost, but your input profiles will remain.
-
-You cannot undo this action.</source>
-        <translation type="vanished">Вы уверены, что хотите восстановить конфигурацию контроллера по умолчанию?
-
-Все общие привязки и конфигурация будут потеряны, но ваши профили ввода останутся.
-
-Вы не можете отменить это действие.</translation>
-    </message>
-    <message>
-        <source>Global Settings</source>
-        <translation type="vanished">Глобальные настройки</translation>
-    </message>
-    <message>
-        <source>Controller Port %1%2
-%3</source>
-        <translation type="vanished">Порт контроллера %1%2
-%3</translation>
-    </message>
-    <message>
-        <source>Controller Port %1
-%2</source>
-        <translation type="vanished">Порт контроллера %1
-%2</translation>
-    </message>
-    <message>
-        <source>Hotkeys</source>
-        <translation type="vanished">Горячие клавиши</translation>
-    </message>
-    <message>
-        <source>Shared</source>
-        <translation type="vanished">Общий</translation>
-    </message>
-    <message>
-        <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="vanished">Профиль ввода с именем &apos;%1&apos; не найден.</translation>
-    </message>
-</context>
-<context>
     <name>ControllerSettingsWindow</name>
     <message>
         <location filename="../controllersettingswindow.ui" line="20"/>
@@ -5316,26 +5128,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Состояние сохранения возобновления не найдено.</translation>
     </message>
     <message>
-        <source>Game ID: %1
-Game Title: %2
-Achievements: %5 (%6)
-
-</source>
-        <translation type="vanished">Идентификатор игры: %1
-Название игры: %2
-Достижения: %5 (%6)
-
-</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n points</source>
-        <translation type="vanished">
-            <numerusform>%n балл</numerusform>
-            <numerusform>%n балла</numerusform>
-            <numerusform>%n баллов</numerusform>
-        </translation>
-    </message>
-    <message>
         <location filename="../qthost.cpp" line="1229"/>
         <source>Game: %1 (%2)
 </source>
@@ -6380,18 +6172,6 @@ Do you want to load this save and continue?</source>
         <translation>Настройки достижений</translation>
     </message>
     <message>
-        <source>Achievements are disabled.</source>
-        <translation type="vanished">Достижения отключены.</translation>
-    </message>
-    <message>
-        <source>Achievements: {} ({} points)</source>
-        <translation type="obsolete">Достижения: {} ({} баллов)</translation>
-    </message>
-    <message>
-        <source>Active Challenge Achievements</source>
-        <translation type="vanished">Достижения в активных испытаниях</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6770"/>
         <source>Add Search Directory</source>
         <translation>Добавить каталог поиска</translation>
@@ -6415,10 +6195,6 @@ Do you want to load this save and continue?</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6774"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation type="unfinished">Добавляет дополнительную точность пост-проекции данных PGXP. Может улучшить визуальные эффекты в некоторых играх.</translation>
-    </message>
-    <message>
-        <source>Adds padding to ensure pixels are a whole number in size.</source>
-        <translation type="obsolete">Добавляет отступы, чтобы обеспечить размер пикселей целым числом.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6769"/>
@@ -7183,17 +6959,9 @@ Error was:</source>
         <translation>Каркасная отрисовка</translation>
     </message>
     <message>
-        <source>Enable Sound Effects</source>
-        <translation type="vanished">Включить звуковые эффекты</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6917"/>
         <source>Enable Subdirectory Scanning</source>
         <translation>Включить сканирование подкаталогов</translation>
-    </message>
-    <message>
-        <source>Enable TTY Output</source>
-        <translation type="obsolete">Включить TTY вывод</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6919"/>
@@ -7240,10 +7008,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6927"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>Включает замену фоновых текстур в поддерживаемых играх.</translation>
-    </message>
-    <message>
-        <source>Enables tracking and submission of leaderboards in supported games.</source>
-        <translation type="obsolete">Позволяет отслеживать и отправлять список лидеров в поддерживаемых играх.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6929"/>
@@ -7322,10 +7086,6 @@ Error was:</source>
         <translation>Ошибка загрузки &apos;{}&apos;.</translation>
     </message>
     <message>
-        <source>Failed to load shader {}. It may be invalid.</source>
-        <translation type="obsolete">Не удалось загрузить шейдер {}. Он может быть неверный.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6945"/>
         <source>Failed to save input profile &apos;{}&apos;.</source>
         <translation>Не удалось сохранить входной профиль &apos;{}&apos;.</translation>
@@ -7349,10 +7109,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6949"/>
         <source>File Title</source>
         <translation type="unfinished">Название файла</translation>
-    </message>
-    <message>
-        <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation type="obsolete">Заполняет окно активной областью отображения, независимо от соотношения сторон.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6950"/>
@@ -7411,10 +7167,6 @@ Error was:</source>
         <translation type="unfinished">Игровая сетка</translation>
     </message>
     <message>
-        <source>Game ID: {}</source>
-        <translation type="obsolete">Идентификатор игры: {}</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6961"/>
         <source>Game List</source>
         <translation>Список игр</translation>
@@ -7438,10 +7190,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6965"/>
         <source>Game Slot {0}##game_slot_{0}</source>
         <translation type="unfinished">Игровой слот {0}##game_slot_{0}</translation>
-    </message>
-    <message>
-        <source>Game Title: {}</source>
-        <translation type="obsolete">Название игры: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6966"/>
@@ -7605,10 +7353,6 @@ Error was:</source>
         <translation>Профиль ввода &apos;{}&apos; сохранен.</translation>
     </message>
     <message>
-        <source>Integer Upscaling</source>
-        <translation type="obsolete">Целочисленное масштабирование</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6998"/>
         <source>Integration</source>
         <translation>Интеграция</translation>
@@ -7677,10 +7421,6 @@ Error was:</source>
         <translation type="unfinished">Ограничивает количество кадров, отображаемых на экране. Эти кадры все еще отрисовываются.</translation>
     </message>
     <message>
-        <source>Linear Upscaling</source>
-        <translation type="obsolete">Линейное масштабирование</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7011"/>
         <source>Load Devices From Save States</source>
         <translation type="unfinished">Загрузить устройства из сохранённого состояния</translation>
@@ -7714,10 +7454,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7017"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
         <translation>Загружает образ игры в оперативную память. Полезно для сетевых путей, которые могут стать ненадежными во время игры.</translation>
-    </message>
-    <message>
-        <source>Locked Achievements</source>
-        <translation type="obsolete">Заблокированные достижения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7018"/>
@@ -8031,17 +7767,9 @@ Error was:</source>
         <translation>Настройки PGXP</translation>
     </message>
     <message>
-        <source>Password: </source>
-        <translation type="vanished">Пароль: </translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7080"/>
         <source>Patches</source>
         <translation>Патчи</translation>
-    </message>
-    <message>
-        <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation type="obsolete">Исправляет BIOS для журналирования вызовов функции printf(). Используется только при отладке, может ломать игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7081"/>
@@ -8059,10 +7787,6 @@ Error was:</source>
         <translation type="unfinished">Пауза при потере фокуса</translation>
     </message>
     <message>
-        <source>Pause On Menu</source>
-        <translation type="obsolete">Пауза в меню</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7084"/>
         <source>Pause On Start</source>
         <translation type="unfinished">Пауза при запуске</translation>
@@ -8076,10 +7800,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7086"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation type="unfinished">Приостанавливает эмулятор, когда вы сворачиваете окно или переключаетесь на другое приложение, и возобновляет работу при обратном переключении.</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
-        <translation type="vanished">Приостанавливает работу эмулятора при открытии быстрого меню и возобновляет работу при его закрытии.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7087"/>
@@ -8112,10 +7832,6 @@ Error was:</source>
         <translation type="unfinished">Воспроизводит звуковые эффекты для таких событий, как разблокировка достижений и отправка в список лидеров.</translation>
     </message>
     <message>
-        <source>Please enter your user name and password for retroachievements.org.</source>
-        <translation type="vanished">Пожалуйста, введите свое имя пользователя и пароль для сайта Retroachievements.org.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7093"/>
         <source>Port {} Controller Type</source>
         <translation>Тип контроллера порта {}</translation>
@@ -8134,10 +7850,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7096"/>
         <source>Post-processing chain cleared.</source>
         <translation>Цепочка постобработки очищена.</translation>
-    </message>
-    <message>
-        <source>Post-processing chain is empty.</source>
-        <translation type="vanished">Цепочка постобработки пуста.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7097"/>
@@ -8356,10 +8068,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7139"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.</source>
         <translation type="unfinished">Для перемотки назад {0} кадров длительностью {1:.2f} секунд потребуется до {3} Мб ОЗУ и {4} Мб видеопамяти.</translation>
-    </message>
-    <message>
-        <source>Rich Presence</source>
-        <translation type="vanished">Статус активности</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7140"/>
@@ -8594,10 +8302,6 @@ Error was:</source>
         <translation>Показать использование процессора</translation>
     </message>
     <message>
-        <source>Show Challenge Indicators</source>
-        <translation type="obsolete">Показывать индикаторы испытаний</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7185"/>
         <source>Show Controller Input</source>
         <translation type="unfinished">Показать ввод контроллера</translation>
@@ -8621,10 +8325,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7189"/>
         <source>Show GPU Usage</source>
         <translation>Показать использование ГП</translation>
-    </message>
-    <message>
-        <source>Show Notifications</source>
-        <translation type="obsolete">Показать уведомления</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7190"/>
@@ -8829,10 +8529,6 @@ Error was:</source>
         <translation>Режим растяжения</translation>
     </message>
     <message>
-        <source>Stretch To Fit</source>
-        <translation type="vanished">Растянуть до заполнения</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7230"/>
         <source>Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.</source>
         <translation>Растягивает изображение в соответствии с соотношением сторон путем умножения по вертикали, а не по горизонтали.</translation>
@@ -8867,10 +8563,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7236"/>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Временно отключает все улучшения, что полезно при тестировании.</translation>
-    </message>
-    <message>
-        <source>Test Mode</source>
-        <translation type="vanished">Режим тестирования</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7237"/>
@@ -8913,10 +8605,6 @@ Error was:</source>
         <translation type="unfinished">Выбранный образ карты памяти будет использоваться в режиме - общая для этого слота.</translation>
     </message>
     <message>
-        <source>This build was not compiled with RetroAchivements support.</source>
-        <translation type="vanished">Эта сборка не была скомпилирована с поддержкой RetroAchivements.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7247"/>
         <source>Threaded Presentation</source>
         <translation>Потоковая презентация</translation>
@@ -8936,10 +8624,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7250"/>
         <source>Time Played: %s</source>
         <translation type="unfinished">Время в игре: %s</translation>
-    </message>
-    <message>
-        <source>Timing out in %.0f seconds...</source>
-        <translation type="vanished">Тайм-аут через %.0f секунд...</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7252"/>
@@ -8994,10 +8678,6 @@ Error was:</source>
         <translation type="unfinished">Не ограничена</translation>
     </message>
     <message>
-        <source>Unlocked Achievements</source>
-        <translation type="vanished">Разблокированные достижения</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7262"/>
         <source>Use Blit Swap Chain</source>
         <translation type="unfinished">Использовать цепочку обмена Blit</translation>
@@ -9023,18 +8703,10 @@ Error was:</source>
         <translation type="unfinished">Использовать серийные имена файлов</translation>
     </message>
     <message>
-        <source>Use Single Card For Sub-Images</source>
-        <translation type="obsolete">Использовать одну карту для под-образов</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7268"/>
         <source>Use Software Renderer For Readbacks</source>
         <translatorcomment>*Обратного чтения-считывания-считываний *отображение *визуализация</translatorcomment>
         <translation type="unfinished">Программная отрисовка для обратных чтений</translation>
-    </message>
-    <message>
-        <source>User Name: </source>
-        <translation type="vanished">Имя пользователя: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7269"/>
@@ -9045,10 +8717,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7270"/>
         <source>Uses PGXP for all instructions, not just memory operations.</source>
         <translation>Использует PGXP для всех инструкций, а не только для операций с памятью.</translation>
-    </message>
-    <message>
-        <source>Uses a bilinear filter when upscaling to display, smoothing out the image.</source>
-        <translation type="obsolete">Использует билинейный фильтр при масштабировании для отображения, сглаживая изображение.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7271"/>
@@ -9121,10 +8789,6 @@ Error was:</source>
         <translation>Если этот параметр включен, будут применены настройки для каждой игры, а несовместимые улучшения будут отключены.</translation>
     </message>
     <message>
-        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translation type="vanished">Если этот параметр включен, расширенная информация о статусе активности будет собираться и отправляться на сервер, где это поддерживается.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7285"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>Если этот параметр включен, для API хоста будет использоваться минимальная поддерживаемая задержка вывода.</translation>
@@ -9140,34 +8804,14 @@ Error was:</source>
         <translation>Если этот параметр выбран, будет использоваться указанная ниже тактовая частота.</translation>
     </message>
     <message>
-        <source>When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation type="vanished">При использовании многодискового образа (m3u/pbp) и карт памяти для каждой игры (название) используйте одну карту памяти для всех дисков.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7289"/>
         <source>Writes textures which can be replaced to the dump directory.</source>
         <translation>Записывает текстуры, которые можно заменить, в каталог дампа.</translation>
     </message>
     <message>
-        <source>XXX points</source>
-        <translation type="vanished">ХХХ баллов</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7290"/>
         <source>Yes</source>
         <translation>Да</translation>
-    </message>
-    <message>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation type="vanished">Вы открыли все достижения и заработали {} баллов!</translation>
-    </message>
-    <message>
-        <source>You have unlocked {} of {} achievements, earning {} of {} possible points.</source>
-        <translation type="vanished">Вы открыли {} из {} достижений и заработали {} из {} возможных баллов.</translation>
-    </message>
-    <message>
-        <source>Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="vanished">Ваш пароль не будет сохранен в DuckStation, вместо него будет сгенерирован и использован токен доступа.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7291"/>
@@ -9193,14 +8837,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7295"/>
         <source>{} is not a valid disc image.</source>
         <translation>{} не верный образ диска.</translation>
-    </message>
-    <message>
-        <source>{} point</source>
-        <translation type="vanished">{} балл</translation>
-    </message>
-    <message>
-        <source>{} points</source>
-        <translation type="vanished">{} баллов</translation>
     </message>
 </context>
 <context>
@@ -11204,10 +10840,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>&amp;Настройки</translation>
     </message>
     <message>
-        <source>Enable GDB server</source>
-        <translation type="vanished">Включить сервер GDB</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="968"/>
         <location filename="../mainwindow.cpp" line="1239"/>
         <source>Start Big Picture Mode</source>
@@ -11826,10 +11458,6 @@ Do you want to load this state, or start from a fresh boot?</source>
         <location filename="../mainwindow.cpp" line="1466"/>
         <source>Select Cover Image</source>
         <translation>Выбрать изображение обложки</translation>
-    </message>
-    <message>
-        <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
-        <translation type="vanished">Все типы изображений (*.jpg *.jpeg *.png)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1484"/>
@@ -12579,26 +12207,9 @@ Are you sure you want to continue?</source>
         <translation>Перемотка отключена, потому что включено опережение.</translation>
     </message>
     <message>
-        <source>Switching to %s%s GPU renderer.</source>
-        <translatorcomment>*отображения *отрисовки *визуализатора</translatorcomment>
-        <translation type="obsolete">Переключение отрисовщика ГПУ на %s%s.</translation>
-    </message>
-    <message>
-        <source>Switching to %s audio backend.</source>
-        <translation type="vanished">Переключение на аудио движок %s.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="3563"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation type="unfinished">Параметры перекомпилятора изменились, очистка всех блоков.</translation>
-    </message>
-    <message>
-        <source>PGXP enabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP включен, все блоки перекомпилированы.</translation>
-    </message>
-    <message>
-        <source>PGXP disabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP отключен, все блоки перекомпилированы.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4448"/>
@@ -12738,10 +12349,6 @@ Are you sure you want to continue?</source>
         <translation>ВНИМАНИЕ: разгон процессора (%u%%) отличался в сохранении состояния (%u%%).</translation>
     </message>
     <message>
-        <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="vanished">Не удалось открыть образ компакт-диска из состояния сохранения &apos;%s&apos;: %s. Использование существующего образа &apos;%s&apos;, может привести к нестабильности.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="2740"/>
         <source>{} cheats are now active.</source>
         <translation type="unfinished">Активировано {} читов.</translation>
@@ -12750,10 +12357,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/system.cpp" line="2741"/>
         <source>{} cheats are now inactive.</source>
         <translation type="unfinished">Деактивировано {} читов.</translation>
-    </message>
-    <message>
-        <source>Failed to open disc image &apos;%s&apos;: %s.</source>
-        <translation type="vanished">Не удалось открыть образ диска &apos;%s: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3443"/>
@@ -12765,10 +12368,6 @@ Are you sure you want to continue?</source>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translatorcomment>*Переключён</translatorcomment>
         <translation type="unfinished">Переключился на под-образ %s (%u) в &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Inserted disc &apos;%s&apos; (%s).</source>
-        <translation type="vanished">Вставлен диск &apos;%s&apos; (%s).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2732"/>
@@ -12825,14 +12424,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/hotkeys.cpp" line="93"/>
         <source>Cannot save state for game without serial.</source>
         <translation>Невозможно сохранить состояние для игры без серийного номера.</translation>
-    </message>
-    <message>
-        <source>Achievements are disabled or unavailable for  game.</source>
-        <translation type="vanished">Достижения отключены или недоступны для игры.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation type="obsolete">Список лидеров отключён или недоступен для игры.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="242"/>
@@ -12914,14 +12505,6 @@ Are you sure you want to continue?</source>
         <location filename="../../core/system.cpp" line="4203"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Снимок экрана сохранен в &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Controller in port %u (%s) is not supported for %s.
-Supported controllers: %s
-Please configure a supported controller from the list above.</source>
-        <translation type="obsolete">Контроллер в порту %u (%s) не поддерживается для %s.
-Поддерживаемые контроллеры: %s
-Пожалуйста, настройте поддерживаемый контроллер из приведенного выше списка.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4378"/>
@@ -13167,14 +12750,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../core/playstation_mouse.cpp" line="213"/>
         <source>Vertical Sensitivity</source>
         <translation>Чувствительность по вертикали</translation>
-    </message>
-    <message>
-        <source>Relative Mouse Mode</source>
-        <translation type="vanished">Взаимосвязанный режим мыши</translation>
-    </message>
-    <message>
-        <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">Привязывает курсор мыши к окну, используется для игр FPS.</translation>
     </message>
 </context>
 <context>
@@ -13492,142 +13067,6 @@ Do you want to create this directory?</source>
 </context>
 <context>
     <name>SettingsDialog</name>
-    <message>
-        <source>DuckStation Settings</source>
-        <translation type="vanished">Настройки DuckStation</translation>
-    </message>
-    <message>
-        <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation type="vanished">Эта сборка DuckStation не была скомпилирована с поддержкой RetroAchievements.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Общие настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют внешним видом и поведением эмулятора. &lt;br&gt; &lt;br&gt; Наведите указатель мыши на параметр, чтобы просмотреть дополнительную информацию.</translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation type="vanished">Сводка</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="vanished">&lt;strong&gt;Сводка&lt;/strong&gt;&lt;hr&gt;На этой странице отображается информация о выбранной игре и позволяет вам проверить правильность сброса вашего диска.</translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="vanished">Общие</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation type="vanished">Список игр</translation>
-    </message>
-    <message>
-        <source>BIOS</source>
-        <translation type="vanished">BIOS</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки BIOS&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, какой BIOS используется и как он будет исправляться.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию.</translation>
-    </message>
-    <message>
-        <source>Console</source>
-        <translation type="vanished">Консоль</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию симулируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Emulation</source>
-        <translation type="vanished">Эмуляция</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки эмуляции&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют скорость и поведение системы с опережением.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Memory Cards</source>
-        <translation type="vanished">Карты памяти</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки папки&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, где DuckStation будет сохранять файлы данных среды выполнения.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки списка игр&lt;/strong&gt;&lt;hr&gt;В приведенном выше списке показаны каталоги, в которых DuckStation будет выполнять поиск для заполнения списка игр. Каталоги поиска можно добавлять, удалять и переключать на рекурсивные/нерекурсивные.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки карты памяти&lt;/strong&gt;&lt;hr&gt;Эта страница позволяет вам контролировать, в каком режиме будет работать эмуляция карты памяти и где изображения для этих карт будут храниться на диске.</translation>
-    </message>
-    <message>
-        <source>Display</source>
-        <translation type="vanished">Отображение</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
-        <translation type="vanished">&lt;strong&gt;Параметры отображения&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют тем, как кадры, созданные консолью, отображаются на экране.</translation>
-    </message>
-    <message>
-        <source>Enhancements</source>
-        <translation type="vanished">Улучшения</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки улучшений&lt;/strong&gt; &lt;hr&gt;Эти параметры управляют улучшениями, которые могут улучшить визуальные эффекты по сравнению с оригинальной консолью. Наведите указатель мыши на каждый параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Post-Processing</source>
-        <translation type="vanished">Постобработка</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки постобработки&lt;/strong&gt;&lt;hr&gt;Постобработка позволяет изменить внешний вид изображения, отображаемого на экране, с помощью различных фильтров. Шейдеры будут выполняться последовательно.</translation>
-    </message>
-    <message>
-        <source>Audio</source>
-        <translation type="vanished">Звук</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки звука&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют аудиовыходом консоли. Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation type="vanished">Достижения</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Настройки достижений&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют RetroAchievements. Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Folders</source>
-        <translation type="vanished">Папки</translation>
-    </message>
-    <message>
-        <source>Advanced</source>
-        <translation type="vanished">Дополнительные</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Дополнительные настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют ведением журнала и внутренним поведением эмулятора. Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
-    </message>
-    <message>
-        <source>Confirm Restore Defaults</source>
-        <translation type="vanished">Подтвердите восстановление настроек по умолчанию</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="vanished">Уверены, что хотите восстановить настройки по умолчанию? Персональные настройки будут потеряны.</translation>
-    </message>
-    <message>
-        <source>Recommended Value</source>
-        <translation type="vanished">Рекомендуемое значение</translation>
-    </message>
-    <message>
-        <source>%1 [%2]</source>
-        <translation type="vanished">%1 [%2]</translation>
-    </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="126"/>
         <source>Use Global Setting [Enabled]</source>
@@ -14163,14 +13602,6 @@ The name of the SBI file must match the name of the disc image.</source>
         <translation>Неверная версия {} ({} версия {})</translation>
     </message>
     <message>
-        <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">Не удалось открыть образ компакт-диска &apos;%s&apos;, используемый сохранением состояния: %s.</translation>
-    </message>
-    <message>
-        <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">Не удалось переключиться на под-образ %u в образе компакт-диска &apos;%s&apos;, используемом в сохранении состояния: %s.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="2975"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>Карту памяти для каждой игры нельзя использовать для слота {}, поскольку запущенная игра не имеет кода. Вместо этого используйте общую карту.</translation>
@@ -14191,22 +13622,6 @@ The name of the SBI file must match the name of the disc image.</source>
         <translation>Карту памяти для каждой игры нельзя использовать для слота {}, поскольку у запущенной игры нет пути. Вместо этого используйте общую карту.</translation>
     </message>
     <message>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-%s: %s
-
-Your dump is incomplete, you must add the SBI file to run this game. 
-
-The name of the SBI file must match the name of the disc image.</source>
-        <translation type="vanished">Вы пытаетесь запустить игру, защищенную libcrypt, без файла SBI:
-
-%s: %s
-
-Ваш дамп неполон, вы должны добавить файл SBI, чтобы запустить эту игру. 
-
-Имя файла SBI должно совпадать с именем образа диска.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="3267"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Игра изменилась, карты памяти перезагружены.</translation>
@@ -14220,33 +13635,6 @@ The name of the SBI file must match the name of the disc image.</source>
         <location filename="../../core/system.cpp" line="2311"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>Не удалось переключиться на под-образ {} в образе компакт-диска &apos;{}&apos;, используемом в сохранении состояния: {}.</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-%s: %s
-
-The game will likely not run properly.
-
-Please check the README for instructions on how to add an SBI file.
-
-Do you wish to continue?</source>
-        <translation type="vanished">Вы пытаетесь запустить игру, защищенную libcrypt, без файла SBI:
-
-%s: %s
-
-Игра, скорее всего, не запустится должным образом.
-
-Пожалуйста, проверьте README, чтобы узнать, как добавить файл SBI.
-
-Вы хотите продолжить?</translation>
-    </message>
-</context>
-<context>
-    <name>USB</name>
-    <message>
-        <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
-        <translation type="vanished">Применяет цвет к выбранным изображениям перекрестия, может использоваться несколькими игроками. Укажите в формате HTML/CSS (например, #aabbcc)</translation>
     </message>
 </context>
 </TS>
