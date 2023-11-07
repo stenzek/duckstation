@@ -41,12 +41,12 @@
     <message>
         <location filename="../aboutdialog.cpp" line="59"/>
         <source>DuckStation Third-Party Notices</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Уведомления третьих лиц DuckStation</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="79"/>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отсутствует файл Thirdparty.html. Вам следует запросить его там, где вы приобрели DuckStation.</translation>
     </message>
 </context>
 <context>
@@ -449,7 +449,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1135"/>
         <source>Your Score: {}{}</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Твой счет: {}{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1136"/>
@@ -1743,7 +1743,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../util/audio_stream.cpp" line="59"/>
         <source>Resampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Передискретизация</translation>
     </message>
     <message>
         <location filename="../../util/audio_stream.cpp" line="60"/>
@@ -1970,7 +1970,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/settings.cpp" line="846"/>
         <source>New Recompiler (Experimental)</source>
-        <translation type="unfinished"></translation>
+        <translation>Новый перекомпилятор (экспериментальный)</translation>
     </message>
 </context>
 <context>
@@ -10882,27 +10882,27 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="91"/>
         <source>Log Window - %1 [%2]</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Окно журнала — %1 [%2]</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="95"/>
         <source>Log Window</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Окно журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="114"/>
         <source>&amp;Clear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Очистить</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="116"/>
         <source>&amp;Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Сохранить...</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="121"/>
         <source>Cl&amp;ose</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Закрыть</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="124"/>
@@ -10927,7 +10927,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="140"/>
         <source>Attach To &amp;Main Window</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Прикрепить к &amp;Главному окну</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="144"/>
@@ -10937,22 +10937,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="150"/>
         <source>&amp;Log Level</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Уровень журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="159"/>
         <source>&amp;Filters</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Фильтры</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Select Log File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выбрать файл журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Log Files (*.txt)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файлы журналов (*.txt)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="257"/>
@@ -10962,13 +10962,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="257"/>
         <source>Failed to open file for writing.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось открыть файл для записи.</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="264"/>
         <source>Log was written to %1.
 </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Журнал записан в %1.
+</translation>
     </message>
 </context>
 <context>
@@ -11164,7 +11165,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="512"/>
         <source>View Third-Party Notices...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Просмотр уведомлений третьих лиц...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="557"/>
@@ -12964,22 +12965,22 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/system.cpp" line="3247"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть образ диска &apos;{}&apos;: {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3261"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставлен диск &apos;{}&apos; ({}).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3494"/>
         <source>Switching to {}{} GPU renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переключение  аппаратного средства отрисовки на {}{}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3520"/>
         <source>Switching to {} audio backend.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переключение на аудиосервер {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3544"/>
