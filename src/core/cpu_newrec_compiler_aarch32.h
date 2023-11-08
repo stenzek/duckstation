@@ -35,7 +35,7 @@ protected:
   void GenerateCall(const void* func, s32 arg1reg = -1, s32 arg2reg = -1, s32 arg3reg = -1) override;
   void EndBlock(const std::optional<u32>& newpc, bool do_event_test) override;
   void EndBlockWithException(Exception excode) override;
-  void EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test);
+  void EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test, bool force_run_events);
   const void* EndCompile(u32* code_size, u32* far_code_size) override;
 
   void Flush(u32 flags) override;

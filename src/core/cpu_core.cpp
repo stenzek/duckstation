@@ -2357,6 +2357,13 @@ void CPU::CodeCache::InterpretUncachedBlock()
     {
       break;
     }
+    else if ((g_state.current_instruction.bits & 0xFFC0FFFFu) == 0x40806000u && HasPendingInterrupt())
+    {
+      // mtc0 rt, sr - Jackie Chan Stuntmaster, MTV Sports games.
+      // Pain in the ass games trigger a software interrupt by writing to SR.Im.
+      break;
+    }
+
 
     in_branch_delay_slot = branch;
   }

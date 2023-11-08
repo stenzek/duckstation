@@ -222,14 +222,14 @@ void CPU::NewRec::X64Compiler::EndBlock(const std::optional<u32>& newpc, bool do
 
   // flush regs
   Flush(FLUSH_END_BLOCK);
-  EndAndLinkBlock(newpc, do_event_test);
+  EndAndLinkBlock(newpc, do_event_test, false);
 }
 
 void CPU::NewRec::X64Compiler::EndBlockWithException(Exception excode)
 {
   // flush regs, but not pc, it's going to get overwritten
   // flush cycles because of the GTE instruction stuff...
-  Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION);
+  Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // TODO: flush load delay
   // TODO: break for pcdrv
@@ -240,14 +240,16 @@ void CPU::NewRec::X64Compiler::EndBlockWithException(Exception excode)
   cg->call(static_cast<void (*)(u32, u32)>(&CPU::RaiseException));
   m_dirty_pc = false;
 
-  EndAndLinkBlock(std::nullopt, true);
+  EndAndLinkBlock(std::nullopt, true, false);
 }
 
-void CPU::NewRec::X64Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test)
+void CPU::NewRec::X64Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
+                                               bool force_run_events)
 {
   // event test
   // pc should've been flushed
-  DebugAssert(!m_dirty_pc);
+  DebugAssert(!m_dirty_pc && !m_block_ended);
+  m_block_ended = true;
 
   // TODO: try extracting this to a function
 
@@ -261,6 +263,12 @@ void CPU::NewRec::X64Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, 
       cg->inc(cg->dword[PTR(&g_state.pending_ticks)]);
     else if (cycles > 0)
       cg->add(cg->dword[PTR(&g_state.pending_ticks)], cycles);
+
+    if (force_run_events)
+    {
+      cg->jmp(CodeCache::g_run_events_and_dispatch);
+      return;
+    }
   }
   else
   {
@@ -303,8 +311,6 @@ void CPU::NewRec::X64Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, 
       cg->jmp(target, CodeGenerator::T_NEAR);
     }
   }
-
-  m_block_ended = true;
 }
 
 const void* CPU::NewRec::X64Compiler::EndCompile(u32* code_size, u32* far_code_size)
@@ -1339,7 +1345,7 @@ Xbyak::Reg32 CPU::NewRec::X64Compiler::GenerateLoad(const Xbyak::Reg32& addr_reg
     cg->mov(RWARG2, m_current_instruction_pc);
     cg->call(static_cast<void (*)(u32, u32)>(&CPU::RaiseException));
     m_dirty_pc = false;
-    EndAndLinkBlock(std::nullopt, true);
+    EndAndLinkBlock(std::nullopt, true, false);
 
     SwitchToNearCode(false);
     RestoreHostState();
@@ -1459,7 +1465,7 @@ void CPU::NewRec::X64Compiler::GenerateStore(const Xbyak::Reg32& addr_reg, const
     cg->mov(RWARG2, m_current_instruction_pc);
     cg->call(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)));
     m_dirty_pc = false;
-    EndAndLinkBlock(std::nullopt, true);
+    EndAndLinkBlock(std::nullopt, true, false);
 
     SwitchToNearCode(false);
     RestoreHostState();
@@ -1929,9 +1935,28 @@ void CPU::NewRec::X64Compiler::TestInterrupts(const Xbyak::Reg32& sr)
 
   SwitchToFarCode(true, &CodeGenerator::jnz);
   BackupHostState();
-  Flush(FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
-  cg->call(reinterpret_cast<const void*>(&DispatchInterrupt));
-  EndBlock(std::nullopt, true);
+  Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
+
+  // Can't use EndBlockWithException() here, because it'll use the wrong PC.
+  // Can't use RaiseException() on the fast path if we're the last instruction, because the next PC is unknown.
+  if (!iinfo->is_last_instruction)
+  {
+    cg->mov(RWARG1, Cop0Registers::CAUSE::MakeValueForException(Exception::INT, iinfo->is_branch_instruction, false,
+                                                                (inst + 1)->cop.cop_n));
+    cg->mov(RWARG2, m_compiler_pc);
+    cg->call(static_cast<void (*)(u32, u32)>(&CPU::RaiseException));
+    m_dirty_pc = false;
+    EndAndLinkBlock(std::nullopt, true, false);
+  }
+  else
+  {
+    if (m_dirty_pc)
+      cg->mov(cg->dword[PTR(&g_state.pc)], m_compiler_pc);
+    m_dirty_pc = false;
+    cg->mov(cg->dword[PTR(&g_state.downcount)], 0);
+    EndAndLinkBlock(std::nullopt, false, true);
+  }
+
   RestoreHostState();
   SwitchToNearCode(false);
 

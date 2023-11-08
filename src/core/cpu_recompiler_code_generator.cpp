@@ -2740,7 +2740,14 @@ bool CodeGenerator::Compile_cop0(Instruction instruction, const CodeCache::Instr
             EmitAnd(sr_value.host_reg, sr_value.host_reg, cause_value);
             EmitTest(sr_value.host_reg, Value::FromConstantU32(0xFF00));
             EmitConditionalBranch(Condition::Zero, false, &no_interrupt);
+
+            EmitBranch(GetCurrentFarCodePointer());
+            SwitchToFarCode();
+            WriteNewPC(CalculatePC(), false);
             EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
+            EmitExceptionExit();
+            SwitchToNearCode();
+
             EmitBindLabel(&no_interrupt);
             m_register_cache.UninhibitAllocation();
           }
