@@ -41,18 +41,16 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
-set QT=6.5.2
+set QT=6.5.3
 set QTMINOR=6.5
-set SDL=SDL2-2.28.2
+set SDL=SDL2-2.28.5
 
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 22383a6b242bac072f949d2b3854cf04c6856cae7a87eaa78c60dd733b71e41e || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" f770a087e350d688441880d08ad2791465e5e3b9a0f8fc2cfbeb5dd305a11d50 || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 9757899b00eea4e6b65f81f922c0215c70969661567398d91da6639a50a788e7 || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 0546a6aa19f5e0188d1ba4a0e0a1423d22b7dc55ce8a614cc4aa65bfac506f74 || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 3148f4f263bf9930d89107eb44bc452481a5f8c6178459e26ecbf3c8dca3b5c7 || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 8b99046b54c40106d4e310be63b41331b717cfd8b42da4b4fc1c9169604be7fc || goto error
-
-call :downloadfile "4b119f48f5cb5e1499f91a0791150231c47430d4.diff" "https://github.com/qt/qtbase/commit/4b119f48f5cb5e1499f91a0791150231c47430d4.diff" d86bd2bd4ee2aff5f5e97da027aa926178dca250d163427eb21503bb357730a5 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 97bd14ee0ec67494d2b93f1a4f7da2bf891103c57090d96fdcc2b019d885c76a || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" a1e47c6ca4807d15725a38a62da2f0f6f51be051ba2196e8358afadd21d2c521 || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 3e5c7247a3a012173d4d86d04940804336b58d74ad1779bb15395143a1baa898 || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 395bd2edf129705504f59cd6d6f641fd2b3bda5a77718ab448a836b35e238053 || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 48ff92781a5eaad10e341ee4fa1c91bca05a76a1782ebb2780dc38b2c8caedbb || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" fb1dbc65df6d1537ba3c6428ee3ff8149026d2ab5d201c2902d857766c1e4470 || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -60,6 +58,7 @@ if %DEBUG%==1 (
   echo Building release libraries...
 )
 
+set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG"
 set ARM64TOOLCHAIN=-DCMAKE_TOOLCHAIN_FILE="%SCRIPTDIR%\cmake-toolchain-windows-arm64.cmake"
 
 echo Building SDL...
@@ -70,10 +69,12 @@ if %DEBUG%==1 (
   cmake -B build-debug %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
   cmake --build build-debug --parallel || goto error
   ninja -C build-debug install || goto error
+  copy build-debug\SDL2d.pdb "%INSTALLDIR%\bin" || goto error
 )
-cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
+cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
+copy build\SDL2.pdb "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
 
 if %DEBUG%==1 (
@@ -86,8 +87,7 @@ echo Building Qt base...
 rmdir /S /Q "qtbase-everywhere-src-%QT%"
 %SEVENZIP% x "qtbase-everywhere-src-%QT%.zip" || goto error
 cd "qtbase-everywhere-src-%QT%" || goto error
-"C:\Program Files\Git\usr\bin\patch" -p1 < ../4b119f48f5cb5e1499f91a0791150231c47430d4.diff || goto error
-cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes %QTBUILDSPEC% || goto error
+cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" %FORCEPDB% -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
@@ -98,7 +98,7 @@ rmdir /S /Q "qtsvg-everywhere-src-%QT%"
 cd "qtsvg-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
@@ -109,7 +109,7 @@ rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
 cd "qtimageformats-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
@@ -120,7 +120,7 @@ rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
 cd "qttools-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
@@ -131,7 +131,7 @@ rmdir /S /Q "qttranslations-everywhere-src-%QT%"
 cd "qttranslations-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
