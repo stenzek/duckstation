@@ -1,14 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "sdl_input_source.h"
 #include "input_manager.h"
 
 #include "core/host.h"
+#include "core/settings.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 
 #include <cmath>
@@ -18,6 +21,8 @@
 #endif
 
 Log_SetChannel(SDLInputSource);
+
+static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
 
 static constexpr const char* s_sdl_axis_names[] = {
   "LeftX",        // SDL_CONTROLLER_AXIS_LEFTX
@@ -128,18 +133,6 @@ SDLInputSource::~SDLInputSource()
 
 bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-  std::optional<std::vector<u8>> controller_db_data = Host::ReadResourceFile("gamecontrollerdb.txt");
-  if (controller_db_data.has_value())
-  {
-    SDL_RWops* ops = SDL_RWFromConstMem(controller_db_data->data(), static_cast<int>(controller_db_data->size()));
-    if (SDL_GameControllerAddMappingsFromRW(ops, true) < 0)
-      Log_ErrorPrintf("SDL_GameControllerAddMappingsFromRW() failed: %s", SDL_GetError());
-  }
-  else
-  {
-    Log_ErrorPrintf("Controller database resource is missing.");
-  }
-
   LoadSettings(si);
   settings_lock.unlock();
   SetHints();
@@ -217,6 +210,12 @@ u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_
 
 void SDLInputSource::SetHints()
 {
+  const std::string controller_db_path = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME);
+  if (FileSystem::FileExists(controller_db_path.c_str()))
+    SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, controller_db_path.c_str());
+  else
+    Log_ErrorFmt("Controller DB not found at '{}'", controller_db_path);
+
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
   // Enable Wii U Pro Controller support
