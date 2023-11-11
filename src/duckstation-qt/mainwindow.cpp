@@ -1304,7 +1304,7 @@ void MainWindow::onGitHubRepositoryActionTriggered()
 
 void MainWindow::onIssueTrackerActionTriggered()
 {
-  QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/issues");
+  QtUtils::OpenURL(this, "https://www.duckstation.org/issues.html");
 }
 
 void MainWindow::onDiscordServerActionTriggered()
@@ -1359,9 +1359,6 @@ void MainWindow::onGameListEntryActivated()
     promptForDiscChange(QString::fromStdString(entry->path));
     return;
   }
-
-  // we might still be saving a resume state...
-  // System::WaitForSaveStateFlush();
 
   std::optional<std::string> save_path;
   if (!entry->serial.empty())
@@ -2644,12 +2641,6 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
 
 void MainWindow::checkForSettingChanges()
 {
-#if 0
-  // FIXME: Triggers incorrectly
-  if (m_display_widget)
-    m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused);
-#endif
-
   LogWindow::updateSettings();
   updateWindowState();
 }
