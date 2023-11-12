@@ -1061,8 +1061,8 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>400</width>
-         <height>266</height>
+         <width>420</width>
+         <height>300</height>
         </size>
        </property>
        <property name="text">
