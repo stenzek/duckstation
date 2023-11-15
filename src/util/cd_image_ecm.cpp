@@ -400,7 +400,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
 
   AddLeadOutIndex();
 
-  m_sbi.LoadSBIFromImagePath(filename);
+  m_sbi.LoadFromImagePath(filename);
 
   m_chunk_buffer.reserve(RAW_SECTOR_SIZE * 2);
   return Seek(1, Position{0, 0, 0});

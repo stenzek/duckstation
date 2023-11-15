@@ -115,7 +115,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   m_filename = image->GetFileName();
   m_lba_count = image->GetLBACount();
 
-  m_sbi.LoadSBI(Path::ReplaceExtension(m_filename, "sbi").c_str());
+  m_sbi.LoadFromImagePath(m_filename);
 
   return Seek(1, Position{0, 0, 0});
 }

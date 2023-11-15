@@ -413,7 +413,7 @@ bool CDImageCHD::Open(const char* filename, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  m_sbi.LoadSBIFromImagePath(filename);
+  m_sbi.LoadFromImagePath(filename);
 
   return Seek(1, Position{0, 0, 0});
 }

@@ -234,7 +234,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
   AddLeadOutIndex();
 
-  m_sbi.LoadSBIFromImagePath(filename);
+  m_sbi.LoadFromImagePath(filename);
 
   return Seek(1, Position{0, 0, 0});
 }
