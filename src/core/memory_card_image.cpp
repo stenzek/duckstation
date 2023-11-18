@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memory_card_image.h"
+#include "gpu_types.h"
 #include "system.h"
 
 #include "util/shiftjis.h"
@@ -21,6 +22,7 @@
 Log_SetChannel(MemoryCard);
 
 namespace MemoryCardImage {
+namespace {
 
 #pragma pack(push, 1)
 
@@ -57,6 +59,8 @@ static_assert(sizeof(TitleFrame) == FRAME_SIZE);
 
 #pragma pack(pop)
 
+} // namespace
+
 static u8 GetChecksum(const u8* frame)
 {
   u8 checksum = frame[0];
@@ -82,24 +86,16 @@ const T* GetFramePtr(const DataArray& data, u32 block, u32 frame)
   return reinterpret_cast<const T*>(&data[(block * BLOCK_SIZE) + (frame * FRAME_SIZE)]);
 }
 
-static constexpr u32 RGBA5551ToRGBA8888(u16 color)
-{
-  u8 r = Truncate8(color & 31);
-  u8 g = Truncate8((color >> 5) & 31);
-  u8 b = Truncate8((color >> 10) & 31);
-  u8 a = Truncate8((color >> 15) & 1);
+static std::optional<u32> GetNextFreeBlock(const DataArray& data);
+static bool ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data);
+static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data);
+static bool ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data);
+static bool ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data);
+static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd);
+static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd);
+} // namespace MemoryCardImage
 
-  // 00012345 -> 1234545
-  b = (b << 3) | (b & 0b111);
-  g = (g << 3) | (g & 0b111);
-  r = (r << 3) | (r & 0b111);
-  // a = a ? 255 : 0;
-  a = (color == 0) ? 0 : 255;
-
-  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
-}
-
-bool LoadFromFile(DataArray* data, const char* filename)
+bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename)
 {
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(filename, &sd) || sd.Size != DATA_SIZE)
@@ -120,7 +116,7 @@ bool LoadFromFile(DataArray* data, const char* filename)
   return true;
 }
 
-bool SaveToFile(const DataArray& data, const char* filename)
+bool MemoryCardImage::SaveToFile(const DataArray& data, const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
     ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
@@ -142,14 +138,14 @@ bool SaveToFile(const DataArray& data, const char* filename)
   return true;
 }
 
-bool IsValid(const DataArray& data)
+bool MemoryCardImage::IsValid(const DataArray& data)
 {
   // TODO: Check checksum?
   const u8* fptr = GetFramePtr<u8>(data, 0, 0);
   return fptr[0] == 'M' && fptr[1] == 'C';
 }
 
-void Format(DataArray* data)
+void MemoryCardImage::Format(DataArray* data)
 {
   // fill everything with FF
   data->fill(u8(0xFF));
@@ -206,7 +202,7 @@ void Format(DataArray* data)
   std::memcpy(GetFramePtr<u8>(data, 0, 63), GetFramePtr<u8>(data, 0, 0), FRAME_SIZE);
 }
 
-static std::optional<u32> GetNextFreeBlock(const DataArray& data)
+std::optional<u32> MemoryCardImage::GetNextFreeBlock(const DataArray& data)
 {
   for (u32 dir_frame = 1; dir_frame < FRAMES_PER_BLOCK; dir_frame++)
   {
@@ -218,7 +214,7 @@ static std::optional<u32> GetNextFreeBlock(const DataArray& data)
   return std::nullopt;
 }
 
-u32 GetFreeBlockCount(const DataArray& data)
+u32 MemoryCardImage::GetFreeBlockCount(const DataArray& data)
 {
   u32 count = 0;
   for (u32 dir_frame = 1; dir_frame < FRAMES_PER_BLOCK; dir_frame++)
@@ -231,7 +227,7 @@ u32 GetFreeBlockCount(const DataArray& data)
   return count;
 }
 
-std::vector<FileInfo> EnumerateFiles(const DataArray& data, bool include_deleted)
+std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const DataArray& data, bool include_deleted)
 {
   std::vector<FileInfo> files;
 
@@ -299,8 +295,8 @@ std::vector<FileInfo> EnumerateFiles(const DataArray& data, bool include_deleted
       u32* pixels_ptr = fi.icon_frames[icon_frame].pixels;
       for (u32 i = 0; i < ICON_WIDTH * ICON_HEIGHT; i += 2)
       {
-        *(pixels_ptr++) = RGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr & 0xF]);
-        *(pixels_ptr++) = RGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr >> 4]);
+        *(pixels_ptr++) = VRAMRGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr & 0xF]);
+        *(pixels_ptr++) = VRAMRGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr >> 4]);
         indices_ptr++;
       }
     }
@@ -311,7 +307,7 @@ std::vector<FileInfo> EnumerateFiles(const DataArray& data, bool include_deleted
   return files;
 }
 
-bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer)
+bool MemoryCardImage::ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer)
 {
   buffer->resize(fi.num_blocks * BLOCK_SIZE);
 
@@ -328,7 +324,7 @@ bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer
   return true;
 }
 
-bool WriteFile(DataArray* data, const std::string_view& filename, const std::vector<u8>& buffer)
+bool MemoryCardImage::WriteFile(DataArray* data, const std::string_view& filename, const std::vector<u8>& buffer)
 {
   if (buffer.empty())
   {
@@ -386,7 +382,7 @@ bool WriteFile(DataArray* data, const std::string_view& filename, const std::vec
   return true;
 }
 
-bool DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors)
+bool MemoryCardImage::DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors)
 {
   Log_InfoFmt("Deleting '{}' from memory card ({} blocks)", fi.filename, fi.num_blocks);
 
@@ -417,7 +413,7 @@ bool DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors)
   return true;
 }
 
-bool UndeleteFile(DataArray* data, const FileInfo& fi)
+bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
 {
   if (!fi.deleted)
   {
@@ -483,7 +479,7 @@ bool UndeleteFile(DataArray* data, const FileInfo& fi)
   return true;
 }
 
-static bool ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data)
+bool MemoryCardImage::ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   if (file_data.size() != DATA_SIZE)
   {
@@ -495,7 +491,7 @@ static bool ImportCardMCD(DataArray* data, const char* filename, std::vector<u8>
   return true;
 }
 
-static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data)
+bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
 #pragma pack(push, 1)
   struct GMEHeader
@@ -522,7 +518,7 @@ static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8>
   if (file_data.size() < expected_size)
   {
     Log_WarningFmt("GME memory card '{}' is too small (got {} expected {}), padding with zeroes", filename,
-                      file_data.size(), expected_size);
+                   file_data.size(), expected_size);
     file_data.resize(expected_size);
   }
 
@@ -531,7 +527,7 @@ static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8>
   return true;
 }
 
-static bool ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data)
+bool MemoryCardImage::ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   constexpr u32 HEADER_SIZE = 64;
 
@@ -552,7 +548,7 @@ static bool ImportCardVGS(DataArray* data, const char* filename, std::vector<u8>
   return true;
 }
 
-static bool ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data)
+bool MemoryCardImage::ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   constexpr u32 HEADER_SIZE = 256;
 
@@ -573,7 +569,7 @@ static bool ImportCardPSX(DataArray* data, const char* filename, std::vector<u8>
   return true;
 }
 
-bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data)
+bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data)
 {
   const char* extension = std::strrchr(filename, '.');
   if (!extension)
@@ -608,7 +604,7 @@ bool ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data
   }
 }
 
-bool ImportCard(DataArray* data, const char* filename)
+bool MemoryCardImage::ImportCard(DataArray* data, const char* filename)
 {
   std::optional<std::vector<u8>> file_data = FileSystem::ReadBinaryFile(filename);
   if (!file_data.has_value())
@@ -617,7 +613,7 @@ bool ImportCard(DataArray* data, const char* filename)
   return ImportCard(data, filename, std::move(file_data.value()));
 }
 
-bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
+bool MemoryCardImage::ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
 {
   std::unique_ptr<ByteStream> stream =
     ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
@@ -650,7 +646,8 @@ bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename)
   return true;
 }
 
-static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
+bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* filename,
+                                                   const FILESYSTEM_STAT_DATA& sd)
 {
   // Make sure the size of the actual file is valid
   if (sd.Size <= FRAME_SIZE || (sd.Size - FRAME_SIZE) % BLOCK_SIZE != 0u || (sd.Size - FRAME_SIZE) / BLOCK_SIZE > 15u)
@@ -713,7 +710,7 @@ static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, 
   return WriteFile(data, df.filename, blocks);
 }
 
-static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
+bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd)
 {
   const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
   std::string save_name(Path::GetFileTitle(filename));
@@ -759,7 +756,7 @@ static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTE
   return WriteFile(data, save_name, blocks.value());
 }
 
-bool ImportSave(DataArray* data, const char* filename)
+bool MemoryCardImage::ImportSave(DataArray* data, const char* filename)
 {
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(filename, &sd))
@@ -789,5 +786,3 @@ bool ImportSave(DataArray* data, const char* filename)
     return false;
   }
 }
-
-} // namespace MemoryCardImage

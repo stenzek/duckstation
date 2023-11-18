@@ -1,14 +1,21 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image_hasher.h"
 #include "cd_image.h"
+
 #include "common/md5_digest.h"
 #include "common/string_util.h"
 
 namespace CDImageHasher {
 
-static bool ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest, ProgressCallback* progress_callback)
+static bool ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest, ProgressCallback* progress_callback);
+static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallback* progress_callback);
+
+} // namespace CDImageHasher
+
+bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest,
+                              ProgressCallback* progress_callback)
 {
   const CDImage::LBA index_start = image->GetTrackIndexPosition(track, index);
   const u32 index_length = image->GetTrackIndexLength(track, index);
@@ -43,7 +50,7 @@ static bool ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* digest, Pro
   return true;
 }
 
-static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallback* progress_callback)
+bool CDImageHasher::ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallback* progress_callback)
 {
   static constexpr u8 INDICES_TO_READ = 2;
 
@@ -78,14 +85,14 @@ static bool ReadTrack(CDImage* image, u8 track, MD5Digest* digest, ProgressCallb
   return true;
 }
 
-std::string HashToString(const Hash& hash)
+std::string CDImageHasher::HashToString(const Hash& hash)
 {
   return fmt::format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
                      hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
                      hash[11], hash[12], hash[13], hash[14], hash[15]);
 }
 
-std::optional<Hash> HashFromString(const std::string_view& str)
+std::optional<CDImageHasher::Hash> CDImageHasher::HashFromString(const std::string_view& str)
 {
   auto decoded = StringUtil::DecodeHex(str);
   if (decoded && decoded->size() == std::tuple_size_v<Hash>)
@@ -97,8 +104,8 @@ std::optional<Hash> HashFromString(const std::string_view& str)
   return std::nullopt;
 }
 
-bool GetImageHash(CDImage* image, Hash* out_hash,
-                  ProgressCallback* progress_callback /*= ProgressCallback::NullProgressCallback*/)
+bool CDImageHasher::GetImageHash(CDImage* image, Hash* out_hash,
+                                 ProgressCallback* progress_callback /*= ProgressCallback::NullProgressCallback*/)
 {
   MD5Digest digest;
 
@@ -121,8 +128,8 @@ bool GetImageHash(CDImage* image, Hash* out_hash,
   return true;
 }
 
-bool GetTrackHash(CDImage* image, u8 track, Hash* out_hash,
-                  ProgressCallback* progress_callback /*= ProgressCallback::NullProgressCallback*/)
+bool CDImageHasher::GetTrackHash(CDImage* image, u8 track, Hash* out_hash,
+                                 ProgressCallback* progress_callback /*= ProgressCallback::NullProgressCallback*/)
 {
   MD5Digest digest;
   if (!ReadTrack(image, track, &digest, progress_callback))
@@ -131,5 +138,3 @@ bool GetTrackHash(CDImage* image, u8 track, Hash* out_hash,
   digest.Final(out_hash->data());
   return true;
 }
-
-} // namespace CDImageHasher

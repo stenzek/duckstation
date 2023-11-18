@@ -30,6 +30,8 @@
 Log_SetChannel(ImGuiManager);
 
 namespace ImGuiManager {
+namespace {
+
 struct SoftwareCursor
 {
   std::string image_path;
@@ -40,6 +42,19 @@ struct SoftwareCursor
   float extent_y;
   std::pair<float, float> pos;
 };
+
+struct OSDMessage
+{
+  std::string key;
+  std::string text;
+  Common::Timer::Value start_time;
+  Common::Timer::Value move_time;
+  float duration;
+  float target_y;
+  float last_y;
+};
+
+} // namespace
 
 static void SetStyle();
 static void SetKeyMap();
@@ -54,7 +69,6 @@ static void CreateSoftwareCursorTextures();
 static void UpdateSoftwareCursorTexture(u32 index);
 static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
-} // namespace ImGuiManager
 
 static float s_global_prescale = 1.0f; // before window scale
 static float s_global_scale = 1.0f;
@@ -85,17 +99,6 @@ static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
 static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
-struct OSDMessage
-{
-  std::string key;
-  std::string text;
-  Common::Timer::Value start_time;
-  Common::Timer::Value move_time;
-  float duration;
-  float target_y;
-  float last_y;
-};
-
 static std::deque<OSDMessage> s_osd_active_messages;
 static std::deque<OSDMessage> s_osd_posted_messages;
 static std::mutex s_osd_messages_lock;
@@ -103,6 +106,7 @@ static bool s_show_osd_messages = true;
 static bool s_global_prescale_changed = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
+} // namespace ImGuiManager
 
 void ImGuiManager::SetFontPath(std::string path)
 {
@@ -627,12 +631,12 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
   else
     Log_InfoPrintf("OSD: %s", message.c_str());
 
-  if (!s_show_osd_messages)
+  if (!ImGuiManager::s_show_osd_messages)
     return;
 
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 
-  OSDMessage msg;
+  ImGuiManager::OSDMessage msg;
   msg.key = std::move(key);
   msg.text = std::move(message);
   msg.duration = duration;
@@ -641,8 +645,8 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
   msg.target_y = -1.0f;
   msg.last_y = -1.0f;
 
-  std::unique_lock<std::mutex> lock(s_osd_messages_lock);
-  s_osd_posted_messages.push_back(std::move(msg));
+  std::unique_lock<std::mutex> lock(ImGuiManager::s_osd_messages_lock);
+  ImGuiManager::s_osd_posted_messages.push_back(std::move(msg));
 }
 
 void Host::AddFormattedOSDMessage(float duration, const char* format, ...)
@@ -670,25 +674,25 @@ void Host::AddKeyedFormattedOSDMessage(std::string key, float duration, const ch
 
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
-  if (!s_show_osd_messages)
+  if (!ImGuiManager::s_show_osd_messages)
     return;
 
-  OSDMessage msg = {};
+  ImGuiManager::OSDMessage msg = {};
   msg.key = std::move(key);
   msg.duration = 0.0f;
 
-  std::unique_lock<std::mutex> lock(s_osd_messages_lock);
-  s_osd_posted_messages.push_back(std::move(msg));
+  std::unique_lock<std::mutex> lock(ImGuiManager::s_osd_messages_lock);
+  ImGuiManager::s_osd_posted_messages.push_back(std::move(msg));
 }
 
 void Host::ClearOSDMessages()
 {
   {
-    std::unique_lock<std::mutex> lock(s_osd_messages_lock);
-    s_osd_posted_messages.clear();
+    std::unique_lock<std::mutex> lock(ImGuiManager::s_osd_messages_lock);
+    ImGuiManager::s_osd_posted_messages.clear();
   }
 
-  s_osd_active_messages.clear();
+  ImGuiManager::s_osd_active_messages.clear();
 }
 
 void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
@@ -716,8 +720,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
       // Don't fade it in again
       const float time_passed =
         static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - iter->start_time));
-      iter->start_time =
-        current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
+      iter->start_time = current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
     }
     else
     {
@@ -825,7 +828,7 @@ float ImGuiManager::GetGlobalScale()
 
 float Host::GetOSDScale()
 {
-  return s_global_scale;
+  return ImGuiManager::s_global_scale;
 }
 
 ImFont* ImGuiManager::GetStandardFont()

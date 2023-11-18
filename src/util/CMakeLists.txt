@@ -77,7 +77,6 @@ target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd reshad
 if(ENABLE_CUBEB)
   target_sources(util PRIVATE
     cubeb_audio_stream.cpp
-    cubeb_audio_stream.h
   )
   target_compile_definitions(util PUBLIC "ENABLE_CUBEB=1")
   target_link_libraries(util PRIVATE cubeb)
@@ -242,7 +241,6 @@ if(WIN32)
     win32_raw_input_source.cpp
     win32_raw_input_source.h
     xaudio2_audio_stream.cpp
-    xaudio2_audio_stream.h
     xinput_source.cpp
     xinput_source.h
   )

@@ -23,6 +23,8 @@
 Log_SetChannel(MDEC);
 
 namespace MDEC {
+namespace {
+
 static constexpr u32 DATA_IN_FIFO_SIZE = 1024;
 static constexpr u32 DATA_OUT_FIFO_SIZE = 768;
 static constexpr u32 NUM_BLOCKS = 6;
@@ -88,6 +90,8 @@ union CommandWord
   BitField<u32, u8, 25, 1> data_output_bit15;
   BitField<u32, u16, 0, 16> parameter_word_count;
 };
+
+} // namespace
 
 static bool HasPendingBlockCopyOut();
 

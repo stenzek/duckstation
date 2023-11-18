@@ -36,6 +36,8 @@ Log_SetChannel(GameList);
 #endif
 
 namespace GameList {
+namespace {
+
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
@@ -53,6 +55,8 @@ struct PlayedTimeEntry
   std::time_t last_played_time;
   std::time_t total_played_time;
 };
+
+} // namespace
 
 using CacheMap = PreferUnorderedStringMap<Entry>;
 using PlayedTimeMap = PreferUnorderedStringMap<PlayedTimeEntry>;

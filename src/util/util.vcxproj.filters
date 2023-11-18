@@ -12,7 +12,6 @@
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="shiftjis.h" />
     <ClInclude Include="page_fault_handler.h" />
-    <ClInclude Include="pbp_types.h" />
     <ClInclude Include="cue_parser.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="shadergen.h" />
@@ -24,11 +23,9 @@
     <ClInclude Include="platform_misc.h" />
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="win32_raw_input_source.h" />
-    <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="xinput_source.h" />
     <ClInclude Include="dinput_source.h" />
     <ClInclude Include="input_manager.h" />
-    <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="metal_stream_buffer.h" />
     <ClInclude Include="opengl_device.h" />
     <ClInclude Include="opengl_loader.h" />

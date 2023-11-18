@@ -1,16 +1,21 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cue_parser.h"
+
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
+
 #include <cstdarg>
+
 Log_SetChannel(CueParser);
 
 namespace CueParser {
+static bool TokenMatch(const std::string_view& s1, const char* token);
+}
 
-static bool TokenMatch(const std::string_view& s1, const char* token)
+bool CueParser::TokenMatch(const std::string_view& s1, const char* token)
 {
   const size_t token_len = std::strlen(token);
   if (s1.length() != token_len)
@@ -19,11 +24,11 @@ static bool TokenMatch(const std::string_view& s1, const char* token)
   return (StringUtil::Strncasecmp(s1.data(), token, token_len) == 0);
 }
 
-File::File() = default;
+CueParser::File::File() = default;
 
-File::~File() = default;
+CueParser::File::~File() = default;
 
-const Track* File::GetTrack(u32 n) const
+const CueParser::Track* CueParser::File::GetTrack(u32 n) const
 {
   for (const auto& it : m_tracks)
   {
@@ -34,7 +39,7 @@ const Track* File::GetTrack(u32 n) const
   return nullptr;
 }
 
-Track* File::GetMutableTrack(u32 n)
+CueParser::Track* CueParser::File::GetMutableTrack(u32 n)
 {
   for (auto& it : m_tracks)
   {
@@ -45,7 +50,7 @@ Track* File::GetMutableTrack(u32 n)
   return nullptr;
 }
 
-bool File::Parse(std::FILE* fp, Error* error)
+bool CueParser::File::Parse(std::FILE* fp, Error* error)
 {
   char line[1024];
   u32 line_number = 1;
@@ -66,7 +71,7 @@ bool File::Parse(std::FILE* fp, Error* error)
   return true;
 }
 
-void File::SetError(u32 line_number, Error* error, const char* format, ...)
+void CueParser::File::SetError(u32 line_number, Error* error, const char* format, ...)
 {
   std::va_list ap;
   SmallString str;
@@ -78,7 +83,7 @@ void File::SetError(u32 line_number, Error* error, const char* format, ...)
   Error::SetString(error, fmt::format("Cue parse error at line {}: {}", line_number, str));
 }
 
-std::string_view File::GetToken(const char*& line)
+std::string_view CueParser::File::GetToken(const char*& line)
 {
   std::string_view ret;
 
@@ -119,7 +124,7 @@ std::string_view File::GetToken(const char*& line)
   return ret;
 }
 
-std::optional<MSF> File::GetMSF(const std::string_view& token)
+std::optional<CueParser::MSF> CueParser::File::GetMSF(const std::string_view& token)
 {
   static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 
@@ -164,7 +169,7 @@ std::optional<MSF> File::GetMSF(const std::string_view& token)
   return ret;
 }
 
-bool File::ParseLine(const char* line, u32 line_number, Error* error)
+bool CueParser::File::ParseLine(const char* line, u32 line_number, Error* error)
 {
   const std::string_view command(GetToken(line));
   if (command.empty())
@@ -208,7 +213,7 @@ bool File::ParseLine(const char* line, u32 line_number, Error* error)
   return false;
 }
 
-bool File::HandleFileCommand(const char* line, u32 line_number, Error* error)
+bool CueParser::File::HandleFileCommand(const char* line, u32 line_number, Error* error)
 {
   const std::string_view filename(GetToken(line));
   const std::string_view mode(GetToken(line));
@@ -230,7 +235,7 @@ bool File::HandleFileCommand(const char* line, u32 line_number, Error* error)
   return true;
 }
 
-bool File::HandleTrackCommand(const char* line, u32 line_number, Error* error)
+bool CueParser::File::HandleTrackCommand(const char* line, u32 line_number, Error* error)
 {
   if (!CompleteLastTrack(line_number, error))
     return false;
@@ -286,7 +291,7 @@ bool File::HandleTrackCommand(const char* line, u32 line_number, Error* error)
   return true;
 }
 
-bool File::HandleIndexCommand(const char* line, u32 line_number, Error* error)
+bool CueParser::File::HandleIndexCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -332,7 +337,7 @@ bool File::HandleIndexCommand(const char* line, u32 line_number, Error* error)
   return true;
 }
 
-bool File::HandlePregapCommand(const char* line, u32 line_number, Error* error)
+bool CueParser::File::HandlePregapCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -364,7 +369,7 @@ bool File::HandlePregapCommand(const char* line, u32 line_number, Error* error)
   return true;
 }
 
-bool File::HandleFlagCommand(const char* line, u32 line_number, Error* error)
+bool CueParser::File::HandleFlagCommand(const char* line, u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
   {
@@ -393,7 +398,7 @@ bool File::HandleFlagCommand(const char* line, u32 line_number, Error* error)
   return true;
 }
 
-bool File::CompleteLastTrack(u32 line_number, Error* error)
+bool CueParser::File::CompleteLastTrack(u32 line_number, Error* error)
 {
   if (!m_current_track.has_value())
     return true;
@@ -434,7 +439,7 @@ bool File::CompleteLastTrack(u32 line_number, Error* error)
   return true;
 }
 
-bool File::SetTrackLengths(u32 line_number, Error* error)
+bool CueParser::File::SetTrackLengths(u32 line_number, Error* error)
 {
   for (const Track& track : m_tracks)
   {
@@ -464,7 +469,7 @@ bool File::SetTrackLengths(u32 line_number, Error* error)
   return true;
 }
 
-const CueParser::MSF* Track::GetIndex(u32 n) const
+const CueParser::MSF* CueParser::Track::GetIndex(u32 n) const
 {
   for (const auto& it : indices)
   {
@@ -474,5 +479,3 @@ const CueParser::MSF* Track::GetIndex(u32 n) const
 
   return nullptr;
 }
-
-} // namespace CueParser

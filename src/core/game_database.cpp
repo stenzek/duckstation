@@ -48,7 +48,7 @@ static bool ParseJsonEntry(Entry* entry, const rapidjson::Value& value);
 static bool ParseJsonCodes(u32 index, const rapidjson::Value& value);
 static bool LoadTrackHashes();
 
-std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
+static std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
   "ForceInterpreter",
   "ForceSoftwareRenderer",
   "ForceSoftwareRendererForReadbacks",

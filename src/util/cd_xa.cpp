@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_xa.h"
 #include "cd_image.h"
+
 #include <algorithm>
 #include <array>
 
@@ -11,7 +12,7 @@ static constexpr std::array<s32, 4> s_xa_adpcm_filter_table_pos = {{0, 60, 115, 
 static constexpr std::array<s32, 4> s_xa_adpcm_filter_table_neg = {{0, 0, -52, -55}};
 
 template<bool IS_STEREO, bool IS_8BIT>
-static void DecodeXA_ADPCMChunk(const u8* chunk_ptr, s16* samples, s32* last_samples)
+ALWAYS_INLINE_RELEASE static void DecodeXA_ADPCMChunk(const u8* chunk_ptr, s16* samples, s32* last_samples)
 {
   // The data layout is annoying here. Each word of data is interleaved with the other blocks, requiring multiple
   // passes to decode the whole chunk.
@@ -58,7 +59,7 @@ static void DecodeXA_ADPCMChunk(const u8* chunk_ptr, s16* samples, s32* last_sam
 }
 
 template<bool IS_STEREO, bool IS_8BIT>
-static void DecodeXA_ADPCMChunks(const u8* chunk_ptr, s16* samples, s32* last_samples)
+ALWAYS_INLINE_RELEASE static void DecodeXA_ADPCMChunks(const u8* chunk_ptr, s16* samples, s32* last_samples)
 {
   constexpr u32 NUM_CHUNKS = 18;
   constexpr u32 CHUNK_SIZE_IN_BYTES = 128;
@@ -73,7 +74,9 @@ static void DecodeXA_ADPCMChunks(const u8* chunk_ptr, s16* samples, s32* last_sa
   }
 }
 
-void DecodeADPCMSector(const void* data, s16* samples, s32* last_samples)
+} // namespace CDXA
+
+void CDXA::DecodeADPCMSector(const void* data, s16* samples, s32* last_samples)
 {
   const XASubHeader* subheader = reinterpret_cast<const XASubHeader*>(
     reinterpret_cast<const u8*>(data) + CDImage::SECTOR_SYNC_SIZE + sizeof(CDImage::SectorHeader));
@@ -97,5 +100,3 @@ void DecodeADPCMSector(const void* data, s16* samples, s32* last_samples)
       DecodeXA_ADPCMChunks<true, true>(chunk_ptr, samples, last_samples);
   }
 }
-
-} // namespace CDXA

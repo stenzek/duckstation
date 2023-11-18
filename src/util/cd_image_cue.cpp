@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -19,6 +19,8 @@
 #include <map>
 
 Log_SetChannel(CDImageCueSheet);
+
+namespace {
 
 class CDImageCueSheet : public CDImage
 {
@@ -45,6 +47,8 @@ private:
   std::vector<TrackFile> m_files;
   CDSubChannelReplacement m_sbi;
 };
+
+} // namespace
 
 CDImageCueSheet::CDImageCueSheet() = default;
 

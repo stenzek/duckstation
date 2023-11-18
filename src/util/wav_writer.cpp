@@ -6,6 +6,7 @@
 #include "common/log.h"
 Log_SetChannel(WAVWriter);
 
+namespace {
 #pragma pack(push, 1)
 struct WAV_HEADER
 {
@@ -32,8 +33,7 @@ struct WAV_HEADER
   } data_chunk_header;
 };
 #pragma pack(pop)
-
-namespace Common {
+} // namespace
 
 WAVWriter::WAVWriter() = default;
 
@@ -114,5 +114,3 @@ bool WAVWriter::WriteHeader()
 
   return (std::fwrite(&header, sizeof(header), 1, m_file) == 1);
 }
-
-} // namespace Common

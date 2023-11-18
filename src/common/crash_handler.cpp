@@ -14,6 +14,7 @@
 #include "thirdparty/StackWalker.h"
 #include <DbgHelp.h>
 
+namespace {
 class CrashHandlerStackWalker : public StackWalker
 {
 public:
@@ -26,6 +27,7 @@ protected:
 private:
   HANDLE m_out_file;
 };
+} // namespace
 
 CrashHandlerStackWalker::CrashHandlerStackWalker(HANDLE out_file)
   : StackWalker(RetrieveVerbose, nullptr, GetCurrentProcessId(), GetCurrentProcess()), m_out_file(out_file)
@@ -213,12 +215,14 @@ void CrashHandler::Uninstall()
 #include <unistd.h>
 
 namespace CrashHandler {
+namespace {
 struct BacktraceBuffer
 {
   char* buffer;
   size_t used;
   size_t size;
 };
+} // namespace
 
 static const char* GetSignalName(int signal_no);
 static void AllocateBuffer(BacktraceBuffer* buf);

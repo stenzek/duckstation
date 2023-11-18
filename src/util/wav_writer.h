@@ -1,11 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 #include "common/types.h"
 #include <cstdio>
-
-namespace Common {
 
 class WAVWriter
 {
@@ -33,5 +31,3 @@ private:
   u32 m_num_channels = 0;
   u32 m_num_frames = 0;
 };
-
-} // namespace Common

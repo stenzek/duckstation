@@ -19,6 +19,7 @@
 Log_SetChannel(SIO);
 
 namespace SIO {
+namespace {
 
 union SIO_CTRL
 {
@@ -64,6 +65,7 @@ union SIO_MODE
   BitField<u16, u8, 5, 1> parity_type;
   BitField<u16, u8, 6, 2> stop_bit_length;
 };
+} // namespace
 
 static void SoftReset();
 
@@ -79,7 +81,9 @@ void SIO::Initialize()
   Reset();
 }
 
-void SIO::Shutdown() {}
+void SIO::Shutdown()
+{
+}
 
 void SIO::Reset()
 {

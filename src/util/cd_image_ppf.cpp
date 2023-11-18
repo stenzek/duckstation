@@ -1,16 +1,21 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <map>
 #include <unordered_map>
+
 Log_SetChannel(CDImagePPF);
+
+namespace {
 
 enum : u32
 {
@@ -50,6 +55,8 @@ private:
   std::unordered_map<u32, u32> m_replacement_map;
   u32 m_replacement_offset = 0;
 };
+
+} // namespace
 
 CDImagePPF::CDImagePPF() = default;
 

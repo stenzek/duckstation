@@ -1,12 +1,67 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "xaudio2_audio_stream.h"
+#include "util/audio_stream.h"
+
 #include "common/assert.h"
 #include "common/log.h"
-#include <VersionHelpers.h>
+#include "common/windows_headers.h"
+
+#include <array>
+#include <cstdint>
+#include <memory>
+#include <wrl/client.h>
 #include <xaudio2.h>
+
 Log_SetChannel(XAudio2AudioStream);
+
+namespace {
+
+class XAudio2AudioStream final : public AudioStream, private IXAudio2VoiceCallback
+{
+public:
+  XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
+  ~XAudio2AudioStream();
+
+  void SetPaused(bool paused) override;
+  void SetOutputVolume(u32 volume) override;
+
+  bool OpenDevice(u32 latency_ms);
+  void CloseDevice();
+  void EnqueueBuffer();
+
+private:
+  enum : u32
+  {
+    NUM_BUFFERS = 2,
+    INTERNAL_BUFFER_SIZE = 512,
+  };
+
+  ALWAYS_INLINE bool IsOpen() const { return static_cast<bool>(m_xaudio); }
+
+  // Inherited via IXAudio2VoiceCallback
+  void __stdcall OnVoiceProcessingPassStart(UINT32 BytesRequired) override;
+  void __stdcall OnVoiceProcessingPassEnd(void) override;
+  void __stdcall OnStreamEnd(void) override;
+  void __stdcall OnBufferStart(void* pBufferContext) override;
+  void __stdcall OnBufferEnd(void* pBufferContext) override;
+  void __stdcall OnLoopEnd(void* pBufferContext) override;
+  void __stdcall OnVoiceError(void* pBufferContext, HRESULT Error) override;
+
+  Microsoft::WRL::ComPtr<IXAudio2> m_xaudio;
+  IXAudio2MasteringVoice* m_mastering_voice = nullptr;
+  IXAudio2SourceVoice* m_source_voice = nullptr;
+
+  std::array<std::unique_ptr<SampleType[]>, NUM_BUFFERS> m_enqueue_buffers;
+  u32 m_enqueue_buffer_size = 0;
+  u32 m_current_buffer = 0;
+  bool m_buffer_enqueued = false;
+
+  HMODULE m_xaudio2_library = {};
+  bool m_com_initialized_by_us = false;
+};
+
+} // namespace
 
 XAudio2AudioStream::XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
   : AudioStream(sample_rate, channels, buffer_ms, stretch)

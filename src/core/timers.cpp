@@ -21,6 +21,8 @@
 Log_SetChannel(Timers);
 
 namespace Timers {
+namespace {
+
 static constexpr u32 NUM_TIMERS = 3;
 
 enum class SyncMode : u8
@@ -59,6 +61,8 @@ struct CounterState
   bool counting_enabled;
   bool irq_done;
 };
+
+} // namespace
 
 static void UpdateCountingEnabled(CounterState& cs);
 static void CheckForIRQ(u32 index, u32 old_counter);

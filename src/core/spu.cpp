@@ -38,6 +38,8 @@ ALWAYS_INLINE static constexpr s32 ApplyVolume(s32 sample, s16 volume)
 }
 
 namespace SPU {
+namespace {
+
 enum : u32
 {
   SPU_BASE = 0x1F801C00,
@@ -307,6 +309,7 @@ struct ReverbRegisters
     u16 rev[NUM_REVERB_REGS];
   };
 };
+} // namespace
 
 static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
@@ -350,7 +353,7 @@ static void CreateOutputStream();
 
 static std::unique_ptr<TimingEvent> s_tick_event;
 static std::unique_ptr<TimingEvent> s_transfer_event;
-static std::unique_ptr<Common::WAVWriter> s_dump_writer;
+static std::unique_ptr<WAVWriter> s_dump_writer;
 static std::unique_ptr<AudioStream> s_audio_stream;
 static std::unique_ptr<AudioStream> s_null_audio_stream;
 static bool s_audio_output_muted = false;
@@ -405,7 +408,7 @@ static std::array<u8, RAM_SIZE> s_ram{};
 
 #ifdef SPU_DUMP_ALL_VOICES
 // +1 for reverb output
-static std::array<std::unique_ptr<Common::WAVWriter>, NUM_VOICES + 1> s_voice_dump_writers;
+static std::array<std::unique_ptr<WAVWriter>, NUM_VOICES + 1> s_voice_dump_writers;
 #endif
 } // namespace SPU
 
@@ -1479,7 +1482,7 @@ bool SPU::IsDumpingAudio()
 bool SPU::StartDumpingAudio(const char* filename)
 {
   s_dump_writer.reset();
-  s_dump_writer = std::make_unique<Common::WAVWriter>();
+  s_dump_writer = std::make_unique<WAVWriter>();
   if (!s_dump_writer->Open(filename, SAMPLE_RATE, 2))
   {
     Log_ErrorPrintf("Failed to open '%s'", filename);
@@ -1491,13 +1494,13 @@ bool SPU::StartDumpingAudio(const char* filename)
   for (size_t i = 0; i < s_voice_dump_writers.size(); i++)
   {
     s_voice_dump_writers[i].reset();
-    s_voice_dump_writers[i] = std::make_unique<Common::WAVWriter>();
+    s_voice_dump_writers[i] = std::make_unique<WAVWriter>();
 
     TinyString new_suffix;
     if (i == NUM_VOICES)
-      new_suffix.Assign("reverb.wav");
+      new_suffix.assign("reverb.wav");
     else
-      new_suffix.Format("voice%u.wav", i);
+      new_suffix.fmt("voice{}.wav", i);
 
     const std::string voice_filename = Path::ReplaceExtension(filename, new_suffix);
     if (!s_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))

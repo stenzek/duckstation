@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -29,6 +29,8 @@
 
 Log_SetChannel(CDImageCHD);
 
+namespace {
+
 static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
 {
   if (std::strncmp(str, "MODE2_FORM_MIX", 14) == 0)
@@ -54,7 +56,6 @@ static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
 static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
 static std::recursive_mutex s_chd_hash_cache_mutex;
 
-namespace {
 class CDImageCHD : public CDImage
 {
 public:

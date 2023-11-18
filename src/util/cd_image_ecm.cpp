@@ -158,6 +158,8 @@ static void eccedc_generate(u8* sector, int type)
   }
 }
 
+namespace {
+
 class CDImageEcm : public CDImage
 {
 public:
@@ -215,6 +217,8 @@ private:
 
   CDSubChannelReplacement m_sbi;
 };
+
+} // namespace
 
 CDImageEcm::CDImageEcm() = default;
 

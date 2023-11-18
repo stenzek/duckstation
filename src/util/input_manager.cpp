@@ -27,6 +27,8 @@
 
 Log_SetChannel(InputManager);
 
+namespace {
+
 // ------------------------------------------------------------------------
 // Constants
 // ------------------------------------------------------------------------
@@ -87,6 +89,8 @@ struct MacroButton
   bool toggle_state;        ///< Current state for turbo.
   bool trigger_state;       ///< Whether the macro button is active.
 };
+
+} // namespace
 
 // ------------------------------------------------------------------------
 // Forward Declarations (for static qualifier)

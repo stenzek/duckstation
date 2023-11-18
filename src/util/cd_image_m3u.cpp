@@ -1,18 +1,23 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <map>
 #include <sstream>
+
 Log_SetChannel(CDImageMemory);
+
+namespace {
 
 class CDImageM3u : public CDImage
 {
@@ -47,6 +52,8 @@ private:
   u32 m_current_image_index = UINT32_C(0xFFFFFFFF);
   bool m_apply_patches = false;
 };
+
+} // namespace
 
 CDImageM3u::CDImageM3u() = default;
 

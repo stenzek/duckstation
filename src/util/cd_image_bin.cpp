@@ -1,13 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+
 #include <cerrno>
+
 Log_SetChannel(CDImageBin);
+
+namespace {
 
 class CDImageBin : public CDImage
 {
@@ -29,6 +34,8 @@ private:
 
   CDSubChannelReplacement m_sbi;
 };
+
+} // namespace
 
 CDImageBin::CDImageBin() = default;
 

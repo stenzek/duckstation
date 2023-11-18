@@ -5,7 +5,6 @@
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_image_hasher.h" />
-    <ClInclude Include="cubeb_audio_stream.h" />
     <ClInclude Include="cue_parser.h" />
     <ClInclude Include="d3d11_device.h" />
     <ClInclude Include="d3d11_pipeline.h" />
@@ -62,7 +61,6 @@
     <ClInclude Include="opengl_texture.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="pbp_types.h" />
     <ClInclude Include="page_fault_handler.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="pch.h" />
@@ -106,7 +104,6 @@
     <ClInclude Include="wav_writer.h" />
     <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="window_info.h" />
-    <ClInclude Include="xaudio2_audio_stream.h" />
     <ClInclude Include="xinput_source.h" />
   </ItemGroup>
   <ItemGroup>

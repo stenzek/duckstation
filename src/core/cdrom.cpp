@@ -32,6 +32,8 @@
 Log_SetChannel(CDROM);
 
 namespace CDROM {
+namespace {
+
 enum : u32
 {
   RAW_SECTOR_OUTPUT_SIZE = CDImage::RAW_SECTOR_SIZE - CDImage::SECTOR_SYNC_SIZE,
@@ -209,6 +211,8 @@ union RequestRegister
   BitField<u8, bool, 6, 1> BFWR;
   BitField<u8, bool, 7, 1> BFRD;
 };
+
+} // namespace
 
 static void SoftReset(TickCount ticks_late);
 

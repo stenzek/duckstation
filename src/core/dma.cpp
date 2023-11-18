@@ -29,6 +29,8 @@
 Log_SetChannel(DMA);
 
 namespace DMA {
+namespace {
+
 enum class SyncMode : u32
 {
   Manual = 0,
@@ -39,35 +41,6 @@ enum class SyncMode : u32
 
 static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
 // static constexpr PhysicalMemoryAddress ADDRESS_MASK = UINT32_C(0x001FFFFC);
-
-static u32 GetAddressMask();
-static void ClearState();
-
-// is everything enabled for a channel to operate?
-static bool CanTransferChannel(Channel channel, bool ignore_halt);
-static bool IsTransferHalted();
-static void UpdateIRQ();
-
-// returns false if the DMA should now be halted
-static TickCount GetTransferSliceTicks();
-static TickCount GetTransferHaltTicks();
-static bool TransferChannel(Channel channel);
-static void HaltTransfer(TickCount duration);
-static void UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late);
-
-// from device -> memory
-static TickCount TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
-
-// from memory -> device
-static TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
-
-// configuration
-static TickCount s_max_slice_ticks = 1000;
-static TickCount s_halt_ticks = 100;
-
-static std::vector<u32> s_transfer_buffer;
-static std::unique_ptr<TimingEvent> s_unhalt_event;
-static TickCount s_halt_ticks_remaining = 0;
 
 struct ChannelState
 {
@@ -110,8 +83,6 @@ struct ChannelState
   bool request = false;
 };
 
-static std::array<ChannelState, NUM_CHANNELS> s_state;
-
 union DPCR
 {
   u32 bits;
@@ -133,14 +104,12 @@ union DPCR
   BitField<u32, u8, 28, 3> priority_offset;
   BitField<u32, bool, 31, 1> unused;
 
-  u8 GetPriority(Channel channel) const { return ((bits >> (static_cast<u8>(channel) * 4)) & u32(3)); }
-  bool GetMasterEnable(Channel channel) const
+  ALWAYS_INLINE u8 GetPriority(Channel channel) const { return ((bits >> (static_cast<u8>(channel) * 4)) & u32(3)); }
+  ALWAYS_INLINE bool GetMasterEnable(Channel channel) const
   {
     return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) * 4 + 3)) & u32(1));
   }
 };
-
-static DPCR s_DPCR = {};
 
 static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'00111111;
 static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
@@ -166,25 +135,57 @@ union DICR
   BitField<u32, bool, 30, 1> OTC_irq_flag;
   BitField<u32, bool, 31, 1> master_flag;
 
-  bool IsIRQEnabled(Channel channel) const
+  ALWAYS_INLINE bool IsIRQEnabled(Channel channel) const
   {
     return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) + 16)) & u32(1));
   }
 
-  bool GetIRQFlag(Channel channel) const
+  ALWAYS_INLINE bool GetIRQFlag(Channel channel) const
   {
     return ConvertToBoolUnchecked((bits >> (static_cast<u8>(channel) + 24)) & u32(1));
   }
 
-  void SetIRQFlag(Channel channel) { bits |= (u32(1) << (static_cast<u8>(channel) + 24)); }
-  void ClearIRQFlag(Channel channel) { bits &= ~(u32(1) << (static_cast<u8>(channel) + 24)); }
+  ALWAYS_INLINE void SetIRQFlag(Channel channel) { bits |= (u32(1) << (static_cast<u8>(channel) + 24)); }
+  ALWAYS_INLINE void ClearIRQFlag(Channel channel) { bits &= ~(u32(1) << (static_cast<u8>(channel) + 24)); }
 
-  void UpdateMasterFlag()
+  ALWAYS_INLINE void UpdateMasterFlag()
   {
     master_flag = master_enable && ((((bits >> 16) & u32(0b1111111)) & ((bits >> 24) & u32(0b1111111))) != 0);
   }
 };
+} // namespace
 
+static u32 GetAddressMask();
+static void ClearState();
+
+// is everything enabled for a channel to operate?
+static bool CanTransferChannel(Channel channel, bool ignore_halt);
+static bool IsTransferHalted();
+static void UpdateIRQ();
+
+// returns false if the DMA should now be halted
+static TickCount GetTransferSliceTicks();
+static TickCount GetTransferHaltTicks();
+static bool TransferChannel(Channel channel);
+static void HaltTransfer(TickCount duration);
+static void UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late);
+
+// from device -> memory
+static TickCount TransferDeviceToMemory(Channel channel, u32 address, u32 increment, u32 word_count);
+
+// from memory -> device
+static TickCount TransferMemoryToDevice(Channel channel, u32 address, u32 increment, u32 word_count);
+
+// configuration
+static TickCount s_max_slice_ticks = 1000;
+static TickCount s_halt_ticks = 100;
+
+static std::vector<u32> s_transfer_buffer;
+static std::unique_ptr<TimingEvent> s_unhalt_event;
+static TickCount s_halt_ticks_remaining = 0;
+
+static std::array<ChannelState, NUM_CHANNELS> s_state;
+static DPCR s_DPCR = {};
 static DICR s_DICR = {};
 }; // namespace DMA
 
