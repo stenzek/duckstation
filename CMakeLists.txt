@@ -47,7 +47,7 @@ endif()
 
 # Required libraries.
 if(ENABLE_SDL2)
-  find_package(SDL2 2.28.2 REQUIRED)
+  find_package(SDL2 2.28.5 REQUIRED)
 endif()
 if(NOT WIN32 AND NOT ANDROID)
   find_package(CURL REQUIRED)
@@ -59,7 +59,7 @@ if(NOT WIN32 AND NOT ANDROID)
   endif()
 endif()
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.5.1 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+  find_package(Qt6 6.5.3 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
 endif()
 
 

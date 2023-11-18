@@ -145,9 +145,9 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (at least version 2.28.2) (`libsdl2-dev` `libxrandr-dev`)
+ - SDL2 (at least version 2.28.5) (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.5.1) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
+ - Qt 6 (at least version 6.5.3) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - libcurl (`libcurl4-openssl-dev`)
@@ -163,8 +163,8 @@ Requirements (Debian/Ubuntu package names):
 
 Requirements:
  - CMake
- - SDL2 (at least version 2.28.2)
- - Qt 6 (at least version 6.5.1)
+ - SDL2 (at least version 2.28.5)
+ - Qt 6 (at least version 6.5.3)
 
 Optional (recommended for faster builds):
  - Ninja
