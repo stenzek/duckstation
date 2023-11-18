@@ -284,11 +284,11 @@ elseif(NOT ANDROID)
 endif()
 
 if(NOT WIN32 AND NOT ANDROID)
-  target_sources(common PRIVATE
+  target_sources(util PRIVATE
     http_downloader_curl.cpp
     http_downloader_curl.h
   )
-  target_link_libraries(common PRIVATE
+  target_link_libraries(util PRIVATE
     CURL::libcurl
   )
 endif()

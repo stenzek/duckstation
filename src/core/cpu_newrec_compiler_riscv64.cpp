@@ -2223,6 +2223,7 @@ void CPU::NewRec::RISCV64Compiler::TestInterrupts(const biscuit::GPR& sr)
                                                                (inst + 1)->cop.cop_n));
     EmitMov(RARG2, m_compiler_pc);
     EmitCall(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)));
+    m_dirty_pc = false;
     EndAndLinkBlock(std::nullopt, true, false);
   }
   else

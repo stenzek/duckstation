@@ -2270,7 +2270,7 @@ void CodeGenerator::EmitBlockProtectCheck(const u8* ram_ptr, const u8* shadow_pt
     m_emit->ldr(vtmp, a64::MemOperand(RXARG2, offset));
     m_emit->cmeq(dst, dst, vtmp);
     if (!first)
-      m_emit->and_(dst.V16B(), dst.V16B(), vtmp.V16B());
+      m_emit->and_(a64::v0.V16B(), a64::v0.V16B(), dst.V16B());
     else
       first = false;
 

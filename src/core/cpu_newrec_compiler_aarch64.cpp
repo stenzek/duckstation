@@ -224,7 +224,7 @@ void CPU::NewRec::AArch64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, 
     armAsm->ldr(vtmp, MemOperand(RXARG2, offset));
     armAsm->cmeq(dst, dst, vtmp);
     if (!first)
-      armAsm->and_(dst.V16B(), dst.V16B(), vtmp.V16B());
+      armAsm->and_(v0.V16B(), v0.V16B(), dst.V16B());
     else
       first = false;
 
@@ -1967,6 +1967,7 @@ void CPU::NewRec::AArch64Compiler::TestInterrupts(const vixl::aarch64::WRegister
                                                                 (inst + 1)->cop.cop_n));
     EmitMov(RWARG2, m_compiler_pc);
     EmitCall(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)));
+    m_dirty_pc = false;
     EndAndLinkBlock(std::nullopt, true, false);
   }
   else
