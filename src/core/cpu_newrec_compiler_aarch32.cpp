@@ -393,7 +393,7 @@ void CPU::NewRec::AArch32Compiler::EndAndLinkBlock(const std::optional<u32>& new
 {
   // event test
   // pc should've been flushed
-  DebugAssert(!m_dirty_pc && !force_run_events);
+  DebugAssert(!m_dirty_pc && !m_block_ended);
   m_block_ended = true;
 
   // TODO: try extracting this to a function
@@ -2003,7 +2003,7 @@ void CPU::NewRec::AArch32Compiler::TestInterrupts(const vixl::aarch32::Register&
       EmitMov(RARG2, m_compiler_pc);
     armAsm->str(RARG1, PTR(&g_state.downcount));
     if (m_dirty_pc)
-      armAsm->str(RARG2, m_compiler_pc);
+      armAsm->str(RARG2, PTR(&g_state.pc));
     m_dirty_pc = false;
     EndAndLinkBlock(std::nullopt, false, true);
   }
